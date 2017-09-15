@@ -101,8 +101,7 @@ namespace OpenHardwareMonitor.Hardware {
       if (fanControllerEnabled) {
         Add(new TBalancer.TBalancerGroup(settings));
         Add(new Heatmaster.HeatmasterGroup(settings));
-        Add(new WindowsHIDSensor.WindowsHIDSensorGroup(settings));
-            }
+      }
 
       if (hddEnabled)
         Add(new HDD.HarddriveGroup(settings));
@@ -182,12 +181,10 @@ namespace OpenHardwareMonitor.Hardware {
           if (value) {
             Add(new TBalancer.TBalancerGroup(settings));
             Add(new Heatmaster.HeatmasterGroup(settings));
-            Add(new WindowsHIDSensor.WindowsHIDSensorGroup(settings));
-                    } else {
+          } else {
             RemoveType<TBalancer.TBalancerGroup>();
             RemoveType<Heatmaster.HeatmasterGroup>();
-            RemoveType<WindowsHIDSensor.WindowsHIDSensorGroup>();
-                    }
+          }
         }
         fanControllerEnabled = value;
       }
