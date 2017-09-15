@@ -21,8 +21,9 @@ namespace OpenHardwareMonitor.Hardware {
     GpuAti,    
     TBalancer,
     Heatmaster,
-    HDD
-  }
+    HDD,
+    WindowsHIDSensor
+    }
 
   public interface IHardware : IElement {
 
