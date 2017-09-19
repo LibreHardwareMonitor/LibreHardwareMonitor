@@ -20,7 +20,7 @@ namespace OpenHardwareMonitor.GUI {
     private ISensor sensor;
     private PersistentSettings settings;
     private UnitManager unitManager;
-    private string format;
+    public string format;
     private bool plot = false;
     private Color? penColor = null;
 

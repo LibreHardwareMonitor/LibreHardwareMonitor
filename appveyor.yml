@@ -1,7 +1,15 @@
 image: Visual Studio 2015
 
+before_build:
+  - nuget restore
+
+configuration:
+  - Debug
+  - Release
+
 build:
   project: OpenHardwareMonitor.sln
 
 artifacts:
   - path: 'Bin\Debug\'
+  - path: 'Bin\Release\'
