@@ -96,6 +96,7 @@ namespace OpenHardwareMonitor.GUI {
       this.timer = new System.Windows.Forms.Timer(this.components);
       this.splitContainer = new OpenHardwareMonitor.GUI.SplitContainerAdv();
       this.treeView = new Aga.Controls.Tree.TreeViewAdv();
+      this.nicMenuItem = new System.Windows.Forms.MenuItem();
       this.logSeparatorMenuItem = new System.Windows.Forms.MenuItem();
       this.loggingIntervalMenuItem = new System.Windows.Forms.MenuItem();
       this.log1sMenuItem = new System.Windows.Forms.MenuItem();
@@ -247,7 +248,8 @@ namespace OpenHardwareMonitor.GUI {
             this.ramMenuItem,
             this.gpuMenuItem,
             this.fanControllerMenuItem,
-            this.hddMenuItem});
+            this.hddMenuItem,
+            this.nicMenuItem});
       this.menuItem5.Text = "Hardware";
       // 
       // mainboardMenuItem
@@ -279,6 +281,11 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.hddMenuItem.Index = 5;
       this.hddMenuItem.Text = "Hard Disk Drives";
+      // 
+      // nicItem
+      // 
+      this.nicMenuItem.Index = 6;
+      this.nicMenuItem.Text = "Network";
       // 
       // menuItem6
       // 
@@ -762,6 +769,7 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem log1hMenuItem;
     private System.Windows.Forms.MenuItem log2hMenuItem;
     private System.Windows.Forms.MenuItem log6hMenuItem;
+    private System.Windows.Forms.MenuItem nicMenuItem;
   }
 }
 
