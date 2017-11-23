@@ -69,6 +69,10 @@ namespace OpenHardwareMonitor.GUI {
           this.Image = Utilities.EmbeddedResources.GetImage("factor.png");
           this.Text = "Factors";
           break;
+        case SensorType.InternetSpeed:
+          this.Image = Utilities.EmbeddedResources.GetImage("internetspeed.png");
+          this.Text = "Internet Speed";
+          break;
       }
 
       NodeAdded += new NodeEventHandler(TypeNode_NodeAdded);

@@ -29,6 +29,26 @@ namespace OpenHardwareMonitor.GUI {
         if (sensor.SensorType == SensorType.Temperature && 
           unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit) {
           return string.Format("{0:F1} °F", value * 1.8 + 32);
+        } else if(sensor.SensorType == SensorType.InternetSpeed){          string result = "-";
+          switch (sensor.Name){ 
+            case "Connection Speed": {
+              switch (value){ 
+                case 100000000: result = "100Mbps";break;
+                case 1000000000: result = "1Gbps";break;
+                default: {
+                  if(value < 1024) result = string.Format("{0:F0} bps", value);
+                  else if(value < 1048576) result = string.Format("{0:F1} Kbps",value/1024);
+                  else if(value < 1073741824) result = string.Format("{0:F1} Mbps",value/1048576);
+                  else result = string.Format("{0:F1} Gbps",value/ 1073741824);
+                } break;
+              }
+            }break;
+            default:{
+              if(value<1048576) result = string.Format("{0:F1} KB/s",value/1024);
+              else result = string.Format("{0:F1} MB/s",value/1048576);
+            } break;
+          }
+          return result;
         } else {
           return string.Format(format, value);
         }                
@@ -54,6 +74,7 @@ namespace OpenHardwareMonitor.GUI {
         case SensorType.Data: format = "{0:F1} GB"; break;
         case SensorType.SmallData: format = "{0:F1} MB"; break;
         case SensorType.Factor: format = "{0:F3}"; break;
+        case SensorType.InternetSpeed: format = "{0:F1} B/s"; break;
       }
 
       bool hidden = settings.GetValue(new Identifier(sensor.Identifier, 
