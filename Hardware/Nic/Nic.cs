@@ -59,7 +59,7 @@ namespace OpenHardwareMonitor.Hardware.Nic
             {
                     shouldTotalFlowUpdate = false;
             }
-            connectionSpeed = new Sensor("Connection Speed", 0, SensorType.InternetSpeed, this,
+            connectionSpeed = new Sensor("Connection Speed", 0, SensorType.Throughput, this,
               settings);
             ActivateSensor(connectionSpeed);
             dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this,
@@ -77,17 +77,17 @@ namespace OpenHardwareMonitor.Hardware.Nic
             totalDataFlowed = new Sensor("Total Data Flowed in Static", 6, SensorType.Data, this,
               settings);
             ActivateSensor(totalDataFlowed);
-            uploadSpeed = new Sensor("Upload Speed", 7, SensorType.InternetSpeed, this,
+            uploadSpeed = new Sensor("Upload Speed", 7, SensorType.Throughput, this,
               settings);
             ActivateSensor(uploadSpeed);
-            downloadSpeed = new Sensor("Download Speed", 8, SensorType.InternetSpeed, this,
+            downloadSpeed = new Sensor("Download Speed", 8, SensorType.Throughput, this,
               settings);
             ActivateSensor(downloadSpeed);
             networkUtilization = new Sensor("Network Utilization", 1, SensorType.Load, this,
               settings);
             ActivateSensor(networkUtilization);
-            bytesUploaded = nic.GetIPv4Statistics().BytesSent;
-            bytesDownloaded = nic.GetIPv4Statistics().BytesReceived;
+            bytesUploaded = nic.GetIPStatistics().BytesSent;
+            bytesDownloaded = nic.GetIPStatistics().BytesReceived;
             latesTime = DateTime.Now;
         }
 

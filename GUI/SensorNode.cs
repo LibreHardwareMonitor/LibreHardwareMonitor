@@ -29,7 +29,7 @@ namespace OpenHardwareMonitor.GUI {
         if (sensor.SensorType == SensorType.Temperature && 
           unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit) {
           return string.Format("{0:F1} °F", value * 1.8 + 32);
-        } else if(sensor.SensorType == SensorType.InternetSpeed){          string result = "-";
+        } else if(sensor.SensorType == SensorType.Throughput){          string result = "-";
           switch (sensor.Name){ 
             case "Connection Speed": {
               switch (value){ 
@@ -74,7 +74,7 @@ namespace OpenHardwareMonitor.GUI {
         case SensorType.Data: format = "{0:F1} GB"; break;
         case SensorType.SmallData: format = "{0:F1} MB"; break;
         case SensorType.Factor: format = "{0:F3}"; break;
-        case SensorType.InternetSpeed: format = "{0:F1} B/s"; break;
+        case SensorType.Throughput: format = "{0:F1} B/s"; break;
       }
 
       bool hidden = settings.GetValue(new Identifier(sensor.Identifier, 

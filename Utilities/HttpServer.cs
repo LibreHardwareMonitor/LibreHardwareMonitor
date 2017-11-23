@@ -504,7 +504,7 @@ namespace OpenHardwareMonitor.Utilities {
           return "level.png";
         case SensorType.Power:
           return "power.png";
-        case SensorType.InternetSpeed:
+        case SensorType.Throughput:
           return "internetspeed.png";
         default:
           return "power.png";

@@ -21,7 +21,14 @@ namespace OpenHardwareMonitor.Hardware.Nic
             }
             nicArr = NetworkInterface.GetAllNetworkInterfaces();
             for (int i = 0; i < nicArr.Length; i++)
-                hardware.Add(new Nic(nicArr[i].Name, settings, i, this));
+            {
+                if (nicArr[i].NetworkInterfaceType.ToString() == "Ethernet")
+                {
+                    hardware.Add(new Nic(nicArr[i].Name, settings, i, this));
+                }
+                
+            }
+                
         }
 
         public string GetReport()

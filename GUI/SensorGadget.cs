@@ -584,7 +584,8 @@ namespace OpenHardwareMonitor.GUI {
                 unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit) {
                 formatted = string.Format("{0:F1} °F",
                   UnitManager.CelsiusToFahrenheit(sensor.Value));
-              } else if(sensor.SensorType == SensorType.InternetSpeed){
+              } else if(sensor.SensorType == SensorType.Throughput)
+                            {
                 string result = "-";
                 switch (sensor.Name){ 
                   case "Connection Speed": {

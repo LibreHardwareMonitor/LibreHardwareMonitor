@@ -257,7 +257,7 @@
     <EmbeddedResource Include="Resources\data.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\internetspeed.png" />
+    <EmbeddedResource Include="Resources\throughput.png" />
   </ItemGroup>  
   <ItemGroup>
     <EmbeddedResource Include="Resources\factor.png" />
