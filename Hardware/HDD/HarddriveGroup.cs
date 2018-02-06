@@ -10,40 +10,47 @@
 
 */
 
+using System;
 using System.Collections.Generic;
-using OpenHardwareMonitor.Software;
+using System.Globalization;
+using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.HDD
-{
-    internal class HarddriveGroup : IGroup
-    {
-        private const int MAX_DRIVES = 32;
+namespace OpenHardwareMonitor.Hardware.HDD {
+  internal class HarddriveGroup : IGroup {
 
-        private readonly List<AbstractHarddrive> hardware =
-            new List<AbstractHarddrive>();
+    private const int MAX_DRIVES = 32;
 
-        public HarddriveGroup(ISettings settings)
-        {
-            if (OperatingSystem.IsLinux) return;
+    private readonly List<AbstractHarddrive> hardware = 
+      new List<AbstractHarddrive>();
 
-            ISmart smart = new WindowsSmart();
+    public HarddriveGroup(ISettings settings) {
+      int p = (int)Environment.OSVersion.Platform;
+      if (p == 4 || p == 128) return;
 
-            for (var drive = 0; drive < MAX_DRIVES; drive++)
-            {
-                var instance =
-                    AbstractHarddrive.CreateInstance(smart, drive, settings);
-                if (instance != null) hardware.Add(instance);
-            }
+      ISmart smart = new WindowsSmart();
+
+      for (int drive = 0; drive < MAX_DRIVES; drive++) {
+        AbstractHarddrive instance =
+          AbstractHarddrive.CreateInstance(smart, drive, settings);
+        if (instance != null) {
+          this.hardware.Add(instance);
         }
-
-        public IHardware[] Hardware => hardware.ToArray();
-
-        public string GetReport() => null;
-
-        public void Close()
-        {
-            foreach (var hdd in hardware)
-                hdd.Close();
-        }
+      }
     }
+
+    public IHardware[] Hardware {
+      get {
+        return hardware.ToArray();
+      }
+    }
+
+    public string GetReport() {
+      return null;
+    }
+
+    public void Close() {
+      foreach (AbstractHarddrive hdd in hardware) 
+        hdd.Close();
+    }
+  }
 }

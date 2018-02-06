@@ -80,7 +80,7 @@ namespace OpenHardwareMonitor.Hardware {
 
     private static bool ExtractDriver(string fileName) {
       string resourceName = "OpenHardwareMonitor.Hardware." +
-        (Software.OperatingSystem.Is64BitOperatingSystem ? "WinRing0x64.sys" : 
+        (OperatingSystem.Is64BitOperatingSystem() ? "WinRing0x64.sys" : 
         "WinRing0.sys");
 
       string[] names = GetAssembly().GetManifestResourceNames();
@@ -129,8 +129,8 @@ namespace OpenHardwareMonitor.Hardware {
 
     public static void Open() {
       // no implementation for unix systems
-
-      if (Software.OperatingSystem.IsLinux)
+      int p = (int)Environment.OSVersion.Platform;
+      if ((p == 4) || (p == 128))
         return;  
       
       if (driver != null)

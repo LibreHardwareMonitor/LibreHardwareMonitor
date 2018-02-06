@@ -144,9 +144,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
       // the file reader for lm-sensors support on Linux
       temperatureStream = null;
-        
-      if (Software.OperatingSystem.IsLinux)
-     {
+      int p = (int)Environment.OSVersion.Platform;
+      if ((p == 4) || (p == 128)) {
         string[] devicePaths = Directory.GetDirectories("/sys/class/hwmon/");
         foreach (string path in devicePaths) {
           string name = null;

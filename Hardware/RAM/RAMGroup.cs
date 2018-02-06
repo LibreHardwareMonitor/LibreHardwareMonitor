@@ -8,34 +8,38 @@
 	
 */
 
-using OpenHardwareMonitor.Software;
+using System;
 
-namespace OpenHardwareMonitor.Hardware.RAM
-{
-    internal class RAMGroup : IGroup
-    {
-        private readonly Hardware[] hardware;
+namespace OpenHardwareMonitor.Hardware.RAM {
+  internal class RAMGroup : IGroup {
 
-        public RAMGroup(SMBIOS smbios, ISettings settings)
-        {
-            // No implementation for RAM on Unix systems
-            if (OperatingSystem.IsLinux)
-            {
-                hardware = new Hardware[0];
-                return;
-            }
+    private Hardware[] hardware;
 
-            hardware = new Hardware[] {new GenericRAM("Generic Memory", settings)};
-        }
+    public RAMGroup(SMBIOS smbios, ISettings settings) {
 
-        public string GetReport() => null;
+      // No implementation for RAM on Unix systems
+      int p = (int)Environment.OSVersion.Platform;
+      if ((p == 4) || (p == 128)) {
+        hardware = new Hardware[0];
+        return;
+      }
 
-        public IHardware[] Hardware => hardware;
-
-        public void Close()
-        {
-            foreach (var ram in hardware)
-                ram.Close();
-        }
+      hardware = new Hardware[] { new GenericRAM("Generic Memory", settings) };
     }
+
+    public string GetReport() {
+      return null;
+    }
+
+    public IHardware[] Hardware {
+      get {
+        return hardware;
+      }
+    }
+
+    public void Close() {
+      foreach (Hardware ram in hardware)
+        ram.Close();
+    }
+  }
 }
