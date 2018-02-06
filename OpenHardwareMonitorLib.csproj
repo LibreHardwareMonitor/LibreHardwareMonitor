@@ -65,7 +65,6 @@
     <Compile Include="Hardware\Mainboard\GigabyteTAMG.cs" />
     <Compile Include="Hardware\Mainboard\Identification.cs" />
     <Compile Include="Hardware\Opcode.cs" />
-    <Compile Include="Hardware\OperatingSystem.cs" />
     <Compile Include="Hardware\RAM\GenericRAM.cs" />
     <Compile Include="Hardware\RAM\RAMGroup.cs" />
     <Compile Include="Hardware\Ring0.cs" />
@@ -114,6 +113,7 @@
     <Compile Include="Hardware\ThreadAffinity.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
+    <Compile Include="Software\OperatingSystem.cs" />
   </ItemGroup>
 
   <ItemGroup>
