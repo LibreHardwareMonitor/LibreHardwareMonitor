@@ -29,6 +29,11 @@
     <Compile Include="Collections\Pair.cs" />
     <Compile Include="Collections\RingCollection.cs" />
     <Compile Include="Hardware\ATI\ADL.cs" />
+    <Compile Include="Hardware\ATI\ADLAdapterInfo.cs" />
+    <Compile Include="Hardware\ATI\ADLFanSpeedInfo.cs" />
+    <Compile Include="Hardware\ATI\ADLFanSpeedValue.cs" />
+    <Compile Include="Hardware\ATI\ADLPMActivity.cs" />
+    <Compile Include="Hardware\ATI\ADLTemperature.cs" />
     <Compile Include="Hardware\ATI\ATIGPU.cs" />
     <Compile Include="Hardware\ATI\ATIGroup.cs" />
     <Compile Include="Hardware\Control.cs" />
@@ -64,8 +69,24 @@
     <Compile Include="Hardware\LPC\NCT677X.cs" />
     <Compile Include="Hardware\Mainboard\GigabyteTAMG.cs" />
     <Compile Include="Hardware\Mainboard\Identification.cs" />
+    <Compile Include="Hardware\Nvidia\NvClocks.cs" />
+    <Compile Include="Hardware\Nvidia\NvCooler.cs" />
+    <Compile Include="Hardware\Nvidia\NvDisplayDriverVersion.cs" />
+    <Compile Include="Hardware\Nvidia\NvDisplayHandle.cs" />
+    <Compile Include="Hardware\Nvidia\NvGPUCoolerLevels.cs" />
+    <Compile Include="Hardware\Nvidia\NvGPUCoolerSettings.cs" />
+    <Compile Include="Hardware\Nvidia\NvGPUThermalSettings.cs" />
+    <Compile Include="Hardware\Nvidia\NvLevel.cs" />
+    <Compile Include="Hardware\Nvidia\NvMemoryInfo.cs" />
+    <Compile Include="Hardware\Nvidia\NvPhysicalGpuHandle.cs" />
+    <Compile Include="Hardware\Nvidia\NvPState.cs" />
+    <Compile Include="Hardware\Nvidia\NvPStates.cs" />
+    <Compile Include="Hardware\Nvidia\NvSensor.cs" />
+    <Compile Include="Hardware\Nvidia\NvStatus.cs" />
+    <Compile Include="Hardware\Nvidia\NvThermalController.cs" />
+    <Compile Include="Hardware\Nvidia\NvThermalTarget.cs" />
+    <Compile Include="Hardware\Nvidia\NvUsages.cs" />
     <Compile Include="Hardware\Opcode.cs" />
-    <Compile Include="Hardware\OperatingSystem.cs" />
     <Compile Include="Hardware\RAM\GenericRAM.cs" />
     <Compile Include="Hardware\RAM\RAMGroup.cs" />
     <Compile Include="Hardware\Ring0.cs" />
@@ -114,6 +135,7 @@
     <Compile Include="Hardware\ThreadAffinity.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
+    <Compile Include="Software\OperatingSystem.cs" />
   </ItemGroup>
 
   <ItemGroup>

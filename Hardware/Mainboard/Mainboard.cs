@@ -50,8 +50,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         new Identifier(Identifier, "name").ToString(), name);
 
       ISuperIO[] superIO;
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128)) {
+
+      if (Software.OperatingSystem.IsLinux) {
         this.lmSensors = new LMSensors();
         superIO = lmSensors.SuperIO;
       } else {
