@@ -29,6 +29,11 @@
     <Compile Include="Collections\Pair.cs" />
     <Compile Include="Collections\RingCollection.cs" />
     <Compile Include="Hardware\ATI\ADL.cs" />
+    <Compile Include="Hardware\ATI\ADLAdapterInfo.cs" />
+    <Compile Include="Hardware\ATI\ADLFanSpeedInfo.cs" />
+    <Compile Include="Hardware\ATI\ADLFanSpeedValue.cs" />
+    <Compile Include="Hardware\ATI\ADLPMActivity.cs" />
+    <Compile Include="Hardware\ATI\ADLTemperature.cs" />
     <Compile Include="Hardware\ATI\ATIGPU.cs" />
     <Compile Include="Hardware\ATI\ATIGroup.cs" />
     <Compile Include="Hardware\Control.cs" />

@@ -12,72 +12,10 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace OpenHardwareMonitor.Hardware.ATI {
-  
-  [StructLayout(LayoutKind.Sequential)]
-  internal struct ADLAdapterInfo {
-    public int Size;
-    public int AdapterIndex;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)]
-    public string UDID;
-    public int BusNumber;
-    public int DeviceNumber;
-    public int FunctionNumber;
-    public int VendorID;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)]
-    public string AdapterName;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)]
-    public string DisplayName;
-    public int Present;
-    public int Exist;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)]
-    public string DriverPath;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)]
-    public string DriverPathExt;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)]
-    public string PNPString;
-    public int OSDisplayIndex;
-  }
+namespace OpenHardwareMonitor.Hardware.ATI
+{
 
-  [StructLayout(LayoutKind.Sequential)]
-  internal struct ADLPMActivity {
-    public int Size;
-    public int EngineClock;
-    public int MemoryClock;
-    public int Vddc;
-    public int ActivityPercent;
-    public int CurrentPerformanceLevel;
-    public int CurrentBusSpeed;
-    public int CurrentBusLanes;
-    public int MaximumBusLanes;
-    public int Reserved;
-  }
-
-  [StructLayout(LayoutKind.Sequential)]
-  internal struct ADLTemperature {
-    public int Size;
-    public int Temperature;
-  }
-
-  [StructLayout(LayoutKind.Sequential)]
-  internal struct ADLFanSpeedValue {
-    public int Size;
-    public int SpeedType;
-    public int FanSpeed;
-    public int Flags;
-  }
-
-  [StructLayout(LayoutKind.Sequential)]
-  internal struct ADLFanSpeedInfo {
-    public int Size;
-    public int Flags;
-    public int MinPercent;
-    public int MaxPercent;
-    public int MinRPM;
-    public int MaxRPM;
-  }
-
-  internal class ADL {
+    internal class ADL {
     public const int ADL_MAX_PATH = 256;
     public const int ADL_MAX_ADAPTERS = 40;
     public const int ADL_MAX_DISPLAYS = 40;
