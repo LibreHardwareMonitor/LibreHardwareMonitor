@@ -8,27 +8,27 @@ namespace OpenHardwareMonitor.Software
     {
         static OperatingSystem()
         {
-            //The operative system doesn't change during execution so let's query it just one time
-            var platform = (int) Environment.OSVersion.Platform;
-            IsLinux = platform == 4 || platform == 128;
+            // The operating system doesn't change during execution so let's query it just one time.
+            var platform = Environment.OSVersion.Platform;
+            IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
+
 
             if (IntPtr.Size == 8)
-                Is64BitOperatingSystem = true;
+                Is64Bit = true;
 
             try
             {
                 var result = IsWow64Process(Process.GetCurrentProcess().Handle, out bool wow64Process);
 
-                Is64BitOperatingSystem = result && wow64Process;
+                Is64Bit = result && wow64Process;
             }
             catch (EntryPointNotFoundException)
             {
-                Is64BitOperatingSystem = false;
+                Is64Bit = false;
             }
         }
 
-        public static bool Is64BitOperatingSystem { get; }
-
+        public static bool Is64Bit { get; }
 
         public static bool IsLinux { get; }
 
