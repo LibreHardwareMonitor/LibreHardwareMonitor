@@ -101,6 +101,15 @@ namespace OpenHardwareMonitor.GUI {
       this.Font = SystemFonts.MessageBoxFont;
       treeView.Font = SystemFonts.MessageBoxFont;
 
+      // Set the bounds immediately, so that our child components can be
+      // properly placed.
+      this.Bounds = new Rectangle {
+        X = settings.GetValue("mainForm.Location.X", Location.X),
+        Y = settings.GetValue("mainForm.Location.Y", Location.Y),
+        Width = settings.GetValue("mainForm.Width", 470),
+        Height = settings.GetValue("mainForm.Height", 640)
+      };
+
       plotPanel = new PlotPanel(settings, unitManager);
       plotPanel.Font = SystemFonts.MessageBoxFont;
       plotPanel.Dock = DockStyle.Fill;
@@ -311,6 +320,7 @@ namespace OpenHardwareMonitor.GUI {
       };
 
       InitializePlotForm();
+      InitializeSplitter(); 
 
       startupMenuItem.Visible = startupManager.IsAvailable;
       
@@ -332,6 +342,13 @@ namespace OpenHardwareMonitor.GUI {
         SaveConfiguration();
         if (runWebServer.Value) 
           server.Quit();
+      };
+    }
+
+    private void InitializeSplitter() {
+      splitContainer.SplitterDistance = settings.GetValue("splitContainer.SplitterDistance", 400);
+      splitContainer.SplitterMoved += delegate (object sender, System.Windows.Forms.SplitterEventArgs e) {
+        settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance);
       };
     }
 
