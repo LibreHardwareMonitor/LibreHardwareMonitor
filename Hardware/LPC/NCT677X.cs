@@ -271,9 +271,10 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           break;
 
         case Chip.NCT6779D:
-        case Chip.NCT6795D:
-        case Chip.NCT6793D:
         case Chip.NCT6791D:
+        case Chip.NCT6792D:
+        case Chip.NCT6793D:
+        case Chip.NCT6795D:
         case Chip.NCT6796D:
           if (chip == Chip.NCT6779D) {
             fans = new float?[5];

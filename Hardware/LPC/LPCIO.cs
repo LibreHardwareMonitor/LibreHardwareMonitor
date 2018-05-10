@@ -216,14 +216,14 @@ namespace OpenHardwareMonitor.Hardware.LPC {
               logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
               break;
           } break;
-        case 0xD4:
+        case 0xC9:
           switch (revision) {
-            case 0x23:
-              chip = Chip.NCT6796D;
+            case 0x11:
+              chip = Chip.NCT6792D;
               logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
               break;
-            } break;
-          case 0xD1:
+          } break;
+        case 0xD1:
           switch (revision) {
             case 0x21:
               chip = Chip.NCT6793D;
@@ -234,6 +234,13 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           switch (revision) {
             case 0x52:
               chip = Chip.NCT6795D;
+              logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+              break;
+          } break;
+        case 0xD4:
+          switch (revision) {
+            case 0x23:
+              chip = Chip.NCT6796D;
               logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
               break;
           } break;
@@ -305,9 +312,10 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           case Chip.NCT6776F:
           case Chip.NCT6779D:
           case Chip.NCT6791D:
-          case Chip.NCT6796D:
+          case Chip.NCT6792D:
           case Chip.NCT6793D:
           case Chip.NCT6795D:
+          case Chip.NCT6796D:          
             superIOs.Add(new NCT677X(chip, revision, address, port));
             break;
           case Chip.F71858:
