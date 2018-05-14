@@ -15,6 +15,7 @@ namespace OpenHardwareMonitor.Hardware {
   public enum HardwareType {
     Mainboard,
     SuperIO,
+    Aquacomputer,
     CPU,
     RAM,
     GpuNvidia,

@@ -19,6 +19,7 @@ namespace OpenHardwareMonitor.Hardware {
     Clock, // MHz
     Temperature, // °C
     Load, // %
+    Frequency, // Hz
     Fan, // RPM
     Flow, // L/h
     Control, // %

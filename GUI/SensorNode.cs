@@ -54,6 +54,7 @@ namespace OpenHardwareMonitor.GUI {
         case SensorType.Data: format = "{0:F1} GB"; break;
         case SensorType.SmallData: format = "{0:F1} MB"; break;
         case SensorType.Factor: format = "{0:F3}"; break;
+        case SensorType.Frequency: format = "{0:F1} Hz"; break;
       }
 
       bool hidden = settings.GetValue(new Identifier(sensor.Identifier, 
