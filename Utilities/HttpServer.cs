@@ -475,6 +475,8 @@ namespace OpenHardwareMonitor.Utilities {
           return "bigng.png";
         case HardwareType.RAM:
           return "ram.png";
+        case HardwareType.NIC:
+          return "nic.png";
         default:
           return "cpu.png";
       }
@@ -502,6 +504,8 @@ namespace OpenHardwareMonitor.Utilities {
           return "level.png";
         case SensorType.Power:
           return "power.png";
+        case SensorType.InternetSpeed:
+          return "internetspeed.png";
         default:
           return "power.png";
       }
