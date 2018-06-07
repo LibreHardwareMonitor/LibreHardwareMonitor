@@ -47,7 +47,7 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
         #endif
         private readonly Sensor[] _temperatures = new Sensor[3];
         private readonly Sensor[] _voltages = new Sensor[2];
-        private readonly Sensor[] _frequencys = new Sensor[2];
+        private readonly Sensor[] _frequencies = new Sensor[2];
                
         public AquastreamXT(HidDevice dev, ISettings settings) : base("Aquastream XT", new Identifier(dev.DevicePath), settings)
         {
@@ -61,16 +61,16 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             Name = $"Aquastream XT {Variant}";
             FirmwareVersion = BitConverter.ToUInt16(rawData, 50);
 #if DEBUG
-            debugSensor[0] = new Sensor("", 0, SensorType.Debug, this, settings);
-            ActivateSensor(debugSensor[0]);
-            debugSensor[1] = new Sensor("", 1, SensorType.Debug, this, settings);
-            ActivateSensor(debugSensor[1]);
-            debugSensor[2] = new Sensor("", 2, SensorType.Debug, this, settings);
-            ActivateSensor(debugSensor[2]);
-            debugSensor[3] = new Sensor("", 3, SensorType.Debug, this, settings);
-            ActivateSensor(debugSensor[3]);
-            debugSensor[4] = new Sensor("", 4, SensorType.Debug, this, settings);
-            ActivateSensor(debugSensor[4]);
+            _debugSensor[0] = new Sensor("", 0, SensorType.Debug, this, settings);
+            ActivateSensor(_debugSensor[0]);
+            _debugSensor[1] = new Sensor("", 1, SensorType.Debug, this, settings);
+            ActivateSensor(_debugSensor[1]);
+            _debugSensor[2] = new Sensor("", 2, SensorType.Debug, this, settings);
+            ActivateSensor(_debugSensor[2]);
+            _debugSensor[3] = new Sensor("", 3, SensorType.Debug, this, settings);
+            ActivateSensor(_debugSensor[3]);
+            _debugSensor[4] = new Sensor("", 4, SensorType.Debug, this, settings);
+            ActivateSensor(_debugSensor[4]);
 #endif
             _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
             ActivateSensor(_temperatures[0]);
@@ -133,10 +133,10 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             _fanControl.Control = control;
             ActivateSensor(_fanControl);
 
-            _frequencys[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
-            ActivateSensor(_frequencys[0]);
-            _frequencys[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
-            ActivateSensor(_frequencys[1]);            
+            _frequencies[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
+            ActivateSensor(_frequencies[0]);
+            _frequencies[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
+            ActivateSensor(_frequencies[1]);            
         }
 
         //TODO: Implement Fan Control
@@ -209,9 +209,9 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             _temperatures[1].Value = BitConverter.ToUInt16(rawData, 15) / 100f;              //External Temperature Sensor: untested
             _temperatures[2].Value = BitConverter.ToUInt16(rawData, 17) / 100f;              //Internal Water Temperature Sensor: tested - OK
 
-            _frequencys[0].Value = (1f / BitConverter.ToInt16(rawData, 19)) * 750000;        //Pump Frequency: tested - OK
-            _rpmSensors[1].Value = _frequencys[0].Value * 60f;                                      //Pump RPM: tested - OK
-            _frequencys[1].Value = (1f / BitConverter.ToUInt16(rawData, 21)) * 750000;    //Pump Max Frequency: tested - OK
+            _frequencies[0].Value = (1f / BitConverter.ToInt16(rawData, 19)) * 750000;        //Pump Frequency: tested - OK
+            _rpmSensors[1].Value = _frequencies[0].Value * 60f;                                      //Pump RPM: tested - OK
+            _frequencies[1].Value = (1f / BitConverter.ToUInt16(rawData, 21)) * 750000;    //Pump Max Frequency: tested - OK
 
             _pumpFlow.Value = BitConverter.ToUInt32(rawData, 23);                            //Internal Pump Flow Sensor: unknown
 
@@ -220,27 +220,27 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             _fanControl.Value = 100f / byte.MaxValue * rawData[31];                          //External Fan Control: tested, External Fan Voltage scales by this value - OK
 
 #if DEBUG
-            debugSensor[0].Name = "Alarms: " + ((PumpAlarms)rawData[32]).ToString();        //Show Alarms (only if interpretation is activated in Aquasuit!): tested - OK
-            debugSensor[0].Value = rawData[32];
-            debugSensor[1].Name = "Modes: " + ((PumpMode)rawData[33]).ToString();           //Shows unlocked Pump Modes: tested - OK
-            debugSensor[1].Value = rawData[33];
+            _debugSensor[0].Name = "Alarms: " + ((PumpAlarms)rawData[32]).ToString();        //Show Alarms (only if interpretation is activated in Aquasuit!): tested - OK
+            _debugSensor[0].Value = rawData[32];
+            _debugSensor[1].Name = "Modes: " + ((PumpMode)rawData[33]).ToString();           //Shows unlocked Pump Modes: tested - OK
+            _debugSensor[1].Value = rawData[33];
 
             var controllerOut = BitConverter.ToUInt32(rawData, 34);                         //unknown
             var controllerI = BitConverter.ToInt32(rawData, 38);                            //unknown
             var controllerP = BitConverter.ToInt32(rawData, 42);                            //unknown
             var controllerD = BitConverter.ToInt32(rawData, 46);                            //unknown
-            debugSensor[2].Name = $"Controller - Out: {controllerOut} I: {controllerI} P: {controllerP} D: {controllerD}";
+            _debugSensor[2].Name = $"Controller - Out: {controllerOut} I: {controllerI} P: {controllerP} D: {controllerD}";
 
             var FirmwareVersion = BitConverter.ToUInt16(rawData, 50);                       //tested - OK
             var BootloaderVersion = BitConverter.ToUInt16(rawData, 52);                     //unknown
             var HardwareVersion = BitConverter.ToUInt16(rawData, 54);                       //unknown
-            debugSensor[3].Name = $"Version - Firmware: {FirmwareVersion} Bootloader: {BootloaderVersion} Hardware: {HardwareVersion}";
+            _debugSensor[3].Name = $"Version - Firmware: {FirmwareVersion} Bootloader: {BootloaderVersion} Hardware: {HardwareVersion}";
 
             var unk1 = rawData[56];                                                         //unknown
             var unk2 = rawData[57];                                                         //unknown
             var SerialNumber = BitConverter.ToUInt16(rawData, 58);                          //tested - OK
             var PublicKey = BitConverter.ToString(rawData, 60, 6);                          //tested - OK
-            debugSensor[4].Name = $"Unk1: {unk1} Unk2: {unk2} SerialNumber: {SerialNumber} PublicKey: {PublicKey}";
+            _debugSensor[4].Name = $"Unk1: {unk1} Unk2: {unk2} SerialNumber: {SerialNumber} PublicKey: {PublicKey}";
 #endif
         }
     }
