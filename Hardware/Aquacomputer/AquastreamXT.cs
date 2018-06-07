@@ -40,44 +40,63 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
         public UInt16 FirmwareVersion { get; private set; }
         #endregion
 
-        private readonly Sensor fanControl, pumpPower, pumpFlow;
-        private readonly Sensor[] rpmSensors = new Sensor[2];
-        private readonly Sensor[] debugSensor = new Sensor[5];
-        private readonly Sensor[] temperatures = new Sensor[3];
-        private readonly Sensor[] voltages = new Sensor[2];
-        private readonly Sensor[] frequencys = new Sensor[2];
+        private readonly Sensor _fanControl, _pumpPower, _pumpFlow;
+        private readonly Sensor[] _rpmSensors = new Sensor[2];
+        #if DEBUG
+        private readonly Sensor[] _debugSensor = new Sensor[5];
+        #endif
+        private readonly Sensor[] _temperatures = new Sensor[3];
+        private readonly Sensor[] _voltages = new Sensor[2];
+        private readonly Sensor[] _frequencys = new Sensor[2];
                
         public AquastreamXT(HidDevice dev, ISettings settings) : base("Aquastream XT", new Identifier(dev.DevicePath), settings)
         {
             device = dev;
-            device.ReadFeatureData(out rawData, 0x4);
+
+            do
+            {
+                device.ReadFeatureData(out rawData, 0x4);
+            } while (rawData[0] != 0x4);
+
             Name = $"Aquastream XT {Variant}";
-                 
-            temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(temperatures[0]);
-            temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(temperatures[1]);
-            temperatures[2] = new Sensor("Internal Water", 2, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(temperatures[2]);
+            FirmwareVersion = BitConverter.ToUInt16(rawData, 50);
+#if DEBUG
+            debugSensor[0] = new Sensor("", 0, SensorType.Debug, this, settings);
+            ActivateSensor(debugSensor[0]);
+            debugSensor[1] = new Sensor("", 1, SensorType.Debug, this, settings);
+            ActivateSensor(debugSensor[1]);
+            debugSensor[2] = new Sensor("", 2, SensorType.Debug, this, settings);
+            ActivateSensor(debugSensor[2]);
+            debugSensor[3] = new Sensor("", 3, SensorType.Debug, this, settings);
+            ActivateSensor(debugSensor[3]);
+            debugSensor[4] = new Sensor("", 4, SensorType.Debug, this, settings);
+            ActivateSensor(debugSensor[4]);
+#endif
+            _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+            ActivateSensor(_temperatures[0]);
+            _temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
+            ActivateSensor(_temperatures[1]);
+            _temperatures[2] = new Sensor("Internal Water", 2, SensorType.Temperature, this, new ParameterDescription[0], settings);
+            ActivateSensor(_temperatures[2]);
 
-            voltages[0] = new Sensor("External Fan", 1, SensorType.Voltage, this, new ParameterDescription[0], settings);
-            ActivateSensor(voltages[0]);
-            voltages[1] = new Sensor("Pump", 2, SensorType.Voltage, this, new ParameterDescription[0], settings);
-            ActivateSensor(voltages[1]);
+            _voltages[0] = new Sensor("External Fan", 1, SensorType.Voltage, this, new ParameterDescription[0], settings);
+            ActivateSensor(_voltages[0]);
+            _voltages[1] = new Sensor("Pump", 2, SensorType.Voltage, this, new ParameterDescription[0], settings);
+            ActivateSensor(_voltages[1]);
 
-            pumpPower = new Sensor("Pump", 0, SensorType.Power, this, new ParameterDescription[0], settings);
-            ActivateSensor(pumpPower);
+            _pumpPower = new Sensor("Pump", 0, SensorType.Power, this, new ParameterDescription[0], settings);
+            ActivateSensor(_pumpPower);
 
-            pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
-            ActivateSensor(pumpFlow);
+            _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
+            ActivateSensor(_pumpFlow);
 
-            rpmSensors[0] = new Sensor("External Fan", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
-            ActivateSensor(rpmSensors[0]);
-            rpmSensors[1] = new Sensor("Pump", 1, SensorType.Fan, this, new ParameterDescription[0], settings);
-            ActivateSensor(rpmSensors[1]);
+            _rpmSensors[0] = new Sensor("External Fan", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
+            ActivateSensor(_rpmSensors[0]);
+            _rpmSensors[1] = new Sensor("Pump", 1, SensorType.Fan, this, new ParameterDescription[0], settings);
+            ActivateSensor(_rpmSensors[1]);
 
-            fanControl = new Sensor("External Fan", 0, SensorType.Control, this, new ParameterDescription[0], settings);
-            Control control = new Control(fanControl, settings, 0, 100);
+            _fanControl = new Sensor("External Fan", 0, SensorType.Control, this, new ParameterDescription[0], settings);
+            Control control = new Control(_fanControl, settings, 0, 100);
             control.ControlModeChanged += (cc) => {
                 switch (cc.ControlMode)
                 {
@@ -111,13 +130,13 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
                 default:
                     break;
             }
-            fanControl.Control = control;
-            ActivateSensor(fanControl);
+            _fanControl.Control = control;
+            ActivateSensor(_fanControl);
 
-            frequencys[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
-            ActivateSensor(frequencys[0]);
-            frequencys[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
-            ActivateSensor(frequencys[1]);            
+            _frequencys[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
+            ActivateSensor(_frequencys[0]);
+            _frequencys[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
+            ActivateSensor(_frequencys[1]);            
         }
 
         //TODO: Implement Fan Control
@@ -182,23 +201,23 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             //var rawSensorsExt = BitConverter.ToUInt16(rawData, 3);                        //unknown - redundant?
             //var rawSensorsWater = BitConverter.ToUInt16(rawData, 5);                      //unknown - redundant?
 
-            voltages[0].Value = BitConverter.ToUInt16(rawData, 7) / 61f;                    //External Fan Voltage: tested - OK
-            voltages[1].Value = BitConverter.ToUInt16(rawData, 9) / 61f;                    //Pump Voltage: tested - OK
-            pumpPower.Value = voltages[1].Value * BitConverter.ToInt16(rawData, 11) / 625f; //Pump Voltage * Pump Current: tested - OK
+            _voltages[0].Value = BitConverter.ToUInt16(rawData, 7) / 61f;                    //External Fan Voltage: tested - OK
+            _voltages[1].Value = BitConverter.ToUInt16(rawData, 9) / 61f;                    //Pump Voltage: tested - OK
+            _pumpPower.Value = _voltages[1].Value * BitConverter.ToInt16(rawData, 11) / 625f; //Pump Voltage * Pump Current: tested - OK
 
-            temperatures[0].Value = BitConverter.ToUInt16(rawData, 13) / 100f;              //External Fan VRM Temperature: untested
-            temperatures[1].Value = BitConverter.ToUInt16(rawData, 15) / 100f;              //External Temperature Sensor: untested
-            temperatures[2].Value = BitConverter.ToUInt16(rawData, 17) / 100f;              //Internal Water Temperature Sensor: tested - OK
+            _temperatures[0].Value = BitConverter.ToUInt16(rawData, 13) / 100f;              //External Fan VRM Temperature: untested
+            _temperatures[1].Value = BitConverter.ToUInt16(rawData, 15) / 100f;              //External Temperature Sensor: untested
+            _temperatures[2].Value = BitConverter.ToUInt16(rawData, 17) / 100f;              //Internal Water Temperature Sensor: tested - OK
 
-            frequencys[0].Value = (1f / BitConverter.ToInt16(rawData, 19)) * 750000;        //Pump Frequency: tested - OK
-            rpmSensors[1].Value = frequencys[0].Value * 60f;                                      //Pump RPM: tested - OK
-            frequencys[1].Value = (1f / BitConverter.ToUInt16(rawData, 21)) * 750000;    //Pump Max Frequency: tested - OK
+            _frequencys[0].Value = (1f / BitConverter.ToInt16(rawData, 19)) * 750000;        //Pump Frequency: tested - OK
+            _rpmSensors[1].Value = _frequencys[0].Value * 60f;                                      //Pump RPM: tested - OK
+            _frequencys[1].Value = (1f / BitConverter.ToUInt16(rawData, 21)) * 750000;    //Pump Max Frequency: tested - OK
 
-            pumpFlow.Value = BitConverter.ToUInt32(rawData, 23);                            //Internal Pump Flow Sensor: unknown
+            _pumpFlow.Value = BitConverter.ToUInt32(rawData, 23);                            //Internal Pump Flow Sensor: unknown
 
-            rpmSensors[0].Value = BitConverter.ToUInt32(rawData, 27);                              //External Fan RPM: untested
+            _rpmSensors[0].Value = BitConverter.ToUInt32(rawData, 27);                              //External Fan RPM: untested
 
-            fanControl.Value = 100f / byte.MaxValue * rawData[31];                          //External Fan Control: tested, External Fan Voltage scales by this value - OK
+            _fanControl.Value = 100f / byte.MaxValue * rawData[31];                          //External Fan Control: tested, External Fan Voltage scales by this value - OK
 
 #if DEBUG
             debugSensor[0].Name = "Alarms: " + ((PumpAlarms)rawData[32]).ToString();        //Show Alarms (only if interpretation is activated in Aquasuit!): tested - OK
