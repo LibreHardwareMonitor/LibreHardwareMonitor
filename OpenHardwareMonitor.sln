@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenHardwareMonitorLib", "OpenHardwareMonitorLib.csproj", "{B0397530-545A-471D-BB74-027AE456DF1A}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenHardwareMonitorLib", "OpenHardwareMonitorLib.csproj", "{B0397530-545A-471D-BB74-027AE456DF1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenHardwareMonitor", "OpenHardwareMonitor.csproj", "{F5E0C1F7-9E9B-46F2-AC88-8C9C1C923880}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -44,20 +46,22 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6A8EF661-2BD7-498F-8FB9-28182B3B0BE5}
+	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = OpenHardwareMonitor.csproj
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
 		$1.ResourceNamePolicy = FileFormatDefault
-		$0.TextStylePolicy = $2
+		$0.TextStylePolicy = $3
 		$2.FileWidth = 120
 		$2.TabWidth = 2
 		$2.NoTabsAfterNonTabs = True
 		$2.inheritsSet = VisualStudio
 		$2.inheritsScope = text/plain
 		$2.scope = text/plain
-		$0.TextStylePolicy = $3
 		$3.inheritsSet = null
 		$3.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $4

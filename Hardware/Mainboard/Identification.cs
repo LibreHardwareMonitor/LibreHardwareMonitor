@@ -181,6 +181,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.X38_DS5;
         case "X58A-UD3R":
           return Model.X58A_UD3R;
+        case "Z270 PC MATE":
+          return Model.Z270_PC_MATE;
         case "X79-UD3":
           return Model.X79_UD3;
         case "Z68A-D3H-B3":
@@ -195,6 +197,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.FH67;
         case "AX370-Gaming K7":
           return Model.AX370_K7;
+        case "PRIME X370-PRO":
+          return Model.PRIME_X370_PRO;
         case "Base Board Product Name":
         case "To be filled by O.E.M.":
           return Model.Unknown;

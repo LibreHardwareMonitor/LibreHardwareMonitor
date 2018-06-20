@@ -1,60 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B0397530-545A-471D-BB74-027AE456DF1A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
     <RootNamespace>OpenHardwareMonitor</RootNamespace>
     <AssemblyName>OpenHardwareMonitorLib</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputTypeEx>Library</OutputTypeEx>
+    <RuntimeIdentifiers>win</RuntimeIdentifiers>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>Libre Hardware Monitor contributors, Michael Möller</Authors>
+    <PackageId>LibreHardwareMonitorLib</PackageId>
+    <PackageLicenseUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageProjectUrl>
+    <PackageTags>libre open hardware monitor monitoring system logging cpu gpu</PackageTags>
+    <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>Bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>Bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System" />
     <Reference Include="System.Management" />
   </ItemGroup>
+
   <ItemGroup>
     <Compile Include="Collections\Pair.cs" />
     <Compile Include="Collections\RingCollection.cs" />
@@ -95,7 +65,6 @@
     <Compile Include="Hardware\Mainboard\GigabyteTAMG.cs" />
     <Compile Include="Hardware\Mainboard\Identification.cs" />
     <Compile Include="Hardware\Opcode.cs" />
-    <Compile Include="Hardware\OperatingSystem.cs" />
     <Compile Include="Hardware\RAM\GenericRAM.cs" />
     <Compile Include="Hardware\RAM\RAMGroup.cs" />
     <Compile Include="Hardware\Ring0.cs" />
@@ -140,39 +109,32 @@
     <Compile Include="Hardware\HexStringArray.cs" />
     <Compile Include="Collections\IReadOnlyArray.cs" />
     <Compile Include="Collections\ListSet.cs" />
-    <Compile Include="Hardware\PInvokeDelegateFactory.cs" />
     <Compile Include="Collections\ReadOnlyArray.cs" />
+    <Compile Include="Hardware\ThreadAffinity.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="Hardware\ThreadAffinity.cs" />
+    <Compile Include="Software\OperatingSystem.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Hardware\WinRing0.sys" />
     <EmbeddedResource Include="Hardware\WinRing0x64.sys" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Win32.Registry">
+      <Version>4.5.0-preview1-25914-04</Version>
+    </PackageReference>
+    <PackageReference Include="System.IO.Ports">
+      <Version>4.4.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="4.5.0-preview1-25914-04" />
+  </ItemGroup>
 </Project>

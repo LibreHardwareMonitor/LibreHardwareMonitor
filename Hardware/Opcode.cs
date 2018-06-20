@@ -19,8 +19,7 @@ namespace OpenHardwareMonitor.Hardware {
     private static ulong size;
 
     public static void Open() {  
-      int p = (int)Environment.OSVersion.Platform;
-            
+
       byte[] rdtscCode;
       byte[] cpuidCode;
       if (IntPtr.Size == 4) {
@@ -29,7 +28,7 @@ namespace OpenHardwareMonitor.Hardware {
       } else {
         rdtscCode = RDTSC_64;
         
-        if ((p == 4) || (p == 128)) { // Unix
+        if (Software.OperatingSystem.IsLinux) { // Unix
           cpuidCode = CPUID_64_LINUX;
         } else { // Windows
           cpuidCode = CPUID_64_WINDOWS;
@@ -38,7 +37,7 @@ namespace OpenHardwareMonitor.Hardware {
       
       size = (ulong)(rdtscCode.Length + cpuidCode.Length);
 
-      if ((p == 4) || (p == 128)) { // Unix   
+      if (Software.OperatingSystem.IsLinux) { // Unix   
         Assembly assembly = 
           Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " +
           "PublicKeyToken=0738eb9f132ed756");
@@ -81,8 +80,8 @@ namespace OpenHardwareMonitor.Hardware {
       Rdtsc = null;
       Cpuid = null;
       
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128)) { // Unix
+
+      if (Software.OperatingSystem.IsLinux) { // Unix
         Assembly assembly =
           Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " +
           "PublicKeyToken=0738eb9f132ed756");

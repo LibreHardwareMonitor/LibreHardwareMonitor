@@ -78,69 +78,33 @@ namespace OpenHardwareMonitor.Hardware.TBalancer {
 
   internal class FTD2XX {
 
-    public delegate FT_STATUS FT_CreateDeviceInfoListDelegate(
-      out uint numDevices);
-    public delegate FT_STATUS FT_GetDeviceInfoListDelegate(
-      [Out] FT_DEVICE_INFO_NODE[] deviceInfoNodes, ref uint length);
-    public delegate FT_STATUS FT_OpenDelegate(int device, out FT_HANDLE handle);
-    public delegate FT_STATUS FT_CloseDelegate(FT_HANDLE handle);
-    public delegate FT_STATUS FT_SetBaudRateDelegate(FT_HANDLE handle,
-      uint baudRate);
-    public delegate FT_STATUS FT_SetDataCharacteristicsDelegate(
-      FT_HANDLE handle, byte wordLength, byte stopBits, byte parity);
-    public delegate FT_STATUS FT_SetFlowControlDelegate(FT_HANDLE handle,
-      FT_FLOW_CONTROL flowControl, byte xon, byte xoff);
-    public delegate FT_STATUS FT_SetTimeoutsDelegate(FT_HANDLE handle,
-      uint readTimeout, uint writeTimeout);
-    public delegate FT_STATUS FT_WriteDelegate(FT_HANDLE handle, byte[] buffer,
-      uint bytesToWrite, out uint bytesWritten);
-    public delegate FT_STATUS FT_PurgeDelegate(FT_HANDLE handle, FT_PURGE mask);
-    public delegate FT_STATUS FT_GetStatusDelegate(FT_HANDLE handle,
-      out uint amountInRxQueue, out uint amountInTxQueue, out uint eventStatus);
-    public delegate FT_STATUS FT_ReadDelegate(FT_HANDLE handle, 
-      [Out] byte[] buffer, uint bytesToRead, out uint bytesReturned);
-    public delegate FT_STATUS FT_ReadByteDelegate(FT_HANDLE handle,
-      out byte buffer, uint bytesToRead, out uint bytesReturned);
-
-    public static readonly FT_CreateDeviceInfoListDelegate 
-      FT_CreateDeviceInfoList = CreateDelegate<
-      FT_CreateDeviceInfoListDelegate>("FT_CreateDeviceInfoList");
-    public static readonly FT_GetDeviceInfoListDelegate 
-      FT_GetDeviceInfoList = CreateDelegate<
-      FT_GetDeviceInfoListDelegate>("FT_GetDeviceInfoList");
-    public static readonly FT_OpenDelegate 
-      FT_Open = CreateDelegate<
-      FT_OpenDelegate>("FT_Open");
-    public static readonly FT_CloseDelegate 
-      FT_Close = CreateDelegate<
-      FT_CloseDelegate>("FT_Close");
-    public static readonly FT_SetBaudRateDelegate 
-      FT_SetBaudRate = CreateDelegate<
-      FT_SetBaudRateDelegate>("FT_SetBaudRate");
-    public static readonly FT_SetDataCharacteristicsDelegate 
-      FT_SetDataCharacteristics = CreateDelegate<
-      FT_SetDataCharacteristicsDelegate>("FT_SetDataCharacteristics");
-    public static readonly FT_SetFlowControlDelegate 
-      FT_SetFlowControl = CreateDelegate<
-      FT_SetFlowControlDelegate>("FT_SetFlowControl");
-    public static readonly FT_SetTimeoutsDelegate 
-      FT_SetTimeouts = CreateDelegate<
-      FT_SetTimeoutsDelegate>("FT_SetTimeouts");
-    public static readonly FT_WriteDelegate 
-      FT_Write = CreateDelegate<
-      FT_WriteDelegate>("FT_Write");
-    public static readonly FT_PurgeDelegate 
-      FT_Purge = CreateDelegate<
-      FT_PurgeDelegate>("FT_Purge");
-    public static readonly FT_GetStatusDelegate 
-      FT_GetStatus = CreateDelegate<
-      FT_GetStatusDelegate>("FT_GetStatus");
-    public static readonly FT_ReadDelegate 
-      FT_Read = CreateDelegate<
-      FT_ReadDelegate>("FT_Read");
-    public static readonly FT_ReadByteDelegate
-      FT_ReadByte = CreateDelegate<
-      FT_ReadByteDelegate>("FT_Read");
+    private const string FtdAssemblyName = "FTD2XX.dll";
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_CreateDeviceInfoList(out uint numDevices);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_GetDeviceInfoList([Out] FT_DEVICE_INFO_NODE[] deviceInfoNodes, ref uint length);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_Open(int device, out FT_HANDLE handle);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_Close(FT_HANDLE handle);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_SetBaudRate(FT_HANDLE handle, uint baudRate);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_SetDataCharacteristics(FT_HANDLE handle, byte wordLength, byte stopBits, byte parity);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_SetFlowControl(FT_HANDLE handle, FT_FLOW_CONTROL flowControl, byte xon, byte xoff);
+	[DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_SetTimeouts(FT_HANDLE handle, uint readTimeout, uint writeTimeout);
+    [DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_Write(FT_HANDLE handle, byte[] buffer, uint bytesToWrite, out uint bytesWritten);
+    [DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_Purge(FT_HANDLE handle, FT_PURGE mask);
+    [DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_GetStatus(FT_HANDLE handle, out uint amountInRxQueue, out uint amountInTxQueue, out uint eventStatus);
+    [DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_Read(FT_HANDLE handle, [Out] byte[] buffer, uint bytesToRead, out uint bytesReturned);
+    [DllImport(FtdAssemblyName)]
+    public static extern FT_STATUS FT_ReadByte(FT_HANDLE handle, out byte buffer, uint bytesToRead, out uint bytesReturned);
 
     private FTD2XX() { }
 
@@ -183,23 +147,5 @@ namespace OpenHardwareMonitor.Hardware.TBalancer {
         throw new InvalidOperationException();
     }
 
-    private static string GetDllName() {
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128))
-        return "libftd2xx.so";
-      else
-        return "ftd2xx.dll";
-    }
-
-    private static T CreateDelegate<T>(string entryPoint)
-      where T : class {
-      DllImportAttribute attribute = new DllImportAttribute(GetDllName());
-      attribute.CallingConvention = CallingConvention.StdCall;
-      attribute.PreserveSig = true;
-      attribute.EntryPoint = entryPoint;
-      T newDelegate;
-      PInvokeDelegateFactory.CreateDelegate(attribute, out newDelegate);
-      return newDelegate;
-    }
   }
 }

@@ -277,7 +277,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
       out uint revisionId, out uint extDeviceId);
 
     private static readonly bool available;
-    private static readonly nvapi_QueryInterfaceDelegate nvapi_QueryInterface;
+    [DllImport(@"nvapi.dll", EntryPoint = @"nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]    private static extern IntPtr NvAPI32_QueryInterface(uint interfaceId);    [DllImport(@"nvapi64.dll", EntryPoint = @"nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]    private static extern IntPtr NvAPI64_QueryInterface(uint interfaceId);
     private static readonly NvAPI_InitializeDelegate NvAPI_Initialize;
     private static readonly NvAPI_GPU_GetFullNameDelegate
       _NvAPI_GPU_GetFullName;
@@ -346,7 +346,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
 
     private static void GetDelegate<T>(uint id, out T newDelegate)
       where T : class {
-      IntPtr ptr = nvapi_QueryInterface(id);
+      IntPtr ptr;
+      if (IntPtr.Size == 4)
+      {
+          ptr = NvAPI32_QueryInterface(id);
+      }
+      else
+      {
+          ptr = NvAPI64_QueryInterface(id);
+      }
       if (ptr != IntPtr.Zero) {
         newDelegate =
           Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
@@ -356,13 +364,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
     }
 
     static NVAPI() {
-      DllImportAttribute attribute = new DllImportAttribute(GetDllName());
-      attribute.CallingConvention = CallingConvention.Cdecl;
-      attribute.PreserveSig = true;
-      attribute.EntryPoint = "nvapi_QueryInterface";
-      PInvokeDelegateFactory.CreateDelegate(attribute,
-        out nvapi_QueryInterface);
-
       try {
         GetDelegate(0x0150E828, out NvAPI_Initialize);
       } catch (DllNotFoundException) { return; } 

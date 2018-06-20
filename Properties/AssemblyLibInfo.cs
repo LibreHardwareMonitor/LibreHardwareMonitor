@@ -14,11 +14,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Open Hardware Monitor Library")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Libre Hardware Monitor Library, a fork of Open Hardware Monitor.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Open Hardware Monitor Library")]
-[assembly: AssemblyCopyright("Copyright © 2009-2017 Michael Möller")]
+[assembly: AssemblyProduct("Libre Hardware Monitor Library")]
+[assembly: AssemblyCopyright("Copyright © Libre Hardware Monitor contributors, Michael Möller")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

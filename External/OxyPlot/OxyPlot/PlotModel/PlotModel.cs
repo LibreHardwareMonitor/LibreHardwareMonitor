@@ -310,6 +310,28 @@ namespace OxyPlot
             this.Subtitle = subtitle;
         }
 
+        public PlotModel(double dpiXscale, double dpiYscale)
+            : this()
+        {
+            this.PlotMargins = new OxyThickness(this.PlotMargins.Left * dpiXscale,
+                                                this.PlotMargins.Top * dpiYscale,
+                                                this.PlotMargins.Right * dpiXscale,
+                                                this.PlotMargins.Bottom * dpiYscale
+                                               );
+            this.Padding = new OxyThickness(this.Padding.Left * dpiXscale,
+                                            this.Padding.Top * dpiYscale,
+                                            this.Padding.Right * dpiXscale,
+                                            this.Padding.Bottom * dpiYscale
+                                           );
+            this.TitlePadding *= dpiXscale;
+            this.LegendSymbolLength *= dpiXscale;
+            this.LegendSymbolMargin *= dpiXscale;
+            this.LegendPadding *= dpiXscale;
+            this.LegendColumnSpacing *= dpiXscale;
+            this.LegendItemSpacing *= dpiXscale;
+            this.LegendMargin *= dpiXscale;
+        }
+
         /// <summary>
         /// The synchronization root object.
         /// </summary>

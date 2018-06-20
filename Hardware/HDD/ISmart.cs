@@ -13,8 +13,7 @@ using System.Collections.Generic;
 
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-
-  internal interface ISmart {
+    public interface ISmart {
 
     IntPtr OpenDrive(int driveNumber);
 

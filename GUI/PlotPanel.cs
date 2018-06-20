@@ -35,11 +35,16 @@ namespace OpenHardwareMonitor.GUI {
     private UserOption stackedAxes;
 
     private DateTime now;
+    private float dpiX;
+    private float dpiY;
+    private double dpiXscale = 1;
+    private double dpiYscale = 1;
 
     public PlotPanel(PersistentSettings settings, UnitManager unitManager) {
       this.settings = settings;
       this.unitManager = unitManager;
 
+      this.SetDPI();
       this.model = CreatePlotModel();
 
       this.plot = new Plot();
@@ -168,7 +173,7 @@ namespace OpenHardwareMonitor.GUI {
         axes.Add(type, axis);
       }
 
-      var model = new PlotModel();
+      var model = new PlotModel(this.dpiXscale, this.dpiYscale);
       model.Axes.Add(timeAxis);
       foreach (var axis in axes.Values)
         model.Axes.Add(axis);
@@ -176,6 +181,30 @@ namespace OpenHardwareMonitor.GUI {
       model.IsLegendVisible = false;
 
       return model;
+    }
+
+    private void SetDPI() {
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/dn469266(v=vs.85).aspx
+        const int _default_dpi = 96;
+        Graphics g = this.CreateGraphics();
+
+        try
+        {
+            this.dpiX = g.DpiX;
+            this.dpiY = g.DpiY;
+        }
+        finally
+        {
+            g.Dispose();
+        }
+        if (dpiX > 0)
+        {
+            this.dpiXscale = dpiX / _default_dpi;
+        }
+        if (dpiY > 0)
+        {
+            this.dpiYscale = dpiY / _default_dpi;
+        }
     }
 
     public void SetSensors(List<ISensor> sensors,

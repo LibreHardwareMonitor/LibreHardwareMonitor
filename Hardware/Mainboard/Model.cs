@@ -31,6 +31,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     P9X79,
     Rampage_Extreme,
     Rampage_II_GENE,
+    PRIME_X370_PRO,
 
     // DFI
     LP_BI_P45_T2RS_Elite,
@@ -38,6 +39,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
     // ECS
     A890GXM_A,
+
+    // MSI
+    Z270_PC_MATE,
 
     // EVGA
     X58_SLI_Classified,
@@ -86,6 +90,6 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     FH67,
 
     // Unknown
-    Unknown    
+    Unknown
   }
 }

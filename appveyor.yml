@@ -1,15 +1,17 @@
-image: Visual Studio 2015
+version: 1.0.{build}
+
+image: Visual Studio 2017
+
+configuration: Release
+
+platform: Any CPU
 
 before_build:
-  - nuget restore
-
-configuration:
-  - Debug
-  - Release
-
+  - ps: nuget restore OpenHardwareMonitor.sln
+  
 build:
   project: OpenHardwareMonitor.sln
+  verbosity: minimal
 
 artifacts:
-  - path: 'Bin\Debug\'
   - path: 'Bin\Release\'

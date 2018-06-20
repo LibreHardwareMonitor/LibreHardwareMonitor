@@ -28,6 +28,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     private readonly float?[] voltages = new float?[0];
     private readonly float?[] temperatures = new float?[0];
     private readonly float?[] fans = new float?[0];
+    private readonly bool[] fansDisabled = new bool[0];
     private readonly float?[] controls = new float?[0];
 
     private readonly float voltageGain;
@@ -46,10 +47,11 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     private const byte TEMPERATURE_BASE_REG = 0x29;
     private const byte VENDOR_ID_REGISTER = 0x58;
     private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
+    private const byte FAN_TACHOMETER_16BIT_REGISTER = 0x0C;
     private readonly byte[] FAN_TACHOMETER_REG = 
-      { 0x0d, 0x0e, 0x0f, 0x80, 0x82 };
+      { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
     private readonly byte[] FAN_TACHOMETER_EXT_REG =
-      { 0x18, 0x19, 0x1a, 0x81, 0x83 };
+      { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4c };
     private const byte VOLTAGE_BASE_REG = 0x20;
     private readonly byte[] FAN_PWM_CTRL_REG = { 0x15, 0x16, 0x17 };
     private readonly byte[] FAN_PWM_DUTY_REG = { 0x63, 0x6b, 0x73 };
@@ -176,7 +178,8 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         return;
 
       // Bit 0x10 of the configuration register should always be 1
-      if ((ReadByte(CONFIGURATION_REGISTER, out valid) & 0x10) == 0)
+      byte config = ReadByte(CONFIGURATION_REGISTER, out valid);
+       if ((config & 0x10) == 0 && chip != Chip.IT8665E)
         return;
       if (!valid)
         return;
@@ -187,13 +190,19 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         voltages = new float?[10];
         temperatures = new float?[5];
         fans = new float?[5];
+        fansDisabled = new bool[5];
         controls = new float?[3];
-      }
-      else
-      {
+      } else if (chip == Chip.IT8665E) {
+        voltages = new float?[10];
+        temperatures = new float?[6];
+        fans = new float?[6];
+        fansDisabled = new bool[6];
+        controls = new float?[3];
+       } else {
         voltages = new float?[9];
         temperatures = new float?[3];
         fans = new float?[chip == Chip.IT8705F ? 3 : 5];
+        fansDisabled = new bool[chip == Chip.IT8705F ? 3 : 5];
         controls = new float?[3];
       }
 
@@ -203,6 +212,10 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         || chip == Chip.IT8728F || chip == Chip.IT8771E || chip == Chip.IT8772E || chip == Chip.IT8686E) 
       {
         voltageGain = 0.012f;
+      }
+      else if (chip == Chip.IT8665E)
+      {
+        voltageGain = 0.0109f;
       } else {
         voltageGain = 0.016f;        
       }
@@ -218,6 +231,25 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
       if(chip == Chip.IT8620E) {
         hasNewerAutopwm = true;
+      }
+
+      // Disable any fans that aren't set with 16-bit fan counters
+      if (has16bitFanCounter)
+      {
+        int modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER, out valid);
+
+        if (!valid)
+          return;
+
+        if (fans.Length >= 5)
+        {
+          fansDisabled[3] = (modes & (1 << 4)) == 0;
+          fansDisabled[4] = (modes & (1 << 5)) == 0;
+        }
+        if (fans.Length >= 6)
+        {
+          fansDisabled[5] = (modes & (1 << 2)) == 0;
+        }
       }
 
       // Set the number of GPIO sets
@@ -333,6 +365,8 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
       if (has16bitFanCounter) {
         for (int i = 0; i < fans.Length; i++) {
+          if (fansDisabled[i])
+             continue;
           bool valid;
           int value = ReadByte(FAN_TACHOMETER_REG[i], out valid);
           if (!valid)

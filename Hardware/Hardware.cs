@@ -12,7 +12,7 @@ using System;
 using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware {
-  internal abstract class Hardware : IHardware {
+    public abstract class Hardware : IHardware {
 
     private readonly Identifier identifier;
     protected readonly string name;

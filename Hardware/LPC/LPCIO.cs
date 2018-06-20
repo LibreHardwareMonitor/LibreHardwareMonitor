@@ -115,6 +115,13 @@ namespace OpenHardwareMonitor.Hardware.LPC {
               logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
               break;
           } break;
+        case 0x11:
+          switch (revision) {
+            case 0x06:
+              chip = Chip.F71878AD;
+              logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
+              break;
+          } break;
         case 0x52:
           switch (revision) {
             case 0x17:
@@ -209,14 +216,14 @@ namespace OpenHardwareMonitor.Hardware.LPC {
               logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
               break;
           } break;
-        case 0xD4:
+        case 0xC9:
           switch (revision) {
-            case 0x23:
-              chip = Chip.NCT6796D;
+            case 0x11:
+              chip = Chip.NCT6792D;
               logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
               break;
-            } break;
-          case 0xD1:
+          } break;
+        case 0xD1:
           switch (revision) {
             case 0x21:
               chip = Chip.NCT6793D;
@@ -227,6 +234,13 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           switch (revision) {
             case 0x52:
               chip = Chip.NCT6795D;
+              logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+              break;
+          } break;
+        case 0xD4:
+          switch (revision) {
+            case 0x23:
+              chip = Chip.NCT6796D;
               logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
               break;
           } break;
@@ -298,14 +312,16 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           case Chip.NCT6776F:
           case Chip.NCT6779D:
           case Chip.NCT6791D:
-          case Chip.NCT6796D:
+          case Chip.NCT6792D:
           case Chip.NCT6793D:
           case Chip.NCT6795D:
+          case Chip.NCT6796D:          
             superIOs.Add(new NCT677X(chip, revision, address, port));
             break;
           case Chip.F71858:
           case Chip.F71862:
           case Chip.F71869:
+          case Chip.F71878AD:
           case Chip.F71869A:
           case Chip.F71882:
           case Chip.F71889AD:
@@ -357,6 +373,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       switch (chipID) {
         case 0x8620: chip = Chip.IT8620E; break;
         case 0x8628: chip = Chip.IT8628E; break;
+        case 0x8665: chip = Chip.IT8665E; break;
         case 0x8686: chip = Chip.IT8686E; break; 
         case 0x8705: chip = Chip.IT8705F; break;
         case 0x8712: chip = Chip.IT8712F; break;

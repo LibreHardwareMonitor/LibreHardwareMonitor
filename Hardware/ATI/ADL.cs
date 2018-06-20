@@ -100,125 +100,40 @@ namespace OpenHardwareMonitor.Hardware.ATI {
 
     public const int ATI_VENDOR_ID = 0x1002;
 
-    private delegate int ADL_Main_Control_CreateDelegate(
-      ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
-    private delegate int ADL_Adapter_AdapterInfo_GetDelegate(IntPtr info,
-      int size);
-
-    public delegate int ADL_Main_Control_DestroyDelegate();
-    public delegate int ADL_Adapter_NumberOfAdapters_GetDelegate(
-      ref int numAdapters);    
-    public delegate int ADL_Adapter_ID_GetDelegate(int adapterIndex,
-      out int adapterID);
-    public delegate int ADL_Display_AdapterID_GetDelegate(int adapterIndex,
-      out int adapterID);      	
-    public delegate int ADL_Adapter_Active_GetDelegate(int adapterIndex,
-      out int status);
-    public delegate int ADL_Overdrive5_CurrentActivity_GetDelegate(
-      int iAdapterIndex, ref ADLPMActivity activity);
-    public delegate int ADL_Overdrive5_Temperature_GetDelegate(int adapterIndex,
-        int thermalControllerIndex, ref ADLTemperature temperature);
-    public delegate int ADL_Overdrive5_FanSpeed_GetDelegate(int adapterIndex,
-        int thermalControllerIndex, ref	ADLFanSpeedValue fanSpeedValue);
-    public delegate int ADL_Overdrive5_FanSpeedInfo_GetDelegate(
-      int adapterIndex, int thermalControllerIndex,
-      ref ADLFanSpeedInfo fanSpeedInfo);
-    public delegate int ADL_Overdrive5_FanSpeedToDefault_SetDelegate(
-      int adapterIndex, int thermalControllerIndex);
-    public delegate int ADL_Overdrive5_FanSpeed_SetDelegate(int adapterIndex,
-      int thermalControllerIndex, ref	ADLFanSpeedValue fanSpeedValue);
-
-    private static ADL_Main_Control_CreateDelegate
-      _ADL_Main_Control_Create;
-    private static ADL_Adapter_AdapterInfo_GetDelegate
-      _ADL_Adapter_AdapterInfo_Get;
-
-    public static ADL_Main_Control_DestroyDelegate
-      ADL_Main_Control_Destroy;
-    public static ADL_Adapter_NumberOfAdapters_GetDelegate
-      ADL_Adapter_NumberOfAdapters_Get;
-    public static ADL_Adapter_ID_GetDelegate 
-      _ADL_Adapter_ID_Get;
-    public static ADL_Display_AdapterID_GetDelegate 
-      _ADL_Display_AdapterID_Get;
-    public static ADL_Adapter_Active_GetDelegate 
-      ADL_Adapter_Active_Get;
-    public static ADL_Overdrive5_CurrentActivity_GetDelegate
-      ADL_Overdrive5_CurrentActivity_Get;
-    public static ADL_Overdrive5_Temperature_GetDelegate
-      ADL_Overdrive5_Temperature_Get;
-    public static ADL_Overdrive5_FanSpeed_GetDelegate
-      ADL_Overdrive5_FanSpeed_Get;
-    public static ADL_Overdrive5_FanSpeedInfo_GetDelegate
-      ADL_Overdrive5_FanSpeedInfo_Get;
-    public static ADL_Overdrive5_FanSpeedToDefault_SetDelegate
-      ADL_Overdrive5_FanSpeedToDefault_Set;
-    public static ADL_Overdrive5_FanSpeed_SetDelegate
-      ADL_Overdrive5_FanSpeed_Set;
-
-    private static string dllName;
-
-    private static void GetDelegate<T>(string entryPoint, out T newDelegate)
-      where T : class 
-    {
-      DllImportAttribute attribute = new DllImportAttribute(dllName);
-      attribute.CallingConvention = CallingConvention.Cdecl;
-      attribute.PreserveSig = true;
-      attribute.EntryPoint = entryPoint;
-      PInvokeDelegateFactory.CreateDelegate(attribute, out newDelegate);
-    }
-
-    private static void CreateDelegates(string name) {
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128))
-        dllName = name + ".so";
-      else
-        dllName = name + ".dll";
-
-      GetDelegate("ADL_Main_Control_Create",
-        out _ADL_Main_Control_Create);
-      GetDelegate("ADL_Adapter_AdapterInfo_Get",
-        out _ADL_Adapter_AdapterInfo_Get);
-      GetDelegate("ADL_Main_Control_Destroy",
-        out ADL_Main_Control_Destroy);
-      GetDelegate("ADL_Adapter_NumberOfAdapters_Get",
-        out ADL_Adapter_NumberOfAdapters_Get);
-      GetDelegate("ADL_Adapter_ID_Get",
-        out _ADL_Adapter_ID_Get);
-      GetDelegate("ADL_Display_AdapterID_Get", 
-        out _ADL_Display_AdapterID_Get);
-      GetDelegate("ADL_Adapter_Active_Get",
-        out ADL_Adapter_Active_Get);
-      GetDelegate("ADL_Overdrive5_CurrentActivity_Get",
-        out ADL_Overdrive5_CurrentActivity_Get);
-      GetDelegate("ADL_Overdrive5_Temperature_Get",
-        out ADL_Overdrive5_Temperature_Get);
-      GetDelegate("ADL_Overdrive5_FanSpeed_Get",
-        out ADL_Overdrive5_FanSpeed_Get);
-      GetDelegate("ADL_Overdrive5_FanSpeedInfo_Get",
-        out ADL_Overdrive5_FanSpeedInfo_Get);
-      GetDelegate("ADL_Overdrive5_FanSpeedToDefault_Set",
-        out ADL_Overdrive5_FanSpeedToDefault_Set);
-      GetDelegate("ADL_Overdrive5_FanSpeed_Set",
-        out ADL_Overdrive5_FanSpeed_Set);
-    }
-
-    static ADL() {
-      CreateDelegates("atiadlxx");
-    }
-
-    private ADL() { }
+    internal const string Atiadlxx_FileName = "atiadlxx.dll";
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Main_Control_Destroy();
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Adapter_NumberOfAdapters_Get();
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Adapter_ID_Get(int adapterIndex, out int adapterID);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Display_AdapterID_Get(int adapterIndex, out int adapterID);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Adapter_Active_Get(int adapterIndex, out int status);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive5_CurrentActivity_Get(int iAdapterIndex, ref ADLPMActivity activity);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive5_FanSpeedToDefault_Set(int adapterIndex, int thermalControllerIndex);
+    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
     public static int ADL_Main_Control_Create(int enumConnectedAdapters) {
       try {
-        try {
-          return _ADL_Main_Control_Create(Main_Memory_Alloc,
-            enumConnectedAdapters);
-        } catch {
-          CreateDelegates("atiadlxy");
-          return _ADL_Main_Control_Create(Main_Memory_Alloc,
-            enumConnectedAdapters);
-        }
+        return ADL_Main_Control_Create(Main_Memory_Alloc,
+        enumConnectedAdapters);
       } catch {
         return ADL_ERR;
       }
@@ -228,7 +143,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       int elementSize = Marshal.SizeOf(typeof(ADLAdapterInfo));
       int size = info.Length * elementSize;
       IntPtr ptr = Marshal.AllocHGlobal(size);
-      int result = _ADL_Adapter_AdapterInfo_Get(ptr, size);
+      int result = ADL_Adapter_AdapterInfo_Get(ptr, size);
       for (int i = 0; i < info.Length; i++)
         info[i] = (ADLAdapterInfo)
           Marshal.PtrToStructure((IntPtr)((long)ptr + i * elementSize),
@@ -254,29 +169,15 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       return result;
     }
 
-    public static int ADL_Adapter_ID_Get(int adapterIndex,
-      out int adapterID) {
-      try {
-        return _ADL_Adapter_ID_Get(adapterIndex, out adapterID);
-      } catch (EntryPointNotFoundException) {
-        try {
-          return _ADL_Display_AdapterID_Get(adapterIndex, out adapterID);
-        } catch (EntryPointNotFoundException) {
-          adapterID = 1;
-          return ADL_OK;
-        }
-      }
-    }
+    public delegate IntPtr ADL_Main_Memory_AllocDelegate(int size);
 
-    private delegate IntPtr ADL_Main_Memory_AllocDelegate(int size);
-
-    // create a Main_Memory_Alloc delegate and keep it alive
-    private static ADL_Main_Memory_AllocDelegate Main_Memory_Alloc =
+        // create a Main_Memory_Alloc delegate and keep it alive
+        public static ADL_Main_Memory_AllocDelegate Main_Memory_Alloc =
       delegate(int size) {
         return Marshal.AllocHGlobal(size);
       };
 
-    private static void Main_Memory_Free(IntPtr buffer) {
+    public static void Main_Memory_Free(IntPtr buffer) {
       if (IntPtr.Zero != buffer)
         Marshal.FreeHGlobal(buffer);
     }

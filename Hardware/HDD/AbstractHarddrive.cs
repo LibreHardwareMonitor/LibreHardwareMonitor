@@ -18,7 +18,7 @@ using System.Text;
 using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  internal abstract class AbstractHarddrive : Hardware {
+  public abstract class AbstractHarddrive : Hardware {
 
     private const int UPDATE_DIVIDER = 30; // update only every 30s
 

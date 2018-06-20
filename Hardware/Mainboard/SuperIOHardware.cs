@@ -182,6 +182,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case Chip.IT8718F:
         case Chip.IT8720F:
         case Chip.IT8726F:
+        case Chip.IT8665E:
         case Chip.IT8686E:
           GetITEConfigurationsA(superIO, manufacturer, model, v, t, f, c,
             ref readFan, ref postUpdate, ref mutex);
@@ -213,7 +214,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case Chip.F71889ED:
         case Chip.F71889F:
         case Chip.F71808E:
-          GetFintekConfiguration(superIO, manufacturer, model, v, t, f);
+          GetFintekConfiguration(superIO, manufacturer, model, v, t, f, c);
           break;
 
         case Chip.W83627EHF:
@@ -267,9 +268,10 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           break;
         case Chip.NCT6779D:
         case Chip.NCT6791D:
-        case Chip.NCT6796D:
+        case Chip.NCT6792D:
         case Chip.NCT6793D:
         case Chip.NCT6795D:
+        case Chip.NCT6796D:
           GetNuvotonConfigurationD(superIO, manufacturer, model, v, t, f, c);
           break;
         default:
@@ -327,6 +329,26 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("CPU Fan", 0));
               f.Add(new Fan("Chassis Fan #1", 1));
               f.Add(new Fan("Chassis Fan #2", 2));
+              break;
+            case Model.PRIME_X370_PRO: // IT8665E
+              v.Add(new Voltage("CPU VCore", 0));
+              v.Add(new Voltage("SB 2.5V", 1));
+              v.Add(new Voltage("+12V", 2, 5, 1));
+              v.Add(new Voltage("+5V", 3, 1.5f, 1));
+              v.Add(new Voltage("Voltage #4", 4, true));
+              v.Add(new Voltage("Voltage #6", 5, true));
+              v.Add(new Voltage("Voltage #7", 6, true));
+              v.Add(new Voltage("+3.3V", 7, 10, 10));
+              v.Add(new Voltage("VBAT", 8, 10, 10));
+              v.Add(new Voltage("Voltage #10", 9, true));
+              t.Add(new Temperature("CPU", 0));
+              t.Add(new Temperature("Motherboard", 1));
+              t.Add(new Temperature("PCH", 2));
+              for (int i = 3; i < superIO.Temperatures.Length; i++)
+                t.Add(new Temperature("Temperature #" + (i + 1), i));
+              f.Add(new Fan("CPU Fan", 0));
+              for (int i = 1; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
               break;
             default:
               v.Add(new Voltage("CPU VCore", 0));
@@ -948,7 +970,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
     private static void GetFintekConfiguration(ISuperIO superIO,
       Manufacturer manufacturer, Model model,
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f) 
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c) 
     {
       switch (manufacturer) {
         case Manufacturer.EVGA:
@@ -1002,6 +1024,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
             t.Add(new Temperature("Temperature #" + (i + 1), i));
           for (int i = 0; i < superIO.Fans.Length; i++)
             f.Add(new Fan("Fan #" + (i + 1), i));
+          for (int i = 0; i < superIO.Controls.Length; i++)
+            c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
           break;
       }
     }
@@ -1185,40 +1210,103 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               t.Add(new Temperature("Temperature #5", 5));
               t.Add(new Temperature("Temperature #6", 6));
               for (int i = 0; i < superIO.Fans.Length; i++)
+              f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+              c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+          }
+          break;
+        case Manufacturer.MSI:
+          switch (model) {
+            case Model.Z270_PC_MATE: // NCT6795D
+              v.Add(new Voltage("CPU VCore", 0));
+              v.Add(new Voltage("+5V", 1, 4, 1));
+              v.Add(new Voltage("AVCC", 2, 34, 34));
+              v.Add(new Voltage("3VCC", 3, 34, 34));
+              v.Add(new Voltage("+12V", 4, 11, 1));
+              v.Add(new Voltage("Voltage #6", 5, true));
+              v.Add(new Voltage("CPU I/O", 6));
+              v.Add(new Voltage("3VSB", 7, 34, 34));
+              v.Add(new Voltage("VTT", 9));
+              v.Add(new Voltage("CPU SA", 10));
+              v.Add(new Voltage("Voltage #12", 11, true));
+              v.Add(new Voltage("PCH", 12));
+              v.Add(new Voltage("DRAM", 13, 1, 1));
+              v.Add(new Voltage("Voltage #15", 14, true));
+              t.Add(new Temperature("CPU", 0));
+              t.Add(new Temperature("Auxiliary", 1));
+              t.Add(new Temperature("Motherboard", 2));
+              f.Add(new Fan("Pump Fan", 0));
+              f.Add(new Fan("CPU Fan", 1));
+              f.Add(new Fan("System Fan #1", 2));
+              f.Add(new Fan("System Fan #2", 3));
+              f.Add(new Fan("System Fan #3", 4));
+              f.Add(new Fan("System Fan #4", 5));
+              c.Add(new Ctrl("Pump Fan", 0));
+              c.Add(new Ctrl("CPU Fan", 1));
+              c.Add(new Ctrl("System Fan #1", 2));
+              c.Add(new Ctrl("System Fan #2", 3));
+              c.Add(new Ctrl("System Fan #3", 4));
+              c.Add(new Ctrl("System Fan #4", 5));
+              break;
+              default:
+              v.Add(new Voltage("CPU VCore", 0));
+              v.Add(new Voltage("Voltage #2", 1, true));
+              v.Add(new Voltage("AVCC", 2, 34, 34));
+              v.Add(new Voltage("3VCC", 3, 34, 34));
+              v.Add(new Voltage("Voltage #5", 4, true));
+              v.Add(new Voltage("Voltage #6", 5, true));
+              v.Add(new Voltage("Voltage #7", 6, true));
+              v.Add(new Voltage("3VSB", 7, 34, 34));
+              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VTT", 9));
+              v.Add(new Voltage("Voltage #11", 10, true));
+              v.Add(new Voltage("Voltage #12", 11, true));
+              v.Add(new Voltage("Voltage #13", 12, true));
+              v.Add(new Voltage("Voltage #14", 13, true));
+              v.Add(new Voltage("Voltage #15", 14, true));
+              t.Add(new Temperature("CPU Core", 0));
+              t.Add(new Temperature("Temperature #1", 1));
+              t.Add(new Temperature("Temperature #2", 2));
+              t.Add(new Temperature("Temperature #3", 3));
+              t.Add(new Temperature("Temperature #4", 4));
+              t.Add(new Temperature("Temperature #5", 5));
+              t.Add(new Temperature("Temperature #6", 6));
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                  f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                  c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+            }
+            break;
+            default:
+              v.Add(new Voltage("CPU VCore", 0));
+              v.Add(new Voltage("Voltage #2", 1, true));
+              v.Add(new Voltage("AVCC", 2, 34, 34));
+              v.Add(new Voltage("3VCC", 3, 34, 34));
+              v.Add(new Voltage("Voltage #5", 4, true));
+              v.Add(new Voltage("Voltage #6", 5, true));
+              v.Add(new Voltage("Voltage #7", 6, true));
+              v.Add(new Voltage("3VSB", 7, 34, 34));
+              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VTT", 9));
+              v.Add(new Voltage("Voltage #11", 10, true));
+              v.Add(new Voltage("Voltage #12", 11, true));
+              v.Add(new Voltage("Voltage #13", 12, true));
+              v.Add(new Voltage("Voltage #14", 13, true));
+              v.Add(new Voltage("Voltage #15", 14, true));
+              t.Add(new Temperature("CPU Core", 0));
+              t.Add(new Temperature("Temperature #1", 1));
+              t.Add(new Temperature("Temperature #2", 2));
+              t.Add(new Temperature("Temperature #3", 3));
+              t.Add(new Temperature("Temperature #4", 4));
+              t.Add(new Temperature("Temperature #5", 5));
+              t.Add(new Temperature("Temperature #6", 6));
+              for (int i = 0; i < superIO.Fans.Length; i++)
                 f.Add(new Fan("Fan #" + (i + 1), i));
               for (int i = 0; i < superIO.Controls.Length; i++)
                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
               break;
-          }
-          break;
-        default:
-          v.Add(new Voltage("CPU VCore", 0));
-          v.Add(new Voltage("Voltage #2", 1, true));
-          v.Add(new Voltage("AVCC", 2, 34, 34));
-          v.Add(new Voltage("3VCC", 3, 34, 34));
-          v.Add(new Voltage("Voltage #5", 4, true));
-          v.Add(new Voltage("Voltage #6", 5, true));
-          v.Add(new Voltage("Voltage #7", 6, true));
-          v.Add(new Voltage("3VSB", 7, 34, 34));
-          v.Add(new Voltage("VBAT", 8, 34, 34));
-          v.Add(new Voltage("VTT", 9));
-          v.Add(new Voltage("Voltage #11", 10, true));
-          v.Add(new Voltage("Voltage #12", 11, true));
-          v.Add(new Voltage("Voltage #13", 12, true));
-          v.Add(new Voltage("Voltage #14", 13, true));
-          v.Add(new Voltage("Voltage #15", 14, true));
-          t.Add(new Temperature("CPU Core", 0));
-          t.Add(new Temperature("Temperature #1", 1));
-          t.Add(new Temperature("Temperature #2", 2));
-          t.Add(new Temperature("Temperature #3", 3));
-          t.Add(new Temperature("Temperature #4", 4));
-          t.Add(new Temperature("Temperature #5", 5));
-          t.Add(new Temperature("Temperature #6", 6));
-          for (int i = 0; i < superIO.Fans.Length; i++)
-            f.Add(new Fan("Fan #" + (i + 1), i));
-          for (int i = 0; i < superIO.Controls.Length; i++)
-            c.Add(new Ctrl("Fan Control #" + (i + 1), i));
-          break;
       }
     }
 

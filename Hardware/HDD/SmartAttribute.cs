@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  internal class SmartAttribute {
+    public class SmartAttribute {
 
     private RawValueConversion rawValueConversion;
 

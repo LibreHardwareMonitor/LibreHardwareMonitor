@@ -26,17 +26,26 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     private const byte ADDRESS_REGISTER_OFFSET = 0x05;
     private const byte DATA_REGISTER_OFFSET = 0x06;
 
+    private const byte PWM_VALUES_OFFSET = 0x2D;
+
     // Hardware Monitor Registers
     private const byte VOLTAGE_BASE_REG = 0x20;
     private const byte TEMPERATURE_CONFIG_REG = 0x69;
     private const byte TEMPERATURE_BASE_REG = 0x70;
     private readonly byte[] FAN_TACHOMETER_REG = 
       new byte[] { 0xA0, 0xB0, 0xC0, 0xD0 };
+    private readonly byte[] FAN_PWM_REG = 
+      new byte[] { 0xA3, 0xB3, 0xC3, 0xD3 };
     
     private byte ReadByte(byte register) {
       Ring0.WriteIoPort(
         (ushort)(address + ADDRESS_REGISTER_OFFSET), register);
       return Ring0.ReadIoPort((ushort)(address + DATA_REGISTER_OFFSET));
+    }
+    private void WriteByte(byte register, byte value) {
+      Ring0.WriteIoPort(
+        (ushort)(address + ADDRESS_REGISTER_OFFSET), register);
+      Ring0.WriteIoPort((ushort)(address + DATA_REGISTER_OFFSET), value);
     }
 
     public byte? ReadGPIO(int index) {
@@ -45,7 +54,10 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
     public void WriteGPIO(int index, byte value) { }
 
-    public void SetControl(int index, byte? value) { }   
+    public void SetControl(int index, byte? value) {
+      if(index < controls.Length)
+        WriteByte(FAN_PWM_REG[index], value ?? 128);
+    }   
 
     public F718XX(Chip chip, ushort address) {
       this.address = address;
@@ -54,7 +66,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       voltages = new float?[chip == Chip.F71858 ? 3 : 9];
       temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
       fans = new float?[chip == Chip.F71882 || chip == Chip.F71858 ? 4 : 3];
-      controls = new float?[0];
+      controls = new float?[chip == Chip.F71878AD ? 3 : 0];
     }
 
     public Chip Chip { get { return chip; } }
@@ -145,7 +157,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           } break;
         }
       }
-
+      
       for (int i = 0; i < fans.Length; i++) {
         int value = ReadByte(FAN_TACHOMETER_REG[i]) << 8;
         value |= ReadByte((byte)(FAN_TACHOMETER_REG[i] + 1));
@@ -154,6 +166,9 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           fans[i] = (value < 0x0fff) ? 1.5e6f / value : 0;
         else 
           fans[i] = null;        
+      }
+      for (int i = 0; i < controls.Length; i++) {
+        controls[i] = (100*ReadByte((byte)(PWM_VALUES_OFFSET + i)))/256.0f;
       }
 
       Ring0.ReleaseIsaBusMutex();

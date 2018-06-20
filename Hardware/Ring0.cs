@@ -80,7 +80,7 @@ namespace OpenHardwareMonitor.Hardware {
 
     private static bool ExtractDriver(string fileName) {
       string resourceName = "OpenHardwareMonitor.Hardware." +
-        (OperatingSystem.Is64BitOperatingSystem() ? "WinRing0x64.sys" : 
+        (Software.OperatingSystem.Is64Bit ? "WinRing0x64.sys" : 
         "WinRing0.sys");
 
       string[] names = GetAssembly().GetManifestResourceNames();
@@ -129,9 +129,7 @@ namespace OpenHardwareMonitor.Hardware {
 
     public static void Open() {
       // no implementation for unix systems
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128))
-        return;  
+      if (Software.OperatingSystem.IsLinux) return;  
       
       if (driver != null)
         return;
@@ -202,8 +200,12 @@ namespace OpenHardwareMonitor.Hardware {
         isaBusMutex = new Mutex(false, mutexName);
       } catch (UnauthorizedAccessException) {
         try {
+#if NETSTANDARD2_0
+          isaBusMutex = Mutex.OpenExisting(mutexName);
+#else
           isaBusMutex = Mutex.OpenExisting(mutexName, MutexRights.Synchronize);
-        } catch { }
+#endif
+                } catch { }
       }
     }
 

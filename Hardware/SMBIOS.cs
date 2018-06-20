@@ -16,7 +16,7 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware {
 
-  internal class SMBIOS {
+  public class SMBIOS {
 
     private readonly byte[] raw;
     private readonly Structure[] table;
@@ -41,9 +41,11 @@ namespace OpenHardwareMonitor.Hardware {
       }
     }
     
-    public SMBIOS() {
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128)) {
+    public SMBIOS()
+    {
+
+      if (Software.OperatingSystem.IsLinux)
+      {
         this.raw = null;
         this.table = null;
         

@@ -13,7 +13,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
   /// <summary>
   /// Localization class for SMART attribute names.
   /// </summary>
-  internal static class SmartNames {
+  public static class SmartNames {
 
     public static string AirflowTemperature {
       get { return "Airflow Temperature"; }

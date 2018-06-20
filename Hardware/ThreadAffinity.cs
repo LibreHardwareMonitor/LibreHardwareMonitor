@@ -19,8 +19,8 @@ namespace OpenHardwareMonitor.Hardware {
       if (mask == 0)
         return 0;
         
-      int p = (int)Environment.OSVersion.Platform;
-      if ((p == 4) || (p == 128)) { // Unix
+      if (Software.OperatingSystem.IsLinux)
+      { // Unix
         ulong result = 0;
         if (NativeMethods.sched_getaffinity(0, (IntPtr)Marshal.SizeOf(result), 
           ref result) != 0)          
@@ -29,16 +29,15 @@ namespace OpenHardwareMonitor.Hardware {
           ref mask) != 0)
           return 0;
         return result;
-      } else { // Windows
+      } // Windows
         UIntPtr uIntPtrMask;
         try {
-          uIntPtrMask = (UIntPtr)mask;
+            uIntPtrMask = (UIntPtr)mask;
         } catch (OverflowException) {
-          throw new ArgumentOutOfRangeException("mask");
+            throw new ArgumentOutOfRangeException("mask");
         }
         return (ulong)NativeMethods.SetThreadAffinityMask(
-          NativeMethods.GetCurrentThread(), uIntPtrMask);
-      }
+            NativeMethods.GetCurrentThread(), uIntPtrMask);
     }
   
     private static class NativeMethods {      
