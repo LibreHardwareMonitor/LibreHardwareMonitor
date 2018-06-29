@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
 using System.Text;
+using System.Security.Principal;        //SecurityIdentifier
 
 namespace OpenHardwareMonitor.Hardware {
   internal static class Ring0 {
@@ -197,8 +198,19 @@ namespace OpenHardwareMonitor.Hardware {
 
       string mutexName = "Global\\Access_ISABUS.HTP.Method";
       try {
+#if NETSTANDARD2_0
         isaBusMutex = new Mutex(false, mutexName);
-      } catch (UnauthorizedAccessException) {
+#else
+        //mutex permissions set to everyone to allow other software to access the hardware
+        //otherwise other monitoring software cant access
+        var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
+        var securitySettings = new MutexSecurity();
+        securitySettings.AddAccessRule(allowEveryoneRule);
+        bool created = false;
+        isaBusMutex = new Mutex(false, mutexName, out created, securitySettings);
+#endif
+      }
+      catch (UnauthorizedAccessException) {
         try {
 #if NETSTANDARD2_0
           isaBusMutex = Mutex.OpenExisting(mutexName);
@@ -214,18 +226,15 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     public static void Close() {
-      if (driver == null)
-        return;
-
-      uint refCount = 0;
-      driver.DeviceIOControl(IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
-
-      driver.Close();
-
-      if (refCount <= 1)
-        driver.Delete();
-
-      driver = null;
+      if (driver != null){
+        uint refCount = 0;
+        driver.DeviceIOControl(IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
+        driver.Close();
+       
+        if (refCount <= 1)
+          driver.Delete();
+        driver = null;
+      }
 
       if (isaBusMutex != null) {
         isaBusMutex.Close();
