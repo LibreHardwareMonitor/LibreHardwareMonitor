@@ -42,9 +42,6 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
 
         private readonly Sensor _fanControl, _pumpPower, _pumpFlow;
         private readonly Sensor[] _rpmSensors = new Sensor[2];
-        #if DEBUG
-        private readonly Sensor[] _debugSensor = new Sensor[5];
-        #endif
         private readonly Sensor[] _temperatures = new Sensor[3];
         private readonly Sensor[] _voltages = new Sensor[2];
         private readonly Sensor[] _frequencies = new Sensor[2];
@@ -207,30 +204,6 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             _rpmSensors[0].Value = BitConverter.ToUInt32(rawData, 27);                              //External Fan RPM: untested
 
             _fanControl.Value = 100f / byte.MaxValue * rawData[31];                          //External Fan Control: tested, External Fan Voltage scales by this value - OK
-
-#if DEBUG
-            _debugSensor[0].Name = "Alarms: " + ((PumpAlarms)rawData[32]).ToString();        //Show Alarms (only if interpretation is activated in Aquasuit!): tested - OK
-            _debugSensor[0].Value = rawData[32];
-            _debugSensor[1].Name = "Modes: " + ((PumpMode)rawData[33]).ToString();           //Shows unlocked Pump Modes: tested - OK
-            _debugSensor[1].Value = rawData[33];
-
-            var controllerOut = BitConverter.ToUInt32(rawData, 34);                         //unknown
-            var controllerI = BitConverter.ToInt32(rawData, 38);                            //unknown
-            var controllerP = BitConverter.ToInt32(rawData, 42);                            //unknown
-            var controllerD = BitConverter.ToInt32(rawData, 46);                            //unknown
-            _debugSensor[2].Name = $"Controller - Out: {controllerOut} I: {controllerI} P: {controllerP} D: {controllerD}";
-
-            var FirmwareVersion = BitConverter.ToUInt16(rawData, 50);                       //tested - OK
-            var BootloaderVersion = BitConverter.ToUInt16(rawData, 52);                     //unknown
-            var HardwareVersion = BitConverter.ToUInt16(rawData, 54);                       //unknown
-            _debugSensor[3].Name = $"Version - Firmware: {FirmwareVersion} Bootloader: {BootloaderVersion} Hardware: {HardwareVersion}";
-
-            var unk1 = rawData[56];                                                         //unknown
-            var unk2 = rawData[57];                                                         //unknown
-            var SerialNumber = BitConverter.ToUInt16(rawData, 58);                          //tested - OK
-            var PublicKey = BitConverter.ToString(rawData, 60, 6);                          //tested - OK
-            _debugSensor[4].Name = $"Unk1: {unk1} Unk2: {unk2} SerialNumber: {SerialNumber} PublicKey: {PublicKey}";
-#endif
         }
     }
 }
