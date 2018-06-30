@@ -60,18 +60,7 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
 
             Name = $"Aquastream XT {Variant}";
             FirmwareVersion = BitConverter.ToUInt16(rawData, 50);
-#if DEBUG
-            _debugSensor[0] = new Sensor("", 0, SensorType.Debug, this, settings);
-            ActivateSensor(_debugSensor[0]);
-            _debugSensor[1] = new Sensor("", 1, SensorType.Debug, this, settings);
-            ActivateSensor(_debugSensor[1]);
-            _debugSensor[2] = new Sensor("", 2, SensorType.Debug, this, settings);
-            ActivateSensor(_debugSensor[2]);
-            _debugSensor[3] = new Sensor("", 3, SensorType.Debug, this, settings);
-            ActivateSensor(_debugSensor[3]);
-            _debugSensor[4] = new Sensor("", 4, SensorType.Debug, this, settings);
-            ActivateSensor(_debugSensor[4]);
-#endif
+
             _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
             ActivateSensor(_temperatures[0]);
             _temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
