@@ -206,8 +206,7 @@ namespace OpenHardwareMonitor.Hardware {
         var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
         var securitySettings = new MutexSecurity();
         securitySettings.AddAccessRule(allowEveryoneRule);
-        bool created = false;
-        isaBusMutex = new Mutex(false, mutexName, out created, securitySettings);
+        isaBusMutex = new Mutex(false, mutexName, out _, securitySettings);
 #endif
       }
       catch (UnauthorizedAccessException) {
