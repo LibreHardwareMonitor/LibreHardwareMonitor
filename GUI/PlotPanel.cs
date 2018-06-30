@@ -150,6 +150,7 @@ namespace OpenHardwareMonitor.GUI {
       units.Add(SensorType.Factor, "1");
       units.Add(SensorType.Power, "W");
       units.Add(SensorType.Data, "GB");
+      units.Add(SensorType.Frequency, "Hz");
 
       foreach (SensorType type in Enum.GetValues(typeof(SensorType))) {
         var axis = new LinearAxis();

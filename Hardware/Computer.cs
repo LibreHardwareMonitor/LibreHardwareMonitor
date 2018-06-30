@@ -101,6 +101,7 @@ namespace OpenHardwareMonitor.Hardware {
       if (fanControllerEnabled) {
         Add(new TBalancer.TBalancerGroup(settings));
         Add(new Heatmaster.HeatmasterGroup(settings));
+        Add(new Aquacomputer.AquacomputerGroup(settings));
       }
 
       if (hddEnabled)
@@ -181,9 +182,11 @@ namespace OpenHardwareMonitor.Hardware {
           if (value) {
             Add(new TBalancer.TBalancerGroup(settings));
             Add(new Heatmaster.HeatmasterGroup(settings));
+            Add(new Aquacomputer.AquacomputerGroup(settings));
           } else {
             RemoveType<TBalancer.TBalancerGroup>();
             RemoveType<Heatmaster.HeatmasterGroup>();
+            RemoveType<Aquacomputer.AquacomputerGroup>();
           }
         }
         fanControllerEnabled = value;

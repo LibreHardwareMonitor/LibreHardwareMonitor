@@ -28,6 +28,8 @@
   <ItemGroup>
     <Compile Include="Collections\Pair.cs" />
     <Compile Include="Collections\RingCollection.cs" />
+    <Compile Include="Hardware\Aquacomputer\AquacomputerGroup.cs" />
+    <Compile Include="Hardware\Aquacomputer\AquastreamXT.cs" />
     <Compile Include="Hardware\ATI\ADL.cs" />
     <Compile Include="Hardware\ATI\ATIGPU.cs" />
     <Compile Include="Hardware\ATI\ATIGroup.cs" />
@@ -135,6 +137,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="hidlibrary" Version="3.2.46" />
     <PackageReference Include="System.Management" Version="4.5.0-preview1-25914-04" />
   </ItemGroup>
 </Project>
