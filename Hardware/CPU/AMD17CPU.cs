@@ -48,6 +48,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
     private const uint FAMILY_17H_MODEL_01_MISC_CONTROL_DEVICE_ID = 0x1463;
     private const uint F17H_M01H_THM_TCON_CUR_TMP = 0x00059800;
     private const uint F17H_M01H_SVI = 0x0005A000;
+
+    public const uint F17H_TEMP_OFFSET_FLAG = 0x80000;
     #endregion
 
     #region Processor
@@ -160,17 +162,28 @@ namespace OpenHardwareMonitor.Hardware.CPU
         double energy = 15.3e-6 * pwr;
         energy /= time.TotalSeconds;
 
-        _packagePower.Value = (float)energy;        
+        _packagePower.Value = (float)energy;
 
-        // current temp Bit [31:21] 
+        // current temp Bit [31:21]
+        //If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
+        bool temp_offset_flag = false;
+        if ((temperature & F17H_TEMP_OFFSET_FLAG) != 0)
+          temp_offset_flag = true;
         temperature = (temperature >> 21) * 125;
+
         float offset = 0.0f;
+        if (cpu.Name != null && (cpu.Name.Contains("2600X") || cpu.Name.Contains("2700X")))
+          offset = -10.0f;
         if (cpu.Name != null && (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X")))
           offset = -20.0f;
-        else if (cpu.Name != null && (cpu.Name.Contains("1920X") || cpu.Name.Contains("1950X")))
+        else if (cpu.Name != null && (cpu.Name.Contains("1920X") || cpu.Name.Contains("1950X") || cpu.Name.Contains("1900X")))
           offset = -27.0f;
-        else if (cpu.Name != null && (cpu.Name.Contains("1910") || cpu.Name.Contains("1920")))
+        else if (cpu.Name != null && (cpu.Name.Contains("1910") || cpu.Name.Contains("1920") || cpu.Name.Contains("1950")))
           offset = -10.0f;
+
+        float t = (temperature * 0.001f);
+        if (temp_offset_flag)
+          t += -49.0f;
 
         _coreTemperatureTctl.Value = (temperature * 0.001f);
         _coreTemperatureTdie.Value = (temperature * 0.001f) + offset;
