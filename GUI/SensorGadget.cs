@@ -558,6 +558,9 @@ namespace OpenHardwareMonitor.GUI {
                 case SensorType.Clock:
                   format = "{0:F0} MHz";
                   break;
+                case SensorType.Frequency:
+                  format = "{0:F0} Hz";
+                  break;
                 case SensorType.Temperature:
                   format = "{0:F1} °C";
                   break;

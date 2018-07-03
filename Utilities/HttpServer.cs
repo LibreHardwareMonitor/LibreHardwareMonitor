@@ -475,6 +475,8 @@ namespace OpenHardwareMonitor.Utilities {
           return "bigng.png";
         case HardwareType.RAM:
           return "ram.png";
+        case HardwareType.Aquacomputer:
+          return "acicon.png";
         default:
           return "cpu.png";
       }
