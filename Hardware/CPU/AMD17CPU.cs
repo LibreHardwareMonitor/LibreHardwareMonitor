@@ -185,8 +185,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         if (temp_offset_flag)
           t += -49.0f;
 
-        _coreTemperatureTctl.Value = (temperature * 0.001f);
-        _coreTemperatureTdie.Value = (temperature * 0.001f) + offset;
+        _coreTemperatureTctl.Value = t;
+        _coreTemperatureTdie.Value = t + offset;
         
         // voltage 
         double VIDStep = 0.00625;
