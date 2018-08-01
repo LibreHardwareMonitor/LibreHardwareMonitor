@@ -54,14 +54,8 @@ namespace OpenHardwareMonitor.Hardware.Nic
             return report.ToString();
         }
 
-        public IHardware[] Hardware
-        {
-            get
-            {
-                return hardware.ToArray();
-            }
-        }
-        public NetworkInterface[] NetworkInterfaces
+    public IEnumerable<IHardware> Hardware => hardware;
+    public NetworkInterface[] NetworkInterfaces
         {
             get
             {

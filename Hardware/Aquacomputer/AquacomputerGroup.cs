@@ -50,7 +50,7 @@ namespace OpenHardwareMonitor.Hardware.Aquacomputer
             }
         }
 
-        public IHardware[] Hardware => _hardware.ToArray();
+        public IEnumerable<IHardware> Hardware => _hardware;
 
         public void Close()
         {

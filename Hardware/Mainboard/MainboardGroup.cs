@@ -8,6 +8,8 @@
 	
 */
 
+using System.Collections.Generic;
+
 namespace OpenHardwareMonitor.Hardware.Mainboard {
   internal class MainboardGroup : IGroup {
 
@@ -27,7 +29,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       return null;
     }
 
-    public IHardware[] Hardware {
+    public IEnumerable<IHardware> Hardware {
       get { return mainboards; }
 
     }

@@ -129,11 +129,7 @@ namespace OpenHardwareMonitor.Hardware.TBalancer {
       }
     }
 
-    public IHardware[] Hardware {
-      get {
-        return hardware.ToArray();
-      }
-    }
+    public IEnumerable<IHardware> Hardware => hardware;
 
     public string GetReport() {
       if (report.Length > 0) {

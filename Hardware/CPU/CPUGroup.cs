@@ -119,12 +119,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         index++;
       }
     }
-    
-    public IHardware[] Hardware {
-      get {
-        return hardware.ToArray();
-      }
-    }
+
+    public IEnumerable<IHardware> Hardware => hardware;
 
     private static void AppendCpuidData(StringBuilder r, uint[,] data, 
       uint offset) 

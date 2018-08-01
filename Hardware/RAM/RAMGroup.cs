@@ -9,6 +9,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 
 namespace OpenHardwareMonitor.Hardware.RAM {
   internal class RAMGroup : IGroup {
@@ -31,11 +32,7 @@ namespace OpenHardwareMonitor.Hardware.RAM {
       return null;
     }
 
-    public IHardware[] Hardware {
-      get {
-        return hardware;
-      }
-    }
+    public IEnumerable<IHardware> Hardware => hardware;
 
     public void Close() {
       foreach (Hardware ram in hardware)

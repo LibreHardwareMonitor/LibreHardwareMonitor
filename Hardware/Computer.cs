@@ -365,7 +365,7 @@ namespace OpenHardwareMonitor.Hardware {
             w.Write(report);
           }
 
-          IHardware[] hardwareArray = group.Hardware;
+          var hardwareArray = group.Hardware;
           foreach (IHardware hardware in hardwareArray)
             ReportHardware(hardware, w);
 

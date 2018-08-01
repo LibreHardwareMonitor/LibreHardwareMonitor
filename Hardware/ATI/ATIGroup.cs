@@ -106,11 +106,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
         }
     }
 
-    public IHardware[] Hardware {
-      get {
-        return hardware.ToArray();
-      }
-    }
+    public IEnumerable<IHardware> Hardware => hardware;
 
     public string GetReport() {
       return report.ToString();

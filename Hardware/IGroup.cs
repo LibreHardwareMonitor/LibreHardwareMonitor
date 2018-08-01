@@ -8,11 +8,13 @@
 	
 */
 
+using System.Collections.Generic;
+
 namespace OpenHardwareMonitor.Hardware {
 
   internal interface IGroup {
 
-    IHardware[] Hardware { get; }
+    IEnumerable<IHardware> Hardware { get; }
 
     string GetReport();
 
