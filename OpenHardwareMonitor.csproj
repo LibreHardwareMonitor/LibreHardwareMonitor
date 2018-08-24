@@ -173,6 +173,7 @@
     <EmbeddedResource Include="Resources\load.png" />
     <EmbeddedResource Include="Resources\voltage.png" />
     <EmbeddedResource Include="Resources\nvidia.png" />
+    <EmbeddedResource Include="Resources\nic.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -256,6 +257,9 @@
     <EmbeddedResource Include="Resources\data.png" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\throughput.png" />
+  </ItemGroup>  
+  <ItemGroup>
     <EmbeddedResource Include="Resources\factor.png" />
   </ItemGroup>
   <ItemGroup>
@@ -307,6 +311,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\acicon.png" />
   </ItemGroup>
+  <ItemGroup>  
+    <EmbeddedResource Include="Resources\internetspeed.png" />
+    <EmbeddedResource Include="Resources\nic.png" />
+  </ItemGroup>  
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

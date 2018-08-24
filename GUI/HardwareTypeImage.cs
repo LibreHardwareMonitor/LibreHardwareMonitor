@@ -61,6 +61,8 @@ namespace OpenHardwareMonitor.GUI {
             break;
           case HardwareType.Aquacomputer:
             image = Utilities.EmbeddedResources.GetImage("acicon.png");
+          case HardwareType.NIC:
+            image = Utilities.EmbeddedResources.GetImage("nic.png");
             break;
           default:
             image = new Bitmap(1, 1);

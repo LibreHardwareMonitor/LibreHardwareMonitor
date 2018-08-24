@@ -477,6 +477,8 @@ namespace OpenHardwareMonitor.Utilities {
           return "ram.png";
         case HardwareType.Aquacomputer:
           return "acicon.png";
+        case HardwareType.NIC:
+          return "nic.png";
         default:
           return "cpu.png";
       }
@@ -504,6 +506,8 @@ namespace OpenHardwareMonitor.Utilities {
           return "level.png";
         case SensorType.Power:
           return "power.png";
+        case SensorType.Throughput:
+          return "internetspeed.png";
         default:
           return "power.png";
       }

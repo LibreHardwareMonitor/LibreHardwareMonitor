@@ -72,6 +72,9 @@ namespace OpenHardwareMonitor.GUI {
         case SensorType.Frequency:
           this.Image = Utilities.EmbeddedResources.GetImage("clock.png");
           this.Text = "Frequencys";
+        case SensorType.Throughput:
+          this.Image = Utilities.EmbeddedResources.GetImage("throughput.png");
+          this.Text = "Throughput";
           break;
       }
 

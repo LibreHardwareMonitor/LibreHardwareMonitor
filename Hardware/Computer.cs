@@ -14,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Permissions;
 using System.Reflection;
+using System.Net.NetworkInformation;
 
 namespace OpenHardwareMonitor.Hardware {
 
@@ -31,7 +32,9 @@ namespace OpenHardwareMonitor.Hardware {
     private bool ramEnabled;
     private bool gpuEnabled;
     private bool fanControllerEnabled;
-    private bool hddEnabled;    
+    private bool hddEnabled;  
+    private bool nicEnabled;
+    private int nicCount;
 
     public Computer() {
       this.settings = new Settings();
@@ -94,18 +97,24 @@ namespace OpenHardwareMonitor.Hardware {
         Add(new RAM.RAMGroup(smbios, settings));
 
       if (gpuEnabled) {
-        Add(new ATI.ATIGroup(settings));
+        //Add(new ATI.ATIGroup(settings));
         Add(new Nvidia.NvidiaGroup(settings));
       }
 
       if (fanControllerEnabled) {
-        Add(new TBalancer.TBalancerGroup(settings));
+        //Add(new TBalancer.TBalancerGroup(settings));
         Add(new Heatmaster.HeatmasterGroup(settings));
         Add(new Aquacomputer.AquacomputerGroup(settings));
       }
 
       if (hddEnabled)
         Add(new HDD.HarddriveGroup(settings));
+
+      if (nicEnabled)
+      {
+        nicCount = NetworkInterface.GetAllNetworkInterfaces().Length;
+        Add(new Nic.NicGroup(settings));
+      }
 
       open = true;
     }
@@ -162,10 +171,10 @@ namespace OpenHardwareMonitor.Hardware {
       set {
         if (open && value != gpuEnabled) {
           if (value) {
-            Add(new ATI.ATIGroup(settings));
+            //Add(new ATI.ATIGroup(settings));
             Add(new Nvidia.NvidiaGroup(settings));
           } else {
-            RemoveType<ATI.ATIGroup>();
+            //RemoveType<ATI.ATIGroup>();
             RemoveType<Nvidia.NvidiaGroup>();
           }
         }
@@ -180,11 +189,11 @@ namespace OpenHardwareMonitor.Hardware {
       set {
         if (open && value != fanControllerEnabled) {
           if (value) {
-            Add(new TBalancer.TBalancerGroup(settings));
+            //Add(new TBalancer.TBalancerGroup(settings));
             Add(new Heatmaster.HeatmasterGroup(settings));
             Add(new Aquacomputer.AquacomputerGroup(settings));
           } else {
-            RemoveType<TBalancer.TBalancerGroup>();
+            //RemoveType<TBalancer.TBalancerGroup>();
             RemoveType<Heatmaster.HeatmasterGroup>();
             RemoveType<Aquacomputer.AquacomputerGroup>();
           }
@@ -205,6 +214,19 @@ namespace OpenHardwareMonitor.Hardware {
             RemoveType<HDD.HarddriveGroup>();
         }
         hddEnabled = value;
+      }
+    }
+
+    public bool NICEnabled {
+      get { return nicEnabled; }      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+      set {
+        if (open && value != nicEnabled) {
+          if (value)
+            Add(new Nic.NicGroup(settings));
+          else
+            RemoveType<Nic.NicGroup>();
+        }
+        nicEnabled = value;
       }
     }
 
@@ -380,6 +402,12 @@ namespace OpenHardwareMonitor.Hardware {
       foreach (IGroup group in groups)
         foreach (IHardware hardware in group.Hardware) 
           hardware.Accept(visitor);
+          int newNiccount = NetworkInterface.GetAllNetworkInterfaces().Length;
+          if (nicCount != newNiccount) {
+            nicCount = newNiccount;
+            NICEnabled = false;
+            NICEnabled = true;
+          }
     }
 
     private class Settings : ISettings {

@@ -66,6 +66,8 @@
     <Compile Include="Hardware\LPC\NCT677X.cs" />
     <Compile Include="Hardware\Mainboard\GigabyteTAMG.cs" />
     <Compile Include="Hardware\Mainboard\Identification.cs" />
+    <Compile Include="Hardware\Nic\Nic.cs" />
+    <Compile Include="Hardware\Nic\NicGroup.cs" />	
     <Compile Include="Hardware\Opcode.cs" />
     <Compile Include="Hardware\RAM\GenericRAM.cs" />
     <Compile Include="Hardware\RAM\RAMGroup.cs" />
