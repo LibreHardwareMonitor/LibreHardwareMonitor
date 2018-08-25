@@ -68,13 +68,13 @@ namespace OpenHardwareMonitor.Hardware.Nic
             dataDownloaded = new Sensor("Data Downloaded", 3, SensorType.Data, this,
               settings);
             ActivateSensor(dataDownloaded);
-            totalDataDownloaded = new Sensor("Total Data Downloaded in Static", 5, SensorType.Data, this,
+            totalDataDownloaded = new Sensor("Total Data Downloaded", 5, SensorType.Data, this,
               settings);
             ActivateSensor(totalDataDownloaded);
-            totalDataUploaded = new Sensor("Total Data Uploaded in Static", 4, SensorType.Data, this,
+            totalDataUploaded = new Sensor("Total Data Uploaded", 4, SensorType.Data, this,
               settings);
             ActivateSensor(totalDataUploaded);
-            totalDataFlowed = new Sensor("Total Data Flowed in Static", 6, SensorType.Data, this,
+            totalDataFlowed = new Sensor("Total Data Flowed", 6, SensorType.Data, this,
               settings);
             ActivateSensor(totalDataFlowed);
             uploadSpeed = new Sensor("Upload Speed", 7, SensorType.Throughput, this,
