@@ -97,12 +97,12 @@ namespace OpenHardwareMonitor.Hardware {
         Add(new RAM.RAMGroup(smbios, settings));
 
       if (gpuEnabled) {
-        //Add(new ATI.ATIGroup(settings));
+        Add(new ATI.ATIGroup(settings));
         Add(new Nvidia.NvidiaGroup(settings));
       }
 
       if (fanControllerEnabled) {
-        //Add(new TBalancer.TBalancerGroup(settings));
+        Add(new TBalancer.TBalancerGroup(settings));
         Add(new Heatmaster.HeatmasterGroup(settings));
         Add(new Aquacomputer.AquacomputerGroup(settings));
       }
@@ -171,10 +171,10 @@ namespace OpenHardwareMonitor.Hardware {
       set {
         if (open && value != gpuEnabled) {
           if (value) {
-            //Add(new ATI.ATIGroup(settings));
+            Add(new ATI.ATIGroup(settings));
             Add(new Nvidia.NvidiaGroup(settings));
           } else {
-            //RemoveType<ATI.ATIGroup>();
+            RemoveType<ATI.ATIGroup>();
             RemoveType<Nvidia.NvidiaGroup>();
           }
         }
@@ -189,11 +189,11 @@ namespace OpenHardwareMonitor.Hardware {
       set {
         if (open && value != fanControllerEnabled) {
           if (value) {
-            //Add(new TBalancer.TBalancerGroup(settings));
+            Add(new TBalancer.TBalancerGroup(settings));
             Add(new Heatmaster.HeatmasterGroup(settings));
             Add(new Aquacomputer.AquacomputerGroup(settings));
           } else {
-            //RemoveType<TBalancer.TBalancerGroup>();
+            RemoveType<TBalancer.TBalancerGroup>();
             RemoveType<Heatmaster.HeatmasterGroup>();
             RemoveType<Aquacomputer.AquacomputerGroup>();
           }

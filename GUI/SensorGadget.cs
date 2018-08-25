@@ -593,20 +593,27 @@ namespace OpenHardwareMonitor.GUI {
                 switch (sensor.Name){ 
                   case "Connection Speed": {
                     switch (sensor.Value){ 
-                      case 100000000: result = "100Mbps";break;
-                      case 1000000000: result = "1Gbps";break;
+                      case 100000000:
+                          result = "100Mbps";
+                          break;
+                      case 1000000000:
+                          result = "1Gbps";
+                          break;
                       default: {
                         if(sensor.Value < 1024) result = string.Format("{0:F0} bps", sensor.Value);
                         else if(sensor.Value < 1048576) result = string.Format("{0:F1} Kbps", sensor.Value / 1024);
                         else if(sensor.Value < 1073741824) result = string.Format("{0:F1} Mbps", sensor.Value / 1048576);
                         else result = string.Format("{0:F1} Gbps", sensor.Value / 1073741824);
-                      } break;
+                      }
+                      break;
                     }
-                  }break;
+                  }
+                  break;
                   default:{
                     if(sensor.Value < 1048576) result = string.Format("{0:F1} KB/s", sensor.Value / 1024);
                     else result = string.Format("{0:F1} MB/s", sensor.Value / 1048576);
-                  } break;
+                  }
+                  break;
                 }
                 formatted =  result;
               } else {
