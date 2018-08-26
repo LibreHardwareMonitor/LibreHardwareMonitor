@@ -218,7 +218,9 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     public bool NICEnabled {
-      get { return nicEnabled; }      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+      get { return nicEnabled; }
+
+      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
       set {
         if (open && value != nicEnabled) {
           if (value)

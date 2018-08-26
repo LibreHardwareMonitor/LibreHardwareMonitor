@@ -9,7 +9,7 @@ namespace OpenHardwareMonitor.Hardware.Nic
     {
 
         private List<Hardware> hardware = new List<Hardware>();
-        private NetworkInterface[] nicArr;
+        private NetworkInterface[] _networkInterfaces;
 
         public NicGroup(ISettings settings)
         {
@@ -19,12 +19,12 @@ namespace OpenHardwareMonitor.Hardware.Nic
                 hardware = new List<Hardware>();
                 return;
             }
-            nicArr = NetworkInterface.GetAllNetworkInterfaces();
-            for (int i = 0; i < nicArr.Length; i++)
+            _networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+            for (int i = 0; i < _networkInterfaces.Length; i++)
             {
-                if (nicArr[i].NetworkInterfaceType != NetworkInterfaceType.Unknown && nicArr[i].NetworkInterfaceType != NetworkInterfaceType.Loopback && nicArr[i].NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                if (_networkInterfaces[i].NetworkInterfaceType != NetworkInterfaceType.Unknown && _networkInterfaces[i].NetworkInterfaceType != NetworkInterfaceType.Loopback && _networkInterfaces[i].NetworkInterfaceType != NetworkInterfaceType.Tunnel)
                 {
-                    hardware.Add(new Nic(nicArr[i].Name, settings, i, this));
+                    hardware.Add(new Nic(_networkInterfaces[i].Name, settings, i, this));
                 }
                 
             }
@@ -33,7 +33,25 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
         public string GetReport()
         {
-            return null;
+            if (NetworkInterfaces == null)
+                return null;
+
+            var report = new StringBuilder();
+
+            foreach (Nic hw in hardware)
+            {
+                report.AppendLine(hw.NetworkInterface.Description);
+                report.AppendLine(hw.NetworkInterface.OperationalStatus.ToString());
+                report.AppendLine();
+                foreach (var sensor in hw.Sensors)
+                {
+                    report.AppendLine(sensor.Name);
+                    report.AppendLine(sensor.Value.ToString() + sensor.SensorType);
+                    report.AppendLine();
+                }
+            }
+
+            return report.ToString();
         }
 
         public IHardware[] Hardware
@@ -43,15 +61,15 @@ namespace OpenHardwareMonitor.Hardware.Nic
                 return hardware.ToArray();
             }
         }
-        public NetworkInterface[] NicArr
+        public NetworkInterface[] NetworkInterfaces
         {
             get
             {
-                return nicArr;
+                return _networkInterfaces;
             }
             set
             {
-                nicArr = value;
+                _networkInterfaces = value;
             }
         }
         public void Close()
