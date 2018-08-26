@@ -29,7 +29,10 @@ namespace OpenHardwareMonitor.GUI {
         if (sensor.SensorType == SensorType.Temperature && 
           unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit) {
           return string.Format("{0:F1} °F", value * 1.8 + 32);
-        } else if(sensor.SensorType == SensorType.Throughput){          string result = "-";
+        }
+        if (sensor.SensorType == SensorType.Throughput)
+        {
+          string result = "-";
           switch (sensor.Name){ 
             case "Connection Speed": {
               switch (value){ 
