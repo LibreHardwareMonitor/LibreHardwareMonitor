@@ -1129,7 +1129,55 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               break;
           }
           break;
-        default:
+       case Manufacturer.ASRock:
+                    {
+                        switch (model)
+                        {
+                            case Model.B85M_DGS:
+                                {
+                                    v.Add(new Voltage("CPU VCCIN", 0, 1, 1));
+                                    v.Add(new Voltage("+12V", 1, 56, 10));
+                                    v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                                    v.Add(new Voltage("+3.3V", 3, 34, 34));
+                                    v.Add(new Voltage("VIN1", 4, true));
+                                    v.Add(new Voltage("+5V", 5, 12, 3));
+                                    v.Add(new Voltage("VIN3", 6, true));
+                                    v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                                    t.Add(new Temperature("CPU", 0));
+                                    t.Add(new Temperature("Auxiliary", 2));
+                                    t.Add(new Temperature("Motherboard", 3));
+                                    f.Add(new Fan("Chassis Fan #1", 0));
+                                    f.Add(new Fan("CPU Fan", 1));
+                                    f.Add(new Fan("Power Fan", 2));
+                                    f.Add(new Fan("Chassis Fan #2", 3));
+                                    c.Add(new Ctrl("Chassis Fan #2", 0));
+                                    c.Add(new Ctrl("CPU Fan", 1));
+                                    c.Add(new Ctrl("Chassis Fan #1", 2));
+                                }
+                                break;
+                            default:
+                                v.Add(new Voltage("CPU VCore", 0));
+                                v.Add(new Voltage("Voltage #2", 1, true));
+                                v.Add(new Voltage("AVCC", 2, 34, 34));
+                                v.Add(new Voltage("3VCC", 3, 34, 34));
+                                v.Add(new Voltage("Voltage #5", 4, true));
+                                v.Add(new Voltage("Voltage #6", 5, true));
+                                v.Add(new Voltage("Voltage #7", 6, true));
+                                v.Add(new Voltage("3VSB", 7, 34, 34));
+                                v.Add(new Voltage("VBAT", 8, 34, 34));
+                                t.Add(new Temperature("CPU Core", 0));
+                                t.Add(new Temperature("Temperature #1", 1));
+                                t.Add(new Temperature("Temperature #2", 2));
+                                t.Add(new Temperature("Temperature #3", 3));
+                                for (int i = 0; i < superIO.Fans.Length; i++)
+                                    f.Add(new Fan("Fan #" + (i + 1), i));
+                                for (int i = 0; i < superIO.Controls.Length; i++)
+                                    c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                break;
+                        }
+                    }
+                    break;
+                default:
           v.Add(new Voltage("CPU VCore", 0));
           v.Add(new Voltage("Voltage #2", 1, true));
           v.Add(new Voltage("AVCC", 2, 34, 34));
@@ -1371,7 +1419,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           f.Add(new Fan("Auxiliary Fan #2", 4));
           break;
       }
-    }
+    }   
 
     private static void GetWinbondConfigurationHG(Manufacturer manufacturer,
       Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f) 

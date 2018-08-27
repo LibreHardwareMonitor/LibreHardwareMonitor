@@ -15,6 +15,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     _880GMH_USB3,
     AOD790GX_128M,
     P55_Deluxe,
+    B85M_DGS,
 
     // ASUS
     Crosshair_III_Formula,

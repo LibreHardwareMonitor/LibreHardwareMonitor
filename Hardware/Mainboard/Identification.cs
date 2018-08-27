@@ -76,6 +76,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       switch (name) {
         case "880GMH/USB3":
           return Model._880GMH_USB3;
+        case "B85M-DGS":
+          return Model.B85M_DGS;
         case "ASRock AOD790GX/128M":
           return Model.AOD790GX_128M;
         case "P55 Deluxe":
@@ -206,6 +208,5 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.Unknown;
       }
     }
-
   }
 }
