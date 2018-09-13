@@ -401,17 +401,8 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     public void Traverse(IVisitor visitor) {
-      if (nicEnabled) {
-        int newNiccount = NetworkInterface.GetAllNetworkInterfaces().Length;
-        if (nicCount != newNiccount) {
-          nicCount = newNiccount;
-          NICEnabled = false;
-          NICEnabled = true;
-        }
-      }
-
       foreach (IGroup group in groups)
-        foreach (IHardware hardware in group.Hardware) 
+        foreach (IHardware hardware in group.Hardware)
           hardware.Accept(visitor);
     }
 

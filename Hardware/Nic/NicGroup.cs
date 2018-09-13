@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 
@@ -7,28 +7,43 @@ namespace OpenHardwareMonitor.Hardware.Nic
 {
     internal class NicGroup : IGroup
     {
-
-        private List<Hardware> hardware = new List<Hardware>();
-        private NetworkInterface[] _networkInterfaces;
+        private readonly ISettings _settings;
+        private List<Nic> _hardware = new List<Nic>();
 
         public NicGroup(ISettings settings)
         {
-            int p = (int)Environment.OSVersion.Platform;
-            if ((p == 4) || (p == 128))
-            {
-                hardware = new List<Hardware>();
+            _settings = settings;
+            if (Software.OperatingSystem.IsLinux)
                 return;
-            }
-            _networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-            for (int i = 0; i < _networkInterfaces.Length; i++)
+
+            ScanNics(settings);
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged; 
+        }
+
+        private void ScanNics(ISettings settings)
+        {
+            NetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+            _hardware = NetworkInterfaces.Where(DesiredNetworkType)
+                .Select((x, i) => new Nic(x, settings, i))
+                .ToList();
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, System.EventArgs e)
+        {
+            ScanNics(_settings);
+        }
+
+        private static bool DesiredNetworkType(NetworkInterface nic)
+        {
+            switch (nic.NetworkInterfaceType)
             {
-                if (_networkInterfaces[i].NetworkInterfaceType != NetworkInterfaceType.Unknown && _networkInterfaces[i].NetworkInterfaceType != NetworkInterfaceType.Loopback && _networkInterfaces[i].NetworkInterfaceType != NetworkInterfaceType.Tunnel)
-                {
-                    hardware.Add(new Nic(_networkInterfaces[i].Name, settings, i, this));
-                }
-                
+                case NetworkInterfaceType.Loopback:
+                case NetworkInterfaceType.Tunnel:
+                case NetworkInterfaceType.Unknown:
+                    return false;
+                default:
+                    return true;
             }
-                
         }
 
         public string GetReport()
@@ -38,7 +53,7 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
             var report = new StringBuilder();
 
-            foreach (Nic hw in hardware)
+            foreach (Nic hw in _hardware)
             {
                 report.AppendLine(hw.NetworkInterface.Description);
                 report.AppendLine(hw.NetworkInterface.OperationalStatus.ToString());
@@ -54,21 +69,14 @@ namespace OpenHardwareMonitor.Hardware.Nic
             return report.ToString();
         }
 
-    public IEnumerable<IHardware> Hardware => hardware;
-    public NetworkInterface[] NetworkInterfaces
-        {
-            get
-            {
-                return _networkInterfaces;
-            }
-            set
-            {
-                _networkInterfaces = value;
-            }
-        }
+        public IEnumerable<IHardware> Hardware => _hardware;
+
+        public NetworkInterface[] NetworkInterfaces { get; set; }
+
         public void Close()
         {
-            foreach (Hardware nic in hardware)
+            NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
+            foreach (var nic in _hardware)
                 nic.Close();
         }
     }

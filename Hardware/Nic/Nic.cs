@@ -9,7 +9,6 @@
 */
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Net.NetworkInformation;
 
@@ -17,60 +16,38 @@ namespace OpenHardwareMonitor.Hardware.Nic
 {
     internal class Nic : Hardware
     {
-        private ISettings settings;
         private Sensor dataUploaded;
         private Sensor dataDownloaded;
         private Sensor uploadSpeed;
         private Sensor downloadSpeed;
         private Sensor networkUtilization;
-        private NetworkInterface networkInterface;
-        private int nicIndex;
         private DateTime latesTime;
-        private DateTime presentBootTime;
 
         private long bytesUploaded;
         private long bytesDownloaded;
-        private bool shouldTotalFlowUpdate = true;
 
-        public Nic(string name, ISettings Settings, int index, NicGroup nicGroup)
-          : base(name, new Identifier("NIC",index.ToString(CultureInfo.InvariantCulture)), Settings)
+        public Nic(NetworkInterface networkInterface, ISettings settings, int index)
+          : base(networkInterface.Name, new Identifier("NIC",index.ToString(CultureInfo.InvariantCulture)), settings)
         {
-            settings = Settings;
-            nicIndex = index;
-            networkInterface = nicGroup.NetworkInterfaces[index];
-            presentBootTime = DateTime.Now.AddMilliseconds(-(double)Environment.TickCount);
-            dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this,
-              settings);
+            NetworkInterface = networkInterface;
+            dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this, settings);
             ActivateSensor(dataUploaded);
-            dataDownloaded = new Sensor("Data Downloaded", 3, SensorType.Data, this,
-              settings);
+            dataDownloaded = new Sensor("Data Downloaded", 3, SensorType.Data, this, settings);
             ActivateSensor(dataDownloaded);
-            uploadSpeed = new Sensor("Upload Speed", 7, SensorType.Throughput, this,
-              settings);
+            uploadSpeed = new Sensor("Upload Speed", 7, SensorType.Throughput, this,  settings);
             ActivateSensor(uploadSpeed);
-            downloadSpeed = new Sensor("Download Speed", 8, SensorType.Throughput, this,
-              settings);
+            downloadSpeed = new Sensor("Download Speed", 8, SensorType.Throughput, this, settings);
             ActivateSensor(downloadSpeed);
-            networkUtilization = new Sensor("Network Utilization", 1, SensorType.Load, this,
-              settings);
+            networkUtilization = new Sensor("Network Utilization", 1, SensorType.Load, this,  settings);
             ActivateSensor(networkUtilization);
             bytesUploaded = NetworkInterface.GetIPStatistics().BytesSent;
             bytesDownloaded = NetworkInterface.GetIPStatistics().BytesReceived;
             latesTime = DateTime.Now;
         }
 
-        public override HardwareType HardwareType
-        {
-            get
-            {
-                return HardwareType.NIC;
-            }
-        }
+        public override HardwareType HardwareType => HardwareType.NIC;
 
-        internal NetworkInterface NetworkInterface
-        {
-            get { return networkInterface; }
-        }
+        internal NetworkInterface NetworkInterface { get; }
 
         public override void Update()
         {
