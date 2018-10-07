@@ -9,6 +9,8 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware {
@@ -18,7 +20,7 @@ namespace OpenHardwareMonitor.Hardware {
     protected readonly string name;
     private string customName;
     protected readonly ISettings settings;
-    protected readonly ListSet<ISensor> active = new ListSet<ISensor>();
+    protected readonly HashSet<ISensor> active = new HashSet<ISensor>();
 
     public Hardware(string name, Identifier identifier, ISettings settings) {
       this.settings = settings;
@@ -41,15 +43,13 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     protected virtual void ActivateSensor(ISensor sensor) {
-      if (active.Add(sensor)) 
-        if (SensorAdded != null)
-          SensorAdded(sensor);
+      if (active.Add(sensor))
+        SensorAdded?.Invoke(sensor);
     }
 
     protected virtual void DeactivateSensor(ISensor sensor) {
       if (active.Remove(sensor))
-        if (SensorRemoved != null)
-          SensorRemoved(sensor);     
+        SensorRemoved?.Invoke(sensor);
     }
 
     public string Name {
