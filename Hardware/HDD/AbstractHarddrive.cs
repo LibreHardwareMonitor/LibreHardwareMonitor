@@ -33,14 +33,14 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       typeof(GenericHarddisk)
     };
 
-    private string firmwareRevision;
+    private readonly string firmwareRevision;
     private readonly ISmart smart;
 
     private readonly IntPtr handle;
     private readonly int index;
     private int count;
 
-    private IList<SmartAttribute> smartAttributes;
+    private readonly IList<SmartAttribute> smartAttributes;
     private IDictionary<SmartAttribute, Sensor> sensors;
 
     private DriveInfo[] driveInfos;
@@ -178,8 +178,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       sensors = new Dictionary<SmartAttribute, Sensor>();
 
       if (handle != smart.InvalidHandle) {
-        IList<Pair<SensorType, int>> sensorTypeAndChannels =
-          new List<Pair<SensorType, int>>();
+        IList<(SensorType, int)> sensorTypeAndChannels =
+          new List<(SensorType, int)>();
 
         DriveAttributeValue[] values = smart.ReadSmartData(handle, index);
 
@@ -196,9 +196,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
           }
           if (!found)
             continue;
-
-          Pair<SensorType, int> pair = new Pair<SensorType, int>(
-            attribute.SensorType.Value, attribute.SensorChannel);
+          var pair = (vaule: attribute.SensorType.Value, 
+                      sensorChannel: attribute.SensorChannel);
 
           if (!sensorTypeAndChannels.Contains(pair)) {
             Sensor sensor = new Sensor(attribute.SensorName,

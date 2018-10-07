@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Collections\Pair.cs" />
     <Compile Include="Collections\RingCollection.cs" />
     <Compile Include="Hardware\Aquacomputer\AquacomputerGroup.cs" />
     <Compile Include="Hardware\Aquacomputer\AquastreamXT.cs" />
@@ -141,5 +140,6 @@
   <ItemGroup>
     <PackageReference Include="hidlibrary" Version="3.2.46" />
     <PackageReference Include="System.Management" Version="4.5.0-preview1-25914-04" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>
