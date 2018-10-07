@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Collections\RingCollection.cs" />
     <Compile Include="Hardware\Aquacomputer\AquacomputerGroup.cs" />
     <Compile Include="Hardware\Aquacomputer\AquastreamXT.cs" />
     <Compile Include="Hardware\ATI\ADL.cs" />

@@ -29,8 +29,7 @@ namespace OpenHardwareMonitor.Hardware {
     private float? currentValue;
     private float? minValue;
     private float? maxValue;
-    private readonly RingCollection<SensorValue> 
-      values = new RingCollection<SensorValue>();
+    private readonly List<SensorValue> values = new List<SensorValue>();
     private readonly ISettings settings;
     private IControl control;
     
@@ -124,13 +123,13 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     private void AppendValue(float value, DateTime time) {
-      if (values.Count >= 2 && values.Last.Value == value && 
+      if (values.Count >= 2 && values[values.Count - 1].Value == value && 
         values[values.Count - 2].Value == value) {
-        values.Last = new SensorValue(value, time);
+        values[values.Count - 1] = new SensorValue(value, time);
         return;
       } 
 
-      values.Append(new SensorValue(value, time));
+      values.Add(new SensorValue(value, time));
     }
 
     public IHardware Hardware {
@@ -180,8 +179,8 @@ namespace OpenHardwareMonitor.Hardware {
       }
       set {
         DateTime now = DateTime.UtcNow;
-        while (values.Count > 0 && (now - values.First.Time).TotalDays > 1)
-          values.Remove();
+        while (values.Count > 0 && (now - values[0].Time).TotalDays > 1)
+          values.RemoveAt(0);
 
         if (value.HasValue) {
           sum += value.Value;
