@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
     public class SmartAttribute {
@@ -92,8 +91,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       }
     }
 
-    public float ConvertValue(DriveAttributeValue value, 
-      IReadOnlyArray<IParameter> parameters) 
+    public float ConvertValue(DriveAttributeValue value,
+      IReadOnlyList<IParameter> parameters) 
     {
       if (rawValueConversion == null) {
         return value.AttrValue;
@@ -103,6 +102,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     }
 
     public delegate float RawValueConversion(byte[] rawValue, byte value,
-      IReadOnlyArray<IParameter> parameters);
+      IReadOnlyList<IParameter> parameters);
   }
 }

@@ -678,7 +678,7 @@ namespace OpenHardwareMonitor.GUI {
         SensorNode node = info.Node.Tag as SensorNode;
         if (node != null && node.Sensor != null) {
           treeContextMenu.MenuItems.Clear();
-          if (node.Sensor.Parameters.Length > 0) {
+          if (node.Sensor.Parameters.Count > 0) {
             MenuItem item = new MenuItem("Parameters...");
             item.Click += delegate(object obj, EventArgs args) {
               ShowParameterForm(node.Sensor);
@@ -854,7 +854,7 @@ namespace OpenHardwareMonitor.GUI {
       TreeNodeAdvMouseEventArgs e) {
       SensorNode node = e.Node.Tag as SensorNode;
       if (node != null && node.Sensor != null && 
-        node.Sensor.Parameters.Length > 0) {
+        node.Sensor.Parameters.Count > 0) {
         ShowParameterForm(node.Sensor);
       }
     }

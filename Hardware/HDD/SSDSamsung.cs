@@ -10,7 +10,6 @@
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   using System.Collections.Generic;
-  using OpenHardwareMonitor.Collections;
 
   [NamePrefix(""), RequireSmart(0xB1), RequireSmart(0xB3), RequireSmart(0xB5),
     RequireSmart(0xB6), RequireSmart(0xB7), RequireSmart(0xBB), 
@@ -37,7 +36,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       new SmartAttribute(0xB7, SmartNames.RuntimeBadBlockTotal, RawToInt),
       new SmartAttribute(0xBB, SmartNames.UncorrectableErrorCount, RawToInt),
       new SmartAttribute(0xBE, SmartNames.Temperature, 
-        (byte[] r, byte v, IReadOnlyArray<IParameter> p) 
+        (byte[] r, byte v, IReadOnlyList<IParameter> p) 
           => { return r[0] + (p == null ? 0 : p[0].Value); }, 
           SensorType.Temperature, 0, SmartNames.Temperature, false, 
         new[] { new ParameterDescription("Offset [°C]", 
@@ -51,7 +50,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       new SmartAttribute(0xCA, SmartNames.ExceptionModeStatus),
       new SmartAttribute(0xEB, SmartNames.PowerRecoveryCount),
       new SmartAttribute(0xF1, SmartNames.TotalLbasWritten, 
-        (byte[] r, byte v, IReadOnlyArray<IParameter> p) => { 
+        (byte[] r, byte v, IReadOnlyList<IParameter> p) => { 
           return (((long)r[5] << 40) | ((long)r[4] << 32) | ((long)r[3] << 24) | 
             ((long)r[2] << 16) | ((long)r[1] << 8) | r[0]) * 
             (512.0f / 1024 / 1024 / 1024);

@@ -18,7 +18,6 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
-using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.GUI {
   public class PlotPanel : UserControl {

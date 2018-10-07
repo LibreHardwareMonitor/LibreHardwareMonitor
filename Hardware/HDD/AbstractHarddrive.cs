@@ -15,9 +15,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using OpenHardwareMonitor.Collections;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace OpenHardwareMonitor.Hardware.HDD
+{
   public abstract class AbstractHarddrive : Hardware {
 
     private const int UPDATE_DIVIDER = 30; // update only every 30s
@@ -351,7 +351,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     }
 
     protected static float RawToInt(byte[] raw, byte value,
-      IReadOnlyArray<IParameter> parameters) 
+      IReadOnlyList<IParameter> parameters) 
     {
       return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
     }

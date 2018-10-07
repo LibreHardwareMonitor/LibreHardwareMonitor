@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware {
 
@@ -25,7 +24,7 @@ namespace OpenHardwareMonitor.Hardware {
     private readonly bool defaultHidden;
     private readonly SensorType sensorType;
     private readonly Hardware hardware;
-    private readonly ReadOnlyArray<IParameter> parameters;
+    private readonly IReadOnlyList<IParameter> parameters;
     private float? currentValue;
     private float? minValue;
     private float? maxValue;
@@ -169,7 +168,7 @@ namespace OpenHardwareMonitor.Hardware {
       get { return defaultHidden; }
     }
 
-    public IReadOnlyArray<IParameter> Parameters {
+    public IReadOnlyList<IParameter> Parameters {
       get { return parameters; }
     }
 

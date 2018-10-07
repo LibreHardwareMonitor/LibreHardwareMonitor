@@ -15,19 +15,18 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.GUI {
   public partial class ParameterForm : Form {
 
-    private IReadOnlyArray<IParameter> parameters;
+    private IReadOnlyList<IParameter> parameters;
     private BindingList<ParameterRow> parameterRows;
 
     public ParameterForm() {
       InitializeComponent();
     }
     
-    public IReadOnlyArray<IParameter> Parameters {
+    public IReadOnlyList<IParameter> Parameters {
       get {
         return parameters;
       }
@@ -88,7 +87,7 @@ namespace OpenHardwareMonitor.GUI {
     private void dataGridView_RowEnter(object sender, 
       DataGridViewCellEventArgs e) 
     {
-      if (e.RowIndex >= 0 && e.RowIndex < parameters.Length)
+      if (e.RowIndex >= 0 && e.RowIndex < parameters.Count)
         descriptionLabel.Text = parameters[e.RowIndex].Description;
       else
         descriptionLabel.Text = "";

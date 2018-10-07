@@ -11,10 +11,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenHardwareMonitor.Collections;
 
-namespace OpenHardwareMonitor.Hardware {
-    public abstract class Hardware : IHardware {
+namespace OpenHardwareMonitor.Hardware
+{
+  public abstract class Hardware : IHardware {
 
     private readonly Identifier identifier;
     protected readonly string name;

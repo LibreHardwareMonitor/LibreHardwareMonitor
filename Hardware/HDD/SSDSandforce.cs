@@ -10,7 +10,6 @@
 */
 
 using System.Collections.Generic;
-using OpenHardwareMonitor.Collections;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
 
@@ -31,7 +30,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       new SmartAttribute(0xB6, SmartNames.AlternativeEraseFailCount, RawToInt),
       new SmartAttribute(0xBB, SmartNames.UncorrectableErrorCount, RawToInt),
       new SmartAttribute(0xC2, SmartNames.Temperature, 
-        (byte[] raw, byte value, IReadOnlyArray<IParameter> p) 
+        (byte[] raw, byte value, IReadOnlyList<IParameter> p) 
           => { return value + (p == null ? 0 : p[0].Value); }, 
         SensorType.Temperature, 0, SmartNames.Temperature, true, 
         new[] { new ParameterDescription("Offset [°C]", 

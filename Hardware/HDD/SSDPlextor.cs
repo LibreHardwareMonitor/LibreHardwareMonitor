@@ -10,8 +10,6 @@
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   using System.Collections.Generic;
-  using OpenHardwareMonitor.Collections;
-
   [NamePrefix("PLEXTOR")]
   internal class SSDPlextor : AbstractHarddrive {
 
@@ -30,7 +28,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
 
     private static float RawToGb(byte[] rawvalue, byte value,
-      IReadOnlyArray<IParameter> parameters) 
+      IReadOnlyList<IParameter> parameters) 
     {
       return RawToInt(rawvalue, value, parameters) / 32;
     }
