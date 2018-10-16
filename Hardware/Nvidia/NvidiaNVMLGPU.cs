@@ -13,10 +13,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
             throw new ArgumentNullException(nameof(nvml));
 
         this.nvml = nvml;
-
-        device = nvml.NvmlDeviceGetHandleByIndex(adapterIndex);
-        if (device.HasValue) {
-            powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
+	
+	if (nvml.Initialised) {
+	    device = nvml.NvmlDeviceGetHandleByIndex(adapterIndex);
+            if (device.HasValue) {
+                powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
+	    }
         }
     }
 
