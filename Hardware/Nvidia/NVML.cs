@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia {
@@ -112,7 +113,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
                 }
             }
             else if(IsNvmlCompatibleWindowsVersion()) {
-                SetDllDirectory(@"C:\Program Files\NVIDIA Corporation\NVSMI\");
+                var programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
+                var dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\");
+                SetDllDirectory(dllPath);
 
                 try {
                     Initialised = (WindowsNvmlInit() == NvmlReturn.Success);
