@@ -112,7 +112,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
                     catch (EntryPointNotFoundException) { return; }
                 }
             }
-            else if(IsNvmlCompatibleWindowsVersion()) {
+            else if (IsNvmlCompatibleWindowsVersion()) {
                 var programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
                 var dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\");
                 SetDllDirectory(dllPath);
