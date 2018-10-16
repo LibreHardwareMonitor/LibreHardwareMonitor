@@ -15,9 +15,10 @@ using System.Text;
 namespace OpenHardwareMonitor.Hardware.Nvidia {
 
   internal class NvidiaGroup : IGroup {
-   
+
     private readonly List<Hardware> hardware = new List<Hardware>();
     private readonly StringBuilder report = new StringBuilder();
+    private readonly NVML nvml = new NVML();
 
     public NvidiaGroup(ISettings settings) {
       if (!NVAPI.IsAvailable)
@@ -82,7 +83,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
       for (int i = 0; i < count; i++) {
         NvDisplayHandle displayHandle;
         displayHandles.TryGetValue(handles[i], out displayHandle);
-        hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings));
+        hardware.Add(new NvidiaNVMLGPU(i, handles[i], displayHandle, settings, nvml));
       }
 
       report.AppendLine();
@@ -100,7 +101,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
 
     public void Close() {
       foreach (Hardware gpu in hardware)
-        gpu.Close();      
+        gpu.Close();
+
+      nvml.Close();
     }
   }
 }

@@ -93,7 +93,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         ControlModeChanged(fanControl);
         control.Control = fanControl;
       }
-      Update();
     }
 
     private static string GetName(NvPhysicalGpuHandle handle) {
