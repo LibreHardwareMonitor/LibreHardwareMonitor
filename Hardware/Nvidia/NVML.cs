@@ -88,7 +88,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct NvmlDevice
+    internal struct NvmlDevice
     {
         public IntPtr Handle;
     }
