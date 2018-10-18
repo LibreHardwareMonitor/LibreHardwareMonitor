@@ -33,6 +33,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     Rampage_Extreme,
     Rampage_II_GENE,
     PRIME_X370_PRO,
+    ROG_MAXIMUS_APEX,
 
     // DFI
     LP_BI_P45_T2RS_Elite,
