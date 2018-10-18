@@ -201,6 +201,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.AX370_K7;
         case "PRIME X370-PRO":
           return Model.PRIME_X370_PRO;
+        case "ROG MAXIMUS X APEX":
+          return Model.ROG_MAXIMUS_APEX;
         case "Base Board Product Name":
         case "To be filled by O.E.M.":
           return Model.Unknown;
