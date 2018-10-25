@@ -579,7 +579,9 @@ namespace OpenHardwareMonitor.GUI {
     }
 
     private int delayCount = 0;
-    private void timer_Tick(object sender, EventArgs e) {
+      private string logDir = String.Empty;
+
+      private void timer_Tick(object sender, EventArgs e) {
       computer.Accept(updateVisitor);
       treeView.Invalidate();
       plotPanel.InvalidatePlot();
@@ -592,7 +594,7 @@ namespace OpenHardwareMonitor.GUI {
 
 
       if (logSensors != null && logSensors.Value && delayCount >= 4)
-        logger.Log();
+        logger.Log(logDir);
 
       if (delayCount < 4)
         delayCount++;
@@ -928,5 +930,13 @@ namespace OpenHardwareMonitor.GUI {
       get { return server; }
     }
 
-  }
+    private void logDirectoryMenuItem_Click(object sender, EventArgs e) {
+        var input ="";
+        var fbd = new FolderBrowserDialog {Description = "Log directory"};
+
+        if (fbd.ShowDialog() == DialogResult.OK) {
+            logDir = fbd.SelectedPath;
+        }
+    }
+   }
 }

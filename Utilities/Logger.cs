@@ -74,8 +74,8 @@ namespace OpenHardwareMonitor.Utilities {
       }
     }
 
-    private static string GetFileName(DateTime date) {
-      return AppDomain.CurrentDomain.BaseDirectory +
+    private static string GetFileName(string directory, DateTime date) {
+      return directory +
         Path.DirectorySeparatorChar + string.Format(fileNameFormat, date);
     }
 
@@ -146,7 +146,7 @@ namespace OpenHardwareMonitor.Utilities {
 
     public TimeSpan LoggingInterval { get; set; }
 
-    public void Log() {      
+    public void Log(string dir) {      
       var now = DateTime.Now;
 
       if (lastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
@@ -154,7 +154,11 @@ namespace OpenHardwareMonitor.Utilities {
 
       if (day != now.Date || !File.Exists(fileName)) {
         day = now.Date;
-        fileName = GetFileName(day);
+
+          if (string.IsNullOrEmpty(dir)) {
+            dir = AppDomain.CurrentDomain.BaseDirectory;
+          }
+        fileName = GetFileName(dir, day);
 
         if (!OpenExistingLogFile())
           CreateNewLogFile();

@@ -123,6 +123,7 @@
     <Compile Include="GUI\UserRadioGroup.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Utilities\HttpServer.cs" />
+    <Compile Include="Utilities\InputDialogUtils.cs" />
     <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Utilities\PersistentSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
