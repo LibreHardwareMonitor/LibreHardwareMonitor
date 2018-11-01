@@ -30,6 +30,13 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       new SmartAttribute(0xAB, SmartNames.ProgramFailCount),
       new SmartAttribute(0xAC, SmartNames.EraseFailCount),
       new SmartAttribute(0xB8, SmartNames.EndToEndError),
+      new SmartAttribute(0xBE, SmartNames.Temperature,
+        (byte[] r, byte v, IReadOnlyList<IParameter> p)
+          => { return r[0] + (p == null ? 0 : p[0].Value); },
+          SensorType.Temperature, 0, SmartNames.AirflowTemperature, false,
+        new[] { new ParameterDescription("Offset [°C]",
+                  "Temperature offset of the thermal sensor.\n" +
+                  "Temperature = Value + Offset.", 0) }),
       new SmartAttribute(0xC0, SmartNames.UnsafeShutdownCount), 
       new SmartAttribute(0xE1, SmartNames.HostWrites, 
         (byte[] r, byte v, IReadOnlyList<IParameter> p) 
