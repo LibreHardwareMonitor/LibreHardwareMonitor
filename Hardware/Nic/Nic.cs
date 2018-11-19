@@ -25,11 +25,12 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
         private long bytesUploaded;
         private long bytesDownloaded;
+        private readonly NetworkInterface networkInterface;
 
         public Nic(NetworkInterface networkInterface, ISettings settings, int index)
           : base(networkInterface.Name, new Identifier("NIC",index.ToString(CultureInfo.InvariantCulture)), settings)
         {
-            NetworkInterface = networkInterface;
+            this.networkInterface = networkInterface;
             dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this, settings);
             ActivateSensor(dataUploaded);
             dataDownloaded = new Sensor("Data Downloaded", 3, SensorType.Data, this, settings);
@@ -45,9 +46,21 @@ namespace OpenHardwareMonitor.Hardware.Nic
             latesTime = DateTime.Now;
         }
 
-        public override HardwareType HardwareType => HardwareType.NIC;
+        public override HardwareType HardwareType
+        {
+            get
+            {
+                return HardwareType.NIC;
+            }
+        }
 
-        internal NetworkInterface NetworkInterface { get; }
+        internal NetworkInterface NetworkInterface
+        {
+            get
+            {
+                return networkInterface;
+            }
+        }
 
         public override void Update()
         {
@@ -59,7 +72,7 @@ namespace OpenHardwareMonitor.Hardware.Nic
             long dBytesDownloaded = interfaceStats.BytesReceived - bytesDownloaded;
             uploadSpeed.Value = (float)dBytesUploaded / dt;
             downloadSpeed.Value = (float)dBytesDownloaded / dt;
-            networkUtilization.Value = Clamp((float)Math.Max(dBytesUploaded, dBytesDownloaded) * 800 / NetworkInterface.Speed / dt, 0,100);
+            networkUtilization.Value = Clamp((float)Math.Max(dBytesUploaded, dBytesDownloaded) * 800 / NetworkInterface.Speed / dt, 0, 100);
             bytesUploaded = interfaceStats.BytesSent;
             bytesDownloaded = interfaceStats.BytesReceived;
             dataUploaded.Value = ((float)bytesUploaded / 1073741824);

@@ -13,9 +13,6 @@ namespace OpenHardwareMonitor.Hardware.Nic
         public NicGroup(ISettings settings)
         {
             _settings = settings;
-            if (Software.OperatingSystem.IsLinux)
-                return;
-
             ScanNics(settings);
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged; 
             NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAddressChanged;
@@ -70,13 +67,20 @@ namespace OpenHardwareMonitor.Hardware.Nic
             return report.ToString();
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IEnumerable<IHardware> Hardware
+        {
+            get
+            {
+                return _hardware;
+            }
+        }
 
         public NetworkInterface[] NetworkInterfaces { get; set; }
 
         public void Close()
         {
             NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAddressChanged;
             foreach (var nic in _hardware)
                 nic.Close();
         }
