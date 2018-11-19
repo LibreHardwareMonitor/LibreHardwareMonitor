@@ -18,6 +18,7 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
             ScanNics(settings);
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged; 
+            NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAddressChanged;
         }
 
         private void ScanNics(ISettings settings)
