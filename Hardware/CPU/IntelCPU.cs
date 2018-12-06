@@ -38,6 +38,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private readonly Sensor[] coreClocks;
     private readonly Sensor busClock;
     private readonly Sensor[] powerSensors;
+    private readonly Sensor[] cStatesResidency;
 
     private readonly Microarchitecture microarchitecture;
     private readonly double timeStampCounterMultiplier;
@@ -61,6 +62,9 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private DateTime[] lastEnergyTime;
     private uint[] lastEnergyConsumed;
 
+    private readonly (int CxState, uint MSR)[] cStatesMSRs;
+    private DateTime[] lastCstatesTime;
+    private ulong[] lastCstatesCounter;
 
     private float[] Floats(float f) {
       float[] result = new float[coreCount];
@@ -339,6 +343,60 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         }
       }
 
+      switch (microarchitecture) {
+        case Microarchitecture.SandyBridge:
+        case Microarchitecture.IvyBridge:
+        case Microarchitecture.Haswell:
+        case Microarchitecture.Broadwell:
+        case Microarchitecture.Skylake:
+        case Microarchitecture.KabyLake:
+          cStatesMSRs = new[] { (2, 0x60Du), (3, 0x3F8u), (6, 0x3F9u), (7, 0x3FAu) };
+          break;
+        case Microarchitecture.Nehalem:
+          cStatesMSRs = new[] { (3, 0x3F8u), (6, 0x3F9u), (7, 0x3FAu) };
+          break;
+        case Microarchitecture.Silvermont:
+        case Microarchitecture.Airmont:
+          cStatesMSRs = new[] { (6, 0x3FAu) };
+          break;
+        case Microarchitecture.ApolloLake:
+          cStatesMSRs = new[] { (2, 0x60Du), (3, 0x3F8u), (6, 0x3F9u), (10, 0x632u) };
+          break;
+      }      
+      switch (model) {    //new microarchs and exceptions, move up when supported
+        case 0x85:
+        case 0x57:
+        case 0x66:
+          cStatesMSRs = new[] { (2, 0x60Du), (3, 0x3F8u), (6, 0x3F9u), (7, 0x3FAu) };
+          break;
+        case 0x45:
+          cStatesMSRs = new[] { (2, 0x60Du), (3, 0x3F8u), (6, 0x3F9u), (7, 0x3FAu), (8, 0x630u), (9, 0x631u), (10, 0x632u) };
+          break;
+        case 0x7A:
+        case 0x5F:
+          cStatesMSRs = new[] { (2, 0x60Du), (3, 0x3F8u), (6, 0x3F9u), (10, 0x632u) };
+          break;
+        case 0x27:
+          cStatesMSRs = new[] { (2, 0x3F8u), (4, 0x3F9u), (6, 0x3FAu) };
+          break;
+      }
+      if (cStatesMSRs?.Length > 0) {
+        cStatesResidency = new Sensor[cStatesMSRs.Length];
+        lastCstatesTime = new DateTime[cStatesMSRs.Length];
+        lastCstatesCounter = new ulong[cStatesMSRs.Length];
+
+        for (int i = 0; i < cStatesMSRs.Length; i++) {
+          uint eax, edx;
+          if (!Ring0.Rdmsr(cStatesMSRs[i].MSR, out eax, out edx))
+            continue;
+
+          lastCstatesTime[i] = DateTime.UtcNow;
+          lastCstatesCounter[i] = (ulong)edx << 32 | eax;
+          cStatesResidency[i] = new Sensor($"CPU Pkg C{cStatesMSRs[i].CxState}", i,
+            SensorType.Level, this, settings);
+          ActivateSensor(cStatesResidency[i]);
+        }
+      }
       Update();
     }
 
@@ -469,6 +527,29 @@ namespace OpenHardwareMonitor.Hardware.CPU {
             energyConsumed - lastEnergyConsumed[sensor.Index]) / deltaTime;
           lastEnergyTime[sensor.Index] = time;
           lastEnergyConsumed[sensor.Index] = energyConsumed;
+        }
+      }
+
+      if (cStatesResidency != null) {
+        foreach (Sensor sensor in cStatesResidency) {
+          if (sensor == null)
+            continue;
+
+          uint eax, edx;
+          if (!Ring0.Rdmsr(cStatesMSRs[sensor.Index].MSR, out eax, out edx))
+            continue;
+
+          DateTime time = DateTime.UtcNow;
+          ulong cStateResidency = (ulong)edx << 32 | eax;
+          float deltaTime =
+            (float)(time - lastCstatesTime[sensor.Index]).TotalSeconds;
+          if (deltaTime < 0.01)
+            continue;
+
+          sensor.Value = (float)(unchecked(cStateResidency - lastCstatesCounter[sensor.Index]) 
+              / (TimeStampCounterFrequency * 10000) * deltaTime);
+          lastCstatesTime[sensor.Index] = time;
+          lastCstatesCounter[sensor.Index] = cStateResidency;
         }
       }
     }

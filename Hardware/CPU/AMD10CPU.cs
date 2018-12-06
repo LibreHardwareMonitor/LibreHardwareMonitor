@@ -23,6 +23,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private readonly Sensor coreTemperature;
     private readonly Sensor[] coreClocks;
     private readonly Sensor busClock;
+    private readonly Sensor[] cStatesResidency;
       
     private const uint PERF_CTL_0 = 0xC0010000;
     private const uint PERF_CTR_0 = 0xC0010004;
@@ -50,6 +51,9 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
     private readonly uint miscellaneousControlAddress;
     private readonly ushort miscellaneousControlDeviceId;
+
+    private const uint cStatesIoPort = 0xCD6;
+    private readonly byte cStatesIoOffset;
 
     private readonly FileStream temperatureStream;
 
@@ -162,6 +166,22 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         }
       }
 
+      uint addr = Ring0.GetPciAddress(0, 20, 0);
+      if(Ring0.ReadPciConfig(addr, 0, out uint dev)) {        
+        Ring0.ReadPciConfig(addr, 8, out uint rev);
+
+        if(dev == 0x43851002)
+          cStatesIoOffset = (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C);
+        else if(dev == 0x780B1022)
+          cStatesIoOffset = (byte)0x9C;
+      }
+      if(cStatesIoOffset != 0) {
+        cStatesResidency = new Sensor[]{
+          new Sensor("CPU Pkg C2", 0, SensorType.Level, this, settings),
+          new Sensor("CPU Pkg C3", 1, SensorType.Level, this, settings) };
+        ActivateSensor(cStatesResidency[0]);
+        ActivateSensor(cStatesResidency[1]);
+      }
       Update();                   
     }
 
@@ -381,6 +401,13 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         if (newBusClock > 0) {
           this.busClock.Value = (float)newBusClock;
           ActivateSensor(this.busClock);
+        }
+      }
+
+      if (cStatesResidency != null) {
+        for (int i = 0; i < cStatesResidency.Length; i++) {
+          Ring0.WriteIoPort(cStatesIoPort, (byte)(cStatesIoOffset + i));
+          cStatesResidency[i].Value = Ring0.ReadIoPort(cStatesIoPort + 1) / 256f * 100;
         }
       }
     }
