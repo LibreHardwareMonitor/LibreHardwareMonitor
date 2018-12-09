@@ -21,9 +21,11 @@ namespace OpenHardwareMonitor.Hardware.CPU {
   internal sealed class AMD10CPU : AMDCPU {
 
     private readonly Sensor coreTemperature;
-    private readonly Sensor[] coreClocks;
+    private readonly Sensor[] coreClocks;    
     private readonly Sensor busClock;
     private readonly Sensor[] cStatesResidency;
+    private readonly Sensor coreVoltage;
+    private readonly Sensor northbridgeVoltage;
       
     private const uint PERF_CTL_0 = 0xC0010000;
     private const uint PERF_CTR_0 = 0xC0010004;
@@ -55,6 +57,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private const uint cStatesIoPort = 0xCD6;
     private readonly byte cStatesIoOffset;
 
+    private readonly bool isSVI2;
+
     private readonly FileStream temperatureStream;
 
     private readonly double timeStampCounterMultiplier;
@@ -69,6 +73,15 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         SensorType.Temperature, this, new [] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
           }, settings);
+                  
+      coreVoltage = new Sensor(
+        "Core" + (coreCount > 1 ? " #1 - #" + coreCount : ""), 0, 
+        SensorType.Voltage, this, settings);
+      ActivateSensor(coreVoltage);
+      northbridgeVoltage = new Sensor("Northbridge", 0, 
+        SensorType.Voltage, this, settings);
+      ActivateSensor(northbridgeVoltage);
+      isSVI2 = (family == 0x15 && model >= 0x10) || family == 0x16;
 
       switch (family) {
         case 0x10: miscellaneousControlDeviceId =
@@ -377,6 +390,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
       if (HasTimeStampCounter) {
         double newBusClock = 0;
+        float maxCoreVoltage = 0, maxNBVoltage = 0;
 
         for (int i = 0; i < coreClocks.Length; i++) {
           Thread.Sleep(1);
@@ -396,8 +410,26 @@ namespace OpenHardwareMonitor.Hardware.CPU {
           } else {
             coreClocks[i].Value = (float)TimeStampCounterFrequency;
           }
-        }
 
+          float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - 0.00625f * vid : 0;
+          float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - 0.0125f * vid : 0;
+          float newCoreVoltage, newNBVoltage;
+          uint coreVid60 = (curEax >> 9) & 0x7F;
+          if (isSVI2) {
+            newCoreVoltage = SVI2Volt(curEax >> 13 & 0x80 | coreVid60);
+            newNBVoltage = SVI2Volt(curEax >> 24);
+          } else {
+            newCoreVoltage = SVI1Volt(coreVid60);
+            newNBVoltage = SVI1Volt(curEax >> 25);
+          }
+          if (newCoreVoltage > maxCoreVoltage)
+            maxCoreVoltage = newCoreVoltage;
+          if (newNBVoltage > maxNBVoltage)
+            maxNBVoltage = newNBVoltage;
+        }
+        coreVoltage.Value = maxCoreVoltage;
+        northbridgeVoltage.Value = maxNBVoltage;
+        
         if (newBusClock > 0) {
           this.busClock.Value = (float)newBusClock;
           ActivateSensor(this.busClock);
@@ -411,6 +443,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         }
       }
     }
+
+    private static float NewMethod(uint vid70) => vid70 < 0b1111_1000 ? 1.5500f - 0.00625f * vid70 : 0;
 
     public override void Close() {      
       if (temperatureStream != null) {
