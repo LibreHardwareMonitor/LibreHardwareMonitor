@@ -186,7 +186,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
         if(dev == 0x43851002)
           cStatesIoOffset = (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C);
-        else if(dev == 0x780B1022)
+        else if(dev == 0x780B1022 || dev == 0x790B1022)
           cStatesIoOffset = (byte)0x9C;
       }
       if(cStatesIoOffset != 0) {
