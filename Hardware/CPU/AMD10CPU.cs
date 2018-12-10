@@ -100,6 +100,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
               FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID; break;
             case 0x30: miscellaneousControlDeviceId =
               FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+            case 0x70:
             case 0x60: miscellaneousControlDeviceId =
               FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID; break;
             default: miscellaneousControlDeviceId = 0; break;
@@ -345,37 +346,28 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       if (temperatureStream == null) {
         if (miscellaneousControlAddress != Ring0.InvalidPciAddress) {
           uint value;
-        if (miscellaneousControlAddress == FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID) {
-          value = F15H_M60H_REPORTED_TEMP_CTRL_OFFSET;
-          Ring0.WritePciConfig(Ring0.GetPciAddress(0, 0, 0), 0xB8, value);
-          Ring0.ReadPciConfig(Ring0.GetPciAddress(0, 0, 0), 0xBC, out value);
-          coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
-              coreTemperature.Parameters[0].Value;
-          ActivateSensor(coreTemperature);
-          return;
-        }
-          if (Ring0.ReadPciConfig(miscellaneousControlAddress,
-            REPORTED_TEMPERATURE_CONTROL_REGISTER, out value)) {
-            if (family == 0x15 && (value & 0x30000) == 0x30000) {
-              if ((model & 0xF0) == 0x00) {
-                coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f +
-                  coreTemperature.Parameters[0].Value - 49;
-              } else {
-                coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
-                  coreTemperature.Parameters[0].Value - 49;
-              }
-            } else if (family == 0x16 && 
-              ((value & 0x30000) == 0x30000 || (value & 0x80000) == 0x80000)) {
-                coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
-                  coreTemperature.Parameters[0].Value - 49;
+          if (miscellaneousControlAddress == FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID) {
+            Ring0.WritePciConfig(Ring0.GetPciAddress(0, 0, 0), 0xB8, F15H_M60H_REPORTED_TEMP_CTRL_OFFSET);
+            Ring0.ReadPciConfig(Ring0.GetPciAddress(0, 0, 0), 0xBC, out value);
+          } else {
+            Ring0.ReadPciConfig(miscellaneousControlAddress,
+              REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
+          }
+          if((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x3000) {
+            if (family == 0x15 && (model & 0xF0) == 0x00) {
+              coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f +
+                coreTemperature.Parameters[0].Value - 49;
             } else {
               coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
-                coreTemperature.Parameters[0].Value;
+                coreTemperature.Parameters[0].Value - 49;
             }
-            ActivateSensor(coreTemperature);
           } else {
-            DeactivateSensor(coreTemperature);
+            coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
+              coreTemperature.Parameters[0].Value;
           }
+          ActivateSensor(coreTemperature);
+        } else {
+          DeactivateSensor(coreTemperature);
         }
       } else {
         string s = ReadFirstLine(temperatureStream);
