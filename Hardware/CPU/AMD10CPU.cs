@@ -21,7 +21,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
   internal sealed class AMD10CPU : AMDCPU {
 
     private readonly Sensor coreTemperature;
-    private readonly Sensor[] coreClocks;    
+    private readonly Sensor[] coreClocks;
     private readonly Sensor busClock;
     private readonly Sensor[] cStatesResidency;
     private readonly Sensor coreVoltage;
@@ -443,8 +443,6 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         }
       }
     }
-
-    private static float NewMethod(uint vid70) => vid70 < 0b1111_1000 ? 1.5500f - 0.00625f * vid70 : 0;
 
     public override void Close() {      
       if (temperatureStream != null) {
