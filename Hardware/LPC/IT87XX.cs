@@ -64,6 +64,10 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       Ring0.WriteIoPort(addressReg, register);
       byte value = Ring0.ReadIoPort(dataReg);
       valid = register == Ring0.ReadIoPort(addressReg);
+      // IT8688E doesn't return the value we wrote to 
+      // addressReg when we read it back.
+      if (this.chip == Chip.IT8688E)
+        valid = true;
       return value;
     }
 
@@ -198,6 +202,11 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         fans = new float?[6];
         fansDisabled = new bool[6];
         controls = new float?[3];
+      } else if (chip == Chip.IT8688E) {
+        voltages = new float?[11];
+        temperatures = new float?[6];
+        fans = new float?[5];
+        controls = new float?[3];
        } else {
         voltages = new float?[9];
         temperatures = new float?[3];
@@ -209,7 +218,8 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resultion 
       // ADC, all others 16mV
       if (chip == Chip.IT8620E || chip == Chip.IT8628E || chip == Chip.IT8721F 
-        || chip == Chip.IT8728F || chip == Chip.IT8771E || chip == Chip.IT8772E || chip == Chip.IT8686E) 
+        || chip == Chip.IT8728F || chip == Chip.IT8771E || chip == Chip.IT8772E
+        || chip == Chip.IT8686E || chip == Chip.IT8688E)
       {
         voltageGain = 0.012f;
       }
@@ -266,6 +276,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           break;
         case Chip.IT8620E:
         case Chip.IT8628E:
+        case Chip.IT8688E:
         case Chip.IT8705F: 
         case Chip.IT8728F:
         case Chip.IT8771E:
