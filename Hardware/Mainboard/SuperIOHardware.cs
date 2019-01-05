@@ -176,6 +176,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       c = new List<Ctrl>();
 
       switch (superIO.Chip) {
+        case Chip.IT8688E:
         case Chip.IT8705F:
         case Chip.IT8712F:
         case Chip.IT8716F:
@@ -601,6 +602,29 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("System Fan #2", 1));
               f.Add(new Fan("Power Fan", 2));
               f.Add(new Fan("System Fan #1", 3));
+              break;
+            case Model.Z390_M_GAMING: // IT8688E
+              v.Add(new Voltage("CPU VCore", 0));
+              v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
+              v.Add(new Voltage("+12V", 2, 5f, 1));
+              v.Add(new Voltage("+5V", 3, 1.5f, 1));
+              v.Add(new Voltage("CPU VCCGT", 4));
+              v.Add(new Voltage("CPU VCCSA", 5));
+              v.Add(new Voltage("VDDQ", 6));  
+              v.Add(new Voltage("DDRVTT", 7));
+              v.Add(new Voltage("PCHCore", 8));
+              v.Add(new Voltage("CPU VCCIO", 9));
+              v.Add(new Voltage("DDRVPP", 10));
+              t.Add(new Temperature("System1", 0));
+              t.Add(new Temperature("PCH", 1));
+              t.Add(new Temperature("CPU", 2));
+              t.Add(new Temperature("PCIEX16", 3));
+              t.Add(new Temperature("VRM MOS", 4));
+              t.Add(new Temperature("System2", 5));
+              f.Add(new Fan("CPU Fan", 0));
+              f.Add(new Fan("System Fan #1", 1));
+              f.Add(new Fan("System Fan #2", 2));
+              f.Add(new Fan("System Fan #3", 3));
               break;
             default:
               v.Add(new Voltage("CPU VCore", 0));
