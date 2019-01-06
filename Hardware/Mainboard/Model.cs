@@ -88,6 +88,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     Z68X_UD7_B3,
     AX370_K7,
     Z390_M_GAMING,
+    Z390_AORUS_ULTRA,
+    Z390_UD,
 
     // Shuttle
     FH67,
