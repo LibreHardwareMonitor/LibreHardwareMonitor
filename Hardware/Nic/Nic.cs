@@ -28,8 +28,8 @@ namespace OpenHardwareMonitor.Hardware.Nic
         private long bytesDownloaded;
         private readonly NetworkInterface networkInterface;
 
-        public Nic(NetworkInterface networkInterface, ISettings settings, int index)
-          : base(networkInterface.Name, new Identifier("NIC",index.ToString(CultureInfo.InvariantCulture)), settings)
+        public Nic(NetworkInterface networkInterface, ISettings settings)
+          : base(networkInterface.Name, new Identifier("nic", networkInterface.Id), settings)
         {
             this.networkInterface = networkInterface;
             dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this, settings);

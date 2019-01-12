@@ -40,7 +40,7 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
                 var scanned = NetworkInterfaces.ToDictionary(x => x.Id, x => x);
                 var newNics = scanned.Where(x => !_nics.ContainsKey(x.Key));
-                var removedNics = _nics.Where(x => !  scanned.ContainsKey(x.Key)).ToList();
+                var removedNics = _nics.Where(x => !scanned.ContainsKey(x.Key)).ToList();
 
                 foreach (var nic in removedNics)
                 {
@@ -48,9 +48,9 @@ namespace OpenHardwareMonitor.Hardware.Nic
                     _nics.Remove(nic.Key);
                 }
 
-                foreach (var nic in newNics.Select((x, i) => new { Id = x.Key, Nic = new Nic(x.Value, settings, i) }))
+                foreach (var nic in newNics)
                 {
-                    _nics.Add(nic.Id, nic.Nic);
+                    _nics.Add(nic.Key, new Nic(nic.Value, settings));
                 }
 
                 _hardware = _nics.Values.OrderBy(x => x.Name).ToList();
