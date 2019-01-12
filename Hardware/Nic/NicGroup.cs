@@ -33,12 +33,11 @@ namespace OpenHardwareMonitor.Hardware.Nic
             // with others as they manipulate non-thread safe state.
             lock (_scanLock)
             {
-                NetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
                     .Where(DesiredNetworkType)
-                    .OrderBy(x => x.Name)
-                    .ToArray();
+                    .OrderBy(x => x.Name);
 
-                var scanned = NetworkInterfaces.ToDictionary(x => x.Id, x => x);
+                var scanned = networkInterfaces.ToDictionary(x => x.Id, x => x);
                 var newNics = scanned.Where(x => !_nics.ContainsKey(x.Key));
                 var removedNics = _nics.Where(x => !scanned.ContainsKey(x.Key)).ToList();
 
@@ -77,9 +76,6 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
         public string GetReport()
         {
-            if (NetworkInterfaces == null)
-                return null;
-
             var report = new StringBuilder();
 
             foreach (Nic hw in _hardware)
@@ -105,8 +101,6 @@ namespace OpenHardwareMonitor.Hardware.Nic
                 return _hardware;
             }
         }
-
-        public NetworkInterface[] NetworkInterfaces { get; set; }
 
         public void Close()
         {
