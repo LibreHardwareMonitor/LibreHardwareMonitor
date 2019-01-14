@@ -82,7 +82,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
       for (int i = 0; i < count; i++) {
         NvDisplayHandle displayHandle;
         displayHandles.TryGetValue(handles[i], out displayHandle);
-        hardware.Add(new NvidiaNVMLGPU(i, handles[i], displayHandle, settings, nvml));
+        hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, nvml));
       }
 
       report.AppendLine();
