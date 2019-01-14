@@ -9,6 +9,8 @@ namespace OpenHardwareMonitor.Hardware.Nic
     {
         private readonly ISettings _settings;
         private List<Nic> _hardware = new List<Nic>();
+        private readonly object _scanLock = new object();
+        private readonly Dictionary<string, Nic> _nics = new Dictionary<string, Nic>();
 
         public NicGroup(ISettings settings)
         {
@@ -20,10 +22,38 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
         private void ScanNics(ISettings settings)
         {
-            NetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-            _hardware = NetworkInterfaces.Where(DesiredNetworkType)
-                .Select((x, i) => new Nic(x, settings, i))
-                .ToList();
+            // If no network is marked up (excluding loopback and tunnel) then don't scan
+            // for interfaces.
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                return;
+            }
+
+            // When multiple events fire concurrently, we don't want threads interferring
+            // with others as they manipulate non-thread safe state.
+            lock (_scanLock)
+            {
+                var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(DesiredNetworkType)
+                    .OrderBy(x => x.Name);
+
+                var scanned = networkInterfaces.ToDictionary(x => x.Id, x => x);
+                var newNics = scanned.Where(x => !_nics.ContainsKey(x.Key));
+                var removedNics = _nics.Where(x => !scanned.ContainsKey(x.Key)).ToList();
+
+                foreach (var nic in removedNics)
+                {
+                    nic.Value.Close();
+                    _nics.Remove(nic.Key);
+                }
+
+                foreach (var nic in newNics)
+                {
+                    _nics.Add(nic.Key, new Nic(nic.Value, settings));
+                }
+
+                _hardware = _nics.Values.OrderBy(x => x.Name).ToList();
+            }
         }
 
         private void NetworkChange_NetworkAddressChanged(object sender, System.EventArgs e)
@@ -46,9 +76,6 @@ namespace OpenHardwareMonitor.Hardware.Nic
 
         public string GetReport()
         {
-            if (NetworkInterfaces == null)
-                return null;
-
             var report = new StringBuilder();
 
             foreach (Nic hw in _hardware)
@@ -74,8 +101,6 @@ namespace OpenHardwareMonitor.Hardware.Nic
                 return _hardware;
             }
         }
-
-        public NetworkInterface[] NetworkInterfaces { get; set; }
 
         public void Close()
         {
