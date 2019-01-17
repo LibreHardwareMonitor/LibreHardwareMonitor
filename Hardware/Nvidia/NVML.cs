@@ -168,13 +168,13 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         }
 
         [DllImport("kernel32")]
-        public static extern IntPtr LoadLibrary(string dllPath);
+        private static extern IntPtr LoadLibrary(string dllPath);
 
         [DllImport("kernel32")]
-        public static extern IntPtr GetProcAddress(IntPtr module, string methodName);
+        private static extern IntPtr GetProcAddress(IntPtr module, string methodName);
 
         [DllImport("kernel32")]
-        public static extern bool FreeLibrary(IntPtr module);
+        private static extern bool FreeLibrary(IntPtr module);
 
         [DllImport(LinuxDllName, EntryPoint = "nvmlInit_v2")]
         private static extern NvmlReturn LinuxNvmlInit();
