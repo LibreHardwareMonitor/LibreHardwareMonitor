@@ -1,4 +1,4 @@
-﻿/*
+/*
  
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -112,6 +112,18 @@ namespace OpenHardwareMonitor.GUI {
       this.log1hMenuItem = new System.Windows.Forms.MenuItem();
       this.log2hMenuItem = new System.Windows.Forms.MenuItem();
       this.log6hMenuItem = new System.Windows.Forms.MenuItem();
+      this.sensorValuesTimeWindowMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow30sMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow2minMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow5minMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow10minMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow30minMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow1hMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow2hMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow6hMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow12hMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow24hMenuItem = new System.Windows.Forms.MenuItem();
+      this.timeWindow1minMenuItem = new System.Windows.Forms.MenuItem();
       this.splitContainer.Panel1.SuspendLayout();
       this.splitContainer.SuspendLayout();
       this.SuspendLayout();
@@ -380,6 +392,7 @@ namespace OpenHardwareMonitor.GUI {
             this.logSeparatorMenuItem,
             this.logSensorsMenuItem,
             this.loggingIntervalMenuItem,
+            this.sensorValuesTimeWindowMenuItem,
             this.webMenuItemSeparator,
             this.webMenuItem});
       this.optionsMenuItem.Text = "Options";
@@ -460,12 +473,12 @@ namespace OpenHardwareMonitor.GUI {
       // 
       // webMenuItemSeparator
       // 
-      this.webMenuItemSeparator.Index = 10;
+      this.webMenuItemSeparator.Index = 11;
       this.webMenuItemSeparator.Text = "-";
       // 
       // webMenuItem
       // 
-      this.webMenuItem.Index = 11;
+      this.webMenuItem.Index = 12;
       this.webMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.runWebServerMenuItem,
             this.serverPortMenuItem});
@@ -670,6 +683,90 @@ namespace OpenHardwareMonitor.GUI {
       this.log6hMenuItem.RadioCheck = true;
       this.log6hMenuItem.Text = "6h";
       // 
+      // 
+      // sensorValuesTimeWindowMenuItem
+      // 
+      this.sensorValuesTimeWindowMenuItem.Index = 10;
+      this.sensorValuesTimeWindowMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+      this.timeWindow30sMenuItem,
+      this.timeWindow1minMenuItem,
+      this.timeWindow2minMenuItem,
+      this.timeWindow5minMenuItem,
+      this.timeWindow10minMenuItem,
+      this.timeWindow30minMenuItem,
+      this.timeWindow1hMenuItem,
+      this.timeWindow2hMenuItem,
+      this.timeWindow6hMenuItem,
+      this.timeWindow12hMenuItem,
+      this.timeWindow24hMenuItem});
+      this.sensorValuesTimeWindowMenuItem.Text = "Sensor Values Time Window";
+      // 
+      // timeWindow30sMenuItem
+      // 
+      this.timeWindow30sMenuItem.Index = 0;
+      this.timeWindow30sMenuItem.RadioCheck = true;
+      this.timeWindow30sMenuItem.Text = "30s";
+      // 
+      // timeWindow2minMenuItem
+      // 
+      this.timeWindow2minMenuItem.Index = 2;
+      this.timeWindow2minMenuItem.RadioCheck = true;
+      this.timeWindow2minMenuItem.Text = "2min";
+      // 
+      // timeWindow5minMenuItem
+      // 
+      this.timeWindow5minMenuItem.Index = 3;
+      this.timeWindow5minMenuItem.RadioCheck = true;
+      this.timeWindow5minMenuItem.Text = "5min";
+      // 
+      // timeWindow10minMenuItem
+      // 
+      this.timeWindow10minMenuItem.Index = 4;
+      this.timeWindow10minMenuItem.RadioCheck = true;
+      this.timeWindow10minMenuItem.Text = "10min";
+      // 
+      // timeWindow30minMenuItem
+      // 
+      this.timeWindow30minMenuItem.Index = 5;
+      this.timeWindow30minMenuItem.RadioCheck = true;
+      this.timeWindow30minMenuItem.Text = "30min";
+      // 
+      // timeWindow1hMenuItem
+      // 
+      this.timeWindow1hMenuItem.Index = 6;
+      this.timeWindow1hMenuItem.RadioCheck = true;
+      this.timeWindow1hMenuItem.Text = "1h";
+      // 
+      // timeWindow2hMenuItem
+      // 
+      this.timeWindow2hMenuItem.Index = 7;
+      this.timeWindow2hMenuItem.RadioCheck = true;
+      this.timeWindow2hMenuItem.Text = "2n";
+      // 
+      // timeWindow6hMenuItem
+      // 
+      this.timeWindow6hMenuItem.Index = 8;
+      this.timeWindow6hMenuItem.RadioCheck = true;
+      this.timeWindow6hMenuItem.Text = "6h";
+      // 
+      // timeWindow12hMenuItem
+      // 
+      this.timeWindow12hMenuItem.Index = 9;
+      this.timeWindow12hMenuItem.RadioCheck = true;
+      this.timeWindow12hMenuItem.Text = "12h";
+      // 
+      // timeWindow24hMenuItem
+      // 
+      this.timeWindow24hMenuItem.Index = 10;
+      this.timeWindow24hMenuItem.RadioCheck = true;
+      this.timeWindow24hMenuItem.Text = "24h";
+      // 
+      // timeWindow1minMenuItem
+      // 
+      this.timeWindow1minMenuItem.Index = 1;
+      this.timeWindow1minMenuItem.RadioCheck = true;
+      this.timeWindow1minMenuItem.Text = "1min";
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -770,6 +867,18 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem log2hMenuItem;
     private System.Windows.Forms.MenuItem log6hMenuItem;
     private System.Windows.Forms.MenuItem nicMenuItem;
+    private System.Windows.Forms.MenuItem sensorValuesTimeWindowMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow30sMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow1minMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow2minMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow5minMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow10minMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow30minMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow1hMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow2hMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow6hMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow12hMenuItem;
+    private System.Windows.Forms.MenuItem timeWindow24hMenuItem;
   }
 }
 
