@@ -206,6 +206,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         voltages = new float?[11];
         temperatures = new float?[6];
         fans = new float?[5];
+        fansDisabled = new bool[5];
         controls = new float?[3];
        } else {
         voltages = new float?[9];
