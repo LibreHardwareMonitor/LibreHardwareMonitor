@@ -28,6 +28,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
     IT8620E = 0x8620,
     IT8628E = 0x8628,
+    IT8655E = 0x8655,
     IT8665E = 0x8665,
     IT8686E = 0x8686,
     IT8688E = 0x8688,
@@ -85,6 +86,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
         case Chip.IT8620E: return "ITE IT8620E";
         case Chip.IT8628E: return "ITE IT8628E";
+        case Chip.IT8655E: return "ITE IT8655E";
         case Chip.IT8665E: return "ITE IT8665E";
         case Chip.IT8686E: return "ITE IT8686E";
         case Chip.IT8688E: return "ITE IT8688E";

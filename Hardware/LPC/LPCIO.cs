@@ -383,6 +383,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       switch (chipID) {
         case 0x8620: chip = Chip.IT8620E; break;
         case 0x8628: chip = Chip.IT8628E; break;
+        case 0x8655: chip = Chip.IT8655E; break;
         case 0x8665: chip = Chip.IT8665E; break;
         case 0x8686: chip = Chip.IT8686E; break; 
         case 0x8688: chip = Chip.IT8688E; break;

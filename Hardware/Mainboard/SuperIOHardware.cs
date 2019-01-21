@@ -191,6 +191,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
         case Chip.IT8620E:
         case Chip.IT8628E:
+        case Chip.IT8655E:
         case Chip.IT8721F:
         case Chip.IT8728F:
         case Chip.IT8771E:

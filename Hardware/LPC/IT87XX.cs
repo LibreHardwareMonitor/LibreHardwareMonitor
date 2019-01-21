@@ -276,6 +276,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           break;
         case Chip.IT8620E:
         case Chip.IT8628E:
+        case Chip.IT8655E:
         case Chip.IT8688E:
         case Chip.IT8705F: 
         case Chip.IT8728F:
