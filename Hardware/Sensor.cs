@@ -1,4 +1,4 @@
-﻿/*
+/*
  
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,6 +29,7 @@ namespace OpenHardwareMonitor.Hardware {
     private float? minValue;
     private float? maxValue;
     private readonly List<SensorValue> values = new List<SensorValue>();
+    private TimeSpan valuesTimeWindow = TimeSpan.FromDays(1.0);
     private readonly ISettings settings;
     private IControl control;
     
@@ -177,17 +178,19 @@ namespace OpenHardwareMonitor.Hardware {
         return currentValue; 
       }
       set {
-        DateTime now = DateTime.UtcNow;
-        while (values.Count > 0 && (now - values[0].Time).TotalDays > 1)
-          values.RemoveAt(0);
+        if (valuesTimeWindow != TimeSpan.Zero) {
+          DateTime now = DateTime.UtcNow;
+          while (values.Count > 0 && (now - values[0].Time) > valuesTimeWindow)
+            values.RemoveAt(0);
 
-        if (value.HasValue) {
-          sum += value.Value;
-          count++;
-          if (count == 4) {
-            AppendValue(sum / count, now);
-            sum = 0;
-            count = 0;
+          if (value.HasValue) {
+            sum += value.Value;
+            count++;
+            if (count == 4) {
+              AppendValue(sum / count, now);
+              sum = 0;
+              count = 0;
+            }
           }
         }
 
@@ -213,6 +216,18 @@ namespace OpenHardwareMonitor.Hardware {
     public IEnumerable<SensorValue> Values {
       get { return values; }
     }    
+
+    public TimeSpan ValuesTimeWindow {
+      get {
+        return valuesTimeWindow;
+      }
+      set {
+        this.valuesTimeWindow = value;
+        
+        if (value == TimeSpan.Zero)
+            values.Clear();
+      }
+    }
 
     public void Accept(IVisitor visitor) {
       if (visitor == null)

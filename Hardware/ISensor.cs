@@ -66,6 +66,7 @@ namespace OpenHardwareMonitor.Hardware
     void ResetMax();
 
     IEnumerable<SensorValue> Values { get; }
+    TimeSpan ValuesTimeWindow { get; set; }
 
     IControl Control { get; }
   }
