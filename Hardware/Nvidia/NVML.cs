@@ -7,21 +7,16 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         private const string LinuxDllName = "nvidia-ml";
 
         private delegate NvmlReturn WindowsNvmlDelegate();
-
         private WindowsNvmlDelegate WindowsNvmlInit;
-        private WindowsNvmlDelegate WindowsNvmlInitLegacy;
         private WindowsNvmlDelegate WindowsNvmlShutdown;
 
-        private delegate NvmlReturn WindowsNvmlGetHandleDelegate(int index, ref NvmlDevice device);
-
+        private delegate NvmlReturn WindowsNvmlGetHandleDelegate(int index, out NvmlDevice device);
         private WindowsNvmlGetHandleDelegate WindowsNvmlDeviceGetHandleByIndex;
-        private WindowsNvmlGetHandleDelegate WindowsNvmlDeviceGetHandleByIndexLegacy;
 
-        private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, ref int power);
-
+        private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
         private WindowsNvmlGetPowerUsageDelegate WindowsNvmlDeviceGetPowerUsage;
 
-        private IntPtr windowsDll;
+        private readonly IntPtr windowsDll;
 
         internal bool Initialised { get; }
 
@@ -37,7 +32,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
                     try {
                         Initialised = (LinuxNvmlInitLegacy() == NvmlReturn.Success);
                     }
-                    catch (EntryPointNotFoundException) { return; }
+                    catch (EntryPointNotFoundException) {
+                        return;
+                    }
                 }
             }
             else if (IsNvmlCompatibleWindowsVersion()) {
@@ -46,24 +43,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
 
                 windowsDll = LoadLibrary(dllPath);
 
-                if (windowsDll == IntPtr.Zero) {
+                if (windowsDll == IntPtr.Zero)
                     return;
-                }
 
-                var delegatesInitialised = InitialiseDelegates();
-
-                try {
-                    Initialised = delegatesInitialised && (WindowsNvmlInit() == NvmlReturn.Success);
-                }
-                catch (DllNotFoundException) {
-                    return;
-                }
-                catch (EntryPointNotFoundException) {
-                    try {
-                        Initialised = delegatesInitialised && (WindowsNvmlInitLegacy() == NvmlReturn.Success);
-                    }
-                    catch (EntryPointNotFoundException) { return; }
-                }
+                Initialised = InitialiseDelegates() && (WindowsNvmlInit() == NvmlReturn.Success);
             }
         }
 
@@ -75,41 +58,39 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
 
         private bool InitialiseDelegates()
         {
-            var nvmlInitv2 = GetProcAddress(windowsDll, "nvmlInit_v2");
-            if (nvmlInitv2 == IntPtr.Zero)
-                return false;
-
-            WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInitv2, typeof(WindowsNvmlDelegate));
-
-            var nvmlInit = GetProcAddress(windowsDll, "nvmlInit");
-            if (nvmlInit == IntPtr.Zero)
-                return false;
-
-            WindowsNvmlInitLegacy = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
+            var nvmlInit = GetProcAddress(windowsDll, "nvmlInit_v2");
+            if (nvmlInit != IntPtr.Zero)
+                WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
+            else {
+                nvmlInit = GetProcAddress(windowsDll, "nvmlInit");
+                if (nvmlInit != IntPtr.Zero)
+                    WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
+                else
+                    return false;
+            }
 
             var nvmlShutdown = GetProcAddress(windowsDll, "nvmlShutdown");
-            if (nvmlShutdown == IntPtr.Zero)
+            if (nvmlShutdown != IntPtr.Zero)
+                WindowsNvmlShutdown = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlShutdown, typeof(WindowsNvmlDelegate));
+            else
                 return false;
 
-            WindowsNvmlShutdown = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlShutdown, typeof(WindowsNvmlDelegate));
-
-            var nvmlGetHandlev2 = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex_v2");
-            if (nvmlGetHandlev2 == IntPtr.Zero)
-                return false;
-
-            WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandlev2, typeof(WindowsNvmlGetHandleDelegate));
-
-            var nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex");
-            if (nvmlGetHandle == IntPtr.Zero)
-                return false;
-
-            WindowsNvmlDeviceGetHandleByIndexLegacy = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
+            var nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex_v2");
+            if (nvmlGetHandle != IntPtr.Zero)
+                WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
+            else {
+                nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex");
+                if (nvmlGetHandle != IntPtr.Zero)
+                    WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
+                else 
+                    return false;
+            }
 
             var nvmlGetPowerUsage = GetProcAddress(windowsDll, "nvmlDeviceGetPowerUsage");
-            if (nvmlGetPowerUsage == IntPtr.Zero)
+            if (nvmlGetPowerUsage != IntPtr.Zero)
+                WindowsNvmlDeviceGetPowerUsage = (WindowsNvmlGetPowerUsageDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPowerUsage, typeof(WindowsNvmlGetPowerUsageDelegate));
+            else
                 return false;
-
-            WindowsNvmlDeviceGetPowerUsage = (WindowsNvmlGetPowerUsageDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPowerUsage, typeof(WindowsNvmlGetPowerUsageDelegate));
 
             return true;
         }
@@ -127,27 +108,19 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
 
         internal NvmlDevice? NvmlDeviceGetHandleByIndex(int index) {
             if (Initialised) {
-                var nvmlDevice = new NvmlDevice();
+                NvmlDevice nvmlDevice;
                 if (Software.OperatingSystem.IsLinux) {
                     try {
-                        if (LinuxNvmlDeviceGetHandleByIndex(index, ref nvmlDevice) == NvmlReturn.Success)
+                        if (LinuxNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
                             return nvmlDevice;
                     }
                     catch (EntryPointNotFoundException) {
-                        if (LinuxNvmlDeviceGetHandleByIndexLegacy(index, ref nvmlDevice) == NvmlReturn.Success)
+                        if (LinuxNvmlDeviceGetHandleByIndexLegacy(index, out nvmlDevice) == NvmlReturn.Success)
                             return nvmlDevice;
                     }
                 }
-                else {
-                    try {
-                        if (WindowsNvmlDeviceGetHandleByIndex(index, ref nvmlDevice) == NvmlReturn.Success)
-                            return nvmlDevice;
-                    }
-                    catch (EntryPointNotFoundException) {
-                        if (WindowsNvmlDeviceGetHandleByIndexLegacy(index, ref nvmlDevice) == NvmlReturn.Success)
-                            return nvmlDevice;
-                    }
-                }
+                else if (WindowsNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
+                    return nvmlDevice;
             }
 
             return null;
@@ -155,12 +128,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
 
         internal int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice) {
             if (Initialised) {
-                var powerUsage = 0;
+                int powerUsage;
                 if (Software.OperatingSystem.IsLinux) {
-                    if (LinuxNvmlDeviceGetPowerUsage(nvmlDevice, ref powerUsage) == NvmlReturn.Success)
+                    if (LinuxNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                         return powerUsage;
                 }
-                else if (WindowsNvmlDeviceGetPowerUsage(nvmlDevice, ref powerUsage) == NvmlReturn.Success)
+                else if (WindowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                     return powerUsage;
             }
 
@@ -168,30 +141,31 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         }
 
         [DllImport("kernel32")]
-        private static extern IntPtr LoadLibrary(string dllPath);
+        private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string dllPath);
 
-        [DllImport("kernel32")]
+        [DllImport("kernel32", ExactSpelling = true)]
         private static extern IntPtr GetProcAddress(IntPtr module, string methodName);
 
         [DllImport("kernel32")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool FreeLibrary(IntPtr module);
 
-        [DllImport(LinuxDllName, EntryPoint = "nvmlInit_v2")]
+        [DllImport(LinuxDllName, EntryPoint = "nvmlInit_v2", ExactSpelling = true)]
         private static extern NvmlReturn LinuxNvmlInit();
 
-        [DllImport(LinuxDllName, EntryPoint = "nvmlInit")]
+        [DllImport(LinuxDllName, EntryPoint = "nvmlInit", ExactSpelling = true)]
         private static extern NvmlReturn LinuxNvmlInitLegacy();
 
-        [DllImport(LinuxDllName, EntryPoint = "nvmlShutdown")]
+        [DllImport(LinuxDllName, EntryPoint = "nvmlShutdown", ExactSpelling = true)]
         private static extern NvmlReturn LinuxNvmlShutdown();
 
-        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByIndex_v2")]
-        private static extern NvmlReturn LinuxNvmlDeviceGetHandleByIndex(int index, ref NvmlDevice device);
+        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByIndex_v2", ExactSpelling = true)]
+        private static extern NvmlReturn LinuxNvmlDeviceGetHandleByIndex(int index, out NvmlDevice device);
 
-        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByIndex")]
-        private static extern NvmlReturn LinuxNvmlDeviceGetHandleByIndexLegacy(int index, ref NvmlDevice device);
+        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByIndex", ExactSpelling = true)]
+        private static extern NvmlReturn LinuxNvmlDeviceGetHandleByIndexLegacy(int index, out NvmlDevice device);
 
-        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPowerUsage")]
-        private static extern NvmlReturn LinuxNvmlDeviceGetPowerUsage(NvmlDevice device, ref int power);
+        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPowerUsage", ExactSpelling = true)]
+        private static extern NvmlReturn LinuxNvmlDeviceGetPowerUsage(NvmlDevice device, out int power);
     }
 }
