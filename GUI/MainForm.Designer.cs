@@ -77,6 +77,14 @@ namespace OpenHardwareMonitor.GUI {
       this.minCloseMenuItem = new System.Windows.Forms.MenuItem();
       this.startupMenuItem = new System.Windows.Forms.MenuItem();
       this.separatorMenuItem = new System.Windows.Forms.MenuItem();
+      this.refreshIntervalMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh200msMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh500msMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh1sMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh2sMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh5sMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh10sMenuItem = new System.Windows.Forms.MenuItem();
+      this.refresh30sMenuItem = new System.Windows.Forms.MenuItem();
       this.temperatureUnitsMenuItem = new System.Windows.Forms.MenuItem();
       this.celsiusMenuItem = new System.Windows.Forms.MenuItem();
       this.fahrenheitMenuItem = new System.Windows.Forms.MenuItem();
@@ -387,6 +395,7 @@ namespace OpenHardwareMonitor.GUI {
             this.minCloseMenuItem,
             this.startupMenuItem,
             this.separatorMenuItem,
+            this.refreshIntervalMenuItem,
             this.temperatureUnitsMenuItem,
             this.plotLocationMenuItem,
             this.logSeparatorMenuItem,
@@ -421,6 +430,64 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.separatorMenuItem.Index = 4;
       this.separatorMenuItem.Text = "-";
+      //
+      // refreshIntervalMenuItem
+      //
+      this.refreshIntervalMenuItem.Index = 5;
+      this.refreshIntervalMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[7]
+      {
+        refresh200msMenuItem,
+        refresh500msMenuItem,
+        refresh1sMenuItem,
+        refresh2sMenuItem,
+        refresh5sMenuItem,
+        refresh10sMenuItem,
+        refresh30sMenuItem
+      });
+      this.refreshIntervalMenuItem.Text = "Sensor Refresh Interval";
+      // 
+      // refresh200msMenuItem
+      // 
+      this.refresh200msMenuItem.Index = 0;
+      this.refresh200msMenuItem.RadioCheck = true;
+      this.refresh200msMenuItem.Text = "200ms";
+      // 
+      // refresh500msMenuItem
+      // 
+      this.refresh500msMenuItem.Index = 1;
+      this.refresh500msMenuItem.RadioCheck = true;
+      this.refresh500msMenuItem.Text = "500ms";
+      // 
+      // refresh1sMenuItem
+      // 
+      this.refresh1sMenuItem.Checked = true;
+      this.refresh1sMenuItem.Index = 2;
+      this.refresh1sMenuItem.RadioCheck = true;
+      this.refresh1sMenuItem.Text = "1s";
+      // 
+      // refresh2sMenuItem
+      // 
+      this.refresh2sMenuItem.Index = 3;
+      this.refresh2sMenuItem.RadioCheck = true;
+      this.refresh2sMenuItem.Text = "2s";
+      // 
+      // refresh5sMenuItem
+      // 
+      this.refresh5sMenuItem.Index = 4;
+      this.refresh5sMenuItem.RadioCheck = true;
+      this.refresh5sMenuItem.Text = "5s";
+      // 
+      // refresh10sMenuItem
+      // 
+      this.refresh10sMenuItem.Index = 5;
+      this.refresh10sMenuItem.RadioCheck = true;
+      this.refresh10sMenuItem.Text = "10s";
+      // 
+      // refresh30sMenuItem
+      // 
+      this.refresh30sMenuItem.Index = 6;
+      this.refresh30sMenuItem.RadioCheck = true;
+      this.refresh30sMenuItem.Text = "30s";
       // 
       // temperatureUnitsMenuItem
       // 
@@ -841,7 +908,7 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem plotWindowMenuItem;
     private System.Windows.Forms.MenuItem plotBottomMenuItem;
     private System.Windows.Forms.MenuItem plotRightMenuItem;
-		private System.Windows.Forms.MenuItem webMenuItem;
+	private System.Windows.Forms.MenuItem webMenuItem;
     private System.Windows.Forms.MenuItem runWebServerMenuItem;
     private System.Windows.Forms.MenuItem serverPortMenuItem;
     private System.Windows.Forms.MenuItem menuItem5;
@@ -879,6 +946,14 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem timeWindow6hMenuItem;
     private System.Windows.Forms.MenuItem timeWindow12hMenuItem;
     private System.Windows.Forms.MenuItem timeWindow24hMenuItem;
+    private System.Windows.Forms.MenuItem refreshIntervalMenuItem;
+    private System.Windows.Forms.MenuItem refresh200msMenuItem;
+    private System.Windows.Forms.MenuItem refresh500msMenuItem;
+    private System.Windows.Forms.MenuItem refresh1sMenuItem;
+    private System.Windows.Forms.MenuItem refresh2sMenuItem;
+    private System.Windows.Forms.MenuItem refresh5sMenuItem;
+    private System.Windows.Forms.MenuItem refresh10sMenuItem;
+    private System.Windows.Forms.MenuItem refresh30sMenuItem;
   }
 }
 

@@ -70,9 +70,13 @@ namespace OpenHardwareMonitor.GUI {
     private UserOption logSensors;
     private UserRadioGroup loggingInterval;
     private UserRadioGroup sensorValuesTimeWindow;
+    private UserRadioGroup sensorRefreshInterval;
+
     private Logger logger;
 
     private bool selectionDragging = false;
+
+    private DateTime timerStartTime;
 
     public MainForm() {      
       InitializeComponent();
@@ -184,7 +188,9 @@ namespace OpenHardwareMonitor.GUI {
 
       computer.Open();
 
+      InitializeTimerRefreshInterval();
       timer.Enabled = true;
+      timerStartTime = DateTime.Now;
 
       showHiddenSensors = new UserOption("hiddenMenuItem", false,
         hiddenMenuItem, settings);
@@ -377,6 +383,44 @@ namespace OpenHardwareMonitor.GUI {
         SaveConfiguration();
         if (runWebServer.Value) 
           server.Quit();
+      };
+    }
+
+    private void InitializeTimerRefreshInterval()
+    {
+      sensorRefreshInterval = new UserRadioGroup("sensorRefreshInterval", 2, new MenuItem[]
+      {
+        refresh200msMenuItem,
+        refresh500msMenuItem,
+        refresh1sMenuItem,
+        refresh2sMenuItem,
+        refresh5sMenuItem,
+        refresh10sMenuItem
+      }, settings);
+
+      sensorRefreshInterval.Changed += (s, e) =>
+      {
+        switch (sensorRefreshInterval.Value)
+        {
+          case 0:
+            timer.Interval = 200;
+            break;
+          case 1:
+            timer.Interval = 500;
+            break;
+          case 2:
+            timer.Interval = 1000;
+            break;
+          case 3:
+            timer.Interval = 2000;
+            break;
+          case 4:
+            timer.Interval = 5000;
+            break;
+          case 5:
+            timer.Interval = 10000;
+            break;
+        }
       };
     }
 
@@ -606,7 +650,6 @@ namespace OpenHardwareMonitor.GUI {
       Close();
     }
 
-    private int delayCount = 0;
     private void timer_Tick(object sender, EventArgs e) {
       computer.Accept(updateVisitor);
       treeView.Invalidate();
@@ -618,12 +661,8 @@ namespace OpenHardwareMonitor.GUI {
       if (wmiProvider != null)
         wmiProvider.Update();
 
-
-      if (logSensors != null && logSensors.Value && delayCount >= 4)
+      if (logSensors != null && logSensors.Value && DateTime.Now >= timerStartTime.AddSeconds(5.0))
         logger.Log();
-
-      if (delayCount < 4)
-        delayCount++;
     }
 
     private void SaveConfiguration() {
