@@ -1,4 +1,4 @@
-﻿/*
+/*
  
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -250,6 +250,34 @@ namespace OpenHardwareMonitor.Utilities {
       }
       else if(request.HttpMethod == "GET") {
         var requestedFile = request.RawUrl.Substring(1);
+
+        /* Kyoudai Ken APR 22 2019: Added dashboard capability that can be added using an external html file --> */
+        if (requestedFile == "dashboard" || requestedFile == "Chart.bundle.min.js")
+        {
+            if (requestedFile == "dashboard") requestedFile = "dashboard.html";
+            //Search for dashboard.html and if found, pass it through as response
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\"+requestedFile))
+            {
+                string html = File.ReadAllText(System.Windows.Forms.Application.StartupPath+"\\"+requestedFile);
+                context.Response.AddHeader("Cache-Control", "no-cache");
+                context.Response.ContentLength64 = Encoding.UTF8.GetBytes(html).Length;
+                if(requestedFile=="dashboard.html") context.Response.ContentType = "text/html; charset=utf-8";
+                if(requestedFile=="Chart.bundle.min.js") context.Response.ContentType = "application/javascript; charset=utf-8";
+                try
+                {
+                    Stream output = context.Response.OutputStream;
+                    output.Write(Encoding.UTF8.GetBytes(html), 0, (int)context.Response.ContentLength64);
+                    output.Close();
+                }
+                catch (HttpListenerException)
+                {
+                }
+
+                context.Response.Close();
+                return;
+            }
+        }
+        /* <-- Kyoudai Ken APR 22 2019 */
 
         if (requestedFile == "data.json") {
           SendJSON(context.Response);
