@@ -195,6 +195,12 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.Z68X_UD3H_B3;
         case "Z68X-UD7-B3":
           return Model.Z68X_UD7_B3;
+        case "Z390 M GAMING-CF":
+          return Model.Z390_M_GAMING;
+        case "Z390 AORUS ULTRA":
+          return Model.Z390_AORUS_ULTRA;
+        case "Z390 UD":
+          return Model.Z390_UD;
         case "FH67":
           return Model.FH67;
         case "AX370-Gaming K7":

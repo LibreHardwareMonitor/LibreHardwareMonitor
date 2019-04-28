@@ -385,6 +385,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         case 0x8628: chip = Chip.IT8628E; break;
         case 0x8665: chip = Chip.IT8665E; break;
         case 0x8686: chip = Chip.IT8686E; break; 
+        case 0x8688: chip = Chip.IT8688E; break;
         case 0x8705: chip = Chip.IT8705F; break;
         case 0x8712: chip = Chip.IT8712F; break;
         case 0x8716: chip = Chip.IT8716F; break;

@@ -19,6 +19,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
     private readonly int adapterIndex;
     private readonly NvPhysicalGpuHandle handle;
     private readonly NvDisplayHandle? displayHandle;
+    private readonly NVML nvml;
+    private readonly NvmlDevice? nvmlDevice;
 
     private readonly Sensor[] temperatures;
     private readonly Sensor fan;
@@ -29,15 +31,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
     private readonly Sensor memoryUsed;
     private readonly Sensor memoryFree;
     private readonly Sensor memoryAvail;
+    private readonly Sensor powerUsage;
     private readonly Control fanControl;
 
     public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
-      NvDisplayHandle? displayHandle, ISettings settings)
+      NvDisplayHandle? displayHandle, ISettings settings, NVML nvml)
       : base(GetName(handle), new Identifier("nvidiagpu",
           adapterIndex.ToString(CultureInfo.InvariantCulture)), settings) {
       this.adapterIndex = adapterIndex;
       this.handle = handle;
       this.displayHandle = displayHandle;
+      this.nvml = nvml;
 
       NvGPUThermalSettings thermalSettings = GetThermalSettings();
       temperatures = new Sensor[thermalSettings.Count];
@@ -93,6 +97,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         ControlModeChanged(fanControl);
         control.Control = fanControl;
       }
+
+      if (nvml.Initialised)
+      {
+        nvmlDevice = nvml.NvmlDeviceGetHandleByIndex(adapterIndex);
+        if (nvmlDevice.HasValue) {
+          powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
+        }
+      }
+
       Update();
     }
 
@@ -218,6 +231,14 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         ActivateSensor(memoryUsed);
         ActivateSensor(memoryFree);
         ActivateSensor(memoryLoad);
+      }
+
+      if (nvml.Initialised && nvmlDevice.HasValue) {
+        var result = nvml.NvmlDeviceGetPowerUsage(nvmlDevice.Value);
+        if (result.HasValue) {
+          powerUsage.Value = (float)result.Value / 1000;
+          ActivateSensor(powerUsage);
+        }
       }
     }
 

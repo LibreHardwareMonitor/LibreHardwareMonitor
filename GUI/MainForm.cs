@@ -69,6 +69,7 @@ namespace OpenHardwareMonitor.GUI {
 
     private UserOption logSensors;
     private UserRadioGroup loggingInterval;
+    private UserRadioGroup sensorValuesTimeWindow;
     private Logger logger;
 
     private bool selectionDragging = false;
@@ -324,6 +325,33 @@ namespace OpenHardwareMonitor.GUI {
           case 11: logger.LoggingInterval = new TimeSpan(2, 0, 0); break;
           case 12: logger.LoggingInterval = new TimeSpan(6, 0, 0); break;
         }
+      };
+
+      sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow", 10,
+        new[] { timeWindow30sMenuItem, timeWindow1minMenuItem, timeWindow2minMenuItem,
+        timeWindow5minMenuItem, timeWindow10minMenuItem, timeWindow30minMenuItem,
+        timeWindow1hMenuItem, timeWindow2hMenuItem, timeWindow6hMenuItem,
+        timeWindow12hMenuItem, timeWindow24hMenuItem},
+        settings);
+      sensorValuesTimeWindow.Changed += (sender, e) => {
+        TimeSpan timeWindow = TimeSpan.Zero;
+        switch (sensorValuesTimeWindow.Value) {
+          case 0: timeWindow = new TimeSpan(0, 0, 30); break;
+          case 1: timeWindow = new TimeSpan(0, 1, 0); break;
+          case 2: timeWindow = new TimeSpan(0, 2, 0); break;
+          case 3: timeWindow = new TimeSpan(0, 5, 0); break;
+          case 4: timeWindow = new TimeSpan(0, 10, 0); break;
+          case 5: timeWindow = new TimeSpan(0, 30, 0); break;
+          case 6: timeWindow = new TimeSpan(1, 0, 0); break;
+          case 7: timeWindow = new TimeSpan(2, 0, 0); break;
+          case 8: timeWindow = new TimeSpan(6, 0, 0); break;
+          case 9: timeWindow = new TimeSpan(12, 0, 0); break;
+          case 10: timeWindow = new TimeSpan(24, 0, 0); break;
+        }
+
+        computer.Accept(new SensorVisitor(delegate(ISensor sensor) {
+          sensor.ValuesTimeWindow = timeWindow;
+        }));
       };
 
       InitializePlotForm();
