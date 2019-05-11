@@ -25,21 +25,42 @@
                 margin:0;
                 padding:0;
             }
+
+			div.container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            /* CSS for mobile view  */
+            @media (max-width:1024px) {
+                div.container {
+                    justify-content: space-around;
+                }
+                
+                div.box {
+                    width: 100%;
+                }
+            }
         </style>        
     </head>
     <body>
-        <div class="box">
-            <div class="canvas"><canvas id="TempChart"></canvas></div>
-        </div>
-        <div class="box">
-            <div class="canvas"><canvas id="PowerChart"></canvas></div>
-        </div>
-        <div class="box">
-            <div class="canvas"><canvas id="ClockChart"></canvas></div>
-        </div>
-        <div class="box">
-            <div class="canvas"><canvas id="LoadChart"></canvas></div>
-        </div>
+		<div class="container">
+        	<div class="box">
+        	    <div class="canvas"><canvas id="TempChart"></canvas></div>
+        	</div>
+        	<div class="box">
+        	    <div class="canvas"><canvas id="PowerChart"></canvas></div>
+        	</div>
+        	<div class="box">
+        	    <div class="canvas"><canvas id="ClockChart"></canvas></div>
+        	</div>
+        	<div class="box">
+        	    <div class="canvas"><canvas id="LoadChart"></canvas></div>
+			</div>
+		</div>
         <script>
             //Define colors
             const colorCPULine = 'rgba(255, 0, 0, 1)';
@@ -78,6 +99,7 @@
 
             //Config
             var chartTimeFrame = 150;
+            var boolPrefillChart = true;
 
             //Globals
             var sensorIndex=0;
@@ -489,7 +511,13 @@
             function cleanupGraph(chartData) {
                 if(chartData.length!=0) {
                     if(chartData.length>=chartTimeFrame) chartData.splice(0,1);
-                    if(new Date().getTime()-chartData[chartData.length-1].x.getTime()>5000) prefillChart(chartData);
+                    if(new Date().getTime()-chartData[chartData.length-1].x.getTime()>5000) {
+                        if(boolPrefillChart) {
+                            prefillChart(chartData);
+                        } else {
+                            chartData.length=0;
+                        }
+                    }
                 }
             }
 
@@ -585,10 +613,12 @@
             }
     
             //Init
-            prefillAllDatasets(TempChart);
-            prefillAllDatasets(PowerChart);
-            prefillAllDatasets(ClockChart);
-            prefillAllDatasets(LoadChart);
+            if(boolPrefillChart) {
+                prefillAllDatasets(TempChart);
+                prefillAllDatasets(PowerChart);
+                prefillAllDatasets(ClockChart);
+                prefillAllDatasets(LoadChart);
+            }
             refreshSensors();
         </script>
     </body>
