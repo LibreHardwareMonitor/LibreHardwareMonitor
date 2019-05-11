@@ -138,6 +138,14 @@
                             borderWidth: widthBorders
                         },
                         {
+                            label: 'Pump',
+                            data: [],
+                            backgroundColor: [colorFan0Fill],
+                            borderColor: [colorFan0Line],
+                            borderWidth: widthBorders,
+                            yAxisID: 'rpm'
+                        },
+                        {
                             label: 'Rad',
                             data: [],
                             backgroundColor: [colorFan0Fill],
@@ -167,7 +175,7 @@
                         {
                             id: 'rpm',
                             ticks: {
-                                stepSize: 100,
+                                stepSize: 500,
                                 fontSize: fontSizeLegendY
                             },
                             gridLines: {
@@ -549,6 +557,7 @@
                     default:
                         var clean = cleanReading(value);
                         if(special=="div2") clean/=2; //Divides through 2 if requested. Useful to convert DDR Memory GT/s back to MHz.
+                        if(special=="div4") clean/=4; //Divides through 4 if requested. Useful to convert QDR Memory GT/s back to MHz.
                         cleanupGraph(chart.data.datasets[sensorIndex].data);
                         chart.data.datasets[sensorIndex].data.push({x:new Date(),y:clean});
                         chart.data.datasets[sensorIndex].label = label+round(clean,1).toFixed(1);
@@ -574,7 +583,11 @@
                     //ASUS PCH Temp
                     plotNextSensor(TempChart, "PCH: ", data.Children[0].Children[0].Children[1].Children[3].Value);
                     //ASUS Fan 0
-                    plotNextSensor(TempChart, "Rad: ", data.Children[0].Children[0].Children[2].Children[0].Value);
+                    plotNextSensor(TempChart, "Pump: ", data.Children[0].Children[0].Children[2].Children[0].Value);
+                    //ASUS buggy fan shit (rad)
+                    for(var f=1;f<data.Children[0].Children[0].Children[2].Children.length;f++) {
+                        if(cleanReading(data.Children[0].Children[0].Children[2].Children[f].Value)>50) plotNextSensor(TempChart, "Rad: ", data.Children[0].Children[0].Children[2].Children[f].Value);
+                    }
 
                     //Power Monitor ------------
                     sensorIndex=0;
@@ -589,7 +602,7 @@
                     plotNextSensor(ClockChart, "CPU", data, "cpu cores");
                     //GPU Clocks
                     plotNextSensor(ClockChart, "GPU Core: ", data.Children[3].Children[0].Children[0].Value);
-                    plotNextSensor(ClockChart, "GPU Memory: ", data.Children[3].Children[0].Children[1].Value, "div2");
+                    plotNextSensor(ClockChart, "GPU Memory: ", data.Children[3].Children[0].Children[1].Value, "div4");
 
                     //Loads ------------
                     sensorIndex=0;
