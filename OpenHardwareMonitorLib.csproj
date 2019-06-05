@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
@@ -14,11 +14,15 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Authors>Libre Hardware Monitor contributors, Michael Möller</Authors>
     <PackageId>LibreHardwareMonitorLib</PackageId>
-    <PackageLicenseUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageProjectUrl>
     <PackageTags>libre open hardware monitor monitoring system logging cpu gpu</PackageTags>
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE" Pack="true" Visible="false" PackagePath=""/>
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System" />
