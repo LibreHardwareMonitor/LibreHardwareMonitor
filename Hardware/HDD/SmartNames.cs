@@ -163,10 +163,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       get { return "Load/Unload Retry Count"; }
     }
 
-    public static string MediaWearoutIndicator {
-      get { return "Media Wearout Indicator"; }
-    }
-
     public static string MultiZoneErrorRate {
       get { return "Multi-Zone Error Rate"; }
     }
