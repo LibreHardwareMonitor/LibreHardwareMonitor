@@ -1,11 +1,11 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System;
@@ -39,9 +39,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     // mainboard specific mutex
     private readonly Mutex mutex;
 
-    public SuperIOHardware(Mainboard mainboard, ISuperIO superIO, 
-      Manufacturer manufacturer, Model model, ISettings settings) 
-      : base(ChipName.GetName(superIO.Chip), new Identifier("lpc", 
+    public SuperIOHardware(Mainboard mainboard, ISuperIO superIO,
+      Manufacturer manufacturer, Model model, ISettings settings)
+      : base(ChipName.GetName(superIO.Chip), new Identifier("lpc",
         superIO.Chip.ToString().ToLowerInvariant()), settings)
     {
       this.mainboard = mainboard;
@@ -62,8 +62,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       CreateControlSensors(superIO, settings, c);
     }
 
-    private void CreateControlSensors(ISuperIO superIO, ISettings settings, 
-      IList<Ctrl> c) 
+    private void CreateControlSensors(ISuperIO superIO, ISettings settings,
+      IList<Ctrl> c)
     {
       foreach (Ctrl ctrl in c) {
         int index = ctrl.Index;
@@ -101,7 +101,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               break;
             default:
               break;
-          }            
+          }
 
           sensor.Control = control;
           controls.Add(sensor);
@@ -110,8 +110,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       }
     }
 
-    private void CreateFanSensors(ISuperIO superIO, ISettings settings, 
-      IList<Fan> f) 
+    private void CreateFanSensors(ISuperIO superIO, ISettings settings,
+      IList<Fan> f)
     {
       foreach (Fan fan in f) {
         if (fan.Index < superIO.Fans.Length) {
@@ -122,8 +122,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       }
     }
 
-    private void CreateTemperatureSensors(ISuperIO superIO, ISettings settings, 
-      IList<Temperature> t) 
+    private void CreateTemperatureSensors(ISuperIO superIO, ISettings settings,
+      IList<Temperature> t)
     {
       foreach (Temperature temperature in t)
         if (temperature.Index < superIO.Temperatures.Length) {
@@ -135,19 +135,19 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         }
     }
 
-    private void CreateVoltageSensors(ISuperIO superIO, ISettings settings, 
-      IList<Voltage> v) 
+    private void CreateVoltageSensors(ISuperIO superIO, ISettings settings,
+      IList<Voltage> v)
     {
       const string formula = "Voltage = value + (value - Vf) * Ri / Rf.";
       foreach (Voltage voltage in v)
         if (voltage.Index < superIO.Voltages.Length) {
           Sensor sensor = new Sensor(voltage.Name, voltage.Index,
             voltage.Hidden, SensorType.Voltage, this, new[] {
-            new ParameterDescription("Ri [kΩ]", "Input resistance.\n" + 
+            new ParameterDescription("Ri [kΩ]", "Input resistance.\n" +
               formula, voltage.Ri),
-            new ParameterDescription("Rf [kΩ]", "Reference resistance.\n" + 
+            new ParameterDescription("Rf [kΩ]", "Reference resistance.\n" +
               formula, voltage.Rf),
-            new ParameterDescription("Vf [V]", "Reference voltage.\n" + 
+            new ParameterDescription("Vf [V]", "Reference voltage.\n" +
               formula, voltage.Vf)
             }, settings);
           voltages.Add(sensor);
@@ -283,8 +283,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       }
     }
 
-    private static void GetDefaultConfiguration(ISuperIO superIO, 
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c) 
+    private static void GetDefaultConfiguration(ISuperIO superIO,
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
     {
       for (int i = 0; i < superIO.Voltages.Length; i++)
         v.Add(new Voltage("Voltage #" + (i + 1), i, true));
@@ -296,11 +296,11 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
     }
 
-    private static void GetITEConfigurationsA(ISuperIO superIO, 
-      Manufacturer manufacturer, Model model, 
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c, 
-      ref ReadValueDelegate readFan, ref UpdateDelegate postUpdate, 
-      ref Mutex mutex) 
+    private static void GetITEConfigurationsA(ISuperIO superIO,
+      Manufacturer manufacturer, Model model,
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c,
+      ref ReadValueDelegate readFan, ref UpdateDelegate postUpdate,
+      ref Mutex mutex)
     {
       switch (manufacturer) {
         case Manufacturer.ASUS:
@@ -324,7 +324,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("Chassis Fan #1", 1));
               f.Add(new Fan("Power Fan", 2));
               break;
-            case Model.M4A79XTD_EVO: // IT8720F           
+            case Model.M4A79XTD_EVO: // IT8720F
               v.Add(new Voltage("+5V", 3, 6.8f, 10));
               v.Add(new Voltage("VBat", 8));
               t.Add(new Temperature("CPU", 0));
@@ -353,6 +353,36 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               for (int i = 1; i < superIO.Fans.Length; i++)
                 f.Add(new Fan("Fan #" + (i + 1), i));
               break;
+
+            case Model.ROG_ZENITH_EXTREME: // IT8665E
+              v.Add(new Voltage("CPU VCore", 0, 10, 10, 0, false));
+              v.Add(new Voltage("DRAM AB", 1, 10, 10, 0, false));
+              v.Add(new Voltage("+12V", 2, 5, 1,0, false));
+              v.Add(new Voltage("+5V", 3, 1.5f, 1, 0, false));
+              v.Add(new Voltage("SB 1.05V", 4, 10, 10, 0, false));
+              v.Add(new Voltage("DRAM CD", 5, 10, 10, 0, false));
+              v.Add(new Voltage("1.8V PLL", 6, 10, 10, 0, false));
+              v.Add(new Voltage("+3.3V", 7, 10, 10, 0, false));
+              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+
+              t.Add(new Temperature("CPU", 0));
+              t.Add(new Temperature("Mainboard", 1));
+              t.Add(new Temperature("CPU Socket", 2));
+              t.Add(new Temperature("Temperature #4", 3));
+              t.Add(new Temperature("Temperature #5", 4));
+              t.Add(new Temperature("VRM", 5));
+
+              f.Add(new Fan("CPU Fan", 0));
+              f.Add(new Fan("Chassis Fan 1", 1));
+              f.Add(new Fan("Chassis Fan 2", 2));
+              f.Add(new Fan("H AMP Fan", 3));
+              f.Add(new Fan("Fan 6", 4));
+              f.Add(new Fan("Fan 5", 5));
+
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+
             default:
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("Voltage #2", 1, true));
@@ -376,7 +406,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case Manufacturer.ASRock:
           switch (model) {
             case Model.P55_Deluxe: // IT8720F
-              GetASRockConfiguration(superIO, v, t, f, 
+              GetASRockConfiguration(superIO, v, t, f,
                 ref readFan, ref postUpdate, ref mutex);
               break;
             default:
@@ -483,7 +513,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("Power Fan", 2));
               f.Add(new Fan("System Fan #1", 3));
               break;
-            case Model.EX58_EXTREME: // IT8720F                 
+            case Model.EX58_EXTREME: // IT8720F
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("DRAM", 1));
               v.Add(new Voltage("+5V", 3, 6.8f, 10));
@@ -496,7 +526,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("Power Fan", 2));
               f.Add(new Fan("System Fan #1", 3));
               break;
-            case Model.P35_DS3: // IT8718F 
+            case Model.P35_DS3: // IT8718F
             case Model.P35_DS3L: // IT8718F
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("DRAM", 1));
@@ -513,9 +543,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               break;
             case Model.P55_UD4: // IT8720F
             case Model.P55A_UD3: // IT8720F
-            case Model.P55M_UD4: // IT8720F                
+            case Model.P55M_UD4: // IT8720F
             case Model.H55_USB3: // IT8720F
-            case Model.EX58_UD3R: // IT8720F 
+            case Model.EX58_UD3R: // IT8720F
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("DRAM", 1));
               v.Add(new Voltage("+3.3V", 2));
@@ -572,7 +602,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               c.Add(new Ctrl("PWM 3", 2));
               break;
             case Model.GA_MA770T_UD3: // IT8720F
-            case Model.GA_MA770T_UD3P: // IT8720F                
+            case Model.GA_MA770T_UD3P: // IT8720F
             case Model.GA_MA790X_UD3P: // IT8720F
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("DRAM", 1));
@@ -616,7 +646,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("System Fan", 1));
               f.Add(new Fan("NB Fan", 2));
               break;
-            case Model.X58A_UD3R: // IT8720F 
+            case Model.X58A_UD3R: // IT8720F
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("DRAM", 1));
               v.Add(new Voltage("+3.3V", 2));
@@ -632,6 +662,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("System Fan #1", 3));
               break;
             case Model.AX370_K7: // IT8686E
+            case Model.AB350_Gaming_3_CF: // IT8686E
               // Note: v3.3, v12, v5, and AVCC3 might be slightly off.
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("+3.3V", 1, 0.65f, 1));
@@ -650,7 +681,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               t.Add(new Temperature("VRM MOS", 4));
               for (int i = 0; i < superIO.Fans.Length; i++)
                 f.Add(new Fan("Fan #" + (i + 1), i));
-	      break;
+	            break;
             case Model.Z390_M_GAMING: // IT8688E
             case Model.Z390_AORUS_ULTRA:
             case Model.Z390_UD:
@@ -660,7 +691,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+5V", 3, 1.5f, 1));
               v.Add(new Voltage("CPU VCCGT", 4));
               v.Add(new Voltage("CPU VCCSA", 5));
-              v.Add(new Voltage("VDDQ", 6));  
+              v.Add(new Voltage("VDDQ", 6));
               v.Add(new Voltage("DDRVTT", 7));
               v.Add(new Voltage("PCHCore", 8));
               v.Add(new Voltage("CPU VCCIO", 9));
@@ -675,6 +706,30 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("System Fan #1", 1));
               f.Add(new Fan("System Fan #2", 2));
               f.Add(new Fan("System Fan #3", 3));
+              break;
+            case Model.GIGABYTE_X399_AOURUS_GAMING7: //ITE IT8686E
+              v.Add(new Voltage("VCORE", 0, 0, 1, 0, false));
+              v.Add(new Voltage("+3.3V", 1, 6.5F, 10, 0, false));
+              v.Add(new Voltage("+12V", 2, 5, 1, 0, false));
+              v.Add(new Voltage("+5V", 3, 1.5F, 1, 0, false));
+              v.Add(new Voltage("DRAM CD", 4, 0, 1, 0, false));
+              v.Add(new Voltage("Vcore SOC", 5, 0, 1, 0, false));
+              v.Add(new Voltage("DRAM AB", 6, 0, 1, 0, false));
+              v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
+              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("AVCC3", 9, 54, 10, 0, false));
+
+              t.Add(new Temperature("System 1", 0));
+              t.Add(new Temperature("Chipset", 1));
+              t.Add(new Temperature("CPU", 2));
+              t.Add(new Temperature("PCIE_X16", 3));
+              t.Add(new Temperature("VRM", 4));
+
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
               break;
             default:
               v.Add(new Voltage("CPU VCore", 0));
@@ -716,10 +771,10 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       }
     }
 
-    private static void GetASRockConfiguration(ISuperIO superIO, 
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, 
-      ref ReadValueDelegate readFan, ref UpdateDelegate postUpdate, 
-      ref Mutex mutex) 
+    private static void GetASRockConfiguration(ISuperIO superIO,
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f,
+      ref ReadValueDelegate readFan, ref UpdateDelegate postUpdate,
+      ref Mutex mutex)
     {
       v.Add(new Voltage("CPU VCore", 0));
       v.Add(new Voltage("+3.3V", 2));
@@ -737,7 +792,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       bool exclusiveAccess = false;
       try {
         exclusiveAccess = mutex.WaitOne(10, false);
-      } catch (AbandonedMutexException) { } 
+      } catch (AbandonedMutexException) { }
         catch (InvalidOperationException) { }
 
       // only read additional fans if we get exclusive access
@@ -781,7 +836,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
     private static void GetITEConfigurationsB(ISuperIO superIO,
       Manufacturer manufacturer, Model model,
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c) 
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
     {
       switch (manufacturer) {
         case Manufacturer.ECS:
@@ -836,7 +891,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("System Fan", 1));
               break;
             case Model.H67A_UD3H_B3: // IT8728F
-            case Model.H67A_USB3_B3: // IT8728F                
+            case Model.H67A_USB3_B3: // IT8728F
               v.Add(new Voltage("VTT", 0));
               v.Add(new Voltage("+5V", 1, 15, 10));
               v.Add(new Voltage("+12V", 2, 30.9f, 10));
@@ -869,9 +924,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               break;
             case Model.P67A_UD3_B3: // IT8728F
             case Model.P67A_UD3R_B3: // IT8728F
-            case Model.P67A_UD4_B3: // IT8728F                
+            case Model.P67A_UD4_B3: // IT8728F
             case Model.Z68AP_D3: // IT8728F
-            case Model.Z68X_UD3H_B3: // IT8728F               
+            case Model.Z68X_UD3H_B3: // IT8728F
               v.Add(new Voltage("VTT", 0));
               v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
               v.Add(new Voltage("+12V", 2, 30.9f, 10));
@@ -944,7 +999,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           break;
         case Manufacturer.Shuttle:
           switch (model) {
-            case Model.FH67: // IT8772E 
+            case Model.FH67: // IT8772E
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("DRAM", 1));
               v.Add(new Voltage("PCH VCCIO", 2));
@@ -998,12 +1053,12 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
     private static void GetFintekConfiguration(ISuperIO superIO,
       Manufacturer manufacturer, Model model,
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c) 
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
     {
       switch (manufacturer) {
         case Manufacturer.EVGA:
           switch (model) {
-            case Model.X58_SLI_Classified: // F71882 
+            case Model.X58_SLI_Classified: // F71882
               v.Add(new Voltage("VCC3V", 0, 150, 150));
               v.Add(new Voltage("CPU VCore", 1, 47, 100));
               v.Add(new Voltage("DIMM", 2, 47, 100));
@@ -1059,9 +1114,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       }
     }
 
-    private static void GetNuvotonConfigurationF(ISuperIO superIO, 
-      Manufacturer manufacturer, Model model, 
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c) 
+    private static void GetNuvotonConfigurationF(ISuperIO superIO,
+      Manufacturer manufacturer, Model model,
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
     {
       switch (manufacturer) {
         case Manufacturer.ASUS:
@@ -1158,80 +1213,229 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           }
           break;
        case Manufacturer.ASRock:
-                    {
-                        switch (model)
-                        {
-                            case Model.B85M_DGS:
-                                {
-                                    v.Add(new Voltage("CPU VCCIN", 0, 1, 1));
-                                    v.Add(new Voltage("+12V", 1, 56, 10));
-                                    v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
-                                    v.Add(new Voltage("+3.3V", 3, 34, 34));
-                                    v.Add(new Voltage("VIN1", 4, true));
-                                    v.Add(new Voltage("+5V", 5, 12, 3));
-                                    v.Add(new Voltage("VIN3", 6, true));
-                                    v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-                                    t.Add(new Temperature("CPU", 0));
-                                    t.Add(new Temperature("Auxiliary", 2));
-                                    t.Add(new Temperature("Motherboard", 3));
-                                    f.Add(new Fan("Chassis Fan #1", 0));
-                                    f.Add(new Fan("CPU Fan", 1));
-                                    f.Add(new Fan("Power Fan", 2));
-                                    f.Add(new Fan("Chassis Fan #2", 3));
-                                    c.Add(new Ctrl("Chassis Fan #2", 0));
-                                    c.Add(new Ctrl("CPU Fan", 1));
-                                    c.Add(new Ctrl("Chassis Fan #1", 2));
-                                }
-                                break;
-                            default:
-                                v.Add(new Voltage("CPU VCore", 0));
-                                v.Add(new Voltage("Voltage #2", 1, true));
-                                v.Add(new Voltage("AVCC", 2, 34, 34));
-                                v.Add(new Voltage("3VCC", 3, 34, 34));
-                                v.Add(new Voltage("Voltage #5", 4, true));
-                                v.Add(new Voltage("Voltage #6", 5, true));
-                                v.Add(new Voltage("Voltage #7", 6, true));
-                                v.Add(new Voltage("3VSB", 7, 34, 34));
-                                v.Add(new Voltage("VBAT", 8, 34, 34));
-                                t.Add(new Temperature("CPU Core", 0));
-                                t.Add(new Temperature("Temperature #1", 1));
-                                t.Add(new Temperature("Temperature #2", 2));
-                                t.Add(new Temperature("Temperature #3", 3));
-                                for (int i = 0; i < superIO.Fans.Length; i++)
-                                    f.Add(new Fan("Fan #" + (i + 1), i));
-                                for (int i = 0; i < superIO.Controls.Length; i++)
-                                    c.Add(new Ctrl("Fan Control #" + (i + 1), i));
-                                break;
-                        }
-                    }
-                    break;
-                default:
-          v.Add(new Voltage("CPU VCore", 0));
-          v.Add(new Voltage("Voltage #2", 1, true));
-          v.Add(new Voltage("AVCC", 2, 34, 34));
-          v.Add(new Voltage("3VCC", 3, 34, 34));
-          v.Add(new Voltage("Voltage #5", 4, true));
-          v.Add(new Voltage("Voltage #6", 5, true));
-          v.Add(new Voltage("Voltage #7", 6, true));
-          v.Add(new Voltage("3VSB", 7, 34, 34));
-          v.Add(new Voltage("VBAT", 8, 34, 34));
-          t.Add(new Temperature("CPU Core", 0));
-          t.Add(new Temperature("Temperature #1", 1));
-          t.Add(new Temperature("Temperature #2", 2));
-          t.Add(new Temperature("Temperature #3", 3));
-          for (int i = 0; i < superIO.Fans.Length; i++)
-            f.Add(new Fan("Fan #" + (i + 1), i));
-          for (int i = 0; i < superIO.Controls.Length; i++)
-            c.Add(new Ctrl("Fan Control #" + (i + 1), i));
-          break;
+        {
+          switch (model)
+            {
+              case Model.B85M_DGS:
+                {
+                    v.Add(new Voltage("CPU VCCIN", 0, 1, 1));
+                    v.Add(new Voltage("+12V", 1, 56, 10));
+                    v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
+                    v.Add(new Voltage("VIN1", 4, true));
+                    v.Add(new Voltage("+5V", 5, 12, 3));
+                    v.Add(new Voltage("VIN3", 6, true));
+                    v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                    t.Add(new Temperature("CPU", 0));
+                    t.Add(new Temperature("Auxiliary", 2));
+                    t.Add(new Temperature("Motherboard", 3));
+                    f.Add(new Fan("Chassis Fan #1", 0));
+                    f.Add(new Fan("CPU Fan", 1));
+                    f.Add(new Fan("Power Fan", 2));
+                    f.Add(new Fan("Chassis Fan #2", 3));
+                    c.Add(new Ctrl("Chassis Fan #2", 0));
+                    c.Add(new Ctrl("CPU Fan", 1));
+                    c.Add(new Ctrl("Chassis Fan #1", 2));
+                }
+                break;
+              case Model.ASROCK_Z77PRO4M: //NCT6776F
+                v.Add(new Voltage("CPU VCore", 0, 0, 1, 0, false));
+                v.Add(new Voltage("+12V", 1, 56, 10, 0, false));
+                v.Add(new Voltage("AVCC", 2, 10, 10, 0, false));
+                v.Add(new Voltage("3VCC", 3, 10, 10, 0, false));
+                v.Add(new Voltage("#Unused 4", 4, 0, 1, 0, true));
+                v.Add(new Voltage("+5V", 5, 20, 10, 0, false));
+                v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
+                v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
+                v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+
+                t.Add(new Temperature("CPU Core", 0));
+                t.Add(new Temperature("CPU", 1));
+                t.Add(new Temperature("AUX", 2));
+                t.Add(new Temperature("Mainboard", 3));
+
+                for (int i = 0; i < superIO.Fans.Length; i++)
+                  f.Add(new Fan("Fan #" + (i + 1), i));
+                for (int i = 0; i < superIO.Controls.Length; i++)
+                  c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                break;
+              default:
+                  v.Add(new Voltage("CPU VCore", 0));
+                  v.Add(new Voltage("Voltage #2", 1, true));
+                  v.Add(new Voltage("AVCC", 2, 34, 34));
+                  v.Add(new Voltage("3VCC", 3, 34, 34));
+                  v.Add(new Voltage("Voltage #5", 4, true));
+                  v.Add(new Voltage("Voltage #6", 5, true));
+                  v.Add(new Voltage("Voltage #7", 6, true));
+                  v.Add(new Voltage("3VSB", 7, 34, 34));
+                  v.Add(new Voltage("VBAT", 8, 34, 34));
+                  t.Add(new Temperature("CPU Core", 0));
+                  t.Add(new Temperature("Temperature #1", 1));
+                  t.Add(new Temperature("Temperature #2", 2));
+                  t.Add(new Temperature("Temperature #3", 3));
+                  for (int i = 0; i < superIO.Fans.Length; i++)
+                      f.Add(new Fan("Fan #" + (i + 1), i));
+                  for (int i = 0; i < superIO.Controls.Length; i++)
+                      c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                  break;
+            }
+        }
+        break;
+    default:
+        v.Add(new Voltage("CPU VCore", 0));
+        v.Add(new Voltage("Voltage #2", 1, true));
+        v.Add(new Voltage("AVCC", 2, 34, 34));
+        v.Add(new Voltage("3VCC", 3, 34, 34));
+        v.Add(new Voltage("Voltage #5", 4, true));
+        v.Add(new Voltage("Voltage #6", 5, true));
+        v.Add(new Voltage("Voltage #7", 6, true));
+        v.Add(new Voltage("3VSB", 7, 34, 34));
+        v.Add(new Voltage("VBAT", 8, 34, 34));
+        t.Add(new Temperature("CPU Core", 0));
+        t.Add(new Temperature("Temperature #1", 1));
+        t.Add(new Temperature("Temperature #2", 2));
+        t.Add(new Temperature("Temperature #3", 3));
+        for (int i = 0; i < superIO.Fans.Length; i++)
+          f.Add(new Fan("Fan #" + (i + 1), i));
+        for (int i = 0; i < superIO.Controls.Length; i++)
+          c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+        break;
       }
     }
 
     private static void GetNuvotonConfigurationD(ISuperIO superIO,
       Manufacturer manufacturer, Model model,
-      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c) 
+      IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
     {
       switch (manufacturer) {
+        case Manufacturer.ASRock:
+          switch (model)
+          {
+            case Model.ASROCK_A320M_HDV: //NCT6779D
+              v.Add(new Voltage("CPU VCore", 0, 10, 10, 0, false));
+              v.Add(new Voltage("Chipset 1.05V", 1, 0, 1, 0, false));
+              v.Add(new Voltage("AVCC", 2, 10, 10, 0, false));
+              v.Add(new Voltage("3VCC", 3, 10, 10, 0, false));
+              v.Add(new Voltage("+12V", 4, 56, 10, 0, false));
+              v.Add(new Voltage("VcoreRef", 5, 0, 1, 0, false));
+              v.Add(new Voltage("DRAM", 6, 0, 1, 0, false));
+              v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
+              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
+              v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
+              v.Add(new Voltage("#Unused 11", 11, 34, 34, 0, true));
+              v.Add(new Voltage("+5V", 12, 20, 10, 0, false));
+              v.Add(new Voltage("#Unused 13", 13, 10, 10, 0, true));
+              v.Add(new Voltage("#Unused 14", 14, 0, 1, 0, true));
+
+              t.Add(new Temperature("#Unused 0", 0));
+              t.Add(new Temperature("#Unused 1", 1));
+              t.Add(new Temperature("Mainboard", 2));
+              t.Add(new Temperature("#Unused 3", 3));
+              t.Add(new Temperature("#Unused 4", 4));
+              t.Add(new Temperature("AUX", 5));
+
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+
+            case Model.ASROCK_AB350_PRO4: //NCT6779D
+            case Model.ASROCK_AB350M_PRO4:
+            case Model.ASROCK_AB350M:
+            case Model.ASROCK_Fatal1ty_AB350_Gaming_K4:
+            case Model.ASROCK_AB350M_HDV:
+              v.Add(new Voltage("1 CPU VCore", 0, 10, 10, 0, false));
+              v.Add(new Voltage("#Unused", 1, 0, 1, 0, true));
+              v.Add(new Voltage("3 AVCC", 2, 10, 10, 0, false));
+              v.Add(new Voltage("4 3VCC", 3, 10, 10, 0, false));
+              v.Add(new Voltage("5 +12V", 4, 28, 5, 0, false));
+              v.Add(new Voltage("#Unused 5", 5, 0, 1, 0, true));
+              v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
+              v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
+              v.Add(new Voltage("9 VBAT", 8, 34, 34));
+              v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
+              v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
+              v.Add(new Voltage("Chipset 1.05V", 11, 0, 1, 0, false));
+              v.Add(new Voltage("+5V", 12, 20, 10, 0, false));
+              v.Add(new Voltage("#Unused 13", 13, 0, 1, 0, true));
+              v.Add(new Voltage("+1.8V", 14, 0, 1, 0, false));
+
+              t.Add(new Temperature("CPU Core", 0));
+              t.Add(new Temperature("CPU", 1));
+              t.Add(new Temperature("Mainboard", 2));
+              t.Add(new Temperature("AUX", 3));
+              t.Add(new Temperature("VRM", 4));
+              t.Add(new Temperature("AUXTIN2", 5));
+              t.Add(new Temperature("Temperature #6", 6));
+
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+
+            case Model.ASROCK_PHANTOM_GAMING_6: //NCT6779D
+              v.Add(new Voltage("CPU VCore", 0, 10, 10, 0, false));
+              v.Add(new Voltage("Chipset 1.05V", 1, 0, 1, 0, false));
+              v.Add(new Voltage("AVCC", 2, 10, 10, 0, false));
+              v.Add(new Voltage("3VCC", 3, 10, 10, 0, false));
+              v.Add(new Voltage("+12V", 4, 56, 10, 0, false));
+              v.Add(new Voltage("VDDCR_SOC", 5, 0, 1, 0, false));
+              v.Add(new Voltage("DRAM", 6, 0, 1, 0, false));
+              v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
+              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("#Unused", 9, 0, 1, 0, true));
+              v.Add(new Voltage("#Unused", 10, 0, 1, 0, true));
+              v.Add(new Voltage("#Unused", 11, 0, 1, 0, true));
+              v.Add(new Voltage("+5V", 12, 20, 10, 0, false));
+              v.Add(new Voltage("+1.8V", 13, 10, 10, 0, false));
+              v.Add(new Voltage("unused", 14, 34, 34, 0, true));
+
+              t.Add(new Temperature("CPU Core", 0));
+              t.Add(new Temperature("Mainboard", 1));
+              t.Add(new Temperature("AUX", 2));
+              t.Add(new Temperature("Chipset", 3));
+              t.Add(new Temperature("Core VRM", 4));
+              t.Add(new Temperature("Core SOC", 5));
+
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+
+            default:
+              v.Add(new Voltage("CPU VCore", 0, 10,10, 0, false));
+              v.Add(new Voltage("Voltage #2", 1, true));
+              v.Add(new Voltage("AVCC", 2, 34, 34));
+              v.Add(new Voltage("3VCC", 3, 34, 34));
+              v.Add(new Voltage("Voltage #5", 4, true));
+              v.Add(new Voltage("Voltage #6", 5, true));
+              v.Add(new Voltage("Voltage #7", 6, true));
+              v.Add(new Voltage("3VSB", 7, 34, 34));
+              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VTT", 9));
+              v.Add(new Voltage("Voltage #11", 10, true));
+              v.Add(new Voltage("Voltage #12", 11, true));
+              v.Add(new Voltage("Voltage #13", 12, true));
+              v.Add(new Voltage("Voltage #14", 13, true));
+              v.Add(new Voltage("Voltage #15", 14, true));
+              t.Add(new Temperature("CPU Core", 0));
+              t.Add(new Temperature("Temperature #1", 1));
+              t.Add(new Temperature("Temperature #2", 2));
+              t.Add(new Temperature("Temperature #3", 3));
+              t.Add(new Temperature("Temperature #4", 4));
+              t.Add(new Temperature("Temperature #5", 5));
+              t.Add(new Temperature("Temperature #6", 6));
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+              break;
+          }
+          break;
         case Manufacturer.ASUS:
           switch (model) {
             case Model.P8Z77_V: // NCT6779D
@@ -1295,6 +1499,36 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               c.Add(new Ctrl("Chassis Fan #2", 2));
               c.Add(new Ctrl("Chassis Fan #3", 3));
               c.Add(new Ctrl("AIO Pump", 4));
+              break;
+            case Model.ASUS_Z170_A: //NCT6793D
+              v.Add(new Voltage("CPU VCore", 0, 2, 2));
+              v.Add(new Voltage("+5V", 1, 4, 1));
+              v.Add(new Voltage("AVSB", 2, 34, 34));
+              v.Add(new Voltage("3VCC", 3, 34, 34));
+              v.Add(new Voltage("+12V", 4, 11, 1));
+              v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
+              v.Add(new Voltage("CPU GFX", 6, 2, 2));
+              v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
+              v.Add(new Voltage("VBAT3", 8, 34, 34));
+              v.Add(new Voltage("VTT", 9));
+              v.Add(new Voltage("DRAM", 10, 1, 1));
+              v.Add(new Voltage("VCCSA", 11));
+              v.Add(new Voltage("PCH Core", 12));
+              v.Add(new Voltage("CPU PLLs", 13));
+              v.Add(new Voltage("CPU VCCIO/IMC", 14));
+
+              t.Add(new Temperature("CPU (PECI)", 0));
+              t.Add(new Temperature("CPU", 1));
+              t.Add(new Temperature("Mainboard", 2));
+              t.Add(new Temperature("CPU", 3));
+              t.Add(new Temperature("PCH", 4));
+              t.Add(new Temperature("Temp #4", 5));
+              t.Add(new Temperature("Temp #5", 6));
+
+              for (int i = 0; i < superIO.Fans.Length; i++)
+                f.Add(new Fan("Fan #" + (i + 1), i));
+              for (int i = 0; i < superIO.Controls.Length; i++)
+                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
               break;
             default:
               v.Add(new Voltage("CPU VCore", 0));
@@ -1421,7 +1655,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     }
 
     private static void GetWinbondConfigurationEHF(Manufacturer manufacturer,
-      Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f) 
+      Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f)
     {
       switch (manufacturer) {
         case Manufacturer.ASRock:
@@ -1481,10 +1715,10 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           f.Add(new Fan("Auxiliary Fan #2", 4));
           break;
       }
-    }   
+    }
 
     private static void GetWinbondConfigurationHG(Manufacturer manufacturer,
-      Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f) 
+      Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f)
     {
       switch (manufacturer) {
         case Manufacturer.ASRock:
@@ -1526,8 +1760,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case Manufacturer.ASUS:
           switch (model) {
             case Model.P6T: // W83667HG
-            case Model.P6X58D_E: // W83667HG                 
-            case Model.Rampage_II_GENE: // W83667HG 
+            case Model.P6X58D_E: // W83667HG
+            case Model.Rampage_II_GENE: // W83667HG
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("+12V", 1, 11.5f, 1.91f));
               v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
@@ -1543,7 +1777,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("Chassis Fan #2", 3));
               f.Add(new Fan("Chassis Fan #3", 4));
               break;
-            case Model.Rampage_Extreme: // W83667HG 
+            case Model.Rampage_Extreme: // W83667HG
               v.Add(new Voltage("CPU VCore", 0));
               v.Add(new Voltage("+12V", 1, 12, 2));
               v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
@@ -1646,7 +1880,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
       foreach (Sensor sensor in controls) {
         float? value = readControl(sensor.Index);
-        sensor.Value = value;                
+        sensor.Value = value;
       }
 
       postUpdate();
@@ -1670,17 +1904,17 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
       public Voltage(string name, int index) :
         this(name, index, false) { }
-      
+
       public Voltage(string name, int index, bool hidden) :
         this(name, index, 0, 1, 0, hidden) { }
-      
+
       public Voltage(string name, int index, float ri, float rf) :
         this(name, index, ri, rf, 0, false) { }
-      
-      // float ri = 0, float rf = 1, float vf = 0, bool hidden = false) 
-      
-      public Voltage(string name, int index, 
-        float ri, float rf, float vf, bool hidden) 
+
+      // float ri = 0, float rf = 1, float vf = 0, bool hidden = false)
+
+      public Voltage(string name, int index,
+        float ri, float rf, float vf, bool hidden)
       {
         this.Name = name;
         this.Index = index;

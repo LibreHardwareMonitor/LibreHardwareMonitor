@@ -1,11 +1,11 @@
 ﻿/*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 namespace OpenHardwareMonitor.Hardware.LPC {
@@ -16,7 +16,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     ATK0110 = 0x0110,
 
     F71858 = 0x0507,
-    F71862 = 0x0601, 
+    F71862 = 0x0601,
     F71869 = 0x0814,
     F71869A = 0x1007,
     F71878AD = 0x1106,
@@ -56,7 +56,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
     W83627DHG = 0xA020,
     W83627DHGP = 0xB070,
-    W83627EHF = 0x8800,    
+    W83627EHF = 0x8800,
     W83627HF = 0x5200,
     W83627THF = 0x8280,
     W83667HG = 0xA510,
@@ -91,7 +91,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         case Chip.IT8705F: return "ITE IT8705F";
         case Chip.IT8712F: return "ITE IT8712F";
         case Chip.IT8716F: return "ITE IT8716F";
-        case Chip.IT8718F: return "ITE IT8718F";        
+        case Chip.IT8718F: return "ITE IT8718F";
         case Chip.IT8720F: return "ITE IT8720F";
         case Chip.IT8721F: return "ITE IT8721F";
         case Chip.IT8726F: return "ITE IT8726F";
