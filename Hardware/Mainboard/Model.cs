@@ -44,6 +44,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     ROG_MAXIMUS_APEX,
     ROG_ZENITH_EXTREME,
     ASUS_Z170_A,
+    TUF_X470_PLUS_GAMING,
 
     // DFI
     LP_BI_P45_T2RS_Elite,
@@ -54,6 +55,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
     // MSI
     Z270_PC_MATE,
+    B360M_PRO_VDH,
 
     // EVGA
     X58_SLI_Classified,
@@ -102,6 +104,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     Z390_UD,
     AB350_Gaming_3_CF,
     GIGABYTE_X399_AOURUS_GAMING7,
+    AX370_Gaming_5,
 
     // Shuttle
     FH67,

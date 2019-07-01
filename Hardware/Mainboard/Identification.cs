@@ -53,6 +53,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case "LENOVO":
           return Manufacturer.Lenovo;
         case "Micro-Star International":
+        case "Micro-Star International Co., Ltd":
         case "MICRO-STAR INTERNATIONAL CO., LTD":
         case "MICRO-STAR INTERNATIONAL CO.,LTD":
         case "MSI":
@@ -199,6 +200,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case "X58A-UD3R":
           return Model.X58A_UD3R;
         case "Z270 PC MATE":
+        case "Z270 PC MATE (MS-7A72)":
           return Model.Z270_PC_MATE;
         case "X79-UD3":
           return Model.X79_UD3;
@@ -234,6 +236,12 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.ASUS_Z170_A;
         case "Z77 Pro4-M":
           return Model.ASROCK_Z77PRO4M;
+        case "AX370-Gaming 5":
+          return Model.AX370_Gaming_5;
+        case "TUF X470-PLUS GAMING":
+          return Model.TUF_X470_PLUS_GAMING;
+        case "B360M PRO-VDH (MS-7B24)":
+          return Model.B360M_PRO_VDH;
 
         case "Base Board Product Name":
         case "To be filled by O.E.M.":
