@@ -68,11 +68,11 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       : base(processorIndex, cpuid, settings)
     {
       // AMD family 1Xh processors support only one temperature sensor
-      coreTemperature = new Sensor("CPU Core", 0, SensorType.Temperature, this, new[] {
+      coreTemperature = new Sensor("CPU Cores", 0, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
           }, settings);
 
-      coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
+      coreVoltage = new Sensor("CPU Cores", 0, SensorType.Voltage, this, settings);
       ActivateSensor(coreVoltage);
       northbridgeVoltage = new Sensor("Northbridge", 0,
         SensorType.Voltage, this, settings);
