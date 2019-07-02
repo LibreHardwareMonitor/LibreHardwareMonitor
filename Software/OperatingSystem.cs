@@ -9,7 +9,7 @@ namespace OpenHardwareMonitor.Software {
       var platform = Environment.OSVersion.Platform;
       IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
 
-      if(System.Environment.Is64BitProcess)
+      if (System.Environment.Is64BitProcess)
         Is64Bit = true;
     }
 

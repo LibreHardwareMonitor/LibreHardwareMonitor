@@ -95,7 +95,7 @@ namespace OpenHardwareMonitor.Hardware {
       string name = new Identifier(Identifier, "values").ToString();
       string s = settings.GetValue(name, null);
 
-      if (s != null && s != string.Empty)
+      if (!string.IsNullOrEmpty(s))
       {
         try
         {

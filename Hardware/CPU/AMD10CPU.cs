@@ -68,15 +68,11 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       : base(processorIndex, cpuid, settings)
     {
       // AMD family 1Xh processors support only one temperature sensor
-      coreTemperature = new Sensor(
-        "Core" + (coreCount > 1 ? " #1 - #" + coreCount : ""), 0,
-        SensorType.Temperature, this, new [] {
+      coreTemperature = new Sensor("CPU Core", 0, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
           }, settings);
 
-      coreVoltage = new Sensor(
-        "Core" + (coreCount > 1 ? " #1 - #" + coreCount : ""), 0,
-        SensorType.Voltage, this, settings);
+      coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
       ActivateSensor(coreVoltage);
       northbridgeVoltage = new Sensor("Northbridge", 0,
         SensorType.Voltage, this, settings);
@@ -191,8 +187,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       }
       if(cStatesIoOffset != 0) {
         cStatesResidency = new Sensor[]{
-          new Sensor("CPU Pkg C2", 0, SensorType.Level, this, settings),
-          new Sensor("CPU Pkg C3", 1, SensorType.Level, this, settings) };
+          new Sensor("CPU Package C2", 0, SensorType.Level, this, settings),
+          new Sensor("CPU Package C3", 1, SensorType.Level, this, settings) };
         ActivateSensor(cStatesResidency[0]);
         ActivateSensor(cStatesResidency[1]);
       }
@@ -353,7 +349,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
             Ring0.ReadPciConfig(miscellaneousControlAddress,
               REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
           }
-          if((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x3000) {
+          if ((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x3000) {
             if (family == 0x15 && (model & 0xF0) == 0x00) {
               coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f +
                 coreTemperature.Parameters[0].Value - 49;

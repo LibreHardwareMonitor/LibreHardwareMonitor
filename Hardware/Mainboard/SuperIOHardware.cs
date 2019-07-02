@@ -236,7 +236,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           v.Add(new Voltage("AVCC", 3, 34, 51));
           v.Add(new Voltage("Voltage #5", 4, true));
           v.Add(new Voltage("5VSB", 5, 34, 51));
-          v.Add(new Voltage("VBAT", 6));
+          v.Add(new Voltage("VBat", 6));
           t.Add(new Temperature("CPU", 0));
           t.Add(new Temperature("Auxiliary", 1));
           t.Add(new Temperature("System", 2));
@@ -257,7 +257,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           v.Add(new Voltage("Voltage #2", 5, true));
           v.Add(new Voltage("Reserved", 6, true));
           v.Add(new Voltage("3VSB", 7, 34, 34));
-          v.Add(new Voltage("VBAT", 8, 34, 34));
+          v.Add(new Voltage("VBat", 8, 34, 34));
           v.Add(new Voltage("Voltage #10", 9, true));
           t.Add(new Temperature("SYS", 1));
           t.Add(new Temperature("CPU Core", 2));
@@ -364,7 +364,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("DRAM CD", 5, 10, 10, 0, false));
               v.Add(new Voltage("1.8V PLL", 6, 10, 10, 0, false));
               v.Add(new Voltage("+3.3V", 7, 10, 10, 0, false));
-              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
 
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Mainboard", 1));
@@ -674,7 +674,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("VDDP", 5));
               v.Add(new Voltage("VDRAM", 6));
               v.Add(new Voltage("3VSB", 7, 10, 10));
-              v.Add(new Voltage("VBAT", 8, 10, 10));
+              v.Add(new Voltage("VBat", 8, 10, 10));
               v.Add(new Voltage("AVCC3", 9, 7.53f, 1));
               t.Add(new Temperature("System", 0));
               t.Add(new Temperature("Chipset", 1));
@@ -710,15 +710,15 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               f.Add(new Fan("System Fan #3", 3));
               break;
             case Model.GIGABYTE_X399_AOURUS_GAMING7: //ITE IT8686E
-              v.Add(new Voltage("VCORE", 0, 0, 1, 0, false));
+              v.Add(new Voltage("CPU VCore", 0, 0, 1, 0, false));
               v.Add(new Voltage("+3.3V", 1, 6.5F, 10, 0, false));
               v.Add(new Voltage("+12V", 2, 5, 1, 0, false));
               v.Add(new Voltage("+5V", 3, 1.5F, 1, 0, false));
               v.Add(new Voltage("DRAM CD", 4, 0, 1, 0, false));
-              v.Add(new Voltage("Vcore SOC", 5, 0, 1, 0, false));
+              v.Add(new Voltage("SOC Vcore", 5, 0, 1, 0, false));
               v.Add(new Voltage("DRAM AB", 6, 0, 1, 0, false));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
-              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
               v.Add(new Voltage("AVCC3", 9, 54, 10, 0, false));
 
               t.Add(new Temperature("System 1", 0));
@@ -1132,7 +1132,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+3.3V", 3, 34, 34));
               v.Add(new Voltage("+5V", 4, 12, 3));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Auxiliary", 2));
               t.Add(new Temperature("Motherboard", 3));
@@ -1153,7 +1153,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Motherboard", 3));
               f.Add(new Fan("Chassis Fan #1", 0));
@@ -1169,7 +1169,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+3.3V", 3, 34, 34));
               v.Add(new Voltage("+5V", 4, 12, 3));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Auxiliary", 2));
               t.Add(new Temperature("Motherboard", 3));
@@ -1185,7 +1185,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+3.3V", 3, 34, 34));
               v.Add(new Voltage("+5V", 4, 12, 3));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Motherboard", 3));
               for (int i = 0; i < superIO.Fans.Length; i++)
@@ -1202,7 +1202,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU Core", 0));
               t.Add(new Temperature("Temperature #1", 1));
               t.Add(new Temperature("Temperature #2", 2));
@@ -1249,7 +1249,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
                 v.Add(new Voltage("+5V", 5, 20, 10, 0, false));
                 v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
                 v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
-                v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+                v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
 
                 t.Add(new Temperature("CPU Core", 0));
                 t.Add(new Temperature("CPU", 1));
@@ -1270,7 +1270,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
                   v.Add(new Voltage("Voltage #6", 5, true));
                   v.Add(new Voltage("Voltage #7", 6, true));
                   v.Add(new Voltage("3VSB", 7, 34, 34));
-                  v.Add(new Voltage("VBAT", 8, 34, 34));
+                  v.Add(new Voltage("VBat", 8, 34, 34));
                   t.Add(new Temperature("CPU Core", 0));
                   t.Add(new Temperature("Temperature #1", 1));
                   t.Add(new Temperature("Temperature #2", 2));
@@ -1292,7 +1292,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         v.Add(new Voltage("Voltage #6", 5, true));
         v.Add(new Voltage("Voltage #7", 6, true));
         v.Add(new Voltage("3VSB", 7, 34, 34));
-        v.Add(new Voltage("VBAT", 8, 34, 34));
+        v.Add(new Voltage("VBat", 8, 34, 34));
         t.Add(new Temperature("CPU Core", 0));
         t.Add(new Temperature("Temperature #1", 1));
         t.Add(new Temperature("Temperature #2", 2));
@@ -1322,7 +1322,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("VcoreRef", 5, 0, 1, 0, false));
               v.Add(new Voltage("DRAM", 6, 0, 1, 0, false));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
-              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
               v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
               v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
               v.Add(new Voltage("#Unused 11", 11, 34, 34, 0, true));
@@ -1356,7 +1356,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("#Unused 5", 5, 0, 1, 0, true));
               v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
-              v.Add(new Voltage("9 VBAT", 8, 34, 34));
+              v.Add(new Voltage("9 VBat", 8, 34, 34));
               v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
               v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
               v.Add(new Voltage("Chipset 1.05V", 11, 0, 1, 0, false));
@@ -1387,7 +1387,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("VDDCR_SOC", 5, 0, 1, 0, false));
               v.Add(new Voltage("DRAM", 6, 0, 1, 0, false));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
-              v.Add(new Voltage("VBAT", 8, 10, 10, 0, false));
+              v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
               v.Add(new Voltage("#Unused", 9, 0, 1, 0, true));
               v.Add(new Voltage("#Unused", 10, 0, 1, 0, true));
               v.Add(new Voltage("#Unused", 11, 0, 1, 0, true));
@@ -1417,7 +1417,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("Voltage #11", 10, true));
               v.Add(new Voltage("Voltage #12", 11, true));
@@ -1449,7 +1449,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("Voltage #11", 10, true));
               v.Add(new Voltage("Voltage #12", 11, true));
@@ -1477,7 +1477,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("CPU GFX", 6, 2, 2));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("DRAM", 10, 1, 1));
               v.Add(new Voltage("VCCSA", 11));
@@ -1511,7 +1511,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
               v.Add(new Voltage("CPU GFX", 6, 2, 2));
               v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
-              v.Add(new Voltage("VBAT3", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("DRAM", 10, 1, 1));
               v.Add(new Voltage("VCCSA", 11));
@@ -1541,7 +1541,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("Voltage #11", 10, true));
               v.Add(new Voltage("Voltage #12", 11, true));
@@ -1630,7 +1630,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("Voltage #11", 10, true));
               v.Add(new Voltage("Voltage #12", 11, true));
@@ -1660,7 +1660,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("VTT", 9));
               v.Add(new Voltage("Voltage #11", 10, true));
               v.Add(new Voltage("Voltage #12", 11, true));
@@ -1695,7 +1695,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+5V", 5, 20, 10));
               v.Add(new Voltage("+12V", 6, 28, 5));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Motherboard", 2));
               f.Add(new Fan("CPU Fan", 0));
@@ -1710,7 +1710,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               v.Add(new Voltage("Voltage #10", 9, true));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Auxiliary", 1));
@@ -1731,7 +1731,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           v.Add(new Voltage("Voltage #6", 5, true));
           v.Add(new Voltage("Voltage #7", 6, true));
           v.Add(new Voltage("3VSB", 7, 34, 34));
-          v.Add(new Voltage("VBAT", 8, 34, 34));
+          v.Add(new Voltage("VBat", 8, 34, 34));
           v.Add(new Voltage("Voltage #10", 9, true));
           t.Add(new Temperature("CPU", 0));
           t.Add(new Temperature("Auxiliary", 1));
@@ -1757,7 +1757,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+5V", 5, 15, 7.5f));
               v.Add(new Voltage("+12V", 6, 56, 10));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Motherboard", 2));
               f.Add(new Fan("Chassis Fan", 0));
@@ -1773,7 +1773,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Auxiliary", 1));
               t.Add(new Temperature("System", 2));
@@ -1796,7 +1796,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+3.3V", 3, 34, 34));
               v.Add(new Voltage("+5V", 4, 15, 7.5f));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Motherboard", 2));
               f.Add(new Fan("Chassis Fan #1", 0));
@@ -1812,7 +1812,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("+3.3V", 3, 34, 34));
               v.Add(new Voltage("+5V", 4, 15, 7.5f));
               v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Motherboard", 2));
               f.Add(new Fan("Chassis Fan #1", 0));
@@ -1830,7 +1830,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("Voltage #6", 5, true));
               v.Add(new Voltage("Voltage #7", 6, true));
               v.Add(new Voltage("3VSB", 7, 34, 34));
-              v.Add(new Voltage("VBAT", 8, 34, 34));
+              v.Add(new Voltage("VBat", 8, 34, 34));
               t.Add(new Temperature("CPU", 0));
               t.Add(new Temperature("Auxiliary", 1));
               t.Add(new Temperature("System", 2));
@@ -1851,7 +1851,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           v.Add(new Voltage("Voltage #6", 5, true));
           v.Add(new Voltage("Voltage #7", 6, true));
           v.Add(new Voltage("3VSB", 7, 34, 34));
-          v.Add(new Voltage("VBAT", 8, 34, 34));
+          v.Add(new Voltage("VBat", 8, 34, 34));
           t.Add(new Temperature("CPU", 0));
           t.Add(new Temperature("Auxiliary", 1));
           t.Add(new Temperature("System", 2));
