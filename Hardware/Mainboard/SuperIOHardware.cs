@@ -373,12 +373,13 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               t.Add(new Temperature("Temperature #5", 4));
               t.Add(new Temperature("VRM", 5));
 
+              int x = superIO.Fans.Length;
               f.Add(new Fan("CPU Fan", 0));
               f.Add(new Fan("Chassis Fan 1", 1));
               f.Add(new Fan("Chassis Fan 2", 2));
-              f.Add(new Fan("H AMP Fan", 3));
-              f.Add(new Fan("Fan 6", 4));
-              f.Add(new Fan("Fan 5", 5));
+              f.Add(new Fan("High Amp Fan", 3));
+              f.Add(new Fan("Fan 5", 4));
+              f.Add(new Fan("Fan 6", 5));
 
               for (int i = 0; i < superIO.Controls.Length; i++)
                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));

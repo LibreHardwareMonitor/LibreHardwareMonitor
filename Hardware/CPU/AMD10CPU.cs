@@ -65,8 +65,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private readonly bool corePerformanceBoostSupport;
 
     public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-      : base(processorIndex, cpuid, settings)
-    {
+      : base(processorIndex, cpuid, settings) {
       // AMD family 1Xh processors support only one temperature sensor
       coreTemperature = new Sensor("CPU Cores", 0, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
@@ -80,37 +79,50 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       isSVI2 = (family == 0x15 && model >= 0x10) || family == 0x16;
 
       switch (family) {
-        case 0x10: miscellaneousControlDeviceId =
-          FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
-        case 0x11: miscellaneousControlDeviceId =
-          FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
-        case 0x12: miscellaneousControlDeviceId =
-          FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
-        case 0x14: miscellaneousControlDeviceId =
-          FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+        case 0x10:
+          miscellaneousControlDeviceId =
+ FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+        case 0x11:
+          miscellaneousControlDeviceId =
+ FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+        case 0x12:
+          miscellaneousControlDeviceId =
+ FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+        case 0x14:
+          miscellaneousControlDeviceId =
+ FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
         case 0x15:
           switch (model & 0xF0) {
-            case 0x00: miscellaneousControlDeviceId =
-              FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
-            case 0x10: miscellaneousControlDeviceId =
-              FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID; break;
-            case 0x30: miscellaneousControlDeviceId =
-              FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+            case 0x00:
+              miscellaneousControlDeviceId =
+     FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
+            case 0x10:
+              miscellaneousControlDeviceId =
+     FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID; break;
+            case 0x30:
+              miscellaneousControlDeviceId =
+     FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
             case 0x70:
-            case 0x60: miscellaneousControlDeviceId =
-              FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID; break;
+            case 0x60:
+              miscellaneousControlDeviceId =
+     FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID; break;
             default: miscellaneousControlDeviceId = 0; break;
-          } break;
+          }
+          break;
         case 0x16:
           switch (model & 0xF0) {
-            case 0x00: miscellaneousControlDeviceId =
-              FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
-            case 0x30: miscellaneousControlDeviceId =
-              FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+            case 0x00:
+              miscellaneousControlDeviceId =
+     FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
+            case 0x30:
+              miscellaneousControlDeviceId =
+     FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
             default: miscellaneousControlDeviceId = 0; break;
-          } break;
-        case 0x17: miscellaneousControlDeviceId =
-            FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
+          }
+          break;
+        case 0x17:
+          miscellaneousControlDeviceId =
+   FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
         default: miscellaneousControlDeviceId = 0; break;
       }
 
@@ -177,15 +189,15 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       }
 
       uint addr = Ring0.GetPciAddress(0, 20, 0);
-      if(Ring0.ReadPciConfig(addr, 0, out uint dev)) {
+      if (Ring0.ReadPciConfig(addr, 0, out uint dev)) {
         Ring0.ReadPciConfig(addr, 8, out uint rev);
 
-        if(dev == 0x43851002)
+        if (dev == 0x43851002)
           cStatesIoOffset = (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C);
-        else if(dev == 0x780B1022 || dev == 0x790B1022)
+        else if (dev == 0x780B1022 || dev == 0x790B1022)
           cStatesIoOffset = (byte)0x9C;
       }
-      if(cStatesIoOffset != 0) {
+      if (cStatesIoOffset != 0) {
         cStatesResidency = new Sensor[]{
           new Sensor("CPU Package C2", 0, SensorType.Level, this, settings),
           new Sensor("CPU Package C3", 1, SensorType.Level, this, settings) };
@@ -385,8 +397,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
           uint curEax, curEdx;
           if (Ring0.RdmsrTx(COFVID_STATUS, out curEax, out curEdx,
-            1UL << cpuid[i][0].Thread))
-          {
+            1UL << cpuid[i][0].Thread)) {
             double multiplier;
             multiplier = GetCoreMultiplier(curEax);
 
