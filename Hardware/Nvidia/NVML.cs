@@ -38,10 +38,21 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
                 }
             }
             else if (IsNvmlCompatibleWindowsVersion()) {
-                var programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
-                var dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\nvml.dll");
+                // Attempt to load the Nvidia Management Library from the
+                // windows standard search order for applications. This will
+                // help installations that either have the library in
+                // %windir%/system32 or provide their own library
+                windowsDll = LoadLibrary("nvml.dll");
 
-                windowsDll = LoadLibrary(dllPath);
+                // If there is no dll in the path, then attempt to load it
+                // from program files
+                if (windowsDll == IntPtr.Zero)
+                {
+                    var programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
+                    var dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\nvml.dll");
+
+                    windowsDll = LoadLibrary(dllPath);
+                }
 
                 if (windowsDll == IntPtr.Zero)
                     return;
