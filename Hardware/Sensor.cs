@@ -128,8 +128,7 @@ namespace OpenHardwareMonitor.Hardware {
                   }
                 }
                 catch (EndOfStreamException e)
-                {
-                }
+                { }
               }
             }
           }
