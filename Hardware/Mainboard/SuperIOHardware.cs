@@ -1246,9 +1246,9 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
                 v.Add(new Voltage("+12V", 1, 56, 10, 0, false));
                 v.Add(new Voltage("AVCC", 2, 10, 10, 0, false));
                 v.Add(new Voltage("3VCC", 3, 10, 10, 0, false));
-                v.Add(new Voltage("#Unused 4", 4, 0, 1, 0, true));
+                //v.Add(new Voltage("#Unused 4", 4, 0, 1, 0, true));
                 v.Add(new Voltage("+5V", 5, 20, 10, 0, false));
-                v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
+                //v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
                 v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
                 v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
 
@@ -1324,18 +1324,18 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("DRAM", 6, 0, 1, 0, false));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
               v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
-              v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
-              v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
-              v.Add(new Voltage("#Unused 11", 11, 34, 34, 0, true));
+              //v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 11", 11, 34, 34, 0, true));
               v.Add(new Voltage("+5V", 12, 20, 10, 0, false));
-              v.Add(new Voltage("#Unused 13", 13, 10, 10, 0, true));
-              v.Add(new Voltage("#Unused 14", 14, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 13", 13, 10, 10, 0, true));
+              //v.Add(new Voltage("#Unused 14", 14, 0, 1, 0, true));
 
-              t.Add(new Temperature("#Unused 0", 0));
-              t.Add(new Temperature("#Unused 1", 1));
+              //t.Add(new Temperature("#Unused 0", 0));
+              //t.Add(new Temperature("#Unused 1", 1));
               t.Add(new Temperature("Mainboard", 2));
-              t.Add(new Temperature("#Unused 3", 3));
-              t.Add(new Temperature("#Unused 4", 4));
+              //t.Add(new Temperature("#Unused 3", 3));
+              //t.Add(new Temperature("#Unused 4", 4));
               t.Add(new Temperature("AUX", 5));
 
               for (int i = 0; i < superIO.Fans.Length; i++)
@@ -1350,19 +1350,19 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
             case Model.ASROCK_Fatal1ty_AB350_Gaming_K4:
             case Model.ASROCK_AB350M_HDV:
               v.Add(new Voltage("1 CPU VCore", 0, 10, 10, 0, false));
-              v.Add(new Voltage("#Unused", 1, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused", 1, 0, 1, 0, true));
               v.Add(new Voltage("3 AVCC", 2, 10, 10, 0, false));
               v.Add(new Voltage("4 3VCC", 3, 10, 10, 0, false));
               v.Add(new Voltage("5 +12V", 4, 28, 5, 0, false));
-              v.Add(new Voltage("#Unused 5", 5, 0, 1, 0, true));
-              v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 5", 5, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
               v.Add(new Voltage("9 VBat", 8, 34, 34));
-              v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
-              v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
               v.Add(new Voltage("Chipset 1.05V", 11, 0, 1, 0, false));
               v.Add(new Voltage("+5V", 12, 20, 10, 0, false));
-              v.Add(new Voltage("#Unused 13", 13, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused 13", 13, 0, 1, 0, true));
               v.Add(new Voltage("+1.8V", 14, 0, 1, 0, false));
 
               t.Add(new Temperature("CPU Core", 0));
@@ -1389,12 +1389,12 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               v.Add(new Voltage("DRAM", 6, 0, 1, 0, false));
               v.Add(new Voltage("3VSB", 7, 10, 10, 0, false));
               v.Add(new Voltage("VBat", 8, 10, 10, 0, false));
-              v.Add(new Voltage("#Unused", 9, 0, 1, 0, true));
-              v.Add(new Voltage("#Unused", 10, 0, 1, 0, true));
-              v.Add(new Voltage("#Unused", 11, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused", 9, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused", 10, 0, 1, 0, true));
+              //v.Add(new Voltage("#Unused", 11, 0, 1, 0, true));
               v.Add(new Voltage("+5V", 12, 20, 10, 0, false));
               v.Add(new Voltage("+1.8V", 13, 10, 10, 0, false));
-              v.Add(new Voltage("unused", 14, 34, 34, 0, true));
+              //v.Add(new Voltage("unused", 14, 34, 34, 0, true));
 
               t.Add(new Temperature("CPU Core", 0));
               t.Add(new Temperature("Mainboard", 1));
@@ -1490,8 +1490,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               t.Add(new Temperature("T1", 2));
               t.Add(new Temperature("CPU", 3));
               t.Add(new Temperature("PCH", 4));
-              t.Add(new Temperature("Temp #4", 5));
-              t.Add(new Temperature("Temp #5", 6));
+              t.Add(new Temperature("Temperature #4", 5));
+              t.Add(new Temperature("Temperature #5", 6));
               f.Add(new Fan("Chassis Fan #1", 0));
               f.Add(new Fan("CPU Fan", 1));
               f.Add(new Fan("Chassis Fan #2", 2));
@@ -1525,8 +1525,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
               t.Add(new Temperature("Mainboard", 2));
               t.Add(new Temperature("CPU", 3));
               t.Add(new Temperature("PCH", 4));
-              t.Add(new Temperature("Temp #4", 5));
-              t.Add(new Temperature("Temp #5", 6));
+              t.Add(new Temperature("Temperature #4", 5));
+              t.Add(new Temperature("Temperature #5", 6));
 
               for (int i = 0; i < superIO.Fans.Length; i++)
                 f.Add(new Fan("Fan #" + (i + 1), i));
