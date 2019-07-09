@@ -275,9 +275,6 @@ namespace OpenHardwareMonitor.Hardware.CPU {
           ActivateSensor(coreTemperatures[i]);
           coreSensorId++;
         }
-
-
-
       } else {
         coreTemperatures = new Sensor[0];
       }
@@ -320,7 +317,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         ActivateSensor(coreMax);
         coreSensorId++;
 
-        coreAvg = new Sensor("Core Avg", coreSensorId, SensorType.Temperature, this, settings);
+        coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
         ActivateSensor(coreAvg);
         coreSensorId++;
       }
@@ -329,7 +326,6 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         coreMax = null;
         coreAvg = null;
       }
-
 
       busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
       coreClocks = new Sensor[coreCount];
