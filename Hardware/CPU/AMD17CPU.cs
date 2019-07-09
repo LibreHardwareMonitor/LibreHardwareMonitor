@@ -392,7 +392,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         double energy = 15.3e-6 * pwr;
         energy /= time.TotalSeconds;
 
-        if(!double.IsNaN(energy))
+        if (!double.IsNaN(energy))
           _power.Value = (float)energy;
       }
       #endregion
