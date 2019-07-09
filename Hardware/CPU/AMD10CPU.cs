@@ -65,7 +65,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private readonly bool corePerformanceBoostSupport;
 
     public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-      : base(processorIndex, cpuid, settings) {
+      : base(processorIndex, cpuid, settings) 
+    {
       // AMD family 1Xh processors support only one temperature sensor
       coreTemperature = new Sensor("CPU Cores", 0, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
@@ -396,8 +397,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
           Thread.Sleep(1);
 
           uint curEax, curEdx;
-          if (Ring0.RdmsrTx(COFVID_STATUS, out curEax, out curEdx,
-            1UL << cpuid[i][0].Thread)) {
+          if (Ring0.RdmsrTx(COFVID_STATUS, out curEax, out curEdx, 1UL << cpuid[i][0].Thread)) {
             double multiplier;
             multiplier = GetCoreMultiplier(curEax);
 
