@@ -30,7 +30,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         }
         catch (ArgumentOutOfRangeException)
         {
-          break; //abort loop, all cores found
+          // All cores found.
+          break;
         }
       }
 
