@@ -181,6 +181,8 @@ namespace OpenHardwareMonitor.Hardware {
         r.AppendLine(Board.ProductName);
         r.Append("Mainboard Version: ");
         r.AppendLine(Board.Version);
+        r.Append("Mainboard Serial: ");
+        r.AppendLine(Board.SerialNumber);
         r.AppendLine();
       }
 
