@@ -412,9 +412,9 @@ namespace OpenHardwareMonitor.Hardware {
       {
         this.ManufacturerName = GetString(0x07).Trim();
         this.Version = GetString(0x10).Trim();
-        this.CoreCount = GetByte(0x23);
-        this.CoreEnabled = GetByte(0x24);
-        this.ThreadCount = GetByte(0x25);
+        this.CoreCount = GetByte(0x23) != 255 ? GetByte(0x23) : GetWord(0x2A);
+        this.CoreEnabled = GetByte(0x24) != 255 ? GetByte(0x24) : GetWord(0x2C);
+        this.ThreadCount = GetByte(0x25) != 255 ? GetByte(0x25) : GetWord(0x2E);
         this.ExternalClock = GetWord(0x12);
       }
 
