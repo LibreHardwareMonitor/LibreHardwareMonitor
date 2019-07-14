@@ -15,7 +15,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
   [NamePrefix(""), RequireSmart(0x01), RequireSmart(0x09), RequireSmart(0x0C), 
     RequireSmart(0xD1), RequireSmart(0xCE), RequireSmart(0xCF)]
-  internal class SSDIndilinx : AbstractHarddrive {
+  internal class SSDIndilinx : ATAStorage {
 
     private static readonly IEnumerable<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
@@ -46,7 +46,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public SSDIndilinx(ISmart smart, string name, string firmwareRevision, 
       int index, ISettings settings)
-      : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
+      : base(smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) {}
   }
 }
 

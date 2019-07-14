@@ -9,27 +9,20 @@
 */
 
 using System;
-using System.Collections.Generic;
-
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-    public interface ISmart {
 
-    IntPtr OpenDrive(int driveNumber);
+  public interface ISmart : IDisposable {
+    bool IsValid { get; }
+    
+    void Close();
 
-    bool EnableSmart(IntPtr handle, int driveNumber);
+    bool EnableSmart();
+      
+    DriveAttributeValue[] ReadSmartData();
 
-    DriveAttributeValue[] ReadSmartData(IntPtr handle, int driveNumber);
+    DriveThresholdValue[] ReadSmartThresholds();
 
-    DriveThresholdValue[] ReadSmartThresholds(IntPtr handle, int driveNumber);
-
-    bool ReadNameAndFirmwareRevision(IntPtr handle, int driveNumber,
-      out string name, out string firmwareRevision); 
-
-    void CloseHandle(IntPtr handle);
-
-    IntPtr InvalidHandle { get; }
-
-    string[] GetLogicalDrives(int driveIndex);
+    bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision); 
   }
 }

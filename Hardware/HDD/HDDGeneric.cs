@@ -16,7 +16,7 @@ namespace OpenHardwareMonitor.Hardware.HDD
 {
 
   [NamePrefix("")]
-  internal class GenericHarddisk : AbstractHarddrive {
+  internal class GenericHarddisk : ATAStorage {
 
     private static readonly List<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
@@ -105,6 +105,6 @@ namespace OpenHardwareMonitor.Hardware.HDD
 
     public GenericHarddisk(ISmart smart, string name, string firmwareRevision, 
       int index, ISettings settings)
-      : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
+      : base(smart, name, firmwareRevision, "hdd", index, smartAttributes, settings) {}
   }
 }

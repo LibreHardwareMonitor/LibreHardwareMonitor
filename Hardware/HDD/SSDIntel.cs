@@ -15,7 +15,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
    
   [NamePrefix("INTEL SSD"), 
    RequireSmart(0xE1), RequireSmart(0xE8), RequireSmart(0xE9)]
-  internal class SSDIntel : AbstractHarddrive {
+  internal class SSDIntel : ATAStorage {
 
     private static readonly IEnumerable<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
@@ -57,6 +57,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public SSDIntel(ISmart smart, string name, string firmwareRevision, 
       int index, ISettings settings)
-      : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
+      : base(smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) {}
   }
 }

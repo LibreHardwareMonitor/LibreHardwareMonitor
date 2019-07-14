@@ -20,18 +20,16 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     private const int MAX_DRIVES = 32;
 
-    private readonly List<AbstractHarddrive> hardware = 
-      new List<AbstractHarddrive>();
+    private readonly List<AbstractStorage> hardware = 
+      new List<AbstractStorage>();
 
     public HarddriveGroup(ISettings settings) {
 
       if (Software.OperatingSystem.IsLinux) return;
 
-      ISmart smart = new WindowsSmart();
-
       for (int drive = 0; drive < MAX_DRIVES; drive++) {
-        AbstractHarddrive instance =
-          AbstractHarddrive.CreateInstance(smart, drive, settings);
+        AbstractStorage instance =
+          AbstractStorage.CreateInstance(drive, settings);
         if (instance != null) {
           this.hardware.Add(instance);
         }
@@ -45,7 +43,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     }
 
     public void Close() {
-      foreach (AbstractHarddrive hdd in hardware) 
+      foreach (AbstractStorage hdd in hardware) 
         hdd.Close();
     }
   }

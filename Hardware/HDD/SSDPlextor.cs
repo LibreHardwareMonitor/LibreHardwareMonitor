@@ -11,7 +11,7 @@
 namespace OpenHardwareMonitor.Hardware.HDD {
   using System.Collections.Generic;
   [NamePrefix("PLEXTOR")]
-  internal class SSDPlextor : AbstractHarddrive {
+  internal class SSDPlextor : ATAStorage {
 
     private static readonly IEnumerable<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
@@ -25,7 +25,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public SSDPlextor(ISmart smart, string name, string firmwareRevision, 
       int index, ISettings settings)
-      : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
+      : base(smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) {}
 
     private static float RawToGb(byte[] rawvalue, byte value,
       IReadOnlyList<IParameter> parameters) 
