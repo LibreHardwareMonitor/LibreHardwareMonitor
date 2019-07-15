@@ -17,8 +17,6 @@ indent_size = 2
 dotnet_style_object_initializer = true:suggestion
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
 
-
-
 # New line preferences
 csharp_new_line_before_open_brace = none
 csharp_new_line_before_else = false
