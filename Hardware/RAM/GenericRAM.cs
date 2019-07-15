@@ -1,35 +1,42 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
-*/
+﻿// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) 2011-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
+// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
+// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
 
 using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.RAM {
   internal class GenericRAM : Hardware {
 
-    private Sensor loadSensor;
-    private Sensor usedMemory;
-    private Sensor availableMemory;
+    private Sensor physicalMemoryUsed { get; set; } = null;
+    private Sensor physicalMemoryAvailable { get; set; } = null;
+    private Sensor physicalMemoryLoad { get; set; } = null;
+    private Sensor virtualMemoryUsed { get; set; } = null;
+    private Sensor virtualMemoryAvailable { get; set; } = null;
+    private Sensor virtualMemoryLoad { get; set; } = null;
 
     public GenericRAM(string name, ISettings settings)
-      : base(name, new Identifier("ram"), settings)
-    {   
-      loadSensor = new Sensor("Memory", 0, SensorType.Load, this, settings);
-      ActivateSensor(loadSensor);
+      : base(name, new Identifier("ram"), settings) {
 
-      usedMemory = new Sensor("Used Memory", 0, SensorType.Data, this,
-        settings);
-      ActivateSensor(usedMemory);
+      physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
+      ActivateSensor(physicalMemoryUsed);
 
-      availableMemory = new Sensor("Available Memory", 1, SensorType.Data, this, 
-        settings);
-      ActivateSensor(availableMemory);
+      physicalMemoryAvailable = new Sensor("Memory Available", 1, SensorType.Data, this, settings);
+      ActivateSensor(physicalMemoryAvailable);
+
+      physicalMemoryLoad = new Sensor("Memory", 0, SensorType.Load, this, settings);
+      ActivateSensor(physicalMemoryLoad);
+
+      virtualMemoryUsed = new Sensor("Virtual Memory Used", 2, SensorType.Data, this, settings);
+      ActivateSensor(virtualMemoryUsed);
+
+      virtualMemoryAvailable = new Sensor("Virtual Memory Available", 3, SensorType.Data, this, settings);
+      ActivateSensor(virtualMemoryAvailable);
+
+      virtualMemoryLoad = new Sensor("Virtual Memory", 1, SensorType.Load, this, settings);
+      ActivateSensor(virtualMemoryLoad);
     }
 
     public override HardwareType HardwareType {
@@ -39,42 +46,19 @@ namespace OpenHardwareMonitor.Hardware.RAM {
     }
 
     public override void Update() {
-      NativeMethods.MemoryStatusEx status = new NativeMethods.MemoryStatusEx();
-      status.Length = checked((uint)Marshal.SizeOf(
-          typeof(NativeMethods.MemoryStatusEx)));
+      Interop.MemoryStatusEx status = new Interop.MemoryStatusEx();
+      status.Length = (uint)Marshal.SizeOf<Interop.MemoryStatusEx>();
 
-      if (!NativeMethods.GlobalMemoryStatusEx(ref status))
+      if (!Interop.GlobalMemoryStatusEx(ref status))
         return;
 
-      loadSensor.Value = 100.0f -
-        (100.0f * status.AvailablePhysicalMemory) /
-        status.TotalPhysicalMemory;
+      physicalMemoryUsed.Value = (float)(status.TotalPhysicalMemory - status.AvailablePhysicalMemory) / (1024 * 1024 * 1024);
+      physicalMemoryAvailable.Value = (float)status.AvailablePhysicalMemory / (1024 * 1024 * 1024);
+      physicalMemoryLoad.Value = 100.0f - (100.0f * status.AvailablePhysicalMemory) / status.TotalPhysicalMemory;
 
-      usedMemory.Value = (float)(status.TotalPhysicalMemory 
-        - status.AvailablePhysicalMemory) / (1024 * 1024 * 1024);
-
-      availableMemory.Value = (float)status.AvailablePhysicalMemory /
-        (1024 * 1024 * 1024);
-    }
-
-    private class NativeMethods {
-      [StructLayout(LayoutKind.Sequential)]
-      public struct MemoryStatusEx {
-        public uint Length;
-        public uint MemoryLoad;
-        public ulong TotalPhysicalMemory;
-        public ulong AvailablePhysicalMemory;
-        public ulong TotalPageFile;
-        public ulong AvailPageFile;
-        public ulong TotalVirtual;
-        public ulong AvailVirtual;
-        public ulong AvailExtendedVirtual;
-      }
-
-      [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-      [return: MarshalAs(UnmanagedType.Bool)]
-      internal static extern bool GlobalMemoryStatusEx(
-        ref NativeMethods.MemoryStatusEx buffer);
+      virtualMemoryUsed.Value = (float)(status.TotalPageFile - status.AvailPageFile) / (1024 * 1024 * 1024);
+      virtualMemoryAvailable.Value = (float)status.AvailPageFile / (1024 * 1024 * 1024);
+      virtualMemoryLoad.Value = 100.0f - (100.0f * status.AvailPageFile) / status.TotalPageFile;
     }
   }
 }
