@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="LICENSE" Pack="true" Visible="false" PackagePath=""/>
+    <None Include="LICENSE" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -38,11 +38,21 @@
     <Compile Include="Hardware\Control.cs" />
     <Compile Include="Hardware\CPU\AMD17CPU.cs" />
     <Compile Include="Hardware\FirmwareTable.cs" />
+    <Compile Include="Hardware\HDD\AbstractStorage.cs" />
+    <Compile Include="Hardware\HDD\ATAStorage.cs" />
     <Compile Include="Hardware\HDD\DebugSmart.cs" />
     <Compile Include="Hardware\HDD\DriveAttributeValue.cs" />
     <Compile Include="Hardware\HDD\DriveThresholdValue.cs" />
     <Compile Include="Hardware\HDD\HDDGeneric.cs" />
+    <Compile Include="Hardware\HDD\Interop.cs" />
+    <Compile Include="Hardware\HDD\INVMeDrive.cs" />
     <Compile Include="Hardware\HDD\ISmart.cs" />
+    <Compile Include="Hardware\HDD\NVMeGeneric.cs" />
+    <Compile Include="Hardware\HDD\NVMeHealthInfo.cs" />
+    <Compile Include="Hardware\HDD\NVMeInfo.cs" />
+    <Compile Include="Hardware\HDD\NVMeSamsung.cs" />
+    <Compile Include="Hardware\HDD\NVMeSmart.cs" />
+    <Compile Include="Hardware\HDD\NVMeWindows.cs" />
     <Compile Include="Hardware\HDD\SmartAttribute.cs" />
     <Compile Include="Hardware\HDD\SmartNames.cs" />
     <Compile Include="Hardware\HDD\RequireSmartAttribute.cs" />
@@ -53,6 +63,9 @@
     <Compile Include="Hardware\HDD\SSDPlextor.cs" />
     <Compile Include="Hardware\HDD\SSDSamsung.cs" />
     <Compile Include="Hardware\HDD\SSDSandforce.cs" />
+    <Compile Include="Hardware\HDD\StorageGeneric.cs" />
+    <Compile Include="Hardware\HDD\StorageInfo.cs" />
+    <Compile Include="Hardware\HDD\WindowsStorage.cs" />
     <Compile Include="Hardware\IControl.cs" />
     <Compile Include="Hardware\IOControlCode.cs" />
     <Compile Include="Hardware\Computer.cs" />
@@ -79,7 +92,6 @@
     <Compile Include="Hardware\Ring0.cs" />
     <Compile Include="Hardware\KernelDriver.cs" />
     <Compile Include="Hardware\Hardware.cs" />
-    <Compile Include="Hardware\HDD\AbstractHarddrive.cs" />
     <Compile Include="Hardware\HDD\HarddriveGroup.cs" />
     <Compile Include="Hardware\HDD\WindowsSmart.cs" />
     <Compile Include="Hardware\Heatmaster\Heatmaster.cs" />

@@ -1,21 +1,15 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-	Copyright (C) 2010 Paul Werelds
-  Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
-	
-*/
+﻿// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
+// Copyright (C) 2010 Paul Werelds
+// Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   using System.Collections.Generic;
 
-  [NamePrefix(""), RequireSmart(0x01), RequireSmart(0x09), RequireSmart(0x0C), 
-    RequireSmart(0xD1), RequireSmart(0xCE), RequireSmart(0xCF)]
-  internal class SSDIndilinx : AbstractHarddrive {
+  [NamePrefix(""), RequireSmart(0x01), RequireSmart(0x09), RequireSmart(0x0C), RequireSmart(0xD1), RequireSmart(0xCE), RequireSmart(0xCF)]
+  internal class SSDIndilinx : ATAStorage {
 
     private static readonly IEnumerable<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
@@ -38,17 +32,13 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         new SmartAttribute(0xCF, SmartNames.MaxErase),
         new SmartAttribute(0xD0, SmartNames.AverageEraseCount),
         new SmartAttribute(0xD1, SmartNames.RemainingLife,
-          null, SensorType.Level, 0, SmartNames.RemainingLife),
+        null, SensorType.Level, 0, SmartNames.RemainingLife),
         new SmartAttribute(0xD2, SmartNames.UnknownUnique),
         new SmartAttribute(0xD3, SmartNames.SataErrorCountCrc),
         new SmartAttribute(0xD4, SmartNames.SataErrorCountHandshake)
       };
 
-    public SSDIndilinx(ISmart smart, string name, string firmwareRevision, 
-      int index, ISettings settings)
-      : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
+    public SSDIndilinx(StorageInfo _storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+      : base(_storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) { }
   }
 }
-
-
-

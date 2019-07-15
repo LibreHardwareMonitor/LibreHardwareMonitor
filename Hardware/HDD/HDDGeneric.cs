@@ -1,22 +1,18 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2011-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-	Copyright (C) 2010 Paul Werelds
-  Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
-	
-*/
+﻿// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) 2011-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
+// Copyright (C) 2010 Paul Werelds
+// Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
 
+using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.HDD
-{
+namespace OpenHardwareMonitor.Hardware.HDD {
 
   [NamePrefix("")]
-  internal class GenericHarddisk : AbstractHarddrive {
+  internal class GenericHarddisk : ATAStorage {
 
     private static readonly List<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
@@ -33,8 +29,8 @@ namespace OpenHardwareMonitor.Hardware.HDD
       new SmartAttribute(0x0B, SmartNames.RecalibrationRetries),
       new SmartAttribute(0x0C, SmartNames.PowerCycleCount, RawToInt),
       new SmartAttribute(0x0D, SmartNames.SoftReadErrorRate),
-      new SmartAttribute(0xAA, SmartNames.Unknown), 
-      new SmartAttribute(0xAB, SmartNames.Unknown), 
+      new SmartAttribute(0xAA, SmartNames.Unknown),
+      new SmartAttribute(0xAB, SmartNames.Unknown),
       new SmartAttribute(0xAC, SmartNames.Unknown),
       new SmartAttribute(0xB7, SmartNames.SataDownshiftErrorCount, RawToInt),
       new SmartAttribute(0xB8, SmartNames.EndToEndError),
@@ -63,7 +59,7 @@ namespace OpenHardwareMonitor.Hardware.HDD
       new SmartAttribute(0xD3, SmartNames.VibrationDuringWrite),
       new SmartAttribute(0xD4, SmartNames.ShockDuringWrite),
       new SmartAttribute(0xDC, SmartNames.DiskShift),
-      new SmartAttribute(0xDD, SmartNames.AlternativeGSenseErrorRate), 
+      new SmartAttribute(0xDD, SmartNames.AlternativeGSenseErrorRate),
       new SmartAttribute(0xDE, SmartNames.LoadedHours),
       new SmartAttribute(0xDF, SmartNames.LoadUnloadRetryCount),
       new SmartAttribute(0xE0, SmartNames.LoadFriction),
@@ -71,7 +67,7 @@ namespace OpenHardwareMonitor.Hardware.HDD
       new SmartAttribute(0xE2, SmartNames.LoadInTime),
       new SmartAttribute(0xE3, SmartNames.TorqueAmplificationCount),
       new SmartAttribute(0xE4, SmartNames.PowerOffRetractCycle),
-      new SmartAttribute(0xE6, SmartNames.GmrHeadAmplitude),      
+      new SmartAttribute(0xE6, SmartNames.GmrHeadAmplitude),
       new SmartAttribute(0xE8, SmartNames.EnduranceRemaining),
       new SmartAttribute(0xE9, SmartNames.PowerOnHours),
       new SmartAttribute(0xF0, SmartNames.HeadFlyingHours),
@@ -80,31 +76,30 @@ namespace OpenHardwareMonitor.Hardware.HDD
       new SmartAttribute(0xFA, SmartNames.ReadErrorRetryRate),
       new SmartAttribute(0xFE, SmartNames.FreeFallProtection),
 
-      new SmartAttribute(0xC2, SmartNames.Temperature, 
-        (byte[] r, byte v, IReadOnlyList<IParameter> p) 
-          => { return r[0] + (p == null ? 0 : p[0].Value); }, 
-          SensorType.Temperature, 0, SmartNames.Temperature, false, 
-        new[] { new ParameterDescription("Offset [°C]", 
-                  "Temperature offset of the thermal sensor.\n" + 
+      new SmartAttribute(0xC2, SmartNames.Temperature,
+        (byte[] r, byte v, IReadOnlyList<IParameter> p)
+          => { return r[0] + (p == null ? 0 : p[0].Value); },
+          SensorType.Temperature, 0, SmartNames.Temperature, false,
+        new[] { new ParameterDescription("Offset [°C]",
+                  "Temperature offset of the thermal sensor.\n" +
                   "Temperature = Value + Offset.", 0) }),
-      new SmartAttribute(0xE7, SmartNames.Temperature, 
-        (byte[] r, byte v, IReadOnlyList<IParameter> p) 
-          => { return r[0] + (p == null ? 0 : p[0].Value); }, 
-          SensorType.Temperature, 0, SmartNames.Temperature, false, 
-        new[] { new ParameterDescription("Offset [°C]", 
-                  "Temperature offset of the thermal sensor.\n" + 
+      new SmartAttribute(0xE7, SmartNames.Temperature,
+        (byte[] r, byte v, IReadOnlyList<IParameter> p)
+          => { return r[0] + (p == null ? 0 : p[0].Value); },
+          SensorType.Temperature, 0, SmartNames.Temperature, false,
+        new[] { new ParameterDescription("Offset [°C]",
+                  "Temperature offset of the thermal sensor.\n" +
                   "Temperature = Value + Offset.", 0) }),
-      new SmartAttribute(0xBE, SmartNames.TemperatureDifferenceFrom100, 
-        (byte[] r, byte v, IReadOnlyList<IParameter> p) 
-          => { return r[0] + (p == null ? 0 : p[0].Value); }, 
-          SensorType.Temperature, 0, "Temperature", false, 
-        new[] { new ParameterDescription("Offset [°C]", 
-                  "Temperature offset of the thermal sensor.\n" + 
+      new SmartAttribute(0xBE, SmartNames.TemperatureDifferenceFrom100,
+        (byte[] r, byte v, IReadOnlyList<IParameter> p)
+          => { return r[0] + (p == null ? 0 : p[0].Value); },
+          SensorType.Temperature, 0, "Temperature", false,
+        new[] { new ParameterDescription("Offset [°C]",
+                  "Temperature offset of the thermal sensor.\n" +
                   "Temperature = Value + Offset.", 0) })
     };
 
-    public GenericHarddisk(ISmart smart, string name, string firmwareRevision, 
-      int index, ISettings settings)
-      : base(smart, name, firmwareRevision, index, smartAttributes, settings) {}
+    public GenericHarddisk(StorageInfo _storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+      : base(_storageInfo, smart, name, firmwareRevision, "hdd", index, smartAttributes, settings) { }
   }
 }
