@@ -25,6 +25,7 @@ namespace OpenHardwareMonitor.Hardware {
     private readonly BIOSInformation biosInformation;
     private readonly SystemInformation systemInformation;
     private readonly BaseBoardInformation baseBoardInformation;
+    private readonly ChassisInformation chassisInformation;
     private readonly ProcessorInformation processorInformation;
     private readonly MemoryDevice[] memoryDevices;
 
@@ -132,6 +133,9 @@ namespace OpenHardwareMonitor.Hardware {
               case 0x02: this.baseBoardInformation = new BaseBoardInformation(
                   type, handle, data, stringsList.ToArray());
                 structureList.Add(this.baseBoardInformation); break;
+              case 0x03: this.chassisInformation = new ChassisInformation(
+                  type, handle, data, stringsList.ToArray()); 
+                structureList.Add(chassisInformation); break;
               case 0x04: this.processorInformation = new ProcessorInformation(
                   type, handle, data, stringsList.ToArray());
                 structureList.Add(this.processorInformation); break;
@@ -181,6 +185,42 @@ namespace OpenHardwareMonitor.Hardware {
         r.AppendLine(Board.ProductName);
         r.Append("Mainboard Version: ");
         r.AppendLine(Board.Version);
+        r.Append("Mainboard Serial: ");
+        r.AppendLine(Board.SerialNumber);
+        r.AppendLine();
+      }
+
+      if (Chassis != null) { 
+        r.Append("Chassis Type: ");
+        r.AppendLine(Chassis.ChassisType.ToString());
+        r.Append("Chassis Manufacturer: ");
+        r.AppendLine(Chassis.ManufacturerName);
+        r.Append("Chassis Version: ");
+        r.AppendLine(Chassis.Version);
+        r.Append("Chassis Serial: ");
+        r.AppendLine(Chassis.SerialNumber);
+        r.Append("Chassis Asset Tag: ");
+        r.AppendLine(Chassis.AssetTag);
+        if (!String.IsNullOrEmpty(Chassis.SKU)) {
+          r.Append("Chassis SKU: ");
+          r.AppendLine(Chassis.SKU);
+        }
+        r.Append("Chassis Boot Up State: ");
+        r.AppendLine(Chassis.BootUpState.ToString());
+        r.Append("Chassis Power Supply State: ");
+        r.AppendLine(Chassis.PowerSupplyState.ToString());
+        r.Append("Chassis Thermal State: ");
+        r.AppendLine(Chassis.ThermalState.ToString());
+        r.Append("Chassis Power Cords: ");
+        r.AppendLine(Chassis.PowerCords.ToString());
+        if (Chassis.RackHeight > 0) {
+          r.Append("Chassis Rack Height: ");
+          r.AppendLine(Chassis.RackHeight.ToString());
+        }
+        r.Append("Chassis Lock Detected: ");
+        r.AppendLine(Chassis.LockDetected ? "Yes" : "No");
+        r.Append("Chassis Security Status: ");
+        r.AppendLine(Chassis.SecurityStatus.ToString());
         r.AppendLine();
       }
 
@@ -249,6 +289,9 @@ namespace OpenHardwareMonitor.Hardware {
       get { return baseBoardInformation; }
     }
 
+    public ChassisInformation Chassis { 
+      get { return chassisInformation; }
+    }
 
     public ProcessorInformation Processor {
       get { return processorInformation; }
@@ -367,6 +410,96 @@ namespace OpenHardwareMonitor.Hardware {
 
     }
 
+    public class ChassisInformation : Structure {
+      public ChassisInformation(byte type, ushort handle, byte[] data,
+        string[] strings)
+        : base(type, handle, data, strings) {
+          ManufacturerName = GetString(0x04).Trim();
+          Version = GetString(0x06).Trim();
+          SerialNumber = GetString(0x07).Trim();
+          AssetTag = GetString(0x08).Trim();
+          RackHeight = GetByte(0x11);
+          PowerCords = GetByte(0x12);
+          SKU = GetString(0x15).Trim();
+          LockDetected = (GetByte(0x05) & 128) == 128;
+          ChassisType = (ChassisType)(GetByte(0x05) & 127);
+          BootUpState = (ChassisStates)GetByte(0x09);
+          PowerSupplyState = (ChassisStates)GetByte(0x0A);
+          ThermalState = (ChassisStates)GetByte(0x0B);
+          SecurityStatus = (ChassisSecurityStatus)GetByte(0x0C);
+      }
+
+      public string ManufacturerName { get; private set; }
+      public string Version { get; private set; }
+      public string SerialNumber { get; private set; }
+      public string AssetTag { get; private set; }
+      public string SKU { get; private set; }
+      public int RackHeight { get; private set; }
+      public int PowerCords { get; private set; }
+      public ChassisType ChassisType { get; private set; }
+      public ChassisStates BootUpState { get; private set; }
+      public ChassisStates PowerSupplyState { get; private set; }
+      public ChassisStates ThermalState { get; private set; }
+      public ChassisSecurityStatus SecurityStatus { get; set; }
+      public bool LockDetected { get; set; }
+    }
+
+    public enum ChassisType { 
+      Other = 1,
+      Unknown,
+      Desktop,
+      LowProfileDesktop,
+      PizzaBox,
+      MiniTower,
+      Tower,
+      Portable,
+      Laptop,
+      Notebook,
+      HandHeld,
+      DockingStation,
+      AllInOne,
+      SubNotebook,
+      SpaceSaving,
+      LunchBox,
+      MainServerChassis,
+      ExpansionChassis,
+      SubChassis,
+      BusExpansionChassis,
+      PeripheralChassis,
+      RAIDChassis,
+      RackMountChassis,
+      SealedCasePC,
+      MultiSystemChassis,
+      CompactPCI,
+      AdvancedTCA,
+      Blade,
+      BladeEnclosure,
+      Tablet,
+      Convertible,
+      Detachable,
+      IoTGateway,
+      EmbeddedPC,
+      MiniPC,
+      StickPC
+    }
+
+    public enum ChassisStates {
+      Other = 1,
+      Unknown,
+      Safe,
+      Warning,
+      Critical,
+      NonRecoverable
+    }
+
+    public enum ChassisSecurityStatus {
+      Other = 1,
+      Unknown,
+      None,
+      ExternalInterfaceLockedOut,
+      ExternalInterfaceEnabled
+    }
+
     public class BaseBoardInformation : Structure {
 
       private readonly string manufacturerName;
@@ -412,9 +545,9 @@ namespace OpenHardwareMonitor.Hardware {
       {
         this.ManufacturerName = GetString(0x07).Trim();
         this.Version = GetString(0x10).Trim();
-        this.CoreCount = GetByte(0x23);
-        this.CoreEnabled = GetByte(0x24);
-        this.ThreadCount = GetByte(0x25);
+        this.CoreCount = GetByte(0x23) != 255 ? GetByte(0x23) : GetWord(0x2A);
+        this.CoreEnabled = GetByte(0x24) != 255 ? GetByte(0x24) : GetWord(0x2C);
+        this.ThreadCount = GetByte(0x25) != 255 ? GetByte(0x25) : GetWord(0x2E);
         this.ExternalClock = GetWord(0x12);
       }
 
