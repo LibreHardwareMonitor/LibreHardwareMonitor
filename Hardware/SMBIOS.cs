@@ -337,7 +337,7 @@ namespace OpenHardwareMonitor.Hardware {
       private readonly SystemWakeUp wakeUp;
 
       public SystemInformation(string manufacturerName, string productName, 
-        string version, string serialNumber, string family, byte wakeUp = 2) 
+        string version, string serialNumber, string family, byte wakeUp = (byte)SystemWakeUp.Unknown) 
         : base (0x01, 0, null, null) 
       {
         this.manufacturerName = manufacturerName;
