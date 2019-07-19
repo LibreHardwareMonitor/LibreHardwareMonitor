@@ -165,12 +165,13 @@ namespace OpenHardwareMonitor.Hardware {
         if (BIOS.Date != null) {
             r.Append("BIOS Date: "); r.AppendLine(BIOS.Date.Value.ToShortDateString());
         }
-        if (BIOS.SizeInKB != null) { 
+        if (BIOS.Size != null) { 
+            const int megabyte = 1024 * 1024;
             r.Append("BIOS Size: ");
-            if (BIOS.SizeInKB > 1024)
-              r.AppendLine(BIOS.SizeInKB.Value / 1024 + " MB");
+            if (BIOS.Size > megabyte)
+              r.AppendLine(BIOS.Size.Value / megabyte + " MB");
             else
-              r.AppendLine(BIOS.SizeInKB.Value + " KB");
+              r.AppendLine(BIOS.Size.Value / 1024 + " KB");
         }
         r.AppendLine();
       }
@@ -316,15 +317,15 @@ namespace OpenHardwareMonitor.Hardware {
       private readonly string vendor;
       private readonly string version;
       private readonly DateTime? date;
-      private readonly long? sizeInKB;
+      private readonly ulong? size;
       
-      public BIOSInformation(string vendor, string version, string date = null, int? sizeInKB = null) 
+      public BIOSInformation(string vendor, string version, string date = null, ulong? size = null) 
         : base (0x00, 0, null, null) 
       {
         this.vendor = vendor;
         this.version = version;
         this.date = ParseBIOSDate(date);
-        this.sizeInKB = sizeInKB;
+        this.size = size;
       }
       
       public BIOSInformation(byte type, ushort handle, byte[] data,
@@ -334,7 +335,26 @@ namespace OpenHardwareMonitor.Hardware {
         this.vendor = GetString(0x04);
         this.version = GetString(0x05);
         this.date = ParseBIOSDate(GetString(0x08));
-        this.sizeInKB = 64 * (GetByte(0x09) + 1);
+        this.size = CalculateBIOSRomSize();
+      }
+
+      private ulong? CalculateBIOSRomSize()
+      {
+        var biosROMSize = GetByte(0x09);
+        var extendedBIOSROMSize = GetWord(0x18);
+        var isExtendedBIOSROMSize = biosROMSize == 0xFF && extendedBIOSROMSize != 0;
+        if (!isExtendedBIOSROMSize)
+            return 65536 * (ulong)(biosROMSize + 1);
+
+        var unit = (extendedBIOSROMSize & 0xC000) >> 14;
+        var extendedSize = (ulong)(extendedBIOSROMSize & ~0xC000) * 1024 * 1024;
+
+        switch(unit) {
+            case 0x00: return extendedSize; // Megabytes
+            case 0x01: return extendedSize * 1024; // Gigabytes - might overflow in the future
+            default:
+                return null; // Other patterns not defined in DMI 3.2.0
+        }
       }
 
       private static DateTime? ParseBIOSDate(string biosDate)
@@ -352,7 +372,7 @@ namespace OpenHardwareMonitor.Hardware {
       
       public DateTime? Date { get { return date; } }
 
-      public long? SizeInKB { get { return sizeInKB; } }
+      public ulong? Size { get { return size; } }
 
       public string Vendor { get { return vendor; } }
 
