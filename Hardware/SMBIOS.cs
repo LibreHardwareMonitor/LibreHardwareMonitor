@@ -337,7 +337,7 @@ namespace OpenHardwareMonitor.Hardware {
       private readonly SystemWakeUp wakeUp;
 
       public SystemInformation(string manufacturerName, string productName, 
-        string version, string serialNumber, string family, byte wakeUp = (byte)SystemWakeUp.Unknown) 
+        string version, string serialNumber, string family, SystemWakeUp wakeUp = SystemWakeUp.Unknown) 
         : base (0x01, 0, null, null) 
       {
         this.manufacturerName = manufacturerName;
@@ -345,7 +345,7 @@ namespace OpenHardwareMonitor.Hardware {
         this.version = version;
         this.serialNumber = serialNumber;
         this.family = family;
-        this.wakeUp = (SystemWakeUp)wakeUp;
+        this.wakeUp = wakeUp;
       }
 
       public SystemInformation(byte type, ushort handle, byte[] data,
@@ -410,7 +410,7 @@ namespace OpenHardwareMonitor.Hardware {
         this.manufacturerName = GetString(0x04).Trim();
         this.productName = GetString(0x05).Trim();
         this.version = GetString(0x06).Trim();
-        this.serialNumber = GetString(0x07).Trim();               
+        this.serialNumber = GetString(0x07).Trim();
       }
       
       public string ManufacturerName { get { return manufacturerName; } }
