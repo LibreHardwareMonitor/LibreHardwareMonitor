@@ -1,21 +1,19 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2011-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.RAM {
   internal class GenericRAM : Hardware {
 
-    private Sensor physicalMemoryUsed { get; set; } = null;
-    private Sensor physicalMemoryAvailable { get; set; } = null;
-    private Sensor physicalMemoryLoad { get; set; } = null;
-    private Sensor virtualMemoryUsed { get; set; } = null;
-    private Sensor virtualMemoryAvailable { get; set; } = null;
-    private Sensor virtualMemoryLoad { get; set; } = null;
+    private Sensor physicalMemoryUsed;
+    private Sensor physicalMemoryAvailable;
+    private Sensor physicalMemoryLoad;
+    private Sensor virtualMemoryUsed;
+    private Sensor virtualMemoryAvailable;
+    private Sensor virtualMemoryLoad;
 
     public GenericRAM(string name, ISettings settings)
       : base(name, new Identifier("ram"), settings) {
@@ -46,10 +44,10 @@ namespace OpenHardwareMonitor.Hardware.RAM {
     }
 
     public override void Update() {
-      Interop.MemoryStatusEx status = new Interop.MemoryStatusEx();
-      status.Length = (uint)Marshal.SizeOf<Interop.MemoryStatusEx>();
+      NativeMethods.MemoryStatusEx status = new NativeMethods.MemoryStatusEx();
+      status.Length = (uint)Marshal.SizeOf<NativeMethods.MemoryStatusEx>();
 
-      if (!Interop.GlobalMemoryStatusEx(ref status))
+      if (!NativeMethods.GlobalMemoryStatusEx(ref status))
         return;
 
       physicalMemoryUsed.Value = (float)(status.TotalPhysicalMemory - status.AvailablePhysicalMemory) / (1024 * 1024 * 1024);
