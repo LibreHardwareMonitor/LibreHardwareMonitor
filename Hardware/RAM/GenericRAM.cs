@@ -4,6 +4,7 @@
 // All Rights Reserved
 
 using System.Runtime.InteropServices;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.RAM {
   internal class GenericRAM : Hardware {
@@ -44,10 +45,10 @@ namespace OpenHardwareMonitor.Hardware.RAM {
     }
 
     public override void Update() {
-      NativeMethods.MemoryStatusEx status = new NativeMethods.MemoryStatusEx();
-      status.Length = (uint)Marshal.SizeOf<NativeMethods.MemoryStatusEx>();
+      Kernel32.MemoryStatusEx status = new Kernel32.MemoryStatusEx();
+      status.Length = (uint)Marshal.SizeOf<Kernel32.MemoryStatusEx>();
 
-      if (!NativeMethods.GlobalMemoryStatusEx(ref status))
+      if (!Kernel32.GlobalMemoryStatusEx(ref status))
         return;
 
       physicalMemoryUsed.Value = (float)(status.TotalPhysicalMemory - status.AvailablePhysicalMemory) / (1024 * 1024 * 1024);

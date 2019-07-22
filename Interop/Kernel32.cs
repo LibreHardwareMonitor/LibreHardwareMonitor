@@ -8,8 +8,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace OpenHardwareMonitor.Hardware.RAM {
-  internal class NativeMethods {
+namespace OpenHardwareMonitor.Interop {
+  internal class Kernel32 {
     private const string KERNEL = "kernel32.dll";
 
     [StructLayout(LayoutKind.Sequential)]
