@@ -1,10 +1,10 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2010 Paul Werelds
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System.Collections.Generic;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
 
@@ -47,10 +47,10 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       this.writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
     }
 
-    public override void UpdateAdditionalSensors(Interop.DriveAttributeValue[] values) {
+    public override void UpdateAdditionalSensors(Kernel32.DriveAttributeValue[] values) {
       float? controllerWritesToNAND = null;
       float? hostWritesToController = null;
-      foreach (Interop.DriveAttributeValue value in values) {
+      foreach (Kernel32.DriveAttributeValue value in values) {
         if (value.Identifier == 0xE9)
           controllerWritesToNAND = RawToInt(value.RawValue, value.AttrValue, null);
 

@@ -1,8 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
@@ -10,11 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  public interface INVMeDrive {
+  internal interface INVMeDrive {
     SafeHandle Identify(StorageInfo _storageInfo);
-    bool IdentifyController(SafeHandle hDevice, out Interop.NVMeIdentifyControllerData data);
-    bool HealthInfoLog(SafeHandle hDevice, out Interop.NVMeHealthInfoLog data);
+    bool IdentifyController(SafeHandle hDevice, out Kernel32.NVMeIdentifyControllerData data);
+    bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVMeHealthInfoLog data);
   }
 }

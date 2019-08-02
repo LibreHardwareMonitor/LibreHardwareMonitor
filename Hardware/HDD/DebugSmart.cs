@@ -1,11 +1,12 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2011-2013 Michael Möller <mmoeller@openhardwaremonitor.org>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
 
@@ -346,13 +347,13 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       return true;
     }
 
-    public Interop.DriveAttributeValue[] ReadSmartData() {
+    public Kernel32.DriveAttributeValue[] ReadSmartData() {
       if (driveNumber < 0)
         throw new ObjectDisposedException("DebugSmart");
       return drives[driveNumber].DriveAttributeValues;
     }
 
-    public Interop.DriveThresholdValue[] ReadSmartThresholds() {
+    public Kernel32.DriveThresholdValue[] ReadSmartThresholds() {
       if (driveNumber < 0)
         throw new ObjectDisposedException("DebugSmart");
       return drives[driveNumber].DriveThresholdValues;
@@ -375,8 +376,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         string[] lines = value.Split(new[] { '\r', '\n' },
           StringSplitOptions.RemoveEmptyEntries);
 
-        DriveAttributeValues = new Interop.DriveAttributeValue[lines.Length];
-        List<Interop.DriveThresholdValue> thresholds = new List<Interop.DriveThresholdValue>();
+        DriveAttributeValues = new Kernel32.DriveAttributeValue[lines.Length];
+        List<Kernel32.DriveThresholdValue> thresholds = new List<Kernel32.DriveThresholdValue>();
 
         for (int i = 0; i < lines.Length; i++) {
 
@@ -386,7 +387,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
           if (array.Length != 4 && array.Length != 5)
             throw new Exception();
 
-          Interop.DriveAttributeValue v = new Interop.DriveAttributeValue();
+          Kernel32.DriveAttributeValue v = new Kernel32.DriveAttributeValue();
           v.Identifier = Convert.ToByte(array[0], idBase);
 
           v.RawValue = new byte[6];
@@ -400,7 +401,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
           DriveAttributeValues[i] = v;
 
           if (array.Length == 5) {
-            Interop.DriveThresholdValue t = new Interop.DriveThresholdValue();
+            Kernel32.DriveThresholdValue t = new Kernel32.DriveThresholdValue();
             t.Identifier = v.Identifier;
             t.Threshold = Convert.ToByte(array[4], 10);
             thresholds.Add(t);
@@ -410,9 +411,9 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         DriveThresholdValues = thresholds.ToArray();
       }
 
-      public Interop.DriveAttributeValue[] DriveAttributeValues { get; private set; }
+      public Kernel32.DriveAttributeValue[] DriveAttributeValues { get; private set; }
 
-      public Interop.DriveThresholdValue[] DriveThresholdValues { get; private set; }
+      public Kernel32.DriveThresholdValue[] DriveThresholdValues { get; private set; }
 
       public string Name { get; private set; }
 

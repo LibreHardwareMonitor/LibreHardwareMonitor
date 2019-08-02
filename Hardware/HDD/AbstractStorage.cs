@@ -1,12 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2010 Paul Werelds
-// Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
-// Copyright (C) 2017 Alexander Thulcke <alexth4ef9@gmail.com>
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
@@ -15,29 +10,28 @@ using System.IO;
 using System.Text;
 using System.Management;
 using System.Linq;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  public abstract class AbstractStorage : Hardware {
-
-    private const int UPDATE_DIVIDER = 30; // update only every 30s
+  internal abstract class AbstractStorage : Hardware {
+    private DateTime lastUpdate = DateTime.MinValue;
+    private TimeSpan updateInterval = TimeSpan.FromSeconds(60);
 
     public string firmwareRevision { get; set; }
     public int index { get; set; }
 
-    private int count { get; set; }
-    private DriveInfo[] driveInfos { get; set; } = null;
-    private StorageInfo storageInfo { get; } = null;
-    private PerformanceValue perfTotal { get; } = new PerformanceValue();
-    private PerformanceValue perfWrite { get; } = new PerformanceValue();
-    private double lastTime { get; set; } = 0;
-    private ulong readRateCounterlast { get; set; } = 0;
-    private ulong writeRateCounterlast { get; set; } = 0;
-
-    private Sensor usageSensor { get; set; } = null;
-    private Sensor sensorDiskWriteActivity { get; set; } = null;
-    private Sensor sensorDiskTotalActivity { get; set; } = null;
-    private Sensor sensorDiskReadRate { get; set; } = null;
-    private Sensor sensorDiskWriteRate { get; set; } = null;
+    private DriveInfo[] driveInfos = null;
+    private StorageInfo storageInfo = null;
+    private PerformanceValue perfTotal = new PerformanceValue();
+    private PerformanceValue perfWrite = new PerformanceValue();
+    private double lastTime = 0;
+    private ulong readRateCounterlast = 0;
+    private ulong writeRateCounterlast = 0;
+    private Sensor usageSensor = null;
+    private Sensor sensorDiskWriteActivity = null;
+    private Sensor sensorDiskTotalActivity = null;
+    private Sensor sensorDiskReadRate = null;
+    private Sensor sensorDiskWriteRate = null;
 
     protected AbstractStorage(StorageInfo info, string name, string firmwareRevision, string id, int index, ISettings settings)
       : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings) {
@@ -45,7 +39,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       this.storageInfo = info;
       this.firmwareRevision = firmwareRevision;
       this.index = index;
-      this.count = 0;
 
       string[] logicalDrives = WindowsStorage.GetLogicalDrives(index);
       List<DriveInfo> driveInfoList = new List<DriveInfo>(logicalDrives.Length);
@@ -71,15 +64,22 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       info.DeviceId = deviceId;
       info.Scsi = string.Format(@"\\.\SCSI{0}:", scsiPort);
 
-      if (info == null || info.Removable || info.BusType == Interop.StorageBusType.BusTypeVirtual || info.BusType == Interop.StorageBusType.BusTypeFileBackedVirtual)
+      if (info == null || info.Removable || info.BusType == Kernel32.StorageBusType.BusTypeVirtual || info.BusType == Kernel32.StorageBusType.BusTypeFileBackedVirtual)
         return null;
 
-      if (info.BusType == Interop.StorageBusType.BusTypeAta || info.BusType == Interop.StorageBusType.BusTypeSata)
+      //fallback, when it is not possible to read out with the nvme implementation,
+      //try it with the sata smart implementation
+      if (info.BusType == Kernel32.StorageBusType.BusTypeNvme) {
+        var x = NVMeGeneric.CreateInstance(info, settings);
+        if (x != null)
+          return x;
+      }
+
+      if (info.BusType == Kernel32.StorageBusType.BusTypeAta ||
+        info.BusType == Kernel32.StorageBusType.BusTypeSata ||
+        info.BusType == Kernel32.StorageBusType.BusTypeNvme) {
         return ATAStorage.CreateInstance(info, settings);
-
-      if (info.BusType == Interop.StorageBusType.BusTypeNvme)
-        return NVMeGeneric.CreateInstance(info, settings);
-
+      }
       return StorageGeneric.CreateInstance(info, settings);
     }
 
@@ -90,13 +90,15 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       }
 
       sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, settings);
-      sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, settings);
       ActivateSensor(sensorDiskWriteActivity);
+
+      sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, settings);
       ActivateSensor(sensorDiskTotalActivity);
 
       sensorDiskReadRate = new Sensor("Read Rate", 34, SensorType.Throughput, this, settings);
-      sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, settings);
       ActivateSensor(sensorDiskReadRate);
+
+      sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, settings);
       ActivateSensor(sensorDiskWriteRate);
     }
 
@@ -106,8 +108,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     protected abstract void UpdateSensors();
 
-
-    public class PerformanceValue {
+    internal class PerformanceValue {
       public ulong perfValue { get; set; } = 0;
       public ulong perfValueBase { get; set; } = 0;
       public double result { get; set; } = 0;
@@ -118,7 +119,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
         perfValue = v;
         perfValueBase = vBase;
-
         result = (100.0 / diff_timebase) * diff_value;
 
         //somtimes it is possible that diff_value > diff_timebase
@@ -181,7 +181,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public override void Update() {
 
-      //update statistics from WMI every time
+      //update statistics from WMI on every update
       if (storageInfo != null) {
         try {
           UpdateStatisticsFromWmi(storageInfo.Index);
@@ -189,8 +189,11 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         catch { }
       }
 
-      //read out other data only 1/UPDATE_DIVIDER
-      if (count == 0) {
+      //read out with updateInterval
+      var tDiff = DateTime.UtcNow - lastUpdate;
+      if(tDiff > updateInterval) {
+        lastUpdate = DateTime.UtcNow;
+
         UpdateSensors();
 
         if (usageSensor != null) {
@@ -203,20 +206,15 @@ namespace OpenHardwareMonitor.Hardware.HDD {
             try {
               totalSize += driveInfos[i].TotalSize;
               totalFreeSpace += driveInfos[i].TotalFreeSpace;
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
+            } catch (IOException) { } catch (UnauthorizedAccessException) { }
           }
           if (totalSize > 0) {
             usageSensor.Value = 100.0f - (100.0f * totalFreeSpace) / totalSize;
-          }
-          else {
+          } else {
             usageSensor.Value = null;
           }
         }
       }
-      count++;
-      count %= UPDATE_DIVIDER;
     }
 
     protected abstract void GetReport(StringBuilder r);

@@ -1,20 +1,19 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  public class NVMeSamsung : INVMeDrive {
+  internal class NVMeSamsung : INVMeDrive {
 
-    //samsung spcific nvme access
+    //samsung nvme access
     //https://github.com/hiyohiyo/CrystalDiskInfo
     //https://github.com/hiyohiyo/CrystalDiskInfo/blob/master/AtaSmart.cpp
 
@@ -24,7 +23,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public static SafeHandle _Identify(StorageInfo _storageInfo) {
 
-      var handle = Interop.OpenDevice(_storageInfo.DeviceId);
+      var handle = Kernel32.OpenDevice(_storageInfo.DeviceId);
       if (handle == null || handle.IsInvalid)
         return null;
 
@@ -32,59 +31,59 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       bool validTransfer = false;
       uint bytesReturned = 0;
       IntPtr buffer;
-      Interop.SPTWith512Buffer sptwb = Interop.CreateStruct<Interop.SPTWith512Buffer>();
+      Kernel32.SPTWith512Buffer sptwb = Kernel32.CreateStruct<Kernel32.SPTWith512Buffer>();
 
-      sptwb.Spt.Length = (ushort)Marshal.SizeOf<Interop.SCSI_PASS_THROUGH>();
+      sptwb.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
       sptwb.Spt.PathId = 0;
       sptwb.Spt.TargetId = 0;
       sptwb.Spt.Lun = 0;
       sptwb.Spt.SenseInfoLength = 24;
-      sptwb.Spt.DataTransferLength = Interop.IDENTIFY_BUFFER_SIZE;
+      sptwb.Spt.DataTransferLength = Kernel32.IDENTIFY_BUFFER_SIZE;
       sptwb.Spt.TimeOutValue = 2;
-      sptwb.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Interop.SPTWith512Buffer), "DataBuf");
-      sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Interop.SPTWith512Buffer), "SenseBuf");
+      sptwb.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SPTWith512Buffer), nameof(Kernel32.SPTWith512Buffer.DataBuf));
+      sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SPTWith512Buffer), nameof(Kernel32.SPTWith512Buffer.SenseBuf));
       sptwb.Spt.CdbLength = 16;
       sptwb.Spt.Cdb[0] = 0xB5; // SECURITY PROTOCOL IN
       sptwb.Spt.Cdb[1] = 0xFE; // Samsung Protocol
       sptwb.Spt.Cdb[3] = 5;    // Identify
       sptwb.Spt.Cdb[8] = 0;   // Transfer Length
       sptwb.Spt.Cdb[9] = 0x40;
-      sptwb.Spt.DataIn = (byte)Interop.SCSI_IOCTL_DATA_OUT;
+      sptwb.Spt.DataIn = (byte)Kernel32.SCSI_IOCTL_DATA_OUT;
       sptwb.DataBuf[0] = 1;
 
-      length = (int)Marshal.SizeOf<Interop.SPTWith512Buffer>();
+      length = (int)Marshal.SizeOf<Kernel32.SPTWith512Buffer>();
       buffer = Marshal.AllocHGlobal(length);
-      Marshal.StructureToPtr<Interop.SPTWith512Buffer>(sptwb, buffer, false);
-      validTransfer = Interop.DeviceIoControl(handle, Interop.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
+      Marshal.StructureToPtr<Kernel32.SPTWith512Buffer>(sptwb, buffer, false);
+      validTransfer = Kernel32.DeviceIoControl(handle, Kernel32.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
       Marshal.FreeHGlobal(buffer);
 
       if (validTransfer) {
         //read data from samsung SSD
-        sptwb = Interop.CreateStruct<Interop.SPTWith512Buffer>();
-        sptwb.Spt.Length = (ushort)Marshal.SizeOf<Interop.SCSI_PASS_THROUGH>();
+        sptwb = Kernel32.CreateStruct<Kernel32.SPTWith512Buffer>();
+        sptwb.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
         sptwb.Spt.PathId = 0;
         sptwb.Spt.TargetId = 0;
         sptwb.Spt.Lun = 0;
         sptwb.Spt.SenseInfoLength = 24;
-        sptwb.Spt.DataTransferLength = Interop.IDENTIFY_BUFFER_SIZE;
+        sptwb.Spt.DataTransferLength = Kernel32.IDENTIFY_BUFFER_SIZE;
         sptwb.Spt.TimeOutValue = 2;
-        sptwb.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Interop.SPTWith512Buffer), "DataBuf");
-        sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Interop.SPTWith512Buffer), "SenseBuf");
+        sptwb.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SPTWith512Buffer), nameof(Kernel32.SPTWith512Buffer.DataBuf));
+        sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SPTWith512Buffer), nameof(Kernel32.SPTWith512Buffer.SenseBuf));
         sptwb.Spt.CdbLength = 16;
         sptwb.Spt.Cdb[0] = 0xA2; // SECURITY PROTOCOL IN
         sptwb.Spt.Cdb[1] = 0xFE; // Samsung Protocol
         sptwb.Spt.Cdb[3] = 5;    // Identify
         sptwb.Spt.Cdb[8] = 2; // Transfer Length
         sptwb.Spt.Cdb[9] = 0;
-        sptwb.Spt.DataIn = Interop.SCSI_IOCTL_DATA_IN;
+        sptwb.Spt.DataIn = Kernel32.SCSI_IOCTL_DATA_IN;
 
-        length = (int)Marshal.SizeOf<Interop.SPTWith512Buffer>();
+        length = (int)Marshal.SizeOf<Kernel32.SPTWith512Buffer>();
         buffer = Marshal.AllocHGlobal(length);
-        Marshal.StructureToPtr<Interop.SPTWith512Buffer>(sptwb, buffer, false);
+        Marshal.StructureToPtr<Kernel32.SPTWith512Buffer>(sptwb, buffer, false);
 
-        validTransfer = Interop.DeviceIoControl(handle, Interop.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
+        validTransfer = Kernel32.DeviceIoControl(handle, Kernel32.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
         if (validTransfer) {
-          var item = Marshal.PtrToStructure<Interop.SPTWith512Buffer>(buffer);
+          var item = Marshal.PtrToStructure<Kernel32.SPTWith512Buffer>(buffer);
           Marshal.FreeHGlobal(buffer);
         }
         else {
@@ -96,8 +95,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       return handle;
     }
 
-    public bool IdentifyController(SafeHandle hDevice, out Interop.NVMeIdentifyControllerData data) {
-      data = Interop.CreateStruct<Interop.NVMeIdentifyControllerData>();
+    public bool IdentifyController(SafeHandle hDevice, out Kernel32.NVMeIdentifyControllerData data) {
+      data = Kernel32.CreateStruct<Kernel32.NVMeIdentifyControllerData>();
       if (hDevice == null || hDevice.IsInvalid)
         return false;
 
@@ -106,68 +105,63 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       bool validTransfer = false;
       uint bytesReturned = 0;
       IntPtr buffer;
-      Interop.SPTWith512Buffer sptwb = Interop.CreateStruct<Interop.SPTWith512Buffer>();
+      Kernel32.SPTWith512Buffer sptwb = Kernel32.CreateStruct<Kernel32.SPTWith512Buffer>();
 
-      sptwb.Spt.Length = (ushort)Marshal.SizeOf<Interop.SCSI_PASS_THROUGH>();
+      sptwb.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
       sptwb.Spt.PathId = 0;
       sptwb.Spt.TargetId = 0;
       sptwb.Spt.Lun = 0;
       sptwb.Spt.SenseInfoLength = 24;
-      sptwb.Spt.DataTransferLength = Interop.IDENTIFY_BUFFER_SIZE;
+      sptwb.Spt.DataTransferLength = Kernel32.IDENTIFY_BUFFER_SIZE;
       sptwb.Spt.TimeOutValue = 2;
-      sptwb.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Interop.SPTWith512Buffer), "DataBuf");
-      sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Interop.SPTWith512Buffer), "SenseBuf");
+      sptwb.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SPTWith512Buffer), nameof(Kernel32.SPTWith512Buffer.DataBuf));
+      sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SPTWith512Buffer), nameof(Kernel32.SPTWith512Buffer.SenseBuf));
       sptwb.Spt.CdbLength = 16;
       sptwb.Spt.Cdb[0] = 0xB5;    // SECURITY PROTOCOL IN
       sptwb.Spt.Cdb[1] = 0xFE;    // Samsung Protocol
       sptwb.Spt.Cdb[3] = 5;       // Identify
       sptwb.Spt.Cdb[8] = 0;       // Transfer Length
       sptwb.Spt.Cdb[9] = 0x40;    // Transfer Length
-      sptwb.Spt.DataIn = (byte)Interop.SCSI_IOCTL_DATA_OUT;
+      sptwb.Spt.DataIn = (byte)Kernel32.SCSI_IOCTL_DATA_OUT;
       sptwb.DataBuf[0] = 1;
 
-      length = (int)Marshal.SizeOf<Interop.SPTWith512Buffer>();
+      length = (int)Marshal.SizeOf<Kernel32.SPTWith512Buffer>();
       buffer = Marshal.AllocHGlobal(length);
-      Marshal.StructureToPtr<Interop.SPTWith512Buffer>(sptwb, buffer, false);
-      validTransfer = Interop.DeviceIoControl(hDevice, Interop.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
+      Marshal.StructureToPtr<Kernel32.SPTWith512Buffer>(sptwb, buffer, false);
+      validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
       Marshal.FreeHGlobal(buffer);
 
       if (validTransfer) {
         //read data from samsung SSD
-        sptwb = Interop.CreateStruct<Interop.SPTWith512Buffer>();
-        sptwb.Spt.Length = (ushort)Marshal.SizeOf<Interop.SCSI_PASS_THROUGH>();
+        sptwb = Kernel32.CreateStruct<Kernel32.SPTWith512Buffer>();
+        sptwb.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
         sptwb.Spt.PathId = 0;
         sptwb.Spt.TargetId = 0;
         sptwb.Spt.Lun = 0;
         sptwb.Spt.SenseInfoLength = 24;
-        sptwb.Spt.DataTransferLength = Interop.IDENTIFY_BUFFER_SIZE;
+        sptwb.Spt.DataTransferLength = Kernel32.IDENTIFY_BUFFER_SIZE;
         sptwb.Spt.TimeOutValue = 2;
-        sptwb.Spt.DataBufferOffset = Marshal.OffsetOf<Interop.SPTWith512Buffer>("DataBuf");
-        sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Interop.SPTWith512Buffer>("SenseBuf");
+        sptwb.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.DataBuf));
+        sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.SenseBuf));
         sptwb.Spt.CdbLength = 16;
         sptwb.Spt.Cdb[0] = 0xA2;  // SECURITY PROTOCOL IN
         sptwb.Spt.Cdb[1] = 0xFE;  // Samsung Protocol
         sptwb.Spt.Cdb[3] = 5;     // Identify
         sptwb.Spt.Cdb[8] = 2;     // Transfer Length (high)
         sptwb.Spt.Cdb[9] = 0;     // Transfer Length (low)
-        sptwb.Spt.DataIn = Interop.SCSI_IOCTL_DATA_IN;
+        sptwb.Spt.DataIn = Kernel32.SCSI_IOCTL_DATA_IN;
 
-        length = (int)Marshal.SizeOf<Interop.SPTWith512Buffer>();
+        length = (int)Marshal.SizeOf<Kernel32.SPTWith512Buffer>();
         buffer = Marshal.AllocHGlobal(length);
-        Marshal.StructureToPtr<Interop.SPTWith512Buffer>(sptwb, buffer, false);
+        Marshal.StructureToPtr<Kernel32.SPTWith512Buffer>(sptwb, buffer, false);
 
-        validTransfer = Interop.DeviceIoControl(hDevice, Interop.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
+        validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
         if (validTransfer) {
-          var offset = Marshal.OffsetOf<Interop.SPTWith512Buffer>("DataBuf");
+          var offset = Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.DataBuf));
           IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-          int finalSize = Marshal.SizeOf<Interop.NVMeIdentifyControllerData>();
-          var ptr = Marshal.AllocHGlobal(Marshal.SizeOf<Interop.NVMeIdentifyControllerData>());
-          Interop.RtlZeroMemory(ptr, finalSize);
-          Interop.CopyMemory(ptr, newPtr, (uint)sptwb.DataBuf.Length);
-          Marshal.FreeHGlobal(buffer);
-          var item = Marshal.PtrToStructure<Interop.NVMeIdentifyControllerData>(ptr);
+          var item = Marshal.PtrToStructure<Kernel32.NVMeIdentifyControllerData>(newPtr);
           data = item;
-          Marshal.FreeHGlobal(ptr);
+          Marshal.FreeHGlobal(buffer);
           result = true;
         }
         else {
@@ -177,8 +171,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       return result;
     }
 
-    public bool HealthInfoLog(SafeHandle hDevice, out Interop.NVMeHealthInfoLog data) {
-      data = Interop.CreateStruct<Interop.NVMeHealthInfoLog>();
+    public bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVMeHealthInfoLog data) {
+      data = Kernel32.CreateStruct<Kernel32.NVMeHealthInfoLog>();
       if (hDevice == null || hDevice.IsInvalid)
         return false;
 
@@ -187,72 +181,67 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       bool validTransfer = false;
       uint bytesReturned = 0;
       IntPtr buffer;
-      Interop.SPTWith512Buffer sptwb = Interop.CreateStruct<Interop.SPTWith512Buffer>();
+      Kernel32.SPTWith512Buffer sptwb = Kernel32.CreateStruct<Kernel32.SPTWith512Buffer>();
 
-      sptwb.Spt.Length = (ushort)Marshal.SizeOf<Interop.SCSI_PASS_THROUGH>();
+      sptwb.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
       sptwb.Spt.PathId = 0;
       sptwb.Spt.TargetId = 0;
       sptwb.Spt.Lun = 0;
       sptwb.Spt.SenseInfoLength = 24;
-      sptwb.Spt.DataTransferLength = Interop.IDENTIFY_BUFFER_SIZE;
+      sptwb.Spt.DataTransferLength = Kernel32.IDENTIFY_BUFFER_SIZE;
       sptwb.Spt.TimeOutValue = 2;
-      sptwb.Spt.DataBufferOffset = Marshal.OffsetOf<Interop.SPTWith512Buffer>("DataBuf");
-      sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Interop.SPTWith512Buffer>("SenseBuf");
+      sptwb.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.DataBuf));
+      sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.SenseBuf));
       sptwb.Spt.CdbLength = 16;
       sptwb.Spt.Cdb[0] = 0xB5;    // SECURITY PROTOCOL IN
       sptwb.Spt.Cdb[1] = 0xFE;    // Samsung Protocol
       sptwb.Spt.Cdb[3] = 6;       // Log Data
       sptwb.Spt.Cdb[8] = 0;       // Transfer Length
       sptwb.Spt.Cdb[9] = 0x40;    // Transfer Length
-      sptwb.Spt.DataIn = (byte)Interop.SCSI_IOCTL_DATA_OUT;
+      sptwb.Spt.DataIn = (byte)Kernel32.SCSI_IOCTL_DATA_OUT;
       sptwb.DataBuf[0] = 2;
       sptwb.DataBuf[4] = 0xff;
       sptwb.DataBuf[5] = 0xff;
       sptwb.DataBuf[6] = 0xff;
       sptwb.DataBuf[7] = 0xff;
 
-      length = (int)Marshal.SizeOf<Interop.SPTWith512Buffer>();
+      length = (int)Marshal.SizeOf<Kernel32.SPTWith512Buffer>();
       buffer = Marshal.AllocHGlobal(length);
-      Marshal.StructureToPtr<Interop.SPTWith512Buffer>(sptwb, buffer, false);
-      validTransfer = Interop.DeviceIoControl(hDevice, Interop.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
+      Marshal.StructureToPtr<Kernel32.SPTWith512Buffer>(sptwb, buffer, false);
+      validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
       Marshal.FreeHGlobal(buffer);
 
       if (validTransfer) {
         //read data from samsung SSD
-        sptwb = Interop.CreateStruct<Interop.SPTWith512Buffer>();
-        sptwb.Spt.Length = (ushort)Marshal.SizeOf<Interop.SCSI_PASS_THROUGH>();
+        sptwb = Kernel32.CreateStruct<Kernel32.SPTWith512Buffer>();
+        sptwb.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
         sptwb.Spt.PathId = 0;
         sptwb.Spt.TargetId = 0;
         sptwb.Spt.Lun = 0;
         sptwb.Spt.SenseInfoLength = 24;
-        sptwb.Spt.DataTransferLength = Interop.IDENTIFY_BUFFER_SIZE;
+        sptwb.Spt.DataTransferLength = Kernel32.IDENTIFY_BUFFER_SIZE;
         sptwb.Spt.TimeOutValue = 2;
-        sptwb.Spt.DataBufferOffset = Marshal.OffsetOf<Interop.SPTWith512Buffer>("DataBuf");
-        sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Interop.SPTWith512Buffer>("SenseBuf");
+        sptwb.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.DataBuf));
+        sptwb.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.SenseBuf));
         sptwb.Spt.CdbLength = 16;
         sptwb.Spt.Cdb[0] = 0xA2;  // SECURITY PROTOCOL IN
         sptwb.Spt.Cdb[1] = 0xFE;  // Samsung Protocol
         sptwb.Spt.Cdb[3] = 6;     // Log Data
         sptwb.Spt.Cdb[8] = 2;     // Transfer Length (high)
         sptwb.Spt.Cdb[9] = 0;     // Transfer Length (low)
-        sptwb.Spt.DataIn = Interop.SCSI_IOCTL_DATA_IN;
+        sptwb.Spt.DataIn = Kernel32.SCSI_IOCTL_DATA_IN;
 
-        length = (int)Marshal.SizeOf<Interop.SPTWith512Buffer>();
+        length = (int)Marshal.SizeOf<Kernel32.SPTWith512Buffer>();
         buffer = Marshal.AllocHGlobal(length);
-        Marshal.StructureToPtr<Interop.SPTWith512Buffer>(sptwb, buffer, false);
+        Marshal.StructureToPtr<Kernel32.SPTWith512Buffer>(sptwb, buffer, false);
 
-        validTransfer = Interop.DeviceIoControl(hDevice, Interop.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
+        validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.Command.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out bytesReturned, IntPtr.Zero);
         if (validTransfer) {
-          var offset = Marshal.OffsetOf<Interop.SPTWith512Buffer>("DataBuf");
+          var offset = Marshal.OffsetOf<Kernel32.SPTWith512Buffer>(nameof(Kernel32.SPTWith512Buffer.DataBuf));
           IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-          int finalSize = Marshal.SizeOf<Interop.NVMeIdentifyControllerData>();
-          var ptr = Marshal.AllocHGlobal(Marshal.SizeOf<Interop.NVMeIdentifyControllerData>());
-          Interop.RtlZeroMemory(ptr, finalSize);
-          Interop.CopyMemory(ptr, newPtr, (uint)sptwb.DataBuf.Length);
-          Marshal.FreeHGlobal(buffer);
-          var item = Marshal.PtrToStructure<Interop.NVMeHealthInfoLog>(ptr);
+          var item = Marshal.PtrToStructure<Kernel32.NVMeHealthInfoLog>(newPtr);
           data = item;
-          Marshal.FreeHGlobal(ptr);
+          Marshal.FreeHGlobal(buffer);
           result = true;
         }
         else {

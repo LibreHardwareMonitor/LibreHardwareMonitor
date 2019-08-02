@@ -1,13 +1,12 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2017 Alexander Thulcke <alexth4ef9@gmail.com>
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   internal sealed class NVMeGeneric : AbstractStorage {
@@ -112,18 +111,18 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       if (health == null)
         return;
 
-      if (health.CriticalWarning == Interop.NVMeCriticalWarning.None)
+      if (health.CriticalWarning == Kernel32.NVMeCriticalWarning.None)
         r.AppendLine("Critical Warning: -");
       else {
-        if ((health.CriticalWarning & Interop.NVMeCriticalWarning.AvailableSpaceLow) != 0)
+        if ((health.CriticalWarning & Kernel32.NVMeCriticalWarning.AvailableSpaceLow) != 0)
           r.AppendLine("Critical Warning: the available spare space has fallen below the threshold.");
-        if ((health.CriticalWarning & Interop.NVMeCriticalWarning.TemperatureThreshold) != 0)
+        if ((health.CriticalWarning & Kernel32.NVMeCriticalWarning.TemperatureThreshold) != 0)
           r.AppendLine("Critical Warning: a temperature is above an over temperature threshold or below an under temperature threshold.");
-        if ((health.CriticalWarning & Interop.NVMeCriticalWarning.ReliabilityDegraded) != 0)
+        if ((health.CriticalWarning & Kernel32.NVMeCriticalWarning.ReliabilityDegraded) != 0)
           r.AppendLine("Critical Warning: the device reliability has been degraded due to significant media related errors or any internal error that degrades device reliability.");
-        if ((health.CriticalWarning & Interop.NVMeCriticalWarning.ReadOnly) != 0)
+        if ((health.CriticalWarning & Kernel32.NVMeCriticalWarning.ReadOnly) != 0)
           r.AppendLine("Critical Warning: the media has been placed in read only mode.");
-        if ((health.CriticalWarning & Interop.NVMeCriticalWarning.VolatileMemoryBackupDeviceFailed) != 0)
+        if ((health.CriticalWarning & Kernel32.NVMeCriticalWarning.VolatileMemoryBackupDeviceFailed) != 0)
           r.AppendLine("Critical Warning: the volatile memory backup device has failed.");
       }
       r.AppendLine("Temperature: " + health.Temperature + " Celsius");

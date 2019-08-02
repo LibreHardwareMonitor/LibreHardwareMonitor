@@ -1,14 +1,13 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2011-2013 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   /// <summary>
   /// Localization class for SMART attribute names.
   /// </summary>
-  public static class SmartNames {
+  internal static class SmartNames {
 
     public static string AirflowTemperature {
       get { return "Airflow Temperature"; }

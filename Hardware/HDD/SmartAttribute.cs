@@ -1,14 +1,14 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2011-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  public class SmartAttribute {
+  internal class SmartAttribute {
 
     private RawValueConversion rawValueConversion;
 
@@ -85,7 +85,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       }
     }
 
-    public float ConvertValue(Interop.DriveAttributeValue value, IReadOnlyList<IParameter> parameters) {
+    public float ConvertValue(Kernel32.DriveAttributeValue value, IReadOnlyList<IParameter> parameters) {
       if (rawValueConversion == null) {
         return value.AttrValue;
       }

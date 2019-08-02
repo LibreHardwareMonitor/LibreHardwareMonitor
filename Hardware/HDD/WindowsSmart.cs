@@ -1,27 +1,27 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2009-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2010 Paul Werelds
-// Copyright (C) 2011 Roland Reinl <roland-reinl@gmx.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
 
-  public class WindowsSmart : ISmart {
+  internal class WindowsSmart : ISmart {
 
-    private SafeHandle handle { get; } = null;
-    private int driveNumber { get; set; }
+    private SafeHandle handle = null;
+    private int driveNumber;
+
     public bool IsValid {
       get { return !handle.IsInvalid; }
     }
 
     public WindowsSmart(int driveNumber) {
       this.driveNumber = driveNumber;
-      handle = Interop.CreateFile(@"\\.\PhysicalDrive" + driveNumber,
+      handle = Kernel32.CreateFile(@"\\.\PhysicalDrive" + driveNumber,
         FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
     }
 
@@ -45,65 +45,65 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       if (handle.IsClosed)
         throw new ObjectDisposedException("WindowsATASmart");
 
-      Interop.DriveCommandParameter parameter = new Interop.DriveCommandParameter();
-      Interop.DriveCommandResult result;
+      Kernel32.DriveCommandParameter parameter = new Kernel32.DriveCommandParameter();
+      Kernel32.DriveCommandResult result;
       uint bytesReturned;
 
       parameter.DriveNumber = (byte)driveNumber;
-      parameter.Registers.Features = Interop.RegisterFeature.SmartEnableOperations;
-      parameter.Registers.LBAMid = Interop.SMART_LBA_MID;
-      parameter.Registers.LBAHigh = Interop.SMART_LBA_HI;
-      parameter.Registers.Command = Interop.RegisterCommand.SmartCmd;
+      parameter.Registers.Features = Kernel32.RegisterFeature.SmartEnableOperations;
+      parameter.Registers.LBAMid = Kernel32.SMART_LBA_MID;
+      parameter.Registers.LBAHigh = Kernel32.SMART_LBA_HI;
+      parameter.Registers.Command = Kernel32.RegisterCommand.SmartCmd;
 
-      return Interop.DeviceIoControl(
+      return Kernel32.DeviceIoControl(
         handle,
-        Interop.DriveCommand.SendDriveCommand,
+        Kernel32.DriveCommand.SendDriveCommand,
         ref parameter, Marshal.SizeOf(parameter), out result,
-        Marshal.SizeOf<Interop.DriveCommandResult>(), out bytesReturned, IntPtr.Zero);
+        Marshal.SizeOf<Kernel32.DriveCommandResult>(), out bytesReturned, IntPtr.Zero);
     }
 
-    public Interop.DriveAttributeValue[] ReadSmartData() {
+    public Kernel32.DriveAttributeValue[] ReadSmartData() {
       if (handle.IsClosed)
         throw new ObjectDisposedException("WindowsATASmart");
 
-      Interop.DriveCommandParameter parameter = new Interop.DriveCommandParameter();
-      Interop.DriveSmartReadDataResult result;
+      Kernel32.DriveCommandParameter parameter = new Kernel32.DriveCommandParameter();
+      Kernel32.DriveSmartReadDataResult result;
       uint bytesReturned;
 
       parameter.DriveNumber = (byte)driveNumber;
-      parameter.Registers.Features = Interop.RegisterFeature.SmartReadData;
-      parameter.Registers.LBAMid = Interop.SMART_LBA_MID;
-      parameter.Registers.LBAHigh = Interop.SMART_LBA_HI;
-      parameter.Registers.Command = Interop.RegisterCommand.SmartCmd;
+      parameter.Registers.Features = Kernel32.RegisterFeature.SmartReadData;
+      parameter.Registers.LBAMid = Kernel32.SMART_LBA_MID;
+      parameter.Registers.LBAHigh = Kernel32.SMART_LBA_HI;
+      parameter.Registers.Command = Kernel32.RegisterCommand.SmartCmd;
 
-      bool isValid = Interop.DeviceIoControl(handle,
-        Interop.DriveCommand.ReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
-        out result, Marshal.SizeOf<Interop.DriveSmartReadDataResult>(),
+      bool isValid = Kernel32.DeviceIoControl(handle,
+        Kernel32.DriveCommand.ReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
+        out result, Marshal.SizeOf<Kernel32.DriveSmartReadDataResult>(),
         out bytesReturned, IntPtr.Zero);
 
-      return (isValid) ? result.Attributes : new Interop.DriveAttributeValue[0];
+      return (isValid) ? result.Attributes : new Kernel32.DriveAttributeValue[0];
     }
 
-    public Interop.DriveThresholdValue[] ReadSmartThresholds() {
+    public Kernel32.DriveThresholdValue[] ReadSmartThresholds() {
       if (handle.IsClosed)
         throw new ObjectDisposedException("WindowsATASmart");
 
-      Interop.DriveCommandParameter parameter = new Interop.DriveCommandParameter();
-      Interop.DriveSmartReadThresholdsResult result;
+      Kernel32.DriveCommandParameter parameter = new Kernel32.DriveCommandParameter();
+      Kernel32.DriveSmartReadThresholdsResult result;
       uint bytesReturned = 0;
 
       parameter.DriveNumber = (byte)driveNumber;
-      parameter.Registers.Features = Interop.RegisterFeature.SmartReadThresholds;
-      parameter.Registers.LBAMid = Interop.SMART_LBA_MID;
-      parameter.Registers.LBAHigh = Interop.SMART_LBA_HI;
-      parameter.Registers.Command = Interop.RegisterCommand.SmartCmd;
+      parameter.Registers.Features = Kernel32.RegisterFeature.SmartReadThresholds;
+      parameter.Registers.LBAMid = Kernel32.SMART_LBA_MID;
+      parameter.Registers.LBAHigh = Kernel32.SMART_LBA_HI;
+      parameter.Registers.Command = Kernel32.RegisterCommand.SmartCmd;
 
-      bool isValid = Interop.DeviceIoControl(handle,
-        Interop.DriveCommand.ReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
-        out result, Marshal.SizeOf<Interop.DriveSmartReadThresholdsResult>(),
+      bool isValid = Kernel32.DeviceIoControl(handle,
+        Kernel32.DriveCommand.ReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
+        out result, Marshal.SizeOf<Kernel32.DriveSmartReadThresholdsResult>(),
         out bytesReturned, IntPtr.Zero);
 
-      return (isValid) ? result.Thresholds : new Interop.DriveThresholdValue[0];
+      return (isValid) ? result.Thresholds : new Kernel32.DriveThresholdValue[0];
     }
 
     private string GetString(byte[] bytes) {
@@ -119,16 +119,16 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       if (handle.IsClosed)
         throw new ObjectDisposedException("WindowsATASmart");
 
-      Interop.DriveCommandParameter parameter = new Interop.DriveCommandParameter();
-      Interop.DriveIdentifyResult result;
+      Kernel32.DriveCommandParameter parameter = new Kernel32.DriveCommandParameter();
+      Kernel32.DriveIdentifyResult result;
       uint bytesReturned;
 
       parameter.DriveNumber = (byte)driveNumber;
-      parameter.Registers.Command = Interop.RegisterCommand.IdCmd;
+      parameter.Registers.Command = Kernel32.RegisterCommand.IdCmd;
 
-      bool valid = Interop.DeviceIoControl(handle,
-        Interop.DriveCommand.ReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
-        out result, Marshal.SizeOf<Interop.DriveIdentifyResult>(),
+      bool valid = Kernel32.DeviceIoControl(handle,
+        Kernel32.DriveCommand.ReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
+        out result, Marshal.SizeOf<Kernel32.DriveIdentifyResult>(),
         out bytesReturned, IntPtr.Zero);
 
       if (!valid) {

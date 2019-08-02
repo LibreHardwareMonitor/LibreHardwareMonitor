@@ -41,15 +41,14 @@
     <Compile Include="Hardware\HDD\AbstractStorage.cs" />
     <Compile Include="Hardware\HDD\ATAStorage.cs" />
     <Compile Include="Hardware\HDD\DebugSmart.cs" />
-    <Compile Include="Hardware\HDD\DriveAttributeValue.cs" />
-    <Compile Include="Hardware\HDD\DriveThresholdValue.cs" />
     <Compile Include="Hardware\HDD\HDDGeneric.cs" />
-    <Compile Include="Hardware\HDD\Interop.cs" />
     <Compile Include="Hardware\HDD\INVMeDrive.cs" />
     <Compile Include="Hardware\HDD\ISmart.cs" />
     <Compile Include="Hardware\HDD\NVMeGeneric.cs" />
     <Compile Include="Hardware\HDD\NVMeHealthInfo.cs" />
     <Compile Include="Hardware\HDD\NVMeInfo.cs" />
+    <Compile Include="Hardware\HDD\NVMeIntelRst.cs" />
+    <Compile Include="Hardware\HDD\NVMeIntel.cs" />
     <Compile Include="Hardware\HDD\NVMeSamsung.cs" />
     <Compile Include="Hardware\HDD\NVMeSmart.cs" />
     <Compile Include="Hardware\HDD\NVMeWindows.cs" />
@@ -129,6 +128,7 @@
     <Compile Include="Hardware\ISettings.cs" />
     <Compile Include="Hardware\HexStringArray.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />
+    <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Software\OperatingSystem.cs" />

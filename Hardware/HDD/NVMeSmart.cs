@@ -1,27 +1,25 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2017 Alexander Thulcke <alexth4ef9@gmail.com>
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
 
-  public class NVMeSmart : IDisposable {
+  internal class NVMeSmart : IDisposable {
 
     public INVMeDrive NVMeDrive { get; set; }
-    private SafeHandle handle { get; } = null;
-    private int driveNumber { get; set; }
+    private SafeHandle handle;
+    private int driveNumber;
 
     private class NVMeInfoImpl : NVMeInfo {
-      public NVMeInfoImpl(int index, Interop.NVMeIdentifyControllerData data) {
+      public NVMeInfoImpl(int index, Kernel32.NVMeIdentifyControllerData data) {
         Index = index;
         VID = data.vid;
         SSVID = data.ssvid;
@@ -37,8 +35,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     }
 
     private class NVMeHealthInfoImpl : NVMeHealthInfo {
-      public NVMeHealthInfoImpl(Interop.NVMeHealthInfoLog log) {
-        CriticalWarning = (Interop.NVMeCriticalWarning)log.CriticalWarning;
+      public NVMeHealthInfoImpl(Kernel32.NVMeHealthInfoLog log) {
+        CriticalWarning = (Kernel32.NVMeCriticalWarning)log.CriticalWarning;
         Temperature = KelvinToCelsius(log.CompositeTemperature);
         AvailableSpare = log.AvailableSpare;
         AvailableSpareThreshold = log.AvailableSpareThreshold;
@@ -89,10 +87,26 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       this.NVMeDrive = null;
 
       //test samsung protocol
-      if (this.NVMeDrive == null && _storageInfo.Name.Contains("Samsung")) {
+      if (this.NVMeDrive == null && _storageInfo.Name.ToLower().Contains("samsung")) {
         handle = NVMeSamsung._Identify(_storageInfo);
         if (handle != null) {
           NVMeDrive = new NVMeSamsung();
+        }
+      }
+
+      //test intel protocol
+      if (this.NVMeDrive == null && _storageInfo.Name.ToLower().Contains("intel")) {
+        handle = NVMeIntel._Identify(_storageInfo);
+        if (handle != null) {
+          NVMeDrive = new NVMeIntel();
+        }
+      }
+
+      //test intel raid protocol
+      if (this.NVMeDrive == null && _storageInfo.Name.ToLower().Contains("intel")) {
+        handle = NVMeIntelRst._Identify(_storageInfo);
+        if (handle != null) {
+          NVMeDrive = new NVMeIntelRst();
         }
       }
 
@@ -133,7 +147,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       if (handle == null || handle.IsClosed)
         return null;
       bool valid = false;
-      Interop.NVMeIdentifyControllerData data = new Interop.NVMeIdentifyControllerData();
+      Kernel32.NVMeIdentifyControllerData data = new Kernel32.NVMeIdentifyControllerData();
       if (NVMeDrive != null)
         valid = NVMeDrive.IdentifyController(handle, out data);
       if (!valid)
@@ -145,7 +159,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       if (handle == null || handle.IsClosed)
         return null;
       bool valid = false;
-      Interop.NVMeHealthInfoLog data = new Interop.NVMeHealthInfoLog();
+      Kernel32.NVMeHealthInfoLog data = new Kernel32.NVMeHealthInfoLog();
       if (NVMeDrive != null)
         valid = NVMeDrive.HealthInfoLog(handle, out data);
       if (!valid)

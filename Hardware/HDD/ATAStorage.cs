@@ -1,11 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2009-2015 Michael Möller <mmoeller @openhardwaremonitor.org>
-// Copyright (C) 2010 Paul Werelds
-// Copyright (C) 2011 Roland Reinl <roland-reinl @gmx.de>
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
@@ -13,9 +9,10 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Linq;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-  public abstract class ATAStorage : AbstractStorage {
+  internal abstract class ATAStorage : AbstractStorage {
 
     // array of all harddrive types, matching type is searched in this order
     private static Type[] hddTypes = {
@@ -28,9 +25,9 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       typeof(GenericHarddisk)
     };
 
-    private ISmart smart { get; }
-    private IList<SmartAttribute> smartAttributes { get; set; }
-    private IDictionary<SmartAttribute, Sensor> sensors { get; set; }
+    private ISmart smart;
+    private IList<SmartAttribute> smartAttributes;
+    private IDictionary<SmartAttribute, Sensor> sensors;
 
     public ATAStorage(StorageInfo _storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IEnumerable<SmartAttribute> smartAttributes, ISettings settings)
       : base(_storageInfo, name, firmwareRevision, id, index, settings) {
@@ -45,7 +42,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       ISmart smart = new WindowsSmart(info.Index);
       string name = null;
       string firmwareRevision = null;
-      Interop.DriveAttributeValue[] values = { };
+      Kernel32.DriveAttributeValue[] values = { };
 
       if (smart.IsValid) {
         bool nameValid = smart.ReadNameAndFirmwareRevision(out name, out firmwareRevision);
@@ -97,18 +94,16 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
       foreach (Type type in hddTypes) {
         // get the array of name prefixes for the current type
-        NamePrefixAttribute[] namePrefixes = type.GetCustomAttributes(
-          typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
+        NamePrefixAttribute[] namePrefixes = type.GetCustomAttributes(typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
 
         // get the array of the required SMART attributes for the current type
-        RequireSmartAttribute[] requiredAttributes = type.GetCustomAttributes(
-          typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
+        RequireSmartAttribute[] requiredAttributes = type.GetCustomAttributes(typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
 
         // check if all required attributes are present
         bool allRequiredAttributesFound = true;
         foreach (var requireAttribute in requiredAttributes) {
           bool adttributeFound = false;
-          foreach (Interop.DriveAttributeValue value in values) {
+          foreach (Kernel32.DriveAttributeValue value in values) {
             if (value.Identifier == requireAttribute.AttributeId) {
               adttributeFound = true;
               break;
@@ -142,21 +137,18 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
       if (smart.IsValid) {
 
-        var smartIds = smart.ReadSmartData()
-                            .Select(attrValue => attrValue.Identifier);
+        var smartIds = smart.ReadSmartData().Select(attrValue => attrValue.Identifier);
 
         // unique attributes by SensorType and SensorChannel.
         var uniqueAtrributes = smartAttributes
-            .Where(a => a.SensorType.HasValue)
-            .Where(a => smartIds.Contains(a.Identifier))
+            .Where(a => a.SensorType.HasValue && smartIds.Contains(a.Identifier))
             .GroupBy(a => new { a.SensorType.Value, a.SensorChannel })
             .Select(g => g.First());
 
         sensors = uniqueAtrributes.ToDictionary(attr => attr,
             attr => new Sensor(attr.SensorName,
               attr.SensorChannel, attr.DefaultHiddenSensor,
-              attr.SensorType.Value, this, attr.ParameterDescriptions,
-              settings));
+              attr.SensorType.Value, this, attr.ParameterDescriptions, settings));
 
         foreach (var sensor in sensors) {
           ActivateSensor(sensor.Value);
@@ -166,15 +158,15 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       base.CreateSensors();
     }
 
-    public virtual void UpdateAdditionalSensors(Interop.DriveAttributeValue[] values) { }
+    public virtual void UpdateAdditionalSensors(Kernel32.DriveAttributeValue[] values) { }
 
     protected override void UpdateSensors() {
       if (smart.IsValid) {
-        Interop.DriveAttributeValue[] values = smart.ReadSmartData();
+        Kernel32.DriveAttributeValue[] values = smart.ReadSmartData();
 
         foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in sensors) {
           SmartAttribute attribute = keyValuePair.Key;
-          foreach (Interop.DriveAttributeValue value in values) {
+          foreach (Kernel32.DriveAttributeValue value in values) {
             if (value.Identifier == attribute.Identifier) {
               Sensor sensor = keyValuePair.Value;
               sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
@@ -188,8 +180,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     protected override void GetReport(StringBuilder r) {
       if (smart.IsValid) {
-        Interop.DriveAttributeValue[] values = smart.ReadSmartData();
-        Interop.DriveThresholdValue[] thresholds = smart.ReadSmartThresholds();
+        Kernel32.DriveAttributeValue[] values = smart.ReadSmartData();
+        Kernel32.DriveThresholdValue[] thresholds = smart.ReadSmartThresholds();
 
         if (values.Length > 0) {
           r.AppendFormat(CultureInfo.InvariantCulture,
@@ -199,16 +191,16 @@ namespace OpenHardwareMonitor.Hardware.HDD {
             ("Raw Value").PadRight(13),
             ("Worst").PadRight(6),
             ("Value").PadRight(6),
-            ("Thres").PadRight(6),
+            ("Threshold").PadRight(6),
             ("Physical").PadRight(8),
             Environment.NewLine);
 
-          foreach (Interop.DriveAttributeValue value in values) {
+          foreach (Kernel32.DriveAttributeValue value in values) {
             if (value.Identifier == 0x00)
               break;
 
             byte? threshold = null;
-            foreach (Interop.DriveThresholdValue t in thresholds) {
+            foreach (Kernel32.DriveThresholdValue t in thresholds) {
               if (t.Identifier == value.Identifier) {
                 threshold = t.Threshold;
               }
@@ -249,7 +241,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public override void Close() {
       smart.Close();
-
       base.Close();
     }
   }

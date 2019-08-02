@@ -1,10 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) 2011-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-// Copyright (C) 2017 Alexander Thulcke <alexth4ef9@gmail.com>
-// Copyright (C) 2016-2019 Sebastian Grams <https://github.com/sebastian-dev>
-// Copyright (C) 2016-2019 Aqua Computer <https://github.com/aquacomputer, info@aqua-computer.de>
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.IO;
@@ -12,20 +9,34 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
-  public class Interop {
-
-    public const string KERNEL = "kernel32.dll";
+namespace OpenHardwareMonitor.Interop {
+  internal class Kernel32 {
+    private const string KERNEL = "kernel32.dll";
     public const byte SMART_LBA_MID = 0x4F;
     public const byte SMART_LBA_HI = 0xC2;
     public const int MAX_DRIVE_ATTRIBUTES = 512;
-    public const string NVMeMiniPortSignature = "NvmeMini";
+    public const string IntelNVMeMiniPortSignature1 = "NvmeMini";
+    public const string IntelNVMeMiniPortSignature2 = "IntelNvm";
     public const uint NVMePassThroughSrbIoCode = 0xe0002000;
-
     public const int IDENTIFY_BUFFER_SIZE = 512;
     public const int SCSI_IOCTL_DATA_OUT = 0;
     public const int SCSI_IOCTL_DATA_IN = 1;
     public const int SCSI_IOCTL_DATA_UNSPECIFIED = 2;
+
+    #region MemoryStatusEx
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MemoryStatusEx {
+      public uint Length;
+      public uint MemoryLoad;
+      public ulong TotalPhysicalMemory;
+      public ulong AvailablePhysicalMemory;
+      public ulong TotalPageFile;
+      public ulong AvailPageFile;
+      public ulong TotalVirtual;
+      public ulong AvailVirtual;
+      public ulong AvailExtendedVirtual;
+    }
+    #endregion
 
     #region DriveAttributeValue
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -187,7 +198,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       public byte Version;
       public byte Reserved;
       [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_DRIVE_ATTRIBUTES)]
-      public Interop.DriveAttributeValue[] Attributes;
+      public DriveAttributeValue[] Attributes;
     }
     #endregion
 
@@ -199,7 +210,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       public byte Version;
       public byte Reserved;
       [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_DRIVE_ATTRIBUTES)]
-      public Interop.DriveThresholdValue[] Thresholds;
+      public DriveThresholdValue[] Thresholds;
     }
     #endregion
 
@@ -448,6 +459,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       public uint DataBufferLen;
       public uint MetaDataLen;
       public uint ReturnBufferLen;
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
+      public byte[] DataBuf;
     }
     #endregion
 
@@ -693,7 +706,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     }
     #endregion
 
-
     #region PhysicalPathToSCSIPath
     public static string PhysicalPathToSCSIPath(SafeHandle pysicalDeviceHandle) {
       string result = string.Empty;
@@ -739,6 +751,10 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     #endregion
 
     #region WIN32
+
+    [DllImport(KERNEL, CharSet = CharSet.Auto, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx buffer);
 
     [DllImport(KERNEL, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     public static extern SafeFileHandle CreateFile(
@@ -811,7 +827,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     [DllImport(KERNEL, SetLastError = true)]
     public static extern void RtlZeroMemory(IntPtr dst, int length);
 
-    [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+    [DllImport(KERNEL, EntryPoint = "CopyMemory", SetLastError = false)]
     public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
     [DllImport(KERNEL)]
