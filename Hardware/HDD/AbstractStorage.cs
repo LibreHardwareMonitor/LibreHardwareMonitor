@@ -17,8 +17,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     private DateTime lastUpdate = DateTime.MinValue;
     private TimeSpan updateInterval = TimeSpan.FromSeconds(60);
 
-    public string firmwareRevision { get; set; }
-    public int index { get; set; }
+    public string FirmwareRevision { get; set; }
+    public int Index { get; set; }
 
     private DriveInfo[] driveInfos = null;
     private StorageInfo storageInfo = null;
@@ -37,8 +37,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings) {
 
       this.storageInfo = info;
-      this.firmwareRevision = firmwareRevision;
-      this.index = index;
+      this.FirmwareRevision = firmwareRevision;
+      this.Index = index;
 
       string[] logicalDrives = WindowsStorage.GetLogicalDrives(index);
       List<DriveInfo> driveInfoList = new List<DriveInfo>(logicalDrives.Length);
@@ -121,7 +121,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         perfValueBase = vBase;
         result = (100.0 / diff_timebase) * diff_value;
 
-        //somtimes it is possible that diff_value > diff_timebase
+        //sometimes it is possible that diff_value > diff_timebase
         //limit result to 100%, this is because timing issues during read from pcie controller an latency between IO operation
         if (result > 100)
           result = 100;
@@ -224,7 +224,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       r.AppendLine(this.GetType().Name);
       r.AppendLine();
       r.AppendLine("Drive name: " + name);
-      r.AppendLine("Firmware version: " + firmwareRevision);
+      r.AppendLine("Firmware version: " + FirmwareRevision);
       r.AppendLine();
       GetReport(r);
 

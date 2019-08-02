@@ -136,7 +136,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       sensors = new Dictionary<SmartAttribute, Sensor>();
 
       if (smart.IsValid) {
-
         var smartIds = smart.ReadSmartData().Select(attrValue => attrValue.Identifier);
 
         // unique attributes by SensorType and SensorChannel.
@@ -154,7 +153,6 @@ namespace OpenHardwareMonitor.Hardware.HDD {
           ActivateSensor(sensor.Value);
         }
       }
-
       base.CreateSensors();
     }
 
