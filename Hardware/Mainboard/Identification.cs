@@ -1,11 +1,11 @@
 ﻿/*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 namespace OpenHardwareMonitor.Hardware.Mainboard {
@@ -53,6 +53,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case "LENOVO":
           return Manufacturer.Lenovo;
         case "Micro-Star International":
+        case "Micro-Star International Co., Ltd":
         case "MICRO-STAR INTERNATIONAL CO., LTD":
         case "MICRO-STAR INTERNATIONAL CO.,LTD":
         case "MSI":
@@ -80,6 +81,20 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.B85M_DGS;
         case "ASRock AOD790GX/128M":
           return Model.AOD790GX_128M;
+        case "AB350 Pro4":
+          return Model.AB350_PRO4;
+        case "AB350M Pro4":
+          return Model.AB350M_PRO4;
+        case "AB350M":
+          return Model.AB350M;
+        case "Fatal1ty AB350 Gaming K4":
+          return Model.Fatal1ty_AB350_Gaming_K4;
+        case "AB350M-HDV":
+          return Model.AB350M_HDV;
+        case "X399 Phantom Gaming 6":
+          return Model.PHANTOM_GAMING_6;
+        case "A320M-HDV":
+          return Model.A320M_HDV;
         case "P55 Deluxe":
           return Model.P55_Deluxe;
         case "Crosshair III Formula":
@@ -136,19 +151,19 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case "G41MT-S2P":
           return Model.G41MT_S2P;
         case "GA-970A-UD3":
-          return Model.GA_970A_UD3;
+          return Model._970A_UD3;
         case "GA-MA770T-UD3":
-          return Model.GA_MA770T_UD3;
+          return Model.MA770T_UD3;
         case "GA-MA770T-UD3P":
-          return Model.GA_MA770T_UD3P;
+          return Model.MA770T_UD3P;
         case "GA-MA785GM-US2H":
-          return Model.GA_MA785GM_US2H;
+          return Model.MA785GM_US2H;
         case "GA-MA785GMT-UD2H":
-          return Model.GA_MA785GMT_UD2H;
+          return Model.MA785GMT_UD2H;
         case "GA-MA78LM-S2H":
-          return Model.GA_MA78LM_S2H;
+          return Model.MA78LM_S2H;
         case "GA-MA790X-UD3P":
-          return Model.GA_MA790X_UD3P;
+          return Model.MA790X_UD3P;
         case "H55-USB3":
           return Model.H55_USB3;
         case "H55N-USB3":
@@ -184,6 +199,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         case "X58A-UD3R":
           return Model.X58A_UD3R;
         case "Z270 PC MATE":
+        case "Z270 PC MATE (MS-7A72)":
           return Model.Z270_PC_MATE;
         case "X79-UD3":
           return Model.X79_UD3;
@@ -209,6 +225,24 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
           return Model.PRIME_X370_PRO;
         case "ROG MAXIMUS X APEX":
           return Model.ROG_MAXIMUS_APEX;
+        case "AB350-Gaming 3-CF":
+          return Model.AB350_Gaming_3_CF;
+        case "X399 AORUS Gaming 7":
+          return Model.X399_AOURUS_GAMING7;
+        case "ROG ZENITH EXTREME":
+          return Model.ROG_ZENITH_EXTREME;
+        case "Z170-A":
+          return Model.Z170_A;
+        case "Z77 Pro4-M":
+          return Model.Z77PRO4M;
+        case "AX370-Gaming 5":
+          return Model.AX370_Gaming_5;
+        case "TUF X470-PLUS GAMING":
+          return Model.TUF_X470_PLUS_GAMING;
+        case "B360M PRO-VDH (MS-7B24)":
+          return Model.B360M_PRO_VDH;
+        case "B450-A PRO (MS-7B86)":
+          return Model.B450A_PRO;
         case "Base Board Product Name":
         case "To be filled by O.E.M.":
           return Model.Unknown;

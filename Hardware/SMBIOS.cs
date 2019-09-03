@@ -25,6 +25,7 @@ namespace OpenHardwareMonitor.Hardware {
     private readonly BIOSInformation biosInformation;
     private readonly SystemInformation systemInformation;
     private readonly BaseBoardInformation baseBoardInformation;
+    private readonly ChassisInformation chassisInformation;
     private readonly ProcessorInformation processorInformation;
     private readonly MemoryDevice[] memoryDevices;
 
@@ -63,7 +64,8 @@ namespace OpenHardwareMonitor.Hardware {
 
         string biosVendor = ReadSysFS("/sys/class/dmi/id/bios_vendor");
         string biosVersion = ReadSysFS("/sys/class/dmi/id/bios_version");
-        this.biosInformation = new BIOSInformation(biosVendor, biosVersion);
+        string biosDate = ReadSysFS("/sys/class/dmi/id/bios_date");
+        this.biosInformation = new BIOSInformation(biosVendor, biosVersion, biosDate);
 
         this.memoryDevices = new MemoryDevice[0];
       } else {              
@@ -132,6 +134,9 @@ namespace OpenHardwareMonitor.Hardware {
               case 0x02: this.baseBoardInformation = new BaseBoardInformation(
                   type, handle, data, stringsList.ToArray());
                 structureList.Add(this.baseBoardInformation); break;
+              case 0x03: this.chassisInformation = new ChassisInformation(
+                  type, handle, data, stringsList.ToArray()); 
+                structureList.Add(chassisInformation); break;
               case 0x04: this.processorInformation = new ProcessorInformation(
                   type, handle, data, stringsList.ToArray());
                 structureList.Add(this.processorInformation); break;
@@ -161,6 +166,17 @@ namespace OpenHardwareMonitor.Hardware {
       if (BIOS != null) {
         r.Append("BIOS Vendor: "); r.AppendLine(BIOS.Vendor);
         r.Append("BIOS Version: "); r.AppendLine(BIOS.Version);
+        if (BIOS.Date != null) {
+            r.Append("BIOS Date: "); r.AppendLine(BIOS.Date.Value.ToShortDateString());
+        }
+        if (BIOS.Size != null) { 
+            const int megabyte = 1024 * 1024;
+            r.Append("BIOS Size: ");
+            if (BIOS.Size > megabyte)
+              r.AppendLine(BIOS.Size.Value / megabyte + " MB");
+            else
+              r.AppendLine(BIOS.Size.Value / 1024 + " KB");
+        }
         r.AppendLine();
       }
 
@@ -171,6 +187,8 @@ namespace OpenHardwareMonitor.Hardware {
         r.AppendLine(System.ProductName);
         r.Append("System Version: ");
         r.AppendLine(System.Version);
+        r.Append("System Wakeup: ");
+        r.AppendLine(System.WakeUp.ToString());
         r.AppendLine();
       }
 
@@ -181,6 +199,42 @@ namespace OpenHardwareMonitor.Hardware {
         r.AppendLine(Board.ProductName);
         r.Append("Mainboard Version: ");
         r.AppendLine(Board.Version);
+        r.Append("Mainboard Serial: ");
+        r.AppendLine(Board.SerialNumber);
+        r.AppendLine();
+      }
+
+      if (Chassis != null) { 
+        r.Append("Chassis Type: ");
+        r.AppendLine(Chassis.ChassisType.ToString());
+        r.Append("Chassis Manufacturer: ");
+        r.AppendLine(Chassis.ManufacturerName);
+        r.Append("Chassis Version: ");
+        r.AppendLine(Chassis.Version);
+        r.Append("Chassis Serial: ");
+        r.AppendLine(Chassis.SerialNumber);
+        r.Append("Chassis Asset Tag: ");
+        r.AppendLine(Chassis.AssetTag);
+        if (!String.IsNullOrEmpty(Chassis.SKU)) {
+          r.Append("Chassis SKU: ");
+          r.AppendLine(Chassis.SKU);
+        }
+        r.Append("Chassis Boot Up State: ");
+        r.AppendLine(Chassis.BootUpState.ToString());
+        r.Append("Chassis Power Supply State: ");
+        r.AppendLine(Chassis.PowerSupplyState.ToString());
+        r.Append("Chassis Thermal State: ");
+        r.AppendLine(Chassis.ThermalState.ToString());
+        r.Append("Chassis Power Cords: ");
+        r.AppendLine(Chassis.PowerCords.ToString());
+        if (Chassis.RackHeight > 0) {
+          r.Append("Chassis Rack Height: ");
+          r.AppendLine(Chassis.RackHeight.ToString());
+        }
+        r.Append("Chassis Lock Detected: ");
+        r.AppendLine(Chassis.LockDetected ? "Yes" : "No");
+        r.Append("Chassis Security Status: ");
+        r.AppendLine(Chassis.SecurityStatus.ToString());
         r.AppendLine();
       }
 
@@ -189,6 +243,8 @@ namespace OpenHardwareMonitor.Hardware {
         r.AppendLine(Processor.ManufacturerName);
         r.Append("Processor Version: ");
         r.AppendLine(Processor.Version);
+        r.Append("Processor Family: ");
+        r.AppendLine(Processor.Family.ToString());
         r.Append("Processor Core Count: ");
         r.AppendLine(Processor.CoreCount.ToString());
         r.Append("Processor Core Enabled: ");
@@ -249,6 +305,9 @@ namespace OpenHardwareMonitor.Hardware {
       get { return baseBoardInformation; }
     }
 
+    public ChassisInformation Chassis { 
+      get { return chassisInformation; }
+    }
 
     public ProcessorInformation Processor {
       get { return processorInformation; }
@@ -304,12 +363,16 @@ namespace OpenHardwareMonitor.Hardware {
 
       private readonly string vendor;
       private readonly string version;
+      private readonly DateTime? date;
+      private readonly ulong? size;
       
-      public BIOSInformation(string vendor, string version) 
+      public BIOSInformation(string vendor, string version, string date = null, ulong? size = null) 
         : base (0x00, 0, null, null) 
       {
         this.vendor = vendor;
         this.version = version;
+        this.date = ParseBIOSDate(date);
+        this.size = size;
       }
       
       public BIOSInformation(byte type, ushort handle, byte[] data,
@@ -318,7 +381,45 @@ namespace OpenHardwareMonitor.Hardware {
       {
         this.vendor = GetString(0x04);
         this.version = GetString(0x05);
+        this.date = ParseBIOSDate(GetString(0x08));
+        this.size = CalculateBIOSRomSize();
       }
+
+      private ulong? CalculateBIOSRomSize()
+      {
+        var biosROMSize = GetByte(0x09);
+        var extendedBIOSROMSize = GetWord(0x18);
+        var isExtendedBIOSROMSize = biosROMSize == 0xFF && extendedBIOSROMSize != 0;
+        if (!isExtendedBIOSROMSize)
+            return 65536 * (ulong)(biosROMSize + 1);
+
+        var unit = (extendedBIOSROMSize & 0xC000) >> 14;
+        var extendedSize = (ulong)(extendedBIOSROMSize & ~0xC000) * 1024 * 1024;
+
+        switch(unit) {
+            case 0x00: return extendedSize; // Megabytes
+            case 0x01: return extendedSize * 1024; // Gigabytes - might overflow in the future
+            default:
+                return null; // Other patterns not defined in DMI 3.2.0
+        }
+      }
+
+      private static DateTime? ParseBIOSDate(string biosDate)
+      {
+        var parts = (biosDate ?? "").Split('/');
+        if (parts.Length == 3 &&
+            int.TryParse(parts[0], out int month) &&
+            int.TryParse(parts[1], out int day) &&
+            int.TryParse(parts[2], out int year)) { 
+            return new DateTime(year < 100 ? 1900 + year : year, month, day);
+        }
+
+        return null;
+      }
+      
+      public DateTime? Date { get { return date; } }
+
+      public ulong? Size { get { return size; } }
 
       public string Vendor { get { return vendor; } }
 
@@ -332,9 +433,10 @@ namespace OpenHardwareMonitor.Hardware {
       private readonly string version;
       private readonly string serialNumber;
       private readonly string family;
+      private readonly SystemWakeUp wakeUp;
 
       public SystemInformation(string manufacturerName, string productName, 
-        string version, string serialNumber, string family) 
+        string version, string serialNumber, string family, SystemWakeUp wakeUp = SystemWakeUp.Unknown) 
         : base (0x01, 0, null, null) 
       {
         this.manufacturerName = manufacturerName;
@@ -342,6 +444,7 @@ namespace OpenHardwareMonitor.Hardware {
         this.version = version;
         this.serialNumber = serialNumber;
         this.family = family;
+        this.wakeUp = wakeUp;
       }
 
       public SystemInformation(byte type, ushort handle, byte[] data,
@@ -353,6 +456,7 @@ namespace OpenHardwareMonitor.Hardware {
         this.version = GetString(0x06);
         this.serialNumber = GetString(0x07);
         this.family = GetString(0x1A);
+        this.wakeUp = (SystemWakeUp)GetByte(0x18);
       }
 
       public string ManufacturerName { get { return manufacturerName; } }
@@ -365,6 +469,110 @@ namespace OpenHardwareMonitor.Hardware {
 
       public string Family { get { return family; } }
 
+      public SystemWakeUp WakeUp { get { return wakeUp; } }
+    }
+
+    public enum SystemWakeUp
+    {
+        Reserved,
+        Other,
+        Unknown,
+        APMTimer,
+        ModemRing,
+        LANRemote,
+        PowerSwitch,
+        PCIPME,
+        ACPowerRestored
+    }
+
+    public class ChassisInformation : Structure {
+      public ChassisInformation(byte type, ushort handle, byte[] data,
+        string[] strings)
+        : base(type, handle, data, strings) {
+          ManufacturerName = GetString(0x04).Trim();
+          Version = GetString(0x06).Trim();
+          SerialNumber = GetString(0x07).Trim();
+          AssetTag = GetString(0x08).Trim();
+          RackHeight = GetByte(0x11);
+          PowerCords = GetByte(0x12);
+          SKU = GetString(0x15).Trim();
+          LockDetected = (GetByte(0x05) & 128) == 128;
+          ChassisType = (ChassisType)(GetByte(0x05) & 127);
+          BootUpState = (ChassisStates)GetByte(0x09);
+          PowerSupplyState = (ChassisStates)GetByte(0x0A);
+          ThermalState = (ChassisStates)GetByte(0x0B);
+          SecurityStatus = (ChassisSecurityStatus)GetByte(0x0C);
+      }
+
+      public string ManufacturerName { get; private set; }
+      public string Version { get; private set; }
+      public string SerialNumber { get; private set; }
+      public string AssetTag { get; private set; }
+      public string SKU { get; private set; }
+      public int RackHeight { get; private set; }
+      public int PowerCords { get; private set; }
+      public ChassisType ChassisType { get; private set; }
+      public ChassisStates BootUpState { get; private set; }
+      public ChassisStates PowerSupplyState { get; private set; }
+      public ChassisStates ThermalState { get; private set; }
+      public ChassisSecurityStatus SecurityStatus { get; set; }
+      public bool LockDetected { get; set; }
+    }
+
+    public enum ChassisType { 
+      Other = 1,
+      Unknown,
+      Desktop,
+      LowProfileDesktop,
+      PizzaBox,
+      MiniTower,
+      Tower,
+      Portable,
+      Laptop,
+      Notebook,
+      HandHeld,
+      DockingStation,
+      AllInOne,
+      SubNotebook,
+      SpaceSaving,
+      LunchBox,
+      MainServerChassis,
+      ExpansionChassis,
+      SubChassis,
+      BusExpansionChassis,
+      PeripheralChassis,
+      RAIDChassis,
+      RackMountChassis,
+      SealedCasePC,
+      MultiSystemChassis,
+      CompactPCI,
+      AdvancedTCA,
+      Blade,
+      BladeEnclosure,
+      Tablet,
+      Convertible,
+      Detachable,
+      IoTGateway,
+      EmbeddedPC,
+      MiniPC,
+      StickPC
+    }
+
+    public enum ChassisStates {
+      Other = 1,
+      Unknown,
+      Safe,
+      Warning,
+      Critical,
+      NonRecoverable
+    }
+
+    public enum ChassisSecurityStatus {
+      Other = 1,
+      Unknown,
+      None,
+      ExternalInterfaceLockedOut,
+      ExternalInterfaceEnabled
     }
 
     public class BaseBoardInformation : Structure {
@@ -391,7 +599,7 @@ namespace OpenHardwareMonitor.Hardware {
         this.manufacturerName = GetString(0x04).Trim();
         this.productName = GetString(0x05).Trim();
         this.version = GetString(0x06).Trim();
-        this.serialNumber = GetString(0x07).Trim();               
+        this.serialNumber = GetString(0x07).Trim();
       }
       
       public string ManufacturerName { get { return manufacturerName; } }
@@ -401,7 +609,6 @@ namespace OpenHardwareMonitor.Hardware {
       public string Version { get { return version; } }
 
       public string SerialNumber { get { return serialNumber; } }
-
     }
 
     public class ProcessorInformation : Structure {
@@ -412,10 +619,12 @@ namespace OpenHardwareMonitor.Hardware {
       {
         this.ManufacturerName = GetString(0x07).Trim();
         this.Version = GetString(0x10).Trim();
-        this.CoreCount = GetByte(0x23);
-        this.CoreEnabled = GetByte(0x24);
-        this.ThreadCount = GetByte(0x25);
+        this.CoreCount = GetByte(0x23) != 255 ? GetByte(0x23) : GetWord(0x2A);
+        this.CoreEnabled = GetByte(0x24) != 255 ? GetByte(0x24) : GetWord(0x2C);
+        this.ThreadCount = GetByte(0x25) != 255 ? GetByte(0x25) : GetWord(0x2E);
         this.ExternalClock = GetWord(0x12);
+        var family = GetByte(0x06);
+        this.Family = (ProcessorFamily) (family == 254 ? GetWord(0x28) : family); 
       }
 
       public string ManufacturerName { get; private set; }
@@ -429,6 +638,222 @@ namespace OpenHardwareMonitor.Hardware {
       public int ThreadCount { get; private set; }
      
       public int ExternalClock { get; private set; }
+
+      public ProcessorFamily Family { get; private set; }
+    }
+
+    public enum ProcessorFamily { 
+        Other = 1,
+        Intel8086 = 3,
+        Intel80286 = 4,
+        Intel386,
+        Intel486,
+        Intel8087,
+        Intel80287,
+        Intel80387,
+        Intel80487,
+        IntelPentium,
+        IntelPentiumPro,
+        IntelPentiumII,
+        IntelPentiumMMX,
+        IntelCeleron,
+        IntelPentiumIIXeon,
+        IntelPentiumIII,
+        M1,
+        M2,
+        IntelCeleronM,
+        IntelPentium4HT,
+        AmdDuron = 24,
+        AmdK5,
+        AmdK6,
+        AmdK62,
+        AmdK63,
+        AmdAthlon,
+        Amd2900,
+        AmdK62Plus,
+        PowerPc,
+        PowerPc601,
+        PowerPc603,
+        PowerPc603Plus,
+        PowerPc604,
+        PowerPc620,
+        PowerPcx704,
+        PowerPc750,
+        IntelCoreDuo,
+        IntelCoreDuoMobile,
+        IntelCoreSoloMobile,
+        IntelAtom,
+        IntelCoreM,
+        IntelCoreM3,
+        IntelCoreM5,
+        IntelCoreM7,
+        Alpha,
+        Alpha21064,
+        Alpha21066,
+        Alpha21164,
+        Alpha21164Pc,
+        Alpha21164a,
+        Alpha21264,
+        Alpha21364,
+        AmdTurionIIUltraDualCoreMobileM,
+        AmdTurionDualCoreMobileM,
+        AmdAthlonIIDualCoreM,
+        AmdOpteron6100Series,
+        AmdOpteron4100Series,
+        AmdOpteron6200Series,
+        AmdOpteron4200Series,
+        AmdFxSeries,
+        Mips,
+        MipsR4000,
+        MipsR4200,
+        MipsR4400,
+        MipsR4600,
+        MipsR10000,
+        AmdCSeries,
+        AmdESeries,
+        AmdASeries,
+        AmdGSeries,
+        AmdZSeries,
+        AmdRSeries,
+        AmdOpteron4300Series,
+        AmdOpteron6300Series,
+        AmdOpteron3300Series,
+        AmdFireProSeries,
+        Sparc,
+        SuperSparc,
+        MicroSparcII,
+        MicroSparcIIep,
+        UltraSparc,
+        UltraSparcII,
+        UltraSparcIIi,
+        UltraSparcIII,
+        UltraSparcIIIi,
+        Motorola68040 = 96,
+        Motorola68xxx,
+        Motorola68000,
+        Motorola68010,
+        Motorola68020,
+        Motorola68030,
+        AmdAthlonX4QuadCore,
+        AmdOpteronX1000Series,
+        AmdOpteronX2000Series,
+        AmdOpteronASeries,
+        AmdOpteronX3000Series,
+        AmdZen,
+        Hobbit = 112,
+        CrusoeTm5000 = 120,
+        CrusoeTm3000,
+        EfficeonTm8000,
+        Weitek = 128,
+        IntelItanium = 130,
+        AmdAthlon64,
+        AmdOpteron,
+        AmdSempron,
+        AmdTurio64Mobile,
+        AmdOpteronDualCore,
+        AmdAthlon64X2DualCore,
+        AmdTurion64X2Mobile,
+        AmdOpteronQuadCore,
+        AmdOpteronThirdGen,
+        AmdPhenomFXQuadCore,
+        AmdPhenomX4QuadCore,
+        AmdPhenomX2DualCore,
+        AmdAthlonX2DualCore,
+        PaRisc,
+        PaRisc8500,
+        PaRisc8000,
+        PaRisc7300LC,
+        PaRisc7200,
+        PaRisc7100LC,
+        PaRisc7100,
+        V30 = 160,
+        IntelXeon3200QuadCoreSeries,
+        IntelXeon3000DualCoreSeries,
+        IntelXeon5300QuadCoreSeries,
+        IntelXeon5100DualCoreSeries,
+        IntelXeon5000DualCoreSeries,
+        IntelXeonLVDualCore,
+        IntelXeonULVDualCore,
+        IntelXeon7100Series,
+        IntelXeon5400Series,
+        IntelXeonQuadCore,
+        IntelXeon5200DualCoreSeries,
+        IntelXeon7200DualCoreSeries,
+        IntelXeon7300QuadCoreSeries,
+        IntelXeon7400QuadCoreSeries,
+        IntelXeon7400MultiCoreSeries,
+        IntelPentiumIIIXeon,
+        IntelPentiumIIISpeedStep,
+        IntelPentium4,
+        IntelXeon,
+        As400,
+        IntelXeonMP,
+        AmdAthlonXP,
+        AmdAthlonMP,
+        IntelItanium2,
+        IntelPentiumM,
+        IntelCeleronD,
+        IntelPentiumD,
+        IntelPentiumExtreme,
+        IntelCoreSolo,
+        IntelCore2Duo = 191,
+        IntelCore2Solo,
+        IntelCore2Extreme,
+        IntelCore2Quad,
+        IntelCore2ExtremeMobile,
+        IntelCore2DuoMobile,
+        IntelCore2SoloMobile,
+        IntelCoreI7,
+        IntelCeleronDualCore,
+        Ibm390,
+        PowerPcG4,
+        PowerPcG5,
+        Esa390G6,
+        ZArchitecture,
+        IntelCoreI5,
+        IntelCoreI3,
+        IntelCoreI9,
+        ViaC7M = 210,
+        ViaC7D,
+        ViaC7,
+        ViaEden,
+        IntelXeonMultiCore,
+        IntelXeon3xxxDualCoreSeries,
+        IntelXeon3xxxQuadCoreSeries,
+        ViaNano,
+        IntelXeon5xxxDualCoreSeries,
+        IntelXeon5xxxQuadCoreSeries,
+        IntelXeon7xxxDualCoreSeries = 221,
+        IntelXeon7xxxQuadCoreSeries,
+        IntelXeon7xxxMultiCoreSeries,
+        IntelXeon3400MultiCoreSeries,
+        AmdOpteron3000Series = 228,
+        AmdSempronII,
+        AmdOpteronQuadCoreEmbedded,
+        AmdPhenomTripleCore,
+        AmdTurionUltraDualCoreMobile,
+        AmdTurionDualCoreMobile,
+        AmdTurionDualCore,
+        AmdAthlonDualCore,
+        AmdSempronSI,
+        AmdPhenomII,
+        AmdAthlonII,
+        AmdOpteronSixCore,
+        AmdSempronM,
+        IntelI860 = 250,
+        IntelI960,
+        ArmV7 = 256,
+        ArmV8,
+        HitachiSh3,
+        HitachiSh4,
+        Arm,
+        StrongArm,
+        _686,
+        MediaGX,
+        MII,
+        WinChip,
+        Dsp,
+        VideoProcessor
     }
 
     public class MemoryDevice : Structure {

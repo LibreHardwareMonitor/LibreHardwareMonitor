@@ -1,11 +1,11 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2014 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System;
@@ -24,9 +24,15 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
       List<CPUID> threads = new List<CPUID>();
       for (int i = 0; i < 64; i++) {
-        try {
+        try
+        {
           threads.Add(new CPUID(i));
-        } catch (ArgumentOutOfRangeException) { }
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+          // All cores found.
+          break;
+        }
       }
 
       SortedDictionary<uint, List<CPUID>> processors =
@@ -52,7 +58,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
     private static CPUID[][] GroupThreadsByCore(IEnumerable<CPUID> threads) {
 
-      SortedDictionary<uint, List<CPUID>> cores = 
+      SortedDictionary<uint, List<CPUID>> cores =
         new SortedDictionary<uint, List<CPUID>>();
       foreach (CPUID thread in threads) {
         List<CPUID> coreList;
@@ -82,7 +88,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       foreach (CPUID[] threads in processorThreads) {
         if (threads.Length == 0)
           continue;
-            
+
         CPUID[][] coreThreads = GroupThreadsByCore(threads);
 
         this.threads[index] = coreThreads;
@@ -122,8 +128,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
     public IEnumerable<IHardware> Hardware => hardware;
 
-    private static void AppendCpuidData(StringBuilder r, uint[,] data, 
-      uint offset) 
+    private static void AppendCpuidData(StringBuilder r, uint[,] data,
+      uint offset)
     {
       for (int i = 0; i < data.GetLength(0); i++) {
         r.Append(" ");
@@ -139,9 +145,9 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     public string GetReport() {
       if (threads == null)
         return null;
-      
+
       StringBuilder r = new StringBuilder();
-      
+
       r.AppendLine("CPUID");
       r.AppendLine();
 
@@ -153,14 +159,14 @@ namespace OpenHardwareMonitor.Hardware.CPU {
           Environment.NewLine);
         r.AppendFormat("Processor Brand: {0}{1}", threads[i][0][0].BrandString,
           Environment.NewLine);
-        r.AppendFormat("Family: 0x{0}{1}", 
-          threads[i][0][0].Family.ToString("X", CultureInfo.InvariantCulture), 
+        r.AppendFormat("Family: 0x{0}{1}",
+          threads[i][0][0].Family.ToString("X", CultureInfo.InvariantCulture),
           Environment.NewLine);
         r.AppendFormat("Model: 0x{0}{1}",
-          threads[i][0][0].Model.ToString("X", CultureInfo.InvariantCulture), 
+          threads[i][0][0].Model.ToString("X", CultureInfo.InvariantCulture),
           Environment.NewLine);
         r.AppendFormat("Stepping: 0x{0}{1}",
-          threads[i][0][0].Stepping.ToString("X", CultureInfo.InvariantCulture), 
+          threads[i][0][0].Stepping.ToString("X", CultureInfo.InvariantCulture),
           Environment.NewLine);
         r.AppendLine();
 
@@ -180,7 +186,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
             r.AppendLine();
           }
       }
-      return r.ToString(); 
+      return r.ToString();
     }
 
     public void Close() {

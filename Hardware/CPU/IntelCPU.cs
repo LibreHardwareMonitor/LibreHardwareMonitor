@@ -1,11 +1,11 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2017 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System;
@@ -38,6 +38,9 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private readonly Sensor[] coreClocks;
     private readonly Sensor busClock;
     private readonly Sensor[] powerSensors;
+    private readonly Sensor[] distToTjMaxTemperatures;
+    private readonly Sensor coreMax;
+    private readonly Sensor coreAvg;
 
     private readonly Microarchitecture microarchitecture;
     private readonly double timeStampCounterMultiplier;
@@ -53,9 +56,9 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private const uint MSR_PP0_ENERY_STATUS = 0x639;
     private const uint MSR_PP1_ENERY_STATUS = 0x641;
 
-    private readonly uint[] energyStatusMSRs = { MSR_PKG_ENERY_STATUS, 
+    private readonly uint[] energyStatusMSRs = { MSR_PKG_ENERY_STATUS,
       MSR_PP0_ENERY_STATUS, MSR_PP1_ENERY_STATUS, MSR_DRAM_ENERGY_STATUS };
-    private readonly string[] powerSensorLabels = 
+    private readonly string[] powerSensorLabels =
       { "CPU Package", "CPU Cores", "CPU Graphics", "CPU DRAM" };
     private float energyUnitMultiplier = 0;
     private DateTime[] lastEnergyTime;
@@ -125,7 +128,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
                 } break;
               case 0x1A: // Intel Core i7 LGA1366 (45nm)
               case 0x1E: // Intel Core i5, i7 LGA1156 (45nm)
-              case 0x1F: // Intel Core i5, i7 
+              case 0x1F: // Intel Core i5, i7
               case 0x25: // Intel Core i3, i5, i7 LGA1156 (32nm)
               case 0x2C: // Intel Core i7 LGA1366 (32nm) 6 Core
               case 0x2E: // Intel Xeon Processor 7500 series (45nm)
@@ -143,11 +146,11 @@ namespace OpenHardwareMonitor.Hardware.CPU {
                 microarchitecture = Microarchitecture.IvyBridge;
                 tjMax = GetTjMaxFromMSR();
                 break;
-              case 0x3C: // Intel Core i5, i7 4xxx LGA1150 (22nm)              
+              case 0x3C: // Intel Core i5, i7 4xxx LGA1150 (22nm)
               case 0x3F: // Intel Xeon E5-2600/1600 v3, Core i7-59xx
                          // LGA2011-v3, Haswell-E (22nm)
               case 0x45: // Intel Core i5, i7 4xxxU (22nm)
-              case 0x46: 
+              case 0x46:
                 microarchitecture = Microarchitecture.Haswell;
                 tjMax = GetTjMaxFromMSR();
                 break;
@@ -180,7 +183,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
                 microarchitecture = Microarchitecture.Airmont;
                 tjMax = GetTjMaxFromMSR();
                 break;
-              case 0x8E: 
+              case 0x8E:
               case 0x9E: // Intel Core i5, i7 7xxxx (14nm)
                 microarchitecture = Microarchitecture.KabyLake;
                 tjMax = GetTjMaxFromMSR();
@@ -188,7 +191,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
               case 0x5C: // Intel ApolloLake
                 microarchitecture = Microarchitecture.ApolloLake;
                 tjMax = GetTjMaxFromMSR();
-                break;			    
+                break;
               case 0xAE: // Intel Core i5, i7 8xxxx (14nm++)
                 microarchitecture = Microarchitecture.CoffeeLake;
                 tjMax = GetTjMaxFromMSR();
@@ -236,7 +239,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         case Microarchitecture.Nehalem:
         case Microarchitecture.SandyBridge:
         case Microarchitecture.IvyBridge:
-        case Microarchitecture.Haswell: 
+        case Microarchitecture.Haswell:
         case Microarchitecture.Broadwell:
         case Microarchitecture.Silvermont:
         case Microarchitecture.Skylake:
@@ -249,53 +252,86 @@ namespace OpenHardwareMonitor.Hardware.CPU {
               timeStampCounterMultiplier = (eax >> 8) & 0xff;
             }
           } break;
-        default: 
+        default:
           timeStampCounterMultiplier = 0;
           break;
       }
 
+      int coreSensorId = 0;
+
       // check if processor supports a digital thermal sensor at core level
-      if (cpuid[0][0].Data.GetLength(0) > 6 &&
-        (cpuid[0][0].Data[6, 0] & 1) != 0 && 
-        microarchitecture != Microarchitecture.Unknown) 
+      if (cpuid[0][0].Data.GetLength(0) > 6 && (cpuid[0][0].Data[6, 0] & 1) != 0 && microarchitecture != Microarchitecture.Unknown)
       {
         coreTemperatures = new Sensor[coreCount];
-        for (int i = 0; i < coreTemperatures.Length; i++) {
-          coreTemperatures[i] = new Sensor(CoreString(i), i,
-            SensorType.Temperature, this, new[] { 
+        for (int i = 0; i < coreTemperatures.Length; i++)
+        {
+          coreTemperatures[i] = new Sensor(CoreString(i), coreSensorId, SensorType.Temperature, this, new[] {
               new ParameterDescription(
-                "TjMax [°C]", "TjMax temperature of the core sensor.\n" + 
-                "Temperature = TjMax - TSlope * Value.", tjMax[i]), 
-              new ParameterDescription("TSlope [°C]", 
-                "Temperature slope of the digital thermal sensor.\n" + 
+                "TjMax [°C]", "TjMax temperature of the core sensor.\n" +
+                "Temperature = TjMax - TSlope * Value.", tjMax[i]),
+              new ParameterDescription("TSlope [°C]",
+                "Temperature slope of the digital thermal sensor.\n" +
                 "Temperature = TjMax - TSlope * Value.", 1)}, settings);
           ActivateSensor(coreTemperatures[i]);
+          coreSensorId++;
         }
       } else {
         coreTemperatures = new Sensor[0];
       }
 
       // check if processor supports a digital thermal sensor at package level
-      if (cpuid[0][0].Data.GetLength(0) > 6 &&
-        (cpuid[0][0].Data[6, 0] & 0x40) != 0 && 
-        microarchitecture != Microarchitecture.Unknown) 
+      if (cpuid[0][0].Data.GetLength(0) > 6 && (cpuid[0][0].Data[6, 0] & 0x40) != 0 && microarchitecture != Microarchitecture.Unknown)
       {
-        packageTemperature = new Sensor("CPU Package",
-          coreTemperatures.Length, SensorType.Temperature, this, new[] { 
+        packageTemperature = new Sensor("CPU Package", coreSensorId, SensorType.Temperature, this, new[] {
               new ParameterDescription(
-                "TjMax [°C]", "TjMax temperature of the package sensor.\n" + 
-                "Temperature = TjMax - TSlope * Value.", tjMax[0]), 
-              new ParameterDescription("TSlope [°C]", 
-                "Temperature slope of the digital thermal sensor.\n" + 
+                "TjMax [°C]", "TjMax temperature of the package sensor.\n" +
+                "Temperature = TjMax - TSlope * Value.", tjMax[0]),
+              new ParameterDescription("TSlope [°C]",
+                "Temperature slope of the digital thermal sensor.\n" +
                 "Temperature = TjMax - TSlope * Value.", 1)}, settings);
         ActivateSensor(packageTemperature);
+        coreSensorId++;
+      }
+
+      // dist to tjmax sensor
+      if (cpuid[0][0].Data.GetLength(0) > 6 && (cpuid[0][0].Data[6, 0] & 1) != 0 && microarchitecture != Microarchitecture.Unknown)
+      {
+        distToTjMaxTemperatures = new Sensor[coreCount];
+        for (int i = 0; i < distToTjMaxTemperatures.Length; i++)
+        {
+          distToTjMaxTemperatures[i] = new Sensor(CoreString(i) + " Distance to TjMax", coreSensorId, SensorType.Temperature, this, settings);
+          ActivateSensor(distToTjMaxTemperatures[i]);
+          coreSensorId++;
+        }
+      }
+      else
+      {
+        distToTjMaxTemperatures = new Sensor[0];
+      }
+
+      //core temp avg and max value
+      //is only available when the cpu has more than 1 core
+      if (cpuid[0][0].Data.GetLength(0) > 6 && (cpuid[0][0].Data[6, 0] & 0x40) != 0 && microarchitecture != Microarchitecture.Unknown && coreCount > 1)
+      {
+        coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings);
+        ActivateSensor(coreMax);
+        coreSensorId++;
+
+        coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
+        ActivateSensor(coreAvg);
+        coreSensorId++;
+      }
+      else
+      {
+        coreMax = null;
+        coreAvg = null;
       }
 
       busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
       coreClocks = new Sensor[coreCount];
-      for (int i = 0; i < coreClocks.Length; i++) {
-        coreClocks[i] =
-          new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+      for (int i = 0; i < coreClocks.Length; i++)
+      {
+        coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
         if (HasTimeStampCounter && microarchitecture != Microarchitecture.Unknown)
           ActivateSensor(coreClocks[i]);
       }
@@ -303,12 +339,12 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       if (microarchitecture == Microarchitecture.SandyBridge ||
           microarchitecture == Microarchitecture.IvyBridge ||
           microarchitecture == Microarchitecture.Haswell ||
-          microarchitecture == Microarchitecture.Broadwell || 
+          microarchitecture == Microarchitecture.Broadwell ||
           microarchitecture == Microarchitecture.Skylake ||
           microarchitecture == Microarchitecture.Silvermont ||
           microarchitecture == Microarchitecture.Airmont ||
           microarchitecture == Microarchitecture.KabyLake ||
-          microarchitecture == Microarchitecture.ApolloLake) 
+          microarchitecture == Microarchitecture.ApolloLake)
       {
         powerSensors = new Sensor[energyStatusMSRs.Length];
         lastEnergyTime = new DateTime[energyStatusMSRs.Length];
@@ -374,27 +410,45 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     public override void Update() {
       base.Update();
 
+      float core_max = float.MinValue;
+      float core_avg = 0;
+
       for (int i = 0; i < coreTemperatures.Length; i++) {
         uint eax, edx;
         // if reading is valid
-        if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out eax, out edx,
-            1UL << cpuid[i][0].Thread) && (eax & 0x80000000) != 0) 
+        if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out eax, out edx, 1UL << cpuid[i][0].Thread) && (eax & 0x80000000) != 0)
         {
           // get the dist from tjMax from bits 22:16
           float deltaT = ((eax & 0x007F0000) >> 16);
           float tjMax = coreTemperatures[i].Parameters[0].Value;
           float tSlope = coreTemperatures[i].Parameters[1].Value;
           coreTemperatures[i].Value = tjMax - tSlope * deltaT;
+
+          core_avg += (float)coreTemperatures[i].Value;
+          if (core_max < coreTemperatures[i].Value)
+            core_max = (float)coreTemperatures[i].Value;
+
+          distToTjMaxTemperatures[i].Value = deltaT;
+
         } else {
           coreTemperatures[i].Value = null;
+          distToTjMaxTemperatures[i].Value = null;
         }
+      }
+
+      //calculate average cpu temperature over all cores
+      if (coreMax != null && core_max != float.MinValue)
+      {
+        coreMax.Value = core_max;
+        core_avg /= coreTemperatures.Length;
+        coreAvg.Value = core_avg;
       }
 
       if (packageTemperature != null) {
         uint eax, edx;
         // if reading is valid
         if (Ring0.RdmsrTx(IA32_PACKAGE_THERM_STATUS, out eax, out edx,
-            1UL << cpuid[0][0].Thread) && (eax & 0x80000000) != 0) 
+            1UL << cpuid[0][0].Thread) && (eax & 0x80000000) != 0)
         {
           // get the dist from tjMax from bits 22:16
           float deltaT = ((eax & 0x007F0000) >> 16);
@@ -422,7 +476,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
                 } break;
               case Microarchitecture.SandyBridge:
               case Microarchitecture.IvyBridge:
-              case Microarchitecture.Haswell: 
+              case Microarchitecture.Haswell:
               case Microarchitecture.Broadwell:
               case Microarchitecture.Silvermont:
               case Microarchitecture.Skylake:

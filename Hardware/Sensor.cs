@@ -1,11 +1,11 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System;
@@ -32,40 +32,40 @@ namespace OpenHardwareMonitor.Hardware {
     private TimeSpan valuesTimeWindow = TimeSpan.FromDays(1.0);
     private readonly ISettings settings;
     private IControl control;
-    
+
     private float sum;
     private int count;
-   
+
     public Sensor(string name, int index, SensorType sensorType,
-      Hardware hardware, ISettings settings) : 
+      Hardware hardware, ISettings settings) :
       this(name, index, sensorType, hardware, null, settings) { }
 
     public Sensor(string name, int index, SensorType sensorType,
-      Hardware hardware, ParameterDescription[] parameterDescriptions, 
+      Hardware hardware, ParameterDescription[] parameterDescriptions,
       ISettings settings) :
       this(name, index, false, sensorType, hardware,
         parameterDescriptions, settings) { }
 
-    public Sensor(string name, int index, bool defaultHidden, 
-      SensorType sensorType, Hardware hardware, 
-      ParameterDescription[] parameterDescriptions, ISettings settings) 
-    {           
+    public Sensor(string name, int index, bool defaultHidden,
+      SensorType sensorType, Hardware hardware,
+      ParameterDescription[] parameterDescriptions, ISettings settings)
+    {
       this.index = index;
       this.defaultHidden = defaultHidden;
       this.sensorType = sensorType;
       this.hardware = hardware;
       Parameter[] parameters = new Parameter[parameterDescriptions == null ?
         0 : parameterDescriptions.Length];
-      for (int i = 0; i < parameters.Length; i++ ) 
+      for (int i = 0; i < parameters.Length; i++ )
         parameters[i] = new Parameter(parameterDescriptions[i], this, settings);
       this.parameters = parameters;
 
       this.settings = settings;
-      this.defaultName = name; 
+      this.defaultName = name;
       this.name = settings.GetValue(
         new Identifier(Identifier, "name").ToString(), name);
 
-      GetSensorValuesFromSettings();      
+      GetSensorValuesFromSettings();
 
       hardware.Closing += delegate(IHardware h) {
         SetSensorValuesToSettings();
@@ -95,39 +95,60 @@ namespace OpenHardwareMonitor.Hardware {
       string name = new Identifier(Identifier, "values").ToString();
       string s = settings.GetValue(name, null);
 
-      try {
-        byte[] array = Convert.FromBase64String(s);
-        s = null;
-        DateTime now = DateTime.UtcNow;
-        using (MemoryStream m = new MemoryStream(array))
-        using (GZipStream c = new GZipStream(m, CompressionMode.Decompress))
-        using (BinaryReader reader = new BinaryReader(c)) {
-          try {
-            long t = 0;
-            while (true) {
-              t += reader.ReadInt64();
-              DateTime time = DateTime.FromBinary(t);
-              if (time > now)
-                break;
-              float value = reader.ReadSingle();
-              AppendValue(value, time);
+      if (!string.IsNullOrEmpty(s))
+      {
+        try
+        {
+          byte[] array = Convert.FromBase64String(s);
+          s = null;
+          DateTime now = DateTime.UtcNow;
+          using (MemoryStream m = new MemoryStream(array))
+          using (GZipStream c = new GZipStream(m, CompressionMode.Decompress))
+          {
+            using (MemoryStream unzip = new MemoryStream())
+            {
+              c.CopyTo(unzip);
+              unzip.Seek(0, SeekOrigin.Begin);
+              using (BinaryReader reader = new BinaryReader(unzip))
+              {
+                try
+                {
+                  long t = 0;
+                  long readLen = reader.BaseStream.Length - reader.BaseStream.Position;
+                  while (true && readLen > 0)
+                  {
+                    t += reader.ReadInt64();
+                    DateTime time = DateTime.FromBinary(t);
+                    if (time > now)
+                      break;
+                    float value = reader.ReadSingle();
+                    AppendValue(value, time);
+
+                    readLen = reader.BaseStream.Length - reader.BaseStream.Position;
+                  }
+                }
+                catch (EndOfStreamException e)
+                { }
+              }
             }
-          } catch (EndOfStreamException) { }
+          }
         }
-      } catch { }
+        catch { }
+      }
+
       if (values.Count > 0)
         AppendValue(float.NaN, DateTime.UtcNow);
 
-      // remove the value string from the settings to reduce memory usage
+      //remove the value string from the settings to reduce memory usage
       settings.Remove(name);
     }
 
     private void AppendValue(float value, DateTime time) {
-      if (values.Count >= 2 && values[values.Count - 1].Value == value && 
+      if (values.Count >= 2 && values[values.Count - 1].Value == value &&
         values[values.Count - 2].Value == value) {
         values[values.Count - 1] = new SensorValue(value, time);
         return;
-      } 
+      }
 
       values.Add(new SensorValue(value, time));
     }
@@ -149,13 +170,13 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     public string Name {
-      get { 
-        return name; 
+      get {
+        return name;
       }
       set {
-        if (!string.IsNullOrEmpty(value)) 
-          name = value;          
-        else 
+        if (!string.IsNullOrEmpty(value))
+          name = value;
+        else
           name = defaultName;
         settings.SetValue(new Identifier(Identifier, "name").ToString(), name);
       }
@@ -174,8 +195,8 @@ namespace OpenHardwareMonitor.Hardware {
     }
 
     public float? Value {
-      get { 
-        return currentValue; 
+      get {
+        return currentValue;
       }
       set {
         if (valuesTimeWindow != TimeSpan.Zero) {
@@ -215,7 +236,7 @@ namespace OpenHardwareMonitor.Hardware {
 
     public IEnumerable<SensorValue> Values {
       get { return values; }
-    }    
+    }
 
     public TimeSpan ValuesTimeWindow {
       get {
@@ -223,7 +244,7 @@ namespace OpenHardwareMonitor.Hardware {
       }
       set {
         this.valuesTimeWindow = value;
-        
+
         if (value == TimeSpan.Zero)
             values.Clear();
       }

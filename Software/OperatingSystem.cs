@@ -9,21 +9,8 @@ namespace OpenHardwareMonitor.Software {
       var platform = Environment.OSVersion.Platform;
       IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
 
-
-      if (IntPtr.Size == 8) {
+      if (System.Environment.Is64BitProcess)
         Is64Bit = true;
-      } else if (!IsLinux) {
-        try {
-          var result = IsWow64Process(Process.GetCurrentProcess().Handle, out bool wow64Process);
-          // If we are still here, this is a 64bit windows; 32bit windows does
-          // not provide IsWow64Process.
-          Is64Bit = true;
-        }
-        catch (EntryPointNotFoundException) {
-          // IsWow64Process is not present on 32 bit:
-          Is64Bit = false;
-        }
-      }
     }
 
     public static bool Is64Bit { get; }

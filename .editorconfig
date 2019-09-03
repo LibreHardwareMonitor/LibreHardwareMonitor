@@ -1,0 +1,27 @@
+# 
+# Documentation: http://EditorConfig.org
+# VS15 plug-in: http://visualstudiogallery.msdn.microsoft.com/c8bccfe2-650c-4b42-bc5c-845e21f96328
+# Natively supported in VS17
+#
+# Configure editor for this project to match original project indentation scheme.
+
+# top-most EditorConfig file
+root = true
+
+[*]
+trim_trailing_whitespace = true
+
+[*.{cs,vb}]
+indent_style = space
+indent_size = 2
+dotnet_style_object_initializer = true:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+
+# New line preferences
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true

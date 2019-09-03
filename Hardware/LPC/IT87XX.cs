@@ -1,11 +1,11 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2015 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System.Globalization;
@@ -14,7 +14,7 @@ using System;
 
 namespace OpenHardwareMonitor.Hardware.LPC {
   internal class IT87XX : ISuperIO {
-       
+
     private readonly ushort address;
     private readonly Chip chip;
     private readonly byte version;
@@ -37,18 +37,18 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
     // Consts
     private const byte ITE_VENDOR_ID = 0x90;
-       
+
     // Environment Controller
     private const byte ADDRESS_REGISTER_OFFSET = 0x05;
     private const byte DATA_REGISTER_OFFSET = 0x06;
 
-    // Environment Controller Registers    
+    // Environment Controller Registers
     private const byte CONFIGURATION_REGISTER = 0x00;
     private const byte TEMPERATURE_BASE_REG = 0x29;
     private const byte VENDOR_ID_REGISTER = 0x58;
     private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
     private const byte FAN_TACHOMETER_16BIT_REGISTER = 0x0C;
-    private readonly byte[] FAN_TACHOMETER_REG = 
+    private readonly byte[] FAN_TACHOMETER_REG =
       { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
     private readonly byte[] FAN_TACHOMETER_EXT_REG =
       { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4c };
@@ -56,7 +56,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     private readonly byte[] FAN_PWM_CTRL_REG = { 0x15, 0x16, 0x17 };
     private readonly byte[] FAN_PWM_DUTY_REG = { 0x63, 0x6b, 0x73 };
 
-    private bool[] restoreDefaultFanPwmControlRequired = new bool[3];       
+    private bool[] restoreDefaultFanPwmControlRequired = new bool[3];
     private byte[] initialFanPwmControl = new byte[3];
     private byte[] initialFanPwmControlMode = new byte[3];
 
@@ -64,7 +64,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       Ring0.WriteIoPort(addressReg, register);
       byte value = Ring0.ReadIoPort(dataReg);
       valid = register == Ring0.ReadIoPort(addressReg);
-      // IT8688E doesn't return the value we wrote to 
+      // IT8688E doesn't return the value we wrote to
       // addressReg when we read it back.
       if (this.chip == Chip.IT8688E)
         valid = true;
@@ -74,7 +74,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     private bool WriteByte(byte register, byte value) {
       Ring0.WriteIoPort(addressReg, register);
       Ring0.WriteIoPort(dataReg, value);
-      return register == Ring0.ReadIoPort(addressReg); 
+      return register == Ring0.ReadIoPort(addressReg);
     }
 
     public byte? ReadGPIO(int index) {
@@ -89,7 +89,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         return;
 
       Ring0.WriteIoPort((ushort)(gpioAddress + index), value);
-    } 
+    }
 
     private void SaveDefaultFanPwmControl(int index) {
       bool valid;
@@ -101,8 +101,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           initialFanPwmControl[index] =
             ReadByte(FAN_PWM_DUTY_REG[index], out valid);
         }
-      }
-      else {
+      } else {
         if (!restoreDefaultFanPwmControlRequired[index]) {
           initialFanPwmControl[index] =
             ReadByte(FAN_PWM_CTRL_REG[index], out valid);
@@ -119,8 +118,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           WriteByte(FAN_PWM_DUTY_REG[index], initialFanPwmControl[index]);
           restoreDefaultFanPwmControlRequired[index] = false;
         }
-      }
-      else {
+      } else {
         if (restoreDefaultFanPwmControlRequired[index]) {
           WriteByte(FAN_PWM_CTRL_REG[index], initialFanPwmControl[index]);
           restoreDefaultFanPwmControlRequired[index] = false;
@@ -153,13 +151,11 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
           // set speed
           WriteByte(FAN_PWM_DUTY_REG[index], value.Value);
-        }
-        else {
+        } else {
           // set output value
           WriteByte(FAN_PWM_CTRL_REG[index], (byte)((value.Value >> 1)));
         }
-      }
-      else {
+      } else {
         RestoreDefaultFanPwmControl(index);
       }
 
@@ -177,20 +173,19 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
       // Check vendor id
       bool valid;
-      byte vendorId = ReadByte(VENDOR_ID_REGISTER, out valid);       
+      byte vendorId = ReadByte(VENDOR_ID_REGISTER, out valid);
       if (!valid || vendorId != ITE_VENDOR_ID)
         return;
 
       // Bit 0x10 of the configuration register should always be 1
       byte config = ReadByte(CONFIGURATION_REGISTER, out valid);
-       if ((config & 0x10) == 0 && chip != Chip.IT8665E)
+      if ((config & 0x10) == 0 && chip != Chip.IT8665E)
         return;
       if (!valid)
         return;
 
       // IT8686E has more sensors
-      if(chip == Chip.IT8686E)
-      {
+      if (chip == Chip.IT8686E) {
         voltages = new float?[10];
         temperatures = new float?[5];
         fans = new float?[5];
@@ -208,7 +203,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         fans = new float?[5];
         fansDisabled = new bool[5];
         controls = new float?[3];
-       } else {
+      } else {
         voltages = new float?[9];
         temperatures = new float?[3];
         fans = new float?[chip == Chip.IT8705F ? 3 : 5];
@@ -216,49 +211,42 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         controls = new float?[3];
       }
 
-      // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resultion 
+      // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resultion
       // ADC, all others 16mV
-      if (chip == Chip.IT8620E || chip == Chip.IT8628E || chip == Chip.IT8721F 
+      if (chip == Chip.IT8620E || chip == Chip.IT8628E || chip == Chip.IT8721F
         || chip == Chip.IT8728F || chip == Chip.IT8771E || chip == Chip.IT8772E
-        || chip == Chip.IT8686E || chip == Chip.IT8688E)
-      {
+        || chip == Chip.IT8686E || chip == Chip.IT8688E) {
         voltageGain = 0.012f;
-      }
-      else if (chip == Chip.IT8665E)
-      {
+      } else if (chip == Chip.IT8665E) {
         voltageGain = 0.0109f;
       } else {
-        voltageGain = 0.016f;        
+        voltageGain = 0.016f;
       }
 
       // older IT8705F and IT8721F revisions do not have 16-bit fan counters
-      if ((chip == Chip.IT8705F && version < 3) || 
-          (chip == Chip.IT8712F && version < 8)) 
-      {
+      if ((chip == Chip.IT8705F && version < 3) ||
+          (chip == Chip.IT8712F && version < 8)) {
         has16bitFanCounter = false;
       } else {
         has16bitFanCounter = true;
       }
 
-      if(chip == Chip.IT8620E) {
+      if (chip == Chip.IT8620E) {
         hasNewerAutopwm = true;
       }
 
       // Disable any fans that aren't set with 16-bit fan counters
-      if (has16bitFanCounter)
-      {
+      if (has16bitFanCounter) {
         int modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER, out valid);
 
         if (!valid)
           return;
 
-        if (fans.Length >= 5)
-        {
+        if (fans.Length >= 5) {
           fansDisabled[3] = (modes & (1 << 4)) == 0;
           fansDisabled[4] = (modes & (1 << 5)) == 0;
         }
-        if (fans.Length >= 6)
-        {
+        if (fans.Length >= 6) {
           fansDisabled[5] = (modes & (1 << 2)) == 0;
         }
       }
@@ -278,7 +266,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         case Chip.IT8620E:
         case Chip.IT8628E:
         case Chip.IT8688E:
-        case Chip.IT8705F: 
+        case Chip.IT8705F:
         case Chip.IT8728F:
         case Chip.IT8771E:
         case Chip.IT8772E:
@@ -315,8 +303,8 @@ namespace OpenHardwareMonitor.Hardware.LPC {
       r.AppendLine("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
       r.AppendLine();
       for (int i = 0; i <= 0xA; i++) {
-        r.Append(" "); 
-        r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture)); 
+        r.Append(" ");
+        r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
         r.Append("  ");
         for (int j = 0; j <= 0xF; j++) {
           r.Append(" ");
@@ -350,14 +338,14 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
       for (int i = 0; i < voltages.Length; i++) {
         bool valid;
-        
-        float value = 
-          voltageGain * ReadByte((byte)(VOLTAGE_BASE_REG + i), out valid);   
+
+        float value =
+          voltageGain * ReadByte((byte)(VOLTAGE_BASE_REG + i), out valid);
 
         if (!valid)
           continue;
         if (value > 0)
-          voltages[i] = value;  
+          voltages[i] = value;
         else
           voltages[i] = null;
       }
@@ -372,13 +360,13 @@ namespace OpenHardwareMonitor.Hardware.LPC {
         if (value < sbyte.MaxValue && value > 0)
           temperatures[i] = value;
         else
-          temperatures[i] = null;       
+          temperatures[i] = null;
       }
 
       if (has16bitFanCounter) {
         for (int i = 0; i < fans.Length; i++) {
           if (fansDisabled[i])
-             continue;
+            continue;
           bool valid;
           int value = ReadByte(FAN_TACHOMETER_REG[i], out valid);
           if (!valid)
@@ -430,12 +418,10 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           if ((ctrlValue & 0x80) > 0) {
             // automatic operation (value can't be read)
             controls[i] = null;
-          }
-          else {
+          } else {
             controls[i] = (float)Math.Round((value) * 100.0f / 0xFF);
           }
-        }
-        else {
+        } else {
           bool valid;
           byte value = ReadByte(FAN_PWM_CTRL_REG[i], out valid);
           if (!valid)
@@ -444,8 +430,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           if ((value & 0x80) > 0) {
             // automatic operation (value can't be read)
             controls[i] = null;
-          }
-          else {
+          } else {
             // software operation
             controls[i] = (float)Math.Round((value & 0x7F) * 100.0f / 0x7F);
           }
@@ -454,5 +439,5 @@ namespace OpenHardwareMonitor.Hardware.LPC {
 
       Ring0.ReleaseIsaBusMutex();
     }
-  } 
+  }
 }

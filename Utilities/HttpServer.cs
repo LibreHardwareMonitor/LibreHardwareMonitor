@@ -1,9 +1,9 @@
 ﻿/*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
 	Copyright (C) 2012 Prince Samuel <prince.samuel@gmail.com>
   Copyright (C) 2012-2013 Michael Möller <mmoeller@openhardwaremonitor.org>
 
@@ -80,7 +80,8 @@ namespace OpenHardwareMonitor.Utilities {
         return false;
 
       try {
-        listenerThread.Abort();
+        if (listenerThread != null)
+          listenerThread.Abort();
         listener.Stop();
         listenerThread = null;
       } catch (HttpListenerException) {
@@ -144,7 +145,7 @@ namespace OpenHardwareMonitor.Utilities {
      * {"result":"fail","message":"Some error message"}
      * or:
      * {"result":"ok","value":42.0, "format":"{0:F2} RPM"}
-     * 
+     *
      * Set:
      * http://localhost:8085/Sensor?action=Set&id=/some/node/path/0&value=42.0
      * http://localhost:8085/Sensor?action=Set&id=/some/node/path/0&value=null
@@ -228,7 +229,7 @@ namespace OpenHardwareMonitor.Utilities {
       // Call EndGetContext to complete the asynchronous operation.
       HttpListenerContext context;
       try {
-        context = listener.EndGetContext(result);     
+        context = listener.EndGetContext(result);
       } catch (Exception) {
         return;
       }
@@ -257,7 +258,7 @@ namespace OpenHardwareMonitor.Utilities {
         }
 
         if (requestedFile.Contains("images_icon")) {
-          ServeResourceImage(context.Response, 
+          ServeResourceImage(context.Response,
             requestedFile.Replace("images_icon/", ""));
           return;
         }
@@ -276,11 +277,11 @@ namespace OpenHardwareMonitor.Utilities {
       }
     }
 
-    private void ServeResourceFile(HttpListenerResponse response, string name, 
-      string ext) 
+    private void ServeResourceFile(HttpListenerResponse response, string name,
+      string ext)
     {
       // resource names do not support the hyphen
-      name = "OpenHardwareMonitor.Resources." + 
+      name = "OpenHardwareMonitor.Resources." +
         name.Replace("custom-theme", "custom_theme");
 
       string[] names =
@@ -299,13 +300,13 @@ namespace OpenHardwareMonitor.Utilities {
                 output.Write(buffer, 0, len);
               }
               output.Flush();
-              output.Close();              
+              output.Close();
               response.Close();
-            } catch (HttpListenerException) { 
-            } catch (InvalidOperationException) { 
+            } catch (HttpListenerException) {
+            } catch (InvalidOperationException) {
             }
             return;
-          }          
+          }
         }
       }
 
@@ -332,7 +333,7 @@ namespace OpenHardwareMonitor.Utilities {
                 ms.WriteTo(output);
               }
               output.Close();
-            } catch (HttpListenerException) {              
+            } catch (HttpListenerException) {
             }
             image.Dispose();
             response.Close();
@@ -416,9 +417,9 @@ namespace OpenHardwareMonitor.Utilities {
       return jsonNode;
     }
 
-    private static void ReturnFile(HttpListenerContext context, string filePath) 
+    private static void ReturnFile(HttpListenerContext context, string filePath)
     {
-      context.Response.ContentType = 
+      context.Response.ContentType =
         GetContentType(Path.GetExtension(filePath));
       const int bufferSize = 1024 * 512; //512KB
       var buffer = new byte[bufferSize];
