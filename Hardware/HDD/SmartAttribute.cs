@@ -85,7 +85,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       }
     }
 
-    public float ConvertValue(Kernel32.DriveAttributeValue value, IReadOnlyList<IParameter> parameters) {
+    internal float ConvertValue(Kernel32.DriveAttributeValue value, IReadOnlyList<IParameter> parameters) {
       if (rawValueConversion == null) {
         return value.AttrValue;
       }

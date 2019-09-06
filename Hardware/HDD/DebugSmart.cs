@@ -343,25 +343,25 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public bool EnableSmart() {
       if (driveNumber < 0)
-        throw new ObjectDisposedException("DebugSmart");
+        throw new ObjectDisposedException(nameof(DebugSmart));
       return true;
     }
 
     public Kernel32.DriveAttributeValue[] ReadSmartData() {
       if (driveNumber < 0)
-        throw new ObjectDisposedException("DebugSmart");
+        throw new ObjectDisposedException(nameof(DebugSmart));
       return drives[driveNumber].DriveAttributeValues;
     }
 
     public Kernel32.DriveThresholdValue[] ReadSmartThresholds() {
       if (driveNumber < 0)
-        throw new ObjectDisposedException("DebugSmart");
+        throw new ObjectDisposedException(nameof(DebugSmart));
       return drives[driveNumber].DriveThresholdValues;
     }
 
     public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision) {
       if (driveNumber < 0)
-        throw new ObjectDisposedException("DebugSmart");
+        throw new ObjectDisposedException(nameof(DebugSmart));
       name = drives[driveNumber].Name;
       firmwareRevision = drives[driveNumber].FirmwareVersion;
       return true;

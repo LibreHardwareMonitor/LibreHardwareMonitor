@@ -28,9 +28,9 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       }
     }
 
-    private NVMeSmart smart { get; } = null;
-    private NVMeInfo info { get; }
-    private List<NVMeSensor> sensors { get; set; } = new List<NVMeSensor>();
+    private NVMeSmart smart = null;
+    private NVMeInfo info = null;
+    private List<NVMeSensor> sensors = new List<NVMeSensor>();
 
     private NVMeGeneric(StorageInfo _storageInfo, NVMeInfo info, int index, ISettings settings)
       : base(_storageInfo, info.Model, info.Revision, "nvme", index, settings) {

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
 namespace OpenHardwareMonitor.Interop {
-  public class Kernel32 {
+  internal class Kernel32 {
     private const string KERNEL = "kernel32.dll";
     public const byte SMART_LBA_MID = 0x4F;
     public const byte SMART_LBA_HI = 0xC2;

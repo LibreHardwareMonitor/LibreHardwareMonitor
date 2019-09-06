@@ -19,8 +19,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public string FirmwareRevision { get; set; }
     public int Index { get; set; }
+    public DriveInfo[] driveInfos { get; private set; } = null;
 
-    private DriveInfo[] driveInfos = null;
     private StorageInfo storageInfo = null;
     private PerformanceValue perfTotal = new PerformanceValue();
     private PerformanceValue perfWrite = new PerformanceValue();
@@ -108,23 +108,27 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     protected abstract void UpdateSensors();
 
+    /// <summary>
+    /// Helper to calculate the disk performance with base timestamps
+    /// https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-perfrawdata
+    /// </summary>
     internal class PerformanceValue {
-      public ulong perfValue { get; set; } = 0;
-      public ulong perfValueBase { get; set; } = 0;
-      public double result { get; set; } = 0;
+      public ulong PerfValue { get; set; } = 0;
+      public ulong PerfValueBase { get; set; } = 0;
+      public double Result { get; set; } = 0;
 
       public void Update(ulong v, ulong vBase) {
-        ulong diff_value = v - perfValue;
-        ulong diff_timebase = vBase - perfValueBase;
+        ulong diff_value = v - PerfValue;
+        ulong diff_timebase = vBase - PerfValueBase;
 
-        perfValue = v;
-        perfValueBase = vBase;
-        result = (100.0 / diff_timebase) * diff_value;
+        PerfValue = v;
+        PerfValueBase = vBase;
+        Result = (100.0 / diff_timebase) * diff_value;
 
         //sometimes it is possible that diff_value > diff_timebase
         //limit result to 100%, this is because timing issues during read from pcie controller an latency between IO operation
-        if (result > 100)
-          result = 100;
+        if (Result > 100)
+          Result = 100;
       }
     }
 
@@ -145,12 +149,12 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
       value_base = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
       perfWrite.Update(value, value_base);
-      sensorDiskWriteActivity.Value = (float)(perfWrite.result);
+      sensorDiskWriteActivity.Value = (float)(perfWrite.Result);
 
       value = (ulong)data.Properties["PercentIdleTime"].Value;
       value_base = (ulong)data.Properties["PercentIdleTime_Base"].Value;
       perfTotal.Update(value, value_base);
-      sensorDiskTotalActivity.Value = (float)(100.0 - perfTotal.result);
+      sensorDiskTotalActivity.Value = (float)(100.0 - perfTotal.Result);
 
       ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
       ulong readRate = readRateCounter - readRateCounterlast;
@@ -165,8 +169,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       double current_time = (double)Timestamp_PerfTime / Frequency_Perftime;
 
       double timedeltaSeconds = current_time - lastTime;
-      lastTime = current_time;
-      if (timedeltaSeconds > 0.2 && timedeltaSeconds < 5.0) {
+      if (lastTime == 0 || timedeltaSeconds > 0.2) {
         double writeSpeed = (double)writeRate;
         writeSpeed *= (1 / timedeltaSeconds);
         sensorDiskWriteRate.Value = (float)writeSpeed;
@@ -174,6 +177,10 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         double readSpeed = (double)readRate;
         readSpeed *= (1 / timedeltaSeconds);
         sensorDiskReadRate.Value = (float)readSpeed;
+      }
+
+      if (lastTime == 0 || timedeltaSeconds > 0.2) {
+        lastTime = current_time;
       }
 
       perfData.Dispose();
@@ -221,7 +228,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
     public override string GetReport() {
       StringBuilder r = new StringBuilder();
-      r.AppendLine(this.GetType().Name);
+      r.AppendLine("STORAGE");
       r.AppendLine();
       r.AppendLine("Drive name: " + name);
       r.AppendLine("Firmware version: " + FirmwareRevision);
