@@ -4,22 +4,128 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-
   internal class NVMeSmart : IDisposable {
+    private readonly int driveNumber;
+    private readonly SafeHandle handle;
 
-    public INVMeDrive NVMeDrive { get; set; }
-    private SafeHandle handle;
-    private int driveNumber;
+    public NVMeSmart(StorageInfo storageInfo) {
+      driveNumber = storageInfo.Index;
+      NVMeDrive = null;
 
-    private class NVMeInfoImpl : NVMeInfo {
-      public NVMeInfoImpl(int index, Kernel32.NVMeIdentifyControllerData data) {
+      //test samsung protocol
+      if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("samsung")) {
+        handle = NVMeSamsung.IdentifyDevice(storageInfo);
+        if (handle != null) {
+          NVMeDrive = new NVMeSamsung();
+        }
+      }
+
+      //test intel protocol
+      if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("intel")) {
+        handle = NVMeIntel.IdentifyDevice(storageInfo);
+        if (handle != null) {
+          NVMeDrive = new NVMeIntel();
+        }
+      }
+
+      //test intel raid protocol
+      if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("intel")) {
+        handle = NVMeIntelRst.IdentifyDevice(storageInfo);
+        if (handle != null) {
+          NVMeDrive = new NVMeIntelRst();
+        }
+      }
+
+      //test windows generic driver protocol
+      if (NVMeDrive == null) {
+        handle = NVMeWindows.IdentifyDevice(storageInfo);
+        if (handle != null) {
+          NVMeDrive = new NVMeWindows();
+        }
+      }
+    }
+
+    public bool IsValid {
+      get {
+        if (handle == null || handle.IsInvalid)
+          return false;
+
+
+        return true;
+      }
+    }
+
+    public INVMeDrive NVMeDrive { get; }
+
+    public void Dispose() {
+      Close();
+    }
+
+    private static string GetString(byte[] s) {
+      return Encoding.ASCII.GetString(s).Trim('\t', '\n', '\r', ' ', '\0');
+    }
+
+    private static short KelvinToCelsius(ushort k) {
+      return (short) (k > 0 ? k - 273 : short.MinValue);
+    }
+
+    private static short KelvinToCelsius(byte[] k) {
+      return KelvinToCelsius(BitConverter.ToUInt16(k, 0));
+    }
+
+    public void Close() {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    protected void Dispose(bool disposing) {
+      if (disposing) {
+        if (handle != null && !handle.IsClosed)
+          handle.Close();
+      }
+    }
+
+    public HDD.NVMeInfo GetInfo() {
+      if (handle == null || handle.IsClosed)
+        return null;
+
+
+      bool valid = false;
+      var data = new Kernel32.NVMeIdentifyControllerData();
+      if (NVMeDrive != null)
+        valid = NVMeDrive.IdentifyController(handle, out data);
+
+      if (!valid)
+        return null;
+
+
+      return new NVMeInfo(driveNumber, data);
+    }
+
+    public HDD.NVMeHealthInfo GetHealthInfo() {
+      if (handle == null || handle.IsClosed)
+        return null;
+
+
+      bool valid = false;
+      var data = new Kernel32.NVMeHealthInfoLog();
+      if (NVMeDrive != null)
+        valid = NVMeDrive.HealthInfoLog(handle, out data);
+
+      if (!valid)
+        return null;
+
+
+      return new NVMeHealthInfo(data);
+    }
+
+    private class NVMeInfo : HDD.NVMeInfo {
+      public NVMeInfo(int index, Kernel32.NVMeIdentifyControllerData data) {
         Index = index;
         VID = data.vid;
         SSVID = data.ssvid;
@@ -34,9 +140,9 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       }
     }
 
-    private class NVMeHealthInfoImpl : NVMeHealthInfo {
-      public NVMeHealthInfoImpl(Kernel32.NVMeHealthInfoLog log) {
-        CriticalWarning = (Kernel32.NVMeCriticalWarning)log.CriticalWarning;
+    private class NVMeHealthInfo : HDD.NVMeHealthInfo {
+      public NVMeHealthInfo(Kernel32.NVMeHealthInfoLog log) {
+        CriticalWarning = (Kernel32.NVMeCriticalWarning) log.CriticalWarning;
         Temperature = KelvinToCelsius(log.CompositeTemperature);
         AvailableSpare = log.AvailableSpare;
         AvailableSpareThreshold = log.AvailableSpareThreshold;
@@ -59,113 +165,5 @@ namespace OpenHardwareMonitor.Hardware.HDD {
           TemperatureSensors[i] = KelvinToCelsius(log.TemperatureSensors[i]);
       }
     }
-
-    private static string GetString(byte[] s) {
-      return Encoding.ASCII.GetString(s).Trim('\t', '\n', '\r', ' ', '\0');
-    }
-
-    private double int128_to_double(byte[] buffer) {
-      int i;
-      double result = 0;
-      for (i = 0; i < 16; i++) {
-        result *= 256;
-        result += buffer[15 - i];
-      }
-      return result;
-    }
-
-    private static short KelvinToCelsius(ushort k) {
-      return (short)((k > 0) ? (int)k - 273 : short.MinValue);
-    }
-
-    private static short KelvinToCelsius(byte[] k) {
-      return KelvinToCelsius(BitConverter.ToUInt16(k, 0));
-    }
-
-    public NVMeSmart(StorageInfo _storageInfo) {
-      this.driveNumber = _storageInfo.Index;
-      this.NVMeDrive = null;
-
-      //test samsung protocol
-      if (this.NVMeDrive == null && _storageInfo.Name.ToLower().Contains("samsung")) {
-        handle = NVMeSamsung._Identify(_storageInfo);
-        if (handle != null) {
-          NVMeDrive = new NVMeSamsung();
-        }
-      }
-
-      //test intel protocol
-      if (this.NVMeDrive == null && _storageInfo.Name.ToLower().Contains("intel")) {
-        handle = NVMeIntel._Identify(_storageInfo);
-        if (handle != null) {
-          NVMeDrive = new NVMeIntel();
-        }
-      }
-
-      //test intel raid protocol
-      if (this.NVMeDrive == null && _storageInfo.Name.ToLower().Contains("intel")) {
-        handle = NVMeIntelRst._Identify(_storageInfo);
-        if (handle != null) {
-          NVMeDrive = new NVMeIntelRst();
-        }
-      }
-
-      //test windows generic driver protocol
-      if (this.NVMeDrive == null) {
-        handle = NVMeWindows._Identify(_storageInfo);
-        if (handle != null) {
-          NVMeDrive = new NVMeWindows();
-        }
-      }
-    }
-
-    public void Close() {
-      Dispose(true);
-      GC.SuppressFinalize(this);
-    }
-
-    public void Dispose() {
-      Close();
-    }
-
-    protected void Dispose(bool disposing) {
-      if (disposing) {
-        if (handle != null && !handle.IsClosed)
-          handle.Close();
-      }
-    }
-
-    public bool IsValid {
-      get {
-        if (handle == null || handle.IsInvalid)
-          return false;
-        return true;
-      }
-    }
-
-    public NVMeInfo GetInfo() {
-      if (handle == null || handle.IsClosed)
-        return null;
-      bool valid = false;
-      Kernel32.NVMeIdentifyControllerData data = new Kernel32.NVMeIdentifyControllerData();
-      if (NVMeDrive != null)
-        valid = NVMeDrive.IdentifyController(handle, out data);
-      if (!valid)
-        return null;
-      return new NVMeInfoImpl(driveNumber, data);
-    }
-
-    public NVMeHealthInfo GetHealthInfo() {
-      if (handle == null || handle.IsClosed)
-        return null;
-      bool valid = false;
-      Kernel32.NVMeHealthInfoLog data = new Kernel32.NVMeHealthInfoLog();
-      if (NVMeDrive != null)
-        valid = NVMeDrive.HealthInfoLog(handle, out data);
-      if (!valid)
-        return null;
-      return new NVMeHealthInfoImpl(data);
-    }
-
   }
 }

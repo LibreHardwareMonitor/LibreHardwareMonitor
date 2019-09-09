@@ -7,33 +7,25 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Linq;
+using System.Text;
 using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   internal abstract class ATAStorage : AbstractStorage {
-
     // array of all harddrive types, matching type is searched in this order
-    private static Type[] hddTypes = {
-      typeof(SSDPlextor),
-      typeof(SSDIntel),
-      typeof(SSDSandforce),
-      typeof(SSDIndilinx),
-      typeof(SSDSamsung),
-      typeof(SSDMicron),
-      typeof(GenericHarddisk)
-    };
+    private static readonly Type[] hddTypes = { typeof(SSDPlextor), typeof(SSDIntel), typeof(SSDSandforce), typeof(SSDIndilinx), typeof(SSDSamsung), typeof(SSDMicron), typeof(GenericHarddisk) };
 
-    private ISmart smart;
-    private IList<SmartAttribute> smartAttributes;
+    private readonly ISmart smart;
+    private readonly IList<SmartAttribute> smartAttributes;
     private IDictionary<SmartAttribute, Sensor> sensors;
 
-    public ATAStorage(StorageInfo _storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IEnumerable<SmartAttribute> smartAttributes, ISettings settings)
-      : base(_storageInfo, name, firmwareRevision, id, index, settings) {
+    protected ATAStorage(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IEnumerable<SmartAttribute> smartAttributes, ISettings settings)
+      : base(storageInfo, name, firmwareRevision, id, index, settings) {
       this.smart = smart;
       if (smart.IsValid)
         smart.EnableSmart();
+
       this.smartAttributes = new List<SmartAttribute>(smartAttributes);
       CreateSensors();
     }
@@ -55,8 +47,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
           name = null;
           firmwareRevision = null;
         }
-      }
-      else {
+      } else {
         string[] logicalDrives = WindowsStorage.GetLogicalDrives(info.Index);
         if (logicalDrives == null || logicalDrives.Length == 0) {
           smart.Close();
@@ -66,18 +57,12 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         bool hasNonZeroSizeDrive = false;
         foreach (string logicalDrive in logicalDrives) {
           try {
-            DriveInfo di = new DriveInfo(logicalDrive);
+            var di = new DriveInfo(logicalDrive);
             if (di.TotalSize > 0) {
               hasNonZeroSizeDrive = true;
               break;
             }
-          }
-          catch (ArgumentException) {
-          }
-          catch (IOException) {
-          }
-          catch (UnauthorizedAccessException) {
-          }
+          } catch (ArgumentException) { } catch (IOException) { } catch (UnauthorizedAccessException) { }
         }
 
         if (!hasNonZeroSizeDrive) {
@@ -94,22 +79,23 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
       foreach (Type type in hddTypes) {
         // get the array of name prefixes for the current type
-        NamePrefixAttribute[] namePrefixes = type.GetCustomAttributes(typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
+        var namePrefixes = type.GetCustomAttributes(typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
 
         // get the array of the required SMART attributes for the current type
-        RequireSmartAttribute[] requiredAttributes = type.GetCustomAttributes(typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
+        var requiredAttributes = type.GetCustomAttributes(typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
 
         // check if all required attributes are present
         bool allRequiredAttributesFound = true;
         foreach (var requireAttribute in requiredAttributes) {
-          bool adttributeFound = false;
+          bool attributeFound = false;
           foreach (Kernel32.DriveAttributeValue value in values) {
             if (value.Identifier == requireAttribute.AttributeId) {
-              adttributeFound = true;
+              attributeFound = true;
               break;
             }
           }
-          if (!adttributeFound) {
+
+          if (!attributeFound) {
             allRequiredAttributesFound = false;
             break;
           }
@@ -118,6 +104,7 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         // if an attribute is missing, then try the next type
         if (!allRequiredAttributesFound)
           continue;
+
 
         // check if there is a matching name prefix for this type
         foreach (NamePrefixAttribute prefix in namePrefixes) {
@@ -131,32 +118,36 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       return null;
     }
 
-
-    protected override sealed void CreateSensors() {
+    protected sealed override void CreateSensors() {
       sensors = new Dictionary<SmartAttribute, Sensor>();
 
       if (smart.IsValid) {
         var smartIds = smart.ReadSmartData().Select(attrValue => attrValue.Identifier);
 
         // unique attributes by SensorType and SensorChannel.
-        var uniqueAtrributes = smartAttributes
-            .Where(a => a.SensorType.HasValue && smartIds.Contains(a.Identifier))
-            .GroupBy(a => new { a.SensorType.Value, a.SensorChannel })
-            .Select(g => g.First());
+        var uniqueAttributes = smartAttributes
+                              .Where(a => a.SensorType.HasValue && smartIds.Contains(a.Identifier))
+                              .GroupBy(a => new { a.SensorType.Value, a.SensorChannel })
+                              .Select(g => g.First());
 
-        sensors = uniqueAtrributes.ToDictionary(attr => attr,
-            attr => new Sensor(attr.SensorName,
-              attr.SensorChannel, attr.DefaultHiddenSensor,
-              attr.SensorType.Value, this, attr.ParameterDescriptions, settings));
+        sensors = uniqueAttributes.ToDictionary(attr => attr,
+                                                attr => new Sensor(attr.SensorName,
+                                                                   attr.SensorChannel,
+                                                                   attr.DefaultHiddenSensor,
+                                                                   attr.SensorType.Value,
+                                                                   this,
+                                                                   attr.ParameterDescriptions,
+                                                                   settings));
 
         foreach (var sensor in sensors) {
           ActivateSensor(sensor.Value);
         }
       }
+
       base.CreateSensors();
     }
 
-    public virtual void UpdateAdditionalSensors(Kernel32.DriveAttributeValue[] values) { }
+    protected virtual void UpdateAdditionalSensors(Kernel32.DriveAttributeValue[] values) { }
 
     protected override void UpdateSensors() {
       if (smart.IsValid) {
@@ -183,19 +174,20 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
         if (values.Length > 0) {
           r.AppendFormat(CultureInfo.InvariantCulture,
-            " {0}{1}{2}{3}{4}{5}{6}{7}",
-            ("ID").PadRight(3),
-            ("Description").PadRight(35),
-            ("Raw Value").PadRight(13),
-            ("Worst").PadRight(6),
-            ("Value").PadRight(6),
-            ("Threshold").PadRight(6),
-            ("Physical").PadRight(8),
-            Environment.NewLine);
+                         " {0}{1}{2}{3}{4}{5}{6}{7}",
+                         "Id".PadRight(3),
+                         "Description".PadRight(35),
+                         "Raw Value".PadRight(13),
+                         "Worst".PadRight(6),
+                         "Value".PadRight(6),
+                         "Threshold".PadRight(6),
+                         "Physical".PadRight(8),
+                         Environment.NewLine);
 
           foreach (Kernel32.DriveAttributeValue value in values) {
             if (value.Identifier == 0x00)
               break;
+
 
             byte? threshold = null;
             foreach (Kernel32.DriveThresholdValue t in thresholds) {
@@ -218,16 +210,19 @@ namespace OpenHardwareMonitor.Hardware.HDD {
 
             string raw = BitConverter.ToString(value.RawValue);
             r.AppendFormat(CultureInfo.InvariantCulture,
-              " {0}{1}{2}{3}{4}{5}{6}{7}",
-              value.Identifier.ToString("X2").PadRight(3),
-              description.PadRight(35),
-              raw.Replace("-", "").PadRight(13),
-              value.WorstValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
-              value.AttrValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
-              (threshold.HasValue ? threshold.Value.ToString(
-                CultureInfo.InvariantCulture) : "-").PadRight(6),
-              (physical.HasValue ? physical.Value.ToString(CultureInfo.InvariantCulture) : "-").PadRight(8), Environment.NewLine);
+                           " {0}{1}{2}{3}{4}{5}{6}{7}",
+                           value.Identifier.ToString("X2").PadRight(3),
+                           description.PadRight(35),
+                           raw.Replace("-", "").PadRight(13),
+                           value.WorstValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
+                           value.AttrValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
+                           (threshold.HasValue
+                             ? threshold.Value.ToString(CultureInfo.InvariantCulture)
+                             : "-").PadRight(6),
+                           (physical.HasValue ? physical.Value.ToString(CultureInfo.InvariantCulture) : "-").PadRight(8),
+                           Environment.NewLine);
           }
+
           r.AppendLine();
         }
       }

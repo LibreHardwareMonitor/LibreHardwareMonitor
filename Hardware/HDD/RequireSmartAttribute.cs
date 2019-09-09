@@ -4,18 +4,14 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
   internal class RequireSmartAttribute : Attribute {
-
     public RequireSmartAttribute(byte attributeId) {
       AttributeId = attributeId;
     }
 
-    public byte AttributeId { get; private set; }
-
+    public byte AttributeId { get; }
   }
 }

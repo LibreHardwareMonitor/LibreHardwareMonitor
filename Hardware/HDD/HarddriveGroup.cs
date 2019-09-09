@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Management;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
@@ -14,26 +12,27 @@ namespace OpenHardwareMonitor.Hardware.HDD {
     private readonly List<AbstractStorage> hardware = new List<AbstractStorage>();
 
     public HarddriveGroup(ISettings settings) {
-
       if (Software.OperatingSystem.IsLinux) return;
 
+
       //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
-      ManagementObjectSearcher mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+      var mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
       ManagementObjectCollection queryCollection = mosDisks.Get(); // get the results
 
       foreach (var disk in queryCollection) {
-        var deviceId = (string)disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
+        var deviceId = (string) disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
         var idx = Convert.ToUInt32(disk.Properties["Index"].Value);
         var diskSize = Convert.ToUInt64(disk.Properties["Size"].Value);
         var scsi = Convert.ToInt32(disk.Properties["SCSIPort"].Value);
 
         if (deviceId != null) {
-          AbstractStorage instance = AbstractStorage.CreateInstance(deviceId, idx, diskSize, scsi, settings);
+          var instance = AbstractStorage.CreateInstance(deviceId, idx, diskSize, scsi, settings);
           if (instance != null) {
-            this.hardware.Add(instance);
+            hardware.Add(instance);
           }
         }
       }
+
       queryCollection.Dispose();
       mosDisks.Dispose();
     }

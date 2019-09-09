@@ -7,10 +7,8 @@ using System.Collections.Generic;
 using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-
   [NamePrefix(""), RequireSmart(0xAB), RequireSmart(0xB1)]
   internal class SSDSandforce : ATAStorage {
-
     private static readonly IEnumerable<SmartAttribute> smartAttributes =
       new List<SmartAttribute> {
         new SmartAttribute(0x01, SmartNames.RawReadErrorRate),
@@ -24,45 +22,54 @@ namespace OpenHardwareMonitor.Hardware.HDD {
         new SmartAttribute(0xB5, SmartNames.AlternativeProgramFailCount, RawToInt),
         new SmartAttribute(0xB6, SmartNames.AlternativeEraseFailCount, RawToInt),
         new SmartAttribute(0xBB, SmartNames.UncorrectableErrorCount, RawToInt),
-        new SmartAttribute(0xC2, SmartNames.Temperature,
-          (byte[] raw, byte value, IReadOnlyList<IParameter> p)
-            => { return value + (p == null ? 0 : p[0].Value); },
-          SensorType.Temperature, 0, SmartNames.Temperature, true,
-          new[] { new ParameterDescription("Offset [°C]",
-                    "Temperature offset of the thermal sensor.\n" +
-                    "Temperature = Value + Offset.", 0) }),
+        new SmartAttribute(0xC2,
+                           SmartNames.Temperature,
+                           (raw, value, p)
+                             => value + (p?[0].Value ?? 0),
+                           SensorType.Temperature,
+                           0,
+                           SmartNames.Temperature,
+                           true,
+                           new[] {
+                             new ParameterDescription("Offset [°C]",
+                                                      "Temperature offset of the thermal sensor.\n" +
+                                                      "Temperature = Value + Offset.",
+                                                      0)
+                           }),
         new SmartAttribute(0xC3, SmartNames.UnrecoverableEcc),
         new SmartAttribute(0xC4, SmartNames.ReallocationEventCount, RawToInt),
         new SmartAttribute(0xE7, SmartNames.RemainingLife, null, SensorType.Level, 0, SmartNames.RemainingLife),
-        new SmartAttribute(0xE9, SmartNames.ControllerWritesToNAND, RawToInt, SensorType.Data, 0, SmartNames.ControllerWritesToNAND),
+        new SmartAttribute(0xE9, SmartNames.ControllerWritesToNand, RawToInt, SensorType.Data, 0, SmartNames.ControllerWritesToNand),
         new SmartAttribute(0xEA, SmartNames.HostWritesToController, RawToInt, SensorType.Data, 1, SmartNames.HostWritesToController),
         new SmartAttribute(0xF1, SmartNames.HostWrites, RawToInt, SensorType.Data, 1, SmartNames.HostWrites),
         new SmartAttribute(0xF2, SmartNames.HostReads, RawToInt, SensorType.Data, 2, SmartNames.HostReads)
       };
 
-    private Sensor writeAmplification;
+    private readonly Sensor writeAmplification;
 
-    public SSDSandforce(StorageInfo _storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(_storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) {
-      this.writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
+    public SSDSandforce(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+      : base(storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) {
+      writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
     }
 
-    public override void UpdateAdditionalSensors(Kernel32.DriveAttributeValue[] values) {
-      float? controllerWritesToNAND = null;
+    protected override void UpdateAdditionalSensors(Kernel32.DriveAttributeValue[] values) {
+      float? controllerWritesToNand = null;
       float? hostWritesToController = null;
       foreach (Kernel32.DriveAttributeValue value in values) {
         if (value.Identifier == 0xE9)
-          controllerWritesToNAND = RawToInt(value.RawValue, value.AttrValue, null);
+          controllerWritesToNand = RawToInt(value.RawValue, value.AttrValue, null);
 
         if (value.Identifier == 0xEA)
           hostWritesToController = RawToInt(value.RawValue, value.AttrValue, null);
       }
-      if (controllerWritesToNAND.HasValue && hostWritesToController.HasValue) {
+
+      if (controllerWritesToNand.HasValue && hostWritesToController.HasValue) {
         if (hostWritesToController.Value > 0)
           writeAmplification.Value =
-            controllerWritesToNAND.Value / hostWritesToController.Value;
+            controllerWritesToNand.Value / hostWritesToController.Value;
         else
           writeAmplification.Value = 0;
+
         ActivateSensor(writeAmplification);
       }
     }

@@ -3,14 +3,12 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using System;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
   internal sealed class StorageGeneric : AbstractStorage {
-    private StorageGeneric(StorageInfo _storageInfo, string name, string firmwareRevision, int index, ISettings settings)
-      : base(_storageInfo, name, firmwareRevision, "hdd", index, settings)
-    {
+    private StorageGeneric(StorageInfo storageInfo, string name, string firmwareRevision, int index, ISettings settings)
+      : base(storageInfo, name, firmwareRevision, "hdd", index, settings) {
       CreateSensors();
     }
 
@@ -20,10 +18,8 @@ namespace OpenHardwareMonitor.Hardware.HDD {
       return new StorageGeneric(info, name, firmwareRevision, info.Index, settings);
     }
 
-    protected override void UpdateSensors() {
-    }
+    protected override void UpdateSensors() { }
 
-    protected override void GetReport(StringBuilder r) {
-    }
+    protected override void GetReport(StringBuilder r) { }
   }
 }
