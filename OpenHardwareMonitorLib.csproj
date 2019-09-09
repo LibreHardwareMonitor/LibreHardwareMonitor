@@ -87,6 +87,7 @@
     <Compile Include="Hardware\Nvidia\NvmlReturn.cs" />	
     <Compile Include="Hardware\Opcode.cs" />
     <Compile Include="Hardware\RAM\GenericRAM.cs" />
+    <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Hardware\RAM\RAMGroup.cs" />
     <Compile Include="Hardware\Ring0.cs" />
     <Compile Include="Hardware\KernelDriver.cs" />

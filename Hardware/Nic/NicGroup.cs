@@ -29,7 +29,7 @@ namespace OpenHardwareMonitor.Hardware.Nic {
         return;
       }
 
-      // When multiple events fire concurrently, we don't want threads interferring
+      // When multiple events fire concurrently, we don't want threads interfering
       // with others as they manipulate non-thread safe state.
       lock (_scanLock) {
         var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()

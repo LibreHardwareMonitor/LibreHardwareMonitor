@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -73,8 +74,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         _packagePower = new Sensor("Package Power", this._hw._sensorPower++, SensorType.Power, this._hw, this._hw.settings);
         _coreTemperatureTctl = new Sensor("Core (Tctl)", this._hw._sensorTemperatures++, SensorType.Temperature, this._hw, this._hw.settings);
         _coreTemperatureTdie = new Sensor("Core (Tdie)", this._hw._sensorTemperatures++, SensorType.Temperature, this._hw, this._hw.settings);
-        _coreVoltage = new Sensor("Core (SVI2)", this._hw._sensorVoltage++, SensorType.Voltage, this._hw, this._hw.settings);
-        _socVoltage = new Sensor("SoC (SVI2)", this._hw._sensorVoltage++, SensorType.Voltage, this._hw, this._hw.settings);
+        _coreVoltage = new Sensor("Core (SVI2 TFN)", this._hw._sensorVoltage++, SensorType.Voltage, this._hw, this._hw.settings);
+        _socVoltage = new Sensor("SoC (SVI2 TFN)", this._hw._sensorVoltage++, SensorType.Voltage, this._hw, this._hw.settings);
 
         _hw.ActivateSensor(_packagePower);
         _hw.ActivateSensor(_coreTemperatureTctl);
@@ -167,9 +168,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         // current temp Bit [31:21]
         //If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
-        bool temp_offset_flag = false;
-        if ((temperature & F17H_TEMP_OFFSET_FLAG) != 0)
-          temp_offset_flag = true;
+        bool temp_offset_flag = (temperature & F17H_TEMP_OFFSET_FLAG) != 0;
         temperature = (temperature >> 21) * 125;
 
         float offset = 0.0f;
@@ -177,16 +176,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
           offset = 0;
         else if (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X"))
           offset = -20.0f;
-        else if (cpu.Name.Contains("1920X") || cpu.Name.Contains("1950X") || cpu.Name.Contains("1900X"))
+        else if (cpu.Name.Contains("1920X") || cpu.Name.Contains("1950X") || cpu.Name.Contains("1900X") ||
+                 cpu.Name.Contains("2920") || cpu.Name.Contains("2950") || cpu.Name.Contains("2970") || cpu.Name.Contains("2990"))
           offset = -27.0f;
-        else if (cpu.Name.Contains("2600X") || cpu.Name.Contains("2700X") || cpu.Name.Contains("2800X"))
+        else if (cpu.Name.Contains("2600X") || cpu.Name.Contains("2700X") || cpu.Name.Contains("2800X") ||
+                 cpu.Name.Contains("1910") || cpu.Name.Contains("1920") || cpu.Name.Contains("1950"))
           offset = -10.0f;
-        else if (cpu.Name.Contains("1910") || cpu.Name.Contains("1920") || cpu.Name.Contains("1950"))
-          offset = -10.0f;
-        else if (cpu.Name.Contains("2920") || cpu.Name.Contains("2950") || cpu.Name.Contains("2970") || cpu.Name.Contains("2990"))
-          offset = -27.0f;
 
-        float t = (temperature * 0.001f);
+        float t = temperature * 0.001f;
         if (temp_offset_flag)
           t += -49.0f;
 
@@ -228,7 +225,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         foreach (var n in Nodes)
         {
           if (n.NodeId == numa_id)
+          {
             node = n;
+            break;
+          }
         }
         if (node == null)
         {
@@ -298,10 +298,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         Threads = new List<CPUID>();
         CoreId = id;
         _hw = (AMD17CPU)hw;
-        _clock = new Sensor("Core #" + CoreId.ToString(), _hw._sensorClock++, SensorType.Clock, _hw, _hw.settings);
-        _multiplier = new Sensor("Core #" + CoreId.ToString(), _hw._sensorMulti++, SensorType.Factor, _hw, _hw.settings);
-        _power = new Sensor("Core #" + CoreId.ToString() + " (SMU)", _hw._sensorPower++, SensorType.Power, _hw, _hw.settings);
-        _vcore = new Sensor("Core #" + CoreId.ToString() + " VID", _hw._sensorVoltage++, SensorType.Voltage, _hw, _hw.settings);
+        _clock = new Sensor("Core #" + CoreId, _hw._sensorClock++, SensorType.Clock, _hw, _hw.settings);
+        _multiplier = new Sensor("Core #" + CoreId, _hw._sensorMulti++, SensorType.Factor, _hw, _hw.settings);
+        _power = new Sensor("Core #" + CoreId + " (SMU)", _hw._sensorPower++, SensorType.Power, _hw, _hw.settings);
+        _vcore = new Sensor("Core #" + CoreId + " VID", _hw._sensorVoltage++, SensorType.Voltage, _hw, _hw.settings);
 
         _hw.ActivateSensor(_clock);
         _hw.ActivateSensor(_multiplier);
@@ -407,39 +407,38 @@ namespace OpenHardwareMonitor.Hardware.CPU
       // add all numa nodes
       // Register ..1E_ECX, [10:8] + 1
       _ryzen = new Processor(this);
-      int NodesPerProcessor = 1 + (int)((cpuid[0][0].ExtData[0x1e, ECX] >> 8) & 0x7);
 
       // add all numa nodes
-      foreach (CPUID[] cpu in cpuid)
+
+      const int initialCoreId = 1_000_000_000;
+
+      int coreId = 1;
+      int lastCoreId = initialCoreId;
+
+      // Ryzen 3000's skip some core ids.
+      // So start at 1 and count upwards when the read core changes.
+
+      foreach (CPUID[] cpu in cpuid.OrderBy(x => x[0].ExtData[0x1e, EBX] & 0xFF))
       {
         CPUID thread = cpu[0];
 
         // coreID
         // Register ..1E_EBX, [7:0]
-        int core_id = (int)(thread.ExtData[0x1e, EBX] & 0xff);
-
+        int coreIdRead = (int)(thread.ExtData[0x1e, EBX] & 0xff);
+        
         // nodeID
         // Register ..1E_ECX, [7:0]
-        int node_id = (int)(thread.ExtData[0x1e, ECX] & 0xff);
+        int nodeId = (int)(thread.ExtData[0x1e, ECX] & 0xff);
 
-        _ryzen.AppendThread(null, node_id, core_id);
+        _ryzen.AppendThread(thread, nodeId, coreId);
+
+        if (lastCoreId != initialCoreId && coreIdRead != lastCoreId) {
+          coreId++;
+        }
+
+        lastCoreId = coreIdRead;
       }
 
-      // add all threads to numa nodes and specific core
-      foreach (CPUID[] cpu in cpuid)
-      {
-        CPUID thread = cpu[0];
-
-        // coreID
-        // Register ..1E_EBX, [7:0]
-        int core_id = (int)(thread.ExtData[0x1e, EBX] & 0xff);
-
-        // nodeID
-        // Register ..1E_ECX, [7:0]
-        int node_id = (int)(thread.ExtData[0x1e, ECX] & 0xff);
-
-        _ryzen.AppendThread(thread, node_id, core_id);
-      }
       Update();
     }
 
@@ -487,11 +486,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
           c.UpdateSensors();
         }
       }
-    }
-
-    public override void Close()
-    {
-      base.Close();
     }
   }
 }
