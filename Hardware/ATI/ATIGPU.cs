@@ -17,7 +17,11 @@ namespace OpenHardwareMonitor.Hardware.ATI {
     private readonly int adapterIndex;
     private readonly int busNumber;
     private readonly int deviceNumber;
-    private readonly Sensor temperature;
+    private readonly Sensor temperatureGPU;
+    private readonly Sensor temperatureHBM;
+    private readonly Sensor temperatureVDDC;
+    private readonly Sensor temperatureMVDD;
+    private readonly Sensor temperatureHotSpot;
     private readonly Sensor fan;
     private readonly Sensor coreClock;
     private readonly Sensor memoryClock;
@@ -35,7 +39,11 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       this.busNumber = busNumber;
       this.deviceNumber = deviceNumber;
 
-      this.temperature = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
+      this.temperatureGPU = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
+      this.temperatureHBM = new Sensor("GPU HBM", 1, SensorType.Temperature, this, settings);
+      this.temperatureVDDC = new Sensor("GPU VDDC", 2, SensorType.Temperature, this, settings);
+      this.temperatureMVDD = new Sensor("GPU MVDD", 3, SensorType.Temperature, this, settings);
+      this.temperatureHotSpot = new Sensor("GPU Hot Spot", 4, SensorType.Temperature, this, settings);
       this.fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
       this.coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
       this.memoryClock = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
@@ -100,14 +108,48 @@ namespace OpenHardwareMonitor.Hardware.ATI {
     }
 
     public override void Update() {
-      ADLTemperature adlt = new ADLTemperature();
-      if (ADL.ADL_Overdrive5_Temperature_Get(adapterIndex, 0, ref adlt)
-        == ADL.ADL_OK) 
+      int temp = 0;
+      IntPtr context = IntPtr.Zero;
+
+      if(ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, ref temp)
+        == ADL.ADL_OK)
       {
-        temperature.Value = 0.001f * adlt.Temperature;
-        ActivateSensor(temperature);
+        temperatureGPU.Value = 0.001f * temp;
+        ActivateSensor(temperatureGPU);
       } else {
-        temperature.Value = null;
+        temperatureGPU.Value = null;
+      }
+
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 2, ref temp)
+        == ADL.ADL_OK) {
+        temperatureHBM.Value = temp;
+        ActivateSensor(temperatureHBM);
+      } else {
+        temperatureHBM.Value = null;
+      }
+
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 3, ref temp)
+        == ADL.ADL_OK) {
+        temperatureVDDC.Value = temp;
+        ActivateSensor(temperatureVDDC);
+      } else {
+        temperatureVDDC.Value = null;
+      }
+
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 4, ref temp)
+        == ADL.ADL_OK) {
+        temperatureMVDD.Value = temp;
+        ActivateSensor(temperatureMVDD);
+      } else {
+        temperatureMVDD.Value = null;
+      }
+
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 7, ref temp)
+        == ADL.ADL_OK) {
+        temperatureHotSpot.Value = temp;
+        ActivateSensor(temperatureHotSpot);
+      } else {
+        temperatureHotSpot.Value = null;
       }
 
       ADLFanSpeedValue adlf = new ADLFanSpeedValue();

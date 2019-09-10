@@ -123,6 +123,8 @@ namespace OpenHardwareMonitor.Hardware.ATI {
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, int thermalControllerIndex, ref int temp);
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
