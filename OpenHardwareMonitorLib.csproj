@@ -47,7 +47,7 @@
     <Compile Include="Hardware\HDD\NVMeGeneric.cs" />
     <Compile Include="Hardware\HDD\NVMeHealthInfo.cs" />
     <Compile Include="Hardware\HDD\NVMeInfo.cs" />
-    <Compile Include="Hardware\HDD\NVMeIntelRst.cs" />
+    <Compile Include="Hardware\HDD\NVMeIntelRST.cs" />
     <Compile Include="Hardware\HDD\NVMeIntel.cs" />
     <Compile Include="Hardware\HDD\NVMeSamsung.cs" />
     <Compile Include="Hardware\HDD\NVMeSmart.cs" />
