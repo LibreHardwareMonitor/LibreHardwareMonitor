@@ -29,7 +29,8 @@ namespace OpenHardwareMonitor.Hardware.ATI {
     private readonly Sensor coreVoltage;
     private readonly Sensor coreLoad;
     private readonly Sensor controlSensor;
-    private readonly Control fanControl;  
+    private readonly Control fanControl;
+    private readonly bool isOverdriveNSupported;
 
     public ATIGPU(string name, int adapterIndex, int busNumber, 
       int deviceNumber, ISettings settings) 
@@ -52,6 +53,11 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
       this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
+      int supported = 0;
+      int enabled = 0;
+      int version = 0;
+      isOverdriveNSupported = ADL.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == ADL.ADL_OK && version >= 7;
+      
       ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
       if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
         != ADL.ADL_OK) 
