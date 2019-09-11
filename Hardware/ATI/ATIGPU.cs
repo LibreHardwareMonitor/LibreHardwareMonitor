@@ -115,47 +115,57 @@ namespace OpenHardwareMonitor.Hardware.ATI {
     }
 
     public override void Update() {
-      int temp = 0;
-      IntPtr context = IntPtr.Zero;
 
-      if(ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, ref temp) == ADL.ADL_OK)
-      {
-        temperatureCore.Value = 0.001f * temp;
-        ActivateSensor(temperatureCore);
+      if (isOverdriveNSupported) {
+        int temp = 0;
+        IntPtr context = IntPtr.Zero;
+
+        if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, ref temp) == ADL.ADL_OK) {
+          temperatureCore.Value = 0.001f * temp;
+          ActivateSensor(temperatureCore);
+        } else {
+          temperatureCore.Value = null;
+        }
+
+        if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 2, ref temp) == ADL.ADL_OK) {
+          temperatureHBM.Value = temp;
+          ActivateSensor(temperatureHBM);
+        } else {
+          temperatureHBM.Value = null;
+        }
+
+        if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 3, ref temp) == ADL.ADL_OK) {
+          temperatureVDDC.Value = temp;
+          ActivateSensor(temperatureVDDC);
+        } else {
+          temperatureVDDC.Value = null;
+        }
+
+        if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 4, ref temp) == ADL.ADL_OK) {
+          temperatureMVDD.Value = temp;
+          ActivateSensor(temperatureMVDD);
+        } else {
+          temperatureMVDD.Value = null;
+        }
+
+        if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 7, ref temp) == ADL.ADL_OK) {
+          temperatureHotSpot.Value = temp;
+          ActivateSensor(temperatureHotSpot);
+        } else {
+          temperatureHotSpot.Value = null;
+        }
+
+        if (context != IntPtr.Zero) {
+          Marshal.FreeHGlobal(context);
+        }
       } else {
-        temperatureCore.Value = null;
-      }
-
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 2, ref temp) == ADL.ADL_OK) {
-        temperatureHBM.Value = temp;
-        ActivateSensor(temperatureHBM);
-      } else {
-        temperatureHBM.Value = null;
-      }
-
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 3, ref temp) == ADL.ADL_OK) {
-        temperatureVDDC.Value = temp;
-        ActivateSensor(temperatureVDDC);
-      } else {
-        temperatureVDDC.Value = null;
-      }
-
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 4, ref temp) == ADL.ADL_OK) {
-        temperatureMVDD.Value = temp;
-        ActivateSensor(temperatureMVDD);
-      } else {
-        temperatureMVDD.Value = null;
-      }
-
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 7, ref temp) == ADL.ADL_OK) {
-        temperatureHotSpot.Value = temp;
-        ActivateSensor(temperatureHotSpot);
-      } else {
-        temperatureHotSpot.Value = null;
-      }
-
-      if (context != IntPtr.Zero) {
-        Marshal.FreeHGlobal(context);
+        ADLTemperature adlt = new ADLTemperature();
+        if (ADL.ADL_Overdrive5_Temperature_Get(adapterIndex, 0, ref adlt) == ADL.ADL_OK) {
+          temperatureCore.Value = 0.001f * adlt.Temperature;
+          ActivateSensor(temperatureCore);
+        } else {
+          temperatureCore.Value = null;
+        }
       }
 
       ADLFanSpeedValue adlf = new ADLFanSpeedValue();
