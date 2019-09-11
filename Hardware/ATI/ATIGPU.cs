@@ -10,6 +10,7 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.ATI {
   internal sealed class ATIGPU : Hardware {
@@ -150,6 +151,10 @@ namespace OpenHardwareMonitor.Hardware.ATI {
         ActivateSensor(temperatureHotSpot);
       } else {
         temperatureHotSpot.Value = null;
+      }
+
+      if(context != IntPtr.Zero) {
+        Marshal.FreeHGlobal(context);
       }
 
       ADLFanSpeedValue adlf = new ADLFanSpeedValue();
