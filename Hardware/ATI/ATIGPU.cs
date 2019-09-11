@@ -112,8 +112,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       int temp = 0;
       IntPtr context = IntPtr.Zero;
 
-      if(ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, ref temp)
-        == ADL.ADL_OK)
+      if(ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, ref temp) == ADL.ADL_OK)
       {
         temperatureCore.Value = 0.001f * temp;
         ActivateSensor(temperatureCore);
@@ -121,32 +120,28 @@ namespace OpenHardwareMonitor.Hardware.ATI {
         temperatureCore.Value = null;
       }
 
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 2, ref temp)
-        == ADL.ADL_OK) {
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 2, ref temp) == ADL.ADL_OK) {
         temperatureHBM.Value = temp;
         ActivateSensor(temperatureHBM);
       } else {
         temperatureHBM.Value = null;
       }
 
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 3, ref temp)
-        == ADL.ADL_OK) {
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 3, ref temp) == ADL.ADL_OK) {
         temperatureVDDC.Value = temp;
         ActivateSensor(temperatureVDDC);
       } else {
         temperatureVDDC.Value = null;
       }
 
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 4, ref temp)
-        == ADL.ADL_OK) {
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 4, ref temp) == ADL.ADL_OK) {
         temperatureMVDD.Value = temp;
         ActivateSensor(temperatureMVDD);
       } else {
         temperatureMVDD.Value = null;
       }
 
-      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 7, ref temp)
-        == ADL.ADL_OK) {
+      if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 7, ref temp) == ADL.ADL_OK) {
         temperatureHotSpot.Value = temp;
         ActivateSensor(temperatureHotSpot);
       } else {
