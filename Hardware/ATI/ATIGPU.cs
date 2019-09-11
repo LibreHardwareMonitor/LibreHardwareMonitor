@@ -18,7 +18,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
     private readonly int adapterIndex;
     private readonly int busNumber;
     private readonly int deviceNumber;
-    private readonly Sensor temperatureGPU;
+    private readonly Sensor temperatureCore;
     private readonly Sensor temperatureHBM;
     private readonly Sensor temperatureVDDC;
     private readonly Sensor temperatureMVDD;
@@ -40,7 +40,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       this.busNumber = busNumber;
       this.deviceNumber = deviceNumber;
 
-      this.temperatureGPU = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
+      this.temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
       this.temperatureHBM = new Sensor("GPU HBM", 1, SensorType.Temperature, this, settings);
       this.temperatureVDDC = new Sensor("GPU VDDC", 2, SensorType.Temperature, this, settings);
       this.temperatureMVDD = new Sensor("GPU MVDD", 3, SensorType.Temperature, this, settings);
@@ -115,10 +115,10 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       if(ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, ref temp)
         == ADL.ADL_OK)
       {
-        temperatureGPU.Value = 0.001f * temp;
-        ActivateSensor(temperatureGPU);
+        temperatureCore.Value = 0.001f * temp;
+        ActivateSensor(temperatureCore);
       } else {
-        temperatureGPU.Value = null;
+        temperatureCore.Value = null;
       }
 
       if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 2, ref temp)
