@@ -148,7 +148,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
         temperatureHotSpot.Value = null;
       }
 
-      if(context != IntPtr.Zero) {
+      if (context != IntPtr.Zero) {
         Marshal.FreeHGlobal(context);
       }
 
