@@ -1,35 +1,23 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2011-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
-*/
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
-using System.Collections.Generic;
-
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.HDD {
-    public interface ISmart {
+  public interface ISmart : IDisposable {
+    bool IsValid { get; }
 
-    IntPtr OpenDrive(int driveNumber);
+    void Close();
 
-    bool EnableSmart(IntPtr handle, int driveNumber);
+    bool EnableSmart();
 
-    DriveAttributeValue[] ReadSmartData(IntPtr handle, int driveNumber);
+    Kernel32.SMART_ATTRIBUTE[] ReadSmartData();
 
-    DriveThresholdValue[] ReadSmartThresholds(IntPtr handle, int driveNumber);
+    Kernel32.SMART_THRESHOLD[] ReadSmartThresholds();
 
-    bool ReadNameAndFirmwareRevision(IntPtr handle, int driveNumber,
-      out string name, out string firmwareRevision); 
-
-    void CloseHandle(IntPtr handle);
-
-    IntPtr InvalidHandle { get; }
-
-    string[] GetLogicalDrives(int driveIndex);
+    bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision);
   }
 }

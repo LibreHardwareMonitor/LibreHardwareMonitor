@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Permissions;
-using System.Reflection;
 using System.Net.NetworkInformation;
 
 namespace OpenHardwareMonitor.Hardware {

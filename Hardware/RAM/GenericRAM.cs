@@ -45,19 +45,19 @@ namespace OpenHardwareMonitor.Hardware.RAM {
     }
 
     public override void Update() {
-      Kernel32.MemoryStatusEx status = new Kernel32.MemoryStatusEx();
-      status.Length = (uint)Marshal.SizeOf<Kernel32.MemoryStatusEx>();
+      Kernel32.MEMORYSTATUSEX status = new Kernel32.MEMORYSTATUSEX();
+      status.dwLength = (uint)Marshal.SizeOf<Kernel32.MEMORYSTATUSEX>();
 
       if (!Kernel32.GlobalMemoryStatusEx(ref status))
         return;
 
-      physicalMemoryUsed.Value = (float)(status.TotalPhysicalMemory - status.AvailablePhysicalMemory) / (1024 * 1024 * 1024);
-      physicalMemoryAvailable.Value = (float)status.AvailablePhysicalMemory / (1024 * 1024 * 1024);
-      physicalMemoryLoad.Value = 100.0f - (100.0f * status.AvailablePhysicalMemory) / status.TotalPhysicalMemory;
+      physicalMemoryUsed.Value = (float)(status.ullTotalPhys - status.ullAvailPhys) / (1024 * 1024 * 1024);
+      physicalMemoryAvailable.Value = (float)status.ullAvailPhys / (1024 * 1024 * 1024);
+      physicalMemoryLoad.Value = 100.0f - (100.0f * status.ullAvailPhys) / status.ullTotalPhys;
 
-      virtualMemoryUsed.Value = (float)(status.TotalPageFile - status.AvailPageFile) / (1024 * 1024 * 1024);
-      virtualMemoryAvailable.Value = (float)status.AvailPageFile / (1024 * 1024 * 1024);
-      virtualMemoryLoad.Value = 100.0f - (100.0f * status.AvailPageFile) / status.TotalPageFile;
+      virtualMemoryUsed.Value = (float)(status.ullTotalPageFile - status.ullAvailPageFile) / (1024 * 1024 * 1024);
+      virtualMemoryAvailable.Value = (float)status.ullAvailPageFile / (1024 * 1024 * 1024);
+      virtualMemoryLoad.Value = 100.0f - (100.0f * status.ullAvailPageFile) / status.ullTotalPageFile;
     }
   }
 }

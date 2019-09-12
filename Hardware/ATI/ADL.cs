@@ -11,6 +11,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.ATI {
   
@@ -100,40 +101,46 @@ namespace OpenHardwareMonitor.Hardware.ATI {
 
     public const int ATI_VENDOR_ID = 0x1002;
 
-    internal const string Atiadlxx_FileName = "atiadlxx.dll";
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    internal const string DllName = "atiadlxx.dll";
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Main_Control_Destroy();
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Adapter_NumberOfAdapters_Get();
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int ADL_Adapter_ID_Get(int adapterIndex, out int adapterID);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int ADL_Display_AdapterID_Get(int adapterIndex, out int adapterID);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Adapter_ID_Get(int adapterIndex, out int adapterId);
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Display_AdapterID_Get(int adapterIndex, out int adapterId);
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Adapter_Active_Get(int adapterIndex, out int status);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_CurrentActivity_Get(int iAdapterIndex, ref ADLPMActivity activity);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, int thermalControllerIndex, ref int temp);
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_FanSpeedToDefault_Set(int adapterIndex, int thermalControllerIndex);
-    [DllImport(Atiadlxx_FileName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int ADL_Overdrive_Caps(int adapterIndex, ref int supported, ref int enabled, ref int version);
 
     public static int ADL_Main_Control_Create(int enumConnectedAdapters) {
       try {
-        return ADL_Main_Control_Create(Main_Memory_Alloc,
-        enumConnectedAdapters);
+        if (Kernel32.LoadLibrary(DllName) != IntPtr.Zero)
+          return ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters);
+
+        return ADL_ERR;
       } catch {
         return ADL_ERR;
       }

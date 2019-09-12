@@ -12,16 +12,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using OpenHardwareMonitor.Interop;
 
 namespace OpenHardwareMonitor.Hardware.ATI {
   internal class ATIGroup : IGroup {
 
     private readonly List<ATIGPU> hardware = new List<ATIGPU>();
     private readonly StringBuilder report = new StringBuilder();
-
+    private readonly int status;
     public ATIGroup(ISettings settings) {
       try {
-        int status = ADL.ADL_Main_Control_Create(1);
+        status = ADL.ADL_Main_Control_Create(1);
 
         report.AppendLine("AMD Display Library");
         report.AppendLine();
@@ -42,12 +43,8 @@ namespace OpenHardwareMonitor.Hardware.ATI {
             ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
             if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
               for (int i = 0; i < numberOfAdapters; i++) {
-                int isActive;
-                ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex,
-                  out isActive);
-                int adapterID;
-                ADL.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex,
-                  out adapterID);
+                ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex, out var isActive);
+                ADL.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out var adapterId);
 
                 report.Append("AdapterIndex: "); 
                 report.AppendLine(i.ToString(CultureInfo.InvariantCulture));
@@ -73,7 +70,7 @@ namespace OpenHardwareMonitor.Hardware.ATI {
                 report.AppendLine(adapterInfo[i].FunctionNumber.ToString(
                   CultureInfo.InvariantCulture));
                 report.Append("AdapterID: 0x");
-                report.AppendLine(adapterID.ToString("X", 
+                report.AppendLine(adapterId.ToString("X", 
                   CultureInfo.InvariantCulture));
 
                 if (!string.IsNullOrEmpty(adapterInfo[i].UDID) &&
@@ -116,7 +113,8 @@ namespace OpenHardwareMonitor.Hardware.ATI {
       try {
         foreach (ATIGPU gpu in hardware)
           gpu.Close();
-        ADL.ADL_Main_Control_Destroy();
+        if (status == ADL.ADL_OK)
+          ADL.ADL_Main_Control_Destroy();
       } catch (Exception) { }
     }
   }

@@ -8,7 +8,6 @@
 	
 */
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware {

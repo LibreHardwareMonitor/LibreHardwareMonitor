@@ -9,10 +9,8 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.Mainboard {

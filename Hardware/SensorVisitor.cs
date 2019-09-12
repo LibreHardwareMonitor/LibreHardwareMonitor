@@ -9,7 +9,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 namespace OpenHardwareMonitor.Hardware {
 

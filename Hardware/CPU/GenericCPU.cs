@@ -9,12 +9,9 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 
 namespace OpenHardwareMonitor.Hardware.CPU {
   public class GenericCPU : Hardware {
@@ -28,23 +25,23 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     protected readonly int processorIndex;
     protected readonly int coreCount;
 
-    private readonly bool hasModelSpecificRegisters;
-
-    private readonly bool hasTimeStampCounter;
     private readonly bool isInvariantTimeStampCounter;
     private readonly double estimatedTimeStampCounterFrequency;
     private readonly double estimatedTimeStampCounterFrequencyError;
 
     private ulong lastTimeStampCount;
     private long lastTime;
-    private double timeStampCounterFrequency;
-    
 
     private readonly Vendor vendor;
 
     private readonly CPULoad cpuLoad;
     private readonly Sensor totalLoad;
     private readonly Sensor[] coreLoads;
+
+    /// <summary>
+    /// Gets the CPUID.
+    /// </summary>
+    public CPUID[][] CPUID => cpuid;
 
     protected string CoreString(int i) {
       if (coreCount == 1)
@@ -59,28 +56,28 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     {
       this.cpuid = cpuid;
 
-      this.vendor = cpuid[0][0].Vendor;
+      vendor = cpuid[0][0].Vendor;
 
-      this.family = cpuid[0][0].Family;
-      this.model = cpuid[0][0].Model;
-      this.stepping = cpuid[0][0].Stepping;
+      family = cpuid[0][0].Family;
+      model = cpuid[0][0].Model;
+      stepping = cpuid[0][0].Stepping;
 
       this.processorIndex = processorIndex;
-      this.coreCount = cpuid.Length;  
+      coreCount = cpuid.Length;  
   
       // check if processor has MSRs
       if (cpuid[0][0].Data.GetLength(0) > 1
         && (cpuid[0][0].Data[1, 3] & 0x20) != 0)
-        hasModelSpecificRegisters = true;
+        HasModelSpecificRegisters = true;
       else
-        hasModelSpecificRegisters = false;
+        HasModelSpecificRegisters = false;
 
       // check if processor has a TSC
       if (cpuid[0][0].Data.GetLength(0) > 1
         && (cpuid[0][0].Data[1, 3] & 0x10) != 0)
-        hasTimeStampCounter = true;
+        HasTimeStampCounter = true;
       else
-        hasTimeStampCounter = false;
+        HasTimeStampCounter = false;
 
       // check if processor supports an invariant TSC 
       if (cpuid[0][0].ExtData.GetLength(0) > 7
@@ -105,7 +102,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
           ActivateSensor(totalLoad);
       }
 
-      if (hasTimeStampCounter) {
+      if (HasTimeStampCounter) {
         ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
 
         EstimateTimeStampCounterFrequency(
@@ -117,7 +114,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
         estimatedTimeStampCounterFrequency = 0;
       }
 
-      timeStampCounterFrequency = estimatedTimeStampCounterFrequency;                  
+      TimeStampCounterFrequency = estimatedTimeStampCounterFrequency;                  
     }
 
     private static Identifier CreateIdentifier(Vendor vendor,
@@ -158,13 +155,13 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     }
 
     private void EstimateTimeStampCounterFrequency(double timeWindow, 
-      out double frequency, out double error) 
+                                                   out double frequency, out double error) 
     {
       long ticks = (long)(timeWindow * Stopwatch.Frequency);
       ulong countBegin, countEnd;
 
       long timeBegin = Stopwatch.GetTimestamp() +
-        (long)Math.Ceiling(0.001 * ticks);
+                       (long)Math.Ceiling(0.001 * ticks);
       long timeEnd = timeBegin + ticks;
 
       while (Stopwatch.GetTimestamp() < timeBegin) { }
@@ -177,7 +174,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
       double delta = (timeEnd - timeBegin);
       frequency = 1e-6 * 
-        (((double)(countEnd - countBegin)) * Stopwatch.Frequency) / delta;
+                  (((double)(countEnd - countBegin)) * Stopwatch.Frequency) / delta;
 
       double beginError = (afterBegin - timeBegin) / delta;
       double endError = (afterEnd - timeEnd) / delta;
@@ -214,23 +211,23 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       r.AppendLine();
       r.AppendFormat("Name: {0}{1}", name, Environment.NewLine);
       r.AppendFormat("Number of Cores: {0}{1}", coreCount,
-        Environment.NewLine);
+                     Environment.NewLine);
       r.AppendFormat("Threads per Core: {0}{1}", cpuid[0].Length,
-        Environment.NewLine);
+                     Environment.NewLine);
       r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-        "Timer Frequency: {0} MHz", Stopwatch.Frequency * 1e-6));
-      r.AppendLine("Time Stamp Counter: " + (hasTimeStampCounter ? (
-        isInvariantTimeStampCounter ? "Invariant" : "Not Invariant") : "None"));
+                                 "Timer Frequency: {0} MHz", Stopwatch.Frequency * 1e-6));
+      r.AppendLine("Time Stamp Counter: " + (HasTimeStampCounter ? (
+                     isInvariantTimeStampCounter ? "Invariant" : "Not Invariant") : "None"));
       r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-        "Estimated Time Stamp Counter Frequency: {0} MHz",
-        Math.Round(estimatedTimeStampCounterFrequency * 100) * 0.01));
+                                 "Estimated Time Stamp Counter Frequency: {0} MHz",
+                                 Math.Round(estimatedTimeStampCounterFrequency * 100) * 0.01));
       r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-        "Estimated Time Stamp Counter Frequency Error: {0} Mhz",
-        Math.Round(estimatedTimeStampCounterFrequency *
-        estimatedTimeStampCounterFrequencyError * 1e5) * 1e-5));
+                                 "Estimated Time Stamp Counter Frequency Error: {0} Mhz",
+                                 Math.Round(estimatedTimeStampCounterFrequency *
+                                            estimatedTimeStampCounterFrequencyError * 1e5) * 1e-5));
       r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-        "Time Stamp Counter Frequency: {0} MHz",
-        Math.Round(timeStampCounterFrequency * 100) * 0.01));   
+                                 "Time Stamp Counter Frequency: {0} MHz",
+                                 Math.Round(TimeStampCounterFrequency * 100) * 0.01));   
       r.AppendLine();
 
       uint[] msrArray = GetMSRs();
@@ -248,24 +245,16 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       return r.ToString();
     }
 
-    public override HardwareType HardwareType {
-      get { return HardwareType.CPU; }
-    }
+    public override HardwareType HardwareType => HardwareType.CPU;
 
-    public bool HasModelSpecificRegisters {
-      get { return hasModelSpecificRegisters; }
-    }
+    public bool HasModelSpecificRegisters { get; }
 
-    public bool HasTimeStampCounter {
-      get { return hasTimeStampCounter; }
-    }
+    public bool HasTimeStampCounter { get; }
 
-    public double TimeStampCounterFrequency {
-      get { return timeStampCounterFrequency; }
-    }
+    public double TimeStampCounterFrequency { get; private set; }
 
     public override void Update() {
-      if (hasTimeStampCounter && isInvariantTimeStampCounter) {
+      if (HasTimeStampCounter && isInvariantTimeStampCounter) {
 
         // make sure always the same thread is used
         ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
@@ -289,7 +278,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
           if (lastTime != 0 && delta > 0.5 && delta < 2) {
 
             // update the TSC frequency with the new value
-            timeStampCounterFrequency =
+            TimeStampCounterFrequency =
               (timeStampCount - lastTimeStampCount) / (1e6 * delta);
           }
 
