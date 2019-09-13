@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Management.Instrumentation;
 using OpenHardwareMonitor.Hardware;
 
-[assembly: Instrumented("root/OpenHardwareMonitor")]
-
+[assembly: Instrumented("root/LibreHardwareMonitor")]
 [System.ComponentModel.RunInstaller(true)]
 public class InstanceInstaller : DefaultManagementProjectInstaller { }
 
@@ -21,22 +20,22 @@ namespace OpenHardwareMonitor.WMI
     /// </summary>
     public class WmiProvider : IDisposable
     {
-        private List<IWmiObject> activeInstances;
+        private List<IWmiObject> _activeInstances;
 
         public WmiProvider(IComputer computer)
         {
-            activeInstances = new List<IWmiObject>();
-
+            _activeInstances = new List<IWmiObject>();
             foreach (IHardware hardware in computer.Hardware)
+            {
                 ComputerHardwareAdded(hardware);
-
+            }
             computer.HardwareAdded += ComputerHardwareAdded;
             computer.HardwareRemoved += ComputerHardwareRemoved;
         }
 
         public void Update()
         {
-            foreach (IWmiObject instance in activeInstances)
+            foreach (IWmiObject instance in _activeInstances)
                 instance.Update();
         }
 
@@ -53,7 +52,7 @@ namespace OpenHardwareMonitor.WMI
                 hardware.SensorRemoved += HardwareSensorRemoved;
 
                 Hardware hw = new Hardware(hardware);
-                activeInstances.Add(hw);
+                _activeInstances.Add(hw);
 
                 try
                 {
@@ -69,7 +68,7 @@ namespace OpenHardwareMonitor.WMI
         private void HardwareSensorAdded(ISensor data)
         {
             Sensor sensor = new Sensor(data);
-            activeInstances.Add(sensor);
+            _activeInstances.Add(sensor);
 
             try
             {
@@ -103,12 +102,12 @@ namespace OpenHardwareMonitor.WMI
 
         private bool Exists(string identifier)
         {
-            return activeInstances.Exists(h => h.Identifier == identifier);
+            return _activeInstances.Exists(h => h.Identifier == identifier);
         }
 
         private void RevokeInstance(string identifier)
         {
-            int instanceIndex = activeInstances.FindIndex(
+            int instanceIndex = _activeInstances.FindIndex(
               item => item.Identifier == identifier.ToString()
             );
 
@@ -117,18 +116,18 @@ namespace OpenHardwareMonitor.WMI
 
             try
             {
-                Instrumentation.Revoke(activeInstances[instanceIndex]);
+                Instrumentation.Revoke(_activeInstances[instanceIndex]);
             }
             catch (Exception) { }
 
-            activeInstances.RemoveAt(instanceIndex);
+            _activeInstances.RemoveAt(instanceIndex);
         }
 
         #endregion
 
         public void Dispose()
         {
-            foreach (IWmiObject instance in activeInstances)
+            foreach (IWmiObject instance in _activeInstances)
             {
                 try
                 {
@@ -136,7 +135,7 @@ namespace OpenHardwareMonitor.WMI
                 }
                 catch (Exception) { }
             }
-            activeInstances = null;
+            _activeInstances = null;
         }
     }
 }

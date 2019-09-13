@@ -12,29 +12,28 @@ namespace OpenHardwareMonitor.GUI
 {
     public class UserRadioGroup
     {
-        private string name;
-        private int value;
-        private MenuItem[] menuItems;
-        private event EventHandler changed;
-        private PersistentSettings settings;
+        private string _name;
+        private int _value;
+        private MenuItem[] _menuItems;
+        private event EventHandler _changed;
+        private PersistentSettings _settings;
 
-        public UserRadioGroup(string name, int value,
-          MenuItem[] menuItems, PersistentSettings settings)
+        public UserRadioGroup(string name, int value, MenuItem[] menuItems, PersistentSettings settings)
         {
-            this.settings = settings;
-            this.name = name;
+            this._settings = settings;
+            this._name = name;
             if (name != null)
-                this.value = settings.GetValue(name, value);
+                this._value = settings.GetValue(name, value);
             else
-                this.value = value;
-            this.menuItems = menuItems;
-            this.value = Math.Max(Math.Min(this.value, menuItems.Length - 1), 0);
+                this._value = value;
+            this._menuItems = menuItems;
+            this._value = Math.Max(Math.Min(this._value, menuItems.Length - 1), 0);
 
-            for (int i = 0; i < this.menuItems.Length; i++)
+            for (int i = 0; i < this._menuItems.Length; i++)
             {
-                this.menuItems[i].Checked = i == this.value;
+                this._menuItems[i].Checked = i == this._value;
                 int index = i;
-                this.menuItems[i].Click += delegate (object sender, EventArgs e)
+                this._menuItems[i].Click += delegate (object sender, EventArgs e)
                 {
                     this.Value = index;
                 };
@@ -43,18 +42,18 @@ namespace OpenHardwareMonitor.GUI
 
         public int Value
         {
-            get { return value; }
+            get { return _value; }
             set
             {
-                if (this.value != value)
+                if (this._value != value)
                 {
-                    this.value = value;
-                    if (this.name != null)
-                        settings.SetValue(name, value);
-                    for (int i = 0; i < this.menuItems.Length; i++)
-                        this.menuItems[i].Checked = i == value;
-                    if (changed != null)
-                        changed(this, null);
+                    this._value = value;
+                    if (this._name != null)
+                        _settings.SetValue(_name, value);
+                    for (int i = 0; i < this._menuItems.Length; i++)
+                        this._menuItems[i].Checked = i == value;
+                    if (_changed != null)
+                        _changed(this, null);
                 }
             }
         }
@@ -63,13 +62,13 @@ namespace OpenHardwareMonitor.GUI
         {
             add
             {
-                changed += value;
-                if (changed != null)
-                    changed(this, null);
+                _changed += value;
+                if (_changed != null)
+                    _changed(this, null);
             }
             remove
             {
-                changed -= value;
+                _changed -= value;
             }
         }
     }

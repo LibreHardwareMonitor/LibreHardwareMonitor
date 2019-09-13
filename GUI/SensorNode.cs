@@ -13,26 +13,25 @@ namespace OpenHardwareMonitor.GUI
 {
     public class SensorNode : Node
     {
-
-        private ISensor sensor;
-        private PersistentSettings settings;
-        private UnitManager unitManager;
-        public string format;
-        private bool plot = false;
-        private Color? penColor = null;
+        private ISensor _sensor;
+        private PersistentSettings _settings;
+        private UnitManager _unitManager;
+        private bool _plot = false;
+        private Color? _penColor = null;
+        public string Format { get; set; } = "";
 
         public string ValueToString(float? value)
         {
             if (value.HasValue)
             {
-                if (sensor.SensorType == SensorType.Temperature && unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
+                if (_sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
                 {
                     return string.Format("{0:F1} °F", value * 1.8 + 32);
                 }
-                else if (sensor.SensorType == SensorType.Throughput)
+                else if (_sensor.SensorType == SensorType.Throughput)
                 {
                     string result = "-";
-                    switch (sensor.Name)
+                    switch (_sensor.Name)
                     {
                         case "Connection Speed":
                             {
@@ -72,7 +71,7 @@ namespace OpenHardwareMonitor.GUI
                 }
                 else
                 {
-                    return string.Format(format, value);
+                    return string.Format(Format, value);
                 }
             }
             else
@@ -81,25 +80,25 @@ namespace OpenHardwareMonitor.GUI
 
         public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager) : base()
         {
-            this.sensor = sensor;
-            this.settings = settings;
-            this.unitManager = unitManager;
+            this._sensor = sensor;
+            this._settings = settings;
+            this._unitManager = unitManager;
             switch (sensor.SensorType)
             {
-                case SensorType.Voltage: format = "{0:F3} V"; break;
-                case SensorType.Clock: format = "{0:F0} MHz"; break;
-                case SensorType.Load: format = "{0:F1} %"; break;
-                case SensorType.Temperature: format = "{0:F1} °C"; break;
-                case SensorType.Fan: format = "{0:F0} RPM"; break;
-                case SensorType.Flow: format = "{0:F0} L/h"; break;
-                case SensorType.Control: format = "{0:F1} %"; break;
-                case SensorType.Level: format = "{0:F1} %"; break;
-                case SensorType.Power: format = "{0:F1} W"; break;
-                case SensorType.Data: format = "{0:F1} GB"; break;
-                case SensorType.SmallData: format = "{0:F1} MB"; break;
-                case SensorType.Factor: format = "{0:F3}"; break;
-                case SensorType.Frequency: format = "{0:F1} Hz"; break;
-                case SensorType.Throughput: format = "{0:F1} B/s"; break;
+                case SensorType.Voltage: Format = "{0:F3} V"; break;
+                case SensorType.Clock: Format = "{0:F0} MHz"; break;
+                case SensorType.Load: Format = "{0:F1} %"; break;
+                case SensorType.Temperature: Format = "{0:F1} °C"; break;
+                case SensorType.Fan: Format = "{0:F0} RPM"; break;
+                case SensorType.Flow: Format = "{0:F0} L/h"; break;
+                case SensorType.Control: Format = "{0:F1} %"; break;
+                case SensorType.Level: Format = "{0:F1} %"; break;
+                case SensorType.Power: Format = "{0:F1} W"; break;
+                case SensorType.Data: Format = "{0:F1} GB"; break;
+                case SensorType.SmallData: Format = "{0:F1} MB"; break;
+                case SensorType.Factor: Format = "{0:F3}"; break;
+                case SensorType.Frequency: Format = "{0:F1} Hz"; break;
+                case SensorType.Throughput: Format = "{0:F1} B/s"; break;
             }
 
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
@@ -114,8 +113,8 @@ namespace OpenHardwareMonitor.GUI
 
         public override string Text
         {
-            get { return sensor.Name; }
-            set { sensor.Name = value; }
+            get { return _sensor.Name; }
+            set { _sensor.Name = value; }
         }
 
         public override bool IsVisible
@@ -124,22 +123,22 @@ namespace OpenHardwareMonitor.GUI
             set
             {
                 base.IsVisible = value;
-                settings.SetValue(new Identifier(sensor.Identifier, "hidden").ToString(), !value);
+                _settings.SetValue(new Identifier(_sensor.Identifier, "hidden").ToString(), !value);
             }
         }
 
         public Color? PenColor
         {
-            get { return penColor; }
+            get { return _penColor; }
             set
             {
-                penColor = value;
+                _penColor = value;
 
-                string id = new Identifier(sensor.Identifier, "penColor").ToString();
+                string id = new Identifier(_sensor.Identifier, "penColor").ToString();
                 if (value.HasValue)
-                    settings.SetValue(id, value.Value);
+                    _settings.SetValue(id, value.Value);
                 else
-                    settings.Remove(id);
+                    _settings.Remove(id);
 
                 if (PlotSelectionChanged != null)
                     PlotSelectionChanged(this, null);
@@ -148,11 +147,11 @@ namespace OpenHardwareMonitor.GUI
 
         public bool Plot
         {
-            get { return plot; }
+            get { return _plot; }
             set
             {
-                plot = value;
-                settings.SetValue(new Identifier(sensor.Identifier, "plot").ToString(), value);
+                _plot = value;
+                _settings.SetValue(new Identifier(_sensor.Identifier, "plot").ToString(), value);
                 if (PlotSelectionChanged != null)
                     PlotSelectionChanged(this, null);
             }
@@ -162,22 +161,22 @@ namespace OpenHardwareMonitor.GUI
 
         public ISensor Sensor
         {
-            get { return sensor; }
+            get { return _sensor; }
         }
 
         public string Value
         {
-            get { return ValueToString(sensor.Value); }
+            get { return ValueToString(_sensor.Value); }
         }
 
         public string Min
         {
-            get { return ValueToString(sensor.Min); }
+            get { return ValueToString(_sensor.Min); }
         }
 
         public string Max
         {
-            get { return ValueToString(sensor.Max); }
+            get { return ValueToString(_sensor.Max); }
         }
 
         public override bool Equals(System.Object obj)
@@ -189,12 +188,12 @@ namespace OpenHardwareMonitor.GUI
             if (s == null)
                 return false;
 
-            return (sensor == s.sensor);
+            return (_sensor == s._sensor);
         }
 
         public override int GetHashCode()
         {
-            return sensor.GetHashCode();
+            return _sensor.GetHashCode();
         }
     }
 }

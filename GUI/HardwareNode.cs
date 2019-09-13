@@ -12,20 +12,22 @@ namespace OpenHardwareMonitor.GUI
 {
     public class HardwareNode : Node
     {
-        private PersistentSettings settings;
-        private UnitManager unitManager;
-        private IHardware hardware;
-        private List<TypeNode> typeNodes = new List<TypeNode>();
+        private PersistentSettings _settings;
+        private UnitManager _unitManager;
+        private IHardware _hardware;
+        private List<TypeNode> _typeNodes = new List<TypeNode>();
+
+        public event EventHandler PlotSelectionChanged;
 
         public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager) : base()
         {
-            this.settings = settings;
-            this.unitManager = unitManager;
-            this.hardware = hardware;
+            this._settings = settings;
+            this._unitManager = unitManager;
+            this._hardware = hardware;
             this.Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
 
             foreach (SensorType sensorType in Enum.GetValues(typeof(SensorType)))
-                typeNodes.Add(new TypeNode(sensorType));
+                _typeNodes.Add(new TypeNode(sensorType));
 
             foreach (ISensor sensor in hardware.Sensors)
                 SensorAdded(sensor);
@@ -36,13 +38,13 @@ namespace OpenHardwareMonitor.GUI
 
         public override string Text
         {
-            get { return hardware.Name; }
-            set { hardware.Name = value; }
+            get { return _hardware.Name; }
+            set { _hardware.Name = value; }
         }
 
         public IHardware Hardware
         {
-            get { return hardware; }
+            get { return _hardware; }
         }
 
         private void UpdateNode(TypeNode node)
@@ -67,7 +69,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void SensorRemoved(ISensor sensor)
         {
-            foreach (TypeNode typeNode in typeNodes)
+            foreach (TypeNode typeNode in _typeNodes)
             {
                 if (typeNode.SensorType == sensor.SensorType)
                 {
@@ -95,7 +97,7 @@ namespace OpenHardwareMonitor.GUI
             int i = 0;
             while (i < node.Nodes.Count && ((SensorNode)node.Nodes[i]).Sensor.Index < sensor.Index)
                 i++;
-            SensorNode sensorNode = new SensorNode(sensor, settings, unitManager);
+            SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
             sensorNode.PlotSelectionChanged += SensorPlotSelectionChanged;
             node.Nodes.Insert(i, sensorNode);
         }
@@ -108,7 +110,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void SensorAdded(ISensor sensor)
         {
-            foreach (TypeNode typeNode in typeNodes)
+            foreach (TypeNode typeNode in _typeNodes)
                 if (typeNode.SensorType == sensor.SensorType)
                 {
                     InsertSorted(typeNode, sensor);
@@ -117,7 +119,5 @@ namespace OpenHardwareMonitor.GUI
             if (PlotSelectionChanged != null)
                 PlotSelectionChanged(this, null);
         }
-
-        public event EventHandler PlotSelectionChanged;
     }
 }

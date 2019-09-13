@@ -11,12 +11,14 @@ namespace OpenHardwareMonitor.GUI
 {
     public abstract class Gadget : IDisposable
     {
-        private GadgetWindow window;
+        private GadgetWindow _window;
+
+        public event EventHandler VisibleChanged;
 
         public Gadget()
         {
-            this.window = new GadgetWindow();
-            this.window.Paint += delegate (object sender, PaintEventArgs e)
+            this._window = new GadgetWindow();
+            this._window.Paint += delegate (object sender, PaintEventArgs e)
             {
                 OnPaint(e);
             };
@@ -24,18 +26,18 @@ namespace OpenHardwareMonitor.GUI
 
         public virtual void Dispose()
         {
-            window.Dispose();
+            _window.Dispose();
         }
 
         public Point Location
         {
             get
             {
-                return window.Location;
+                return _window.Location;
             }
             set
             {
-                window.Location = value;
+                _window.Location = value;
             }
         }
 
@@ -43,11 +45,11 @@ namespace OpenHardwareMonitor.GUI
         {
             add
             {
-                window.LocationChanged += value;
+                _window.LocationChanged += value;
             }
             remove
             {
-                window.LocationChanged -= value;
+                _window.LocationChanged -= value;
             }
         }
 
@@ -55,11 +57,11 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return window.Size;
+                return _window.Size;
             }
             set
             {
-                this.window.Size = value;
+                this._window.Size = value;
             }
         }
 
@@ -67,11 +69,11 @@ namespace OpenHardwareMonitor.GUI
         {
             add
             {
-                window.SizeChanged += value;
+                _window.SizeChanged += value;
             }
             remove
             {
-                window.SizeChanged -= value;
+                _window.SizeChanged -= value;
             }
         }
 
@@ -79,11 +81,11 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return window.Opacity;
+                return _window.Opacity;
             }
             set
             {
-                window.Opacity = value;
+                _window.Opacity = value;
             }
         }
 
@@ -91,11 +93,11 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return window.LockPositionAndSize;
+                return _window.LockPositionAndSize;
             }
             set
             {
-                window.LockPositionAndSize = value;
+                _window.LockPositionAndSize = value;
             }
         }
 
@@ -103,11 +105,11 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return window.AlwaysOnTop;
+                return _window.AlwaysOnTop;
             }
             set
             {
-                window.AlwaysOnTop = value;
+                _window.AlwaysOnTop = value;
             }
         }
 
@@ -115,11 +117,11 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return window.ContextMenu;
+                return _window.ContextMenu;
             }
             set
             {
-                window.ContextMenu = value;
+                _window.ContextMenu = value;
             }
         }
 
@@ -127,11 +129,11 @@ namespace OpenHardwareMonitor.GUI
         {
             add
             {
-                window.HitTest += value;
+                _window.HitTest += value;
             }
             remove
             {
-                window.HitTest -= value;
+                _window.HitTest -= value;
             }
         }
 
@@ -139,11 +141,11 @@ namespace OpenHardwareMonitor.GUI
         {
             add
             {
-                window.MouseDoubleClick += value;
+                _window.MouseDoubleClick += value;
             }
             remove
             {
-                window.MouseDoubleClick -= value;
+                _window.MouseDoubleClick -= value;
             }
         }
 
@@ -151,13 +153,13 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return window.Visible;
+                return _window.Visible;
             }
             set
             {
-                if (value != window.Visible)
+                if (value != _window.Visible)
                 {
-                    window.Visible = value;
+                    _window.Visible = value;
                     if (VisibleChanged != null)
                         VisibleChanged(this, EventArgs.Empty);
                     if (value)
@@ -166,14 +168,11 @@ namespace OpenHardwareMonitor.GUI
             }
         }
 
-        public event EventHandler VisibleChanged;
-
         public void Redraw()
         {
-            window.Redraw();
+            _window.Redraw();
         }
 
         protected abstract void OnPaint(PaintEventArgs e);
-
     }
 }

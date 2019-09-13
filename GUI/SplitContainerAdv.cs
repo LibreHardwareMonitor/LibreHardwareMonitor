@@ -12,9 +12,9 @@ namespace OpenHardwareMonitor.GUI
 {
     public class SplitContainerAdv : SplitContainer
     {
-        private int delta = 0;
-        private Border3DStyle border3DStyle = Border3DStyle.Raised;
-        private Color color = SystemColors.Control;
+        private int _delta = 0;
+        private Border3DStyle _border3DStyle = Border3DStyle.Raised;
+        private Color _bgColor = SystemColors.Control;
 
         public SplitContainerAdv()
           : base()
@@ -30,12 +30,11 @@ namespace OpenHardwareMonitor.GUI
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-
             Graphics g = e.Graphics;
             Rectangle r = SplitterRectangle;
-            using (SolidBrush brush = new SolidBrush(color))
+            using (SolidBrush brush = new SolidBrush(_bgColor))
                 g.FillRectangle(brush, r);
-            ControlPaint.DrawBorder3D(g, r, border3DStyle);
+            ControlPaint.DrawBorder3D(g, r, _border3DStyle);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -58,12 +57,12 @@ namespace OpenHardwareMonitor.GUI
         {
             if (Orientation == Orientation.Vertical)
             {
-                delta = this.SplitterDistance - e.X;
+                _delta = this.SplitterDistance - e.X;
                 Cursor.Current = Cursors.VSplit;
             }
             else
             {
-                delta = this.SplitterDistance - e.Y;
+                _delta = this.SplitterDistance - e.Y;
                 Cursor.Current = Cursors.HSplit;
             }
             base.IsSplitterFixed = true;
@@ -79,14 +78,14 @@ namespace OpenHardwareMonitor.GUI
                     {
                         if (e.X > 0 && e.X < Width)
                         {
-                            SplitterDistance = e.X + delta < 0 ? 0 : e.X + delta;
+                            SplitterDistance = e.X + _delta < 0 ? 0 : e.X + _delta;
                         }
                     }
                     else
                     {
                         if (e.Y > 0 && e.Y < Height)
                         {
-                            SplitterDistance = e.Y + delta < 0 ? 0 : e.Y + delta;
+                            SplitterDistance = e.Y + _delta < 0 ? 0 : e.Y + _delta;
                         }
                     }
                 }
@@ -114,27 +113,27 @@ namespace OpenHardwareMonitor.GUI
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            delta = 0;
+            _delta = 0;
             base.IsSplitterFixed = false;
             Cursor.Current = Cursors.Default;
         }
 
         public Border3DStyle Border3DStyle
         {
-            get { return border3DStyle; }
+            get { return _border3DStyle; }
             set
             {
-                border3DStyle = value;
+                _border3DStyle = value;
                 Invalidate(false);
             }
         }
 
         public Color Color
         {
-            get { return color; }
+            get { return _bgColor; }
             set
             {
-                color = value;
+                _bgColor = value;
                 Invalidate(false);
             }
         }

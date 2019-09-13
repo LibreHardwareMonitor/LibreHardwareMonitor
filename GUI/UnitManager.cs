@@ -18,22 +18,22 @@ namespace OpenHardwareMonitor.GUI
     public class UnitManager
     {
 
-        private PersistentSettings settings;
-        private TemperatureUnit temperatureUnit;
+        private PersistentSettings _settings;
+        private TemperatureUnit _temperatureUnit;
 
         public UnitManager(PersistentSettings settings)
         {
-            this.settings = settings;
-            this.temperatureUnit = (TemperatureUnit)settings.GetValue("TemperatureUnit", (int)TemperatureUnit.Celsius);
+            this._settings = settings;
+            this._temperatureUnit = (TemperatureUnit)settings.GetValue("TemperatureUnit", (int)TemperatureUnit.Celsius);
         }
 
         public TemperatureUnit TemperatureUnit
         {
-            get { return temperatureUnit; }
+            get { return _temperatureUnit; }
             set
             {
-                this.temperatureUnit = value;
-                this.settings.SetValue("TemperatureUnit", (int)temperatureUnit);
+                this._temperatureUnit = value;
+                this._settings.SetValue("TemperatureUnit", (int)_temperatureUnit);
             }
         }
 

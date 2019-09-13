@@ -12,23 +12,23 @@ namespace OpenHardwareMonitor.GUI
 {
     public class UserOption
     {
-        private string name;
-        private bool value;
-        private MenuItem menuItem;
-        private event EventHandler changed;
-        private PersistentSettings settings;
+        private string _name;
+        private bool _value;
+        private MenuItem _menuItem;
+        private event EventHandler _changed;
+        private PersistentSettings _settings;
 
         public UserOption(string name, bool value, MenuItem menuItem, PersistentSettings settings)
         {
-            this.settings = settings;
-            this.name = name;
+            this._settings = settings;
+            this._name = name;
             if (name != null)
-                this.value = settings.GetValue(name, value);
+                this._value = settings.GetValue(name, value);
             else
-                this.value = value;
-            this.menuItem = menuItem;
-            this.menuItem.Checked = this.value;
-            this.menuItem.Click += new EventHandler(menuItem_Click);
+                this._value = value;
+            this._menuItem = menuItem;
+            this._menuItem.Checked = this._value;
+            this._menuItem.Click += new EventHandler(menuItem_Click);
         }
 
         private void menuItem_Click(object sender, EventArgs e)
@@ -38,17 +38,17 @@ namespace OpenHardwareMonitor.GUI
 
         public bool Value
         {
-            get { return value; }
+            get { return _value; }
             set
             {
-                if (this.value != value)
+                if (this._value != value)
                 {
-                    this.value = value;
-                    if (this.name != null)
-                        settings.SetValue(name, value);
-                    this.menuItem.Checked = value;
-                    if (changed != null)
-                        changed(this, null);
+                    this._value = value;
+                    if (this._name != null)
+                        _settings.SetValue(_name, value);
+                    this._menuItem.Checked = value;
+                    if (_changed != null)
+                        _changed(this, null);
                 }
             }
         }
@@ -57,13 +57,13 @@ namespace OpenHardwareMonitor.GUI
         {
             add
             {
-                changed += value;
-                if (changed != null)
-                    changed(this, null);
+                _changed += value;
+                if (_changed != null)
+                    _changed(this, null);
             }
             remove
             {
-                changed -= value;
+                _changed -= value;
             }
         }
     }

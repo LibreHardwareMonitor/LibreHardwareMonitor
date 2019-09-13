@@ -15,69 +15,69 @@ namespace OpenHardwareMonitor.GUI
 {
     public class SensorGadget : Gadget
     {
-        private UnitManager unitManager;
-        private Image back = Utilities.EmbeddedResources.GetImage("gadget.png");
-        private Image image = null;
-        private Image fore = null;
-        private Image barBack = Utilities.EmbeddedResources.GetImage("barback.png");
-        private Image barFore = Utilities.EmbeddedResources.GetImage("barblue.png");
-        private const int topBorder = 6;
-        private const int bottomBorder = 7;
-        private const int leftBorder = 6;
-        private const int rightBorder = 7;
-        private Image background = new Bitmap(1, 1);
+        private const int TopBorder = 6;
+        private const int BottomBorder = 7;
+        private const int LeftBorder = 6;
+        private const int RightBorder = 7;
 
-        private readonly float scale;
-        private float fontSize;
-        private int iconSize;
-        private int hardwareLineHeight;
-        private int sensorLineHeight;
-        private int rightMargin;
-        private int leftMargin;
-        private int topMargin;
-        private int bottomMargin;
-        private int progressWidth;
+        private UnitManager _unitManager;
+        private Image _back = Utilities.EmbeddedResources.GetImage("gadget.png");
+        private Image _image = null;
+        private Image _fore = null;
+        private Image _barBack = Utilities.EmbeddedResources.GetImage("barback.png");
+        private Image _barFore = Utilities.EmbeddedResources.GetImage("barblue.png");
+        private Image _background = new Bitmap(1, 1);
+        private readonly float _scale;
+        private float _fontSize;
+        private int _iconSize;
+        private int _hardwareLineHeight;
+        private int _sensorLineHeight;
+        private int _rightMargin;
+        private int _leftMargin;
+        private int _topMargin;
+        private int _bottomMargin;
+        private int _progressWidth;
 
-        private IDictionary<IHardware, IList<ISensor>> sensors = new SortedDictionary<IHardware, IList<ISensor>>(new HardwareComparer());
-        private PersistentSettings settings;
-        private UserOption hardwareNames;
-        private UserOption alwaysOnTop;
-        private UserOption lockPositionAndSize;
+        private IDictionary<IHardware, IList<ISensor>> _sensors = new SortedDictionary<IHardware, IList<ISensor>>(new HardwareComparer());
+        private PersistentSettings _settings;
+        private UserOption _hardwareNames;
+        private UserOption _alwaysOnTop;
+        private UserOption _lockPositionAndSize;
 
-        private Font largeFont;
-        private Font smallFont;
-        private Brush darkWhite;
-        private StringFormat stringFormat;
-        private StringFormat trimStringFormat;
-        private StringFormat alignRightStringFormat;
+        private Font _largeFont;
+        private Font _smallFont;
+        private Brush _darkWhite;
+        private StringFormat _stringFormat;
+        private StringFormat _trimStringFormat;
+        private StringFormat _alignRightStringFormat;
 
         public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
         {
-            this.unitManager = unitManager;
-            this.settings = settings;
+            this._unitManager = unitManager;
+            this._settings = settings;
             computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
             computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
 
-            this.darkWhite = new SolidBrush(Color.FromArgb(0xF0, 0xF0, 0xF0));
+            this._darkWhite = new SolidBrush(Color.FromArgb(0xF0, 0xF0, 0xF0));
 
-            this.stringFormat = new StringFormat();
-            this.stringFormat.FormatFlags = StringFormatFlags.NoWrap;
+            this._stringFormat = new StringFormat();
+            this._stringFormat.FormatFlags = StringFormatFlags.NoWrap;
 
-            this.trimStringFormat = new StringFormat();
-            this.trimStringFormat.Trimming = StringTrimming.EllipsisCharacter;
-            this.trimStringFormat.FormatFlags = StringFormatFlags.NoWrap;
+            this._trimStringFormat = new StringFormat();
+            this._trimStringFormat.Trimming = StringTrimming.EllipsisCharacter;
+            this._trimStringFormat.FormatFlags = StringFormatFlags.NoWrap;
 
-            this.alignRightStringFormat = new StringFormat();
-            this.alignRightStringFormat.Alignment = StringAlignment.Far;
-            this.alignRightStringFormat.FormatFlags = StringFormatFlags.NoWrap;
+            this._alignRightStringFormat = new StringFormat();
+            this._alignRightStringFormat.Alignment = StringAlignment.Far;
+            this._alignRightStringFormat.FormatFlags = StringFormatFlags.NoWrap;
 
             if (File.Exists("gadget_background.png"))
             {
                 try
                 {
                     Image newBack = new Bitmap("gadget_background.png");
-                    back.Dispose();
-                    back = newBack;
+                    _back.Dispose();
+                    _back = newBack;
                 }
                 catch { }
             }
@@ -86,7 +86,7 @@ namespace OpenHardwareMonitor.GUI
             {
                 try
                 {
-                    image = new Bitmap("gadget_image.png");
+                    _image = new Bitmap("gadget_image.png");
                 }
                 catch { }
             }
@@ -95,7 +95,7 @@ namespace OpenHardwareMonitor.GUI
             {
                 try
                 {
-                    fore = new Bitmap("gadget_foreground.png");
+                    _fore = new Bitmap("gadget_foreground.png");
                 }
                 catch { }
             }
@@ -105,8 +105,8 @@ namespace OpenHardwareMonitor.GUI
                 try
                 {
                     Image newBarBack = new Bitmap("gadget_bar_background.png");
-                    barBack.Dispose();
-                    barBack = newBarBack;
+                    _barBack.Dispose();
+                    _barBack = newBarBack;
                 }
                 catch { }
             }
@@ -116,8 +116,8 @@ namespace OpenHardwareMonitor.GUI
                 try
                 {
                     Image newBarColor = new Bitmap("gadget_bar_foreground.png");
-                    barFore.Dispose();
-                    barFore = newBarColor;
+                    _barFore.Dispose();
+                    _barFore = newBarColor;
                 }
                 catch { }
             }
@@ -134,7 +134,7 @@ namespace OpenHardwareMonitor.GUI
             // get the custom to default dpi ratio
             using (Bitmap b = new Bitmap(1, 1))
             {
-                scale = b.HorizontalResolution / 96.0f;
+                _scale = b.HorizontalResolution / 96.0f;
             }
 
             SetFontSize(settings.GetValue("sensorGadget.FontSize", 7.5f));
@@ -157,7 +157,7 @@ namespace OpenHardwareMonitor.GUI
                     default: throw new NotImplementedException();
                 }
                 MenuItem item = new MenuItem(name);
-                item.Checked = fontSize == size;
+                item.Checked = _fontSize == size;
                 item.Click += delegate (object sender, EventArgs e)
                 {
                     SetFontSize(size);
@@ -193,34 +193,34 @@ namespace OpenHardwareMonitor.GUI
             }
             this.ContextMenu = contextMenu;
 
-            hardwareNames = new UserOption("sensorGadget.Hardwarenames", true, hardwareNamesItem, settings);
-            hardwareNames.Changed += delegate (object sender, EventArgs e)
+            _hardwareNames = new UserOption("sensorGadget.Hardwarenames", true, hardwareNamesItem, settings);
+            _hardwareNames.Changed += delegate (object sender, EventArgs e)
             {
                 Resize();
             };
 
-            alwaysOnTop = new UserOption("sensorGadget.AlwaysOnTop", false, alwaysOnTopItem, settings);
-            alwaysOnTop.Changed += delegate (object sender, EventArgs e)
+            _alwaysOnTop = new UserOption("sensorGadget.AlwaysOnTop", false, alwaysOnTopItem, settings);
+            _alwaysOnTop.Changed += delegate (object sender, EventArgs e)
             {
-                this.AlwaysOnTop = alwaysOnTop.Value;
+                this.AlwaysOnTop = _alwaysOnTop.Value;
             };
-            lockPositionAndSize = new UserOption("sensorGadget.LockPositionAndSize", false, lockItem, settings);
-            lockPositionAndSize.Changed += delegate (object sender, EventArgs e)
+            _lockPositionAndSize = new UserOption("sensorGadget.LockPositionAndSize", false, lockItem, settings);
+            _lockPositionAndSize.Changed += delegate (object sender, EventArgs e)
             {
-                this.LockPositionAndSize = lockPositionAndSize.Value;
+                this.LockPositionAndSize = _lockPositionAndSize.Value;
             };
 
             HitTest += delegate (object sender, HitTestEventArgs e)
             {
-                if (lockPositionAndSize.Value)
+                if (_lockPositionAndSize.Value)
                     return;
 
-                if (e.Location.X < leftBorder)
+                if (e.Location.X < LeftBorder)
                 {
                     e.HitResult = HitResult.Left;
                     return;
                 }
-                if (e.Location.X > Size.Width - 1 - rightBorder)
+                if (e.Location.X > Size.Width - 1 - RightBorder)
                 {
                     e.HitResult = HitResult.Right;
                     return;
@@ -253,46 +253,46 @@ namespace OpenHardwareMonitor.GUI
         public override void Dispose()
         {
 
-            largeFont.Dispose();
-            largeFont = null;
+            _largeFont.Dispose();
+            _largeFont = null;
 
-            smallFont.Dispose();
-            smallFont = null;
+            _smallFont.Dispose();
+            _smallFont = null;
 
-            darkWhite.Dispose();
-            darkWhite = null;
+            _darkWhite.Dispose();
+            _darkWhite = null;
 
-            stringFormat.Dispose();
-            stringFormat = null;
+            _stringFormat.Dispose();
+            _stringFormat = null;
 
-            trimStringFormat.Dispose();
-            trimStringFormat = null;
+            _trimStringFormat.Dispose();
+            _trimStringFormat = null;
 
-            alignRightStringFormat.Dispose();
-            alignRightStringFormat = null;
+            _alignRightStringFormat.Dispose();
+            _alignRightStringFormat = null;
 
-            back.Dispose();
-            back = null;
+            _back.Dispose();
+            _back = null;
 
-            barFore.Dispose();
-            barFore = null;
+            _barFore.Dispose();
+            _barFore = null;
 
-            barBack.Dispose();
-            barBack = null;
+            _barBack.Dispose();
+            _barBack = null;
 
-            background.Dispose();
-            background = null;
+            _background.Dispose();
+            _background = null;
 
-            if (image != null)
+            if (_image != null)
             {
-                image.Dispose();
-                image = null;
+                _image.Dispose();
+                _image = null;
             }
 
-            if (fore != null)
+            if (_fore != null)
             {
-                fore.Dispose();
-                fore = null;
+                _fore.Dispose();
+                _fore = null;
             }
 
             base.Dispose();
@@ -320,7 +320,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void SensorAdded(ISensor sensor)
         {
-            if (settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
+            if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
                 Add(sensor);
         }
 
@@ -332,7 +332,7 @@ namespace OpenHardwareMonitor.GUI
 
         public bool Contains(ISensor sensor)
         {
-            foreach (IList<ISensor> list in sensors.Values)
+            foreach (IList<ISensor> list in _sensors.Values)
                 if (list.Contains(sensor))
                     return true;
             return false;
@@ -353,10 +353,10 @@ namespace OpenHardwareMonitor.GUI
 
                 // get the sensor list associated with the hardware
                 IList<ISensor> list;
-                if (!sensors.TryGetValue(hardware, out list))
+                if (!_sensors.TryGetValue(hardware, out list))
                 {
                     list = new List<ISensor>();
-                    sensors.Add(hardware, list);
+                    _sensors.Add(hardware, list);
                 }
 
                 // insert the sensor at the right position
@@ -366,7 +366,7 @@ namespace OpenHardwareMonitor.GUI
                     list[i].Index < sensor.Index))) i++;
                 list.Insert(i, sensor);
 
-                settings.SetValue(new Identifier(sensor.Identifier, "gadget").ToString(), true);
+                _settings.SetValue(new Identifier(sensor.Identifier, "gadget").ToString(), true);
                 Resize();
             }
         }
@@ -379,16 +379,16 @@ namespace OpenHardwareMonitor.GUI
         private void Remove(ISensor sensor, bool deleteConfig)
         {
             if (deleteConfig)
-                settings.Remove(new Identifier(sensor.Identifier, "gadget").ToString());
+                _settings.Remove(new Identifier(sensor.Identifier, "gadget").ToString());
 
-            foreach (KeyValuePair<IHardware, IList<ISensor>> keyValue in sensors)
+            foreach (KeyValuePair<IHardware, IList<ISensor>> keyValue in _sensors)
             {
                 if (keyValue.Value.Contains(sensor))
                 {
                     keyValue.Value.Remove(sensor);
                     if (keyValue.Value.Count == 0)
                     {
-                        sensors.Remove(keyValue.Key);
+                        _sensors.Remove(keyValue.Key);
                         break;
                     }
                 }
@@ -420,19 +420,19 @@ namespace OpenHardwareMonitor.GUI
 
         private void SetFontSize(float size)
         {
-            fontSize = size;
-            largeFont = CreateFont(fontSize, FontStyle.Bold);
-            smallFont = CreateFont(fontSize, FontStyle.Regular);
+            _fontSize = size;
+            _largeFont = CreateFont(_fontSize, FontStyle.Bold);
+            _smallFont = CreateFont(_fontSize, FontStyle.Regular);
 
-            double scaledFontSize = fontSize * scale;
-            iconSize = (int)Math.Round(1.5 * scaledFontSize);
-            hardwareLineHeight = (int)Math.Round(1.66 * scaledFontSize);
-            sensorLineHeight = (int)Math.Round(1.33 * scaledFontSize);
-            leftMargin = leftBorder + (int)Math.Round(0.3 * scaledFontSize);
-            rightMargin = rightBorder + (int)Math.Round(0.3 * scaledFontSize);
-            topMargin = topBorder;
-            bottomMargin = bottomBorder + (int)Math.Round(0.3 * scaledFontSize);
-            progressWidth = (int)Math.Round(5.3 * scaledFontSize);
+            double scaledFontSize = _fontSize * _scale;
+            _iconSize = (int)Math.Round(1.5 * scaledFontSize);
+            _hardwareLineHeight = (int)Math.Round(1.66 * scaledFontSize);
+            _sensorLineHeight = (int)Math.Round(1.33 * scaledFontSize);
+            _leftMargin = LeftBorder + (int)Math.Round(0.3 * scaledFontSize);
+            _rightMargin = RightBorder + (int)Math.Round(0.3 * scaledFontSize);
+            _topMargin = TopBorder;
+            _bottomMargin = BottomBorder + (int)Math.Round(0.3 * scaledFontSize);
+            _progressWidth = (int)Math.Round(5.3 * scaledFontSize);
 
             Resize((int)Math.Round(17.3 * scaledFontSize));
         }
@@ -444,20 +444,20 @@ namespace OpenHardwareMonitor.GUI
 
         private void Resize(int width)
         {
-            int y = topMargin;
-            foreach (KeyValuePair<IHardware, IList<ISensor>> pair in sensors)
+            int y = _topMargin;
+            foreach (KeyValuePair<IHardware, IList<ISensor>> pair in _sensors)
             {
-                if (hardwareNames.Value)
+                if (_hardwareNames.Value)
                 {
-                    if (y > topMargin)
-                        y += hardwareLineHeight - sensorLineHeight;
-                    y += hardwareLineHeight;
+                    if (y > _topMargin)
+                        y += _hardwareLineHeight - _sensorLineHeight;
+                    y += _hardwareLineHeight;
                 }
-                y += pair.Value.Count * sensorLineHeight;
+                y += pair.Value.Count * _sensorLineHeight;
             }
-            if (sensors.Count == 0)
-                y += 4 * sensorLineHeight + hardwareLineHeight;
-            y += bottomMargin;
+            if (_sensors.Count == 0)
+                y += 4 * _sensorLineHeight + _hardwareLineHeight;
+            y += _bottomMargin;
             this.Size = new Size(width, y);
         }
 
@@ -493,60 +493,60 @@ namespace OpenHardwareMonitor.GUI
             int w = Size.Width;
             int h = Size.Height;
 
-            if (w != background.Width || h != background.Height)
+            if (w != _background.Width || h != _background.Height)
             {
 
-                background.Dispose();
-                background = new Bitmap(w, h, PixelFormat.Format32bppPArgb);
-                using (Graphics graphics = Graphics.FromImage(background))
+                _background.Dispose();
+                _background = new Bitmap(w, h, PixelFormat.Format32bppPArgb);
+                using (Graphics graphics = Graphics.FromImage(_background))
                 {
 
-                    DrawImageWidthBorder(graphics, w, h, back, topBorder, bottomBorder,leftBorder, rightBorder);
+                    DrawImageWidthBorder(graphics, w, h, _back, TopBorder, BottomBorder,LeftBorder, RightBorder);
 
-                    if (fore != null)
-                        DrawImageWidthBorder(graphics, w, h, fore, topBorder, bottomBorder, leftBorder, rightBorder);
+                    if (_fore != null)
+                        DrawImageWidthBorder(graphics, w, h, _fore, TopBorder, BottomBorder, LeftBorder, RightBorder);
 
-                    if (image != null)
+                    if (_image != null)
                     {
-                        int width = w - leftBorder - rightBorder;
-                        int height = h - topBorder - bottomBorder;
-                        float xRatio = width / (float)image.Width;
-                        float yRatio = height / (float)image.Height;
+                        int width = w - LeftBorder - RightBorder;
+                        int height = h - TopBorder - BottomBorder;
+                        float xRatio = width / (float)_image.Width;
+                        float yRatio = height / (float)_image.Height;
                         float destWidth, destHeight;
                         float xOffset, yOffset;
                         if (xRatio < yRatio)
                         {
                             destWidth = width;
-                            destHeight = image.Height * xRatio;
+                            destHeight = _image.Height * xRatio;
                             xOffset = 0;
                             yOffset = 0.5f * (height - destHeight);
                         }
                         else
                         {
-                            destWidth = image.Width * yRatio;
+                            destWidth = _image.Width * yRatio;
                             destHeight = height;
                             xOffset = 0.5f * (width - destWidth);
                             yOffset = 0;
                         }
 
-                        graphics.DrawImage(image, new RectangleF(leftBorder + xOffset, topBorder + yOffset, destWidth, destHeight));
+                        graphics.DrawImage(_image, new RectangleF(LeftBorder + xOffset, TopBorder + yOffset, destWidth, destHeight));
                     }
                 }
             }
 
-            g.DrawImageUnscaled(background, 0, 0);
+            g.DrawImageUnscaled(_background, 0, 0);
         }
 
         private void DrawProgress(Graphics g, float x, float y,
           float width, float height, float progress)
         {
-            g.DrawImage(barBack,
+            g.DrawImage(_barBack,
               new RectangleF(x + width * progress, y, width * (1 - progress), height),
-              new RectangleF(barBack.Width * progress, 0, (1 - progress) * barBack.Width, barBack.Height),
+              new RectangleF(_barBack.Width * progress, 0, (1 - progress) * _barBack.Width, _barBack.Height),
               GraphicsUnit.Pixel);
-            g.DrawImage(barFore,
+            g.DrawImage(_barFore,
               new RectangleF(x, y, width * progress, height),
-              new RectangleF(0, 0, progress * barFore.Width, barFore.Height), GraphicsUnit.Pixel);
+              new RectangleF(0, 0, progress * _barFore.Width, _barFore.Height), GraphicsUnit.Pixel);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -559,30 +559,30 @@ namespace OpenHardwareMonitor.GUI
             DrawBackground(g);
 
             int x;
-            int y = topMargin;
+            int y = _topMargin;
 
-            if (sensors.Count == 0)
+            if (_sensors.Count == 0)
             {
-                x = leftBorder + 1;
+                x = LeftBorder + 1;
                 g.DrawString("Right-click on a sensor in the main window and select " +
                   "\"Show in Gadget\" to show the sensor here.",
-                  smallFont, Brushes.White,
-                  new Rectangle(x, y - 1, w - rightBorder - x, 0));
+                  _smallFont, Brushes.White,
+                  new Rectangle(x, y - 1, w - RightBorder - x, 0));
             }
 
-            foreach (KeyValuePair<IHardware, IList<ISensor>> pair in sensors)
+            foreach (KeyValuePair<IHardware, IList<ISensor>> pair in _sensors)
             {
-                if (hardwareNames.Value)
+                if (_hardwareNames.Value)
                 {
-                    if (y > topMargin)
-                        y += hardwareLineHeight - sensorLineHeight;
-                    x = leftBorder + 1;
+                    if (y > _topMargin)
+                        y += _hardwareLineHeight - _sensorLineHeight;
+                    x = LeftBorder + 1;
                     g.DrawImage(HardwareTypeImage.Instance.GetImage(pair.Key.HardwareType),
-                      new Rectangle(x, y + 1, iconSize, iconSize));
-                    x += iconSize + 1;
-                    g.DrawString(pair.Key.Name, largeFont, Brushes.White,
-                      new Rectangle(x, y - 1, w - rightBorder - x, 0), stringFormat);
-                    y += hardwareLineHeight;
+                      new Rectangle(x, y + 1, _iconSize, _iconSize));
+                    x += _iconSize + 1;
+                    g.DrawString(pair.Key.Name, _largeFont, Brushes.White,
+                      new Rectangle(x, y - 1, w - RightBorder - x, 0), _stringFormat);
+                    y += _hardwareLineHeight;
                 }
 
                 foreach (ISensor sensor in pair.Value)
@@ -634,7 +634,7 @@ namespace OpenHardwareMonitor.GUI
                             }
 
                             if (sensor.SensorType == SensorType.Temperature &&
-                              unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
+                              _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
                             {
                                 formatted = string.Format("{0:F1} °F",
                                   UnitManager.CelsiusToFahrenheit(sensor.Value));
@@ -690,29 +690,29 @@ namespace OpenHardwareMonitor.GUI
                             formatted = "-";
                         }
 
-                        g.DrawString(formatted, smallFont, darkWhite,
-                          new RectangleF(-1, y - 1, w - rightMargin + 3, 0), alignRightStringFormat);
+                        g.DrawString(formatted, _smallFont, _darkWhite,
+                          new RectangleF(-1, y - 1, w - _rightMargin + 3, 0), _alignRightStringFormat);
 
                         remainingWidth = w - (int)Math.Floor(g.MeasureString(formatted,
-                          smallFont, w, StringFormat.GenericTypographic).Width) - rightMargin;
+                          _smallFont, w, StringFormat.GenericTypographic).Width) - _rightMargin;
                     }
                     else
                     {
-                        DrawProgress(g, w - progressWidth - rightMargin,
-                          y + 0.35f * sensorLineHeight, progressWidth,
-                          0.6f * sensorLineHeight, 0.01f * sensor.Value.Value);
+                        DrawProgress(g, w - _progressWidth - _rightMargin,
+                          y + 0.35f * _sensorLineHeight, _progressWidth,
+                          0.6f * _sensorLineHeight, 0.01f * sensor.Value.Value);
 
-                        remainingWidth = w - progressWidth - rightMargin;
+                        remainingWidth = w - _progressWidth - _rightMargin;
                     }
 
-                    remainingWidth -= leftMargin + 2;
+                    remainingWidth -= _leftMargin + 2;
                     if (remainingWidth > 0)
                     {
-                        g.DrawString(sensor.Name, smallFont, darkWhite,
-                          new RectangleF(leftMargin - 1, y - 1, remainingWidth, 0), trimStringFormat);
+                        g.DrawString(sensor.Name, _smallFont, _darkWhite,
+                          new RectangleF(_leftMargin - 1, y - 1, remainingWidth, 0), _trimStringFormat);
                     }
 
-                    y += sensorLineHeight;
+                    y += _sensorLineHeight;
                 }
             }
         }

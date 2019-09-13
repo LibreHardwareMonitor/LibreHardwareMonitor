@@ -11,40 +11,40 @@ namespace OpenHardwareMonitor.GUI
 {
     public class ShowDesktop
     {
-        private static ShowDesktop instance = new ShowDesktop();
+        private static ShowDesktop s_instance = new ShowDesktop();
         public delegate void ShowDesktopChangedEventHandler(bool showDesktop);
         private event ShowDesktopChangedEventHandler ShowDesktopChangedEvent;
-        private System.Threading.Timer timer;
-        private bool showDesktop = false;
-        private NativeWindow referenceWindow;
-        private string referenceWindowCaption = "OpenHardwareMonitorShowDesktopReferenceWindow";
+        private System.Threading.Timer _timer;
+        private bool _showDesktop = false;
+        private NativeWindow _referenceWindow;
+        private string _referenceWindowCaption = "OpenHardwareMonitorShowDesktopReferenceWindow";
 
         private ShowDesktop()
         {
             // create a reference window to detect show desktop
-            referenceWindow = new NativeWindow();
+            _referenceWindow = new NativeWindow();
             CreateParams cp = new CreateParams();
             cp.ExStyle = GadgetWindow.WS_EX_TOOLWINDOW;
-            cp.Caption = referenceWindowCaption;
-            referenceWindow.CreateHandle(cp);
+            cp.Caption = _referenceWindowCaption;
+            _referenceWindow.CreateHandle(cp);
             NativeMethods.SetWindowPos(
-                referenceWindow.Handle,
-                GadgetWindow.HWND_BOTTOM, 0, 0, 0, 0, GadgetWindow.SWP_NOMOVE |
+                _referenceWindow.Handle,
+                GadgetWindow.s_hWND_BOTTOM, 0, 0, 0, 0, GadgetWindow.SWP_NOMOVE |
                 GadgetWindow.SWP_NOSIZE | GadgetWindow.SWP_NOACTIVATE |
                 GadgetWindow.SWP_NOSENDCHANGING);
 
             // start a repeated timer to detect "Show Desktop" events
-            timer = new System.Threading.Timer(OnTimer, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            _timer = new System.Threading.Timer(OnTimer, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         private void StartTimer()
         {
-            timer.Change(0, 200);
+            _timer.Change(0, 200);
         }
 
         private void StopTimer()
         {
-            timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            _timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         // the desktop worker window (if available) can hide the reference window
@@ -85,7 +85,7 @@ namespace OpenHardwareMonitor.GUI
             if (workerWindow != IntPtr.Zero)
             {
                 // search if the reference window is behind the worker window
-                IntPtr reference = NativeMethods.FindWindowEx(IntPtr.Zero, workerWindow, null, referenceWindowCaption);
+                IntPtr reference = NativeMethods.FindWindowEx(IntPtr.Zero, workerWindow, null, _referenceWindowCaption);
                 showDesktopDetected = reference != IntPtr.Zero;
             }
             else
@@ -94,19 +94,19 @@ namespace OpenHardwareMonitor.GUI
                 showDesktopDetected = false;
             }
 
-            if (showDesktop != showDesktopDetected)
+            if (_showDesktop != showDesktopDetected)
             {
-                showDesktop = showDesktopDetected;
+                _showDesktop = showDesktopDetected;
                 if (ShowDesktopChangedEvent != null)
                 {
-                    ShowDesktopChangedEvent(showDesktop);
+                    ShowDesktopChangedEvent(_showDesktop);
                 }
             }
         }
 
         public static ShowDesktop Instance
         {
-            get { return instance; }
+            get { return s_instance; }
         }
 
         // notify when the "show desktop" mode is changed

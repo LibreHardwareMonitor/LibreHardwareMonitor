@@ -19,15 +19,13 @@ namespace OpenHardwareMonitor.GUI
             InitializeComponent();
             this.Font = SystemFonts.MessageBoxFont;
             this.label3.Text = "Version " + System.Windows.Forms.Application.ProductVersion;
-
             projectLinkLabel.Links.Remove(projectLinkLabel.Links[0]);
-            projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "http://openhardwaremonitor.org");
-
+            projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
             licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);
-            licenseLinkLabel.Links.Add(0, licenseLinkLabel.Text.Length, "License.html");
+            licenseLinkLabel.Links.Add(0, licenseLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LICENSE");
         }
 
-        private void linkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void LinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try
             {

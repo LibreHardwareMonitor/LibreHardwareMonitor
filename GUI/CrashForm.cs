@@ -13,7 +13,7 @@ namespace OpenHardwareMonitor.GUI
 {
     public partial class CrashForm : Form
     {
-        private Exception exception;
+        private Exception _exception;
 
         public CrashForm()
         {
@@ -22,19 +22,19 @@ namespace OpenHardwareMonitor.GUI
 
         public Exception Exception
         {
-            get { return exception; }
+            get { return _exception; }
             set
             {
-                exception = value;
+                _exception = value;
                 StringBuilder s = new StringBuilder();
                 Version version = typeof(CrashForm).Assembly.GetName().Version;
                 s.Append("Version: "); s.AppendLine(version.ToString());
                 s.AppendLine();
-                s.AppendLine(exception.ToString());
+                s.AppendLine(_exception.ToString());
                 s.AppendLine();
-                if (exception.InnerException != null)
+                if (_exception.InnerException != null)
                 {
-                    s.AppendLine(exception.InnerException.ToString());
+                    s.AppendLine(_exception.InnerException.ToString());
                     s.AppendLine();
                 }
                 s.Append("Common Language Runtime: ");
@@ -47,7 +47,7 @@ namespace OpenHardwareMonitor.GUI
             }
         }
 
-        private void sendButton_Click(object sender, EventArgs e)
+        private void SendButton_Click(object sender, EventArgs e)
         {
             try
             {
@@ -71,7 +71,6 @@ namespace OpenHardwareMonitor.GUI
                     Stream dataStream = request.GetRequestStream();
                     dataStream.Write(byteArray, 0, byteArray.Length);
                     dataStream.Close();
-
                     WebResponse response = request.GetResponse();
                     dataStream = response.GetResponseStream();
                     StreamReader reader = new StreamReader(dataStream);
@@ -79,7 +78,6 @@ namespace OpenHardwareMonitor.GUI
                     reader.Close();
                     dataStream.Close();
                     response.Close();
-
                     Close();
                 }
                 catch (WebException)

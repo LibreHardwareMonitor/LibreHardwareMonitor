@@ -14,7 +14,7 @@ namespace OpenHardwareMonitor.GUI
 {
     public partial class ReportForm : Form
     {
-        private string report;
+        private string _report;
 
         public ReportForm()
         {
@@ -30,15 +30,15 @@ namespace OpenHardwareMonitor.GUI
 
         public string Report
         {
-            get { return report; }
+            get { return _report; }
             set
             {
-                report = value;
-                reportTextBox.Text = report;
+                _report = value;
+                reportTextBox.Text = _report;
             }
         }
 
-        private void sendButton_Click(object sender, EventArgs e)
+        private void SendButton_Click(object sender, EventArgs e)
         {
             Version version = typeof(CrashForm).Assembly.GetName().Version;
             WebRequest request = WebRequest.Create("http://openhardwaremonitor.org/report.php");

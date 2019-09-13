@@ -11,7 +11,7 @@ namespace OpenHardwareMonitor.WMI
     [InstrumentationClass(InstrumentationType.Instance)]
     public class Sensor : IWmiObject
     {
-        private ISensor sensor;
+        private ISensor _sensor;
 
         #region WMI Exposed
 
@@ -35,18 +35,18 @@ namespace OpenHardwareMonitor.WMI
             Identifier = sensor.Identifier.ToString();
             Parent = sensor.Hardware.Identifier.ToString();
 
-            this.sensor = sensor;
+            this._sensor = sensor;
         }
 
         public void Update()
         {
-            Value = (sensor.Value != null) ? (float)sensor.Value : 0;
+            Value = (_sensor.Value != null) ? (float)_sensor.Value : 0;
 
-            if (sensor.Min != null)
-                Min = (float)sensor.Min;
+            if (_sensor.Min != null)
+                Min = (float)_sensor.Min;
 
-            if (sensor.Max != null)
-                Max = (float)sensor.Max;
+            if (_sensor.Max != null)
+                Max = (float)_sensor.Max;
         }
     }
 }

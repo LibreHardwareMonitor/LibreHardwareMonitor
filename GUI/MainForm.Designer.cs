@@ -232,13 +232,13 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.saveReportMenuItem.Index = 0;
       this.saveReportMenuItem.Text = "Save Report...";
-      this.saveReportMenuItem.Click += new System.EventHandler(this.saveReportMenuItem_Click);
+      this.saveReportMenuItem.Click += new System.EventHandler(this.SaveReportMenuItem_Click);
       // 
       // sumbitReportMenuItem
       // 
       this.sumbitReportMenuItem.Index = 1;
       this.sumbitReportMenuItem.Text = "Submit Report...";
-      this.sumbitReportMenuItem.Click += new System.EventHandler(this.sumbitReportMenuItem_Click);
+      this.sumbitReportMenuItem.Click += new System.EventHandler(this.SumbitReportMenuItem_Click);
       // 
       // MenuItem2
       // 
@@ -249,7 +249,7 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.resetMenuItem.Index = 3;
       this.resetMenuItem.Text = "Reset";
-      this.resetMenuItem.Click += new System.EventHandler(this.resetClick);
+      this.resetMenuItem.Click += new System.EventHandler(this.ResetClick);
       // 
       // menuItem5
       // 
@@ -308,7 +308,7 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.exitMenuItem.Index = 6;
       this.exitMenuItem.Text = "Exit";
-      this.exitMenuItem.Click += new System.EventHandler(this.exitClick);
+      this.exitMenuItem.Click += new System.EventHandler(this.ExitClick);
       // 
       // viewMenuItem
       // 
@@ -327,7 +327,7 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.resetMinMaxMenuItem.Index = 0;
       this.resetMinMaxMenuItem.Text = "Reset Min/Max";
-      this.resetMinMaxMenuItem.Click += new System.EventHandler(this.resetMinMaxMenuItem_Click);
+      this.resetMinMaxMenuItem.Click += new System.EventHandler(this.ResetMinMaxMenuItem_Click);
       // 
       // MenuItem3
       // 
@@ -435,14 +435,14 @@ namespace OpenHardwareMonitor.GUI {
       this.celsiusMenuItem.Index = 0;
       this.celsiusMenuItem.RadioCheck = true;
       this.celsiusMenuItem.Text = "Celsius";
-      this.celsiusMenuItem.Click += new System.EventHandler(this.celsiusMenuItem_Click);
+      this.celsiusMenuItem.Click += new System.EventHandler(this.CelsiusMenuItem_Click);
       // 
       // fahrenheitMenuItem
       // 
       this.fahrenheitMenuItem.Index = 1;
       this.fahrenheitMenuItem.RadioCheck = true;
       this.fahrenheitMenuItem.Text = "Fahrenheit";
-      this.fahrenheitMenuItem.Click += new System.EventHandler(this.fahrenheitMenuItem_Click);
+      this.fahrenheitMenuItem.Click += new System.EventHandler(this.FahrenheitMenuItem_Click);
       // 
       // plotLocationMenuItem
       // 
@@ -493,7 +493,7 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.serverPortMenuItem.Index = 1;
       this.serverPortMenuItem.Text = "Port";
-      this.serverPortMenuItem.Click += new System.EventHandler(this.serverPortMenuItem_Click);
+      this.serverPortMenuItem.Click += new System.EventHandler(this.ServerPortMenuItem_Click);
       // 
       // logSensorsMenuItem
       // 
@@ -511,7 +511,7 @@ namespace OpenHardwareMonitor.GUI {
       // 
       this.aboutMenuItem.Index = 0;
       this.aboutMenuItem.Text = "About";
-      this.aboutMenuItem.Click += new System.EventHandler(this.aboutMenuItem_Click);
+      this.aboutMenuItem.Click += new System.EventHandler(this.AboutMenuItem_Click);
       // 
       // saveFileDialog
       // 
@@ -524,7 +524,7 @@ namespace OpenHardwareMonitor.GUI {
       // timer
       // 
       this.timer.Interval = 1000;
-      this.timer.Tick += new System.EventHandler(this.timer_Tick);
+      this.timer.Tick += new System.EventHandler(this.Timer_Tick);
       // 
       // splitContainer
       // 
@@ -575,11 +575,11 @@ namespace OpenHardwareMonitor.GUI {
       this.treeView.TabIndex = 0;
       this.treeView.Text = "treeView";
       this.treeView.UseColumns = true;
-      this.treeView.NodeMouseDoubleClick += new System.EventHandler<Aga.Controls.Tree.TreeNodeAdvMouseEventArgs>(this.treeView_NodeMouseDoubleClick);
-      this.treeView.Click += new System.EventHandler(this.treeView_Click);
-      this.treeView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseDown);
-      this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseMove);
-      this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
+      this.treeView.NodeMouseDoubleClick += new System.EventHandler<Aga.Controls.Tree.TreeNodeAdvMouseEventArgs>(this.TreeView_NodeMouseDoubleClick);
+      this.treeView.Click += new System.EventHandler(this.TreeView_Click);
+      this.treeView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseDown);
+      this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseMove);
+      this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseUp);
       // 
       // logSeparatorMenuItem
       // 

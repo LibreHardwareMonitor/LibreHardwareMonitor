@@ -11,11 +11,11 @@ namespace OpenHardwareMonitor.GUI
 {
     public class TypeNode : Node
     {
-        private SensorType sensorType;
+        private SensorType _sensorType;
 
         public TypeNode(SensorType sensorType) : base()
         {
-            this.sensorType = sensorType;
+            this._sensorType = sensorType;
 
             switch (sensorType)
             {
@@ -108,7 +108,7 @@ namespace OpenHardwareMonitor.GUI
 
         public SensorType SensorType
         {
-            get { return sensorType; }
+            get { return _sensorType; }
         }
     }
 }

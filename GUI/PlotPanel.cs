@@ -18,49 +18,48 @@ namespace OpenHardwareMonitor.GUI
 {
     public class PlotPanel : UserControl
     {
-        private readonly PersistentSettings settings;
-        private readonly UnitManager unitManager;
-
-        private readonly Plot plot;
-        private readonly PlotModel model;
-        private readonly TimeSpanAxis timeAxis = new TimeSpanAxis();
-        private readonly SortedDictionary<SensorType, LinearAxis> axes = new SortedDictionary<SensorType, LinearAxis>();
-        private UserOption stackedAxes;
-        private DateTime now;
-        private float dpiX;
-        private float dpiY;
-        private double dpiXscale = 1;
-        private double dpiYscale = 1;
+        private readonly PersistentSettings _settings;
+        private readonly UnitManager _unitManager;
+        private readonly Plot _plot;
+        private readonly PlotModel _model;
+        private readonly TimeSpanAxis _timeAxis = new TimeSpanAxis();
+        private readonly SortedDictionary<SensorType, LinearAxis> _axes = new SortedDictionary<SensorType, LinearAxis>();
+        private UserOption _stackedAxes;
+        private DateTime _now;
+        private float _dpiX;
+        private float _dpiY;
+        private double _dpiXscale = 1;
+        private double _dpiYscale = 1;
 
         public PlotPanel(PersistentSettings settings, UnitManager unitManager)
         {
-            this.settings = settings;
-            this.unitManager = unitManager;
+            this._settings = settings;
+            this._unitManager = unitManager;
 
             this.SetDPI();
-            this.model = CreatePlotModel();
+            this._model = CreatePlotModel();
 
-            this.plot = new Plot();
-            this.plot.Dock = DockStyle.Fill;
-            this.plot.Model = model;
-            this.plot.BackColor = Color.White;
-            this.plot.ContextMenu = CreateMenu();
+            this._plot = new Plot();
+            this._plot.Dock = DockStyle.Fill;
+            this._plot.Model = _model;
+            this._plot.BackColor = Color.White;
+            this._plot.ContextMenu = CreateMenu();
 
             UpdateAxesPosition();
 
             this.SuspendLayout();
-            this.Controls.Add(plot);
+            this.Controls.Add(_plot);
             this.ResumeLayout(true);
         }
 
         public void SetCurrentSettings()
         {
-            settings.SetValue("plotPanel.MinTimeSpan", (float)timeAxis.ViewMinimum);
-            settings.SetValue("plotPanel.MaxTimeSpan", (float)timeAxis.ViewMaximum);
-            foreach (var axis in axes.Values)
+            _settings.SetValue("plotPanel.MinTimeSpan", (float)_timeAxis.ViewMinimum);
+            _settings.SetValue("plotPanel.MaxTimeSpan", (float)_timeAxis.ViewMaximum);
+            foreach (var axis in _axes.Values)
             {
-                settings.SetValue("plotPanel.Min" + axis.Key, (float)axis.ViewMinimum);
-                settings.SetValue("plotPanel.Max" + axis.Key, (float)axis.ViewMaximum);
+                _settings.SetValue("plotPanel.Min" + axis.Key, (float)axis.ViewMinimum);
+                _settings.SetValue("plotPanel.Max" + axis.Key, (float)axis.ViewMaximum);
             }
         }
 
@@ -69,8 +68,8 @@ namespace OpenHardwareMonitor.GUI
             ContextMenu menu = new ContextMenu();
 
             MenuItem stackedAxesMenuItem = new MenuItem("Stacked Axes");
-            stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, settings);
-            stackedAxes.Changed += (sender, e) =>
+            _stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, _settings);
+            _stackedAxes.Changed += (sender, e) =>
             {
                 UpdateAxesPosition();
                 InvalidatePlot();
@@ -79,59 +78,45 @@ namespace OpenHardwareMonitor.GUI
 
             MenuItem timeWindow = new MenuItem("Time Window");
             MenuItem[] timeWindowMenuItems =
-              { new MenuItem("Auto",
-            (s, e) => { timeAxis.Zoom(0, double.NaN); InvalidatePlot(); }),
-          new MenuItem("5 min",
-            (s, e) => { timeAxis.Zoom(0, 5 * 60); InvalidatePlot(); }),
-          new MenuItem("10 min",
-            (s, e) => { timeAxis.Zoom(0, 10 * 60); InvalidatePlot(); }),
-          new MenuItem("20 min",
-            (s, e) => { timeAxis.Zoom(0, 20 * 60); InvalidatePlot(); }),
-          new MenuItem("30 min",
-            (s, e) => { timeAxis.Zoom(0, 30 * 60); InvalidatePlot(); }),
-          new MenuItem("45 min",
-            (s, e) => { timeAxis.Zoom(0, 45 * 60); InvalidatePlot(); }),
-          new MenuItem("1 h",
-            (s, e) => { timeAxis.Zoom(0, 60 * 60); InvalidatePlot(); }),
-          new MenuItem("1.5 h",
-            (s, e) => { timeAxis.Zoom(0, 1.5 * 60 * 60); InvalidatePlot(); }),
-          new MenuItem("2 h",
-            (s, e) => { timeAxis.Zoom(0, 2 * 60 * 60); InvalidatePlot(); }),
-          new MenuItem("3 h",
-            (s, e) => { timeAxis.Zoom(0, 3 * 60 * 60); InvalidatePlot(); }),
-          new MenuItem("6 h",
-            (s, e) => { timeAxis.Zoom(0, 6 * 60 * 60); InvalidatePlot(); }),
-          new MenuItem("12 h",
-            (s, e) => { timeAxis.Zoom(0, 12 * 60 * 60); InvalidatePlot(); }),
-          new MenuItem("24 h",
-            (s, e) => { timeAxis.Zoom(0, 24 * 60 * 60); InvalidatePlot(); }) };
+                { new MenuItem("Auto", (s, e) => { _timeAxis.Zoom(0, double.NaN); InvalidatePlot(); }),
+                new MenuItem("5 min", (s, e) => { _timeAxis.Zoom(0, 5 * 60); InvalidatePlot(); }),
+                new MenuItem("10 min", (s, e) => { _timeAxis.Zoom(0, 10 * 60); InvalidatePlot(); }),
+                new MenuItem("20 min", (s, e) => { _timeAxis.Zoom(0, 20 * 60); InvalidatePlot(); }),
+                new MenuItem("30 min", (s, e) => { _timeAxis.Zoom(0, 30 * 60); InvalidatePlot(); }),
+                new MenuItem("45 min", (s, e) => { _timeAxis.Zoom(0, 45 * 60); InvalidatePlot(); }),
+                new MenuItem("1 h", (s, e) => { _timeAxis.Zoom(0, 60 * 60); InvalidatePlot(); }),
+                new MenuItem("1.5 h", (s, e) => { _timeAxis.Zoom(0, 1.5 * 60 * 60); InvalidatePlot(); }),
+                new MenuItem("2 h", (s, e) => { _timeAxis.Zoom(0, 2 * 60 * 60); InvalidatePlot(); }),
+                new MenuItem("3 h", (s, e) => { _timeAxis.Zoom(0, 3 * 60 * 60); InvalidatePlot(); }),
+                new MenuItem("6 h", (s, e) => { _timeAxis.Zoom(0, 6 * 60 * 60); InvalidatePlot(); }),
+                new MenuItem("12 h", (s, e) => { _timeAxis.Zoom(0, 12 * 60 * 60); InvalidatePlot(); }),
+                new MenuItem("24 h", (s, e) => { _timeAxis.Zoom(0, 24 * 60 * 60); InvalidatePlot(); }) };
             foreach (MenuItem mi in timeWindowMenuItems)
                 timeWindow.MenuItems.Add(mi);
             menu.MenuItems.Add(timeWindow);
-
             return menu;
         }
 
         private PlotModel CreatePlotModel()
         {
-            timeAxis.Position = AxisPosition.Bottom;
-            timeAxis.MajorGridlineStyle = LineStyle.Solid;
-            timeAxis.MajorGridlineThickness = 1;
-            timeAxis.MajorGridlineColor = OxyColor.FromRgb(192, 192, 192);
-            timeAxis.MinorGridlineStyle = LineStyle.Solid;
-            timeAxis.MinorGridlineThickness = 1;
-            timeAxis.MinorGridlineColor = OxyColor.FromRgb(232, 232, 232);
-            timeAxis.StartPosition = 1;
-            timeAxis.EndPosition = 0;
-            timeAxis.MinimumPadding = 0;
-            timeAxis.MaximumPadding = 0;
-            timeAxis.AbsoluteMinimum = 0;
-            timeAxis.Minimum = 0;
-            timeAxis.AbsoluteMaximum = 24 * 60 * 60;
-            timeAxis.Zoom(
-              settings.GetValue("plotPanel.MinTimeSpan", 0.0f),
-              settings.GetValue("plotPanel.MaxTimeSpan", 10.0f * 60));
-            timeAxis.StringFormat = "h:mm";
+            _timeAxis.Position = AxisPosition.Bottom;
+            _timeAxis.MajorGridlineStyle = LineStyle.Solid;
+            _timeAxis.MajorGridlineThickness = 1;
+            _timeAxis.MajorGridlineColor = OxyColor.FromRgb(192, 192, 192);
+            _timeAxis.MinorGridlineStyle = LineStyle.Solid;
+            _timeAxis.MinorGridlineThickness = 1;
+            _timeAxis.MinorGridlineColor = OxyColor.FromRgb(232, 232, 232);
+            _timeAxis.StartPosition = 1;
+            _timeAxis.EndPosition = 0;
+            _timeAxis.MinimumPadding = 0;
+            _timeAxis.MaximumPadding = 0;
+            _timeAxis.AbsoluteMinimum = 0;
+            _timeAxis.Minimum = 0;
+            _timeAxis.AbsoluteMaximum = 24 * 60 * 60;
+            _timeAxis.Zoom(
+              _settings.GetValue("plotPanel.MinTimeSpan", 0.0f),
+              _settings.GetValue("plotPanel.MaxTimeSpan", 10.0f * 60));
+            _timeAxis.StringFormat = "h:mm";
 
             var units = new Dictionary<SensorType, string>();
             units.Add(SensorType.Voltage, "V");
@@ -153,26 +138,26 @@ namespace OpenHardwareMonitor.GUI
                 axis.Position = AxisPosition.Left;
                 axis.MajorGridlineStyle = LineStyle.Solid;
                 axis.MajorGridlineThickness = 1;
-                axis.MajorGridlineColor = timeAxis.MajorGridlineColor;
+                axis.MajorGridlineColor = _timeAxis.MajorGridlineColor;
                 axis.MinorGridlineStyle = LineStyle.Solid;
                 axis.MinorGridlineThickness = 1;
-                axis.MinorGridlineColor = timeAxis.MinorGridlineColor;
+                axis.MinorGridlineColor = _timeAxis.MinorGridlineColor;
                 axis.AxislineStyle = LineStyle.Solid;
                 axis.Title = type.ToString();
                 axis.Key = type.ToString();
 
                 axis.Zoom(
-                  settings.GetValue("plotPanel.Min" + axis.Key, float.NaN),
-                  settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
+                  _settings.GetValue("plotPanel.Min" + axis.Key, float.NaN),
+                  _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
 
                 if (units.ContainsKey(type))
                     axis.Unit = units[type];
-                axes.Add(type, axis);
+                _axes.Add(type, axis);
             }
 
-            var model = new PlotModel(this.dpiXscale, this.dpiYscale);
-            model.Axes.Add(timeAxis);
-            foreach (var axis in axes.Values)
+            var model = new PlotModel(this._dpiXscale, this._dpiYscale);
+            model.Axes.Add(_timeAxis);
+            foreach (var axis in _axes.Values)
                 model.Axes.Add(axis);
             model.PlotMargins = new OxyThickness(0);
             model.IsLegendVisible = false;
@@ -185,31 +170,28 @@ namespace OpenHardwareMonitor.GUI
             // https://msdn.microsoft.com/en-us/library/windows/desktop/dn469266(v=vs.85).aspx
             const int _default_dpi = 96;
             Graphics g = this.CreateGraphics();
-
             try
             {
-                this.dpiX = g.DpiX;
-                this.dpiY = g.DpiY;
+                this._dpiX = g.DpiX;
+                this._dpiY = g.DpiY;
             }
             finally
             {
                 g.Dispose();
             }
-            if (dpiX > 0)
+            if (_dpiX > 0)
             {
-                this.dpiXscale = dpiX / _default_dpi;
+                this._dpiXscale = _dpiX / _default_dpi;
             }
-            if (dpiY > 0)
+            if (_dpiY > 0)
             {
-                this.dpiYscale = dpiY / _default_dpi;
+                this._dpiYscale = _dpiY / _default_dpi;
             }
         }
 
-        public void SetSensors(List<ISensor> sensors,
-          IDictionary<ISensor, Color> colors)
+        public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
         {
-            this.model.Series.Clear();
-
+            this._model.Series.Clear();
             var types = new System.Collections.Generic.HashSet<SensorType>();
 
             foreach (ISensor sensor in sensors)
@@ -219,8 +201,8 @@ namespace OpenHardwareMonitor.GUI
                 {
                     series.ItemsSource = sensor.Values.Select(value => new DataPoint
                     {
-                        X = (now - value.Time).TotalSeconds,
-                        Y = unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
+                        X = (_now - value.Time).TotalSeconds,
+                        Y = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
                         value.Value : UnitManager.CelsiusToFahrenheit(value.Value).Value
                     });
                 }
@@ -228,37 +210,36 @@ namespace OpenHardwareMonitor.GUI
                 {
                     series.ItemsSource = sensor.Values.Select(value => new DataPoint
                     {
-                        X = (now - value.Time).TotalSeconds,
+                        X = (_now - value.Time).TotalSeconds,
                         Y = value.Value
                     });
                 }
                 series.Color = colors[sensor].ToOxyColor();
                 series.StrokeThickness = 1;
-                series.YAxisKey = axes[sensor.SensorType].Key;
+                series.YAxisKey = _axes[sensor.SensorType].Key;
                 series.Title = sensor.Hardware.Name + " " + sensor.Name;
-                this.model.Series.Add(series);
+                this._model.Series.Add(series);
 
                 types.Add(sensor.SensorType);
             }
 
-            foreach (var pair in axes.Reverse())
+            foreach (var pair in _axes.Reverse())
             {
                 var axis = pair.Value;
                 var type = pair.Key;
                 axis.IsAxisVisible = types.Contains(type);
             }
-
             UpdateAxesPosition();
             InvalidatePlot();
         }
 
         private void UpdateAxesPosition()
         {
-            if (stackedAxes.Value)
+            if (_stackedAxes.Value)
             {
-                var count = axes.Values.Count(axis => axis.IsAxisVisible);
+                var count = _axes.Values.Count(axis => axis.IsAxisVisible);
                 var start = 0.0;
-                foreach (var pair in axes.Reverse())
+                foreach (var pair in _axes.Reverse())
                 {
                     var axis = pair.Value;
                     var type = pair.Key;
@@ -274,7 +255,7 @@ namespace OpenHardwareMonitor.GUI
             else
             {
                 var tier = 0;
-                foreach (var pair in axes.Reverse())
+                foreach (var pair in _axes.Reverse())
                 {
                     var axis = pair.Value;
                     var type = pair.Key;
@@ -300,18 +281,16 @@ namespace OpenHardwareMonitor.GUI
 
         public void InvalidatePlot()
         {
-            this.now = DateTime.UtcNow;
-
-            foreach (var pair in axes)
+            this._now = DateTime.UtcNow;
+            foreach (var pair in _axes)
             {
                 var axis = pair.Value;
                 var type = pair.Key;
                 if (type == SensorType.Temperature)
-                    axis.Unit = unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
+                    axis.Unit = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
                     "°C" : "°F";
             }
-
-            this.plot.InvalidatePlot(true);
+            this._plot.InvalidatePlot(true);
         }
     }
 }

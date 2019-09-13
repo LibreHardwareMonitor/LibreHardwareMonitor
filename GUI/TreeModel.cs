@@ -13,23 +13,23 @@ namespace OpenHardwareMonitor.GUI
 {
     public class TreeModel : ITreeModel
     {
-        private Node root;
-        private bool forceVisible = false;
+        private Node _root;
+        private bool _forceVisible = false;
 
         public TreeModel()
         {
-            root = new Node();
-            root.Model = this;
+            _root = new Node();
+            _root.Model = this;
         }
 
         public TreePath GetPath(Node node)
         {
-            if (node == root)
+            if (node == _root)
                 return TreePath.Empty;
             else
             {
                 Stack<object> stack = new Stack<object>();
-                while (node != root)
+                while (node != _root)
                 {
                     stack.Push(node);
                     node = node.Parent;
@@ -40,12 +40,12 @@ namespace OpenHardwareMonitor.GUI
 
         public Collection<Node> Nodes
         {
-            get { return root.Nodes; }
+            get { return _root.Nodes; }
         }
 
         private Node GetNode(TreePath treePath)
         {
-            Node parent = root;
+            Node parent = _root;
             foreach (object obj in treePath.FullPath)
             {
                 Node node = obj as Node;
@@ -62,7 +62,7 @@ namespace OpenHardwareMonitor.GUI
             if (node != null)
             {
                 foreach (Node n in node.Nodes)
-                    if (forceVisible || n.IsVisible)
+                    if (_forceVisible || n.IsVisible)
                         yield return n;
             }
             else
@@ -80,14 +80,14 @@ namespace OpenHardwareMonitor.GUI
         {
             get
             {
-                return forceVisible;
+                return _forceVisible;
             }
             set
             {
-                if (value != forceVisible)
+                if (value != _forceVisible)
                 {
-                    forceVisible = value;
-                    OnStructureChanged(root);
+                    _forceVisible = value;
+                    OnStructureChanged(_root);
                 }
             }
         }
@@ -113,27 +113,23 @@ namespace OpenHardwareMonitor.GUI
         public void OnStructureChanged(Node node)
         {
             if (StructureChanged != null)
-                StructureChanged(this,
-                  new TreeModelEventArgs(GetPath(node), new object[0]));
+                StructureChanged(this, new TreeModelEventArgs(GetPath(node), new object[0]));
         }
 
         public void OnNodeInserted(Node parent, int index, Node node)
         {
             if (NodesInserted != null)
             {
-                TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent),
-                  new int[] { index }, new object[] { node });
+                TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new int[] { index }, new object[] { node });
                 NodesInserted(this, args);
             }
-
         }
 
         public void OnNodeRemoved(Node parent, int index, Node node)
         {
             if (NodesRemoved != null)
             {
-                TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent),
-                  new int[] { index }, new object[] { node });
+                TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new int[] { index }, new object[] { node });
                 NodesRemoved(this, args);
             }
         }

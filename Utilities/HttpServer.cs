@@ -209,7 +209,7 @@ namespace OpenHardwareMonitor.Utilities
                     else if (dict["action"] == "Get")
                     {
                         result["value"] = sNode.Sensor.Value;
-                        result["format"] = sNode.format;
+                        result["format"] = sNode.Format;
                     }
                     else
                     {

@@ -12,20 +12,20 @@ namespace OpenHardwareMonitor.GUI
 {
     public class HardwareTypeImage
     {
-        private static HardwareTypeImage instance = new HardwareTypeImage();
-        private IDictionary<HardwareType, Image> images = new Dictionary<HardwareType, Image>();
+        private static HardwareTypeImage s_instance = new HardwareTypeImage();
+        private IDictionary<HardwareType, Image> _images = new Dictionary<HardwareType, Image>();
 
         private HardwareTypeImage() { }
 
         public static HardwareTypeImage Instance
         {
-            get { return instance; }
+            get { return s_instance; }
         }
 
         public Image GetImage(HardwareType hardwareType)
         {
             Image image;
-            if (images.TryGetValue(hardwareType, out image))
+            if (_images.TryGetValue(hardwareType, out image))
             {
                 return image;
             }
@@ -70,7 +70,7 @@ namespace OpenHardwareMonitor.GUI
                         image = new Bitmap(1, 1);
                         break;
                 }
-                images.Add(hardwareType, image);
+                _images.Add(hardwareType, image);
                 return image;
             }
         }
