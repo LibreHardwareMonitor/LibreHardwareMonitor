@@ -1,24 +1,19 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2009-2017 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
-*/
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Open Hardware Monitor")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Libre Hardware Monitor")]
+[assembly: AssemblyDescription("Libre Hardware Monitor, a fork of Open Hardware Monitor.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Open Hardware Monitor")]
-[assembly: AssemblyCopyright("Copyright © 2009-2017 Michael Möller")]
+[assembly: AssemblyProduct("Libre Hardware Monitor")]
+[assembly: AssemblyCopyright("Copyright © Libre Hardware Monitor contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

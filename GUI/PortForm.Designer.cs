@@ -43,7 +43,7 @@
       this.portOKButton.TabIndex = 0;
       this.portOKButton.Text = "OK";
       this.portOKButton.UseVisualStyleBackColor = true;
-      this.portOKButton.Click += new System.EventHandler(this.portOKButton_Click);
+      this.portOKButton.Click += new System.EventHandler(this.PortOKButton_Click);
       // 
       // portCancelButton
       // 
@@ -54,7 +54,7 @@
       this.portCancelButton.TabIndex = 1;
       this.portCancelButton.Text = "Cancel";
       this.portCancelButton.UseVisualStyleBackColor = true;
-      this.portCancelButton.Click += new System.EventHandler(this.portCancelButton_Click);
+      this.portCancelButton.Click += new System.EventHandler(this.PortCancelButton_Click);
       // 
       // label1
       // 
@@ -103,7 +103,7 @@
       this.webServerLinkLabel.TabIndex = 7;
       this.webServerLinkLabel.TabStop = true;
       this.webServerLinkLabel.Text = "linkLabel1";
-      this.webServerLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.webServerLinkLabel_LinkClicked);
+      this.webServerLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.WebServerLinkLabel_LinkClicked);
       // 
       // portNumericUpDn
       // 
@@ -126,7 +126,7 @@
             0,
             0,
             0});
-      this.portNumericUpDn.ValueChanged += new System.EventHandler(this.portNumericUpDn_ValueChanged);
+      this.portNumericUpDn.ValueChanged += new System.EventHandler(this.PortNumericUpDn_ValueChanged);
       // 
       // label5
       // 

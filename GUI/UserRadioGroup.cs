@@ -1,70 +1,75 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2011 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
-*/
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI {
-  public class UserRadioGroup {
-    private string name;
-    private int value;
-    private MenuItem[] menuItems;
-    private event EventHandler changed;
-    private PersistentSettings settings;
+namespace OpenHardwareMonitor.GUI
+{
+    public class UserRadioGroup
+    {
+        private string _name;
+        private int _value;
+        private MenuItem[] _menuItems;
+        private event EventHandler _changed;
+        private PersistentSettings _settings;
 
-    public UserRadioGroup(string name, int value,
-      MenuItem[] menuItems, PersistentSettings settings) {
-      this.settings = settings;
-      this.name = name;
-      if (name != null)
-        this.value = settings.GetValue(name, value);
-      else
-        this.value = value;
-      this.menuItems = menuItems;
-      this.value = Math.Max(Math.Min(this.value, menuItems.Length - 1), 0);
+        public UserRadioGroup(string name, int value, MenuItem[] menuItems, PersistentSettings settings)
+        {
+            _settings = settings;
+            _name = name;
+            if (name != null)
+                _value = settings.GetValue(name, value);
+            else
+                _value = value;
+            _menuItems = menuItems;
+            _value = Math.Max(Math.Min(_value, menuItems.Length - 1), 0);
 
-      for (int i = 0; i < this.menuItems.Length; i++) {
-        this.menuItems[i].Checked = i == this.value;
-        int index = i;
-        this.menuItems[i].Click += delegate(object sender, EventArgs e) {
-          this.Value = index;
-        };
-      }      
-    }
-
-    public int Value {
-      get { return value; }
-      set {
-        if (this.value != value) {
-          this.value = value;
-          if (this.name != null)
-            settings.SetValue(name, value);
-          for (int i = 0; i < this.menuItems.Length; i++) 
-            this.menuItems[i].Checked = i == value;
-          if (changed != null)
-            changed(this, null);
+            for (int i = 0; i < _menuItems.Length; i++)
+            {
+                _menuItems[i].Checked = i == _value;
+                int index = i;
+                _menuItems[i].Click += delegate (object sender, EventArgs e)
+                {
+                    Value = index;
+                };
+            }
         }
-      }
-    }
 
-    public event EventHandler Changed {
-      add {
-        changed += value;
-        if (changed != null)
-          changed(this, null);
-      }
-      remove {
-        changed -= value;
-      }
+        public int Value
+        {
+            get { return _value; }
+            set
+            {
+                if (_value != value)
+                {
+                    _value = value;
+                    if (_name != null)
+                        _settings.SetValue(_name, value);
+                    for (int i = 0; i < _menuItems.Length; i++)
+                        _menuItems[i].Checked = i == value;
+                    if (_changed != null)
+                        _changed(this, null);
+                }
+            }
+        }
+
+        public event EventHandler Changed
+        {
+            add
+            {
+                _changed += value;
+                if (_changed != null)
+                    _changed(this, null);
+            }
+            remove
+            {
+                _changed -= value;
+            }
+        }
     }
-  }
 }
