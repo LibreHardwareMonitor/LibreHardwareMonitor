@@ -81,24 +81,24 @@ namespace OpenHardwareMonitor.GUI
                 Environment.Exit(0);
             }
 
-            this._settings = new PersistentSettings();
-            this._settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
+            _settings = new PersistentSettings();
+            _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
 
-            this._unitManager = new UnitManager(_settings);
+            _unitManager = new UnitManager(_settings);
 
             // make sure the buffers used for double buffering are not disposed
             // after each draw call
             BufferedGraphicsManager.Current.MaximumBuffer = Screen.PrimaryScreen.Bounds.Size;
 
             // set the DockStyle here, to avoid conflicts with the MainMenu
-            this.splitContainer.Dock = DockStyle.Fill;
+            splitContainer.Dock = DockStyle.Fill;
 
-            this.Font = SystemFonts.MessageBoxFont;
+            Font = SystemFonts.MessageBoxFont;
             treeView.Font = SystemFonts.MessageBoxFont;
 
             // Set the bounds immediately, so that our child components can be
             // properly placed.
-            this.Bounds = new Rectangle
+            Bounds = new Rectangle
             {
                 X = _settings.GetValue("mainForm.Location.X", Location.X),
                 Y = _settings.GetValue("mainForm.Location.Y", Location.Y),
@@ -129,7 +129,7 @@ namespace OpenHardwareMonitor.GUI
             _treeModel.Nodes.Add(_root);
             treeView.Model = _treeModel;
 
-            this._computer = new Computer(_settings);
+            _computer = new Computer(_settings);
 
             _systemTray = new SystemTray(_computer, _settings, _unitManager);
             _systemTray.HideShowCommand += HideShowClick;
@@ -280,7 +280,7 @@ namespace OpenHardwareMonitor.GUI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            _server = new HttpServer(_root, this._settings.GetValue("listenerPort", 8085));
+            _server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085));
             if (_server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
@@ -398,7 +398,7 @@ namespace OpenHardwareMonitor.GUI
             _plotForm.FormBorderStyle = FormBorderStyle.SizableToolWindow;
             _plotForm.ShowInTaskbar = false;
             _plotForm.StartPosition = FormStartPosition.Manual;
-            this.AddOwnedForm(_plotForm);
+            AddOwnedForm(_plotForm);
             _plotForm.Bounds = new Rectangle
             {
                 X = _settings.GetValue("plotForm.Location.X", -100000),
@@ -414,7 +414,7 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_plotLocation.Value == 0)
                 {
-                    if (_showPlot.Value && this.Visible)
+                    if (_showPlot.Value && Visible)
                         _plotForm.Show();
                     else
                         _plotForm.Hide();
@@ -433,7 +433,7 @@ namespace OpenHardwareMonitor.GUI
                         splitContainer.Panel2.Controls.Clear();
                         splitContainer.Panel2Collapsed = true;
                         _plotForm.Controls.Add(_plotPanel);
-                        if (_showPlot.Value && this.Visible)
+                        if (_showPlot.Value && Visible)
                             _plotForm.Show();
                         break;
                     case 1:
@@ -493,9 +493,9 @@ namespace OpenHardwareMonitor.GUI
                 }
             };
 
-            this.VisibleChanged += delegate (object sender, EventArgs e)
+            VisibleChanged += delegate (object sender, EventArgs e)
             {
-                if (this.Visible && _showPlot.Value && _plotLocation.Value == 0)
+                if (Visible && _showPlot.Value && _plotLocation.Value == 0)
                     _plotForm.Show();
                 else
                     _plotForm.Hide();
@@ -668,7 +668,7 @@ namespace OpenHardwareMonitor.GUI
                 _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
             }
 
-            this._settings.SetValue("listenerPort", _server.ListenerPort);
+            _settings.SetValue("listenerPort", _server.ListenerPort);
 
             string fileName = Path.ChangeExtension(System.Windows.Forms.Application.ExecutablePath, ".config");
             try
@@ -713,7 +713,7 @@ namespace OpenHardwareMonitor.GUI
                 newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) -
                               (newBounds.Height / 2);
             }
-            this.Bounds = newBounds;
+            Bounds = newBounds;
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)

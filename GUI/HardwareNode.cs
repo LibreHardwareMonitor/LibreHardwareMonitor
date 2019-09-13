@@ -21,10 +21,10 @@ namespace OpenHardwareMonitor.GUI
 
         public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager) : base()
         {
-            this._settings = settings;
-            this._unitManager = unitManager;
-            this._hardware = hardware;
-            this.Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
+            _settings = settings;
+            _unitManager = unitManager;
+            _hardware = hardware;
+            Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
 
             foreach (SensorType sensorType in Enum.GetValues(typeof(SensorType)))
                 _typeNodes.Add(new TypeNode(sensorType));

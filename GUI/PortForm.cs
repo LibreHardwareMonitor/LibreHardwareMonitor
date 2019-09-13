@@ -57,12 +57,12 @@ namespace OpenHardwareMonitor.GUI
         private void PortOKButton_Click(object sender, EventArgs e)
         {
             _parent.Server.ListenerPort = (int)portNumericUpDn.Value;
-            this.Close();
+            Close();
         }
 
         private void PortCancelButton_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void PortForm_Load(object sender, EventArgs e)

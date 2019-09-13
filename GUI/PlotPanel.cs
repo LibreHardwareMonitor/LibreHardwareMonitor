@@ -33,23 +33,23 @@ namespace OpenHardwareMonitor.GUI
 
         public PlotPanel(PersistentSettings settings, UnitManager unitManager)
         {
-            this._settings = settings;
-            this._unitManager = unitManager;
+            _settings = settings;
+            _unitManager = unitManager;
 
-            this.SetDPI();
-            this._model = CreatePlotModel();
+            SetDPI();
+            _model = CreatePlotModel();
 
-            this._plot = new Plot();
-            this._plot.Dock = DockStyle.Fill;
-            this._plot.Model = _model;
-            this._plot.BackColor = Color.White;
-            this._plot.ContextMenu = CreateMenu();
+            _plot = new Plot();
+            _plot.Dock = DockStyle.Fill;
+            _plot.Model = _model;
+            _plot.BackColor = Color.White;
+            _plot.ContextMenu = CreateMenu();
 
             UpdateAxesPosition();
 
-            this.SuspendLayout();
-            this.Controls.Add(_plot);
-            this.ResumeLayout(true);
+            SuspendLayout();
+            Controls.Add(_plot);
+            ResumeLayout(true);
         }
 
         public void SetCurrentSettings()
@@ -155,7 +155,7 @@ namespace OpenHardwareMonitor.GUI
                 _axes.Add(type, axis);
             }
 
-            var model = new PlotModel(this._dpiXscale, this._dpiYscale);
+            var model = new PlotModel(_dpiXscale, _dpiYscale);
             model.Axes.Add(_timeAxis);
             foreach (var axis in _axes.Values)
                 model.Axes.Add(axis);
@@ -169,11 +169,11 @@ namespace OpenHardwareMonitor.GUI
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/dn469266(v=vs.85).aspx
             const int _default_dpi = 96;
-            Graphics g = this.CreateGraphics();
+            Graphics g = CreateGraphics();
             try
             {
-                this._dpiX = g.DpiX;
-                this._dpiY = g.DpiY;
+                _dpiX = g.DpiX;
+                _dpiY = g.DpiY;
             }
             finally
             {
@@ -181,17 +181,17 @@ namespace OpenHardwareMonitor.GUI
             }
             if (_dpiX > 0)
             {
-                this._dpiXscale = _dpiX / _default_dpi;
+                _dpiXscale = _dpiX / _default_dpi;
             }
             if (_dpiY > 0)
             {
-                this._dpiYscale = _dpiY / _default_dpi;
+                _dpiYscale = _dpiY / _default_dpi;
             }
         }
 
         public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
         {
-            this._model.Series.Clear();
+            _model.Series.Clear();
             var types = new System.Collections.Generic.HashSet<SensorType>();
 
             foreach (ISensor sensor in sensors)
@@ -218,7 +218,7 @@ namespace OpenHardwareMonitor.GUI
                 series.StrokeThickness = 1;
                 series.YAxisKey = _axes[sensor.SensorType].Key;
                 series.Title = sensor.Hardware.Name + " " + sensor.Name;
-                this._model.Series.Add(series);
+                _model.Series.Add(series);
 
                 types.Add(sensor.SensorType);
             }
@@ -281,7 +281,7 @@ namespace OpenHardwareMonitor.GUI
 
         public void InvalidatePlot()
         {
-            this._now = DateTime.UtcNow;
+            _now = DateTime.UtcNow;
             foreach (var pair in _axes)
             {
                 var axis = pair.Value;
@@ -290,7 +290,7 @@ namespace OpenHardwareMonitor.GUI
                     axis.Unit = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
                     "°C" : "°F";
             }
-            this._plot.InvalidatePlot(true);
+            _plot.InvalidatePlot(true);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace OpenHardwareMonitor.GUI
 {
     public class ShowDesktop
     {
-        private static ShowDesktop s_instance = new ShowDesktop();
+        private static ShowDesktop _instance = new ShowDesktop();
         public delegate void ShowDesktopChangedEventHandler(bool showDesktop);
         private event ShowDesktopChangedEventHandler ShowDesktopChangedEvent;
         private System.Threading.Timer _timer;
@@ -29,7 +29,7 @@ namespace OpenHardwareMonitor.GUI
             _referenceWindow.CreateHandle(cp);
             NativeMethods.SetWindowPos(
                 _referenceWindow.Handle,
-                GadgetWindow.s_hWND_BOTTOM, 0, 0, 0, 0, GadgetWindow.SWP_NOMOVE |
+                GadgetWindow.HWND_BOTTOM, 0, 0, 0, 0, GadgetWindow.SWP_NOMOVE |
                 GadgetWindow.SWP_NOSIZE | GadgetWindow.SWP_NOACTIVATE |
                 GadgetWindow.SWP_NOSENDCHANGING);
 
@@ -106,7 +106,7 @@ namespace OpenHardwareMonitor.GUI
 
         public static ShowDesktop Instance
         {
-            get { return s_instance; }
+            get { return _instance; }
         }
 
         // notify when the "show desktop" mode is changed

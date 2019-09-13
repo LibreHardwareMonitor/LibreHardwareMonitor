@@ -53,23 +53,23 @@ namespace OpenHardwareMonitor.GUI
 
         public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
         {
-            this._unitManager = unitManager;
-            this._settings = settings;
+            _unitManager = unitManager;
+            _settings = settings;
             computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
             computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
 
-            this._darkWhite = new SolidBrush(Color.FromArgb(0xF0, 0xF0, 0xF0));
+            _darkWhite = new SolidBrush(Color.FromArgb(0xF0, 0xF0, 0xF0));
 
-            this._stringFormat = new StringFormat();
-            this._stringFormat.FormatFlags = StringFormatFlags.NoWrap;
+            _stringFormat = new StringFormat();
+            _stringFormat.FormatFlags = StringFormatFlags.NoWrap;
 
-            this._trimStringFormat = new StringFormat();
-            this._trimStringFormat.Trimming = StringTrimming.EllipsisCharacter;
-            this._trimStringFormat.FormatFlags = StringFormatFlags.NoWrap;
+            _trimStringFormat = new StringFormat();
+            _trimStringFormat.Trimming = StringTrimming.EllipsisCharacter;
+            _trimStringFormat.FormatFlags = StringFormatFlags.NoWrap;
 
-            this._alignRightStringFormat = new StringFormat();
-            this._alignRightStringFormat.Alignment = StringAlignment.Far;
-            this._alignRightStringFormat.FormatFlags = StringFormatFlags.NoWrap;
+            _alignRightStringFormat = new StringFormat();
+            _alignRightStringFormat.Alignment = StringAlignment.Far;
+            _alignRightStringFormat.FormatFlags = StringFormatFlags.NoWrap;
 
             if (File.Exists("gadget_background.png"))
             {
@@ -122,7 +122,7 @@ namespace OpenHardwareMonitor.GUI
                 catch { }
             }
 
-            this.Location = new Point(
+            Location = new Point(
               settings.GetValue("sensorGadget.Location.X", 100),
               settings.GetValue("sensorGadget.Location.Y", 100));
             LocationChanged += delegate (object sender, EventArgs e)
@@ -191,7 +191,7 @@ namespace OpenHardwareMonitor.GUI
                 };
                 opacityMenu.MenuItems.Add(item);
             }
-            this.ContextMenu = contextMenu;
+            ContextMenu = contextMenu;
 
             _hardwareNames = new UserOption("sensorGadget.Hardwarenames", true, hardwareNamesItem, settings);
             _hardwareNames.Changed += delegate (object sender, EventArgs e)
@@ -202,12 +202,12 @@ namespace OpenHardwareMonitor.GUI
             _alwaysOnTop = new UserOption("sensorGadget.AlwaysOnTop", false, alwaysOnTopItem, settings);
             _alwaysOnTop.Changed += delegate (object sender, EventArgs e)
             {
-                this.AlwaysOnTop = _alwaysOnTop.Value;
+                AlwaysOnTop = _alwaysOnTop.Value;
             };
             _lockPositionAndSize = new UserOption("sensorGadget.LockPositionAndSize", false, lockItem, settings);
             _lockPositionAndSize.Changed += delegate (object sender, EventArgs e)
             {
-                this.LockPositionAndSize = _lockPositionAndSize.Value;
+                LockPositionAndSize = _lockPositionAndSize.Value;
             };
 
             HitTest += delegate (object sender, HitTestEventArgs e)
@@ -439,7 +439,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void Resize()
         {
-            Resize(this.Size.Width);
+            Resize(Size.Width);
         }
 
         private void Resize(int width)
@@ -458,7 +458,7 @@ namespace OpenHardwareMonitor.GUI
             if (_sensors.Count == 0)
                 y += 4 * _sensorLineHeight + _hardwareLineHeight;
             y += _bottomMargin;
-            this.Size = new Size(width, y);
+            Size = new Size(width, y);
         }
 
         private void DrawImageWidthBorder(Graphics g, int width, int height,

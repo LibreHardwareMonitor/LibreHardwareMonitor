@@ -24,13 +24,13 @@ namespace OpenHardwareMonitor.GUI
 
         public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager)
         {
-            this._computer = computer;
-            this._settings = settings;
-            this._unitManager = unitManager;
+            _computer = computer;
+            _settings = settings;
+            _unitManager = unitManager;
             computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
             computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
 
-            this._mainIcon = new NotifyIconAdv();
+            _mainIcon = new NotifyIconAdv();
 
             ContextMenu contextMenu = new ContextMenu();
             MenuItem hideShowItem = new MenuItem("Hide/Show");
@@ -46,13 +46,13 @@ namespace OpenHardwareMonitor.GUI
                 SendExitCommand();
             };
             contextMenu.MenuItems.Add(exitItem);
-            this._mainIcon.ContextMenu = contextMenu;
-            this._mainIcon.DoubleClick += delegate (object obj, EventArgs args)
+            _mainIcon.ContextMenu = contextMenu;
+            _mainIcon.DoubleClick += delegate (object obj, EventArgs args)
             {
                 SendHideShowCommand();
             };
-            this._mainIcon.Icon = EmbeddedResources.GetIcon("smallicon.ico");
-            this._mainIcon.Text = "Open Hardware Monitor";
+            _mainIcon.Icon = EmbeddedResources.GetIcon("smallicon.ico");
+            _mainIcon.Text = "Open Hardware Monitor";
         }
 
         private void HardwareRemoved(IHardware hardware)

@@ -55,9 +55,9 @@ namespace OpenHardwareMonitor.GUI
 
             public ParameterRow(IParameter parameter)
             {
-                this.Parameter = parameter;
-                this._value = parameter.Value;
-                this.IsDefault = parameter.IsDefault;
+                Parameter = parameter;
+                _value = parameter.Value;
+                IsDefault = parameter.IsDefault;
             }
 
             public string Name
@@ -70,8 +70,8 @@ namespace OpenHardwareMonitor.GUI
                 get { return _value; }
                 set
                 {
-                    this.IsDefault = false;
-                    this._value = value;
+                    IsDefault = false;
+                    _value = value;
                     NotifyPropertyChanged("Default");
                     NotifyPropertyChanged("Value");
                 }
@@ -84,7 +84,7 @@ namespace OpenHardwareMonitor.GUI
                 {
                     IsDefault = value;
                     if (value)
-                        this._value = Parameter.DefaultValue;
+                        _value = Parameter.DefaultValue;
                     NotifyPropertyChanged("Default");
                     NotifyPropertyChanged("Value");
                 }

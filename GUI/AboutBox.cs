@@ -17,8 +17,8 @@ namespace OpenHardwareMonitor.GUI
         public AboutBox()
         {
             InitializeComponent();
-            this.Font = SystemFonts.MessageBoxFont;
-            this.label3.Text = "Version " + System.Windows.Forms.Application.ProductVersion;
+            Font = SystemFonts.MessageBoxFont;
+            label3.Text = "Version " + System.Windows.Forms.Application.ProductVersion;
             projectLinkLabel.Links.Remove(projectLinkLabel.Links[0]);
             projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
             licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);

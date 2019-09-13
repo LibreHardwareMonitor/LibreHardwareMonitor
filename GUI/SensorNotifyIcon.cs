@@ -32,9 +32,9 @@ namespace OpenHardwareMonitor.GUI
 
         public SensorNotifyIcon(SystemTray sensorSystemTray, ISensor sensor, bool balloonTip, PersistentSettings settings, UnitManager unitManager)
         {
-            this._unitManager = unitManager;
-            this._sensor = sensor;
-            this._notifyIcon = new NotifyIconAdv();
+            _unitManager = unitManager;
+            _sensor = sensor;
+            _notifyIcon = new NotifyIconAdv();
 
             Color defaultColor = Color.White;
             if (sensor.SensorType == SensorType.Load ||
@@ -45,7 +45,7 @@ namespace OpenHardwareMonitor.GUI
             }
             Color = settings.GetValue(new Identifier(sensor.Identifier, "traycolor").ToString(), defaultColor);
 
-            this._pen = new Pen(Color.FromArgb(96, Color.Black));
+            _pen = new Pen(Color.FromArgb(96, Color.Black));
             ContextMenu contextMenu = new ContextMenu();
             MenuItem hideShowItem = new MenuItem("Hide/Show");
             hideShowItem.Click += delegate (object obj, EventArgs args)
@@ -57,7 +57,7 @@ namespace OpenHardwareMonitor.GUI
             MenuItem removeItem = new MenuItem("Remove Sensor");
             removeItem.Click += delegate (object obj, EventArgs args)
             {
-                sensorSystemTray.Remove(this._sensor);
+                sensorSystemTray.Remove(_sensor);
             };
             contextMenu.MenuItems.Add(removeItem);
             MenuItem colorItem = new MenuItem("Change Color...");
@@ -80,8 +80,8 @@ namespace OpenHardwareMonitor.GUI
                 sensorSystemTray.SendExitCommand();
             };
             contextMenu.MenuItems.Add(exitItem);
-            this._notifyIcon.ContextMenu = contextMenu;
-            this._notifyIcon.DoubleClick += delegate (object obj, EventArgs args)
+            _notifyIcon.ContextMenu = contextMenu;
+            _notifyIcon.DoubleClick += delegate (object obj, EventArgs args)
             {
                 sensorSystemTray.SendHideShowCommand();
             };
@@ -112,15 +112,15 @@ namespace OpenHardwareMonitor.GUI
                 default: baseSize = 12; break;
             }
 
-            this._font = new Font(family, baseSize * width / 16.0f, GraphicsUnit.Pixel);
-            this._smallFont = new Font(family, 0.75f * baseSize * width / 16.0f, GraphicsUnit.Pixel);
+            _font = new Font(family, baseSize * width / 16.0f, GraphicsUnit.Pixel);
+            _smallFont = new Font(family, 0.75f * baseSize * width / 16.0f, GraphicsUnit.Pixel);
 
-            this._bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            this._graphics = Graphics.FromImage(this._bitmap);
+            _bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            _graphics = Graphics.FromImage(_bitmap);
             if (Environment.OSVersion.Version.Major > 5)
             {
-                this._graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
-                this._graphics.SmoothingMode = SmoothingMode.HighQuality;
+                _graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+                _graphics.SmoothingMode = SmoothingMode.HighQuality;
             }
         }
 
@@ -134,14 +134,14 @@ namespace OpenHardwareMonitor.GUI
             get { return _color; }
             set
             {
-                this._color = value;
-                this._darkColor = Color.FromArgb(255, this._color.R / 3, this._color.G / 3, this._color.B / 3);
-                Brush brush = this._brush;
-                this._brush = new SolidBrush(this._color);
+                _color = value;
+                _darkColor = Color.FromArgb(255, _color.R / 3, _color.G / 3, _color.B / 3);
+                Brush brush = _brush;
+                _brush = new SolidBrush(_color);
                 if (brush != null)
                     brush.Dispose();
-                Brush darkBrush = this._darkBrush;
-                this._darkBrush = new SolidBrush(this._darkColor);
+                Brush darkBrush = _darkBrush;
+                _darkBrush = new SolidBrush(_darkColor);
                 if (darkBrush != null)
                     darkBrush.Dispose();
             }

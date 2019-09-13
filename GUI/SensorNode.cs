@@ -80,9 +80,9 @@ namespace OpenHardwareMonitor.GUI
 
         public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager) : base()
         {
-            this._sensor = sensor;
-            this._settings = settings;
-            this._unitManager = unitManager;
+            _sensor = sensor;
+            _settings = settings;
+            _unitManager = unitManager;
             switch (sensor.SensorType)
             {
                 case SensorType.Voltage: Format = "{0:F3} V"; break;
@@ -100,15 +100,12 @@ namespace OpenHardwareMonitor.GUI
                 case SensorType.Frequency: Format = "{0:F1} Hz"; break;
                 case SensorType.Throughput: Format = "{0:F1} B/s"; break;
             }
-
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
             base.IsVisible = !hidden;
-
-            this.Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
-
+            Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
             string id = new Identifier(sensor.Identifier, "penColor").ToString();
             if (settings.Contains(id))
-                this.PenColor = settings.GetValue(id, Color.Black);
+                PenColor = settings.GetValue(id, Color.Black);
         }
 
         public override string Text

@@ -39,7 +39,7 @@ namespace OpenHardwareMonitor.GUI
               BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public,
               null, new Type[] { typeof(int) }, null);
 
-            this.CreateHandle(CreateParams);
+            CreateHandle(CreateParams);
 
             // move window to the bottom
             MoveToBottom(Handle);
@@ -70,12 +70,12 @@ namespace OpenHardwareMonitor.GUI
 
         private void MoveToBottom(IntPtr handle)
         {
-            NativeMethods.SetWindowPos(handle, s_hWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+            NativeMethods.SetWindowPos(handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
         }
 
         private void MoveToTopMost(IntPtr handle)
         {
-            NativeMethods.SetWindowPos(handle, s_hWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+            NativeMethods.SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
         }
 
         private void ShowContextMenu(Point position)
@@ -151,46 +151,46 @@ namespace OpenHardwareMonitor.GUI
                     break;
                 case WM_WINDOWPOSCHANGING:
                     {
-                        WindowPos wp = (WindowPos)Marshal.PtrToStructure(
-                          message.LParam, typeof(WindowPos));
+                        WINDOWPOS wp = (WINDOWPOS)Marshal.PtrToStructure(
+                          message.LParam, typeof(WINDOWPOS));
 
                         if (!_lockPositionAndSize)
                         {
                             // prevent the window from leaving the screen
-                            if ((wp.Flags & SWP_NOMOVE) == 0)
+                            if ((wp.flags & SWP_NOMOVE) == 0)
                             {
-                                Rectangle rect = Screen.GetWorkingArea(new Rectangle(wp.X, wp.Y, wp.Cx, wp.Cy));
+                                Rectangle rect = Screen.GetWorkingArea(new Rectangle(wp.x, wp.y, wp.cx, wp.cy));
                                 const int margin = 16;
-                                wp.X = Math.Max(wp.X, rect.Left - wp.Cx + margin);
-                                wp.X = Math.Min(wp.X, rect.Right - margin);
-                                wp.Y = Math.Max(wp.Y, rect.Top - wp.Cy + margin);
-                                wp.Y = Math.Min(wp.Y, rect.Bottom - margin);
+                                wp.x = Math.Max(wp.x, rect.Left - wp.cx + margin);
+                                wp.x = Math.Min(wp.x, rect.Right - margin);
+                                wp.y = Math.Max(wp.y, rect.Top - wp.cy + margin);
+                                wp.y = Math.Min(wp.y, rect.Bottom - margin);
                             }
 
                             // update location and fire event
-                            if ((wp.Flags & SWP_NOMOVE) == 0)
+                            if ((wp.flags & SWP_NOMOVE) == 0)
                             {
-                                if (_location.X != wp.X || _location.Y != wp.Y)
+                                if (_location.X != wp.x || _location.Y != wp.y)
                                 {
-                                    _location = new Point(wp.X, wp.Y);
+                                    _location = new Point(wp.x, wp.y);
                                     if (LocationChanged != null)
                                         LocationChanged(this, EventArgs.Empty);
                                 }
                             }
 
                             // update size and fire event
-                            if ((wp.Flags & SWP_NOSIZE) == 0)
+                            if ((wp.flags & SWP_NOSIZE) == 0)
                             {
-                                if (_size.Width != wp.Cx || _size.Height != wp.Cy)
+                                if (_size.Width != wp.cx || _size.Height != wp.cy)
                                 {
-                                    _size = new Size(wp.Cx, wp.Cy);
+                                    _size = new Size(wp.cx, wp.cy);
                                     if (SizeChanged != null)
                                         SizeChanged(this, EventArgs.Empty);
                                 }
                             }
 
                             // update the size of the layered window
-                            if ((wp.Flags & SWP_NOSIZE) == 0)
+                            if ((wp.flags & SWP_NOSIZE) == 0)
                             {
                                 NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero,
                                   IntPtr.Zero, ref _size, IntPtr.Zero, IntPtr.Zero, 0,
@@ -198,7 +198,7 @@ namespace OpenHardwareMonitor.GUI
                             }
 
                             // update the position of the layered window
-                            if ((wp.Flags & SWP_NOMOVE) == 0)
+                            if ((wp.flags & SWP_NOMOVE) == 0)
                             {
                                 NativeMethods.SetWindowPos(Handle, IntPtr.Zero,
                                   _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE |
@@ -207,10 +207,10 @@ namespace OpenHardwareMonitor.GUI
                         }
 
                         // do not forward any move or size messages
-                        wp.Flags |= SWP_NOSIZE | SWP_NOMOVE;
+                        wp.flags |= SWP_NOSIZE | SWP_NOMOVE;
 
                         // suppress any frame changed events
-                        wp.Flags &= ~SWP_FRAMECHANGED;
+                        wp.flags &= ~SWP_FRAMECHANGED;
 
                         Marshal.StructureToPtr(wp, message.LParam, false);
                         message.Result = IntPtr.Zero;
@@ -241,7 +241,7 @@ namespace OpenHardwareMonitor.GUI
             NativeMethods.ReleaseDC(IntPtr.Zero, handleScreenDC);
             _bufferSize = _size;
 
-            BitmapInfo info = new BitmapInfo();
+            BITMAPINFO info = new BITMAPINFO();
             info.Size = Marshal.SizeOf(info);
             info.Width = _size.Width;
             info.Height = -_size.Height;
@@ -257,8 +257,8 @@ namespace OpenHardwareMonitor.GUI
 
             if (Environment.OSVersion.Version.Major > 5)
             {
-                this._graphics.TextRenderingHint = TextRenderingHint.SystemDefault;
-                this._graphics.SmoothingMode = SmoothingMode.HighQuality;
+                _graphics.TextRenderingHint = TextRenderingHint.SystemDefault;
+                _graphics.SmoothingMode = SmoothingMode.HighQuality;
             }
         }
 
@@ -424,7 +424,7 @@ namespace OpenHardwareMonitor.GUI
             }
             set
             {
-                this._contextMenu = value;
+                _contextMenu = value;
             }
         }
 
@@ -438,19 +438,19 @@ namespace OpenHardwareMonitor.GUI
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct WindowPos
+        private struct WINDOWPOS
         {
-            public IntPtr Hwnd;
-            public IntPtr HwndInsertAfter;
-            public int X;
-            public int Y;
-            public int Cx;
-            public int Cy;
-            public uint Flags;
+            public IntPtr hwnd;
+            public IntPtr hwndInsertAfter;
+            public int x;
+            public int y;
+            public int cx;
+            public int cy;
+            public uint flags;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct BitmapInfo
+        public struct BITMAPINFO
         {
             public Int32 Size;
             public Int32 Width;
@@ -466,8 +466,8 @@ namespace OpenHardwareMonitor.GUI
             public Int32 Colors;
         }
 
-        public static readonly IntPtr s_hWND_BOTTOM = (IntPtr)1;
-        public static readonly IntPtr s_hWND_TOPMOST = (IntPtr)(-1);
+        public static readonly IntPtr HWND_BOTTOM = (IntPtr)1;
+        public static readonly IntPtr HWND_TOPMOST = (IntPtr)(-1);
 
         public const int WS_EX_LAYERED = 0x00080000;
         public const int WS_EX_TOOLWINDOW = 0x00000080;
@@ -580,7 +580,7 @@ namespace OpenHardwareMonitor.GUI
             public static extern IntPtr CreateCompatibleDC(IntPtr hDC);
 
             [DllImport(GDI, CallingConvention = CallingConvention.Winapi)]
-            public static extern IntPtr CreateDIBSection(IntPtr hdc, [In] ref BitmapInfo pbmi, uint pila, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
+            public static extern IntPtr CreateDIBSection(IntPtr hdc, [In] ref BITMAPINFO pbmi, uint pila, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
 
             [DllImport(GDI, CallingConvention = CallingConvention.Winapi)]
             [return: MarshalAs(UnmanagedType.Bool)]

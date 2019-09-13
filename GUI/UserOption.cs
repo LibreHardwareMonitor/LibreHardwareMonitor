@@ -20,20 +20,20 @@ namespace OpenHardwareMonitor.GUI
 
         public UserOption(string name, bool value, MenuItem menuItem, PersistentSettings settings)
         {
-            this._settings = settings;
-            this._name = name;
+            _settings = settings;
+            _name = name;
             if (name != null)
-                this._value = settings.GetValue(name, value);
+                _value = settings.GetValue(name, value);
             else
-                this._value = value;
-            this._menuItem = menuItem;
-            this._menuItem.Checked = this._value;
-            this._menuItem.Click += new EventHandler(menuItem_Click);
+                _value = value;
+            _menuItem = menuItem;
+            _menuItem.Checked = _value;
+            _menuItem.Click += new EventHandler(menuItem_Click);
         }
 
         private void menuItem_Click(object sender, EventArgs e)
         {
-            this.Value = !this.Value;
+            Value = !Value;
         }
 
         public bool Value
@@ -41,12 +41,12 @@ namespace OpenHardwareMonitor.GUI
             get { return _value; }
             set
             {
-                if (this._value != value)
+                if (_value != value)
                 {
-                    this._value = value;
-                    if (this._name != null)
+                    _value = value;
+                    if (_name != null)
                         _settings.SetValue(_name, value);
-                    this._menuItem.Checked = value;
+                    _menuItem.Checked = value;
                     if (_changed != null)
                         _changed(this, null);
                 }

@@ -57,12 +57,12 @@ namespace OpenHardwareMonitor.GUI
         {
             if (Orientation == Orientation.Vertical)
             {
-                _delta = this.SplitterDistance - e.X;
+                _delta = SplitterDistance - e.X;
                 Cursor.Current = Cursors.VSplit;
             }
             else
             {
-                _delta = this.SplitterDistance - e.Y;
+                _delta = SplitterDistance - e.Y;
                 Cursor.Current = Cursors.HSplit;
             }
             base.IsSplitterFixed = true;

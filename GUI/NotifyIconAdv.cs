@@ -382,7 +382,7 @@ namespace OpenHardwareMonitor.GUI
         private class NotifyIconWindowsImplementation : Component
         {
 
-            private static int s_nextId = 0;
+            private static int _nextId = 0;
             private object _syncObj = new object();
             private Icon _icon;
             private string _text = "";
@@ -476,7 +476,7 @@ namespace OpenHardwareMonitor.GUI
                   BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public,
                   null, new Type[] { typeof(int) }, null);
 
-                _id = ++NotifyIconWindowsImplementation.s_nextId;
+                _id = ++NotifyIconWindowsImplementation._nextId;
                 _window = new NotifyIconNativeWindow(this);
                 UpdateNotifyIcon(_visible);
             }
@@ -756,7 +756,7 @@ namespace OpenHardwareMonitor.GUI
                         }
                 }
 
-                if (message.Msg == NotifyIconWindowsImplementation.s_wmTaskBarCreated)
+                if (message.Msg == NotifyIconWindowsImplementation._wmTaskBarCreated)
                 {
                     lock (_syncObj)
                     {
@@ -775,7 +775,7 @@ namespace OpenHardwareMonitor.GUI
 
                 internal NotifyIconNativeWindow(NotifyIconWindowsImplementation component)
                 {
-                    this._reference = component;
+                    _reference = component;
                 }
 
                 ~NotifyIconNativeWindow()
@@ -835,7 +835,7 @@ namespace OpenHardwareMonitor.GUI
             private const int NIN_BALLOONTIMEOUT = 0x404;
             private const int NIN_BALLOONUSERCLICK = 0x405;
 
-            private static int s_wmTaskBarCreated = NativeMethods.RegisterWindowMessage("TaskbarCreated");
+            private static int _wmTaskBarCreated = NativeMethods.RegisterWindowMessage("TaskbarCreated");
 
             private static class NativeMethods
             {

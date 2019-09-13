@@ -12,14 +12,14 @@ namespace OpenHardwareMonitor.GUI
 {
     public class HardwareTypeImage
     {
-        private static HardwareTypeImage s_instance = new HardwareTypeImage();
+        private static HardwareTypeImage _instance = new HardwareTypeImage();
         private IDictionary<HardwareType, Image> _images = new Dictionary<HardwareType, Image>();
 
         private HardwareTypeImage() { }
 
         public static HardwareTypeImage Instance
         {
-            get { return s_instance; }
+            get { return _instance; }
         }
 
         public Image GetImage(HardwareType hardwareType)

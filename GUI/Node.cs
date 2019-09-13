@@ -41,9 +41,9 @@ namespace OpenHardwareMonitor.GUI
 
         public Node(string text)
         {
-            this._text = text;
-            this._nodes = new NodeCollection(this);
-            this._visible = true;
+            _text = text;
+            _nodes = new NodeCollection(this);
+            _visible = true;
         }
 
         public TreeModel Model
@@ -140,13 +140,13 @@ namespace OpenHardwareMonitor.GUI
 
             public NodeCollection(Node owner)
             {
-                this._owner = owner;
+                _owner = owner;
             }
 
             protected override void ClearItems()
             {
-                while (this.Count != 0)
-                    this.RemoveAt(this.Count - 1);
+                while (Count != 0)
+                    RemoveAt(Count - 1);
             }
 
             protected override void InsertItem(int index, Node item)

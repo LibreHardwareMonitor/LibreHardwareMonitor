@@ -20,60 +20,60 @@ namespace OpenHardwareMonitor.GUI
             switch (sensorType)
             {
                 case SensorType.Voltage:
-                    this.Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                    this.Text = "Voltages";
+                    Image = Utilities.EmbeddedResources.GetImage("voltage.png");
+                    Text = "Voltages";
                     break;
                 case SensorType.Clock:
-                    this.Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                    this.Text = "Clocks";
+                    Image = Utilities.EmbeddedResources.GetImage("clock.png");
+                    Text = "Clocks";
                     break;
                 case SensorType.Load:
-                    this.Image = Utilities.EmbeddedResources.GetImage("load.png");
-                    this.Text = "Load";
+                    Image = Utilities.EmbeddedResources.GetImage("load.png");
+                    Text = "Load";
                     break;
                 case SensorType.Temperature:
-                    this.Image = Utilities.EmbeddedResources.GetImage("temperature.png");
-                    this.Text = "Temperatures";
+                    Image = Utilities.EmbeddedResources.GetImage("temperature.png");
+                    Text = "Temperatures";
                     break;
                 case SensorType.Fan:
-                    this.Image = Utilities.EmbeddedResources.GetImage("fan.png");
-                    this.Text = "Fans";
+                    Image = Utilities.EmbeddedResources.GetImage("fan.png");
+                    Text = "Fans";
                     break;
                 case SensorType.Flow:
-                    this.Image = Utilities.EmbeddedResources.GetImage("flow.png");
-                    this.Text = "Flows";
+                    Image = Utilities.EmbeddedResources.GetImage("flow.png");
+                    Text = "Flows";
                     break;
                 case SensorType.Control:
-                    this.Image = Utilities.EmbeddedResources.GetImage("control.png");
-                    this.Text = "Controls";
+                    Image = Utilities.EmbeddedResources.GetImage("control.png");
+                    Text = "Controls";
                     break;
                 case SensorType.Level:
-                    this.Image = Utilities.EmbeddedResources.GetImage("level.png");
-                    this.Text = "Levels";
+                    Image = Utilities.EmbeddedResources.GetImage("level.png");
+                    Text = "Levels";
                     break;
                 case SensorType.Power:
-                    this.Image = Utilities.EmbeddedResources.GetImage("power.png");
-                    this.Text = "Powers";
+                    Image = Utilities.EmbeddedResources.GetImage("power.png");
+                    Text = "Powers";
                     break;
                 case SensorType.Data:
-                    this.Image = Utilities.EmbeddedResources.GetImage("data.png");
-                    this.Text = "Data";
+                    Image = Utilities.EmbeddedResources.GetImage("data.png");
+                    Text = "Data";
                     break;
                 case SensorType.SmallData:
-                    this.Image = Utilities.EmbeddedResources.GetImage("data.png");
-                    this.Text = "Data";
+                    Image = Utilities.EmbeddedResources.GetImage("data.png");
+                    Text = "Data";
                     break;
                 case SensorType.Factor:
-                    this.Image = Utilities.EmbeddedResources.GetImage("factor.png");
-                    this.Text = "Factors";
+                    Image = Utilities.EmbeddedResources.GetImage("factor.png");
+                    Text = "Factors";
                     break;
                 case SensorType.Frequency:
-                    this.Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                    this.Text = "Frequencys";
+                    Image = Utilities.EmbeddedResources.GetImage("clock.png");
+                    Text = "Frequencys";
                     break;
                 case SensorType.Throughput:
-                    this.Image = Utilities.EmbeddedResources.GetImage("throughput.png");
-                    this.Text = "Throughput";
+                    Image = Utilities.EmbeddedResources.GetImage("throughput.png");
+                    Text = "Throughput";
                     break;
             }
 
@@ -99,11 +99,11 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (n.IsVisible)
                 {
-                    this.IsVisible = true;
+                    IsVisible = true;
                     return;
                 }
             }
-            this.IsVisible = false;
+            IsVisible = false;
         }
 
         public SensorType SensorType
