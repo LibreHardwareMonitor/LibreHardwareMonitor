@@ -1,4 +1,4 @@
-﻿namespace OpenHardwareMonitor.Hardware.Nvidia {
+﻿namespace LibreHardwareMonitor.Hardware.Nvidia {
     internal enum NvmlReturn {
         /// <summary>
         /// The operation was successful

@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.Win32;
 
-namespace OpenHardwareMonitor.Hardware.Heatmaster {
+namespace LibreHardwareMonitor.Hardware.Heatmaster {
   internal class HeatmasterGroup : IGroup {
 
     private readonly List<Heatmaster> hardware = new List<Heatmaster>();

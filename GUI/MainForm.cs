@@ -13,11 +13,11 @@ using System.Reflection;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
-using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.WMI;
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.WMI;
+using LibreHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public sealed partial class MainForm : Form
     {
@@ -67,7 +67,7 @@ namespace OpenHardwareMonitor.GUI
             // check if the OpenHardwareMonitorLib assembly has the correct version
             if (Assembly.GetAssembly(typeof(Computer)).GetName().Version != Assembly.GetExecutingAssembly().GetName().Version)
             {
-                MessageBox.Show("The version of the file OpenHardwareMonitorLib.dll is incompatible.",
+                MessageBox.Show("The version of the file LibreHardwareMonitorLib.dll is incompatible.",
                   "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
             }

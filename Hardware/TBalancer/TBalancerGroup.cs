@@ -14,7 +14,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-namespace OpenHardwareMonitor.Hardware.TBalancer {
+namespace LibreHardwareMonitor.Hardware.TBalancer {
   internal class TBalancerGroup : IGroup {
 
     private readonly List<TBalancer> hardware = new List<TBalancer>();

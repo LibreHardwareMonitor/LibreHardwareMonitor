@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   [NamePrefix("PLEXTOR")]
   internal class SSDPlextor : ATAStorage {
     private static readonly IEnumerable<SmartAttribute> smartAttributes =

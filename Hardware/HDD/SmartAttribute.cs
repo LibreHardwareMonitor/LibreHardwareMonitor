@@ -4,9 +4,9 @@
 // All Rights Reserved
 
 using System.Collections.Generic;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public class SmartAttribute {
     private readonly RawValueConversion rawValueConversion;
 

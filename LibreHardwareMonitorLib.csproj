@@ -4,8 +4,8 @@
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <RootNamespace>OpenHardwareMonitor</RootNamespace>
-    <AssemblyName>OpenHardwareMonitorLib</AssemblyName>
+    <RootNamespace>LibreHardwareMonitor</RootNamespace>
+    <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputTypeEx>Library</OutputTypeEx>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>
@@ -66,7 +66,6 @@
     <Compile Include="Hardware\HDD\StorageInfo.cs" />
     <Compile Include="Hardware\HDD\WindowsStorage.cs" />
     <Compile Include="Hardware\IControl.cs" />
-    <Compile Include="Hardware\IOControlCode.cs" />
     <Compile Include="Hardware\Computer.cs" />
     <Compile Include="Hardware\CPU\AMDCPU.cs" />
     <Compile Include="Hardware\CPU\GenericCPU.cs" />
@@ -85,7 +84,8 @@
     <Compile Include="Hardware\Nvidia\NVML.cs" />
     <Compile Include="Hardware\Nvidia\NvmlDevice.cs" />
     <Compile Include="Hardware\Nvidia\NvmlReturn.cs" />	
-    <Compile Include="Hardware\Opcode.cs" />
+    <Compile Include="Hardware\Opcode.cs" />	
+    <Compile Include="Hardware\ParameterDescription.cs" />
     <Compile Include="Hardware\RAM\GenericRAM.cs" />
     <Compile Include="Hardware\RAM\RAMGroup.cs" />
     <Compile Include="Hardware\Ring0.cs" />
@@ -129,6 +129,8 @@
     <Compile Include="Hardware\HexStringArray.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />
     <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="Interop\Advapi32.cs" />
+    <Compile Include="Interop\Libc.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Software\OperatingSystem.cs" />

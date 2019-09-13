@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.CPU {
+namespace LibreHardwareMonitor.Hardware.CPU {
   public enum Vendor {
     Unknown,
     Intel,

@@ -10,10 +10,10 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class SensorNotifyIcon : IDisposable
     {

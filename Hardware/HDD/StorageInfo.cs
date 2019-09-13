@@ -3,9 +3,9 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal abstract class StorageInfo {
     public Kernel32.STORAGE_BUS_TYPE BusType { get; protected set; }
 

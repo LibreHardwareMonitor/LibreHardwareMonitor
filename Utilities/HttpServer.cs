@@ -11,15 +11,15 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using OpenHardwareMonitor.GUI;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.GUI;
+using LibreHardwareMonitor.Hardware;
 using System.Web;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
 
-namespace OpenHardwareMonitor.Utilities
+namespace LibreHardwareMonitor.Utilities
 {
     public class HttpServer
     {
@@ -314,7 +314,7 @@ namespace OpenHardwareMonitor.Utilities
         private void ServeResourceFile(HttpListenerResponse response, string name, string ext)
         {
             // resource names do not support the hyphen
-            name = "OpenHardwareMonitor.Resources." +
+            name = "LibreHardwareMonitor.Resources." +
               name.Replace("custom-theme", "custom_theme");
 
             string[] names =
@@ -358,7 +358,7 @@ namespace OpenHardwareMonitor.Utilities
 
         private void ServeResourceImage(HttpListenerResponse response, string name)
         {
-            name = "OpenHardwareMonitor.Resources." + name;
+            name = "LibreHardwareMonitor.Resources." + name;
 
             string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
 

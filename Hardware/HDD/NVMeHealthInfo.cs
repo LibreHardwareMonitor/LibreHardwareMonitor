@@ -3,9 +3,9 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public abstract class NVMeHealthInfo {
     public byte AvailableSpare { get; protected set; }
 

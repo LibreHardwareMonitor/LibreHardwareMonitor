@@ -10,10 +10,10 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
-using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class SensorGadget : Gadget
     {

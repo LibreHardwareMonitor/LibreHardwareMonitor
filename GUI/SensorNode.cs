@@ -5,10 +5,10 @@
 
 using System;
 using System.Drawing;
-using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class SensorNode : Node
     {

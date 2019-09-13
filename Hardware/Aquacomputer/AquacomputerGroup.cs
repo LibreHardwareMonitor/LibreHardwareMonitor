@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.Aquacomputer
+namespace LibreHardwareMonitor.Hardware.Aquacomputer
 {
     public class AquacomputerGroup : IGroup
     {

@@ -5,7 +5,7 @@
 
 using System;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
   internal class RequireSmartAttribute : Attribute {
     public RequireSmartAttribute(byte attributeId) {

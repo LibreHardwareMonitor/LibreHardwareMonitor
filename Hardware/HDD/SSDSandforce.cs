@@ -4,9 +4,9 @@
 // All Rights Reserved
 
 using System.Collections.Generic;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   [NamePrefix(""), RequireSmart(0xAB), RequireSmart(0xB1)]
   internal class SSDSandforce : ATAStorage {
     private static readonly IEnumerable<SmartAttribute> smartAttributes =

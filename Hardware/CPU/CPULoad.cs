@@ -11,7 +11,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace OpenHardwareMonitor.Hardware.CPU {
+namespace LibreHardwareMonitor.Hardware.CPU {
   internal class CPULoad {
 
     [StructLayout(LayoutKind.Sequential)]

@@ -10,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public abstract class ATAStorage : AbstractStorage {
     // array of all harddrive types, matching type is searched in this order
     private static readonly Type[] hddTypes = { typeof(SSDPlextor), typeof(SSDIntel), typeof(SSDSandforce), typeof(SSDIndilinx), typeof(SSDSamsung), typeof(SSDMicron), typeof(GenericHarddisk) };

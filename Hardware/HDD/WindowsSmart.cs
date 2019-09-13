@@ -6,9 +6,9 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal class WindowsSmart : ISmart {
     private readonly int driveNumber;
     private readonly SafeHandle handle;

@@ -4,9 +4,9 @@
 // All Rights Reserved
 
 using System.Runtime.InteropServices;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal interface INVMeDrive {
     SafeHandle Identify(StorageInfo storageInfo);
 

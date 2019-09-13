@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class NotifyIconAdv : IDisposable
     {
@@ -19,15 +19,10 @@ namespace OpenHardwareMonitor.GUI
 
         public NotifyIconAdv()
         {
-            int p = (int)Environment.OSVersion.Platform;
-            if ((p == 4) || (p == 128))
-            { // Unix
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
                 _genericNotifyIcon = new NotifyIcon();
-            }
             else
-            { // Windows
                 _windowsNotifyIcon = new NotifyIconWindowsImplementation();
-            }
         }
 
         public event EventHandler BalloonTipClicked
@@ -667,7 +662,7 @@ namespace OpenHardwareMonitor.GUI
 
             private void ProcessInitMenuPopup(ref Message message)
             {
-                if (ContextMenu != null && 
+                if (ContextMenu != null &&
                     (bool)ContextMenu.GetType().InvokeMember("ProcessInitMenuPopup", BindingFlags.NonPublic | BindingFlags.InvokeMethod | BindingFlags.Instance, null, ContextMenu, new object[] { message.WParam }))
                 {
                     return;

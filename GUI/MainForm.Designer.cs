@@ -8,7 +8,7 @@
 	
 */
 
-namespace OpenHardwareMonitor.GUI {
+namespace LibreHardwareMonitor.GUI {
     sealed partial class MainForm {
     /// <summary>
     /// Required designer variable.
@@ -121,7 +121,7 @@ namespace OpenHardwareMonitor.GUI {
             this.treeContextMenu = new System.Windows.Forms.ContextMenu();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.timer = new System.Windows.Forms.Timer(this.components);
-            this.splitContainer = new OpenHardwareMonitor.GUI.SplitContainerAdv();
+            this.splitContainer = new LibreHardwareMonitor.GUI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -694,7 +694,7 @@ namespace OpenHardwareMonitor.GUI {
             // saveFileDialog
             // 
             this.saveFileDialog.DefaultExt = "txt";
-            this.saveFileDialog.FileName = "OpenHardwareMonitor.Report.txt";
+            this.saveFileDialog.FileName = "LibreHardwareMonitor.Report.txt";
             this.saveFileDialog.Filter = "Text Documents|*.txt|All Files|*.*";
             this.saveFileDialog.RestoreDirectory = true;
             this.saveFileDialog.Title = "Save Report As";

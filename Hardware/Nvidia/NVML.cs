@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace OpenHardwareMonitor.Hardware.Nvidia {
+namespace LibreHardwareMonitor.Hardware.Nvidia {
     internal class NVML {
         private const string LinuxDllName = "nvidia-ml";
 

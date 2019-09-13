@@ -3,7 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   /// <summary>
   /// Localization class for SMART attribute names.
   /// </summary>

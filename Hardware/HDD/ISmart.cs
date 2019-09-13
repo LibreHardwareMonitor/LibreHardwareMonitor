@@ -4,9 +4,9 @@
 // All Rights Reserved
 
 using System;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public interface ISmart : IDisposable {
     bool IsValid { get; }
 

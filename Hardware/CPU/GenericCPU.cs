@@ -13,7 +13,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.CPU {
+namespace LibreHardwareMonitor.Hardware.CPU {
   public class GenericCPU : Hardware {
 
     protected readonly CPUID[][] cpuid;

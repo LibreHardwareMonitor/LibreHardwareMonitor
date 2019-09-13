@@ -8,7 +8,7 @@
 	
 */
 
-namespace OpenHardwareMonitor.Hardware.Mainboard {
+namespace LibreHardwareMonitor.Hardware.Mainboard {
 
   internal enum Manufacturer {
     Alienware,

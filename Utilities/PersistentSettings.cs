@@ -9,9 +9,9 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 
-namespace OpenHardwareMonitor.Utilities
+namespace LibreHardwareMonitor.Utilities
 {
     public class PersistentSettings : ISettings
     {

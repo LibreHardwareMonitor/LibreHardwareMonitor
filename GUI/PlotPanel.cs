@@ -8,14 +8,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Utilities;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class PlotPanel : UserControl
     {

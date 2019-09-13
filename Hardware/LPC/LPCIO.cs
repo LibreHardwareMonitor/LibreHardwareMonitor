@@ -14,7 +14,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-namespace OpenHardwareMonitor.Hardware.LPC {
+namespace LibreHardwareMonitor.Hardware.LPC {
   internal class LPCIO {
 
     private readonly List<ISuperIO> superIOs = new List<ISuperIO>();

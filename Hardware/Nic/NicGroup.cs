@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.Nic {
+namespace LibreHardwareMonitor.Hardware.Nic {
   internal class NicGroup : IGroup {
     private readonly ISettings _settings;
     private List<Nic> _hardware = new List<Nic>();

@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   [NamePrefix(""), RequireSmart(0x01), RequireSmart(0x09), RequireSmart(0x0C), RequireSmart(0xD1), RequireSmart(0xCE), RequireSmart(0xCF)]
   internal class SSDIndilinx : ATAStorage {
     private static readonly IEnumerable<SmartAttribute> smartAttributes =

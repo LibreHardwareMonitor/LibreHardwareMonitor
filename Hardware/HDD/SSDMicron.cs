@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   [NamePrefix(""), RequireSmart(0xAA), RequireSmart(0xAB), RequireSmart(0xAC), RequireSmart(0xAD), RequireSmart(0xAE), RequireSmart(0xCA)]
   internal class SSDMicron : ATAStorage {
     private static readonly IEnumerable<SmartAttribute> smartAttributes =

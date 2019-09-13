@@ -10,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Text;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public abstract class AbstractStorage : Hardware {
     private readonly PerformanceValue perfTotal = new PerformanceValue();
     private readonly PerformanceValue perfWrite = new PerformanceValue();

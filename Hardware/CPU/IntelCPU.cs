@@ -12,7 +12,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.CPU {
+namespace LibreHardwareMonitor.Hardware.CPU {
   internal sealed class IntelCPU : GenericCPU {
 
     private enum Microarchitecture {

@@ -13,7 +13,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.Mainboard {
+namespace LibreHardwareMonitor.Hardware.Mainboard {
   
   internal class GigabyteTAMG {
     private byte[] table;

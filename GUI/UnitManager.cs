@@ -3,9 +3,9 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
 
     public enum TemperatureUnit

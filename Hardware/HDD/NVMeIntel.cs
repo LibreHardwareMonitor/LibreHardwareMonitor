@@ -6,9 +6,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal class NVMeIntel : INVMeDrive {
     //intel nvme access
 

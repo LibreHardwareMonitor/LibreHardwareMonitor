@@ -10,7 +10,7 @@
 
 using System.Collections.Generic;
 
-namespace OpenHardwareMonitor.Hardware.Mainboard {
+namespace LibreHardwareMonitor.Hardware.Mainboard {
   internal class MainboardGroup : IGroup {
 
     private readonly Mainboard[] mainboards;

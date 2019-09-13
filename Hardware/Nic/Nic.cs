@@ -7,7 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 
-namespace OpenHardwareMonitor.Hardware.Nic {
+namespace LibreHardwareMonitor.Hardware.Nic {
   internal class Nic : Hardware {
     private Sensor dataUploaded;
     private Sensor dataDownloaded;

@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 using System.Runtime.InteropServices;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal static class WindowsStorage {
     public static HDD.StorageInfo GetStorageInfo(string deviceId, uint driveIndex) {
       using (SafeHandle handle = Kernel32.OpenDevice(deviceId)) {

@@ -8,7 +8,7 @@
 	
 */
 
-namespace OpenHardwareMonitor.Hardware.LPC {
+namespace LibreHardwareMonitor.Hardware.LPC {
 
   internal class LPCPort {
     private readonly ushort registerPort;

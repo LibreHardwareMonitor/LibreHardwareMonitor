@@ -4,9 +4,9 @@
 // All Rights Reserved
 
 using System.Management.Instrumentation;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 
-namespace OpenHardwareMonitor.WMI
+namespace LibreHardwareMonitor.WMI
 {
     [InstrumentationClass(InstrumentationType.Instance)]
     public class Sensor : IWmiObject

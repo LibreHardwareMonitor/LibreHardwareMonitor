@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public partial class ParameterForm : Form
     {

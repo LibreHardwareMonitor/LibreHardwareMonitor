@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace OpenHardwareMonitor.Hardware.RAM {
+namespace LibreHardwareMonitor.Hardware.RAM {
   internal class RAMGroup : IGroup {
 
     private Hardware[] hardware;

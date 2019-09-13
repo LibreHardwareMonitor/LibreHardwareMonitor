@@ -10,7 +10,7 @@
 
 // ReSharper disable InconsistentNaming
 
-namespace OpenHardwareMonitor.Hardware.Mainboard {
+namespace LibreHardwareMonitor.Hardware.Mainboard {
 
   internal enum Model {
     // ASRock

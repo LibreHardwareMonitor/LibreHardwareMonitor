@@ -12,7 +12,7 @@ using System.Globalization;
 using System.Text;
 using System;
 
-namespace OpenHardwareMonitor.Hardware.LPC {
+namespace LibreHardwareMonitor.Hardware.LPC {
   internal class IT87XX : ISuperIO {
 
     private readonly ushort address;

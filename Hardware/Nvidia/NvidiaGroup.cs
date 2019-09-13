@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.Nvidia {
+namespace LibreHardwareMonitor.Hardware.Nvidia {
 
   internal class NvidiaGroup : IGroup {
     private readonly List<Hardware> hardware = new List<Hardware>();

@@ -6,9 +6,9 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
-using OpenHardwareMonitor.GUI;
+using LibreHardwareMonitor.GUI;
 
-namespace OpenHardwareMonitor
+namespace LibreHardwareMonitor
 {
     public static class Program
     {
@@ -48,7 +48,7 @@ namespace OpenHardwareMonitor
             if (!IsFileAvailable("Aga.Controls.dll"))
                 return false;
 
-            if (!IsFileAvailable("OpenHardwareMonitorLib.dll"))
+            if (!IsFileAvailable("LibreHardwareMonitorLib.dll"))
                 return false;
 
             if (!IsFileAvailable("OxyPlot.dll"))

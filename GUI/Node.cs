@@ -7,7 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class Node
     {

@@ -4,9 +4,9 @@
 // All Rights Reserved
 
 using System.Runtime.InteropServices;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.RAM {
+namespace LibreHardwareMonitor.Hardware.RAM {
   internal class GenericRAM : Hardware {
 
     private Sensor physicalMemoryUsed;

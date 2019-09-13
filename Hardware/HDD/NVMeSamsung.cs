@@ -5,9 +5,9 @@
 
 using System;
 using System.Runtime.InteropServices;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal class NVMeSamsung : INVMeDrive {
     //samsung nvme access
     //https://github.com/hiyohiyo/CrystalDiskInfo

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.CPU {
+namespace LibreHardwareMonitor.Hardware.CPU {
 
   internal class CPUGroup : IGroup {
     private readonly List<GenericCPU> hardware = new List<GenericCPU>();

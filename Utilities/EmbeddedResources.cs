@@ -7,13 +7,13 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 
-namespace OpenHardwareMonitor.Utilities
+namespace LibreHardwareMonitor.Utilities
 {
     public class EmbeddedResources
     {
         public static Image GetImage(string name)
         {
-            name = "OpenHardwareMonitor.Resources." + name;
+            name = "LibreHardwareMonitor.Resources." + name;
             string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
 
             for (int i = 0; i < names.Length; i++)
@@ -40,7 +40,7 @@ namespace OpenHardwareMonitor.Utilities
 
         public static Icon GetIcon(string name)
         {
-            name = "OpenHardwareMonitor.Resources." + name;
+            name = "LibreHardwareMonitor.Resources." + name;
             string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             for (int i = 0; i < names.Length; i++)
             {

@@ -10,9 +10,9 @@ using System.Security;
 using System.Security.Principal;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using OpenHardwareMonitor.TaskScheduler;
+using LibreHardwareMonitor.TaskScheduler;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class StartupManager
     {
@@ -96,7 +96,7 @@ namespace OpenHardwareMonitor.GUI
                     using (RegistryKey key = Registry.CurrentUser.OpenSubKey(REGISTRY_RUN))
                     {
                         _startup = false;
-                        string value = (string) key?.GetValue("OpenHardwareMonitor");
+                        string value = (string) key?.GetValue("LibreHardwareMonitor");
 
                         if (value != null)
                             _startup = value == Application.ExecutablePath;
@@ -158,13 +158,13 @@ namespace OpenHardwareMonitor.GUI
         private void CreateRegistryRun()
         {
             RegistryKey key = Registry.CurrentUser.CreateSubKey(REGISTRY_RUN);
-            key.SetValue("OpenHardwareMonitor", Application.ExecutablePath);
+            key.SetValue("LibreHardwareMonitor", Application.ExecutablePath);
         }
 
         private void DeleteRegistryRun()
         {
             RegistryKey key = Registry.CurrentUser.CreateSubKey(REGISTRY_RUN);
-            key.DeleteValue("OpenHardwareMonitor");
+            key.DeleteValue("LibreHardwareMonitor");
         }
 
         public bool IsAvailable { get; }

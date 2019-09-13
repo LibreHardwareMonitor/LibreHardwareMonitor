@@ -11,9 +11,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using OpenHardwareMonitor.Hardware.LPC;
+using LibreHardwareMonitor.Hardware.LPC;
 
-namespace OpenHardwareMonitor.Hardware.Mainboard {
+namespace LibreHardwareMonitor.Hardware.Mainboard {
   internal sealed class SuperIOHardware : Hardware {
 
     private readonly Mainboard mainboard;

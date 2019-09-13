@@ -1,23 +1,26 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
-namespace OpenHardwareMonitor.Software {
-  public static class OperatingSystem {
-    static OperatingSystem() {
-      // The operating system doesn't change during execution so let's query it just one time.
-      var platform = Environment.OSVersion.Platform;
-      IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
+using System;
 
-      if (System.Environment.Is64BitProcess)
-        Is64Bit = true;
+namespace LibreHardwareMonitor.Software
+{
+    public static class OperatingSystem
+    {
+        static OperatingSystem()
+        {
+            // The operating system doesn't change during execution so let's query it just one time.
+            var platform = Environment.OSVersion.Platform;
+            IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
+
+            if (System.Environment.Is64BitProcess)
+                Is64Bit = true;
+        }
+
+        public static bool Is64Bit { get; }
+
+        public static bool IsLinux { get; }
     }
-
-    public static bool Is64Bit { get; }
-
-    public static bool IsLinux { get; }
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool IsWow64Process(IntPtr hProcess, out bool wow64Process);
-  }
 }

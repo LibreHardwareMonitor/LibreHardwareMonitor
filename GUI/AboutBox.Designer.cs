@@ -8,7 +8,7 @@
 	
 */
 
-namespace OpenHardwareMonitor.GUI {
+namespace LibreHardwareMonitor.GUI {
     sealed partial class AboutBox {
     /// <summary>
     /// Required designer variable.

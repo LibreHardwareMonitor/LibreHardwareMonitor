@@ -1,7 +1,7 @@
 ﻿using System;
 using HidLibrary;
 
-namespace OpenHardwareMonitor.Hardware.Aquacomputer
+namespace LibreHardwareMonitor.Hardware.Aquacomputer
 {
     /*
      * TODO:

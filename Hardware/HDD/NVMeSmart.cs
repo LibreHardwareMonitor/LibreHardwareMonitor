@@ -6,9 +6,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public class NVMeSmart : IDisposable {
     private readonly int driveNumber;
     private readonly SafeHandle handle;

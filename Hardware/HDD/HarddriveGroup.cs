@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal class HarddriveGroup : IGroup {
     private readonly List<AbstractStorage> hardware = new List<AbstractStorage>();
 

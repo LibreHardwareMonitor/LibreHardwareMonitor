@@ -11,9 +11,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.ATI {
+namespace LibreHardwareMonitor.Hardware.ATI {
   
   [StructLayout(LayoutKind.Sequential)]
   internal struct ADLAdapterInfo {

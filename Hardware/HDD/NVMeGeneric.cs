@@ -5,9 +5,9 @@
 
 using System.Collections.Generic;
 using System.Text;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public sealed class NVMeGeneric : AbstractStorage {
     private const ulong Scale = 1000000;
     private const ulong Units = 512;

@@ -3,7 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   public abstract class NVMeInfo {
     public ushort ControllerId { get; protected set; }
 

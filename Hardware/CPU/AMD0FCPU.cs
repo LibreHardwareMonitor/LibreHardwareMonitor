@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-namespace OpenHardwareMonitor.Hardware.CPU {
+namespace LibreHardwareMonitor.Hardware.CPU {
   internal sealed class AMD0FCPU : AMDCPU {
     
     private readonly Sensor[] coreTemperatures;

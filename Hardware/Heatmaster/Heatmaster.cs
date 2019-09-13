@@ -16,7 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace OpenHardwareMonitor.Hardware.Heatmaster {
+namespace LibreHardwareMonitor.Hardware.Heatmaster {
   internal class Heatmaster : Hardware, IDisposable {
 
     private readonly string portName;

@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 
-namespace OpenHardwareMonitor.Utilities
+namespace LibreHardwareMonitor.Utilities
 {
     public class Logger
     {

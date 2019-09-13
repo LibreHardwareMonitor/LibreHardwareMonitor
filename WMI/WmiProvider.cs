@@ -6,13 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Instrumentation;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 
 [assembly: Instrumented("root/LibreHardwareMonitor")]
 [System.ComponentModel.RunInstaller(true)]
 public class InstanceInstaller : DefaultManagementProjectInstaller { }
 
-namespace OpenHardwareMonitor.WMI
+namespace LibreHardwareMonitor.WMI
 {
     /// <summary>
     /// The WMI Provider.

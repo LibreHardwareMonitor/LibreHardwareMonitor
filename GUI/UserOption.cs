@@ -5,9 +5,9 @@
 
 using System;
 using System.Windows.Forms;
-using OpenHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Utilities;
 
-namespace OpenHardwareMonitor.GUI
+namespace LibreHardwareMonitor.GUI
 {
     public class UserOption
     {

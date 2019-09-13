@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace OpenHardwareMonitor.Utilities
+namespace LibreHardwareMonitor.Utilities
 {
     public class IconFactory
     {

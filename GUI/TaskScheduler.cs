@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace OpenHardwareMonitor.TaskScheduler
+namespace LibreHardwareMonitor.TaskScheduler
 {
 
     [StructLayout(LayoutKind.Sequential, Pack = 2)]

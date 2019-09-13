@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   [NamePrefix("")]
   public class GenericHarddisk : ATAStorage {
     private static readonly List<SmartAttribute> smartAttributes =

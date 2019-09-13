@@ -1,18 +1,18 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System;
 using System.Text;
-using OpenHardwareMonitor.Hardware.LPC;
+using LibreHardwareMonitor.Hardware.LPC;
 
-namespace OpenHardwareMonitor.Hardware.Mainboard {
+namespace LibreHardwareMonitor.Hardware.Mainboard {
   public class Mainboard : IHardware {
     private readonly SMBIOS smbios;
     private readonly string name;
@@ -34,7 +34,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
       Manufacturer manufacturer = smbios.Board == null ? Manufacturer.Unknown :
         Identification.GetManufacturer(smbios.Board.ManufacturerName);
 
-      Model model = smbios.Board == null ? Model.Unknown : 
+      Model model = smbios.Board == null ? Model.Unknown :
         Identification.GetModel(smbios.Board.ProductName);
 
       if (smbios.Board != null) {
@@ -60,10 +60,10 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
         this.lmSensors = new LMSensors();
         superIO = lmSensors.SuperIO;
       } else {
-        this.lpcio = new LPCIO();       
+        this.lpcio = new LPCIO();
         superIO = lpcio.SuperIO;
       }
-      
+
       superIOHardware = new Hardware[superIO.Length];
       for (int i = 0; i < superIO.Length; i++)
         superIOHardware[i] = new SuperIOHardware(this, superIO[i],
@@ -97,17 +97,17 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
     }
 
     public string GetReport() {
-      StringBuilder r = new StringBuilder(); 
+      StringBuilder r = new StringBuilder();
 
       r.AppendLine("Mainboard");
-      r.AppendLine();           
+      r.AppendLine();
       r.Append(smbios.GetReport());
 
       if (lpcio != null)
         r.Append(lpcio.GetReport());
 
-      byte[] table = 
-        FirmwareTable.GetTable(FirmwareTable.Provider.ACPI, "TAMG");
+      byte[] table =
+        FirmwareTable.GetTable(Interop.Kernel32.Provider.ACPI, "TAMG");
       if (table != null) {
         GigabyteTAMG tamg = new GigabyteTAMG(table);
         r.Append(tamg.GetReport());
@@ -146,7 +146,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
     public void Traverse(IVisitor visitor) {
       foreach (IHardware hardware in superIOHardware)
-        hardware.Accept(visitor);     
+        hardware.Accept(visitor);
     }
   }
 }

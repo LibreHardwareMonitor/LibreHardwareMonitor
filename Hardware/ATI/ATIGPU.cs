@@ -12,7 +12,7 @@ using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
-namespace OpenHardwareMonitor.Hardware.ATI {
+namespace LibreHardwareMonitor.Hardware.ATI {
   internal sealed class ATIGPU : Hardware {
 
     private readonly int adapterIndex;

@@ -11,7 +11,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace OpenHardwareMonitor.Hardware.TBalancer {
+namespace LibreHardwareMonitor.Hardware.TBalancer {
 
   internal enum FT_DEVICE : uint {
     FT_DEVICE_232BM,

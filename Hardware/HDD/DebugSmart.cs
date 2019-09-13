@@ -5,9 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
 #if DEBUG
 
   internal class DebugSmart : ISmart {

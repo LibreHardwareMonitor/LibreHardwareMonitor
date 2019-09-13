@@ -5,7 +5,7 @@
 
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.HDD {
+namespace LibreHardwareMonitor.Hardware.HDD {
   internal sealed class StorageGeneric : AbstractStorage {
     private StorageGeneric(StorageInfo storageInfo, string name, string firmwareRevision, int index, ISettings settings)
       : base(storageInfo, name, firmwareRevision, "hdd", index, settings) {

@@ -12,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using OpenHardwareMonitor.Interop;
+using LibreHardwareMonitor.Interop;
 
-namespace OpenHardwareMonitor.Hardware.ATI {
+namespace LibreHardwareMonitor.Hardware.ATI {
   internal class ATIGroup : IGroup {
 
     private readonly List<ATIGPU> hardware = new List<ATIGPU>();

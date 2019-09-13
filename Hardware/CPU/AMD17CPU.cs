@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace OpenHardwareMonitor.Hardware.CPU
+namespace LibreHardwareMonitor.Hardware.CPU
 {
   internal sealed class AMD17CPU : AMDCPU
   {
