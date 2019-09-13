@@ -58,7 +58,7 @@ namespace OpenHardwareMonitor.WMI
                 {
                     Instrumentation.Publish(hw);
                 }
-                catch (Exception) { }
+                catch { }
             }
 
             foreach (IHardware subHardware in hardware.SubHardware)
@@ -74,7 +74,7 @@ namespace OpenHardwareMonitor.WMI
             {
                 Instrumentation.Publish(sensor);
             }
-            catch (Exception) { }
+            catch { }
         }
 
         private void ComputerHardwareRemoved(IHardware hardware)
@@ -118,7 +118,7 @@ namespace OpenHardwareMonitor.WMI
             {
                 Instrumentation.Revoke(_activeInstances[instanceIndex]);
             }
-            catch (Exception) { }
+            catch { }
 
             _activeInstances.RemoveAt(instanceIndex);
         }
@@ -133,7 +133,7 @@ namespace OpenHardwareMonitor.WMI
                 {
                     Instrumentation.Revoke(instance);
                 }
-                catch (Exception) { }
+                catch { }
             }
             _activeInstances = null;
         }

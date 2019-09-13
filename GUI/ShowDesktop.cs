@@ -11,24 +11,20 @@ namespace OpenHardwareMonitor.GUI
 {
     public class ShowDesktop
     {
-        private static ShowDesktop _instance = new ShowDesktop();
         public delegate void ShowDesktopChangedEventHandler(bool showDesktop);
         private event ShowDesktopChangedEventHandler ShowDesktopChangedEvent;
-        private System.Threading.Timer _timer;
-        private bool _showDesktop = false;
-        private NativeWindow _referenceWindow;
-        private string _referenceWindowCaption = "OpenHardwareMonitorShowDesktopReferenceWindow";
+        private readonly System.Threading.Timer _timer;
+        private bool _showDesktop;
+        private readonly string _referenceWindowCaption = "OpenHardwareMonitorShowDesktopReferenceWindow";
 
         private ShowDesktop()
         {
             // create a reference window to detect show desktop
-            _referenceWindow = new NativeWindow();
-            CreateParams cp = new CreateParams();
-            cp.ExStyle = GadgetWindow.WS_EX_TOOLWINDOW;
-            cp.Caption = _referenceWindowCaption;
-            _referenceWindow.CreateHandle(cp);
+            NativeWindow referenceWindow = new NativeWindow();
+            CreateParams cp = new CreateParams { ExStyle = GadgetWindow.WS_EX_TOOLWINDOW, Caption = _referenceWindowCaption };
+            referenceWindow.CreateHandle(cp);
             NativeMethods.SetWindowPos(
-                _referenceWindow.Handle,
+                referenceWindow.Handle,
                 GadgetWindow.HWND_BOTTOM, 0, 0, 0, 0, GadgetWindow.SWP_NOMOVE |
                 GadgetWindow.SWP_NOSIZE | GadgetWindow.SWP_NOACTIVATE |
                 GadgetWindow.SWP_NOSENDCHANGING);
@@ -54,15 +50,13 @@ namespace OpenHardwareMonitor.GUI
             if (shellWindow == IntPtr.Zero)
                 return IntPtr.Zero;
 
-            int shellId;
-            NativeMethods.GetWindowThreadProcessId(shellWindow, out shellId);
+
+            NativeMethods.GetWindowThreadProcessId(shellWindow, out int shellId);
 
             IntPtr workerWindow = IntPtr.Zero;
             while ((workerWindow = NativeMethods.FindWindowEx(IntPtr.Zero, workerWindow, "WorkerW", null)) != IntPtr.Zero)
             {
-
-                int workerId;
-                NativeMethods.GetWindowThreadProcessId(workerWindow, out workerId);
+                NativeMethods.GetWindowThreadProcessId(workerWindow, out int workerId);
                 if (workerId == shellId)
                 {
                     IntPtr window = NativeMethods.FindWindowEx(workerWindow, IntPtr.Zero, "SHELLDLL_DefView", null);
@@ -77,7 +71,7 @@ namespace OpenHardwareMonitor.GUI
             return IntPtr.Zero;
         }
 
-        private void OnTimer(Object state)
+        private void OnTimer(object state)
         {
             bool showDesktopDetected;
 
@@ -97,15 +91,11 @@ namespace OpenHardwareMonitor.GUI
             if (_showDesktop != showDesktopDetected)
             {
                 _showDesktop = showDesktopDetected;
-                if (ShowDesktopChangedEvent != null)
-                    ShowDesktopChangedEvent(_showDesktop);
+                ShowDesktopChangedEvent?.Invoke(_showDesktop);
             }
         }
 
-        public static ShowDesktop Instance
-        {
-            get { return _instance; }
-        }
+        public static ShowDesktop Instance { get; } = new ShowDesktop();
 
         // notify when the "show desktop" mode is changed
         public event ShowDesktopChangedEventHandler ShowDesktopChanged

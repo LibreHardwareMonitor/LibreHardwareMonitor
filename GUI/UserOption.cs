@@ -4,7 +4,6 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Utilities;
 
@@ -12,26 +11,23 @@ namespace OpenHardwareMonitor.GUI
 {
     public class UserOption
     {
-        private string _name;
+        private readonly string _name;
         private bool _value;
-        private MenuItem _menuItem;
+        private readonly MenuItem _menuItem;
         private event EventHandler _changed;
-        private PersistentSettings _settings;
+        private readonly PersistentSettings _settings;
 
         public UserOption(string name, bool value, MenuItem menuItem, PersistentSettings settings)
         {
             _settings = settings;
             _name = name;
-            if (name != null)
-                _value = settings.GetValue(name, value);
-            else
-                _value = value;
+            _value = name != null ? settings.GetValue(name, value) : value;
             _menuItem = menuItem;
             _menuItem.Checked = _value;
-            _menuItem.Click += new EventHandler(menuItem_Click);
+            _menuItem.Click += MenuItem_Click;
         }
 
-        private void menuItem_Click(object sender, EventArgs e)
+        private void MenuItem_Click(object sender, EventArgs e)
         {
             Value = !Value;
         }
@@ -47,8 +43,7 @@ namespace OpenHardwareMonitor.GUI
                     if (_name != null)
                         _settings.SetValue(_name, value);
                     _menuItem.Checked = value;
-                    if (_changed != null)
-                        _changed(this, null);
+                    _changed?.Invoke(this, null);
                 }
             }
         }
@@ -58,8 +53,7 @@ namespace OpenHardwareMonitor.GUI
             add
             {
                 _changed += value;
-                if (_changed != null)
-                    _changed(this, null);
+                _changed?.Invoke(this, null);
             }
             remove
             {

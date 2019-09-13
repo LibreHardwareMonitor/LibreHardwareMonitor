@@ -4,10 +4,6 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
@@ -17,8 +13,8 @@ namespace OpenHardwareMonitor.GUI
 {
     public partial class PortForm : Form
     {
-        private MainForm _parent;
-        private string _localIP;
+        private readonly MainForm _parent;
+        private readonly string _localIP;
         public PortForm(MainForm m)
         {
             InitializeComponent();

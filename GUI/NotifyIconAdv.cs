@@ -14,8 +14,8 @@ namespace OpenHardwareMonitor.GUI
 {
     public class NotifyIconAdv : IDisposable
     {
-        private NotifyIcon _genericNotifyIcon;
-        private NotifyIconWindowsImplementation _windowsNotifyIcon;
+        private readonly NotifyIcon _genericNotifyIcon;
+        private readonly NotifyIconWindowsImplementation _windowsNotifyIcon;
 
         public NotifyIconAdv()
         {
@@ -216,8 +216,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.BalloonTipText;
-                else
-                    return _windowsNotifyIcon.BalloonTipText;
+
+
+                return _windowsNotifyIcon.BalloonTipText;
             }
             set
             {
@@ -234,8 +235,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.BalloonTipIcon;
-                else
-                    return _windowsNotifyIcon.BalloonTipIcon;
+
+
+                return _windowsNotifyIcon.BalloonTipIcon;
             }
             set
             {
@@ -252,8 +254,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.BalloonTipTitle;
-                else
-                    return _windowsNotifyIcon.BalloonTipTitle;
+
+
+                return _windowsNotifyIcon.BalloonTipTitle;
             }
             set
             {
@@ -270,8 +273,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.ContextMenu;
-                else
-                    return _windowsNotifyIcon.ContextMenu;
+
+
+                return _windowsNotifyIcon.ContextMenu;
             }
             set
             {
@@ -288,8 +292,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.ContextMenuStrip;
-                else
-                    return _windowsNotifyIcon.ContextMenuStrip;
+
+
+                return _windowsNotifyIcon.ContextMenuStrip;
             }
             set
             {
@@ -308,8 +313,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.Icon;
-                else
-                    return _windowsNotifyIcon.Icon;
+
+
+                return _windowsNotifyIcon.Icon;
             }
             set
             {
@@ -326,8 +332,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.Text;
-                else
-                    return _windowsNotifyIcon.Text;
+
+
+                return _windowsNotifyIcon.Text;
             }
             set
             {
@@ -344,8 +351,9 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_genericNotifyIcon != null)
                     return _genericNotifyIcon.Visible;
-                else
-                    return _windowsNotifyIcon.Visible;
+
+
+                return _windowsNotifyIcon.Visible;
             }
             set
             {
@@ -381,16 +389,16 @@ namespace OpenHardwareMonitor.GUI
         private class NotifyIconWindowsImplementation : Component
         {
 
-            private static int _nextId = 0;
-            private object _syncObj = new object();
+            private static int _nextId;
+            private readonly object _syncObj = new object();
             private Icon _icon;
             private string _text = "";
-            private int _id;
+            private readonly int _id;
             private bool _created;
             private NotifyIconNativeWindow _window;
             private bool _doubleClickDown;
             private bool _visible;
-            private MethodInfo _commandDispatch;
+            private readonly MethodInfo _commandDispatch;
 
             public event EventHandler BalloonTipClicked;
             public event EventHandler BalloonTipClosed;
@@ -408,7 +416,6 @@ namespace OpenHardwareMonitor.GUI
             public string BalloonTipTitle { get; set; }
             public ContextMenu ContextMenu { get; set; }
             public ContextMenuStrip ContextMenuStrip { get; set; }
-            public object Tag { get; set; }
 
             public Icon Icon
             {
@@ -473,9 +480,9 @@ namespace OpenHardwareMonitor.GUI
                 _commandDispatch = typeof(Form).Assembly.
                   GetType("System.Windows.Forms.Command").GetMethod("DispatchID",
                   BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public,
-                  null, new Type[] { typeof(int) }, null);
+                  null, new[] { typeof(int) }, null);
 
-                _id = ++NotifyIconWindowsImplementation._nextId;
+                _id = ++_nextId;
                 _window = new NotifyIconNativeWindow(this);
                 UpdateNotifyIcon(_visible);
             }
@@ -514,7 +521,7 @@ namespace OpenHardwareMonitor.GUI
             public void ShowBalloonTip(int timeout, string tipTitle, string tipText, ToolTipIcon tipIcon)
             {
                 if (timeout < 0)
-                    throw new ArgumentOutOfRangeException("timeout");
+                    throw new ArgumentOutOfRangeException(nameof(timeout));
 
                 if (string.IsNullOrEmpty(tipText))
                     throw new ArgumentException("tipText");
@@ -554,17 +561,16 @@ namespace OpenHardwareMonitor.GUI
                     ContextMenu.GetType().InvokeMember("OnPopup",
                       BindingFlags.NonPublic | BindingFlags.InvokeMethod |
                       BindingFlags.Instance, null, ContextMenu,
-                      new Object[] { System.EventArgs.Empty });
+                      new object[] { EventArgs.Empty });
 
                     NativeMethods.TrackPopupMenuEx(new HandleRef(ContextMenu, ContextMenu.Handle), 72, p.X, p.Y, new HandleRef(_window, _window.Handle), IntPtr.Zero);
                     NativeMethods.PostMessage(new HandleRef(_window, _window.Handle), WM_NULL, 0, 0);
                     return;
                 }
 
-                if (ContextMenuStrip != null)
-                    ContextMenuStrip.GetType().InvokeMember("ShowInTaskbar",
-                      BindingFlags.NonPublic | BindingFlags.InvokeMethod |
-                      BindingFlags.Instance, null, ContextMenuStrip, new Object[] { p.X, p.Y });
+                ContextMenuStrip?.GetType().InvokeMember("ShowInTaskbar",
+                                                         BindingFlags.NonPublic | BindingFlags.InvokeMethod |
+                                                         BindingFlags.Instance, null, ContextMenuStrip, new object[] { p.X, p.Y });
             }
 
             private void UpdateNotifyIcon(bool showNotifyIcon)
@@ -576,9 +582,7 @@ namespace OpenHardwareMonitor.GUI
                 {
                     _window.LockReference(showNotifyIcon);
 
-                    NativeMethods.NotifyIconData data = new NativeMethods.NotifyIconData();
-                    data.CallbackMessage = WM_TRAYMOUSEMESSAGE;
-                    data.Flags = NativeMethods.NotifyIconDataFlags.Message;
+                    NativeMethods.NotifyIconData data = new NativeMethods.NotifyIconData { CallbackMessage = WM_TRAYMOUSEMESSAGE, Flags = NativeMethods.NotifyIconDataFlags.Message };
 
                     if (showNotifyIcon && _window.Handle == IntPtr.Zero)
                         _window.CreateHandle(new CreateParams());
@@ -620,7 +624,7 @@ namespace OpenHardwareMonitor.GUI
                         if (_created)
                         {
                             int i = 0;
-                            bool deleted = false;
+                            bool deleted;
                             do
                             {
                                 deleted = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Delete, data);
@@ -636,49 +640,39 @@ namespace OpenHardwareMonitor.GUI
                 }
             }
 
-            private void ProcessMouseDown(ref Message message, MouseButtons button, bool doubleClick)
+            private void ProcessMouseDown(MouseButtons button, bool doubleClick)
             {
                 if (doubleClick)
                 {
-                    if (DoubleClick != null)
-                        DoubleClick(this, new MouseEventArgs(button, 2, 0, 0, 0));
-
-                    if (MouseDoubleClick != null)
-                        MouseDoubleClick(this, new MouseEventArgs(button, 2, 0, 0, 0));
+                    DoubleClick?.Invoke(this, new MouseEventArgs(button, 2, 0, 0, 0));
+                    MouseDoubleClick?.Invoke(this, new MouseEventArgs(button, 2, 0, 0, 0));
 
                     _doubleClickDown = true;
                 }
 
-                if (MouseDown != null)
-                    MouseDown(this, new MouseEventArgs(button, doubleClick ? 2 : 1, 0, 0, 0));
+                MouseDown?.Invoke(this, new MouseEventArgs(button, doubleClick ? 2 : 1, 0, 0, 0));
             }
 
-            private void ProcessMouseUp(ref Message message, MouseButtons button)
+            private void ProcessMouseUp(MouseButtons button)
             {
-                if (MouseUp != null)
-                    MouseUp(this, new MouseEventArgs(button, 0, 0, 0, 0));
+                MouseUp?.Invoke(this, new MouseEventArgs(button, 0, 0, 0, 0));
 
                 if (!_doubleClickDown)
                 {
-                    if (Click != null)
-                        Click(this, new MouseEventArgs(button, 0, 0, 0, 0));
-
-                    if (MouseClick != null)
-                        MouseClick(this, new MouseEventArgs(button, 0, 0, 0, 0));
+                    Click?.Invoke(this, new MouseEventArgs(button, 0, 0, 0, 0));
+                    MouseClick?.Invoke(this, new MouseEventArgs(button, 0, 0, 0, 0));
                 }
                 _doubleClickDown = false;
             }
 
             private void ProcessInitMenuPopup(ref Message message)
             {
-                if (ContextMenu != null &&
-                  (bool)ContextMenu.GetType().InvokeMember("ProcessInitMenuPopup",
-                    BindingFlags.NonPublic | BindingFlags.InvokeMethod |
-                    BindingFlags.Instance, null, ContextMenu,
-                    new Object[] { message.WParam }))
+                if (ContextMenu != null && 
+                    (bool)ContextMenu.GetType().InvokeMember("ProcessInitMenuPopup", BindingFlags.NonPublic | BindingFlags.InvokeMethod | BindingFlags.Instance, null, ContextMenu, new object[] { message.WParam }))
                 {
                     return;
                 }
+
                 _window.DefWndProc(ref message);
             }
 
@@ -704,58 +698,54 @@ namespace OpenHardwareMonitor.GUI
                         switch ((int)message.LParam)
                         {
                             case WM_MOUSEMOVE:
-                                if (MouseMove != null)
-                                    MouseMove(this,
-                                      new MouseEventArgs(Control.MouseButtons, 0, 0, 0, 0));
+                                MouseMove?.Invoke(this,
+  new MouseEventArgs(Control.MouseButtons, 0, 0, 0, 0));
                                 return;
                             case WM_LBUTTONDOWN:
-                                ProcessMouseDown(ref message, MouseButtons.Left, false);
+                                ProcessMouseDown(MouseButtons.Left, false);
                                 return;
                             case WM_LBUTTONUP:
-                                ProcessMouseUp(ref message, MouseButtons.Left);
+                                ProcessMouseUp(MouseButtons.Left);
                                 return;
                             case WM_LBUTTONDBLCLK:
-                                ProcessMouseDown(ref message, MouseButtons.Left, true);
+                                ProcessMouseDown(MouseButtons.Left, true);
                                 return;
                             case WM_RBUTTONDOWN:
-                                ProcessMouseDown(ref message, MouseButtons.Right, false);
+                                ProcessMouseDown(MouseButtons.Right, false);
                                 return;
                             case WM_RBUTTONUP:
                                 if (ContextMenu != null || ContextMenuStrip != null)
                                     ShowContextMenu();
-                                ProcessMouseUp(ref message, MouseButtons.Right);
+                                ProcessMouseUp(MouseButtons.Right);
                                 return;
                             case WM_RBUTTONDBLCLK:
-                                ProcessMouseDown(ref message, MouseButtons.Right, true);
+                                ProcessMouseDown(MouseButtons.Right, true);
                                 return;
                             case WM_MBUTTONDOWN:
-                                ProcessMouseDown(ref message, MouseButtons.Middle, false);
+                                ProcessMouseDown(MouseButtons.Middle, false);
                                 return;
                             case WM_MBUTTONUP:
-                                ProcessMouseUp(ref message, MouseButtons.Middle);
+                                ProcessMouseUp(MouseButtons.Middle);
                                 return;
                             case WM_MBUTTONDBLCLK:
-                                ProcessMouseDown(ref message, MouseButtons.Middle, true);
+                                ProcessMouseDown(MouseButtons.Middle, true);
                                 return;
                             case NIN_BALLOONSHOW:
-                                if (BalloonTipShown != null)
-                                    BalloonTipShown(this, EventArgs.Empty);
+                                BalloonTipShown?.Invoke(this, EventArgs.Empty);
                                 return;
                             case NIN_BALLOONHIDE:
                             case NIN_BALLOONTIMEOUT:
-                                if (BalloonTipClosed != null)
-                                    BalloonTipClosed(this, EventArgs.Empty);
+                                BalloonTipClosed?.Invoke(this, EventArgs.Empty);
                                 return;
                             case NIN_BALLOONUSERCLICK:
-                                if (BalloonTipClicked != null)
-                                    BalloonTipClicked(this, EventArgs.Empty);
+                                BalloonTipClicked?.Invoke(this, EventArgs.Empty);
                                 return;
                             default:
                                 return;
                         }
                 }
 
-                if (message.Msg == NotifyIconWindowsImplementation._wmTaskBarCreated)
+                if (message.Msg == _wmTaskBarCreated)
                 {
                     lock (_syncObj)
                     {
@@ -769,7 +759,7 @@ namespace OpenHardwareMonitor.GUI
 
             private class NotifyIconNativeWindow : NativeWindow
             {
-                private NotifyIconWindowsImplementation _reference;
+                private readonly NotifyIconWindowsImplementation _reference;
                 private GCHandle _referenceHandle;
 
                 internal NotifyIconNativeWindow(NotifyIconWindowsImplementation component)
@@ -779,9 +769,8 @@ namespace OpenHardwareMonitor.GUI
 
                 ~NotifyIconNativeWindow()
                 {
-                    if (base.Handle != IntPtr.Zero)
-                        NativeMethods.PostMessage(
-                          new HandleRef(this, base.Handle), WM_CLOSE, 0, 0);
+                    if (Handle != IntPtr.Zero)
+                        NativeMethods.PostMessage(new HandleRef(this, Handle), WM_CLOSE, 0, 0);
                 }
 
                 public void LockReference(bool locked)
@@ -791,7 +780,6 @@ namespace OpenHardwareMonitor.GUI
                         if (!_referenceHandle.IsAllocated)
                         {
                             _referenceHandle = GCHandle.Alloc(_reference, GCHandleType.Normal);
-                            return;
                         }
                     }
                     else
@@ -834,7 +822,7 @@ namespace OpenHardwareMonitor.GUI
             private const int NIN_BALLOONTIMEOUT = 0x404;
             private const int NIN_BALLOONUSERCLICK = 0x405;
 
-            private static int _wmTaskBarCreated = NativeMethods.RegisterWindowMessage("TaskbarCreated");
+            private static readonly int _wmTaskBarCreated = NativeMethods.RegisterWindowMessage("TaskbarCreated");
 
             private static class NativeMethods
             {
@@ -895,8 +883,8 @@ namespace OpenHardwareMonitor.GUI
                 [StructLayout(LayoutKind.Sequential)]
                 public struct Point
                 {
-                    public int X;
-                    public int Y;
+                    public readonly int X;
+                    public readonly int Y;
                 }
 
                 [DllImport(DllNameUser32, CharSet = CharSet.Auto, ExactSpelling = true)]

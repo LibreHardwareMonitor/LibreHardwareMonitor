@@ -3,8 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using System;
-using System.Collections.Generic;
 using OpenHardwareMonitor.Hardware;
 
 namespace OpenHardwareMonitor.GUI

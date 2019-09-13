@@ -5,7 +5,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Windows.Forms;
 using OpenHardwareMonitor.GUI;
 
@@ -21,9 +20,9 @@ namespace OpenHardwareMonitor
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            using (GUI.MainForm form = new GUI.MainForm())
+            using (MainForm form = new MainForm())
             {
-                form.FormClosed += delegate (Object sender, FormClosedEventArgs e)
+                form.FormClosed += delegate
                 {
                     Application.Exit();
                 };
@@ -48,10 +47,13 @@ namespace OpenHardwareMonitor
         {
             if (!IsFileAvailable("Aga.Controls.dll"))
                 return false;
+
             if (!IsFileAvailable("OpenHardwareMonitorLib.dll"))
                 return false;
+
             if (!IsFileAvailable("OxyPlot.dll"))
                 return false;
+
             if (!IsFileAvailable("OxyPlot.WindowsForms.dll"))
                 return false;
 

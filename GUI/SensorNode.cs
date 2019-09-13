@@ -5,7 +5,6 @@
 
 using System;
 using System.Drawing;
-using System.Collections.Generic;
 using OpenHardwareMonitor.Hardware;
 using OpenHardwareMonitor.Utilities;
 
@@ -13,27 +12,26 @@ namespace OpenHardwareMonitor.GUI
 {
     public class SensorNode : Node
     {
-        private ISensor _sensor;
-        private PersistentSettings _settings;
-        private UnitManager _unitManager;
-        private bool _plot = false;
-        private Color? _penColor = null;
+        private readonly PersistentSettings _settings;
+        private readonly UnitManager _unitManager;
+        private bool _plot;
+        private Color? _penColor;
         public string Format { get; set; } = "";
 
         public string ValueToString(float? value)
         {
             if (value.HasValue)
             {
-                if (_sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
+                switch (Sensor.SensorType)
                 {
-                    return string.Format("{0:F1} °F", value * 1.8 + 32);
-                }
-                else if (_sensor.SensorType == SensorType.Throughput)
-                {
-                    string result = "-";
-                    switch (_sensor.Name)
+                    case SensorType.Temperature when _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit:
+                        return $"{value * 1.8 + 32:F1} °F";
+                    case SensorType.Throughput:
                     {
-                        case "Connection Speed":
+                        string result;
+                        switch (Sensor.Name)
+                        {
+                            case "Connection Speed":
                             {
                                 switch (value)
                                 {
@@ -44,45 +42,45 @@ namespace OpenHardwareMonitor.GUI
                                         result = "1Gbps";
                                         break;
                                     default:
-                                        {
-                                            if (value < 1024)
-                                                result = string.Format("{0:F0} bps", value);
-                                            else if (value < 1048576)
-                                                result = string.Format("{0:F1} Kbps", value / 1024);
-                                            else if (value < 1073741824)
-                                                result = string.Format("{0:F1} Mbps", value / 1048576);
-                                            else
-                                                result = string.Format("{0:F1} Gbps", value / 1073741824);
-                                        }
+                                    {
+                                        if (value < 1024)
+                                            result = $"{value:F0} bps";
+                                        else if (value < 1048576)
+                                            result = $"{value / 1024:F1} Kbps";
+                                        else if (value < 1073741824)
+                                            result = $"{value / 1048576:F1} Mbps";
+                                        else
+                                            result = $"{value / 1073741824:F1} Gbps";
+                                    }
                                         break;
                                 }
                             }
-                            break;
-                        default:
+                                break;
+                            default:
                             {
                                 if (value < 1048576)
-                                    result = string.Format("{0:F1} KB/s", value / 1024);
+                                    result = $"{value / 1024:F1} KB/s";
                                 else
-                                    result = string.Format("{0:F1} MB/s", value / 1048576);
+                                    result = $"{value / 1048576:F1} MB/s";
                             }
-                            break;
+                                break;
+                        }
+                        return result;
                     }
-                    return result;
-                }
-                else
-                {
-                    return string.Format(Format, value);
+                    default:
+                        return string.Format(Format, value);
                 }
             }
-            else
-                return "-";
+
+            return "-";
         }
 
-        public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager) : base()
+        public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
         {
-            _sensor = sensor;
+            Sensor = sensor;
             _settings = settings;
             _unitManager = unitManager;
+
             switch (sensor.SensorType)
             {
                 case SensorType.Voltage: Format = "{0:F3} V"; break;
@@ -100,18 +98,20 @@ namespace OpenHardwareMonitor.GUI
                 case SensorType.Frequency: Format = "{0:F1} Hz"; break;
                 case SensorType.Throughput: Format = "{0:F1} B/s"; break;
             }
+
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
             base.IsVisible = !hidden;
             Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
             string id = new Identifier(sensor.Identifier, "penColor").ToString();
+
             if (settings.Contains(id))
                 PenColor = settings.GetValue(id, Color.Black);
         }
 
         public override string Text
         {
-            get { return _sensor.Name; }
-            set { _sensor.Name = value; }
+            get { return Sensor.Name; }
+            set { Sensor.Name = value; }
         }
 
         public override bool IsVisible
@@ -120,7 +120,7 @@ namespace OpenHardwareMonitor.GUI
             set
             {
                 base.IsVisible = value;
-                _settings.SetValue(new Identifier(_sensor.Identifier, "hidden").ToString(), !value);
+                _settings.SetValue(new Identifier(Sensor.Identifier, "hidden").ToString(), !value);
             }
         }
 
@@ -131,14 +131,13 @@ namespace OpenHardwareMonitor.GUI
             {
                 _penColor = value;
 
-                string id = new Identifier(_sensor.Identifier, "penColor").ToString();
+                string id = new Identifier(Sensor.Identifier, "penColor").ToString();
                 if (value.HasValue)
                     _settings.SetValue(id, value.Value);
                 else
                     _settings.Remove(id);
 
-                if (PlotSelectionChanged != null)
-                    PlotSelectionChanged(this, null);
+                PlotSelectionChanged?.Invoke(this, null);
             }
         }
 
@@ -148,49 +147,44 @@ namespace OpenHardwareMonitor.GUI
             set
             {
                 _plot = value;
-                _settings.SetValue(new Identifier(_sensor.Identifier, "plot").ToString(), value);
-                if (PlotSelectionChanged != null)
-                    PlotSelectionChanged(this, null);
+                _settings.SetValue(new Identifier(Sensor.Identifier, "plot").ToString(), value);
+                PlotSelectionChanged?.Invoke(this, null);
             }
         }
 
         public event EventHandler PlotSelectionChanged;
 
-        public ISensor Sensor
-        {
-            get { return _sensor; }
-        }
+        public ISensor Sensor { get; }
 
         public string Value
         {
-            get { return ValueToString(_sensor.Value); }
+            get { return ValueToString(Sensor.Value); }
         }
 
         public string Min
         {
-            get { return ValueToString(_sensor.Min); }
+            get { return ValueToString(Sensor.Min); }
         }
 
         public string Max
         {
-            get { return ValueToString(_sensor.Max); }
+            get { return ValueToString(Sensor.Max); }
         }
 
-        public override bool Equals(System.Object obj)
+        public override bool Equals(object obj)
         {
             if (obj == null)
                 return false;
 
-            SensorNode s = obj as SensorNode;
-            if (s == null)
+            if (!(obj is SensorNode s))
                 return false;
 
-            return (_sensor == s._sensor);
+            return (Sensor == s.Sensor);
         }
 
         public override int GetHashCode()
         {
-            return _sensor.GetHashCode();
+            return Sensor.GetHashCode();
         }
     }
 }
