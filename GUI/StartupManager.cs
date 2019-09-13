@@ -4,7 +4,6 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -17,10 +16,8 @@ namespace OpenHardwareMonitor.GUI
 {
     public class StartupManager
     {
-        private TaskSchedulerClass _scheduler;
+        private readonly TaskSchedulerClass _scheduler;
         private bool _startup;
-        private bool _isAvailable;
-
         private const string REGISTRY_RUN = @"Software\Microsoft\Windows\CurrentVersion\Run";
 
         private bool IsAdministrator()
@@ -39,11 +36,11 @@ namespace OpenHardwareMonitor.GUI
 
         public StartupManager()
         {
-            int p = (int)System.Environment.OSVersion.Platform;
+            int p = (int)Environment.OSVersion.Platform;
             if ((p == 4) || (p == 128))
             {
                 _scheduler = null;
-                _isAvailable = false;
+                IsAvailable = false;
                 return;
             }
 
@@ -64,15 +61,14 @@ namespace OpenHardwareMonitor.GUI
                     try
                     {
                         // check if the taskscheduler is running
-                        IRunningTaskCollection collection = _scheduler.GetRunningTasks(0);
+                        IRunningTaskCollection _ = _scheduler.GetRunningTasks(0);
                         ITaskFolder folder = _scheduler.GetFolder("\\Open Hardware Monitor");
                         IRegisteredTask task = folder.GetTask("Startup");
                         _startup = (task != null) && (task.Definition.Triggers.Count > 0) &&
                             (task.Definition.Triggers[1].Type == TASK_TRIGGER_TYPE2.TASK_TRIGGER_LOGON) &&
                             (task.Definition.Actions.Count > 0) &&
                             (task.Definition.Actions[1].Type == TASK_ACTION_TYPE.TASK_ACTION_EXEC) &&
-                            (task.Definition.Actions[1] as IExecAction != null) &&
-                            ((task.Definition.Actions[1] as IExecAction).Path == Application.ExecutablePath);
+                            (task.Definition.Actions[1] is IExecAction) && (((IExecAction) task.Definition.Actions[1]).Path == Application.ExecutablePath);
                     }
                     catch (IOException)
                     {
@@ -100,23 +96,21 @@ namespace OpenHardwareMonitor.GUI
                     using (RegistryKey key = Registry.CurrentUser.OpenSubKey(REGISTRY_RUN))
                     {
                         _startup = false;
-                        if (key != null)
-                        {
-                            string value = (string)key.GetValue("OpenHardwareMonitor");
-                            if (value != null)
-                                _startup = value == Application.ExecutablePath;
-                        }
+                        string value = (string) key?.GetValue("OpenHardwareMonitor");
+
+                        if (value != null)
+                            _startup = value == Application.ExecutablePath;
                     }
-                    _isAvailable = true;
+                    IsAvailable = true;
                 }
                 catch (SecurityException)
                 {
-                    _isAvailable = false;
+                    IsAvailable = false;
                 }
             }
             else
             {
-                _isAvailable = true;
+                IsAvailable = true;
             }
         }
 
@@ -173,10 +167,7 @@ namespace OpenHardwareMonitor.GUI
             key.DeleteValue("OpenHardwareMonitor");
         }
 
-        public bool IsAvailable
-        {
-            get { return _isAvailable; }
-        }
+        public bool IsAvailable { get; }
 
         public bool Startup
         {
@@ -188,7 +179,7 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (_startup != value)
                 {
-                    if (_isAvailable)
+                    if (IsAvailable)
                     {
                         if (_scheduler != null)
                         {

@@ -5,25 +5,24 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using OpenHardwareMonitor.Hardware;
+using OpenHardwareMonitor.Utilities;
 
 namespace OpenHardwareMonitor.GUI
 {
     public class HardwareNode : Node
     {
-        private PersistentSettings _settings;
-        private UnitManager _unitManager;
-        private IHardware _hardware;
-        private List<TypeNode> _typeNodes = new List<TypeNode>();
+        private readonly PersistentSettings _settings;
+        private readonly UnitManager _unitManager;
+        private readonly List<TypeNode> _typeNodes = new List<TypeNode>();
 
         public event EventHandler PlotSelectionChanged;
 
-        public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager) : base()
+        public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager)
         {
             _settings = settings;
             _unitManager = unitManager;
-            _hardware = hardware;
+            Hardware = hardware;
             Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
 
             foreach (SensorType sensorType in Enum.GetValues(typeof(SensorType)))
@@ -32,20 +31,17 @@ namespace OpenHardwareMonitor.GUI
             foreach (ISensor sensor in hardware.Sensors)
                 SensorAdded(sensor);
 
-            hardware.SensorAdded += new SensorEventHandler(SensorAdded);
-            hardware.SensorRemoved += new SensorEventHandler(SensorRemoved);
+            hardware.SensorAdded += SensorAdded;
+            hardware.SensorRemoved += SensorRemoved;
         }
 
         public override string Text
         {
-            get { return _hardware.Name; }
-            set { _hardware.Name = value; }
+            get { return Hardware.Name; }
+            set { Hardware.Name = value; }
         }
 
-        public IHardware Hardware
-        {
-            get { return _hardware; }
-        }
+        public IHardware Hardware { get; }
 
         private void UpdateNode(TypeNode node)
         {
@@ -56,6 +52,7 @@ namespace OpenHardwareMonitor.GUI
                     int i = 0;
                     while (i < Nodes.Count && ((TypeNode)Nodes[i]).SensorType < node.SensorType)
                         i++;
+
                     Nodes.Insert(i, node);
                 }
             }
@@ -75,8 +72,7 @@ namespace OpenHardwareMonitor.GUI
                     SensorNode sensorNode = null;
                     foreach (Node node in typeNode.Nodes)
                     {
-                        SensorNode n = node as SensorNode;
-                        if (n != null && n.Sensor == sensor)
+                        if (node is SensorNode n && n.Sensor == sensor)
                             sensorNode = n;
                     }
                     if (sensorNode != null)
@@ -87,8 +83,7 @@ namespace OpenHardwareMonitor.GUI
                     }
                 }
             }
-            if (PlotSelectionChanged != null)
-                PlotSelectionChanged(this, null);
+            PlotSelectionChanged?.Invoke(this, null);
         }
 
         private void InsertSorted(Node node, ISensor sensor)
@@ -96,6 +91,7 @@ namespace OpenHardwareMonitor.GUI
             int i = 0;
             while (i < node.Nodes.Count && ((SensorNode)node.Nodes[i]).Sensor.Index < sensor.Index)
                 i++;
+
             SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
             sensorNode.PlotSelectionChanged += SensorPlotSelectionChanged;
             node.Nodes.Insert(i, sensorNode);
@@ -103,8 +99,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void SensorPlotSelectionChanged(object sender, EventArgs e)
         {
-            if (PlotSelectionChanged != null)
-                PlotSelectionChanged(this, null);
+            PlotSelectionChanged?.Invoke(this, null);
         }
 
         private void SensorAdded(ISensor sensor)
@@ -117,8 +112,8 @@ namespace OpenHardwareMonitor.GUI
                     UpdateNode(typeNode);
                 }
             }
-            if (PlotSelectionChanged != null)
-                PlotSelectionChanged(this, null);
+
+            PlotSelectionChanged?.Invoke(this, null);
         }
     }
 }

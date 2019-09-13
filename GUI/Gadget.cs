@@ -11,11 +11,11 @@ namespace OpenHardwareMonitor.GUI
 {
     public abstract class Gadget : IDisposable
     {
-        private GadgetWindow _window;
+        private readonly GadgetWindow _window;
 
         public event EventHandler VisibleChanged;
 
-        public Gadget()
+        protected Gadget()
         {
             _window = new GadgetWindow();
             _window.Paint += delegate (object sender, PaintEventArgs e)
@@ -160,8 +160,8 @@ namespace OpenHardwareMonitor.GUI
                 if (value != _window.Visible)
                 {
                     _window.Visible = value;
-                    if (VisibleChanged != null)
-                        VisibleChanged(this, EventArgs.Empty);
+                    VisibleChanged?.Invoke(this, EventArgs.Empty);
+
                     if (value)
                         Redraw();
                 }

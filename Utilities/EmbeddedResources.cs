@@ -3,8 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -13,11 +11,11 @@ namespace OpenHardwareMonitor.Utilities
 {
     public class EmbeddedResources
     {
-
         public static Image GetImage(string name)
         {
             name = "OpenHardwareMonitor.Resources." + name;
             string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
             for (int i = 0; i < names.Length; i++)
             {
                 if (names[i].Replace('\\', '.') == name)

@@ -13,29 +13,27 @@ namespace OpenHardwareMonitor.GUI
 {
     public class TreeModel : ITreeModel
     {
-        private Node _root;
-        private bool _forceVisible = false;
+        private readonly Node _root;
+        private bool _forceVisible;
 
         public TreeModel()
         {
-            _root = new Node();
-            _root.Model = this;
+            _root = new Node { Model = this };
         }
 
         public TreePath GetPath(Node node)
         {
             if (node == _root)
                 return TreePath.Empty;
-            else
+
+
+            Stack<object> stack = new Stack<object>();
+            while (node != _root)
             {
-                Stack<object> stack = new Stack<object>();
-                while (node != _root)
-                {
-                    stack.Push(node);
-                    node = node.Parent;
-                }
-                return new TreePath(stack.ToArray());
+                stack.Push(node);
+                node = node.Parent;
             }
+            return new TreePath(stack.ToArray());
         }
 
         public Collection<Node> Nodes
@@ -48,8 +46,7 @@ namespace OpenHardwareMonitor.GUI
             Node parent = _root;
             foreach (object obj in treePath.FullPath)
             {
-                Node node = obj as Node;
-                if (node == null || node.Parent != parent)
+                if (!(obj is Node node) || node.Parent != parent)
                     return null;
                 parent = node;
             }
@@ -66,9 +63,7 @@ namespace OpenHardwareMonitor.GUI
                         yield return n;
             }
             else
-            {
-                yield break;
-            }
+            { }
         }
 
         public bool IsLeaf(TreePath treePath)
@@ -101,37 +96,29 @@ namespace OpenHardwareMonitor.GUI
 
         public void OnNodeChanged(Node parent, int index, Node node)
         {
-            if (NodesChanged != null && parent != null)
+            if (parent != null)
             {
                 TreePath path = GetPath(parent);
                 if (path != null)
-                    NodesChanged(this, new TreeModelEventArgs(
-                      path, new int[] { index }, new object[] { node }));
+                    NodesChanged?.Invoke(this, new TreeModelEventArgs(path, new[] { index }, new object[] { node }));
             }
         }
 
         public void OnStructureChanged(Node node)
         {
-            if (StructureChanged != null)
-                StructureChanged(this, new TreeModelEventArgs(GetPath(node), new object[0]));
+            StructureChanged?.Invoke(this, new TreeModelEventArgs(GetPath(node), new object[0]));
         }
 
         public void OnNodeInserted(Node parent, int index, Node node)
         {
-            if (NodesInserted != null)
-            {
-                TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new int[] { index }, new object[] { node });
-                NodesInserted(this, args);
-            }
+            TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new[] { index }, new object[] { node });
+            NodesInserted?.Invoke(this, args);
         }
 
         public void OnNodeRemoved(Node parent, int index, Node node)
         {
-            if (NodesRemoved != null)
-            {
-                TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new int[] { index }, new object[] { node });
-                NodesRemoved(this, args);
-            }
+            TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new[] { index }, new object[] { node });
+            NodesRemoved?.Invoke(this, args);
         }
 
     }

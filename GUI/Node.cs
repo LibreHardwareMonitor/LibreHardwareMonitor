@@ -4,20 +4,16 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
-using Aga.Controls.Tree;
 
 namespace OpenHardwareMonitor.GUI
 {
     public class Node
     {
-        private TreeModel _treeModel;
         private Node _parent;
-        private NodeCollection _nodes;
+        private readonly NodeCollection _nodes;
         private string _text;
-        private Image _image;
         private bool _visible;
 
         public delegate void NodeEventHandler(Node node);
@@ -46,11 +42,7 @@ namespace OpenHardwareMonitor.GUI
             _visible = true;
         }
 
-        public TreeModel Model
-        {
-            get { return _treeModel; }
-            set { _treeModel = value; }
-        }
+        public TreeModel Model { get; set; }
 
         public Node Parent
         {
@@ -59,10 +51,8 @@ namespace OpenHardwareMonitor.GUI
             {
                 if (value != _parent)
                 {
-                    if (_parent != null)
-                        _parent._nodes.Remove(this);
-                    if (value != null)
-                        value._nodes.Add(this);
+                    _parent?._nodes.Remove(this);
+                    value?._nodes.Add(this);
                 }
             }
         }
@@ -77,24 +67,11 @@ namespace OpenHardwareMonitor.GUI
             get { return _text; }
             set
             {
-                if (_text != value)
-                {
-                    _text = value;
-                }
+                _text = value;
             }
         }
 
-        public Image Image
-        {
-            get { return _image; }
-            set
-            {
-                if (_image != value)
-                {
-                    _image = value;
-                }
-            }
-        }
+        public Image Image { get; set; }
 
         public virtual bool IsVisible
         {
@@ -128,15 +105,14 @@ namespace OpenHardwareMonitor.GUI
                                 model.OnNodeRemoved(_parent, index, this);
                         }
                     }
-                    if (IsVisibleChanged != null)
-                        IsVisibleChanged(this);
+                    IsVisibleChanged?.Invoke(this);
                 }
             }
         }
 
         private class NodeCollection : Collection<Node>
         {
-            private Node _owner;
+            private readonly Node _owner;
 
             public NodeCollection(Node owner)
             {
@@ -152,20 +128,17 @@ namespace OpenHardwareMonitor.GUI
             protected override void InsertItem(int index, Node item)
             {
                 if (item == null)
-                    throw new ArgumentNullException("item");
+                    throw new ArgumentNullException(nameof(item));
 
                 if (item._parent != _owner)
                 {
-                    if (item._parent != null)
-                        item._parent._nodes.Remove(item);
+                    item._parent?._nodes.Remove(item);
                     item._parent = _owner;
                     base.InsertItem(index, item);
 
                     TreeModel model = _owner.RootTreeModel();
-                    if (model != null)
-                        model.OnStructureChanged(_owner);
-                    if (_owner.NodeAdded != null)
-                        _owner.NodeAdded(item);
+                    model?.OnStructureChanged(_owner);
+                    _owner.NodeAdded?.Invoke(item);
                 }
             }
 
@@ -176,16 +149,14 @@ namespace OpenHardwareMonitor.GUI
                 base.RemoveItem(index);
 
                 TreeModel model = _owner.RootTreeModel();
-                if (model != null)
-                    model.OnStructureChanged(_owner);
-                if (_owner.NodeRemoved != null)
-                    _owner.NodeRemoved(item);
+                model?.OnStructureChanged(_owner);
+                _owner.NodeRemoved?.Invoke(item);
             }
 
             protected override void SetItem(int index, Node item)
             {
                 if (item == null)
-                    throw new ArgumentNullException("item");
+                    throw new ArgumentNullException(nameof(item));
 
                 RemoveAt(index);
                 InsertItem(index, item);

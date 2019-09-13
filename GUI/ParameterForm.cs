@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Hardware;
 
@@ -32,67 +31,33 @@ namespace OpenHardwareMonitor.GUI
             {
                 _parameters = value;
                 _parameterRows = new BindingList<ParameterRow>();
+
                 foreach (IParameter parameter in _parameters)
                     _parameterRows.Add(new ParameterRow(parameter));
+
                 bindingSource.DataSource = _parameterRows;
             }
         }
 
         private class ParameterRow : INotifyPropertyChanged
         {
-            public IParameter Parameter;
-            private float _value;
-            public bool IsDefault;
-            public event PropertyChangedEventHandler PropertyChanged;
+            public readonly IParameter Parameter;
 
-            private void NotifyPropertyChanged(String propertyName)
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-                }
-            }
+            public event PropertyChangedEventHandler PropertyChanged;
 
             public ParameterRow(IParameter parameter)
             {
                 Parameter = parameter;
-                _value = parameter.Value;
-                IsDefault = parameter.IsDefault;
+                Value = parameter.Value;
+                Default = parameter.IsDefault;
             }
 
-            public string Name
-            {
-                get { return Parameter.Name; }
-            }
+            public float Value { get; }
 
-            public float Value
-            {
-                get { return _value; }
-                set
-                {
-                    IsDefault = false;
-                    _value = value;
-                    NotifyPropertyChanged("Default");
-                    NotifyPropertyChanged("Value");
-                }
-            }
-
-            public bool Default
-            {
-                get { return IsDefault; }
-                set
-                {
-                    IsDefault = value;
-                    if (value)
-                        _value = Parameter.DefaultValue;
-                    NotifyPropertyChanged("Default");
-                    NotifyPropertyChanged("Value");
-                }
-            }
+            public bool Default { get; }
         }
 
-        private void DataGridView_RowEnter(object sender,
-          DataGridViewCellEventArgs e)
+        private void DataGridView_RowEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0 && e.RowIndex < _parameters.Count)
                 descriptionLabel.Text = _parameters[e.RowIndex].Description;
@@ -102,12 +67,9 @@ namespace OpenHardwareMonitor.GUI
 
         private void DataGridView_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            float value;
-            if (e.ColumnIndex == 2 &&
-              !float.TryParse(e.FormattedValue.ToString(), out value))
+            if (e.ColumnIndex == 2 && !float.TryParse(e.FormattedValue.ToString(), out float _))
             {
-                dataGridView.Rows[e.RowIndex].Cells[0].ErrorText =
-                  "Invalid value";
+                dataGridView.Rows[e.RowIndex].Cells[0].ErrorText = "Invalid value";
                 e.Cancel = true;
             }
         }
@@ -122,22 +84,16 @@ namespace OpenHardwareMonitor.GUI
             foreach (ParameterRow row in _parameterRows)
             {
                 if (row.Default)
-                {
                     row.Parameter.IsDefault = true;
-                }
                 else
-                {
                     row.Parameter.Value = row.Value;
-                }
             }
         }
 
         private void DataGridView_CurrentCellDirtyStateChanged(object sender, EventArgs e)
         {
             if (dataGridView.CurrentCell is DataGridViewCheckBoxCell || dataGridView.CurrentCell is DataGridViewComboBoxCell)
-            {
                 dataGridView.CommitEdit(DataGridViewDataErrorContexts.Commit);
-            }
         }
     }
 }

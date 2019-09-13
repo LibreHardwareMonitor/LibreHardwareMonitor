@@ -4,7 +4,6 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -12,12 +11,11 @@ namespace OpenHardwareMonitor.GUI
 {
     public class SplitContainerAdv : SplitContainer
     {
-        private int _delta = 0;
+        private int _delta;
         private Border3DStyle _border3DStyle = Border3DStyle.Raised;
         private Color _bgColor = SystemColors.Control;
 
         public SplitContainerAdv()
-          : base()
         {
             SetStyle(ControlStyles.ResizeRedraw, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
@@ -32,19 +30,29 @@ namespace OpenHardwareMonitor.GUI
             base.OnPaint(e);
             Graphics g = e.Graphics;
             Rectangle r = SplitterRectangle;
+
             using (SolidBrush brush = new SolidBrush(_bgColor))
                 g.FillRectangle(brush, r);
+
             ControlPaint.DrawBorder3D(g, r, _border3DStyle);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (!base.IsSplitterFixed)
+            if (!IsSplitterFixed)
             {
-                if (e.KeyData == Keys.Right || e.KeyData == Keys.Down)
-                    SplitterDistance += SplitterIncrement;
-                else if (e.KeyData == Keys.Left || e.KeyData == Keys.Up)
-                    SplitterDistance -= SplitterIncrement;
+                switch (e.KeyData)
+                {
+                    case Keys.Right:
+                    case Keys.Down:
+                        SplitterDistance += SplitterIncrement;
+                        break;
+                    case Keys.Left:
+                    case Keys.Up:
+                        SplitterDistance -= SplitterIncrement;
+                        break;
+                }
+
                 Invalidate();
             }
         }
@@ -61,12 +69,12 @@ namespace OpenHardwareMonitor.GUI
                 _delta = SplitterDistance - e.Y;
                 Cursor.Current = Cursors.HSplit;
             }
-            base.IsSplitterFixed = true;
+            IsSplitterFixed = true;
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            if (base.IsSplitterFixed)
+            if (IsSplitterFixed)
             {
                 if (e.Button == MouseButtons.Left)
                 {
@@ -83,7 +91,7 @@ namespace OpenHardwareMonitor.GUI
                 }
                 else
                 {
-                    base.IsSplitterFixed = false;
+                    IsSplitterFixed = false;
                 }
                 Invalidate();
             }
@@ -103,7 +111,7 @@ namespace OpenHardwareMonitor.GUI
         protected override void OnMouseUp(MouseEventArgs e)
         {
             _delta = 0;
-            base.IsSplitterFixed = false;
+            IsSplitterFixed = false;
             Cursor.Current = Cursors.Default;
         }
 

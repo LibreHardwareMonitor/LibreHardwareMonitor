@@ -4,7 +4,6 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Utilities;
 
@@ -12,20 +11,17 @@ namespace OpenHardwareMonitor.GUI
 {
     public class UserRadioGroup
     {
-        private string _name;
+        private readonly string _name;
         private int _value;
-        private MenuItem[] _menuItems;
+        private readonly MenuItem[] _menuItems;
         private event EventHandler _changed;
-        private PersistentSettings _settings;
+        private readonly PersistentSettings _settings;
 
         public UserRadioGroup(string name, int value, MenuItem[] menuItems, PersistentSettings settings)
         {
             _settings = settings;
             _name = name;
-            if (name != null)
-                _value = settings.GetValue(name, value);
-            else
-                _value = value;
+            _value = name != null ? settings.GetValue(name, value) : value;
             _menuItems = menuItems;
             _value = Math.Max(Math.Min(_value, menuItems.Length - 1), 0);
 
@@ -33,7 +29,7 @@ namespace OpenHardwareMonitor.GUI
             {
                 _menuItems[i].Checked = i == _value;
                 int index = i;
-                _menuItems[i].Click += delegate (object sender, EventArgs e)
+                _menuItems[i].Click += delegate
                 {
                     Value = index;
                 };
@@ -52,8 +48,7 @@ namespace OpenHardwareMonitor.GUI
                         _settings.SetValue(_name, value);
                     for (int i = 0; i < _menuItems.Length; i++)
                         _menuItems[i].Checked = i == value;
-                    if (_changed != null)
-                        _changed(this, null);
+                    _changed?.Invoke(this, null);
                 }
             }
         }
@@ -63,8 +58,7 @@ namespace OpenHardwareMonitor.GUI
             add
             {
                 _changed += value;
-                if (_changed != null)
-                    _changed(this, null);
+                _changed?.Invoke(this, null);
             }
             remove
             {

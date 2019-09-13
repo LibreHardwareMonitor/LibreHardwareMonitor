@@ -19,54 +19,46 @@ using OpenHardwareMonitor.Utilities;
 
 namespace OpenHardwareMonitor.GUI
 {
-    public partial class MainForm : Form
+    public sealed partial class MainForm : Form
     {
-        private int _delayCount = 0;
-        private PersistentSettings _settings;
-        private UnitManager _unitManager;
-        private Computer _computer;
-        private Node _root;
-        private TreeModel _treeModel;
+        private int _delayCount;
+        private readonly PersistentSettings _settings;
+        private readonly UnitManager _unitManager;
+        private readonly Computer _computer;
+        private readonly Node _root;
         private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
-        private Color[] _plotColorPalette;
-        private SystemTray _systemTray;
-        private StartupManager _startupManager = new StartupManager();
-        private UpdateVisitor _updateVisitor = new UpdateVisitor();
-        private SensorGadget _gadget;
+        private readonly Color[] _plotColorPalette;
+        private readonly SystemTray _systemTray;
+        private readonly StartupManager _startupManager = new StartupManager();
+        private readonly UpdateVisitor _updateVisitor = new UpdateVisitor();
+        private readonly SensorGadget _gadget;
         private Form _plotForm;
-        private PlotPanel _plotPanel;
+        private readonly PlotPanel _plotPanel;
 
-        private UserOption _showHiddenSensors;
         private UserOption _showPlot;
-        private UserOption _showValue;
-        private UserOption _showMin;
-        private UserOption _showMax;
-        private UserOption _startMinimized;
-        private UserOption _minimizeToTray;
-        private UserOption _minimizeOnClose;
-        private UserOption _autoStart;
+        private readonly UserOption _minimizeToTray;
+        private readonly UserOption _minimizeOnClose;
+        private readonly UserOption _autoStart;
 
-        private UserOption _readMainboardSensors;
-        private UserOption _readCpuSensors;
-        private UserOption _readRamSensors;
-        private UserOption _readGpuSensors;
-        private UserOption _readFanControllersSensors;
-        private UserOption _readHddSensors;
-        private UserOption _readNicSensors;
+        private readonly UserOption _readMainboardSensors;
+        private readonly UserOption _readCpuSensors;
+        private readonly UserOption _readRamSensors;
+        private readonly UserOption _readGpuSensors;
+        private readonly UserOption _readFanControllersSensors;
+        private readonly UserOption _readHddSensors;
+        private readonly UserOption _readNicSensors;
 
-        private UserOption _showGadget;
+        private readonly UserOption _showGadget;
         private UserRadioGroup _plotLocation;
-        private WmiProvider _wmiProvider;
+        private readonly WmiProvider _wmiProvider;
 
-        private UserOption _runWebServer;
-        private HttpServer _server;
+        private readonly UserOption _runWebServer;
+        private readonly UserOption _logSensors;
+        private readonly UserRadioGroup _loggingInterval;
+        private readonly UserRadioGroup _sensorValuesTimeWindow;
+        private readonly Logger _logger;
 
-        private UserOption _logSensors;
-        private UserRadioGroup _loggingInterval;
-        private UserRadioGroup _sensorValuesTimeWindow;
-        private Logger _logger;
-
-        private bool _selectionDragging = false;
+        private bool _selectionDragging;
 
         public MainForm()
         {
@@ -75,8 +67,7 @@ namespace OpenHardwareMonitor.GUI
             // check if the OpenHardwareMonitorLib assembly has the correct version
             if (Assembly.GetAssembly(typeof(Computer)).GetName().Version != Assembly.GetExecutingAssembly().GetName().Version)
             {
-                MessageBox.Show(
-                  "The version of the file OpenHardwareMonitorLib.dll is incompatible.",
+                MessageBox.Show("The version of the file OpenHardwareMonitorLib.dll is incompatible.",
                   "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
             }
@@ -106,9 +97,7 @@ namespace OpenHardwareMonitor.GUI
                 Height = _settings.GetValue("mainForm.Height", 640)
             };
 
-            _plotPanel = new PlotPanel(_settings, _unitManager);
-            _plotPanel.Font = SystemFonts.MessageBoxFont;
-            _plotPanel.Dock = DockStyle.Fill;
+            _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
 
             nodeCheckBox.IsVisibleValueNeeded += NodeCheckBox_IsVisibleValueNeeded;
             nodeTextBoxText.DrawText += NodeTextBoxText_DrawText;
@@ -118,16 +107,13 @@ namespace OpenHardwareMonitor.GUI
             nodeTextBoxText.EditorShowing += NodeTextBoxText_EditorShowing;
 
             foreach (TreeColumn column in treeView.Columns)
-            {
                 column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
-            }
 
-            _treeModel = new TreeModel();
-            _root = new Node(System.Environment.MachineName);
-            _root.Image = Utilities.EmbeddedResources.GetImage("computer.png");
+            TreeModel treeModel = new TreeModel();
+            _root = new Node(Environment.MachineName) { Image = EmbeddedResources.GetImage("computer.png") };
 
-            _treeModel.Nodes.Add(_root);
-            treeView.Model = _treeModel;
+            treeModel.Nodes.Add(_root);
+            treeView.Model = treeModel;
 
             _computer = new Computer(_settings);
 
@@ -174,39 +160,39 @@ namespace OpenHardwareMonitor.GUI
             _plotColorPalette[11] = Color.Olive;
             _plotColorPalette[12] = Color.Firebrick;
 
-            _computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
-            _computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
+            _computer.HardwareAdded += HardwareAdded;
+            _computer.HardwareRemoved += HardwareRemoved;
             _computer.Open();
 
             timer.Enabled = true;
 
-            _showHiddenSensors = new UserOption("hiddenMenuItem", false, hiddenMenuItem, _settings);
-            _showHiddenSensors.Changed += delegate (object sender, EventArgs e)
+            UserOption showHiddenSensors = new UserOption("hiddenMenuItem", false, hiddenMenuItem, _settings);
+            showHiddenSensors.Changed += delegate
             {
-                _treeModel.ForceVisible = _showHiddenSensors.Value;
+                treeModel.ForceVisible = showHiddenSensors.Value;
             };
 
-            _showValue = new UserOption("valueMenuItem", true, valueMenuItem, _settings);
-            _showValue.Changed += delegate (object sender, EventArgs e)
+            UserOption showValue = new UserOption("valueMenuItem", true, valueMenuItem, _settings);
+            showValue.Changed += delegate
             {
-                treeView.Columns[1].IsVisible = _showValue.Value;
+                treeView.Columns[1].IsVisible = showValue.Value;
             };
 
-            _showMin = new UserOption("minMenuItem", false, minMenuItem, _settings);
-            _showMin.Changed += delegate (object sender, EventArgs e)
+            UserOption showMin = new UserOption("minMenuItem", false, minMenuItem, _settings);
+            showMin.Changed += delegate
             {
-                treeView.Columns[2].IsVisible = _showMin.Value;
+                treeView.Columns[2].IsVisible = showMin.Value;
             };
 
-            _showMax = new UserOption("maxMenuItem", true, maxMenuItem, _settings);
-            _showMax.Changed += delegate (object sender, EventArgs e)
+            UserOption showMax = new UserOption("maxMenuItem", true, maxMenuItem, _settings);
+            showMax.Changed += delegate
             {
-                treeView.Columns[3].IsVisible = _showMax.Value;
+                treeView.Columns[3].IsVisible = showMax.Value;
             };
 
-            _startMinimized = new UserOption("startMinMenuItem", false, startMinMenuItem, _settings);
+            var _ = new UserOption("startMinMenuItem", false, startMinMenuItem, _settings);
             _minimizeToTray = new UserOption("minTrayMenuItem", true, minTrayMenuItem, _settings);
-            _minimizeToTray.Changed += delegate (object sender, EventArgs e)
+            _minimizeToTray.Changed += delegate
             {
                 _systemTray.IsMainIconEnabled = _minimizeToTray.Value;
             };
@@ -214,7 +200,7 @@ namespace OpenHardwareMonitor.GUI
             _minimizeOnClose = new UserOption("minCloseMenuItem", false, minCloseMenuItem, _settings);
 
             _autoStart = new UserOption(null, _startupManager.Startup, startupMenuItem, _settings);
-            _autoStart.Changed += delegate (object sender, EventArgs e)
+            _autoStart.Changed += delegate
             {
                 try
                 {
@@ -229,49 +215,49 @@ namespace OpenHardwareMonitor.GUI
             };
 
             _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
-            _readMainboardSensors.Changed += delegate (object sender, EventArgs e)
+            _readMainboardSensors.Changed += delegate
             {
                 _computer.MainboardEnabled = _readMainboardSensors.Value;
             };
 
             _readCpuSensors = new UserOption("cpuMenuItem", true, cpuMenuItem, _settings);
-            _readCpuSensors.Changed += delegate (object sender, EventArgs e)
+            _readCpuSensors.Changed += delegate
             {
                 _computer.CPUEnabled = _readCpuSensors.Value;
             };
 
             _readRamSensors = new UserOption("ramMenuItem", true, ramMenuItem, _settings);
-            _readRamSensors.Changed += delegate (object sender, EventArgs e)
+            _readRamSensors.Changed += delegate
             {
                 _computer.RAMEnabled = _readRamSensors.Value;
             };
 
             _readGpuSensors = new UserOption("gpuMenuItem", true, gpuMenuItem, _settings);
-            _readGpuSensors.Changed += delegate (object sender, EventArgs e)
+            _readGpuSensors.Changed += delegate
             {
                 _computer.GPUEnabled = _readGpuSensors.Value;
             };
 
             _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
-            _readFanControllersSensors.Changed += delegate (object sender, EventArgs e)
+            _readFanControllersSensors.Changed += delegate
             {
                 _computer.FanControllerEnabled = _readFanControllersSensors.Value;
             };
 
             _readHddSensors = new UserOption("hddMenuItem", true, hddMenuItem, _settings);
-            _readHddSensors.Changed += delegate (object sender, EventArgs e)
+            _readHddSensors.Changed += delegate
             {
                 _computer.HDDEnabled = _readHddSensors.Value;
             };
 
             _readNicSensors = new UserOption("nicMenuItem", true, nicMenuItem, _settings);
-            _readNicSensors.Changed += delegate (object sender, EventArgs e)
+            _readNicSensors.Changed += delegate
             {
                 _computer.NICEnabled = _readNicSensors.Value;
             };
 
             _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
-            _showGadget.Changed += delegate (object sender, EventArgs e)
+            _showGadget.Changed += delegate
             {
                 if (_gadget != null)
                     _gadget.Visible = _showGadget.Value;
@@ -280,20 +266,20 @@ namespace OpenHardwareMonitor.GUI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            _server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085));
-            if (_server.PlatformNotSupported)
+            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085));
+            if (Server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
                 webMenuItem.Visible = false;
             }
 
             _runWebServer = new UserOption("runWebServerMenuItem", false, runWebServerMenuItem, _settings);
-            _runWebServer.Changed += delegate (object sender, EventArgs e)
+            _runWebServer.Changed += delegate
             {
                 if (_runWebServer.Value)
-                    _server.StartHTTPListener();
+                    Server.StartHttpListener();
                 else
-                    _server.StopHTTPListener();
+                    Server.StopHttpListener();
             };
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
@@ -366,12 +352,9 @@ namespace OpenHardwareMonitor.GUI
                 }
             }
             else
-            {
                 Show();
-            }
 
             // Create a handle, otherwise calling Close() does not fire FormClosed
-            IntPtr handle = Handle;
 
             // Make sure the settings are saved when the user logs off
             Microsoft.Win32.SystemEvents.SessionEnded += delegate
@@ -379,14 +362,14 @@ namespace OpenHardwareMonitor.GUI
                 _computer.Close();
                 SaveConfiguration();
                 if (_runWebServer.Value)
-                    _server.Quit();
+                    Server.Quit();
             };
         }
 
         private void InitializeSplitter()
         {
             splitContainer.SplitterDistance = _settings.GetValue("splitContainer.SplitterDistance", 400);
-            splitContainer.SplitterMoved += delegate (object sender, System.Windows.Forms.SplitterEventArgs e)
+            splitContainer.SplitterMoved += delegate
             {
                 _settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance);
             };
@@ -394,10 +377,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void InitializePlotForm()
         {
-            _plotForm = new Form();
-            _plotForm.FormBorderStyle = FormBorderStyle.SizableToolWindow;
-            _plotForm.ShowInTaskbar = false;
-            _plotForm.StartPosition = FormStartPosition.Manual;
+            _plotForm = new Form { FormBorderStyle = FormBorderStyle.SizableToolWindow, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual };
             AddOwnedForm(_plotForm);
             _plotForm.Bounds = new Rectangle
             {
@@ -410,7 +390,7 @@ namespace OpenHardwareMonitor.GUI
             _showPlot = new UserOption("plotMenuItem", false, plotMenuItem, _settings);
             _plotLocation = new UserRadioGroup("plotLocation", 0, new[] { plotWindowMenuItem, plotBottomMenuItem, plotRightMenuItem }, _settings);
 
-            _showPlot.Changed += delegate (object sender, EventArgs e)
+            _showPlot.Changed += delegate
             {
                 if (_plotLocation.Value == 0)
                 {
@@ -425,7 +405,7 @@ namespace OpenHardwareMonitor.GUI
                 }
                 treeView.Invalidate();
             };
-            _plotLocation.Changed += delegate (object sender, EventArgs e)
+            _plotLocation.Changed += delegate
             {
                 switch (_plotLocation.Value)
                 {
@@ -466,7 +446,8 @@ namespace OpenHardwareMonitor.GUI
                 }
             };
 
-            EventHandler moveOrResizePlotForm = delegate (object sender, EventArgs e)
+
+            void MoveOrResizePlotForm(object sender, EventArgs e)
             {
                 if (_plotForm.WindowState != FormWindowState.Minimized)
                 {
@@ -475,11 +456,12 @@ namespace OpenHardwareMonitor.GUI
                     _settings.SetValue("plotForm.Width", _plotForm.Bounds.Width);
                     _settings.SetValue("plotForm.Height", _plotForm.Bounds.Height);
                 }
-            };
-            _plotForm.Move += moveOrResizePlotForm;
-            _plotForm.Resize += moveOrResizePlotForm;
+            }
+            
+            _plotForm.Move += MoveOrResizePlotForm;
+            _plotForm.Resize += MoveOrResizePlotForm;
 
-            _plotForm.VisibleChanged += delegate (object sender, EventArgs e)
+            _plotForm.VisibleChanged += delegate
             {
                 Rectangle bounds = new Rectangle(_plotForm.Location, _plotForm.Size);
                 Screen screen = Screen.FromRectangle(bounds);
@@ -493,7 +475,7 @@ namespace OpenHardwareMonitor.GUI
                 }
             };
 
-            VisibleChanged += delegate (object sender, EventArgs e)
+            VisibleChanged += delegate
             {
                 if (Visible && _showPlot.Value && _plotLocation.Value == 0)
                     _plotForm.Show();
@@ -502,11 +484,12 @@ namespace OpenHardwareMonitor.GUI
             };
         }
 
-        private void InsertSorted(Collection<Node> nodes, HardwareNode node)
+        private void InsertSorted(IList<Node> nodes, HardwareNode node)
         {
             int i = 0;
             while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType < node.Hardware.HardwareType)
                 i++;
+
             nodes.Insert(i, node);
         }
 
@@ -530,8 +513,7 @@ namespace OpenHardwareMonitor.GUI
             List<HardwareNode> nodesToRemove = new List<HardwareNode>();
             foreach (Node node in _root.Nodes)
             {
-                HardwareNode hardwareNode = node as HardwareNode;
-                if (hardwareNode != null && hardwareNode.Hardware == hardware)
+                if (node is HardwareNode hardwareNode && hardwareNode.Hardware == hardware)
                     nodesToRemove.Add(hardwareNode);
             }
             foreach (HardwareNode hardwareNode in nodesToRemove)
@@ -544,20 +526,15 @@ namespace OpenHardwareMonitor.GUI
 
         private void NodeTextBoxText_DrawText(object sender, DrawEventArgs e)
         {
-            Node node = e.Node.Tag as Node;
-            if (node != null)
+            if (e.Node.Tag is Node node)
             {
-                Color color;
                 if (node.IsVisible)
                 {
-                    SensorNode sensorNode = node as SensorNode;
-                    if (plotMenuItem.Checked && sensorNode != null && _sensorPlotColors.TryGetValue(sensorNode.Sensor, out color))
+                    if (plotMenuItem.Checked && node is SensorNode sensorNode && _sensorPlotColors.TryGetValue(sensorNode.Sensor, out Color color))
                         e.TextColor = color;
                 }
                 else
-                {
                     e.TextColor = Color.DarkGray;
-                }
             }
         }
 
@@ -566,10 +543,10 @@ namespace OpenHardwareMonitor.GUI
             List<ISensor> selected = new List<ISensor>();
             IDictionary<ISensor, Color> colors = new Dictionary<ISensor, Color>();
             int colorIndex = 0;
+
             foreach (TreeNodeAdv node in treeView.AllNodes)
             {
-                SensorNode sensorNode = node.Tag as SensorNode;
-                if (sensorNode != null)
+                if (node.Tag is SensorNode sensorNode)
                 {
                     if (sensorNode.Plot)
                     {
@@ -590,14 +567,15 @@ namespace OpenHardwareMonitor.GUI
             // colors jump around as little as possible as sensors get added/removed
             // from the plot
             var usedColors = new List<Color>();
-            foreach (var curSelectedSensor in selected)
+            foreach (ISensor curSelectedSensor in selected)
             {
                 if (!colors.ContainsKey(curSelectedSensor))
                     continue;
-                var curColor = colors[curSelectedSensor];
+
+                Color curColor = colors[curSelectedSensor];
                 if (usedColors.Contains(curColor))
                 {
-                    foreach (var potentialNewColor in _plotColorPalette)
+                    foreach (Color potentialNewColor in _plotColorPalette)
                     {
                         if (!colors.Values.Contains(potentialNewColor))
                         {
@@ -615,8 +593,7 @@ namespace OpenHardwareMonitor.GUI
 
             foreach (TreeNodeAdv node in treeView.AllNodes)
             {
-                SensorNode sensorNode = node.Tag as SensorNode;
-                if (sensorNode != null && sensorNode.Plot && sensorNode.PenColor.HasValue)
+                if (node.Tag is SensorNode sensorNode && sensorNode.Plot && sensorNode.PenColor.HasValue)
                     colors.Add(sensorNode.Sensor, sensorNode.PenColor.Value);
             }
             _sensorPlotColors = colors;
@@ -632,8 +609,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void NodeCheckBox_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
         {
-            SensorNode node = e.Node.Tag as SensorNode;
-            e.Value = (node != null) && plotMenuItem.Checked;
+            e.Value = (e.Node.Tag is SensorNode node) && plotMenuItem.Checked;
         }
 
         private void ExitClick(object sender, EventArgs e)
@@ -647,12 +623,12 @@ namespace OpenHardwareMonitor.GUI
             treeView.Invalidate();
             _plotPanel.InvalidatePlot();
             _systemTray.Redraw();
-            if (_gadget != null)
-                _gadget.Redraw();
-            if (_wmiProvider != null)
-                _wmiProvider.Update();
+            _gadget?.Redraw();
+            _wmiProvider?.Update();
+
             if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
                 _logger.Log();
+
             if (_delayCount < 4)
                 _delayCount++;
         }
@@ -660,14 +636,14 @@ namespace OpenHardwareMonitor.GUI
         private void SaveConfiguration()
         {
             _plotPanel.SetCurrentSettings();
+
             foreach (TreeColumn column in treeView.Columns)
-            {
                 _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
-            }
 
-            _settings.SetValue("listenerPort", _server.ListenerPort);
+            _settings.SetValue("listenerPort", Server.ListenerPort);
 
-            string fileName = Path.ChangeExtension(System.Windows.Forms.Application.ExecutablePath, ".config");
+            string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
+
             try
             {
                 _settings.Save(fileName);
@@ -705,10 +681,8 @@ namespace OpenHardwareMonitor.GUI
             Rectangle intersection = Rectangle.Intersect(fullWorkingArea, newBounds);
             if (intersection.Width < 20 || intersection.Height < 20 || !_settings.Contains("mainForm.Location.X"))
             {
-                newBounds.X = (Screen.PrimaryScreen.WorkingArea.Width / 2) -
-                              (newBounds.Width / 2);
-                newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) -
-                              (newBounds.Height / 2);
+                newBounds.X = (Screen.PrimaryScreen.WorkingArea.Width / 2) - (newBounds.Width / 2);
+                newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) - (newBounds.Height / 2);
             }
             Bounds = newBounds;
         }
@@ -721,34 +695,31 @@ namespace OpenHardwareMonitor.GUI
             _computer.Close();
             SaveConfiguration();
             if (_runWebServer.Value)
-                _server.Quit();
+                Server.Quit();
             _systemTray.Dispose();
         }
 
         private void AboutMenuItem_Click(object sender, EventArgs e)
         {
-            new AboutBox().ShowDialog();
+            _ = new AboutBox().ShowDialog();
         }
 
         private void TreeView_Click(object sender, EventArgs e)
         {
-
-            MouseEventArgs m = e as MouseEventArgs;
-            if (m == null || m.Button != MouseButtons.Right)
+            if (!(e is MouseEventArgs m) || m.Button != MouseButtons.Right)
                 return;
 
             NodeControlInfo info = treeView.GetNodeControlInfoAt(new Point(m.X, m.Y));
             treeView.SelectedNode = info.Node;
             if (info.Node != null)
             {
-                SensorNode node = info.Node.Tag as SensorNode;
-                if (node != null && node.Sensor != null)
+                if (info.Node.Tag is SensorNode node && node.Sensor != null)
                 {
                     treeContextMenu.MenuItems.Clear();
                     if (node.Sensor.Parameters.Count > 0)
                     {
                         MenuItem item = new MenuItem("Parameters...");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
                             ShowParameterForm(node.Sensor);
                         };
@@ -757,7 +728,7 @@ namespace OpenHardwareMonitor.GUI
                     if (nodeTextBoxText.EditEnabled)
                     {
                         MenuItem item = new MenuItem("Rename");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
                             nodeTextBoxText.BeginEdit();
                         };
@@ -766,7 +737,7 @@ namespace OpenHardwareMonitor.GUI
                     if (node.IsVisible)
                     {
                         MenuItem item = new MenuItem("Hide");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
                             node.IsVisible = false;
                         };
@@ -775,7 +746,7 @@ namespace OpenHardwareMonitor.GUI
                     else
                     {
                         MenuItem item = new MenuItem("Unhide");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
                             node.IsVisible = true;
                         };
@@ -784,10 +755,9 @@ namespace OpenHardwareMonitor.GUI
                     treeContextMenu.MenuItems.Add(new MenuItem("-"));
                     {
                         MenuItem item = new MenuItem("Pen Color...");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
-                            ColorDialog dialog = new ColorDialog();
-                            dialog.Color = node.PenColor.GetValueOrDefault();
+                            ColorDialog dialog = new ColorDialog { Color = node.PenColor.GetValueOrDefault() };
                             if (dialog.ShowDialog() == DialogResult.OK)
                                 node.PenColor = dialog.Color;
                         };
@@ -795,7 +765,7 @@ namespace OpenHardwareMonitor.GUI
                     }
                     {
                         MenuItem item = new MenuItem("Reset Pen Color");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
                             node.PenColor = null;
                         };
@@ -803,9 +773,8 @@ namespace OpenHardwareMonitor.GUI
                     }
                     treeContextMenu.MenuItems.Add(new MenuItem("-"));
                     {
-                        MenuItem item = new MenuItem("Show in Tray");
-                        item.Checked = _systemTray.Contains(node.Sensor);
-                        item.Click += delegate (object obj, EventArgs args)
+                        MenuItem item = new MenuItem("Show in Tray") { Checked = _systemTray.Contains(node.Sensor) };
+                        item.Click += delegate
                         {
                             if (item.Checked)
                                 _systemTray.Remove(node.Sensor);
@@ -816,9 +785,8 @@ namespace OpenHardwareMonitor.GUI
                     }
                     if (_gadget != null)
                     {
-                        MenuItem item = new MenuItem("Show in Gadget");
-                        item.Checked = _gadget.Contains(node.Sensor);
-                        item.Click += delegate (object obj, EventArgs args)
+                        MenuItem item = new MenuItem("Show in Gadget") { Checked = _gadget.Contains(node.Sensor) };
+                        item.Click += delegate
                         {
                             if (item.Checked)
                             {
@@ -836,10 +804,9 @@ namespace OpenHardwareMonitor.GUI
                         treeContextMenu.MenuItems.Add(new MenuItem("-"));
                         IControl control = node.Sensor.Control;
                         MenuItem controlItem = new MenuItem("Control");
-                        MenuItem defaultItem = new MenuItem("Default");
-                        defaultItem.Checked = control.ControlMode == ControlMode.Default;
+                        MenuItem defaultItem = new MenuItem("Default") { Checked = control.ControlMode == ControlMode.Default };
                         controlItem.MenuItems.Add(defaultItem);
-                        defaultItem.Click += delegate (object obj, EventArgs args)
+                        defaultItem.Click += delegate
                         {
                             control.SetDefault();
                         };
@@ -851,13 +818,11 @@ namespace OpenHardwareMonitor.GUI
                             if (i <= control.MaxSoftwareValue &&
                                 i >= control.MinSoftwareValue)
                             {
-                                MenuItem item = new MenuItem(i + " %");
-                                item.RadioCheck = true;
+                                MenuItem item = new MenuItem(i + " %") { RadioCheck = true };
                                 manualItem.MenuItems.Add(item);
-                                item.Checked = control.ControlMode == ControlMode.Software &&
-                                  Math.Round(control.SoftwareValue) == i;
+                                item.Checked = control.ControlMode == ControlMode.Software && Math.Round(control.SoftwareValue) == i;
                                 int softwareValue = i;
-                                item.Click += delegate (object obj, EventArgs args)
+                                item.Click += delegate
                                 {
                                     control.SetSoftware(softwareValue);
                                 };
@@ -869,15 +834,14 @@ namespace OpenHardwareMonitor.GUI
                     treeContextMenu.Show(treeView, new Point(m.X, m.Y));
                 }
 
-                HardwareNode hardwareNode = info.Node.Tag as HardwareNode;
-                if (hardwareNode != null && hardwareNode.Hardware != null)
+                if (info.Node.Tag is HardwareNode hardwareNode && hardwareNode.Hardware != null)
                 {
                     treeContextMenu.MenuItems.Clear();
 
                     if (nodeTextBoxText.EditEnabled)
                     {
                         MenuItem item = new MenuItem("Rename");
-                        item.Click += delegate (object obj, EventArgs args)
+                        item.Click += delegate
                         {
                             nodeTextBoxText.BeginEdit();
                         };
@@ -942,21 +906,16 @@ namespace OpenHardwareMonitor.GUI
             SysTrayHideShow();
         }
 
-        private void ShowParameterForm(ISensor sensor)
+        private void ShowParameterForm(ISensor sensorForm)
         {
-            ParameterForm form = new ParameterForm();
-            form.Parameters = sensor.Parameters;
-            form.captionLabel.Text = sensor.Name;
+            ParameterForm form = new ParameterForm { Parameters = sensorForm.Parameters, captionLabel = { Text = sensorForm.Name } };
             form.ShowDialog();
         }
 
         private void TreeView_NodeMouseDoubleClick(object sender, TreeNodeAdvMouseEventArgs e)
         {
-            SensorNode node = e.Node.Tag as SensorNode;
-            if (node != null && node.Sensor != null && node.Sensor.Parameters.Count > 0)
-            {
+            if (e.Node.Tag is SensorNode node && node.Sensor != null && node.Sensor.Parameters.Count > 0)
                 ShowParameterForm(node.Sensor);
-            }
         }
 
         private void CelsiusMenuItem_Click(object sender, EventArgs e)
@@ -975,10 +934,10 @@ namespace OpenHardwareMonitor.GUI
 
         private void ResetMinMaxMenuItem_Click(object sender, EventArgs e)
         {
-            _computer.Accept(new SensorVisitor(delegate (ISensor sensor)
+            _computer.Accept(new SensorVisitor(delegate (ISensor sensorClick)
             {
-                sensor.ResetMin();
-                sensor.ResetMax();
+                sensorClick.ResetMin();
+                sensorClick.ResetMax();
             }));
         }
 
@@ -1006,7 +965,7 @@ namespace OpenHardwareMonitor.GUI
 
         private void TreeView_MouseMove(object sender, MouseEventArgs e)
         {
-            _selectionDragging = _selectionDragging & (e.Button & (MouseButtons.Left | MouseButtons.Right)) > 0;
+            _selectionDragging &= (e.Button & (MouseButtons.Left | MouseButtons.Right)) > 0;
             if (_selectionDragging)
                 treeView.SelectedNode = treeView.GetNodeAt(e.Location);
         }
@@ -1026,9 +985,6 @@ namespace OpenHardwareMonitor.GUI
             new PortForm(this).ShowDialog();
         }
 
-        public HttpServer Server
-        {
-            get { return _server; }
-        }
+        public HttpServer Server { get; }
     }
 }

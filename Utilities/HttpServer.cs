@@ -23,24 +23,22 @@ namespace OpenHardwareMonitor.Utilities
 {
     public class HttpServer
     {
-        private HttpListener listener;
-        private int listenerPort;
-        private Thread listenerThread;
-        private Node root;
+        private readonly HttpListener _listener;
+        private Thread _listenerThread;
+        private readonly Node _root;
 
         public HttpServer(Node node, int port)
         {
-            root = node;
-            listenerPort = port;
+            _root = node;
+            ListenerPort = port;
 
             try
             {
-                listener = new HttpListener();
-                listener.IgnoreWriteExceptions = true;
+                _listener = new HttpListener { IgnoreWriteExceptions = true };
             }
             catch (PlatformNotSupportedException)
             {
-                listener = null;
+                _listener = null;
             }
         }
 
@@ -48,29 +46,29 @@ namespace OpenHardwareMonitor.Utilities
         {
             get
             {
-                return listener == null;
+                return _listener == null;
             }
         }
 
-        public Boolean StartHTTPListener()
+        public bool StartHttpListener()
         {
             if (PlatformNotSupported)
                 return false;
 
             try
             {
-                if (listener.IsListening)
+                if (_listener.IsListening)
                     return true;
 
-                string prefix = "http://+:" + listenerPort + "/";
-                listener.Prefixes.Clear();
-                listener.Prefixes.Add(prefix);
-                listener.Start();
+                string prefix = "http://+:" + ListenerPort + "/";
+                _listener.Prefixes.Clear();
+                _listener.Prefixes.Add(prefix);
+                _listener.Start();
 
-                if (listenerThread == null)
+                if (_listenerThread == null)
                 {
-                    listenerThread = new Thread(HandleRequests);
-                    listenerThread.Start();
+                    _listenerThread = new Thread(HandleRequests);
+                    _listenerThread.Start();
                 }
             }
             catch (Exception)
@@ -81,40 +79,33 @@ namespace OpenHardwareMonitor.Utilities
             return true;
         }
 
-        public Boolean StopHTTPListener()
+        public bool StopHttpListener()
         {
             if (PlatformNotSupported)
                 return false;
 
             try
             {
-                if (listenerThread != null)
-                    listenerThread.Abort();
-                listener.Stop();
-                listenerThread = null;
+                _listenerThread?.Abort();
+                _listener.Stop();
+                _listenerThread = null;
             }
-            catch (HttpListenerException)
-            {
-            }
+            catch (HttpListenerException) 
+            { }
             catch (ThreadAbortException)
-            {
-            }
+            { }
             catch (NullReferenceException)
-            {
-            }
+            { }
             catch (Exception)
-            {
-            }
+            { }
             return true;
         }
 
         private void HandleRequests()
         {
-
-            while (listener.IsListening)
+            while (_listener.IsListening)
             {
-                var context = listener.BeginGetContext(
-                  new AsyncCallback(ListenerCallback), listener);
+                IAsyncResult context = _listener.BeginGetContext(ListenerCallback, _listener);
                 context.AsyncWaitHandle.WaitOne();
             }
         }
@@ -122,7 +113,7 @@ namespace OpenHardwareMonitor.Utilities
         public static IDictionary<string, string> ToDictionary(NameValueCollection col)
         {
             IDictionary<string, string> dict = new Dictionary<string, string>();
-            foreach (var k in col.AllKeys)
+            foreach (string k in col.AllKeys)
             {
                 dict.Add(k, col[k]);
             }
@@ -131,12 +122,12 @@ namespace OpenHardwareMonitor.Utilities
 
         public SensorNode FindSensor(Node node, string id)
         {
-            if (node is SensorNode)
+            if (node is SensorNode sNode)
             {
-                SensorNode sNode = (SensorNode)node;
                 if (sNode.Sensor.Identifier.ToString() == id)
                     return sNode;
             }
+
             foreach (Node child in node.Nodes)
             {
                 SensorNode s = FindSensor(child, id);
@@ -188,32 +179,26 @@ namespace OpenHardwareMonitor.Utilities
             {
                 if (dict.ContainsKey("id"))
                 {
-                    SensorNode sNode = FindSensor(root, dict["id"]);
+                    SensorNode sNode = FindSensor(_root, dict["id"]);
 
                     if (sNode == null)
                     {
                         throw new ArgumentException("Unknown id " + dict["id"] + " specified");
                     }
 
-                    if (dict["action"] == "Set")
+                    switch (dict["action"])
                     {
-                        if (dict.ContainsKey("value"))
-                        {
+                        case "Set" when dict.ContainsKey("value"):
                             SetSensorControlValue(sNode, dict["value"]);
-                        }
-                        else
-                        {
+                            break;
+                        case "Set":
                             throw new ArgumentNullException("No value provided");
-                        }
-                    }
-                    else if (dict["action"] == "Get")
-                    {
-                        result["value"] = sNode.Sensor.Value;
-                        result["format"] = sNode.Format;
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Unknown action type " + dict["action"]);
+                        case "Get":
+                            result["value"] = sNode.Sensor.Value;
+                            result["format"] = sNode.Format;
+                            break;
+                        default:
+                            throw new ArgumentException("Unknown action type " + dict["action"]);
                     }
                 }
                 else
@@ -231,10 +216,8 @@ namespace OpenHardwareMonitor.Utilities
         //Currently the only supported base URL is http://localhost:8085/Sensor.
         private string HandlePostRequest(HttpListenerRequest request)
         {
-            JObject result = new JObject();
-
-            result["result"] = "ok";
-
+            JObject result = new JObject { ["result"] = "ok" };
+            
             try
             {
                 if (request.Url.Segments.Length == 2)
@@ -244,7 +227,9 @@ namespace OpenHardwareMonitor.Utilities
                         HandleSensorRequest(request, result);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid URL ('" + request.Url.Segments[1] + "'), possible values: ['Sensor']");
+                    }
                 }
                 else
                     throw new ArgumentException("Empty URL, possible values: ['Sensor']");
@@ -296,11 +281,11 @@ namespace OpenHardwareMonitor.Utilities
             }
             else if (request.HttpMethod == "GET")
             {
-                var requestedFile = request.RawUrl.Substring(1);
+                string requestedFile = request.RawUrl.Substring(1);
 
                 if (requestedFile == "data.json")
                 {
-                    SendJSON(context.Response);
+                    SendJson(context.Response);
                     return;
                 }
 
@@ -344,10 +329,10 @@ namespace OpenHardwareMonitor.Utilities
                         response.ContentType = GetContentType("." + ext);
                         response.ContentLength64 = stream.Length;
                         byte[] buffer = new byte[512 * 1024];
-                        int len;
                         try
                         {
                             Stream output = response.OutputStream;
+                            int len;
                             while ((len = stream.Read(buffer, 0, buffer.Length)) > 0)
                             {
                                 output.Write(buffer, 0, len);
@@ -375,8 +360,8 @@ namespace OpenHardwareMonitor.Utilities
         {
             name = "OpenHardwareMonitor.Resources." + name;
 
-            string[] names =
-              Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
             for (int i = 0; i < names.Length; i++)
             {
                 if (names[i].Replace('\\', '.') == name)
@@ -411,7 +396,7 @@ namespace OpenHardwareMonitor.Utilities
             response.Close();
         }
 
-        private void SendJSON(HttpListenerResponse response)
+        private void SendJson(HttpListenerResponse response)
         {
             JObject json = new JObject();
 
@@ -424,11 +409,10 @@ namespace OpenHardwareMonitor.Utilities
             json["Max"] = "Max";
             json["ImageURL"] = "";
 
-            JArray children = new JArray();
-            children.Add(GenerateJSONForNode(root, ref nodeIndex));
+            JArray children = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
             json["Children"] = children;
 #if DEBUG
-            var responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
+            string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
       var responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
 #endif
@@ -451,14 +435,16 @@ namespace OpenHardwareMonitor.Utilities
             response.Close();
         }
 
-        private JObject GenerateJSONForNode(Node n, ref int nodeIndex)
+        private JObject GenerateJsonForNode(Node n, ref int nodeIndex)
         {
-            JObject jsonNode = new JObject();
-            jsonNode["id"] = nodeIndex++;
-            jsonNode["Text"] = n.Text;
-            jsonNode["Min"] = "";
-            jsonNode["Value"] = "";
-            jsonNode["Max"] = "";
+            JObject jsonNode = new JObject
+            {
+                ["id"] = nodeIndex++,
+                ["Text"] = n.Text,
+                ["Min"] = "",
+                ["Value"] = "",
+                ["Max"] = ""
+            };
 
             if (n is SensorNode)
             {
@@ -469,13 +455,13 @@ namespace OpenHardwareMonitor.Utilities
                 jsonNode["Max"] = ((SensorNode)n).Max;
                 jsonNode["ImageURL"] = "images/transparent.png";
             }
-            else if (n is HardwareNode)
+            else if (n is HardwareNode hardwareNode)
             {
-                jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile((HardwareNode)n);
+                jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
             }
-            else if (n is TypeNode)
+            else if (n is TypeNode typeNode)
             {
-                jsonNode["ImageURL"] = "images_icon/" + GetTypeImageFile((TypeNode)n);
+                jsonNode["ImageURL"] = "images_icon/" + GetTypeImageFile(typeNode);
             }
             else
             {
@@ -485,30 +471,12 @@ namespace OpenHardwareMonitor.Utilities
             JArray children = new JArray();
             foreach (Node child in n.Nodes)
             {
-                children.Add(GenerateJSONForNode(child, ref nodeIndex));
+                children.Add(GenerateJsonForNode(child, ref nodeIndex));
             }
 
             jsonNode["Children"] = children;
 
             return jsonNode;
-        }
-
-        private static void ReturnFile(HttpListenerContext context, string filePath)
-        {
-            context.Response.ContentType =
-              GetContentType(Path.GetExtension(filePath));
-            const int bufferSize = 1024 * 512; //512KB
-            var buffer = new byte[bufferSize];
-            using (var fs = File.OpenRead(filePath))
-            {
-
-                context.Response.ContentLength64 = fs.Length;
-                int read;
-                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
-                    context.Response.OutputStream.Write(buffer, 0, read);
-            }
-
-            context.Response.OutputStream.Close();
         }
 
         private static string GetContentType(string extension)
@@ -598,19 +566,15 @@ namespace OpenHardwareMonitor.Utilities
 
         }
 
-        public int ListenerPort
-        {
-            get { return listenerPort; }
-            set { listenerPort = value; }
-        }
+        public int ListenerPort { get; set; }
 
         ~HttpServer()
         {
             if (PlatformNotSupported)
                 return;
 
-            StopHTTPListener();
-            listener.Abort();
+            StopHttpListener();
+            _listener.Abort();
         }
 
         public void Quit()
@@ -618,8 +582,8 @@ namespace OpenHardwareMonitor.Utilities
             if (PlatformNotSupported)
                 return;
 
-            StopHTTPListener();
-            listener.Abort();
+            StopHttpListener();
+            _listener.Abort();
         }
     }
 }

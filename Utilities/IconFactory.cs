@@ -4,11 +4,9 @@
 // All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Text;
 
 namespace OpenHardwareMonitor.Utilities
 {
@@ -16,31 +14,31 @@ namespace OpenHardwareMonitor.Utilities
     {
         private struct BITMAPINFOHEADER
         {
-            public uint Size;
-            public int Width;
-            public int Height;
-            public ushort Planes;
-            public ushort BitCount;
-            public uint Compression;
-            public uint SizeImage;
-            public int XPelsPerMeter;
-            public int YPelsPerMeter;
-            public uint ClrUsed;
-            public uint ClrImportant;
+            public readonly uint Size;
+            public readonly int Width;
+            public readonly int Height;
+            public readonly ushort Planes;
+            public readonly ushort BitCount;
+            public readonly uint Compression;
+            public readonly uint SizeImage;
+            public readonly int XPelsPerMeter;
+            public readonly int YPelsPerMeter;
+            public readonly uint ClrUsed;
+            public readonly uint ClrImportant;
 
             public BITMAPINFOHEADER(int width, int height, int bitCount)
             {
-                this.Size = 40;
-                this.Width = width;
-                this.Height = height;
-                this.Planes = 1;
-                this.BitCount = (ushort)bitCount;
-                this.Compression = 0;
-                this.SizeImage = 0;
-                this.XPelsPerMeter = 0;
-                this.YPelsPerMeter = 0;
-                this.ClrUsed = 0;
-                this.ClrImportant = 0;
+                Size = 40;
+                Width = width;
+                Height = height;
+                Planes = 1;
+                BitCount = (ushort)bitCount;
+                Compression = 0;
+                SizeImage = 0;
+                XPelsPerMeter = 0;
+                YPelsPerMeter = 0;
+                ClrUsed = 0;
+                ClrImportant = 0;
             }
 
             public void Write(BinaryWriter bw)
@@ -62,14 +60,14 @@ namespace OpenHardwareMonitor.Utilities
         private struct ICONIMAGE
         {
             public BITMAPINFOHEADER Header;
-            public byte[] Colors;
-            public int MaskSize;
+            public readonly byte[] Colors;
+            public readonly int MaskSize;
 
             public ICONIMAGE(int width, int height, byte[] colors)
             {
-                this.Header = new BITMAPINFOHEADER(width, height << 1,
+                Header = new BITMAPINFOHEADER(width, height << 1,
                   (8 * colors.Length) / (width * height));
-                this.Colors = colors;
+                Colors = colors;
                 MaskSize = (width * height) >> 3;
             }
 
@@ -86,25 +84,25 @@ namespace OpenHardwareMonitor.Utilities
 
         private struct ICONDIRENTRY
         {
-            public byte Width;
-            public byte Height;
-            public byte ColorCount;
-            public byte Reserved;
-            public ushort Planes;
-            public ushort BitCount;
-            public uint BytesInRes;
+            public readonly byte Width;
+            public readonly byte Height;
+            public readonly byte ColorCount;
+            public readonly byte Reserved;
+            public readonly ushort Planes;
+            public readonly ushort BitCount;
+            public readonly uint BytesInRes;
             public uint ImageOffset;
 
             public ICONDIRENTRY(ICONIMAGE image, int imageOffset)
             {
-                this.Width = (byte)image.Header.Width;
-                this.Height = (byte)(image.Header.Height >> 1);
-                this.ColorCount = 0;
-                this.Reserved = 0;
-                this.Planes = image.Header.Planes;
-                this.BitCount = image.Header.BitCount;
-                this.BytesInRes = (uint)(image.Header.Size + image.Colors.Length + image.MaskSize + image.MaskSize);
-                this.ImageOffset = (uint)imageOffset;
+                Width = (byte)image.Header.Width;
+                Height = (byte)(image.Header.Height >> 1);
+                ColorCount = 0;
+                Reserved = 0;
+                Planes = image.Header.Planes;
+                BitCount = image.Header.BitCount;
+                BytesInRes = (uint)(image.Header.Size + image.Colors.Length + image.MaskSize + image.MaskSize);
+                ImageOffset = (uint)imageOffset;
             }
 
             public void Write(BinaryWriter bw)
@@ -127,17 +125,17 @@ namespace OpenHardwareMonitor.Utilities
 
         private struct ICONDIR
         {
-            public ushort Reserved;
-            public ushort Type;
-            public ushort Count;
-            public ICONDIRENTRY[] Entries;
+            public readonly ushort Reserved;
+            public readonly ushort Type;
+            public readonly ushort Count;
+            public readonly ICONDIRENTRY[] Entries;
 
             public ICONDIR(ICONDIRENTRY[] entries)
             {
-                this.Reserved = 0;
-                this.Type = 1;
-                this.Count = (ushort)entries.Length;
-                this.Entries = entries;
+                Reserved = 0;
+                Type = 1;
+                Count = (ushort)entries.Length;
+                Entries = entries;
             }
 
             public void Write(BinaryWriter bw)
@@ -158,7 +156,7 @@ namespace OpenHardwareMonitor.Utilities
             }
         }
 
-        private static BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream());
+        private static readonly BinaryWriter BinaryWriter = new BinaryWriter(new MemoryStream());
 
         public static Icon Create(byte[] colors, int width, int height,
           PixelFormat format)
@@ -167,16 +165,15 @@ namespace OpenHardwareMonitor.Utilities
                 throw new NotImplementedException();
 
             ICONIMAGE image = new ICONIMAGE(width, height, colors);
-            ICONDIR dir = new ICONDIR(new ICONDIRENTRY[] { new ICONDIRENTRY(image, 0) });
+            ICONDIR dir = new ICONDIR(new[] { new ICONDIRENTRY(image, 0) });
             dir.Entries[0].ImageOffset = dir.Size;
 
-            Icon icon;
-            binaryWriter.BaseStream.Position = 0;
-            dir.Write(binaryWriter);
-            image.Write(binaryWriter);
+            BinaryWriter.BaseStream.Position = 0;
+            dir.Write(BinaryWriter);
+            image.Write(BinaryWriter);
 
-            binaryWriter.BaseStream.Position = 0;
-            icon = new Icon(binaryWriter.BaseStream);
+            BinaryWriter.BaseStream.Position = 0;
+            Icon icon = new Icon(BinaryWriter.BaseStream);
 
             return icon;
         }

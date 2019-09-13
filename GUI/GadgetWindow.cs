@@ -13,16 +13,14 @@ using System.Windows.Forms;
 
 namespace OpenHardwareMonitor.GUI
 {
-    public class GadgetWindow : NativeWindow, IDisposable
+    public sealed class GadgetWindow : NativeWindow, IDisposable
     {
-        private bool _visible = false;
-        private bool _lockPositionAndSize = false;
-        private bool _alwaysOnTop = false;
+        private bool _visible;
+        private bool _alwaysOnTop;
         private byte _opacity = 255;
         private Point _location = new Point(100, 100);
         private Size _size = new Size(130, 84);
-        private ContextMenu _contextMenu = null;
-        private MethodInfo _commandDispatch;
+        private readonly MethodInfo _commandDispatch;
         private IntPtr _handleBitmapDC;
         private Size _bufferSize;
         private Graphics _graphics;
@@ -37,7 +35,7 @@ namespace OpenHardwareMonitor.GUI
             Type commandType = typeof(Form).Assembly.GetType("System.Windows.Forms.Command");
             _commandDispatch = commandType.GetMethod("DispatchID",
               BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public,
-              null, new Type[] { typeof(int) }, null);
+              null, new[] { typeof(int) }, null);
 
             CreateHandle(CreateParams);
 
@@ -48,7 +46,7 @@ namespace OpenHardwareMonitor.GUI
             try
             {
                 bool value = true;
-                NativeMethods.DwmSetWindowAttribute(Handle, WindowAttribute.DWMWA_EXCLUDED_FROM_PEEK, ref value, Marshal.SizeOf(value));
+                NativeMethods.DwmSetWindowAttribute(Handle, WindowAttribute.DWMWA_EXCLUDED_FROM_PEEK, ref value, Marshal.SizeOf(true));
             }
             catch (DllNotFoundException) { }
             catch (EntryPointNotFoundException) { }
@@ -76,19 +74,22 @@ namespace OpenHardwareMonitor.GUI
 
         private void ShowContextMenu(Point position)
         {
-            NativeMethods.TrackPopupMenuEx(_contextMenu.Handle, TPM_RIGHTBUTTON | TPM_VERTICAL, position.X, position.Y, Handle, IntPtr.Zero);
+            NativeMethods.TrackPopupMenuEx(ContextMenu.Handle, TPM_RIGHTBUTTON | TPM_VERTICAL, position.X, position.Y, Handle, IntPtr.Zero);
         }
 
-        protected virtual CreateParams CreateParams
+        private CreateParams CreateParams
         {
             get
             {
-                CreateParams cp = new CreateParams();
-                cp.Width = 4096;
-                cp.Height = 4096;
-                cp.X = _location.X;
-                cp.Y = _location.Y;
-                cp.ExStyle = WS_EX_LAYERED | WS_EX_TOOLWINDOW;
+                CreateParams cp = new CreateParams
+                {
+                    Width = 4096,
+                    Height = 4096,
+                    X = _location.X,
+                    Y = _location.Y,
+                    ExStyle = WS_EX_LAYERED | WS_EX_TOOLWINDOW
+                };
+
                 return cp;
             }
         }
@@ -121,8 +122,7 @@ namespace OpenHardwareMonitor.GUI
                     break;
                 case WM_NCLBUTTONDBLCLK:
                     {
-                        if (MouseDoubleClick != null)
-                            MouseDoubleClick(this, new MouseEventArgs(MouseButtons.Left, 2, Macros.GET_X_LPARAM(message.LParam) - _location.X, Macros.GET_Y_LPARAM(message.LParam) - _location.Y, 0));
+                        MouseDoubleClick?.Invoke(this, new MouseEventArgs(MouseButtons.Left, 2, Macros.GET_X_LPARAM(message.LParam) - _location.X, Macros.GET_Y_LPARAM(message.LParam) - _location.Y, 0));
                         message.Result = IntPtr.Zero;
                     }
                     break;
@@ -133,7 +133,7 @@ namespace OpenHardwareMonitor.GUI
                     break;
                 case WM_NCRBUTTONUP:
                     {
-                        if (_contextMenu != null)
+                        if (ContextMenu != null)
                             ShowContextMenu(new Point(Macros.GET_X_LPARAM(message.LParam),Macros.GET_Y_LPARAM(message.LParam)));
                         message.Result = IntPtr.Zero;
                     }
@@ -141,7 +141,7 @@ namespace OpenHardwareMonitor.GUI
                 case WM_WINDOWPOSCHANGING:
                     {
                         WINDOWPOS wp = (WINDOWPOS)Marshal.PtrToStructure(message.LParam, typeof(WINDOWPOS));
-                        if (!_lockPositionAndSize)
+                        if (!LockPositionAndSize)
                         {
                             // prevent the window from leaving the screen
                             if ((wp.flags & SWP_NOMOVE) == 0)
@@ -160,8 +160,7 @@ namespace OpenHardwareMonitor.GUI
                                 if (_location.X != wp.x || _location.Y != wp.y)
                                 {
                                     _location = new Point(wp.x, wp.y);
-                                    if (LocationChanged != null)
-                                        LocationChanged(this, EventArgs.Empty);
+                                    LocationChanged?.Invoke(this, EventArgs.Empty);
                                 }
                             }
 
@@ -171,22 +170,17 @@ namespace OpenHardwareMonitor.GUI
                                 if (_size.Width != wp.cx || _size.Height != wp.cy)
                                 {
                                     _size = new Size(wp.cx, wp.cy);
-                                    if (SizeChanged != null)
-                                        SizeChanged(this, EventArgs.Empty);
+                                    SizeChanged?.Invoke(this, EventArgs.Empty);
                                 }
                             }
 
                             // update the size of the layered window
                             if ((wp.flags & SWP_NOSIZE) == 0)
-                            {
                                 NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero, IntPtr.Zero, ref _size, IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero, 0);
-                            }
 
                             // update the position of the layered window
                             if ((wp.flags & SWP_NOMOVE) == 0)
-                            {
                                 NativeMethods.SetWindowPos(Handle, IntPtr.Zero, _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
-                            }
                         }
 
                         // do not forward any move or size messages
@@ -209,12 +203,7 @@ namespace OpenHardwareMonitor.GUI
 
         private BlendFunction CreateBlendFunction()
         {
-            BlendFunction blend = new BlendFunction();
-            blend.BlendOp = AC_SRC_OVER;
-            blend.BlendFlags = 0;
-            blend.SourceConstantAlpha = _opacity;
-            blend.AlphaFormat = AC_SRC_ALPHA;
-            return blend;
+            return new BlendFunction { BlendOp = AC_SRC_OVER, BlendFlags = 0, SourceConstantAlpha = _opacity, AlphaFormat = AC_SRC_ALPHA };
         }
 
         private void CreateBuffer()
@@ -231,8 +220,7 @@ namespace OpenHardwareMonitor.GUI
             info.BitCount = 32;
             info.Planes = 1;
 
-            IntPtr ptr;
-            IntPtr hBmp = NativeMethods.CreateDIBSection(_handleBitmapDC, ref info, 0, out ptr, IntPtr.Zero, 0);
+            IntPtr hBmp = NativeMethods.CreateDIBSection(_handleBitmapDC, ref info, 0, out IntPtr _, IntPtr.Zero, 0);
             IntPtr hBmpOld = NativeMethods.SelectObject(_handleBitmapDC, hBmp);
             NativeMethods.DeleteObject(hBmpOld);
 
@@ -251,7 +239,7 @@ namespace OpenHardwareMonitor.GUI
             NativeMethods.DeleteDC(_handleBitmapDC);
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             DisposeBuffer();
         }
@@ -268,6 +256,7 @@ namespace OpenHardwareMonitor.GUI
                 DisposeBuffer();
                 CreateBuffer();
             }
+
             Paint(this, new PaintEventArgs(_graphics, new Rectangle(Point.Empty, _size)));
             Point pointSource = Point.Empty;
             BlendFunction blend = CreateBlendFunction();
@@ -305,6 +294,7 @@ namespace OpenHardwareMonitor.GUI
                 {
                     _visible = value;
                     NativeMethods.SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | (value ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+
                     if (value)
                     {
                         if (!_alwaysOnTop)
@@ -320,17 +310,7 @@ namespace OpenHardwareMonitor.GUI
         }
 
         // if locked, the window can not be moved or resized
-        public bool LockPositionAndSize
-        {
-            get
-            {
-                return _lockPositionAndSize;
-            }
-            set
-            {
-                _lockPositionAndSize = value;
-            }
-        }
+        public bool LockPositionAndSize { get; set; }
 
         public bool AlwaysOnTop
         {
@@ -343,15 +323,18 @@ namespace OpenHardwareMonitor.GUI
                 if (value != _alwaysOnTop)
                 {
                     _alwaysOnTop = value;
+
                     if (_alwaysOnTop)
                     {
                         if (_visible)
                             ShowDesktop.Instance.ShowDesktopChanged -= ShowDesktopChanged;
+
                         MoveToTopMost(Handle);
                     }
                     else
                     {
                         MoveToBottom(Handle);
+
                         if (_visible)
                             ShowDesktop.Instance.ShowDesktopChanged += ShowDesktopChanged;
                     }
@@ -371,8 +354,7 @@ namespace OpenHardwareMonitor.GUI
                 {
                     _size = value;
                     NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero, IntPtr.Zero, ref _size, IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero, 0);
-                    if (SizeChanged != null)
-                        SizeChanged(this, EventArgs.Empty);
+                    SizeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -389,23 +371,12 @@ namespace OpenHardwareMonitor.GUI
                 {
                     _location = value;
                     NativeMethods.SetWindowPos(Handle, IntPtr.Zero, _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
-                    if (LocationChanged != null)
-                        LocationChanged(this, EventArgs.Empty);
+                    LocationChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
 
-        public ContextMenu ContextMenu
-        {
-            get
-            {
-                return _contextMenu;
-            }
-            set
-            {
-                _contextMenu = value;
-            }
-        }
+        public ContextMenu ContextMenu { get; set; }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct BlendFunction
@@ -419,30 +390,30 @@ namespace OpenHardwareMonitor.GUI
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct WINDOWPOS
         {
-            public IntPtr hwnd;
-            public IntPtr hwndInsertAfter;
+            public readonly IntPtr hwnd;
+            public readonly IntPtr hwndInsertAfter;
             public int x;
             public int y;
-            public int cx;
-            public int cy;
+            public readonly int cx;
+            public readonly int cy;
             public uint flags;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct BITMAPINFO
         {
-            public Int32 Size;
-            public Int32 Width;
-            public Int32 Height;
-            public Int16 Planes;
-            public Int16 BitCount;
-            public Int32 Compression;
-            public Int32 SizeImage;
-            public Int32 XPelsPerMeter;
-            public Int32 YPelsPerMeter;
-            public Int32 ClrUsed;
-            public Int32 ClrImportant;
-            public Int32 Colors;
+            public int Size;
+            public int Width;
+            public int Height;
+            public short Planes;
+            public short BitCount;
+            public int Compression;
+            public int SizeImage;
+            public int XPelsPerMeter;
+            public int YPelsPerMeter;
+            public int ClrUsed;
+            public int ClrImportant;
+            public int Colors;
         }
 
         public static readonly IntPtr HWND_BOTTOM = (IntPtr)1;
@@ -506,7 +477,7 @@ namespace OpenHardwareMonitor.GUI
                 return (ushort)((ulong)l & 0xFFFF);
             }
 
-            public static UInt16 HIWORD(IntPtr l)
+            public static ushort HIWORD(IntPtr l)
             {
                 return (ushort)(((ulong)l >> 16) & 0xFFFF);
             }
@@ -529,7 +500,7 @@ namespace OpenHardwareMonitor.GUI
         {
             private const string USER = "user32.dll";
             private const string GDI = "gdi32.dll";
-            public const string DWMAPI = "dwmapi.dll";
+            private const string DWMAPI = "dwmapi.dll";
 
             [DllImport(USER, CallingConvention = CallingConvention.Winapi)]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -603,7 +574,7 @@ namespace OpenHardwareMonitor.GUI
             Location = location;
             HitResult = hitResult;
         }
-        public Point Location { get; private set; }
+        public Point Location { get; }
         public HitResult HitResult { get; set; }
     }
 }

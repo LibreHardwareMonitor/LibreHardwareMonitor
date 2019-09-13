@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Hardware;
 using OpenHardwareMonitor.Utilities;
@@ -16,38 +14,38 @@ namespace OpenHardwareMonitor.GUI
     public class SystemTray : IDisposable
     {
         private IComputer _computer;
-        private PersistentSettings _settings;
-        private UnitManager _unitManager;
-        private List<SensorNotifyIcon> _sensorList = new List<SensorNotifyIcon>();
-        private bool _mainIconEnabled = false;
-        private NotifyIconAdv _mainIcon;
+        private readonly PersistentSettings _settings;
+        private readonly UnitManager _unitManager;
+        private readonly List<SensorNotifyIcon> _sensorList = new List<SensorNotifyIcon>();
+        private bool _mainIconEnabled;
+        private readonly NotifyIconAdv _mainIcon;
 
         public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager)
         {
             _computer = computer;
             _settings = settings;
             _unitManager = unitManager;
-            computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
-            computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
+            computer.HardwareAdded += HardwareAdded;
+            computer.HardwareRemoved += HardwareRemoved;
 
             _mainIcon = new NotifyIconAdv();
 
             ContextMenu contextMenu = new ContextMenu();
             MenuItem hideShowItem = new MenuItem("Hide/Show");
-            hideShowItem.Click += delegate (object obj, EventArgs args)
+            hideShowItem.Click += delegate
             {
                 SendHideShowCommand();
             };
             contextMenu.MenuItems.Add(hideShowItem);
             contextMenu.MenuItems.Add(new MenuItem("-"));
             MenuItem exitItem = new MenuItem("Exit");
-            exitItem.Click += delegate (object obj, EventArgs args)
+            exitItem.Click += delegate
             {
                 SendExitCommand();
             };
             contextMenu.MenuItems.Add(exitItem);
             _mainIcon.ContextMenu = contextMenu;
-            _mainIcon.DoubleClick += delegate (object obj, EventArgs args)
+            _mainIcon.DoubleClick += delegate
             {
                 SendHideShowCommand();
             };
@@ -57,10 +55,12 @@ namespace OpenHardwareMonitor.GUI
 
         private void HardwareRemoved(IHardware hardware)
         {
-            hardware.SensorAdded -= new SensorEventHandler(SensorAdded);
-            hardware.SensorRemoved -= new SensorEventHandler(SensorRemoved);
+            hardware.SensorAdded -= SensorAdded;
+            hardware.SensorRemoved -= SensorRemoved;
+
             foreach (ISensor sensor in hardware.Sensors)
                 SensorRemoved(sensor);
+
             foreach (IHardware subHardware in hardware.SubHardware)
                 HardwareRemoved(subHardware);
         }
@@ -69,16 +69,17 @@ namespace OpenHardwareMonitor.GUI
         {
             foreach (ISensor sensor in hardware.Sensors)
                 SensorAdded(sensor);
-            hardware.SensorAdded += new SensorEventHandler(SensorAdded);
-            hardware.SensorRemoved += new SensorEventHandler(SensorRemoved);
+
+            hardware.SensorAdded += SensorAdded;
+            hardware.SensorRemoved += SensorRemoved;
+
             foreach (IHardware subHardware in hardware.SubHardware)
                 HardwareAdded(subHardware);
         }
 
         private void SensorAdded(ISensor sensor)
         {
-            if (_settings.GetValue(new Identifier(sensor.Identifier,
-              "tray").ToString(), false))
+            if (_settings.GetValue(new Identifier(sensor.Identifier, "tray").ToString(), false))
                 Add(sensor, false);
         }
 
@@ -113,12 +114,11 @@ namespace OpenHardwareMonitor.GUI
         {
             if (Contains(sensor))
                 return;
-            else
-            {
-                _sensorList.Add(new SensorNotifyIcon(this, sensor, balloonTip, _settings, _unitManager));
-                UpdateMainIconVisibilty();
-                _settings.SetValue(new Identifier(sensor.Identifier, "tray").ToString(), true);
-            }
+
+
+            _sensorList.Add(new SensorNotifyIcon(this, sensor, _settings, _unitManager));
+            UpdateMainIconVisibility();
+            _settings.SetValue(new Identifier(sensor.Identifier, "tray").ToString(), true);
         }
 
         public void Remove(ISensor sensor)
@@ -142,7 +142,7 @@ namespace OpenHardwareMonitor.GUI
             if (instance != null)
             {
                 _sensorList.Remove(instance);
-                UpdateMainIconVisibilty();
+                UpdateMainIconVisibility();
                 instance.Dispose();
             }
         }
@@ -151,19 +151,17 @@ namespace OpenHardwareMonitor.GUI
 
         public void SendHideShowCommand()
         {
-            if (HideShowCommand != null)
-                HideShowCommand(this, null);
+            HideShowCommand?.Invoke(this, null);
         }
 
         public event EventHandler ExitCommand;
 
         public void SendExitCommand()
         {
-            if (ExitCommand != null)
-                ExitCommand(this, null);
+            ExitCommand?.Invoke(this, null);
         }
 
-        private void UpdateMainIconVisibilty()
+        private void UpdateMainIconVisibility()
         {
             if (_mainIconEnabled)
                 _mainIcon.Visible = _sensorList.Count == 0;
@@ -179,7 +177,7 @@ namespace OpenHardwareMonitor.GUI
                 if (_mainIconEnabled != value)
                 {
                     _mainIconEnabled = value;
-                    UpdateMainIconVisibilty();
+                    UpdateMainIconVisibility();
                 }
             }
         }

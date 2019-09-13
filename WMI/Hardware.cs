@@ -13,10 +13,10 @@ namespace OpenHardwareMonitor.WMI
     {
         #region WMI Exposed
 
-        public string HardwareType { get; private set; }
-        public string Identifier { get; private set; }
-        public string Name { get; private set; }
-        public string Parent { get; private set; }
+        public string HardwareType { get; }
+        public string Identifier { get; }
+        public string Name { get; }
+        public string Parent { get; }
 
         #endregion
 

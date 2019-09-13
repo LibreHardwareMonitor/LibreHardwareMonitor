@@ -3,19 +3,15 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using System;
-using System.Collections.Generic;
 using OpenHardwareMonitor.Hardware;
 
 namespace OpenHardwareMonitor.GUI
 {
-    public class TypeNode : Node
+    public sealed class TypeNode : Node
     {
-        private SensorType _sensorType;
-
-        public TypeNode(SensorType sensorType) : base()
+        public TypeNode(SensorType sensorType)
         {
-            this._sensorType = sensorType;
+            SensorType = sensorType;
 
             switch (sensorType)
             {
@@ -69,7 +65,7 @@ namespace OpenHardwareMonitor.GUI
                     break;
                 case SensorType.Frequency:
                     Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                    Text = "Frequencys";
+                    Text = "Frequencies";
                     break;
                 case SensorType.Throughput:
                     Image = Utilities.EmbeddedResources.GetImage("throughput.png");
@@ -77,19 +73,19 @@ namespace OpenHardwareMonitor.GUI
                     break;
             }
 
-            NodeAdded += new NodeEventHandler(TypeNode_NodeAdded);
-            NodeRemoved += new NodeEventHandler(TypeNode_NodeRemoved);
+            NodeAdded += TypeNode_NodeAdded;
+            NodeRemoved += TypeNode_NodeRemoved;
         }
 
         private void TypeNode_NodeRemoved(Node node)
         {
-            node.IsVisibleChanged -= new NodeEventHandler(Node_IsVisibleChanged);
+            node.IsVisibleChanged -= Node_IsVisibleChanged;
             Node_IsVisibleChanged(null);
         }
 
         private void TypeNode_NodeAdded(Node node)
         {
-            node.IsVisibleChanged += new NodeEventHandler(Node_IsVisibleChanged);
+            node.IsVisibleChanged += Node_IsVisibleChanged;
             Node_IsVisibleChanged(null);
         }
 
@@ -106,9 +102,6 @@ namespace OpenHardwareMonitor.GUI
             IsVisible = false;
         }
 
-        public SensorType SensorType
-        {
-            get { return _sensorType; }
-        }
+        public SensorType SensorType { get; }
     }
 }

@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using OpenHardwareMonitor.Hardware;
+using OpenHardwareMonitor.Utilities;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
@@ -28,22 +29,18 @@ namespace OpenHardwareMonitor.GUI
         private DateTime _now;
         private float _dpiX;
         private float _dpiY;
-        private double _dpiXscale = 1;
-        private double _dpiYscale = 1;
+        private double _dpiXScale = 1;
+        private double _dpiYScale = 1;
 
         public PlotPanel(PersistentSettings settings, UnitManager unitManager)
         {
             _settings = settings;
             _unitManager = unitManager;
 
-            SetDPI();
+            SetDpi();
             _model = CreatePlotModel();
 
-            _plot = new Plot();
-            _plot.Dock = DockStyle.Fill;
-            _plot.Model = _model;
-            _plot.BackColor = Color.White;
-            _plot.ContextMenu = CreateMenu();
+            _plot = new Plot { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenu = CreateMenu() };
 
             UpdateAxesPosition();
 
@@ -56,7 +53,7 @@ namespace OpenHardwareMonitor.GUI
         {
             _settings.SetValue("plotPanel.MinTimeSpan", (float)_timeAxis.ViewMinimum);
             _settings.SetValue("plotPanel.MaxTimeSpan", (float)_timeAxis.ViewMaximum);
-            foreach (var axis in _axes.Values)
+            foreach (LinearAxis axis in _axes.Values)
             {
                 _settings.SetValue("plotPanel.Min" + axis.Key, (float)axis.ViewMinimum);
                 _settings.SetValue("plotPanel.Max" + axis.Key, (float)axis.ViewMaximum);
@@ -118,46 +115,48 @@ namespace OpenHardwareMonitor.GUI
               _settings.GetValue("plotPanel.MaxTimeSpan", 10.0f * 60));
             _timeAxis.StringFormat = "h:mm";
 
-            var units = new Dictionary<SensorType, string>();
-            units.Add(SensorType.Voltage, "V");
-            units.Add(SensorType.Clock, "MHz");
-            units.Add(SensorType.Temperature, "°C");
-            units.Add(SensorType.Load, "%");
-            units.Add(SensorType.Fan, "RPM");
-            units.Add(SensorType.Flow, "L/h");
-            units.Add(SensorType.Control, "%");
-            units.Add(SensorType.Level, "%");
-            units.Add(SensorType.Factor, "1");
-            units.Add(SensorType.Power, "W");
-            units.Add(SensorType.Data, "GB");
-            units.Add(SensorType.Frequency, "Hz");
+            var units = new Dictionary<SensorType, string>
+            {
+                { SensorType.Voltage, "V" },
+                { SensorType.Clock, "MHz" },
+                { SensorType.Temperature, "°C" },
+                { SensorType.Load, "%" },
+                { SensorType.Fan, "RPM" },
+                { SensorType.Flow, "L/h" },
+                { SensorType.Control, "%" },
+                { SensorType.Level, "%" },
+                { SensorType.Factor, "1" },
+                { SensorType.Power, "W" },
+                { SensorType.Data, "GB" },
+                { SensorType.Frequency, "Hz" }
+            };
 
             foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
             {
-                var axis = new LinearAxis();
-                axis.Position = AxisPosition.Left;
-                axis.MajorGridlineStyle = LineStyle.Solid;
-                axis.MajorGridlineThickness = 1;
-                axis.MajorGridlineColor = _timeAxis.MajorGridlineColor;
-                axis.MinorGridlineStyle = LineStyle.Solid;
-                axis.MinorGridlineThickness = 1;
-                axis.MinorGridlineColor = _timeAxis.MinorGridlineColor;
-                axis.AxislineStyle = LineStyle.Solid;
-                axis.Title = type.ToString();
-                axis.Key = type.ToString();
+                var axis = new LinearAxis
+                {
+                    Position = AxisPosition.Left,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    MajorGridlineThickness = 1,
+                    MajorGridlineColor = _timeAxis.MajorGridlineColor,
+                    MinorGridlineStyle = LineStyle.Solid,
+                    MinorGridlineThickness = 1,
+                    MinorGridlineColor = _timeAxis.MinorGridlineColor,
+                    AxislineStyle = LineStyle.Solid,
+                    Title = type.ToString(),
+                    Key = type.ToString()
+                };
 
-                axis.Zoom(
-                  _settings.GetValue("plotPanel.Min" + axis.Key, float.NaN),
-                  _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
+                axis.Zoom(_settings.GetValue("plotPanel.Min" + axis.Key, float.NaN), _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
 
                 if (units.ContainsKey(type))
                     axis.Unit = units[type];
                 _axes.Add(type, axis);
             }
 
-            var model = new PlotModel(_dpiXscale, _dpiYscale);
+            var model = new PlotModel(_dpiXScale, _dpiYScale);
             model.Axes.Add(_timeAxis);
-            foreach (var axis in _axes.Values)
+            foreach (LinearAxis axis in _axes.Values)
                 model.Axes.Add(axis);
             model.PlotMargins = new OxyThickness(0);
             model.IsLegendVisible = false;
@@ -165,11 +164,12 @@ namespace OpenHardwareMonitor.GUI
             return model;
         }
 
-        private void SetDPI()
+        private void SetDpi()
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/dn469266(v=vs.85).aspx
-            const int _default_dpi = 96;
+            const int defaultDpi = 96;
             Graphics g = CreateGraphics();
+
             try
             {
                 _dpiX = g.DpiX;
@@ -179,10 +179,11 @@ namespace OpenHardwareMonitor.GUI
             {
                 g.Dispose();
             }
+
             if (_dpiX > 0)
-                _dpiXscale = _dpiX / _default_dpi;
+                _dpiXScale = _dpiX / defaultDpi;
             if (_dpiY > 0)
-                _dpiYscale = _dpiY / _default_dpi;
+                _dpiYScale = _dpiY / defaultDpi;
         }
 
         public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
@@ -219,12 +220,13 @@ namespace OpenHardwareMonitor.GUI
                 types.Add(sensor.SensorType);
             }
 
-            foreach (var pair in _axes.Reverse())
+            foreach (KeyValuePair<SensorType, LinearAxis> pair in _axes.Reverse())
             {
-                var axis = pair.Value;
-                var type = pair.Key;
+                LinearAxis axis = pair.Value;
+                SensorType type = pair.Key;
                 axis.IsAxisVisible = types.Contains(type);
             }
+
             UpdateAxesPosition();
             InvalidatePlot();
         }
@@ -233,14 +235,13 @@ namespace OpenHardwareMonitor.GUI
         {
             if (_stackedAxes.Value)
             {
-                var count = _axes.Values.Count(axis => axis.IsAxisVisible);
-                var start = 0.0;
-                foreach (var pair in _axes.Reverse())
+                int count = _axes.Values.Count(axis => axis.IsAxisVisible);
+                double start = 0.0;
+                foreach (KeyValuePair<SensorType, LinearAxis> pair in _axes.Reverse())
                 {
-                    var axis = pair.Value;
-                    var type = pair.Key;
+                    LinearAxis axis = pair.Value;
                     axis.StartPosition = start;
-                    var delta = axis.IsAxisVisible ? 1.0 / count : 0;
+                    double delta = axis.IsAxisVisible ? 1.0 / count : 0;
                     start += delta;
                     axis.EndPosition = start;
                     axis.PositionTier = 0;
@@ -250,11 +251,12 @@ namespace OpenHardwareMonitor.GUI
             }
             else
             {
-                var tier = 0;
-                foreach (var pair in _axes.Reverse())
+                int tier = 0;
+
+                foreach (KeyValuePair<SensorType, LinearAxis> pair in _axes.Reverse())
                 {
-                    var axis = pair.Value;
-                    var type = pair.Key;
+                    LinearAxis axis = pair.Value;
+
                     if (axis.IsAxisVisible)
                     {
                         axis.StartPosition = 0;
@@ -278,15 +280,19 @@ namespace OpenHardwareMonitor.GUI
         public void InvalidatePlot()
         {
             _now = DateTime.UtcNow;
-            foreach (var pair in _axes)
+
+            if (_axes != null)
             {
-                var axis = pair.Value;
-                var type = pair.Key;
-                if (type == SensorType.Temperature)
-                    axis.Unit = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
-                    "°C" : "°F";
+                foreach (KeyValuePair<SensorType, LinearAxis> pair in _axes)
+                {
+                    LinearAxis axis = pair.Value;
+                    SensorType type = pair.Key;
+                    if (type == SensorType.Temperature)
+                        axis.Unit = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ? "°C" : "°F";
+                }
             }
-            _plot.InvalidatePlot(true);
+
+            _plot?.InvalidatePlot(true);
         }
     }
 }
