@@ -39,9 +39,7 @@ namespace OpenHardwareMonitor.GUI
             foreach (IPAddress ip in host.AddressList)
             {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
                     localIP = ip.ToString();
-                }
             }
             return localIP;
         }

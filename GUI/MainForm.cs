@@ -592,7 +592,8 @@ namespace OpenHardwareMonitor.GUI
             var usedColors = new List<Color>();
             foreach (var curSelectedSensor in selected)
             {
-                if (!colors.ContainsKey(curSelectedSensor)) continue;
+                if (!colors.ContainsKey(curSelectedSensor))
+                    continue;
                 var curColor = colors[curSelectedSensor];
                 if (usedColors.Contains(curColor))
                 {
@@ -618,7 +619,6 @@ namespace OpenHardwareMonitor.GUI
                 if (sensorNode != null && sensorNode.Plot && sensorNode.PenColor.HasValue)
                     colors.Add(sensorNode.Sensor, sensorNode.PenColor.Value);
             }
-
             _sensorPlotColors = colors;
             _plotPanel.SetSensors(selected, colors);
         }
@@ -649,13 +649,10 @@ namespace OpenHardwareMonitor.GUI
             _systemTray.Redraw();
             if (_gadget != null)
                 _gadget.Redraw();
-
             if (_wmiProvider != null)
                 _wmiProvider.Update();
-
             if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
                 _logger.Log();
-
             if (_delayCount < 4)
                 _delayCount++;
         }
@@ -976,13 +973,6 @@ namespace OpenHardwareMonitor.GUI
             _unitManager.TemperatureUnit = TemperatureUnit.Fahrenheit;
         }
 
-        private void SumbitReportMenuItem_Click(object sender, EventArgs e)
-        {
-            ReportForm form = new ReportForm();
-            form.Report = _computer.GetReport();
-            form.ShowDialog();
-        }
-
         private void ResetMinMaxMenuItem_Click(object sender, EventArgs e)
         {
             _computer.Accept(new SensorVisitor(delegate (ISensor sensor)
@@ -1017,7 +1007,6 @@ namespace OpenHardwareMonitor.GUI
         private void TreeView_MouseMove(object sender, MouseEventArgs e)
         {
             _selectionDragging = _selectionDragging & (e.Button & (MouseButtons.Left | MouseButtons.Right)) > 0;
-
             if (_selectionDragging)
                 treeView.SelectedNode = treeView.GetNodeAt(e.Location);
         }

@@ -180,13 +180,9 @@ namespace OpenHardwareMonitor.GUI
                 g.Dispose();
             }
             if (_dpiX > 0)
-            {
                 _dpiXscale = _dpiX / _default_dpi;
-            }
             if (_dpiY > 0)
-            {
                 _dpiYscale = _dpiY / _default_dpi;
-            }
         }
 
         public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)

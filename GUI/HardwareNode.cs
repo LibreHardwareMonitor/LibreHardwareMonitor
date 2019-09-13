@@ -54,8 +54,7 @@ namespace OpenHardwareMonitor.GUI
                 if (!Nodes.Contains(node))
                 {
                     int i = 0;
-                    while (i < Nodes.Count &&
-                      ((TypeNode)Nodes[i]).SensorType < node.SensorType)
+                    while (i < Nodes.Count && ((TypeNode)Nodes[i]).SensorType < node.SensorType)
                         i++;
                     Nodes.Insert(i, node);
                 }
@@ -111,11 +110,13 @@ namespace OpenHardwareMonitor.GUI
         private void SensorAdded(ISensor sensor)
         {
             foreach (TypeNode typeNode in _typeNodes)
+            {
                 if (typeNode.SensorType == sensor.SensorType)
                 {
                     InsertSorted(typeNode, sensor);
                     UpdateNode(typeNode);
                 }
+            }
             if (PlotSelectionChanged != null)
                 PlotSelectionChanged(this, null);
         }

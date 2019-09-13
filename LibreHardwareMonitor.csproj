@@ -87,18 +87,6 @@
     <Compile Include="GUI\PortForm.Designer.cs">
       <DependentUpon>PortForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\ReportForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\ReportForm.Designer.cs">
-      <DependentUpon>ReportForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\CrashForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\CrashForm.Designer.cs">
-      <DependentUpon>CrashForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\Node.cs" />
     <Compile Include="GUI\ParameterForm.cs">
       <SubType>Form</SubType>
@@ -192,18 +180,12 @@
     <EmbeddedResource Include="Resources\flow.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GUI\CrashForm.resx">
-      <DependentUpon>CrashForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\mainboard.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\ReportForm.resx">
-      <DependentUpon>ReportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\control.png" />
   </ItemGroup>

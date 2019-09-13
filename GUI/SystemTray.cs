@@ -112,9 +112,7 @@ namespace OpenHardwareMonitor.GUI
         public void Add(ISensor sensor, bool balloonTip)
         {
             if (Contains(sensor))
-            {
                 return;
-            }
             else
             {
                 _sensorList.Add(new SensorNotifyIcon(this, sensor, balloonTip, _settings, _unitManager));
@@ -168,13 +166,9 @@ namespace OpenHardwareMonitor.GUI
         private void UpdateMainIconVisibilty()
         {
             if (_mainIconEnabled)
-            {
                 _mainIcon.Visible = _sensorList.Count == 0;
-            }
             else
-            {
                 _mainIcon.Visible = false;
-            }
         }
 
         public bool IsMainIconEnabled

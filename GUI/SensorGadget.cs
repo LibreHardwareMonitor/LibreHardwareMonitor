@@ -59,14 +59,11 @@ namespace OpenHardwareMonitor.GUI
             computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
 
             _darkWhite = new SolidBrush(Color.FromArgb(0xF0, 0xF0, 0xF0));
-
             _stringFormat = new StringFormat();
             _stringFormat.FormatFlags = StringFormatFlags.NoWrap;
-
             _trimStringFormat = new StringFormat();
             _trimStringFormat.Trimming = StringTrimming.EllipsisCharacter;
             _trimStringFormat.FormatFlags = StringFormatFlags.NoWrap;
-
             _alignRightStringFormat = new StringFormat();
             _alignRightStringFormat.Alignment = StringAlignment.Far;
             _alignRightStringFormat.FormatFlags = StringFormatFlags.NoWrap;
@@ -461,31 +458,21 @@ namespace OpenHardwareMonitor.GUI
             Size = new Size(width, y);
         }
 
-        private void DrawImageWidthBorder(Graphics g, int width, int height,
-          Image back, int t, int b, int l, int r)
+        private void DrawImageWidthBorder(Graphics g, int width, int height, Image back, int t, int b, int l, int r)
         {
             GraphicsUnit u = GraphicsUnit.Pixel;
 
-            g.DrawImage(back, new Rectangle(0, 0, l, t),
-                  new Rectangle(0, 0, l, t), u);
-            g.DrawImage(back, new Rectangle(l, 0, width - l - r, t),
-              new Rectangle(l, 0, back.Width - l - r, t), u);
-            g.DrawImage(back, new Rectangle(width - r, 0, r, t),
-              new Rectangle(back.Width - r, 0, r, t), u);
+            g.DrawImage(back, new Rectangle(0, 0, l, t), new Rectangle(0, 0, l, t), u);
+            g.DrawImage(back, new Rectangle(l, 0, width - l - r, t), new Rectangle(l, 0, back.Width - l - r, t), u);
+            g.DrawImage(back, new Rectangle(width - r, 0, r, t), new Rectangle(back.Width - r, 0, r, t), u);
 
-            g.DrawImage(back, new Rectangle(0, t, l, height - t - b),
-              new Rectangle(0, t, l, back.Height - t - b), u);
-            g.DrawImage(back, new Rectangle(l, t, width - l - r, height - t - b),
-              new Rectangle(l, t, back.Width - l - r, back.Height - t - b), u);
-            g.DrawImage(back, new Rectangle(width - r, t, r, height - t - b),
-              new Rectangle(back.Width - r, t, r, back.Height - t - b), u);
+            g.DrawImage(back, new Rectangle(0, t, l, height - t - b), new Rectangle(0, t, l, back.Height - t - b), u);
+            g.DrawImage(back, new Rectangle(l, t, width - l - r, height - t - b), new Rectangle(l, t, back.Width - l - r, back.Height - t - b), u);
+            g.DrawImage(back, new Rectangle(width - r, t, r, height - t - b), new Rectangle(back.Width - r, t, r, back.Height - t - b), u);
 
-            g.DrawImage(back, new Rectangle(0, height - b, l, b),
-              new Rectangle(0, back.Height - b, l, b), u);
-            g.DrawImage(back, new Rectangle(l, height - b, width - l - r, b),
-              new Rectangle(l, back.Height - b, back.Width - l - r, b), u);
-            g.DrawImage(back, new Rectangle(width - r, height - b, r, b),
-              new Rectangle(back.Width - r, back.Height - b, r, b), u);
+            g.DrawImage(back, new Rectangle(0, height - b, l, b), new Rectangle(0, back.Height - b, l, b), u);
+            g.DrawImage(back, new Rectangle(l, height - b, width - l - r, b), new Rectangle(l, back.Height - b, back.Width - l - r, b), u);
+            g.DrawImage(back, new Rectangle(width - r, height - b, r, b), new Rectangle(back.Width - r, back.Height - b, r, b), u);
         }
 
         private void DrawBackground(Graphics g)
@@ -500,7 +487,6 @@ namespace OpenHardwareMonitor.GUI
                 _background = new Bitmap(w, h, PixelFormat.Format32bppPArgb);
                 using (Graphics graphics = Graphics.FromImage(_background))
                 {
-
                     DrawImageWidthBorder(graphics, w, h, _back, TopBorder, BottomBorder,LeftBorder, RightBorder);
 
                     if (_fore != null)
@@ -537,8 +523,7 @@ namespace OpenHardwareMonitor.GUI
             g.DrawImageUnscaled(_background, 0, 0);
         }
 
-        private void DrawProgress(Graphics g, float x, float y,
-          float width, float height, float progress)
+        private void DrawProgress(Graphics g, float x, float y, float width, float height, float progress)
         {
             g.DrawImage(_barBack,
               new RectangleF(x + width * progress, y, width * (1 - progress), height),
@@ -555,7 +540,6 @@ namespace OpenHardwareMonitor.GUI
             int w = Size.Width;
 
             g.Clear(Color.Transparent);
-
             DrawBackground(g);
 
             int x;
@@ -577,11 +561,9 @@ namespace OpenHardwareMonitor.GUI
                     if (y > _topMargin)
                         y += _hardwareLineHeight - _sensorLineHeight;
                     x = LeftBorder + 1;
-                    g.DrawImage(HardwareTypeImage.Instance.GetImage(pair.Key.HardwareType),
-                      new Rectangle(x, y + 1, _iconSize, _iconSize));
+                    g.DrawImage(HardwareTypeImage.Instance.GetImage(pair.Key.HardwareType), new Rectangle(x, y + 1, _iconSize, _iconSize));
                     x += _iconSize + 1;
-                    g.DrawString(pair.Key.Name, _largeFont, Brushes.White,
-                      new Rectangle(x, y - 1, w - RightBorder - x, 0), _stringFormat);
+                    g.DrawString(pair.Key.Name, _largeFont, Brushes.White, new Rectangle(x, y - 1, w - RightBorder - x, 0), _stringFormat);
                     y += _hardwareLineHeight;
                 }
 
@@ -633,11 +615,9 @@ namespace OpenHardwareMonitor.GUI
                                     break;
                             }
 
-                            if (sensor.SensorType == SensorType.Temperature &&
-                              _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
+                            if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
                             {
-                                formatted = string.Format("{0:F1} °F",
-                                  UnitManager.CelsiusToFahrenheit(sensor.Value));
+                                formatted = string.Format("{0:F1} °F", UnitManager.CelsiusToFahrenheit(sensor.Value));
                             }
                             else if (sensor.SensorType == SensorType.Throughput)
                             {
@@ -690,28 +670,21 @@ namespace OpenHardwareMonitor.GUI
                             formatted = "-";
                         }
 
-                        g.DrawString(formatted, _smallFont, _darkWhite,
-                          new RectangleF(-1, y - 1, w - _rightMargin + 3, 0), _alignRightStringFormat);
+                        g.DrawString(formatted, _smallFont, _darkWhite, new RectangleF(-1, y - 1, w - _rightMargin + 3, 0), _alignRightStringFormat);
 
-                        remainingWidth = w - (int)Math.Floor(g.MeasureString(formatted,
-                          _smallFont, w, StringFormat.GenericTypographic).Width) - _rightMargin;
+                        remainingWidth = w - (int)Math.Floor(g.MeasureString(formatted, _smallFont, w, StringFormat.GenericTypographic).Width) - _rightMargin;
                     }
                     else
                     {
-                        DrawProgress(g, w - _progressWidth - _rightMargin,
-                          y + 0.35f * _sensorLineHeight, _progressWidth,
-                          0.6f * _sensorLineHeight, 0.01f * sensor.Value.Value);
-
+                        DrawProgress(g, w - _progressWidth - _rightMargin, y + 0.35f * _sensorLineHeight, _progressWidth, 0.6f * _sensorLineHeight, 0.01f * sensor.Value.Value);
                         remainingWidth = w - _progressWidth - _rightMargin;
                     }
 
                     remainingWidth -= _leftMargin + 2;
                     if (remainingWidth > 0)
                     {
-                        g.DrawString(sensor.Name, _smallFont, _darkWhite,
-                          new RectangleF(_leftMargin - 1, y - 1, remainingWidth, 0), _trimStringFormat);
+                        g.DrawString(sensor.Name, _smallFont, _darkWhite, new RectangleF(_leftMargin - 1, y - 1, remainingWidth, 0), _trimStringFormat);
                     }
-
                     y += _sensorLineHeight;
                 }
             }

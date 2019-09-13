@@ -59,13 +59,9 @@ namespace OpenHardwareMonitor.GUI
         private void ShowDesktopChanged(bool showDesktop)
         {
             if (showDesktop)
-            {
                 MoveToTopMost(Handle);
-            }
             else
-            {
                 MoveToBottom(Handle);
-            }
         }
 
         private void MoveToBottom(IntPtr handle)
@@ -126,11 +122,7 @@ namespace OpenHardwareMonitor.GUI
                 case WM_NCLBUTTONDBLCLK:
                     {
                         if (MouseDoubleClick != null)
-                        {
-                            MouseDoubleClick(this, new MouseEventArgs(MouseButtons.Left, 2,
-                              Macros.GET_X_LPARAM(message.LParam) - _location.X,
-                              Macros.GET_Y_LPARAM(message.LParam) - _location.Y, 0));
-                        }
+                            MouseDoubleClick(this, new MouseEventArgs(MouseButtons.Left, 2, Macros.GET_X_LPARAM(message.LParam) - _location.X, Macros.GET_Y_LPARAM(message.LParam) - _location.Y, 0));
                         message.Result = IntPtr.Zero;
                     }
                     break;
@@ -142,18 +134,13 @@ namespace OpenHardwareMonitor.GUI
                 case WM_NCRBUTTONUP:
                     {
                         if (_contextMenu != null)
-                            ShowContextMenu(new Point(
-                              Macros.GET_X_LPARAM(message.LParam),
-                              Macros.GET_Y_LPARAM(message.LParam)
-                            ));
+                            ShowContextMenu(new Point(Macros.GET_X_LPARAM(message.LParam),Macros.GET_Y_LPARAM(message.LParam)));
                         message.Result = IntPtr.Zero;
                     }
                     break;
                 case WM_WINDOWPOSCHANGING:
                     {
-                        WINDOWPOS wp = (WINDOWPOS)Marshal.PtrToStructure(
-                          message.LParam, typeof(WINDOWPOS));
-
+                        WINDOWPOS wp = (WINDOWPOS)Marshal.PtrToStructure(message.LParam, typeof(WINDOWPOS));
                         if (!_lockPositionAndSize)
                         {
                             // prevent the window from leaving the screen
@@ -192,17 +179,13 @@ namespace OpenHardwareMonitor.GUI
                             // update the size of the layered window
                             if ((wp.flags & SWP_NOSIZE) == 0)
                             {
-                                NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero,
-                                  IntPtr.Zero, ref _size, IntPtr.Zero, IntPtr.Zero, 0,
-                                  IntPtr.Zero, 0);
+                                NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero, IntPtr.Zero, ref _size, IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero, 0);
                             }
 
                             // update the position of the layered window
                             if ((wp.flags & SWP_NOMOVE) == 0)
                             {
-                                NativeMethods.SetWindowPos(Handle, IntPtr.Zero,
-                                  _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE |
-                                  SWP_NOZORDER | SWP_NOSENDCHANGING);
+                                NativeMethods.SetWindowPos(Handle, IntPtr.Zero, _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
                             }
                         }
 
@@ -285,14 +268,10 @@ namespace OpenHardwareMonitor.GUI
                 DisposeBuffer();
                 CreateBuffer();
             }
-
             Paint(this, new PaintEventArgs(_graphics, new Rectangle(Point.Empty, _size)));
-
             Point pointSource = Point.Empty;
             BlendFunction blend = CreateBlendFunction();
-
             NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero, IntPtr.Zero, ref _size, _handleBitmapDC, ref pointSource, 0, ref blend, ULW_ALPHA);
-
             // make sure the window is at the right location
             NativeMethods.SetWindowPos(Handle, IntPtr.Zero, _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
         }

@@ -83,17 +83,17 @@ namespace OpenHardwareMonitor.GUI
 
         private void TypeNode_NodeRemoved(Node node)
         {
-            node.IsVisibleChanged -= new NodeEventHandler(node_IsVisibleChanged);
-            node_IsVisibleChanged(null);
+            node.IsVisibleChanged -= new NodeEventHandler(Node_IsVisibleChanged);
+            Node_IsVisibleChanged(null);
         }
 
         private void TypeNode_NodeAdded(Node node)
         {
-            node.IsVisibleChanged += new NodeEventHandler(node_IsVisibleChanged);
-            node_IsVisibleChanged(null);
+            node.IsVisibleChanged += new NodeEventHandler(Node_IsVisibleChanged);
+            Node_IsVisibleChanged(null);
         }
 
-        private void node_IsVisibleChanged(Node node)
+        private void Node_IsVisibleChanged(Node node)
         {
             foreach (Node n in Nodes)
             {

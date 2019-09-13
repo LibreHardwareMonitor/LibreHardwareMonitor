@@ -65,7 +65,6 @@ namespace OpenHardwareMonitor.GUI
                     {
                         // check if the taskscheduler is running
                         IRunningTaskCollection collection = _scheduler.GetRunningTasks(0);
-
                         ITaskFolder folder = _scheduler.GetFolder("\\Open Hardware Monitor");
                         IRegisteredTask task = folder.GetTask("Startup");
                         _startup = (task != null) && (task.Definition.Triggers.Count > 0) &&
@@ -98,8 +97,7 @@ namespace OpenHardwareMonitor.GUI
             {
                 try
                 {
-                    using (RegistryKey key =
-                      Registry.CurrentUser.OpenSubKey(REGISTRY_RUN))
+                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(REGISTRY_RUN))
                     {
                         _startup = false;
                         if (key != null)
@@ -130,8 +128,6 @@ namespace OpenHardwareMonitor.GUI
             definition.Settings.DisallowStartIfOnBatteries = false;
             definition.Settings.StopIfGoingOnBatteries = false;
             definition.Settings.ExecutionTimeLimit = "PT0S";
-
-            ILogonTrigger trigger = (ILogonTrigger)definition.Triggers.Create(TASK_TRIGGER_TYPE2.TASK_TRIGGER_LOGON);
             IExecAction action = (IExecAction)definition.Actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC);
             action.Path = Application.ExecutablePath;
             action.WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath);

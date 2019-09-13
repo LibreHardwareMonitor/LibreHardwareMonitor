@@ -42,13 +42,9 @@ namespace OpenHardwareMonitor.GUI
             if (!base.IsSplitterFixed)
             {
                 if (e.KeyData == Keys.Right || e.KeyData == Keys.Down)
-                {
                     SplitterDistance += SplitterIncrement;
-                }
                 else if (e.KeyData == Keys.Left || e.KeyData == Keys.Up)
-                {
                     SplitterDistance -= SplitterIncrement;
-                }
                 Invalidate();
             }
         }
@@ -77,16 +73,12 @@ namespace OpenHardwareMonitor.GUI
                     if (Orientation == Orientation.Vertical)
                     {
                         if (e.X > 0 && e.X < Width)
-                        {
                             SplitterDistance = e.X + _delta < 0 ? 0 : e.X + _delta;
-                        }
                     }
                     else
                     {
                         if (e.Y > 0 && e.Y < Height)
-                        {
                             SplitterDistance = e.Y + _delta < 0 ? 0 : e.Y + _delta;
-                        }
                     }
                 }
                 else
@@ -98,10 +90,7 @@ namespace OpenHardwareMonitor.GUI
             else
             {
                 if (SplitterRectangle.Contains(e.Location))
-                {
-                    Cursor = Orientation == Orientation.Vertical ?
-                      Cursors.VSplit : Cursors.HSplit;
-                }
+                    Cursor = Orientation == Orientation.Vertical ? Cursors.VSplit : Cursors.HSplit;
             }
         }
 
@@ -137,14 +126,5 @@ namespace OpenHardwareMonitor.GUI
                 Invalidate(false);
             }
         }
-
-        public new bool IsSplitterFixed
-        {
-            get
-            {
-                return false;
-            }
-        }
-
     }
 }

@@ -16,16 +16,6 @@ namespace OpenHardwareMonitor
         [STAThread]
         public static void Main()
         {
-#if !DEBUG
-        Application.ThreadException +=
-          new ThreadExceptionEventHandler(Application_ThreadException);
-        Application.SetUnhandledExceptionMode(
-          UnhandledExceptionMode.CatchException);
-
-        AppDomain.CurrentDomain.UnhandledException +=
-          new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-#endif
-
             if (!AllRequiredFilesAvailable())
                 Environment.Exit(0);
 
@@ -43,9 +33,7 @@ namespace OpenHardwareMonitor
 
         private static bool IsFileAvailable(string fileName)
         {
-            string path = Path.GetDirectoryName(Application.ExecutablePath) +
-              Path.DirectorySeparatorChar;
-
+            string path = Path.GetDirectoryName(Application.ExecutablePath) + Path.DirectorySeparatorChar;
             if (!File.Exists(path + fileName))
             {
                 MessageBox.Show("The following file could not be found: " + fileName +
@@ -68,47 +56,6 @@ namespace OpenHardwareMonitor
                 return false;
 
             return true;
-        }
-
-        private static void ReportException(Exception e)
-        {
-            CrashForm form = new CrashForm();
-            form.Exception = e;
-            form.ShowDialog();
-        }
-
-        public static void Application_ThreadException(object sender,
-          ThreadExceptionEventArgs e)
-        {
-            try
-            {
-                ReportException(e.Exception);
-            }
-            catch
-            {
-            }
-            finally
-            {
-                Application.Exit();
-            }
-        }
-
-        public static void CurrentDomain_UnhandledException(object sender,
-          UnhandledExceptionEventArgs args)
-        {
-            try
-            {
-                Exception e = args.ExceptionObject as Exception;
-                if (e != null)
-                    ReportException(e);
-            }
-            catch
-            {
-            }
-            finally
-            {
-                Environment.Exit(0);
-            }
         }
     }
 }

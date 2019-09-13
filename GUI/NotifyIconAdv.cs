@@ -14,7 +14,6 @@ namespace OpenHardwareMonitor.GUI
 {
     public class NotifyIconAdv : IDisposable
     {
-
         private NotifyIcon _genericNotifyIcon;
         private NotifyIconWindowsImplementation _windowsNotifyIcon;
 

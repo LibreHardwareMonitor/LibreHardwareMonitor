@@ -48,7 +48,6 @@ namespace OpenHardwareMonitor.GUI {
             this.mainMenu = new System.Windows.Forms.MainMenu(this.components);
             this.fileMenuItem = new System.Windows.Forms.MenuItem();
             this.saveReportMenuItem = new System.Windows.Forms.MenuItem();
-            this.sumbitReportMenuItem = new System.Windows.Forms.MenuItem();
             this.MenuItem2 = new System.Windows.Forms.MenuItem();
             this.resetMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem5 = new System.Windows.Forms.MenuItem();
@@ -221,7 +220,6 @@ namespace OpenHardwareMonitor.GUI {
             this.fileMenuItem.Index = 0;
             this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.saveReportMenuItem,
-            this.sumbitReportMenuItem,
             this.MenuItem2,
             this.resetMenuItem,
             this.menuItem5,
@@ -235,26 +233,20 @@ namespace OpenHardwareMonitor.GUI {
             this.saveReportMenuItem.Text = "Save Report...";
             this.saveReportMenuItem.Click += new System.EventHandler(this.SaveReportMenuItem_Click);
             // 
-            // sumbitReportMenuItem
-            // 
-            this.sumbitReportMenuItem.Index = 1;
-            this.sumbitReportMenuItem.Text = "Submit Report...";
-            this.sumbitReportMenuItem.Click += new System.EventHandler(this.SumbitReportMenuItem_Click);
-            // 
             // MenuItem2
             // 
-            this.MenuItem2.Index = 2;
+            this.MenuItem2.Index = 1;
             this.MenuItem2.Text = "-";
             // 
             // resetMenuItem
             // 
-            this.resetMenuItem.Index = 3;
+            this.resetMenuItem.Index = 2;
             this.resetMenuItem.Text = "Reset";
             this.resetMenuItem.Click += new System.EventHandler(this.ResetClick);
             // 
             // menuItem5
             // 
-            this.menuItem5.Index = 4;
+            this.menuItem5.Index = 3;
             this.menuItem5.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.mainboardMenuItem,
             this.cpuMenuItem,
@@ -302,12 +294,12 @@ namespace OpenHardwareMonitor.GUI {
             // 
             // menuItem6
             // 
-            this.menuItem6.Index = 5;
+            this.menuItem6.Index = 4;
             this.menuItem6.Text = "-";
             // 
             // exitMenuItem
             // 
-            this.exitMenuItem.Index = 6;
+            this.exitMenuItem.Index = 5;
             this.exitMenuItem.Text = "Exit";
             this.exitMenuItem.Click += new System.EventHandler(this.ExitClick);
             // 
@@ -830,7 +822,6 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem webMenuItemSeparator;
     private System.Windows.Forms.MenuItem celsiusMenuItem;
     private System.Windows.Forms.MenuItem fahrenheitMenuItem;
-    private System.Windows.Forms.MenuItem sumbitReportMenuItem;
     private System.Windows.Forms.MenuItem MenuItem2;
     private System.Windows.Forms.MenuItem resetMinMaxMenuItem;
     private System.Windows.Forms.MenuItem MenuItem3;
