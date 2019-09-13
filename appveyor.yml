@@ -7,10 +7,10 @@ configuration: Release
 platform: Any CPU
 
 before_build:
-  - ps: nuget restore OpenHardwareMonitor.sln
+  - ps: nuget restore LibreHardwareMonitor.sln
   
 build:
-  project: OpenHardwareMonitor.sln
+  project: LibreHardwareMonitor.sln
   verbosity: minimal
 
 artifacts:
