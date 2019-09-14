@@ -6,58 +6,61 @@
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.RAM {
-  internal class GenericRAM : Hardware {
+namespace LibreHardwareMonitor.Hardware.RAM
+{
+    internal class GenericRAM : Hardware
+    {
+        private Sensor _physicalMemoryUsed;
+        private Sensor _physicalMemoryAvailable;
+        private Sensor _physicalMemoryLoad;
+        private Sensor _virtualMemoryUsed;
+        private Sensor _virtualMemoryAvailable;
+        private Sensor _virtualMemoryLoad;
 
-    private Sensor physicalMemoryUsed;
-    private Sensor physicalMemoryAvailable;
-    private Sensor physicalMemoryLoad;
-    private Sensor virtualMemoryUsed;
-    private Sensor virtualMemoryAvailable;
-    private Sensor virtualMemoryLoad;
+        public GenericRAM(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
+        {
+            _physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
+            ActivateSensor(_physicalMemoryUsed);
 
-    public GenericRAM(string name, ISettings settings)
-      : base(name, new Identifier("ram"), settings) {
+            _physicalMemoryAvailable = new Sensor("Memory Available", 1, SensorType.Data, this, settings);
+            ActivateSensor(_physicalMemoryAvailable);
 
-      physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
-      ActivateSensor(physicalMemoryUsed);
+            _physicalMemoryLoad = new Sensor("Memory", 0, SensorType.Load, this, settings);
+            ActivateSensor(_physicalMemoryLoad);
 
-      physicalMemoryAvailable = new Sensor("Memory Available", 1, SensorType.Data, this, settings);
-      ActivateSensor(physicalMemoryAvailable);
+            _virtualMemoryUsed = new Sensor("Virtual Memory Used", 2, SensorType.Data, this, settings);
+            ActivateSensor(_virtualMemoryUsed);
 
-      physicalMemoryLoad = new Sensor("Memory", 0, SensorType.Load, this, settings);
-      ActivateSensor(physicalMemoryLoad);
+            _virtualMemoryAvailable = new Sensor("Virtual Memory Available", 3, SensorType.Data, this, settings);
+            ActivateSensor(_virtualMemoryAvailable);
 
-      virtualMemoryUsed = new Sensor("Virtual Memory Used", 2, SensorType.Data, this, settings);
-      ActivateSensor(virtualMemoryUsed);
+            _virtualMemoryLoad = new Sensor("Virtual Memory", 1, SensorType.Load, this, settings);
+            ActivateSensor(_virtualMemoryLoad);
+        }
 
-      virtualMemoryAvailable = new Sensor("Virtual Memory Available", 3, SensorType.Data, this, settings);
-      ActivateSensor(virtualMemoryAvailable);
+        public override HardwareType HardwareType
+        {
+            get
+            {
+                return HardwareType.RAM;
+            }
+        }
 
-      virtualMemoryLoad = new Sensor("Virtual Memory", 1, SensorType.Load, this, settings);
-      ActivateSensor(virtualMemoryLoad);
+        public override void Update()
+        {
+            Kernel32.MEMORYSTATUSEX status = new Kernel32.MEMORYSTATUSEX();
+            status.dwLength = (uint)Marshal.SizeOf<Kernel32.MEMORYSTATUSEX>();
+
+            if (!Kernel32.GlobalMemoryStatusEx(ref status))
+                return;
+
+            _physicalMemoryUsed.Value = (float)(status.ullTotalPhys - status.ullAvailPhys) / (1024 * 1024 * 1024);
+            _physicalMemoryAvailable.Value = (float)status.ullAvailPhys / (1024 * 1024 * 1024);
+            _physicalMemoryLoad.Value = 100.0f - (100.0f * status.ullAvailPhys) / status.ullTotalPhys;
+
+            _virtualMemoryUsed.Value = (float)(status.ullTotalPageFile - status.ullAvailPageFile) / (1024 * 1024 * 1024);
+            _virtualMemoryAvailable.Value = (float)status.ullAvailPageFile / (1024 * 1024 * 1024);
+            _virtualMemoryLoad.Value = 100.0f - (100.0f * status.ullAvailPageFile) / status.ullTotalPageFile;
+        }
     }
-
-    public override HardwareType HardwareType {
-      get {
-        return HardwareType.RAM;
-      }
-    }
-
-    public override void Update() {
-      Kernel32.MEMORYSTATUSEX status = new Kernel32.MEMORYSTATUSEX();
-      status.dwLength = (uint)Marshal.SizeOf<Kernel32.MEMORYSTATUSEX>();
-
-      if (!Kernel32.GlobalMemoryStatusEx(ref status))
-        return;
-
-      physicalMemoryUsed.Value = (float)(status.ullTotalPhys - status.ullAvailPhys) / (1024 * 1024 * 1024);
-      physicalMemoryAvailable.Value = (float)status.ullAvailPhys / (1024 * 1024 * 1024);
-      physicalMemoryLoad.Value = 100.0f - (100.0f * status.ullAvailPhys) / status.ullTotalPhys;
-
-      virtualMemoryUsed.Value = (float)(status.ullTotalPageFile - status.ullAvailPageFile) / (1024 * 1024 * 1024);
-      virtualMemoryAvailable.Value = (float)status.ullAvailPageFile / (1024 * 1024 * 1024);
-      virtualMemoryLoad.Value = 100.0f - (100.0f * status.ullAvailPageFile) / status.ullTotalPageFile;
-    }
-  }
 }

@@ -30,11 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Hardware\Amd\ADL.cs" />
+    <Compile Include="Hardware\Amd\ATIGPU.cs" />
+    <Compile Include="Hardware\Amd\ATIGroup.cs" />
     <Compile Include="Hardware\Aquacomputer\AquacomputerGroup.cs" />
     <Compile Include="Hardware\Aquacomputer\AquastreamXT.cs" />
-    <Compile Include="Hardware\ATI\ADL.cs" />
-    <Compile Include="Hardware\ATI\ATIGPU.cs" />
-    <Compile Include="Hardware\ATI\ATIGroup.cs" />
     <Compile Include="Hardware\Control.cs" />
     <Compile Include="Hardware\CPU\AMD17CPU.cs" />
     <Compile Include="Hardware\FirmwareTable.cs" />
@@ -130,6 +130,7 @@
     <Compile Include="Hardware\ThreadAffinity.cs" />
     <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Interop\Advapi32.cs" />
+    <Compile Include="Interop\Ntdll.cs" />
     <Compile Include="Interop\Libc.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
@@ -142,6 +143,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Hardware\Gpu\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

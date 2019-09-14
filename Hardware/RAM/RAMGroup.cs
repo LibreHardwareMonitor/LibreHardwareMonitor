@@ -5,30 +5,34 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.RAM {
-  internal class RAMGroup : IGroup {
+namespace LibreHardwareMonitor.Hardware.RAM
+{
+    internal class RAMGroup : IGroup
+    {
+        private Hardware[] _hardware;
 
-    private Hardware[] hardware;
+        public RAMGroup(SMBIOS smbios, ISettings settings)
+        {
+            // No implementation for RAM on Unix systems
+            if (Software.OperatingSystem.IsLinux)
+            {
+                _hardware = new Hardware[0];
+                return;
+            }
+            _hardware = new Hardware[] { new GenericRAM("Generic Memory", settings) };
+        }
 
-    public RAMGroup(SMBIOS smbios, ISettings settings) {
+        public string GetReport()
+        {
+            return null;
+        }
 
-      // No implementation for RAM on Unix systems
-      if (Software.OperatingSystem.IsLinux) {
-        hardware = new Hardware[0];
-        return;
-      }
-      hardware = new Hardware[] { new GenericRAM("Generic Memory", settings) };
+        public IEnumerable<IHardware> Hardware => _hardware;
+
+        public void Close()
+        {
+            foreach (Hardware ram in _hardware)
+                ram.Close();
+        }
     }
-
-    public string GetReport() {
-      return null;
-    }
-
-    public IEnumerable<IHardware> Hardware => hardware;
-
-    public void Close() {
-      foreach (Hardware ram in hardware)
-        ram.Close();
-    }
-  }
 }

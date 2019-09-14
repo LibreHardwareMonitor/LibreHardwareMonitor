@@ -1,11 +1,11 @@
 /*
- 
+
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
   Copyright (C) 2009-2012 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
+
 */
 
 using System;
@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.ATI {
-  
+
   [StructLayout(LayoutKind.Sequential)]
   internal struct ADLAdapterInfo {
     public int Size;
@@ -157,7 +157,7 @@ namespace LibreHardwareMonitor.Hardware.ATI {
           typeof(ADLAdapterInfo));
       Marshal.FreeHGlobal(ptr);
 
-      // the ADLAdapterInfo.VendorID field reported by ADL is wrong on 
+      // the ADLAdapterInfo.VendorID field reported by ADL is wrong on
       // Windows systems (parse error), so we fix this here
       for (int i = 0; i < info.Length; i++) {
         // try Windows UDID format

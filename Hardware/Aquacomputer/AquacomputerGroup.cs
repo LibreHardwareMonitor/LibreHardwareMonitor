@@ -1,4 +1,9 @@
-﻿using HidLibrary;
+﻿// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
+
+using HidLibrary;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,13 +18,13 @@ namespace LibreHardwareMonitor.Hardware.Aquacomputer
         {
             _report.AppendLine($"Aquacomputer Hardware");
             _report.AppendLine();
-            
+
             foreach (HidDevice dev in HidDevices.Enumerate(0x0c70))
             {
                 byte[] productNameBytes;
                 dev.ReadProduct(out productNameBytes);
                 string ProductName = UnicodeEncoding.Unicode.GetString(productNameBytes).Replace("\0", string.Empty);
-                ProductName = ProductName.Substring(0,1).ToUpper() + ProductName.Substring(1);
+                ProductName = ProductName.Substring(0, 1).ToUpper() + ProductName.Substring(1);
 
                 switch (dev.Attributes.ProductId)
                 {
@@ -54,9 +59,7 @@ namespace LibreHardwareMonitor.Hardware.Aquacomputer
         public void Close()
         {
             foreach (Hardware h in _hardware)
-            {
                 h.Close();
-            }
         }
 
         public string GetReport()
