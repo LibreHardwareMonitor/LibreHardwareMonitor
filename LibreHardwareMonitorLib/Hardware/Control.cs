@@ -27,8 +27,7 @@ namespace LibreHardwareMonitor.Hardware
                 this._softwareValue = 0;
 
             int mode;
-            if (!int.TryParse(settings.GetValue(
-                new Identifier(Identifier, "mode").ToString(), ((int)ControlMode.Undefined).ToString(CultureInfo.InvariantCulture)), NumberStyles.Integer, CultureInfo.InvariantCulture, out mode))
+            if (!int.TryParse(settings.GetValue(new Identifier(Identifier, "mode").ToString(), ((int)ControlMode.Undefined).ToString(CultureInfo.InvariantCulture)), NumberStyles.Integer, CultureInfo.InvariantCulture, out mode))
             {
                 _mode = ControlMode.Undefined;
             }

@@ -192,7 +192,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (_smart.IsValid)
             {
                 Kernel32.SMART_ATTRIBUTE[] values = _smart.ReadSmartData();
-
                 foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
                 {
                     SmartAttribute attribute = keyValuePair.Key;
@@ -216,7 +215,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             {
                 Kernel32.SMART_ATTRIBUTE[] values = _smart.ReadSmartData();
                 Kernel32.SMART_THRESHOLD[] thresholds = _smart.ReadSmartThresholds();
-
                 if (values.Length > 0)
                 {
                     r.AppendFormat(CultureInfo.InvariantCulture,
@@ -234,7 +232,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                     {
                         if (value.Id == 0x00)
                             break;
-
 
                         byte? threshold = null;
                         foreach (Kernel32.SMART_THRESHOLD t in thresholds)

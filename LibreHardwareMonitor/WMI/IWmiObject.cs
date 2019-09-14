@@ -3,7 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-namespace LibreHardwareMonitor.WMI
+namespace LibreHardwareMonitor.Wmi
 {
     interface IWmiObject
     {

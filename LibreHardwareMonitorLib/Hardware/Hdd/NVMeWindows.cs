@@ -24,10 +24,8 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
             IntPtr buffer;
-
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
@@ -64,10 +62,8 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
             IntPtr buffer;
-
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
@@ -105,9 +101,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (handle == null || handle.IsInvalid)
                 return null;
 
-
             IntPtr buffer;
-
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;

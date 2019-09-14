@@ -75,7 +75,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (info.Removable || info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual || info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
                 return null;
 
-
             //fallback, when it is not possible to read out with the nvme implementation,
             //try it with the sata smart implementation
             if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
@@ -91,7 +90,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             {
                 return ATAStorage.CreateInstance(info, settings);
             }
-
             return StorageGeneric.CreateInstance(info, settings);
         }
 
@@ -124,7 +122,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
 
             var perfData = new ManagementObjectSearcher(query);
             var data = perfData.Get().OfType<ManagementObject>().FirstOrDefault();
-
             if (data == null)
             {
                 perfData.Dispose();
@@ -156,12 +153,10 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             double timeDeltaSeconds = currentTime - _lastTime;
             if (_lastTime == 0 || timeDeltaSeconds > 0.2)
             {
-                double writeSpeed = writeRate;
-                writeSpeed *= (1 / timeDeltaSeconds);
+                double writeSpeed = writeRate * (1 / timeDeltaSeconds);
                 _sensorDiskWriteRate.Value = (float)writeSpeed;
 
-                double readSpeed = readRate;
-                readSpeed *= (1 / timeDeltaSeconds);
+                double readSpeed = readRate * (1 / timeDeltaSeconds);
                 _sensorDiskReadRate.Value = (float)readSpeed;
             }
 
@@ -191,7 +186,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                         DeactivateSensor(_sensorDiskWriteActivity);
                         DeactivateSensor(_sensorDiskReadRate);
                         DeactivateSensor(_sensorDiskWriteRate);
-
                         _canUpdateWmi = false;
                     }
                 }
@@ -227,13 +221,9 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                     }
 
                     if (totalSize > 0)
-                    {
                         _usageSensor.Value = 100.0f - (100.0f * totalFreeSpace) / totalSize;
-                    }
                     else
-                    {
                         _usageSensor.Value = null;
-                    }
                 }
             }
         }

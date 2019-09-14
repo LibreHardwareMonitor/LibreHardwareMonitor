@@ -12,12 +12,12 @@ using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Interop
 {
-    public class Ntdll
+    internal class Ntdll
     {
         private const string DllName = "ntdll";
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SystemProcessorPerformanceInformation
+        internal struct SystemProcessorPerformanceInformation
         {
             public long IdleTime;
             public long KernelTime;
@@ -27,7 +27,7 @@ namespace LibreHardwareMonitor.Interop
             public ulong Reserved2;
         }
 
-        public enum SystemInformationClass
+        internal enum SystemInformationClass
         {
             SystemBasicInformation = 0,
             SystemCpuInformation = 1,
@@ -38,6 +38,6 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [DllImport(DllName)]
-        public static extern int NtQuerySystemInformation(SystemInformationClass informationClass, [Out] SystemProcessorPerformanceInformation[] informations, int structSize, out IntPtr returnLength);
+        internal static extern int NtQuerySystemInformation(SystemInformationClass informationClass, [Out] SystemProcessorPerformanceInformation[] informations, int structSize, out IntPtr returnLength);
     }
 }

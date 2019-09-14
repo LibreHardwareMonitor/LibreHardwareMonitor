@@ -26,7 +26,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
             IntPtr buffer;
             Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS sptwb = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
@@ -104,7 +103,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             data = Kernel32.CreateStruct<Kernel32.NVME_HEALTH_INFO_LOG>();
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
-
 
             bool result = false;
             IntPtr buffer;
@@ -187,7 +185,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             var handle = Kernel32.OpenDevice(storageInfo.DeviceId);
             if (handle == null || handle.IsInvalid)
                 return null;
-
 
             IntPtr buffer;
             Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS sptwb = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();

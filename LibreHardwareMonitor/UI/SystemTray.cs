@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class SystemTray : IDisposable
     {

@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public partial class ParameterForm : Form
     {

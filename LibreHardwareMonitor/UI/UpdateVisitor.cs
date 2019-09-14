@@ -5,7 +5,7 @@
 
 using LibreHardwareMonitor.Hardware;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class UpdateVisitor : IVisitor
     {

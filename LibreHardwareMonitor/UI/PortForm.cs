@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public partial class PortForm : Form
     {

@@ -1102,13 +1102,13 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern UIntPtr SetThreadAffinityMask(IntPtr handle, UIntPtr mask);
+        internal static extern UIntPtr SetThreadAffinityMask(IntPtr handle, UIntPtr mask);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern IntPtr GetCurrentThread();
+        internal static extern IntPtr GetCurrentThread();
 
         [Flags()]
-        public enum AllocationType : uint
+        internal enum AllocationType : uint
         {
             COMMIT = 0x1000,
             RESERVE = 0x2000,
@@ -1120,7 +1120,7 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [Flags()]
-        public enum MemoryProtection : uint
+        internal enum MemoryProtection : uint
         {
             EXECUTE = 0x10,
             EXECUTE_READ = 0x20,
@@ -1136,26 +1136,26 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [Flags]
-        public enum FreeType
+        internal enum FreeType
         {
             DECOMMIT = 0x4000,
             RELEASE = 0x8000
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
+        internal static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, FreeType dwFreeType);
+        internal static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, FreeType dwFreeType);
 
 
-        public enum Win32FileAccess : uint
+        internal enum Win32FileAccess : uint
         {
             GENERIC_READ = 0x80000000,
             GENERIC_WRITE = 0x40000000
         }
 
-        public enum CreationDisposition : uint
+        internal enum CreationDisposition : uint
         {
             CREATE_NEW = 1,
             CREATE_ALWAYS = 2,
@@ -1165,7 +1165,7 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct IOControlCode
+        internal struct IOControlCode
         {
             private uint _code;
 
@@ -1194,7 +1194,7 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern bool DeviceIoControl(SafeFileHandle device, IOControlCode ioControlCode,
+        internal static extern bool DeviceIoControl(SafeFileHandle device, IOControlCode ioControlCode,
             [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
             uint inBufferSize,
             [MarshalAs(UnmanagedType.AsAny)]
@@ -1202,11 +1202,11 @@ namespace LibreHardwareMonitor.Interop
             uint nOutBufferSize, out uint bytesReturned, IntPtr overlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        public static extern IntPtr CreateFile(string lpFileName, Win32FileAccess dwDesiredAccess, uint dwShareMode,
+        internal static extern IntPtr CreateFile(string lpFileName, Win32FileAccess dwDesiredAccess, uint dwShareMode,
             IntPtr lpSecurityAttributes, CreationDisposition dwCreationDisposition,
             FileAttributes dwFlagsAndAttributes, IntPtr hTemplateFile);
 
-        public enum Provider : int
+        internal enum Provider : int
         {
             ACPI = (byte)'A' << 24 | (byte)'C' << 16 | (byte)'P' << 8 | (byte)'I',
             FIRM = (byte)'F' << 24 | (byte)'I' << 16 | (byte)'R' << 8 | (byte)'M',
@@ -1214,9 +1214,9 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        public static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
+        internal static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        public static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
+        internal static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
     }
 }

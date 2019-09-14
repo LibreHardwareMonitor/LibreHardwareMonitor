@@ -298,6 +298,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\amd.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

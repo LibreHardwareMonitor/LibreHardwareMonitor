@@ -25,7 +25,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
             IntPtr buffer;
 
@@ -80,7 +79,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
             IntPtr buffer;
 
@@ -128,7 +126,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (handle == null || handle.IsInvalid)
                 return null;
 
-
             bool validTransfer;
             IntPtr buffer;
 
@@ -161,7 +158,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                 handle.Close();
                 handle = null;
             }
-
             return handle;
         }
     }

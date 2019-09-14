@@ -12,14 +12,14 @@ using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Interop
 {
-    public class Libc
+    internal class Libc
     {
         private const string DllName = "libc";
 
         [DllImport(DllName)]
-        public static extern int sched_getaffinity(int pid, IntPtr maskSize, ref ulong mask);
+        internal static extern int sched_getaffinity(int pid, IntPtr maskSize, ref ulong mask);
 
         [DllImport(DllName)]
-        public static extern int sched_setaffinity(int pid, IntPtr maskSize, ref ulong mask);
+        internal static extern int sched_setaffinity(int pid, IntPtr maskSize, ref ulong mask);
     }
 }

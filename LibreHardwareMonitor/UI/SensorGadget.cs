@@ -13,7 +13,7 @@ using System.Linq;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class SensorGadget : Gadget
     {

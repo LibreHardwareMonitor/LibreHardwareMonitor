@@ -87,7 +87,7 @@ namespace LibreHardwareMonitor.Hardware
             if (_open)
                 return;
 
-            this._smbios = new SmBios();
+            _smbios = new SmBios();
 
             Ring0.Open();
             Opcode.Open();

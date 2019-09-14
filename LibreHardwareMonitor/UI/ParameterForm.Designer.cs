@@ -8,7 +8,7 @@
 	
 */
 
-namespace LibreHardwareMonitor.GUI {
+namespace LibreHardwareMonitor.UI {
   partial class ParameterForm {
     /// <summary>
     /// Required designer variable.

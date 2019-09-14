@@ -8,7 +8,7 @@
 	
 */
 
-namespace LibreHardwareMonitor.GUI {
+namespace LibreHardwareMonitor.UI {
     sealed partial class MainForm {
     /// <summary>
     /// Required designer variable.
@@ -121,7 +121,7 @@ namespace LibreHardwareMonitor.GUI {
             this.treeContextMenu = new System.Windows.Forms.ContextMenu();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.timer = new System.Windows.Forms.Timer(this.components);
-            this.splitContainer = new LibreHardwareMonitor.GUI.SplitContainerAdv();
+            this.splitContainer = new LibreHardwareMonitor.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();

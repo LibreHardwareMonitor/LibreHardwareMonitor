@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
     internal sealed class StorageGeneric : AbstractStorage
     {
         private StorageGeneric(StorageInfo storageInfo, string name, string firmwareRevision, int index, ISettings settings)
-          : base(storageInfo, name, firmwareRevision, "hdd", index, settings)
+            : base(storageInfo, name, firmwareRevision, "hdd", index, settings)
         {
             CreateSensors();
         }

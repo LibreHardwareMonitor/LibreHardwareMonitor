@@ -12,27 +12,27 @@ using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Interop
 {
-    public class Advapi32
+    internal class Advapi32
     {
         private const string DllName = "advapi32.dll";
 
-        public enum ServiceAccessRights : uint
+        internal enum ServiceAccessRights : uint
         {
             SERVICE_ALL_ACCESS = 0xF01FF
         }
 
-        public enum ServiceControlManagerAccessRights : uint
+        internal enum ServiceControlManagerAccessRights : uint
         {
             SC_MANAGER_ALL_ACCESS = 0xF003F
         }
 
-        public enum ServiceType : uint
+        internal enum ServiceType : uint
         {
             SERVICE_KERNEL_DRIVER = 1,
             SERVICE_FILE_SYSTEM_DRIVER = 2
         }
 
-        public enum StartType : uint
+        internal enum StartType : uint
         {
             SERVICE_BOOT_START = 0,
             SERVICE_SYSTEM_START = 1,
@@ -41,7 +41,7 @@ namespace LibreHardwareMonitor.Interop
             SERVICE_DISABLED = 4
         }
 
-        public enum ErrorControl : uint
+        internal enum ErrorControl : uint
         {
             SERVICE_ERROR_IGNORE = 0,
             SERVICE_ERROR_NORMAL = 1,
@@ -49,7 +49,7 @@ namespace LibreHardwareMonitor.Interop
             SERVICE_ERROR_CRITICAL = 3
         }
 
-        public enum ServiceControl : uint
+        internal enum ServiceControl : uint
         {
             SERVICE_CONTROL_STOP = 1,
             SERVICE_CONTROL_PAUSE = 2,
@@ -68,7 +68,7 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct ServiceStatus
+        internal struct ServiceStatus
         {
             public uint dwServiceType;
             public uint dwCurrentState;
@@ -81,32 +81,30 @@ namespace LibreHardwareMonitor.Interop
 
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern IntPtr OpenSCManager(string machineName, string databaseName, ServiceControlManagerAccessRights dwAccess);
+        internal static extern IntPtr OpenSCManager(string machineName, string databaseName, ServiceControlManagerAccessRights dwAccess);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CloseServiceHandle(IntPtr hSCObject);
+        internal static extern bool CloseServiceHandle(IntPtr hSCObject);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        public static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName,
-          ServiceAccessRights dwDesiredAccess, ServiceType dwServiceType,
-          StartType dwStartType, ErrorControl dwErrorControl,
-          string lpBinaryPathName, string lpLoadOrderGroup, string lpdwTagId,
-          string lpDependencies, string lpServiceStartName, string lpPassword);
+        internal static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName,
+            ServiceAccessRights dwDesiredAccess, ServiceType dwServiceType, StartType dwStartType, ErrorControl dwErrorControl,
+            string lpBinaryPathName, string lpLoadOrderGroup, string lpdwTagId, string lpDependencies, string lpServiceStartName, string lpPassword);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        public static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceAccessRights dwDesiredAccess);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool DeleteService(IntPtr hService);
+        internal static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceAccessRights dwDesiredAccess);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool StartService(IntPtr hService, uint dwNumServiceArgs, string[] lpServiceArgVectors);
+        internal static extern bool DeleteService(IntPtr hService);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ControlService(IntPtr hService, ServiceControl dwControl, ref ServiceStatus lpServiceStatus);
+        internal static extern bool StartService(IntPtr hService, uint dwNumServiceArgs, string[] lpServiceArgVectors);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ControlService(IntPtr hService, ServiceControl dwControl, ref ServiceStatus lpServiceStatus);
     }
 }

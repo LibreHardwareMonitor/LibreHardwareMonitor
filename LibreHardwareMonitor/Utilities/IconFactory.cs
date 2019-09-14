@@ -65,8 +65,7 @@ namespace LibreHardwareMonitor.Utilities
 
             public ICONIMAGE(int width, int height, byte[] colors)
             {
-                Header = new BITMAPINFOHEADER(width, height << 1,
-                  (8 * colors.Length) / (width * height));
+                Header = new BITMAPINFOHEADER(width, height << 1, (8 * colors.Length) / (width * height));
                 Colors = colors;
                 MaskSize = (width * height) >> 3;
             }
@@ -158,8 +157,7 @@ namespace LibreHardwareMonitor.Utilities
 
         private static readonly BinaryWriter BinaryWriter = new BinaryWriter(new MemoryStream());
 
-        public static Icon Create(byte[] colors, int width, int height,
-          PixelFormat format)
+        public static Icon Create(byte[] colors, int width, int height, PixelFormat format)
         {
             if (format != PixelFormat.Format32bppArgb)
                 throw new NotImplementedException();

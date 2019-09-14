@@ -15,7 +15,7 @@ using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class PlotPanel : UserControl
     {

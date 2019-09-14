@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public sealed class GadgetWindow : NativeWindow, IDisposable
     {

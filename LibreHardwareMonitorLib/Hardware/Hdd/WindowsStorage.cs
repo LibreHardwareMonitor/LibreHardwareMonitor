@@ -20,19 +20,17 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                 if (handle == null || handle.IsInvalid)
                     return null;
 
+                var query = new Kernel32.STORAGE_PROPERTY_QUERY
+                {
+                    PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty,
+                    QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery
+                };
 
-                var query = new Kernel32.STORAGE_PROPERTY_QUERY { PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty, QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery };
-
-
-                if (!Kernel32.DeviceIoControl(handle,
-                                              Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY,
-                                              ref query,
-                                              Marshal.SizeOf(query),
-                                              out var header,
-                                              Marshal.SizeOf<Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER>(),
-                                              out _,
-                                              IntPtr.Zero))
+                if (!Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query),
+                    out var header, Marshal.SizeOf<Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER>(), out _, IntPtr.Zero))
+                {
                     return null;
+                }
 
 
                 IntPtr descriptorPtr = Marshal.AllocHGlobal((int)header.Size);
@@ -40,7 +38,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                 {
                     if (!Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out _, IntPtr.Zero))
                         return null;
-
 
                     return new StorageInfo((int)driveIndex, descriptorPtr);
                 }
@@ -56,19 +53,16 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             var list = new List<string>();
             try
             {
-                using (var s =
-                  new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex))
+                using (var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex))
+                using (ManagementObjectCollection dpc = s.Get())
                 {
-                    using (ManagementObjectCollection dpc = s.Get())
+                    foreach (ManagementObject dp in dpc)
                     {
-                        foreach (ManagementObject dp in dpc)
+                        using (ManagementObjectCollection ldc = dp.GetRelated("Win32_LogicalDisk"))
                         {
-                            using (ManagementObjectCollection ldc = dp.GetRelated("Win32_LogicalDisk"))
+                            foreach (ManagementBaseObject ld in ldc)
                             {
-                                foreach (ManagementBaseObject ld in ldc)
-                                {
-                                    list.Add(((string)ld["Name"]).TrimEnd(':'));
-                                }
+                                list.Add(((string)ld["Name"]).TrimEnd(':'));
                             }
                         }
                     }

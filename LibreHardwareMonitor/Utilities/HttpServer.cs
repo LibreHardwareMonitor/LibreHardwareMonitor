@@ -11,7 +11,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using LibreHardwareMonitor.GUI;
+using LibreHardwareMonitor.UI;
 using LibreHardwareMonitor.Hardware;
 using System.Web;
 using System.Collections.Specialized;

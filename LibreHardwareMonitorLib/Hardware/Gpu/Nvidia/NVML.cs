@@ -14,16 +14,16 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private const string LinuxDllName = "nvidia-ml";
 
         private delegate NvmlReturn WindowsNvmlDelegate();
-        private WindowsNvmlDelegate WindowsNvmlInit;
-        private WindowsNvmlDelegate WindowsNvmlShutdown;
+        private WindowsNvmlDelegate _windowsNvmlInit;
+        private WindowsNvmlDelegate _windowsNvmlShutdown;
 
         private delegate NvmlReturn WindowsNvmlGetHandleDelegate(int index, out NvmlDevice device);
-        private WindowsNvmlGetHandleDelegate WindowsNvmlDeviceGetHandleByIndex;
+        private WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
 
         private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
-        private WindowsNvmlGetPowerUsageDelegate WindowsNvmlDeviceGetPowerUsage;
+        private WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
 
-        private readonly IntPtr windowsDll;
+        private readonly IntPtr _windowsDll;
 
         internal bool Initialised { get; }
 
@@ -57,22 +57,22 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 // windows standard search order for applications. This will
                 // help installations that either have the library in
                 // %windir%/system32 or provide their own library
-                windowsDll = LoadLibrary("nvml.dll");
+                _windowsDll = LoadLibrary("nvml.dll");
 
                 // If there is no dll in the path, then attempt to load it
                 // from program files
-                if (windowsDll == IntPtr.Zero)
+                if (_windowsDll == IntPtr.Zero)
                 {
                     var programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
                     var dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\nvml.dll");
 
-                    windowsDll = LoadLibrary(dllPath);
+                    _windowsDll = LoadLibrary(dllPath);
                 }
 
-                if (windowsDll == IntPtr.Zero)
+                if (_windowsDll == IntPtr.Zero)
                     return;
 
-                Initialised = InitialiseDelegates() && (WindowsNvmlInit() == NvmlReturn.Success);
+                Initialised = InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
             }
         }
 
@@ -84,39 +84,39 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         private bool InitialiseDelegates()
         {
-            var nvmlInit = GetProcAddress(windowsDll, "nvmlInit_v2");
+            var nvmlInit = GetProcAddress(_windowsDll, "nvmlInit_v2");
             if (nvmlInit != IntPtr.Zero)
-                WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
+                _windowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
             else
             {
-                nvmlInit = GetProcAddress(windowsDll, "nvmlInit");
+                nvmlInit = GetProcAddress(_windowsDll, "nvmlInit");
                 if (nvmlInit != IntPtr.Zero)
-                    WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
+                    _windowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
                 else
                     return false;
             }
 
-            var nvmlShutdown = GetProcAddress(windowsDll, "nvmlShutdown");
+            var nvmlShutdown = GetProcAddress(_windowsDll, "nvmlShutdown");
             if (nvmlShutdown != IntPtr.Zero)
-                WindowsNvmlShutdown = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlShutdown, typeof(WindowsNvmlDelegate));
+                _windowsNvmlShutdown = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlShutdown, typeof(WindowsNvmlDelegate));
             else
                 return false;
 
-            var nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex_v2");
+            var nvmlGetHandle = GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex_v2");
             if (nvmlGetHandle != IntPtr.Zero)
-                WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
+                _windowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
             else
             {
-                nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex");
+                nvmlGetHandle = GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex");
                 if (nvmlGetHandle != IntPtr.Zero)
-                    WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
+                    _windowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
                 else
                     return false;
             }
 
-            var nvmlGetPowerUsage = GetProcAddress(windowsDll, "nvmlDeviceGetPowerUsage");
+            var nvmlGetPowerUsage = GetProcAddress(_windowsDll, "nvmlDeviceGetPowerUsage");
             if (nvmlGetPowerUsage != IntPtr.Zero)
-                WindowsNvmlDeviceGetPowerUsage = (WindowsNvmlGetPowerUsageDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPowerUsage, typeof(WindowsNvmlGetPowerUsageDelegate));
+                _windowsNvmlDeviceGetPowerUsage = (WindowsNvmlGetPowerUsageDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPowerUsage, typeof(WindowsNvmlGetPowerUsageDelegate));
             else
                 return false;
 
@@ -129,10 +129,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             {
                 if (Software.OperatingSystem.IsLinux)
                     LinuxNvmlShutdown();
-                else if (windowsDll != IntPtr.Zero)
+                else if (_windowsDll != IntPtr.Zero)
                 {
-                    WindowsNvmlShutdown();
-                    FreeLibrary(windowsDll);
+                    _windowsNvmlShutdown();
+                    FreeLibrary(_windowsDll);
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                             return nvmlDevice;
                     }
                 }
-                else if (WindowsNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
+                else if (_windowsNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
                     return nvmlDevice;
             }
 
@@ -172,7 +172,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     if (LinuxNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                         return powerUsage;
                 }
-                else if (WindowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
+                else if (_windowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                     return powerUsage;
             }
 

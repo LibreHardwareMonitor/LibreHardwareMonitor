@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class NotifyIconAdv : IDisposable
     {

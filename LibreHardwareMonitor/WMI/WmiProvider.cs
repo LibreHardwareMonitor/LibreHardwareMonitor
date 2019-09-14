@@ -12,7 +12,7 @@ using LibreHardwareMonitor.Hardware;
 [System.ComponentModel.RunInstaller(true)]
 public class InstanceInstaller : DefaultManagementProjectInstaller { }
 
-namespace LibreHardwareMonitor.WMI
+namespace LibreHardwareMonitor.Wmi
 {
     /// <summary>
     /// The WMI Provider.

@@ -6,7 +6,7 @@
 using System.Management.Instrumentation;
 using LibreHardwareMonitor.Hardware;
 
-namespace LibreHardwareMonitor.WMI
+namespace LibreHardwareMonitor.Wmi
 {
     [InstrumentationClass(InstrumentationType.Instance)]
     public class Hardware : IWmiObject

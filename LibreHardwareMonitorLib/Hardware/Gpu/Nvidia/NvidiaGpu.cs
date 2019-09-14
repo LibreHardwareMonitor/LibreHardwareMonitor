@@ -435,30 +435,18 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 {
                     for (int i = 0; i < settings.Count; i++)
                     {
-                        r.AppendFormat(" Cooler[{0}].Type: {1}{2}", i,
-                          settings.Cooler[i].Type, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].Controller: {1}{2}", i,
-                          settings.Cooler[i].Controller, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].DefaultMin: {1}{2}", i,
-                          settings.Cooler[i].DefaultMin, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].DefaultMax: {1}{2}", i,
-                          settings.Cooler[i].DefaultMax, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].CurrentMin: {1}{2}", i,
-                          settings.Cooler[i].CurrentMin, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].CurrentMax: {1}{2}", i,
-                          settings.Cooler[i].CurrentMax, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].CurrentLevel: {1}{2}", i,
-                          settings.Cooler[i].CurrentLevel, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].DefaultPolicy: {1}{2}", i,
-                          settings.Cooler[i].DefaultPolicy, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].CurrentPolicy: {1}{2}", i,
-                          settings.Cooler[i].CurrentPolicy, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].Target: {1}{2}", i,
-                          settings.Cooler[i].Target, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].ControlType: {1}{2}", i,
-                          settings.Cooler[i].ControlType, Environment.NewLine);
-                        r.AppendFormat(" Cooler[{0}].Active: {1}{2}", i,
-                          settings.Cooler[i].Active, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].Type: {1}{2}", i, settings.Cooler[i].Type, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].Controller: {1}{2}", i, settings.Cooler[i].Controller, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].DefaultMin: {1}{2}", i, settings.Cooler[i].DefaultMin, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].DefaultMax: {1}{2}", i, settings.Cooler[i].DefaultMax, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].CurrentMin: {1}{2}", i, settings.Cooler[i].CurrentMin, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].CurrentMax: {1}{2}", i, settings.Cooler[i].CurrentMax, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].CurrentLevel: {1}{2}", i, settings.Cooler[i].CurrentLevel, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].DefaultPolicy: {1}{2}", i, settings.Cooler[i].DefaultPolicy, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].CurrentPolicy: {1}{2}", i, settings.Cooler[i].CurrentPolicy, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].Target: {1}{2}", i, settings.Cooler[i].Target, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].ControlType: {1}{2}", i, settings.Cooler[i].ControlType, Environment.NewLine);
+                        r.AppendFormat(" Cooler[{0}].Active: {1}{2}", i, settings.Cooler[i].Active, Environment.NewLine);
                     }
                 }
                 else

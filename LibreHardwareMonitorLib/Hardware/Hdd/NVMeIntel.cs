@@ -25,7 +25,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
             IntPtr buffer;
 
@@ -80,7 +79,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (hDevice == null || hDevice.IsInvalid)
                 return false;
 
-
             bool result = false;
 
             Kernel32.NVME_PASS_THROUGH_IOCTL passThrough = Kernel32.CreateStruct<Kernel32.NVME_PASS_THROUGH_IOCTL>();
@@ -117,7 +115,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             {
                 Marshal.FreeHGlobal(buffer);
             }
-
             return result;
         }
 
@@ -126,7 +123,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             var handle = Kernel32.OpenDevice(storageInfo.Scsi);
             if (handle == null || handle.IsInvalid)
                 return null;
-
 
             bool validTransfer;
             IntPtr buffer;
@@ -160,7 +156,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                 handle.Close();
                 handle = null;
             }
-
             return handle;
         }
     }

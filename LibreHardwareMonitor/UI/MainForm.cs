@@ -14,10 +14,10 @@ using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
-using LibreHardwareMonitor.WMI;
+using LibreHardwareMonitor.Wmi;
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public sealed partial class MainForm : Form
     {

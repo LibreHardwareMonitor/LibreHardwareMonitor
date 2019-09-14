@@ -19,8 +19,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
         /// </summary>
         /// <param name="identifier">The SMART identifier of the attribute.</param>
         /// <param name="name">The name of the attribute.</param>
-        public SmartAttribute(byte identifier, string name) :
-          this(identifier, name, null, null, 0, null)
+        public SmartAttribute(byte identifier, string name) : this(identifier, name, null, null, 0, null)
         { }
 
         /// <summary>
@@ -32,12 +31,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
         /// A delegate for converting the raw byte
         /// array into a value (or null to use the attribute value).
         /// </param>
-        public SmartAttribute
-        (
-          byte identifier,
-          string name,
-          RawValueConversion rawValueConversion) :
-          this(identifier, name, rawValueConversion, null, 0, null)
+        public SmartAttribute(byte identifier, string name, RawValueConversion rawValueConversion) : this(identifier, name, rawValueConversion, null, 0, null)
         { }
 
         /// <summary>
@@ -67,20 +61,11 @@ namespace LibreHardwareMonitor.Hardware.Hdd
         /// Description for the parameters of the sensor
         /// (or null).
         /// </param>
-        public SmartAttribute
-        (
-          byte identifier,
-          string name,
-          RawValueConversion rawValueConversion,
-          SensorType? sensorType,
-          int sensorChannel,
-          string sensorName,
-          bool defaultHiddenSensor = false,
-          ParameterDescription[] parameterDescriptions = null)
+        public SmartAttribute(byte identifier, string name, RawValueConversion rawValueConversion, SensorType? sensorType, int sensorChannel, string sensorName, bool defaultHiddenSensor = false, ParameterDescription[] parameterDescriptions = null)
         {
             Identifier = identifier;
             Name = name;
-            this._rawValueConversion = rawValueConversion;
+            _rawValueConversion = rawValueConversion;
             SensorType = sensorType;
             SensorChannel = sensorChannel;
             SensorName = sensorName;
@@ -110,10 +95,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
         internal float ConvertValue(Kernel32.SMART_ATTRIBUTE value, IReadOnlyList<IParameter> parameters)
         {
             if (_rawValueConversion == null)
-            {
                 return value.CurrentValue;
-            }
-
             return _rawValueConversion(value.RawValue, value.CurrentValue, parameters);
         }
     }

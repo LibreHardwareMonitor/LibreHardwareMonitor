@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class HardwareNode : Node
     {

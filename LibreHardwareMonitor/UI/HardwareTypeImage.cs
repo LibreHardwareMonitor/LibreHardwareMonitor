@@ -7,7 +7,7 @@ using System.Drawing;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Hardware;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class HardwareTypeImage
     {

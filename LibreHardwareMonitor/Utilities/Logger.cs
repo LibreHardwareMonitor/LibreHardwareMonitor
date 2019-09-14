@@ -14,7 +14,7 @@ namespace LibreHardwareMonitor.Utilities
 {
     public class Logger
     {
-        private const string FileNameFormat = "OpenHardwareMonitorLog-{0:yyyy-MM-dd}.csv";
+        private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}.csv";
 
         private readonly IComputer _computer;
 

@@ -8,7 +8,7 @@ using System.Drawing;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class SensorNode : Node
     {

@@ -7,7 +7,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public abstract class Gadget : IDisposable
     {

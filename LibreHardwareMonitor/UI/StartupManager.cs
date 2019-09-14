@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using LibreHardwareMonitor.TaskScheduler;
 
-namespace LibreHardwareMonitor.GUI
+namespace LibreHardwareMonitor.UI
 {
     public class StartupManager
     {

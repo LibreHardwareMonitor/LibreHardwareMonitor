@@ -39,16 +39,11 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (_handle.IsClosed)
                 throw new ObjectDisposedException("WindowsATASmart");
 
-
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
                 bDriveNumber = (byte)_driveNumber,
-                irDriveRegs = { bFeaturesReg = Kernel32.SMART_FEATURES.ENABLE_SMART,
-                    bCylLowReg = Kernel32.SMART_LBA_MID,
-                    bCylHighReg = Kernel32.SMART_LBA_HI,
-                    bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART}
+                irDriveRegs = { bFeaturesReg = Kernel32.SMART_FEATURES.ENABLE_SMART, bCylLowReg = Kernel32.SMART_LBA_MID, bCylHighReg = Kernel32.SMART_LBA_HI, bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART}
             };
-
 
             return Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_SEND_DRIVE_COMMAND, ref parameter, Marshal.SizeOf(parameter),
                 out Kernel32.SENDCMDOUTPARAMS _, Marshal.SizeOf<Kernel32.SENDCMDOUTPARAMS>(), out _, IntPtr.Zero);
@@ -59,27 +54,18 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (_handle.IsClosed)
                 throw new ObjectDisposedException("WindowsATASmart");
 
-
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
-                bDriveNumber = (byte)_driveNumber,
-                irDriveRegs = {
-          bFeaturesReg = Kernel32.SMART_FEATURES.SMART_READ_DATA,
-          bCylLowReg = Kernel32.SMART_LBA_MID,
-          bCylHighReg = Kernel32.SMART_LBA_HI,
-          bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
-        }
+                bDriveNumber = (byte)_driveNumber, irDriveRegs = {
+                    bFeaturesReg = Kernel32.SMART_FEATURES.SMART_READ_DATA,
+                    bCylLowReg = Kernel32.SMART_LBA_MID,
+                    bCylHighReg = Kernel32.SMART_LBA_HI,
+                    bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                }
             };
 
-
-            bool isValid = Kernel32.DeviceIoControl(_handle,
-                                                    Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA,
-                                                    ref parameter,
-                                                    Marshal.SizeOf(parameter),
-                                                    out Kernel32.ATTRIBUTECMDOUTPARAMS result,
-                                                    Marshal.SizeOf<Kernel32.ATTRIBUTECMDOUTPARAMS>(),
-                                                    out _,
-                                                    IntPtr.Zero);
+            bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+                out Kernel32.ATTRIBUTECMDOUTPARAMS result, Marshal.SizeOf<Kernel32.ATTRIBUTECMDOUTPARAMS>(), out _, IntPtr.Zero);
 
             return (isValid) ? result.Attributes : new Kernel32.SMART_ATTRIBUTE[0];
         }
@@ -89,27 +75,18 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (_handle.IsClosed)
                 throw new ObjectDisposedException("WindowsATASmart");
 
-
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
-                bDriveNumber = (byte)_driveNumber,
-                irDriveRegs = {
-          bFeaturesReg = Kernel32.SMART_FEATURES.READ_THRESHOLDS,
-          bCylLowReg = Kernel32.SMART_LBA_MID,
-          bCylHighReg = Kernel32.SMART_LBA_HI,
-          bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
-        }
+                bDriveNumber = (byte)_driveNumber, irDriveRegs = {
+                    bFeaturesReg = Kernel32.SMART_FEATURES.READ_THRESHOLDS,
+                    bCylLowReg = Kernel32.SMART_LBA_MID,
+                    bCylHighReg = Kernel32.SMART_LBA_HI,
+                    bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                }
             };
 
-
-            bool isValid = Kernel32.DeviceIoControl(_handle,
-                                                    Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA,
-                                                    ref parameter,
-                                                    Marshal.SizeOf(parameter),
-                                                    out Kernel32.THRESHOLDCMDOUTPARAMS result,
-                                                    Marshal.SizeOf<Kernel32.THRESHOLDCMDOUTPARAMS>(),
-                                                    out _,
-                                                    IntPtr.Zero);
+            bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+                out Kernel32.THRESHOLDCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.THRESHOLDCMDOUTPARAMS>(), out _, IntPtr.Zero);
 
             return (isValid) ? result.Thresholds : new Kernel32.SMART_THRESHOLD[0];
         }
@@ -119,18 +96,14 @@ namespace LibreHardwareMonitor.Hardware.Hdd
             if (_handle.IsClosed)
                 throw new ObjectDisposedException("WindowsATASmart");
 
+            var parameter = new Kernel32.SENDCMDINPARAMS
+            {
+                bDriveNumber = (byte)_driveNumber,
+                irDriveRegs = { bCommandReg = Kernel32.ATA_COMMAND.ATA_IDENTIFY_DEVICE }
+            };
 
-            var parameter = new Kernel32.SENDCMDINPARAMS { bDriveNumber = (byte)_driveNumber, irDriveRegs = { bCommandReg = Kernel32.ATA_COMMAND.ATA_IDENTIFY_DEVICE } };
-
-
-            bool valid = Kernel32.DeviceIoControl(_handle,
-                                                  Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA,
-                                                  ref parameter,
-                                                  Marshal.SizeOf(parameter),
-                                                  out Kernel32.IDENTIFYCMDOUTPARAMS result,
-                                                  Marshal.SizeOf<Kernel32.IDENTIFYCMDOUTPARAMS>(),
-                                                  out _,
-                                                  IntPtr.Zero);
+            bool valid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+                out Kernel32.IDENTIFYCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.IDENTIFYCMDOUTPARAMS>(), out _, IntPtr.Zero);
 
             if (!valid)
             {
@@ -161,7 +134,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
                 chars[i] = (char)bytes[i + 1];
                 chars[i + 1] = (char)bytes[i];
             }
-
             return new string(chars).Trim(' ', '\0');
         }
     }

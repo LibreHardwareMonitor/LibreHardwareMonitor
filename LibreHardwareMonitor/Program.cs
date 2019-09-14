@@ -6,7 +6,7 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
-using LibreHardwareMonitor.GUI;
+using LibreHardwareMonitor.UI;
 
 namespace LibreHardwareMonitor
 {

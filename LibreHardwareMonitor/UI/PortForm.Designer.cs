@@ -1,4 +1,4 @@
-﻿namespace LibreHardwareMonitor.GUI {
+﻿namespace LibreHardwareMonitor.UI {
   partial class PortForm {
     /// <summary>
     /// Required designer variable.

@@ -13,7 +13,6 @@ namespace LibreHardwareMonitor.Hardware.Hdd
     {
         private const ulong Scale = 1000000;
         private const ulong Units = 512;
-
         private readonly NVMeInfo _info;
         private readonly List<NVMeSensor> _sensors = new List<NVMeSensor>();
         private readonly NVMeSmart _smart;
