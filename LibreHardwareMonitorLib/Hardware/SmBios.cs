@@ -11,7 +11,7 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware
 {
-    public class SMBIOS
+    public class SmBios
     {
         private readonly byte[] _raw;
         private readonly Structure[] _table;
@@ -35,7 +35,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        public SMBIOS()
+        public SmBios()
         {
 
             if (Software.OperatingSystem.IsLinux)

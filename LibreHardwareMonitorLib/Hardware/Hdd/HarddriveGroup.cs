@@ -7,45 +7,52 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  internal class HarddriveGroup : IGroup {
-    private readonly List<AbstractStorage> hardware = new List<AbstractStorage>();
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    internal class HarddriveGroup : IGroup
+    {
+        private readonly List<AbstractStorage> _hardware = new List<AbstractStorage>();
 
-    public HarddriveGroup(ISettings settings) {
-      if (Software.OperatingSystem.IsLinux) return;
+        public HarddriveGroup(ISettings settings)
+        {
+            if (Software.OperatingSystem.IsLinux) return;
 
+            //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
+            var mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+            ManagementObjectCollection queryCollection = mosDisks.Get(); // get the results
 
-      //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
-      var mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
-      ManagementObjectCollection queryCollection = mosDisks.Get(); // get the results
+            foreach (var disk in queryCollection)
+            {
+                var deviceId = (string)disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
+                var idx = Convert.ToUInt32(disk.Properties["Index"].Value);
+                var diskSize = Convert.ToUInt64(disk.Properties["Size"].Value);
+                var scsi = Convert.ToInt32(disk.Properties["SCSIPort"].Value);
 
-      foreach (var disk in queryCollection) {
-        var deviceId = (string) disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
-        var idx = Convert.ToUInt32(disk.Properties["Index"].Value);
-        var diskSize = Convert.ToUInt64(disk.Properties["Size"].Value);
-        var scsi = Convert.ToInt32(disk.Properties["SCSIPort"].Value);
+                if (deviceId != null)
+                {
+                    var instance = AbstractStorage.CreateInstance(deviceId, idx, diskSize, scsi, settings);
+                    if (instance != null)
+                    {
+                        _hardware.Add(instance);
+                    }
+                }
+            }
 
-        if (deviceId != null) {
-          var instance = AbstractStorage.CreateInstance(deviceId, idx, diskSize, scsi, settings);
-          if (instance != null) {
-            hardware.Add(instance);
-          }
+            queryCollection.Dispose();
+            mosDisks.Dispose();
         }
-      }
 
-      queryCollection.Dispose();
-      mosDisks.Dispose();
+        public IEnumerable<IHardware> Hardware => _hardware;
+
+        public string GetReport()
+        {
+            return null;
+        }
+
+        public void Close()
+        {
+            foreach (AbstractStorage storage in _hardware)
+                storage.Close();
+        }
     }
-
-    public IEnumerable<IHardware> Hardware => hardware;
-
-    public string GetReport() {
-      return null;
-    }
-
-    public void Close() {
-      foreach (AbstractStorage storage in hardware)
-        storage.Close();
-    }
-  }
 }

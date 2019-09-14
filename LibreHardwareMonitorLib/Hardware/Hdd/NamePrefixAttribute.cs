@@ -5,13 +5,16 @@
 
 using System;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-  internal class NamePrefixAttribute : Attribute {
-    public NamePrefixAttribute(string namePrefix) {
-      Prefix = namePrefix;
-    }
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    internal class NamePrefixAttribute : Attribute
+    {
+        public NamePrefixAttribute(string namePrefix)
+        {
+            Prefix = namePrefix;
+        }
 
-    public string Prefix { get; }
-  }
+        public string Prefix { get; }
+    }
 }

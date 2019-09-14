@@ -5,13 +5,16 @@
 
 using System;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-  internal class RequireSmartAttribute : Attribute {
-    public RequireSmartAttribute(byte attributeId) {
-      AttributeId = attributeId;
-    }
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    internal class RequireSmartAttribute : Attribute
+    {
+        public RequireSmartAttribute(byte attributeId)
+        {
+            AttributeId = attributeId;
+        }
 
-    public byte AttributeId { get; }
-  }
+        public byte AttributeId { get; }
+    }
 }

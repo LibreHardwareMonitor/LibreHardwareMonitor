@@ -5,10 +5,12 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [NamePrefix("")]
-  public class GenericHarddisk : ATAStorage {
-    private static readonly List<SmartAttribute> smartAttributes = new List<SmartAttribute> {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [NamePrefix("")]
+    public class GenericHarddisk : ATAStorage
+    {
+        private static readonly List<SmartAttribute> _smartAttributes = new List<SmartAttribute> {
         new SmartAttribute(0x01, SmartNames.ReadErrorRate),
         new SmartAttribute(0x02, SmartNames.ThroughputPerformance),
         new SmartAttribute(0x03, SmartNames.SpinUpTime),
@@ -112,7 +114,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
                            })
       };
 
-    internal GenericHarddisk(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(storageInfo, smart, name, firmwareRevision, "hdd", index, smartAttributes, settings) { }
-  }
+        internal GenericHarddisk(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+          : base(storageInfo, smart, name, firmwareRevision, "hdd", index, _smartAttributes, settings) { }
+    }
 }

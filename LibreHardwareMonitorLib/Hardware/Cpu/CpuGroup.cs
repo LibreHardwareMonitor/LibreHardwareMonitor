@@ -10,19 +10,19 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    internal class CPUGroup : IGroup
+    internal class CpuGroup : IGroup
     {
-        private readonly List<GenericCPU> _hardware = new List<GenericCPU>();
-        private readonly CPUID[][][] _threads;
+        private readonly List<GenericCpu> _hardware = new List<GenericCpu>();
+        private readonly CpuID[][][] _threads;
 
-        private static CPUID[][] GetProcessorThreads()
+        private static CpuID[][] GetProcessorThreads()
         {
-            List<CPUID> threads = new List<CPUID>();
+            List<CpuID> threads = new List<CpuID>();
             for (int i = 0; i < 64; i++)
             {
                 try
                 {
-                    threads.Add(new CPUID(i));
+                    threads.Add(new CpuID(i));
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -31,22 +31,22 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
             }
 
-            SortedDictionary<uint, List<CPUID>> processors = new SortedDictionary<uint, List<CPUID>>();
-            foreach (CPUID thread in threads)
+            SortedDictionary<uint, List<CpuID>> processors = new SortedDictionary<uint, List<CpuID>>();
+            foreach (CpuID thread in threads)
             {
-                List<CPUID> list;
+                List<CpuID> list;
                 processors.TryGetValue(thread.ProcessorId, out list);
                 if (list == null)
                 {
-                    list = new List<CPUID>();
+                    list = new List<CpuID>();
                     processors.Add(thread.ProcessorId, list);
                 }
                 list.Add(thread);
             }
 
-            CPUID[][] processorThreads = new CPUID[processors.Count][];
+            CpuID[][] processorThreads = new CpuID[processors.Count][];
             int index = 0;
-            foreach (List<CPUID> list in processors.Values)
+            foreach (List<CpuID> list in processors.Values)
             {
                 processorThreads[index] = list.ToArray();
                 index++;
@@ -54,25 +54,25 @@ namespace LibreHardwareMonitor.Hardware.CPU
             return processorThreads;
         }
 
-        private static CPUID[][] GroupThreadsByCore(IEnumerable<CPUID> threads)
+        private static CpuID[][] GroupThreadsByCore(IEnumerable<CpuID> threads)
         {
 
-            SortedDictionary<uint, List<CPUID>> cores = new SortedDictionary<uint, List<CPUID>>();
-            foreach (CPUID thread in threads)
+            SortedDictionary<uint, List<CpuID>> cores = new SortedDictionary<uint, List<CpuID>>();
+            foreach (CpuID thread in threads)
             {
-                List<CPUID> coreList;
+                List<CpuID> coreList;
                 cores.TryGetValue(thread.CoreId, out coreList);
                 if (coreList == null)
                 {
-                    coreList = new List<CPUID>();
+                    coreList = new List<CpuID>();
                     cores.Add(thread.CoreId, coreList);
                 }
                 coreList.Add(thread);
             }
 
-            CPUID[][] coreThreads = new CPUID[cores.Count][];
+            CpuID[][] coreThreads = new CpuID[cores.Count][];
             int index = 0;
-            foreach (List<CPUID> list in cores.Values)
+            foreach (List<CpuID> list in cores.Values)
             {
                 coreThreads[index] = list.ToArray();
                 index++;
@@ -80,30 +80,30 @@ namespace LibreHardwareMonitor.Hardware.CPU
             return coreThreads;
         }
 
-        public CPUGroup(ISettings settings)
+        public CpuGroup(ISettings settings)
         {
-            CPUID[][] processorThreads = GetProcessorThreads();
-            _threads = new CPUID[processorThreads.Length][][];
+            CpuID[][] processorThreads = GetProcessorThreads();
+            _threads = new CpuID[processorThreads.Length][][];
 
             int index = 0;
-            foreach (CPUID[] threads in processorThreads)
+            foreach (CpuID[] threads in processorThreads)
             {
                 if (threads.Length == 0)
                     continue;
 
-                CPUID[][] coreThreads = GroupThreadsByCore(threads);
+                CpuID[][] coreThreads = GroupThreadsByCore(threads);
                 _threads[index] = coreThreads;
 
                 switch (threads[0].Vendor)
                 {
                     case Vendor.Intel:
-                        _hardware.Add(new IntelCPU(index, coreThreads, settings));
+                        _hardware.Add(new IntelCpu(index, coreThreads, settings));
                         break;
                     case Vendor.AMD:
                         switch (threads[0].Family)
                         {
                             case 0x0F:
-                                _hardware.Add(new AMD0FCPU(index, coreThreads, settings));
+                                _hardware.Add(new Amd0FCpu(index, coreThreads, settings));
                                 break;
                             case 0x10:
                             case 0x11:
@@ -111,18 +111,18 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             case 0x14:
                             case 0x15:
                             case 0x16:
-                                _hardware.Add(new AMD10CPU(index, coreThreads, settings));
+                                _hardware.Add(new Amd10Cpu(index, coreThreads, settings));
                                 break;
                             case 0x17:
-                                _hardware.Add(new AMD17CPU(index, coreThreads, settings));
+                                _hardware.Add(new Amd17Cpu(index, coreThreads, settings));
                                 break;
                             default:
-                                _hardware.Add(new GenericCPU(index, coreThreads, settings));
+                                _hardware.Add(new GenericCpu(index, coreThreads, settings));
                                 break;
                         }
                         break;
                     default:
-                        _hardware.Add(new GenericCPU(index, coreThreads, settings));
+                        _hardware.Add(new GenericCpu(index, coreThreads, settings));
                         break;
                 }
                 index++;
@@ -179,8 +179,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         r.AppendLine(" Thread ID: " + _threads[i][j][k].ThreadId);
                         r.AppendLine();
                         r.AppendLine(" Function  EAX       EBX       ECX       EDX");
-                        AppendCpuidData(r, _threads[i][j][k].Data, CPUID.CPUID_0);
-                        AppendCpuidData(r, _threads[i][j][k].ExtData, CPUID.CPUID_EXT);
+                        AppendCpuidData(r, _threads[i][j][k].Data, CpuID.CPUID_0);
+                        AppendCpuidData(r, _threads[i][j][k].ExtData, CpuID.CPUID_EXT);
                         r.AppendLine();
                     }
                 }
@@ -190,7 +190,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public void Close()
         {
-            foreach (GenericCPU cpu in _hardware)
+            foreach (GenericCpu cpu in _hardware)
             {
                 cpu.Close();
             }

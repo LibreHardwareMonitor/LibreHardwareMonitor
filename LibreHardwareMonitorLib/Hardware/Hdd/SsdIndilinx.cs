@@ -5,11 +5,13 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [NamePrefix(""), RequireSmart(0x01), RequireSmart(0x09), RequireSmart(0x0C), RequireSmart(0xD1), RequireSmart(0xCE), RequireSmart(0xCF)]
-  internal class SSDIndilinx : ATAStorage {
-    private static readonly IEnumerable<SmartAttribute> smartAttributes =
-      new List<SmartAttribute> {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [NamePrefix(""), RequireSmart(0x01), RequireSmart(0x09), RequireSmart(0x0C), RequireSmart(0xD1), RequireSmart(0xCE), RequireSmart(0xCF)]
+    internal class SsdIndilinx : ATAStorage
+    {
+        private static readonly IEnumerable<SmartAttribute> _smartAttributes =
+          new List<SmartAttribute> {
         new SmartAttribute(0x01, SmartNames.ReadErrorRate),
         new SmartAttribute(0x09, SmartNames.PowerOnHours),
         new SmartAttribute(0x0C, SmartNames.PowerCycleCount),
@@ -37,9 +39,9 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
         new SmartAttribute(0xD2, SmartNames.UnknownUnique),
         new SmartAttribute(0xD3, SmartNames.SataErrorCountCrc),
         new SmartAttribute(0xD4, SmartNames.SataErrorCountHandshake)
-      };
+          };
 
-    public SSDIndilinx(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) { }
-  }
+        public SsdIndilinx(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+          : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
+    }
 }

@@ -5,11 +5,13 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [NamePrefix(""), RequireSmart(0xAA), RequireSmart(0xAB), RequireSmart(0xAC), RequireSmart(0xAD), RequireSmart(0xAE), RequireSmart(0xCA)]
-  internal class SSDMicron : ATAStorage {
-    private static readonly IEnumerable<SmartAttribute> smartAttributes =
-      new List<SmartAttribute> {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [NamePrefix(""), RequireSmart(0xAA), RequireSmart(0xAB), RequireSmart(0xAC), RequireSmart(0xAD), RequireSmart(0xAE), RequireSmart(0xCA)]
+    internal class SsdMicron : ATAStorage
+    {
+        private static readonly IEnumerable<SmartAttribute> _smartAttributes =
+          new List<SmartAttribute> {
         new SmartAttribute(0x01, SmartNames.ReadErrorRate, RawToInt),
         new SmartAttribute(0x05, SmartNames.ReallocatedSectorsCount, RawToInt),
         new SmartAttribute(0x09, SmartNames.PowerOnHours, RawToInt),
@@ -42,9 +44,9 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
                            SmartNames.WriteErrorRate,
                            (raw, value, p)
                              => 6e4f * ((raw[1] << 8) | raw[0]))
-      };
+          };
 
-    public SSDMicron(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) { }
-  }
+        public SsdMicron(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+          : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
+    }
 }

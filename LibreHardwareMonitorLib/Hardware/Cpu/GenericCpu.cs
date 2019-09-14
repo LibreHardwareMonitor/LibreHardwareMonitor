@@ -10,9 +10,9 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    public class GenericCPU : Hardware
+    public class GenericCpu : Hardware
     {
-        protected readonly CPUID[][] cpuid;
+        protected readonly CpuID[][] cpuid;
         protected readonly uint family;
         protected readonly uint model;
         protected readonly uint stepping;
@@ -27,14 +27,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private readonly Vendor _vendor;
 
-        private readonly CPULoad _cpuLoad;
+        private readonly CpuLoad _cpuLoad;
         private readonly Sensor _totalLoad;
         private readonly Sensor[] _coreLoads;
 
         /// <summary>
         /// Gets the CPUID.
         /// </summary>
-        public CPUID[][] CPUID => cpuid;
+        public CpuID[][] CPUID => cpuid;
 
         protected string CoreString(int i)
         {
@@ -44,7 +44,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 return "CPU Core #" + (i + 1);
         }
 
-        public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings) : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
+        public GenericCpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
         {
             this.cpuid = cpuid;
             _vendor = cpuid[0][0].Vendor;
@@ -82,7 +82,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             for (int i = 0; i < _coreLoads.Length; i++)
                 _coreLoads[i] = new Sensor(CoreString(i), i + 1, SensorType.Load, this, settings);
 
-            _cpuLoad = new CPULoad(cpuid);
+            _cpuLoad = new CpuLoad(cpuid);
             if (_cpuLoad.IsAvailable)
             {
                 foreach (Sensor sensor in _coreLoads)

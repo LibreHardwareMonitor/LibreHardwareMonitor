@@ -1,9 +1,16 @@
+// Mozilla Public License 2.0
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace LibreHardwareMonitor.Hardware.Gpu {
-    internal class NVML {
+namespace LibreHardwareMonitor.Hardware.Gpu
+{
+    internal class NVML
+    {
         private const string LinuxDllName = "nvidia-ml";
 
         private delegate NvmlReturn WindowsNvmlDelegate();
@@ -20,24 +27,32 @@ namespace LibreHardwareMonitor.Hardware.Gpu {
 
         internal bool Initialised { get; }
 
-        internal NVML() {
-            if (Software.OperatingSystem.IsLinux) {
-                try {
+        internal NVML()
+        {
+            if (Software.OperatingSystem.IsLinux)
+            {
+                try
+                {
                     Initialised = (LinuxNvmlInit() == NvmlReturn.Success);
                 }
-                catch (DllNotFoundException) {
+                catch (DllNotFoundException)
+                {
                     return;
                 }
-                catch (EntryPointNotFoundException) {
-                    try {
+                catch (EntryPointNotFoundException)
+                {
+                    try
+                    {
                         Initialised = (LinuxNvmlInitLegacy() == NvmlReturn.Success);
                     }
-                    catch (EntryPointNotFoundException) {
+                    catch (EntryPointNotFoundException)
+                    {
                         return;
                     }
                 }
             }
-            else if (IsNvmlCompatibleWindowsVersion()) {
+            else if (IsNvmlCompatibleWindowsVersion())
+            {
                 // Attempt to load the Nvidia Management Library from the
                 // windows standard search order for applications. This will
                 // help installations that either have the library in
@@ -72,7 +87,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu {
             var nvmlInit = GetProcAddress(windowsDll, "nvmlInit_v2");
             if (nvmlInit != IntPtr.Zero)
                 WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
-            else {
+            else
+            {
                 nvmlInit = GetProcAddress(windowsDll, "nvmlInit");
                 if (nvmlInit != IntPtr.Zero)
                     WindowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
@@ -89,11 +105,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu {
             var nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex_v2");
             if (nvmlGetHandle != IntPtr.Zero)
                 WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
-            else {
+            else
+            {
                 nvmlGetHandle = GetProcAddress(windowsDll, "nvmlDeviceGetHandleByIndex");
                 if (nvmlGetHandle != IntPtr.Zero)
                     WindowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
-                else 
+                else
                     return false;
             }
 
@@ -106,26 +123,34 @@ namespace LibreHardwareMonitor.Hardware.Gpu {
             return true;
         }
 
-        internal void Close() {
-            if (Initialised) {
+        internal void Close()
+        {
+            if (Initialised)
+            {
                 if (Software.OperatingSystem.IsLinux)
                     LinuxNvmlShutdown();
-                else if (windowsDll != IntPtr.Zero) {
+                else if (windowsDll != IntPtr.Zero)
+                {
                     WindowsNvmlShutdown();
                     FreeLibrary(windowsDll);
                 }
-            }  
+            }
         }
 
-        internal NvmlDevice? NvmlDeviceGetHandleByIndex(int index) {
-            if (Initialised) {
+        internal NvmlDevice? NvmlDeviceGetHandleByIndex(int index)
+        {
+            if (Initialised)
+            {
                 NvmlDevice nvmlDevice;
-                if (Software.OperatingSystem.IsLinux) {
-                    try {
+                if (Software.OperatingSystem.IsLinux)
+                {
+                    try
+                    {
                         if (LinuxNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
                             return nvmlDevice;
                     }
-                    catch (EntryPointNotFoundException) {
+                    catch (EntryPointNotFoundException)
+                    {
                         if (LinuxNvmlDeviceGetHandleByIndexLegacy(index, out nvmlDevice) == NvmlReturn.Success)
                             return nvmlDevice;
                     }
@@ -137,10 +162,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu {
             return null;
         }
 
-        internal int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice) {
-            if (Initialised) {
+        internal int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice)
+        {
+            if (Initialised)
+            {
                 int powerUsage;
-                if (Software.OperatingSystem.IsLinux) {
+                if (Software.OperatingSystem.IsLinux)
+                {
                     if (LinuxNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                         return powerUsage;
                 }

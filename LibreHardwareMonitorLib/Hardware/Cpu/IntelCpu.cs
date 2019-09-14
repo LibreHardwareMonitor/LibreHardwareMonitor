@@ -9,7 +9,7 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    internal sealed class IntelCPU : GenericCPU
+    internal sealed class IntelCpu : GenericCpu
     {
         private enum Microarchitecture
         {
@@ -81,7 +81,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             return result;
         }
 
-        public IntelCPU(int processorIndex, CPUID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
+        public IntelCpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
         {
             // set tjMax
             float[] tjMax;

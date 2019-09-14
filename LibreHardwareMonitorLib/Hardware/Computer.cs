@@ -16,7 +16,7 @@ namespace LibreHardwareMonitor.Hardware
     {
         private readonly List<IGroup> _groups = new List<IGroup>();
         private readonly ISettings _settings;
-        private SMBIOS _smbios;
+        private SmBios _smbios;
         private bool _open;
 
         private bool _mainboardEnabled;
@@ -87,7 +87,7 @@ namespace LibreHardwareMonitor.Hardware
             if (_open)
                 return;
 
-            this._smbios = new SMBIOS();
+            this._smbios = new SmBios();
 
             Ring0.Open();
             Opcode.Open();
@@ -96,14 +96,14 @@ namespace LibreHardwareMonitor.Hardware
                 Add(new Mainboard.MainboardGroup(_smbios, _settings));
 
             if (_cpuEnabled)
-                Add(new CPU.CPUGroup(_settings));
+                Add(new CPU.CpuGroup(_settings));
 
             if (_ramEnabled)
                 Add(new Ram.RAMGroup(_smbios, _settings));
 
             if (_gpuEnabled)
             {
-                Add(new Gpu.ATIGroup(_settings));
+                Add(new Gpu.AmdGpuGroup(_settings));
                 Add(new Gpu.NvidiaGroup(_settings));
             }
 
@@ -153,9 +153,9 @@ namespace LibreHardwareMonitor.Hardware
                 if (_open && value != _cpuEnabled)
                 {
                     if (value)
-                        Add(new CPU.CPUGroup(_settings));
+                        Add(new CPU.CpuGroup(_settings));
                     else
-                        RemoveType<CPU.CPUGroup>();
+                        RemoveType<CPU.CpuGroup>();
                 }
                 _cpuEnabled = value;
             }
@@ -190,12 +190,12 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new Gpu.ATIGroup(_settings));
+                        Add(new Gpu.AmdGpuGroup(_settings));
                         Add(new Gpu.NvidiaGroup(_settings));
                     }
                     else
                     {
-                        RemoveType<Gpu.ATIGroup>();
+                        RemoveType<Gpu.AmdGpuGroup>();
                         RemoveType<Gpu.NvidiaGroup>();
                     }
                 }

@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Ram
     {
         private Hardware[] _hardware;
 
-        public RAMGroup(SMBIOS smbios, ISettings settings)
+        public RAMGroup(SmBios smbios, ISettings settings)
         {
             // No implementation for RAM on Unix systems
             if (Software.OperatingSystem.IsLinux)

@@ -14,7 +14,7 @@ using System.Threading;
 namespace LibreHardwareMonitor.Hardware.CPU
 {
 
-    internal sealed class AMD10CPU : AMDCPU
+    internal sealed class Amd10Cpu : AmdCpu
     {
         private readonly Sensor _coreTemperature;
         private readonly Sensor[] _coreClocks;
@@ -55,7 +55,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly double _timeStampCounterMultiplier;
         private readonly bool _corePerformanceBoostSupport;
 
-        public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
+        public Amd10Cpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
         {
             // AMD family 1Xh processors support only one temperature sensor
             _coreTemperature = new Sensor("CPU Cores", 0, SensorType.Temperature, this, new[] { new ParameterDescription("Offset [°C]", "Temperature offset.", 0) }, settings);

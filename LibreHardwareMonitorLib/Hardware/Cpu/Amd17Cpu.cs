@@ -11,7 +11,7 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    internal sealed class AMD17CPU : AMDCPU
+    internal sealed class Amd17Cpu : AmdCpu
     {
         // counter, to create sensor index values
         private int _sensorTemperatures = 0;
@@ -52,7 +52,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         #region Processor
         private class Processor
         {
-            private AMD17CPU _hw = null;
+            private Amd17Cpu _hw = null;
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue = 0;
             private Sensor _packagePower = null;
@@ -64,7 +64,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             public Processor(Hardware hw)
             {
-                this._hw = (AMD17CPU)hw;
+                this._hw = (Amd17Cpu)hw;
                 Nodes = new List<NumaNode>();
 
                 _packagePower = new Sensor("Package Power", this._hw._sensorPower++, SensorType.Power, this._hw, this._hw.settings);
@@ -88,7 +88,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 Core core = node.Cores[0];
                 if (core == null)
                     return;
-                CPUID cpu = core.Threads[0];
+                CpuID cpu = core.Threads[0];
                 if (cpu == null)
                     return;
                 uint eax, edx;
@@ -215,7 +215,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
             #endregion
 
-            public void AppendThread(CPUID thread, int numa_id, int core_id)
+            public void AppendThread(CpuID thread, int numa_id, int core_id)
             {
                 NumaNode node = null;
                 foreach (var n in Nodes)
@@ -240,7 +240,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         #region NumaNode
         private class NumaNode
         {
-            private AMD17CPU _hw = null;
+            private Amd17Cpu _hw = null;
             public int NodeId { get; private set; }
             public List<Core> Cores { get; private set; }
 
@@ -248,10 +248,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 Cores = new List<Core>();
                 NodeId = id;
-                _hw = (AMD17CPU)hw;
+                _hw = (Amd17Cpu)hw;
             }
 
-            public void AppendThread(CPUID thread, int core_id)
+            public void AppendThread(CpuID thread, int core_id)
             {
                 Core core = null;
                 foreach (var c in Cores)
@@ -281,19 +281,19 @@ namespace LibreHardwareMonitor.Hardware.CPU
         {
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue = 0;
-            private AMD17CPU _hw = null;
+            private Amd17Cpu _hw = null;
             private Sensor _clock = null;
             private Sensor _vcore = null;
             private Sensor _power = null;
             private Sensor _multiplier = null;
             public int CoreId { get; private set; }
-            public List<CPUID> Threads { get; private set; }
+            public List<CpuID> Threads { get; private set; }
 
             public Core(Hardware hw, int id)
             {
-                Threads = new List<CPUID>();
+                Threads = new List<CpuID>();
                 CoreId = id;
-                _hw = (AMD17CPU)hw;
+                _hw = (Amd17Cpu)hw;
                 _clock = new Sensor("Core #" + CoreId, _hw._sensorClock++, SensorType.Clock, _hw, _hw.settings);
                 _multiplier = new Sensor("Core #" + CoreId, _hw._sensorMulti++, SensorType.Factor, _hw, _hw.settings);
                 _power = new Sensor("Core #" + CoreId + " (SMU)", _hw._sensorPower++, SensorType.Power, _hw, _hw.settings);
@@ -309,7 +309,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             public void UpdateSensors()
             {
                 // CPUID cpu = threads.FirstOrDefault();
-                CPUID cpu = Threads[0];
+                CpuID cpu = Threads[0];
                 if (cpu == null)
                     return;
                 uint eax, edx;
@@ -397,7 +397,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private Processor _ryzen = null;
 
-        public AMD17CPU(int processorIndex, CPUID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
+        public Amd17Cpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
         {
             // add all numa nodes
             // Register ..1E_ECX, [10:8] + 1
@@ -411,9 +411,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             // Ryzen 3000's skip some core ids.
             // So start at 1 and count upwards when the read core changes.
-            foreach (CPUID[] cpu in cpuid.OrderBy(x => x[0].ExtData[0x1e, EBX] & 0xFF))
+            foreach (CpuID[] cpu in cpuid.OrderBy(x => x[0].ExtData[0x1e, EBX] & 0xFF))
             {
-                CPUID thread = cpu[0];
+                CpuID thread = cpu[0];
 
                 // coreID
                 // Register ..1E_EBX, [7:0]

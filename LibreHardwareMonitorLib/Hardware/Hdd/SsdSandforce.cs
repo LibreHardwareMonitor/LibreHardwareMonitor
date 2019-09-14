@@ -6,11 +6,13 @@
 using System.Collections.Generic;
 using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [NamePrefix(""), RequireSmart(0xAB), RequireSmart(0xB1)]
-  internal class SSDSandforce : ATAStorage {
-    private static readonly IEnumerable<SmartAttribute> smartAttributes =
-      new List<SmartAttribute> {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [NamePrefix(""), RequireSmart(0xAB), RequireSmart(0xB1)]
+    internal class SsdSandforce : ATAStorage
+    {
+        private static readonly IEnumerable<SmartAttribute> _smartAttributes =
+          new List<SmartAttribute> {
         new SmartAttribute(0x01, SmartNames.RawReadErrorRate),
         new SmartAttribute(0x05, SmartNames.RetiredBlockCount, RawToInt),
         new SmartAttribute(0x09, SmartNames.PowerOnHours, RawToInt),
@@ -43,35 +45,39 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
         new SmartAttribute(0xEA, SmartNames.HostWritesToController, RawToInt, SensorType.Data, 1, SmartNames.HostWritesToController),
         new SmartAttribute(0xF1, SmartNames.HostWrites, RawToInt, SensorType.Data, 1, SmartNames.HostWrites),
         new SmartAttribute(0xF2, SmartNames.HostReads, RawToInt, SensorType.Data, 2, SmartNames.HostReads)
-      };
+          };
 
-    private readonly Sensor writeAmplification;
+        private readonly Sensor _writeAmplification;
 
-    public SSDSandforce(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) {
-      writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
+        public SsdSandforce(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+          : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
+        {
+            _writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
+        }
+
+        protected override void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values)
+        {
+            float? controllerWritesToNand = null;
+            float? hostWritesToController = null;
+            foreach (Kernel32.SMART_ATTRIBUTE value in values)
+            {
+                if (value.Id == 0xE9)
+                    controllerWritesToNand = RawToInt(value.RawValue, value.CurrentValue, null);
+
+                if (value.Id == 0xEA)
+                    hostWritesToController = RawToInt(value.RawValue, value.CurrentValue, null);
+            }
+
+            if (controllerWritesToNand.HasValue && hostWritesToController.HasValue)
+            {
+                if (hostWritesToController.Value > 0)
+                    _writeAmplification.Value =
+                      controllerWritesToNand.Value / hostWritesToController.Value;
+                else
+                    _writeAmplification.Value = 0;
+
+                ActivateSensor(_writeAmplification);
+            }
+        }
     }
-
-    protected override void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values) {
-      float? controllerWritesToNand = null;
-      float? hostWritesToController = null;
-      foreach (Kernel32.SMART_ATTRIBUTE value in values) {
-        if (value.Id == 0xE9)
-          controllerWritesToNand = RawToInt(value.RawValue, value.CurrentValue, null);
-
-        if (value.Id == 0xEA)
-          hostWritesToController = RawToInt(value.RawValue, value.CurrentValue, null);
-      }
-
-      if (controllerWritesToNand.HasValue && hostWritesToController.HasValue) {
-        if (hostWritesToController.Value > 0)
-          writeAmplification.Value =
-            controllerWritesToNand.Value / hostWritesToController.Value;
-        else
-          writeAmplification.Value = 0;
-
-        ActivateSensor(writeAmplification);
-      }
-    }
-  }
 }

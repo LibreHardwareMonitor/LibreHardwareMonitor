@@ -5,11 +5,13 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [NamePrefix("INTEL SSD"), RequireSmart(0xE1), RequireSmart(0xE8), RequireSmart(0xE9)]
-  internal class SSDIntel : ATAStorage {
-    private static readonly IEnumerable<SmartAttribute> smartAttributes =
-      new List<SmartAttribute> {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [NamePrefix("INTEL SSD"), RequireSmart(0xE1), RequireSmart(0xE8), RequireSmart(0xE9)]
+    internal class SsdIntel : ATAStorage
+    {
+        private static readonly IEnumerable<SmartAttribute> _smartAttributes =
+          new List<SmartAttribute> {
         new SmartAttribute(0x01, SmartNames.ReadErrorRate),
         new SmartAttribute(0x03, SmartNames.SpinUpTime),
         new SmartAttribute(0x04, SmartNames.StartStopCount, RawToInt),
@@ -63,9 +65,9 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
                            SensorType.Data,
                            1,
                            SmartNames.HostReads)
-      };
+          };
 
-    public SSDIntel(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) { }
-  }
+        public SsdIntel(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+          : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
+    }
 }

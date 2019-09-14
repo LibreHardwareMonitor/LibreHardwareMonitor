@@ -7,12 +7,14 @@ using System;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
 #if DEBUG
 
-  internal class DebugSmart : ISmart {
-    private readonly Drive[] drives = {
-      new Drive("KINGSTON SNV425S264GB",
+    internal class DebugSmart : ISmart
+    {
+        private readonly Drive[] _drives = {
+            new Drive("KINGSTON SNV425S264GB",
                 null,
                 16,
                 @" 01 000000000000 100 100      
@@ -340,110 +342,123 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
             F1 A56AA1F60200 99  99  0")
     };
 
-    private int driveNumber;
+        private int driveNumber;
 
-    public DebugSmart(int driveNumber) {
-      this.driveNumber = driveNumber;
-    }
-
-    public bool IsValid => true;
-
-    public void Close() {
-      Dispose(true);
-      GC.SuppressFinalize(this);
-    }
-
-    public bool EnableSmart() {
-      if (driveNumber < 0)
-        throw new ObjectDisposedException(nameof(DebugSmart));
-
-
-      return true;
-    }
-
-    public Kernel32.SMART_ATTRIBUTE[] ReadSmartData() {
-      if (driveNumber < 0)
-        throw new ObjectDisposedException(nameof(DebugSmart));
-
-
-      return drives[driveNumber].DriveAttributeValues;
-    }
-
-    public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds() {
-      if (driveNumber < 0)
-        throw new ObjectDisposedException(nameof(DebugSmart));
-
-
-      return drives[driveNumber].DriveThresholdValues;
-    }
-
-    public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision) {
-      if (driveNumber < 0)
-        throw new ObjectDisposedException(nameof(DebugSmart));
-
-
-      name = drives[driveNumber].Name;
-      firmwareRevision = drives[driveNumber].FirmwareVersion;
-      return true;
-    }
-
-    public void Dispose() {
-      Close();
-    }
-
-    protected void Dispose(bool disposing) {
-      if (disposing)
-        driveNumber = -1;
-    }
-
-    private class Drive {
-      public Drive(string name, string firmware, int idBase, string value) {
-        Name = name;
-        FirmwareVersion = firmware;
-
-        string[] lines = value.Split(new[] { '\r', '\n' },
-                                     StringSplitOptions.RemoveEmptyEntries);
-
-        DriveAttributeValues = new Kernel32.SMART_ATTRIBUTE[lines.Length];
-        var thresholds = new List<Kernel32.SMART_THRESHOLD>();
-
-        for (int i = 0; i < lines.Length; i++) {
-          string[] array = lines[i].Split(new[] { ' ' },
-                                          StringSplitOptions.RemoveEmptyEntries);
-
-          if (array.Length != 4 && array.Length != 5)
-            throw new Exception();
-
-
-          var v = new Kernel32.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
-
-          for (int j = 0; j < 6; j++) {
-            v.RawValue[j] = Convert.ToByte(array[1].Substring(2 * j, 2), 16);
-          }
-
-          v.WorstValue = Convert.ToByte(array[2], 10);
-          v.CurrentValue = Convert.ToByte(array[3], 10);
-
-          DriveAttributeValues[i] = v;
-
-          if (array.Length == 5) {
-            var t = new Kernel32.SMART_THRESHOLD { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
-            thresholds.Add(t);
-          }
+        public DebugSmart(int driveNumber)
+        {
+            this.driveNumber = driveNumber;
         }
 
-        DriveThresholdValues = thresholds.ToArray();
-      }
+        public bool IsValid => true;
 
-      public Kernel32.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
+        public void Close()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-      public Kernel32.SMART_THRESHOLD[] DriveThresholdValues { get; }
+        public bool EnableSmart()
+        {
+            if (driveNumber < 0)
+                throw new ObjectDisposedException(nameof(DebugSmart));
 
-      public string FirmwareVersion { get; }
 
-      public string Name { get; }
+            return true;
+        }
+
+        public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
+        {
+            if (driveNumber < 0)
+                throw new ObjectDisposedException(nameof(DebugSmart));
+
+
+            return _drives[driveNumber].DriveAttributeValues;
+        }
+
+        public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
+        {
+            if (driveNumber < 0)
+                throw new ObjectDisposedException(nameof(DebugSmart));
+
+
+            return _drives[driveNumber].DriveThresholdValues;
+        }
+
+        public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
+        {
+            if (driveNumber < 0)
+                throw new ObjectDisposedException(nameof(DebugSmart));
+
+
+            name = _drives[driveNumber].Name;
+            firmwareRevision = _drives[driveNumber].FirmwareVersion;
+            return true;
+        }
+
+        public void Dispose()
+        {
+            Close();
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (disposing)
+                driveNumber = -1;
+        }
+
+        private class Drive
+        {
+            public Drive(string name, string firmware, int idBase, string value)
+            {
+                Name = name;
+                FirmwareVersion = firmware;
+
+                string[] lines = value.Split(new[] { '\r', '\n' },
+                                             StringSplitOptions.RemoveEmptyEntries);
+
+                DriveAttributeValues = new Kernel32.SMART_ATTRIBUTE[lines.Length];
+                var thresholds = new List<Kernel32.SMART_THRESHOLD>();
+
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string[] array = lines[i].Split(new[] { ' ' },
+                                                    StringSplitOptions.RemoveEmptyEntries);
+
+                    if (array.Length != 4 && array.Length != 5)
+                        throw new Exception();
+
+
+                    var v = new Kernel32.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
+
+                    for (int j = 0; j < 6; j++)
+                    {
+                        v.RawValue[j] = Convert.ToByte(array[1].Substring(2 * j, 2), 16);
+                    }
+
+                    v.WorstValue = Convert.ToByte(array[2], 10);
+                    v.CurrentValue = Convert.ToByte(array[3], 10);
+
+                    DriveAttributeValues[i] = v;
+
+                    if (array.Length == 5)
+                    {
+                        var t = new Kernel32.SMART_THRESHOLD { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
+                        thresholds.Add(t);
+                    }
+                }
+
+                DriveThresholdValues = thresholds.ToArray();
+            }
+
+            public Kernel32.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
+
+            public Kernel32.SMART_THRESHOLD[] DriveThresholdValues { get; }
+
+            public string FirmwareVersion { get; }
+
+            public string Name { get; }
+        }
     }
-  }
 
 #endif
 }

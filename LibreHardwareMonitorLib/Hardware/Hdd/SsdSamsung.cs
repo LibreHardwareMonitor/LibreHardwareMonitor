@@ -5,11 +5,13 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  [NamePrefix(""), RequireSmart(0xB1), RequireSmart(0xB3), RequireSmart(0xB5), RequireSmart(0xB6), RequireSmart(0xB7), RequireSmart(0xBB), RequireSmart(0xC3), RequireSmart(0xC7)]
-  internal class SSDSamsung : ATAStorage {
-    private static readonly IEnumerable<SmartAttribute> smartAttributes =
-      new List<SmartAttribute> {
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    [NamePrefix(""), RequireSmart(0xB1), RequireSmart(0xB3), RequireSmart(0xB5), RequireSmart(0xB6), RequireSmart(0xB7), RequireSmart(0xBB), RequireSmart(0xC3), RequireSmart(0xC7)]
+    internal class SsdSamsung : ATAStorage
+    {
+        private static readonly IEnumerable<SmartAttribute> _smartAttributes =
+          new List<SmartAttribute> {
         new SmartAttribute(0x05, SmartNames.ReallocatedSectorsCount),
         new SmartAttribute(0x09, SmartNames.PowerOnHours, RawToInt),
         new SmartAttribute(0x0C, SmartNames.PowerCycleCount, RawToInt),
@@ -58,9 +60,9 @@ namespace LibreHardwareMonitor.Hardware.Hdd {
                            SensorType.Data,
                            0,
                            "Total Bytes Written")
-      };
+          };
 
-    public SSDSamsung(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-      : base(storageInfo, smart, name, firmwareRevision, "ssd", index, smartAttributes, settings) { }
-  }
+        public SsdSamsung(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
+          : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
+    }
 }

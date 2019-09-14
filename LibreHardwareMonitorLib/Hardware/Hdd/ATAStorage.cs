@@ -12,242 +12,282 @@ using System.Reflection;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.Hdd {
-  public abstract class ATAStorage : AbstractStorage {
-    // array of all harddrive types, matching type is searched in this order
-    private static readonly Type[] hddTypes = { typeof(SSDPlextor), typeof(SSDIntel), typeof(SSDSandforce), typeof(SSDIndilinx), typeof(SSDSamsung), typeof(SSDMicron), typeof(GenericHarddisk) };
+namespace LibreHardwareMonitor.Hardware.Hdd
+{
+    public abstract class ATAStorage : AbstractStorage
+    {
+        // array of all harddrive types, matching type is searched in this order
+        private static readonly Type[] _hddTypes = { typeof(SsdPlextor), typeof(SsdIntel), typeof(SsdSandforce), typeof(SsdIndilinx), typeof(SsdSamsung), typeof(SsdMicron), typeof(GenericHarddisk) };
+        private readonly ISmart _smart;
+        private readonly List<SmartAttribute> _smartAttributes;
+        private IDictionary<SmartAttribute, Sensor> _sensors;
 
-    private readonly ISmart smart;
-    private readonly List<SmartAttribute> smartAttributes;
-    private IDictionary<SmartAttribute, Sensor> sensors;
+        /// <summary>
+        /// Gets the SMART data.
+        /// </summary>
+        public ISmart Smart => _smart;
 
-    /// <summary>
-    /// Gets the SMART data.
-    /// </summary>
-    public ISmart Smart => smart;
+        /// <summary>
+        /// Gets the SMART attributes.
+        /// </summary>
+        public IReadOnlyList<SmartAttribute> SmartAttributes => _smartAttributes;
 
-    /// <summary>
-    /// Gets the SMART attributes.
-    /// </summary>
-    public IReadOnlyList<SmartAttribute> SmartAttributes => smartAttributes;
+        internal ATAStorage(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IEnumerable<SmartAttribute> smartAttributes, ISettings settings)
+          : base(storageInfo, name, firmwareRevision, id, index, settings)
+        {
+            _smart = smart;
+            if (smart.IsValid)
+                smart.EnableSmart();
 
-    internal ATAStorage(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IEnumerable<SmartAttribute> smartAttributes, ISettings settings)
-      : base(storageInfo, name, firmwareRevision, id, index, settings) {
-      this.smart = smart;
-      if (smart.IsValid)
-        smart.EnableSmart();
-      
-      this.smartAttributes = new List<SmartAttribute>(smartAttributes);
-      CreateSensors();
-    }
-
-    internal static AbstractStorage CreateInstance(StorageInfo info, ISettings settings) {
-      ISmart smart = new WindowsSmart(info.Index);
-      string name = null;
-      string firmwareRevision = null;
-      Kernel32.SMART_ATTRIBUTE[] values = { };
-
-      if (smart.IsValid) {
-        bool nameValid = smart.ReadNameAndFirmwareRevision(out name, out firmwareRevision);
-        bool smartEnabled = smart.EnableSmart();
-
-        if (smartEnabled)
-          values = smart.ReadSmartData();
-
-        if (!nameValid) {
-          name = null;
-          firmwareRevision = null;
-        }
-      } else {
-        string[] logicalDrives = WindowsStorage.GetLogicalDrives(info.Index);
-        if (logicalDrives == null || logicalDrives.Length == 0) {
-          smart.Close();
-          return null;
+            _smartAttributes = new List<SmartAttribute>(smartAttributes);
+            CreateSensors();
         }
 
-        bool hasNonZeroSizeDrive = false;
-        foreach (string logicalDrive in logicalDrives) {
-          try {
-            var di = new DriveInfo(logicalDrive);
-            if (di.TotalSize > 0) {
-              hasNonZeroSizeDrive = true;
-              break;
+        internal static AbstractStorage CreateInstance(StorageInfo info, ISettings settings)
+        {
+            ISmart smart = new WindowsSmart(info.Index);
+            string name = null;
+            string firmwareRevision = null;
+            Kernel32.SMART_ATTRIBUTE[] values = { };
+
+            if (smart.IsValid)
+            {
+                bool nameValid = smart.ReadNameAndFirmwareRevision(out name, out firmwareRevision);
+                bool smartEnabled = smart.EnableSmart();
+
+                if (smartEnabled)
+                    values = smart.ReadSmartData();
+
+                if (!nameValid)
+                {
+                    name = null;
+                    firmwareRevision = null;
+                }
             }
-          } catch (ArgumentException) { } catch (IOException) { } catch (UnauthorizedAccessException) { }
-        }
+            else
+            {
+                string[] logicalDrives = WindowsStorage.GetLogicalDrives(info.Index);
+                if (logicalDrives == null || logicalDrives.Length == 0)
+                {
+                    smart.Close();
+                    return null;
+                }
 
-        if (!hasNonZeroSizeDrive) {
-          smart.Close();
-          return null;
-        }
-      }
+                bool hasNonZeroSizeDrive = false;
+                foreach (string logicalDrive in logicalDrives)
+                {
+                    try
+                    {
+                        var di = new DriveInfo(logicalDrive);
+                        if (di.TotalSize > 0)
+                        {
+                            hasNonZeroSizeDrive = true;
+                            break;
+                        }
+                    }
+                    catch (ArgumentException) { }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
+                }
 
-      if (string.IsNullOrEmpty(name))
-        name = string.IsNullOrEmpty(info.Name) ? "Generic Hard Disk" : info.Name;
-
-      if (string.IsNullOrEmpty(firmwareRevision))
-        firmwareRevision = string.IsNullOrEmpty(info.Revision) ? "Unknown" : info.Revision;
-
-      foreach (Type type in hddTypes) {
-        // get the array of name prefixes for the current type
-        var namePrefixes = type.GetCustomAttributes(typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
-
-        // get the array of the required SMART attributes for the current type
-        var requiredAttributes = type.GetCustomAttributes(typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
-
-        // check if all required attributes are present
-        bool allRequiredAttributesFound = true;
-        foreach (var requireAttribute in requiredAttributes) {
-          bool attributeFound = false;
-          foreach (Kernel32.SMART_ATTRIBUTE value in values) {
-            if (value.Id == requireAttribute.AttributeId) {
-              attributeFound = true;
-              break;
-            }
-          }
-
-          if (!attributeFound) {
-            allRequiredAttributesFound = false;
-            break;
-          }
-        }
-
-        // if an attribute is missing, then try the next type
-        if (!allRequiredAttributesFound)
-          continue;
-
-
-        // check if there is a matching name prefix for this type
-        foreach (NamePrefixAttribute prefix in namePrefixes) {
-          if (name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture)) {
-            var flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-            return Activator.CreateInstance(type, flags, null, new object[] { info, smart, name, firmwareRevision, info.Index, settings }, null) as ATAStorage;
-          }
-        }
-      }
-
-      // no matching type has been found
-      smart.Close();
-      return null;
-    }
-
-    protected sealed override void CreateSensors() {
-      sensors = new Dictionary<SmartAttribute, Sensor>();
-
-      if (smart.IsValid) {
-        var smartIds = smart.ReadSmartData().Select(attrValue => attrValue.Id);
-
-        // unique attributes by SensorType and SensorChannel.
-        var uniqueAttributes = smartAttributes
-                              .Where(a => a.SensorType.HasValue && smartIds.Contains(a.Identifier))
-                              .GroupBy(a => new { a.SensorType.Value, a.SensorChannel })
-                              .Select(g => g.First());
-
-        sensors = uniqueAttributes.ToDictionary(attr => attr,
-                                                attr => new Sensor(attr.SensorName,
-                                                                   attr.SensorChannel,
-                                                                   attr.DefaultHiddenSensor,
-                                                                   attr.SensorType.Value,
-                                                                   this,
-                                                                   attr.ParameterDescriptions,
-                                                                   settings));
-
-        foreach (var sensor in sensors) {
-          ActivateSensor(sensor.Value);
-        }
-      }
-
-      base.CreateSensors();
-    }
-
-    protected virtual void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values) { }
-
-    protected override void UpdateSensors() {
-      if (smart.IsValid) {
-        Kernel32.SMART_ATTRIBUTE[] values = smart.ReadSmartData();
-
-        foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in sensors) {
-          SmartAttribute attribute = keyValuePair.Key;
-          foreach (Kernel32.SMART_ATTRIBUTE value in values) {
-            if (value.Id == attribute.Identifier) {
-              Sensor sensor = keyValuePair.Value;
-              sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
-            }
-          }
-        }
-
-        UpdateAdditionalSensors(values);
-      }
-    }
-
-    protected override void GetReport(StringBuilder r) {
-      if (smart.IsValid) {
-        Kernel32.SMART_ATTRIBUTE[] values = smart.ReadSmartData();
-        Kernel32.SMART_THRESHOLD[] thresholds = smart.ReadSmartThresholds();
-
-        if (values.Length > 0) {
-          r.AppendFormat(CultureInfo.InvariantCulture,
-                         " {0}{1}{2}{3}{4}{5}{6}{7}",
-                         "Id".PadRight(3),
-                         "Description".PadRight(35),
-                         "Raw Value".PadRight(13),
-                         "Worst".PadRight(6),
-                         "Value".PadRight(6),
-                         "Threshold".PadRight(6),
-                         "Physical".PadRight(8),
-                         Environment.NewLine);
-
-          foreach (Kernel32.SMART_ATTRIBUTE value in values) {
-            if (value.Id == 0x00)
-              break;
-
-
-            byte? threshold = null;
-            foreach (Kernel32.SMART_THRESHOLD t in thresholds) {
-              if (t.Id == value.Id) {
-                threshold = t.Threshold;
-              }
+                if (!hasNonZeroSizeDrive)
+                {
+                    smart.Close();
+                    return null;
+                }
             }
 
-            string description = "Unknown";
-            float? physical = null;
-            foreach (SmartAttribute a in smartAttributes) {
-              if (a.Identifier == value.Id) {
-                description = a.Name;
-                if (a.HasRawValueConversion | a.SensorType.HasValue)
-                  physical = a.ConvertValue(value, null);
-                else
-                  physical = null;
-              }
+            if (string.IsNullOrEmpty(name))
+                name = string.IsNullOrEmpty(info.Name) ? "Generic Hard Disk" : info.Name;
+
+            if (string.IsNullOrEmpty(firmwareRevision))
+                firmwareRevision = string.IsNullOrEmpty(info.Revision) ? "Unknown" : info.Revision;
+
+            foreach (Type type in _hddTypes)
+            {
+                // get the array of name prefixes for the current type
+                var namePrefixes = type.GetCustomAttributes(typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
+
+                // get the array of the required SMART attributes for the current type
+                var requiredAttributes = type.GetCustomAttributes(typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
+
+                // check if all required attributes are present
+                bool allRequiredAttributesFound = true;
+                foreach (var requireAttribute in requiredAttributes)
+                {
+                    bool attributeFound = false;
+                    foreach (Kernel32.SMART_ATTRIBUTE value in values)
+                    {
+                        if (value.Id == requireAttribute.AttributeId)
+                        {
+                            attributeFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!attributeFound)
+                    {
+                        allRequiredAttributesFound = false;
+                        break;
+                    }
+                }
+
+                // if an attribute is missing, then try the next type
+                if (!allRequiredAttributesFound)
+                    continue;
+
+
+                // check if there is a matching name prefix for this type
+                foreach (NamePrefixAttribute prefix in namePrefixes)
+                {
+                    if (name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture))
+                    {
+                        var flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+                        return Activator.CreateInstance(type, flags, null, new object[] { info, smart, name, firmwareRevision, info.Index, settings }, null) as ATAStorage;
+                    }
+                }
             }
 
-            string raw = BitConverter.ToString(value.RawValue);
-            r.AppendFormat(CultureInfo.InvariantCulture,
-                           " {0}{1}{2}{3}{4}{5}{6}{7}",
-                           value.Id.ToString("X2").PadRight(3),
-                           description.PadRight(35),
-                           raw.Replace("-", "").PadRight(13),
-                           value.WorstValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
-                           value.CurrentValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
-                           (threshold.HasValue
-                             ? threshold.Value.ToString(CultureInfo.InvariantCulture)
-                             : "-").PadRight(6),
-                           (physical.HasValue ? physical.Value.ToString(CultureInfo.InvariantCulture) : "-").PadRight(8),
-                           Environment.NewLine);
-          }
-
-          r.AppendLine();
+            // no matching type has been found
+            smart.Close();
+            return null;
         }
-      }
-    }
 
-    protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters) {
-      return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
-    }
+        protected sealed override void CreateSensors()
+        {
+            _sensors = new Dictionary<SmartAttribute, Sensor>();
 
-    public override void Close() {
-      smart.Close();
-      base.Close();
+            if (_smart.IsValid)
+            {
+                var smartIds = _smart.ReadSmartData().Select(attrValue => attrValue.Id);
+
+                // unique attributes by SensorType and SensorChannel.
+                var uniqueAttributes = _smartAttributes
+                                      .Where(a => a.SensorType.HasValue && smartIds.Contains(a.Identifier))
+                                      .GroupBy(a => new { a.SensorType.Value, a.SensorChannel })
+                                      .Select(g => g.First());
+
+                _sensors = uniqueAttributes.ToDictionary(attr => attr,
+                                                        attr => new Sensor(attr.SensorName,
+                                                                           attr.SensorChannel,
+                                                                           attr.DefaultHiddenSensor,
+                                                                           attr.SensorType.Value,
+                                                                           this,
+                                                                           attr.ParameterDescriptions,
+                                                                           settings));
+
+                foreach (var sensor in _sensors)
+                {
+                    ActivateSensor(sensor.Value);
+                }
+            }
+
+            base.CreateSensors();
+        }
+
+        protected virtual void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values) { }
+
+        protected override void UpdateSensors()
+        {
+            if (_smart.IsValid)
+            {
+                Kernel32.SMART_ATTRIBUTE[] values = _smart.ReadSmartData();
+
+                foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
+                {
+                    SmartAttribute attribute = keyValuePair.Key;
+                    foreach (Kernel32.SMART_ATTRIBUTE value in values)
+                    {
+                        if (value.Id == attribute.Identifier)
+                        {
+                            Sensor sensor = keyValuePair.Value;
+                            sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
+                        }
+                    }
+                }
+
+                UpdateAdditionalSensors(values);
+            }
+        }
+
+        protected override void GetReport(StringBuilder r)
+        {
+            if (_smart.IsValid)
+            {
+                Kernel32.SMART_ATTRIBUTE[] values = _smart.ReadSmartData();
+                Kernel32.SMART_THRESHOLD[] thresholds = _smart.ReadSmartThresholds();
+
+                if (values.Length > 0)
+                {
+                    r.AppendFormat(CultureInfo.InvariantCulture,
+                                   " {0}{1}{2}{3}{4}{5}{6}{7}",
+                                   "Id".PadRight(3),
+                                   "Description".PadRight(35),
+                                   "Raw Value".PadRight(13),
+                                   "Worst".PadRight(6),
+                                   "Value".PadRight(6),
+                                   "Threshold".PadRight(6),
+                                   "Physical".PadRight(8),
+                                   Environment.NewLine);
+
+                    foreach (Kernel32.SMART_ATTRIBUTE value in values)
+                    {
+                        if (value.Id == 0x00)
+                            break;
+
+
+                        byte? threshold = null;
+                        foreach (Kernel32.SMART_THRESHOLD t in thresholds)
+                        {
+                            if (t.Id == value.Id)
+                            {
+                                threshold = t.Threshold;
+                            }
+                        }
+
+                        string description = "Unknown";
+                        float? physical = null;
+                        foreach (SmartAttribute a in _smartAttributes)
+                        {
+                            if (a.Identifier == value.Id)
+                            {
+                                description = a.Name;
+                                if (a.HasRawValueConversion | a.SensorType.HasValue)
+                                    physical = a.ConvertValue(value, null);
+                                else
+                                    physical = null;
+                            }
+                        }
+
+                        string raw = BitConverter.ToString(value.RawValue);
+                        r.AppendFormat(CultureInfo.InvariantCulture,
+                                       " {0}{1}{2}{3}{4}{5}{6}{7}",
+                                       value.Id.ToString("X2").PadRight(3),
+                                       description.PadRight(35),
+                                       raw.Replace("-", "").PadRight(13),
+                                       value.WorstValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
+                                       value.CurrentValue.ToString(CultureInfo.InvariantCulture).PadRight(6),
+                                       (threshold.HasValue
+                                         ? threshold.Value.ToString(CultureInfo.InvariantCulture)
+                                         : "-").PadRight(6),
+                                       (physical.HasValue ? physical.Value.ToString(CultureInfo.InvariantCulture) : "-").PadRight(8),
+                                       Environment.NewLine);
+                    }
+
+                    r.AppendLine();
+                }
+            }
+        }
+
+        protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters)
+        {
+            return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
+        }
+
+        public override void Close()
+        {
+            _smart.Close();
+            base.Close();
+        }
     }
-  }
 }

@@ -15,14 +15,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
         AMD
     }
 
-    public class CPUID
+    public class CpuID
     {
         public const uint CPUID_0 = 0;
         public const uint CPUID_EXT = 0x80000000;
         private readonly uint _coreMaskWith;
         private readonly uint _threadMaskWith;
 
-        public CPUID(int thread)
+        public CpuID(int thread)
         {
             Thread = thread;
             uint maxCpuidExt;

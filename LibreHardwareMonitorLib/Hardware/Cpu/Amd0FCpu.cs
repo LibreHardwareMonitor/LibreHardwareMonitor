@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    internal sealed class AMD0FCPU : AMDCPU
+    internal sealed class Amd0FCpu : AmdCpu
     {
         private readonly Sensor[] _coreTemperatures;
         private readonly Sensor[] _coreClocks;
@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly byte _thermSenseCoreSelCPU1;
         private readonly uint _miscellaneousControlAddress;
 
-        public AMD0FCPU(int processorIndex, CPUID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
+        public Amd0FCpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
         {
             float offset = -49.0f;
 

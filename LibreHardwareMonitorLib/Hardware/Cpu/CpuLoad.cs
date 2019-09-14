@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    internal class CPULoad
+    internal class CpuLoad
     {
-        private readonly CPUID[][] _cpuid;
+        private readonly CpuID[][] _cpuid;
         private long[] _idleTimes;
         private long[] _totalTimes;
         private float _totalLoad;
@@ -40,7 +40,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             return true;
         }
 
-        public CPULoad(CPUID[][] cpuid)
+        public CpuLoad(CpuID[][] cpuid)
         {
             _cpuid = cpuid;
             _coreLoads = new float[cpuid.Length];

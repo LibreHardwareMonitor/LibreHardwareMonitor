@@ -5,14 +5,14 @@
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-    internal abstract class AMDCPU : GenericCPU
+    internal abstract class AmdCpu : GenericCpu
     {
         private const byte PCI_BUS = 0;
         private const byte PCI_BASE_DEVICE = 0x18;
         private const byte DEVICE_VENDOR_ID_REGISTER = 0;
         private const ushort AMD_VENDOR_ID = 0x1022;
 
-        public AMDCPU(int processorIndex, CPUID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings) { }
+        public AmdCpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings) { }
 
         protected uint GetPciAddress(byte function, ushort deviceId)
         {
