@@ -31,8 +31,8 @@ namespace LibreHardwareMonitor.GUI
                 case HardwareType.GpuNvidia:
                     image = Utilities.EmbeddedResources.GetImage("nvidia.png");
                     break;
-                case HardwareType.GpuAti:
-                    image = Utilities.EmbeddedResources.GetImage("ati.png");
+                case HardwareType.GpuAmd:
+                    image = Utilities.EmbeddedResources.GetImage("amd.png");
                     break;
                 case HardwareType.HDD:
                     image = Utilities.EmbeddedResources.GetImage("hdd.png");

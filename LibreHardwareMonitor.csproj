@@ -146,8 +146,6 @@
     <EmbeddedResource Include="GUI\PortForm.resx">
       <DependentUpon>PortForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\ati.png">
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\bigng.png" />
     <EmbeddedResource Include="Resources\clock.png" />
     <EmbeddedResource Include="Resources\computer.png" />
@@ -292,6 +290,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\acicon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\amd.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

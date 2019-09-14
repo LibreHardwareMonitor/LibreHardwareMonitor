@@ -15,7 +15,7 @@ namespace LibreHardwareMonitor.Hardware
         CPU,
         RAM,
         GpuNvidia,
-        GpuAti,
+        GpuAmd,
         TBalancer,
         Heatmaster,
         HDD,

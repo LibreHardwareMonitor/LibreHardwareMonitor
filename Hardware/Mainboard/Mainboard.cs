@@ -10,7 +10,7 @@
 
 using System;
 using System.Text;
-using LibreHardwareMonitor.Hardware.LPC;
+using LibreHardwareMonitor.Hardware.Lpc;
 
 namespace LibreHardwareMonitor.Hardware.Mainboard {
   public class Mainboard : IHardware {

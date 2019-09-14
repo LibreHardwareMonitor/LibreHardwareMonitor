@@ -511,7 +511,7 @@ namespace LibreHardwareMonitor.Utilities
                     return "cpu.png";
                 case HardwareType.GpuNvidia:
                     return "nvidia.png";
-                case HardwareType.GpuAti:
+                case HardwareType.GpuAmd:
                     return "ati.png";
                 case HardwareType.HDD:
                     return "hdd.png";

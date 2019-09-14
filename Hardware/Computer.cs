@@ -99,23 +99,23 @@ namespace LibreHardwareMonitor.Hardware
                 Add(new CPU.CPUGroup(_settings));
 
             if (_ramEnabled)
-                Add(new RAM.RAMGroup(_smbios, _settings));
+                Add(new Ram.RAMGroup(_smbios, _settings));
 
             if (_gpuEnabled)
             {
-                Add(new ATI.ATIGroup(_settings));
-                Add(new Nvidia.NvidiaGroup(_settings));
+                Add(new Gpu.ATIGroup(_settings));
+                Add(new Gpu.NvidiaGroup(_settings));
             }
 
             if (_fanControllerEnabled)
             {
-                Add(new TBalancer.TBalancerGroup(_settings));
-                Add(new Heatmaster.HeatmasterGroup(_settings));
-                Add(new Aquacomputer.AquacomputerGroup(_settings));
+                Add(new Controller.TBalancerGroup(_settings));
+                Add(new Controller.HeatmasterGroup(_settings));
+                Add(new Controller.AquacomputerGroup(_settings));
             }
 
             if (_hddEnabled)
-                Add(new HDD.HarddriveGroup(_settings));
+                Add(new Hdd.HarddriveGroup(_settings));
 
             if (_nicEnabled)
             {
@@ -171,9 +171,9 @@ namespace LibreHardwareMonitor.Hardware
                 if (_open && value != _ramEnabled)
                 {
                     if (value)
-                        Add(new RAM.RAMGroup(_smbios, _settings));
+                        Add(new Ram.RAMGroup(_smbios, _settings));
                     else
-                        RemoveType<RAM.RAMGroup>();
+                        RemoveType<Ram.RAMGroup>();
                 }
                 _ramEnabled = value;
             }
@@ -190,13 +190,13 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new ATI.ATIGroup(_settings));
-                        Add(new Nvidia.NvidiaGroup(_settings));
+                        Add(new Gpu.ATIGroup(_settings));
+                        Add(new Gpu.NvidiaGroup(_settings));
                     }
                     else
                     {
-                        RemoveType<ATI.ATIGroup>();
-                        RemoveType<Nvidia.NvidiaGroup>();
+                        RemoveType<Gpu.ATIGroup>();
+                        RemoveType<Gpu.NvidiaGroup>();
                     }
                 }
                 _gpuEnabled = value;
@@ -214,15 +214,15 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new TBalancer.TBalancerGroup(_settings));
-                        Add(new Heatmaster.HeatmasterGroup(_settings));
-                        Add(new Aquacomputer.AquacomputerGroup(_settings));
+                        Add(new Controller.TBalancerGroup(_settings));
+                        Add(new Controller.HeatmasterGroup(_settings));
+                        Add(new Controller.AquacomputerGroup(_settings));
                     }
                     else
                     {
-                        RemoveType<TBalancer.TBalancerGroup>();
-                        RemoveType<Heatmaster.HeatmasterGroup>();
-                        RemoveType<Aquacomputer.AquacomputerGroup>();
+                        RemoveType<Controller.TBalancerGroup>();
+                        RemoveType<Controller.HeatmasterGroup>();
+                        RemoveType<Controller.AquacomputerGroup>();
                     }
                 }
                 _fanControllerEnabled = value;
@@ -239,9 +239,9 @@ namespace LibreHardwareMonitor.Hardware
                 if (_open && value != _hddEnabled)
                 {
                     if (value)
-                        Add(new HDD.HarddriveGroup(_settings));
+                        Add(new Hdd.HarddriveGroup(_settings));
                     else
-                        RemoveType<HDD.HarddriveGroup>();
+                        RemoveType<Hdd.HarddriveGroup>();
                 }
                 _hddEnabled = value;
             }
