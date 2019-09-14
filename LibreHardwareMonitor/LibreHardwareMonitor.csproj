@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F5E0C1F7-9E9B-46F2-AC88-8C9C1C923880}</ProjectGuid>
+    <ProjectUId>{F5E0C1F7-9E9B-46F2-AC88-8C9C1C923880}</ProjectUId>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputType>WinExe</OutputType>
@@ -36,6 +36,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <ProjectGuid>{F5E0C1F7-9E9B-46F2-AC88-8C9C1C923880}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -62,8 +63,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
@@ -74,61 +76,63 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GUI\GadgetWindow.cs" />
-    <Compile Include="GUI\Gadget.cs" />
-    <Compile Include="GUI\HardwareTypeImage.cs" />
-    <Compile Include="GUI\NotifyIconAdv.cs" />
-    <Compile Include="GUI\PlotPanel.cs">
+    <Compile Include="..\LibreHardwareMonitorLib\Properties\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="UI\GadgetWindow.cs" />
+    <Compile Include="UI\Gadget.cs" />
+    <Compile Include="UI\HardwareTypeImage.cs" />
+    <Compile Include="UI\NotifyIconAdv.cs" />
+    <Compile Include="UI\PlotPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\PortForm.cs">
+    <Compile Include="UI\PortForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\PortForm.Designer.cs">
+    <Compile Include="UI\PortForm.Designer.cs">
       <DependentUpon>PortForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Node.cs" />
-    <Compile Include="GUI\ParameterForm.cs">
+    <Compile Include="UI\Node.cs" />
+    <Compile Include="UI\ParameterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\ParameterForm.Designer.cs">
+    <Compile Include="UI\ParameterForm.Designer.cs">
       <DependentUpon>ParameterForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\SensorGadget.cs" />
-    <Compile Include="GUI\SensorNotifyIcon.cs" />
-    <Compile Include="GUI\ShowDesktop.cs" />
-    <Compile Include="GUI\SplitContainerAdv.cs">
+    <Compile Include="UI\SensorGadget.cs" />
+    <Compile Include="UI\SensorNotifyIcon.cs" />
+    <Compile Include="UI\ShowDesktop.cs" />
+    <Compile Include="UI\SplitContainerAdv.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="GUI\SystemTray.cs" />
-    <Compile Include="GUI\StartupManager.cs" />
-    <Compile Include="GUI\TaskScheduler.cs" />
-    <Compile Include="GUI\TreeModel.cs" />
-    <Compile Include="GUI\TypeNode.cs" />
-    <Compile Include="GUI\UnitManager.cs" />
-    <Compile Include="GUI\UpdateVisitor.cs" />
-    <Compile Include="GUI\UserOption.cs" />
-    <Compile Include="GUI\UserRadioGroup.cs" />
-    <Compile Include="Properties\AssemblyVersion.cs" />
+    <Compile Include="UI\SystemTray.cs" />
+    <Compile Include="UI\StartupManager.cs" />
+    <Compile Include="UI\TaskScheduler.cs" />
+    <Compile Include="UI\TreeModel.cs" />
+    <Compile Include="UI\TypeNode.cs" />
+    <Compile Include="UI\UnitManager.cs" />
+    <Compile Include="UI\UpdateVisitor.cs" />
+    <Compile Include="UI\UserOption.cs" />
+    <Compile Include="UI\UserRadioGroup.cs" />
     <Compile Include="Utilities\HttpServer.cs" />
     <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Utilities\PersistentSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="GUI\AboutBox.cs">
+    <Compile Include="UI\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\AboutBox.Designer.cs">
+    <Compile Include="UI\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\HardwareNode.cs" />
-    <Compile Include="GUI\MainForm.cs">
+    <Compile Include="UI\HardwareNode.cs" />
+    <Compile Include="UI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\MainForm.Designer.cs">
+    <Compile Include="UI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="GUI\SensorNode.cs" />
+    <Compile Include="UI\SensorNode.cs" />
     <Compile Include="Utilities\EmbeddedResources.cs" />
     <Compile Include="Utilities\IconFactory.cs" />
     <Compile Include="WMI\Hardware.cs" />
@@ -139,11 +143,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GUI\AboutBox.resx">
+    <EmbeddedResource Include="UI\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\PortForm.resx">
+    <EmbeddedResource Include="UI\PortForm.resx">
       <DependentUpon>PortForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\bigng.png" />
@@ -172,7 +176,7 @@
     <EmbeddedResource Include="Resources\smallicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GUI\ParameterForm.resx">
+    <EmbeddedResource Include="UI\ParameterForm.resx">
       <DependentUpon>ParameterForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\flow.png" />
@@ -181,26 +185,26 @@
     <EmbeddedResource Include="Resources\mainboard.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GUI\MainForm.resx">
+    <EmbeddedResource Include="UI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\control.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="External\Aga.Controls\Aga.Controls.csproj">
+    <ProjectReference Include="..\Aga.Controls\Aga.Controls.csproj">
       <Project>{e73bb233-d88b-44a7-a98f-d71ee158381d}</Project>
       <Name>Aga.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="External\OxyPlot\OxyPlot.WindowsForms\OxyPlot.WindowsForms.csproj">
+    <ProjectReference Include="..\OxyPlot\OxyPlot.WindowsForms\OxyPlot.WindowsForms.csproj">
       <Project>{d4554296-094e-4cac-8eae-44eb250666c6}</Project>
       <Name>OxyPlot.WindowsForms</Name>
     </ProjectReference>
-    <ProjectReference Include="External\OxyPlot\OxyPlot\OxyPlot.csproj">
+    <ProjectReference Include="..\OxyPlot\OxyPlot\OxyPlot.csproj">
       <Project>{bcc43e58-e473-403e-a84d-63fedc723040}</Project>
       <Name>OxyPlot</Name>
     </ProjectReference>
-    <ProjectReference Include="LibreHardwareMonitorLib.csproj">
+    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
       <Project>{B0397530-545A-471D-BB74-027AE456DF1A}</Project>
       <Name>LibreHardwareMonitorLib</Name>
     </ProjectReference>
