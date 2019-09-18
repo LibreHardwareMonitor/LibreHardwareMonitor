@@ -65,7 +65,6 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 {
                     var programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
                     var dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\nvml.dll");
-
                     _windowsDll = LoadLibrary(dllPath);
                 }
 
@@ -78,8 +77,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         private static bool IsNvmlCompatibleWindowsVersion()
         {
-            return Software.OperatingSystem.Is64Bit &&
-                ((Environment.OSVersion.Version.Major > 6) || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 1));
+            return Software.OperatingSystem.Is64Bit && ((Environment.OSVersion.Version.Major > 6) || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 1));
         }
 
         private bool InitialiseDelegates()

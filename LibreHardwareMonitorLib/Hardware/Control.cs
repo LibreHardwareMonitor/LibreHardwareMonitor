@@ -23,8 +23,8 @@ namespace LibreHardwareMonitor.Hardware
             MinSoftwareValue = minSoftwareValue;
             MaxSoftwareValue = maxSoftwareValue;
 
-            if (!float.TryParse(settings.GetValue(new Identifier(Identifier, "value").ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out this._softwareValue))
-                this._softwareValue = 0;
+            if (!float.TryParse(settings.GetValue(new Identifier(Identifier, "value").ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out _softwareValue))
+                _softwareValue = 0;
 
             int mode;
             if (!int.TryParse(settings.GetValue(new Identifier(Identifier, "mode").ToString(), ((int)ControlMode.Undefined).ToString(CultureInfo.InvariantCulture)), NumberStyles.Integer, CultureInfo.InvariantCulture, out mode))

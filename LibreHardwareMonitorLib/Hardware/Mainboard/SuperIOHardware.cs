@@ -35,8 +35,8 @@ namespace LibreHardwareMonitor.Hardware.Mainboard
         public SuperIOHardware(Mainboard mainboard, ISuperIO superIO, Manufacturer manufacturer, Model model, ISettings settings)
           : base(ChipName.GetName(superIO.Chip), new Identifier("lpc", superIO.Chip.ToString().ToLowerInvariant()), settings)
         {
-            this._mainboard = mainboard;
-            this._superIO = superIO;
+            _mainboard = mainboard;
+            _superIO = superIO;
 
             IList<Voltage> v;
             IList<Temperature> t;
@@ -1908,7 +1908,6 @@ namespace LibreHardwareMonitor.Hardware.Mainboard
             get { return _mainboard; }
         }
 
-
         public override string GetReport()
         {
             return _superIO.GetReport();
@@ -1977,8 +1976,7 @@ namespace LibreHardwareMonitor.Hardware.Mainboard
             public readonly float Vf;
             public readonly bool Hidden;
 
-            public Voltage(string name, int index) :
-              this(name, index, false)
+            public Voltage(string name, int index) : this(name, index, false)
             { }
 
             public Voltage(string name, int index, bool hidden) : this(name, index, 0, 1, 0, hidden)

@@ -74,7 +74,7 @@ namespace LibreHardwareMonitor.Hardware
             if (other == null)
                 return 1;
             else
-                return string.Compare(this._identifier, other._identifier,
+                return string.Compare(_identifier, other._identifier,
                   StringComparison.Ordinal);
         }
 

@@ -127,15 +127,15 @@ namespace LibreHardwareMonitor.Hardware
                         {
                             case 0x00:
                                 BIOS = new BIOSInformation(type, handle, data, stringsList.ToArray());
-                                structureList.Add(this.BIOS);
+                                structureList.Add(BIOS);
                                 break;
                             case 0x01:
                                 System = new SystemInformation(type, handle, data, stringsList.ToArray());
-                                structureList.Add(this.System);
+                                structureList.Add(System);
                                 break;
                             case 0x02:
                                 Board = new BaseBoardInformation(type, handle, data, stringsList.ToArray());
-                                structureList.Add(this.Board);
+                                structureList.Add(Board);
                                 break;
                             case 0x03:
                                 Chassis = new ChassisInformation(type, handle, data, stringsList.ToArray());
@@ -143,7 +143,7 @@ namespace LibreHardwareMonitor.Hardware
                                 break;
                             case 0x04:
                                 Processor = new ProcessorInformation(type, handle, data, stringsList.ToArray());
-                                structureList.Add(this.Processor);
+                                structureList.Add(Processor);
                                 break;
                             case 0x11:
                                 MemoryDevice m = new MemoryDevice(type, handle, data, stringsList.ToArray());

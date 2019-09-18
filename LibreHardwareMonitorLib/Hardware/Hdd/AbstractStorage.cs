@@ -35,7 +35,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
         internal AbstractStorage(StorageInfo storageInfo, string name, string firmwareRevision, string id, int index, ISettings settings)
           : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings)
         {
-            this._storageInfo = storageInfo;
+            _storageInfo = storageInfo;
             FirmwareRevision = firmwareRevision;
             Index = index;
 

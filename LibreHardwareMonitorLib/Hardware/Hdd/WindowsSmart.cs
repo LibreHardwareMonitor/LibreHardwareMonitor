@@ -17,7 +17,7 @@ namespace LibreHardwareMonitor.Hardware.Hdd
 
         public WindowsSmart(int driveNumber)
         {
-            this._driveNumber = driveNumber;
+            _driveNumber = driveNumber;
             _handle = Kernel32.CreateFile(@"\\.\PhysicalDrive" + driveNumber, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
         }
 

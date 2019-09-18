@@ -61,7 +61,7 @@ namespace LibreHardwareMonitor.Hardware.Lpc
             valid = register == Ring0.ReadIoPort(_addressReg);
             // IT8688E doesn't return the value we wrote to
             // addressReg when we read it back.
-            if (this._chip == Chip.IT8688E)
+            if (_chip == Chip.IT8688E)
                 valid = true;
             return value;
         }
@@ -315,7 +315,7 @@ namespace LibreHardwareMonitor.Hardware.Lpc
         {
             StringBuilder r = new StringBuilder();
 
-            r.AppendLine("LPC " + this.GetType().Name);
+            r.AppendLine("LPC " + GetType().Name);
             r.AppendLine();
             r.Append("Chip ID: 0x"); r.AppendLine(_chip.ToString("X"));
             r.Append("Chip Version: 0x"); r.AppendLine(_version.ToString("X", CultureInfo.InvariantCulture));

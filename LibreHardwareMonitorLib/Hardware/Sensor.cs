@@ -221,7 +221,7 @@ namespace LibreHardwareMonitor.Hardware
                     }
                 }
 
-                this._currentValue = value;
+                _currentValue = value;
                 if (_minValue > value || !_minValue.HasValue)
                     _minValue = value;
                 if (_maxValue < value || !_maxValue.HasValue)

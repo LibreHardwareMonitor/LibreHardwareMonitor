@@ -74,7 +74,7 @@ namespace LibreHardwareMonitor.Hardware.Lpc
         {
             StringBuilder r = new StringBuilder();
 
-            r.AppendLine("LPC " + this.GetType().Name);
+            r.AppendLine("LPC " + GetType().Name);
             r.AppendLine();
             r.Append("Base Adress: 0x");
             r.AppendLine(_address.ToString("X4", CultureInfo.InvariantCulture));

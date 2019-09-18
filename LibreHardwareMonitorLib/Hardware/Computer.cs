@@ -428,7 +428,7 @@ namespace LibreHardwareMonitor.Hardware
             Opcode.Close();
             Ring0.Close();
 
-            this._smbios = null;
+            _smbios = null;
             _open = false;
         }
 

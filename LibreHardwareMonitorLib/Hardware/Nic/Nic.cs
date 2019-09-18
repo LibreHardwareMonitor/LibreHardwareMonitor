@@ -24,7 +24,7 @@ namespace LibreHardwareMonitor.Hardware.Nic
         public Nic(NetworkInterface networkInterface, ISettings settings)
           : base(networkInterface.Name, new Identifier("nic", networkInterface.Id), settings)
         {
-            this._networkInterface = networkInterface;
+            _networkInterface = networkInterface;
             _dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this, settings);
             ActivateSensor(_dataUploaded);
             _dataDownloaded = new Sensor("Data Downloaded", 3, SensorType.Data, this, settings);

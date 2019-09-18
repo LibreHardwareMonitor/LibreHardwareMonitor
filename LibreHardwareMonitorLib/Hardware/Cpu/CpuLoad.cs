@@ -86,7 +86,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             for (int i = 0; i < Math.Min(newTotalTimes.Length, _totalTimes.Length); i++)
             {
-                if (newTotalTimes[i] - this._totalTimes[i] < 100000)
+                if (newTotalTimes[i] - _totalTimes[i] < 100000)
                     return;
             }
 
@@ -103,7 +103,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     long index = _cpuid[i][j].Thread;
                     if (index < newIdleTimes.Length && index < _totalTimes.Length)
                     {
-                        float idle = (float)(newIdleTimes[index] - this._idleTimes[index]) / (float)(newTotalTimes[index] - this._totalTimes[index]);
+                        float idle = (float)(newIdleTimes[index] - _idleTimes[index]) / (float)(newTotalTimes[index] - _totalTimes[index]);
                         value += idle;
                         total += idle;
                         count++;

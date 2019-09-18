@@ -113,9 +113,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return "NVIDIA " + gpuName.Trim();
             }
             else
-            {
                 return "NVIDIA";
-            }
         }
 
         public override HardwareType HardwareType

@@ -527,8 +527,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
                 if (newBusClock > 0)
                 {
-                    this._busClock.Value = (float)newBusClock;
-                    ActivateSensor(this._busClock);
+                    _busClock.Value = (float)newBusClock;
+                    ActivateSensor(_busClock);
                 }
             }
 

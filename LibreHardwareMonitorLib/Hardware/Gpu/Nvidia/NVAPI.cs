@@ -108,8 +108,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
     {
         public uint Version;
         public uint Count;
-        [MarshalAs(UnmanagedType.ByValArray,
-          SizeConst = NVAPI.MAX_THERMAL_SENSORS_PER_GPU)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.MAX_THERMAL_SENSORS_PER_GPU)]
         public NvSensor[] Sensor;
     }
 
@@ -202,8 +201,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
     internal struct NvMemoryInfo
     {
         public uint Version;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst =
-          NVAPI.MAX_MEMORY_VALUES_PER_GPU)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.MAX_MEMORY_VALUES_PER_GPU)]
         public uint[] Values;
     }
 

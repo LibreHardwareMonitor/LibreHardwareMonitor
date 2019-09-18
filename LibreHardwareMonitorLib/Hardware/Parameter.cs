@@ -25,8 +25,8 @@ namespace LibreHardwareMonitor.Hardware
             _value = description.DefaultValue;
             if (!_isDefault)
             {
-                if (!float.TryParse(settings.GetValue(Identifier.ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out this._value))
-                    this._value = description.DefaultValue;
+                if (!float.TryParse(settings.GetValue(Identifier.ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out _value))
+                    _value = description.DefaultValue;
             }
         }
 
@@ -58,9 +58,9 @@ namespace LibreHardwareMonitor.Hardware
             }
             set
             {
-                this._isDefault = false;
-                this._value = value;
-                this._settings.SetValue(Identifier.ToString(), value.ToString(CultureInfo.InvariantCulture));
+                _isDefault = false;
+                _value = value;
+                _settings.SetValue(Identifier.ToString(), value.ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -74,7 +74,7 @@ namespace LibreHardwareMonitor.Hardware
             get { return _isDefault; }
             set
             {
-                this._isDefault = value;
+                _isDefault = value;
                 if (value)
                 {
                     _value = _description.DefaultValue;

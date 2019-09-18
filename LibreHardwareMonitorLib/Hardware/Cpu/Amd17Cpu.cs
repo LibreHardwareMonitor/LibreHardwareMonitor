@@ -64,14 +64,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             public Processor(Hardware hw)
             {
-                this._hw = (Amd17Cpu)hw;
+                _hw = (Amd17Cpu)hw;
                 Nodes = new List<NumaNode>();
 
-                _packagePower = new Sensor("Package Power", this._hw._sensorPower++, SensorType.Power, this._hw, this._hw.settings);
-                _coreTemperatureTctl = new Sensor("Core (Tctl)", this._hw._sensorTemperatures++, SensorType.Temperature, this._hw, this._hw.settings);
-                _coreTemperatureTdie = new Sensor("Core (Tdie)", this._hw._sensorTemperatures++, SensorType.Temperature, this._hw, this._hw.settings);
-                _coreVoltage = new Sensor("Core (SVI2 TFN)", this._hw._sensorVoltage++, SensorType.Voltage, this._hw, this._hw.settings);
-                _socVoltage = new Sensor("SoC (SVI2 TFN)", this._hw._sensorVoltage++, SensorType.Voltage, this._hw, this._hw.settings);
+                _packagePower = new Sensor("Package Power", _hw._sensorPower++, SensorType.Power, _hw, _hw.settings);
+                _coreTemperatureTctl = new Sensor("Core (Tctl)", _hw._sensorTemperatures++, SensorType.Temperature, _hw, _hw.settings);
+                _coreTemperatureTdie = new Sensor("Core (Tdie)", _hw._sensorTemperatures++, SensorType.Temperature, _hw, _hw.settings);
+                _coreVoltage = new Sensor("Core (SVI2 TFN)", _hw._sensorVoltage++, SensorType.Voltage, _hw, _hw.settings);
+                _socVoltage = new Sensor("SoC (SVI2 TFN)", _hw._sensorVoltage++, SensorType.Voltage, _hw, _hw.settings);
 
                 _hw.ActivateSensor(_packagePower);
                 _hw.ActivateSensor(_coreTemperatureTctl);

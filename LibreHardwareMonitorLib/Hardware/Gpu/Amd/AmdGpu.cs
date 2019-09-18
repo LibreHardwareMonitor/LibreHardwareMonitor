@@ -54,8 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _isOverdriveNSupported = ADL.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == ADL.ADL_OK && version >= 7;
 
             ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
-            if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
-              != ADL.ADL_OK)
+            if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi) != ADL.ADL_OK)
             {
                 afsi.MaxPercent = 100;
                 afsi.MinPercent = 0;
@@ -127,9 +126,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_temperatureCore);
                 }
                 else
-                {
                     _temperatureCore.Value = null;
-                }
 
                 if (ADL.ADL2_OverdriveN_Temperature_Get(context, _adapterIndex, 2, ref temp) == ADL.ADL_OK)
                 {
@@ -137,9 +134,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_temperatureHBM);
                 }
                 else
-                {
                     _temperatureHBM.Value = null;
-                }
 
                 if (ADL.ADL2_OverdriveN_Temperature_Get(context, _adapterIndex, 3, ref temp) == ADL.ADL_OK)
                 {
@@ -147,9 +142,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_temperatureVDDC);
                 }
                 else
-                {
                     _temperatureVDDC.Value = null;
-                }
 
                 if (ADL.ADL2_OverdriveN_Temperature_Get(context, _adapterIndex, 4, ref temp) == ADL.ADL_OK)
                 {
@@ -157,9 +150,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_temperatureMVDD);
                 }
                 else
-                {
                     _temperatureMVDD.Value = null;
-                }
 
                 if (ADL.ADL2_OverdriveN_Temperature_Get(context, _adapterIndex, 7, ref temp) == ADL.ADL_OK)
                 {
@@ -167,9 +158,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_temperatureHotSpot);
                 }
                 else
-                {
                     _temperatureHotSpot.Value = null;
-                }
 
                 if (context != IntPtr.Zero)
                 {
@@ -185,9 +174,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_temperatureCore);
                 }
                 else
-                {
                     _temperatureCore.Value = null;
-                }
             }
 
             ADLFanSpeedValue adlf = new ADLFanSpeedValue();
@@ -198,9 +185,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 ActivateSensor(_fan);
             }
             else
-            {
                 _fan.Value = null;
-            }
 
             adlf = new ADLFanSpeedValue();
             adlf.SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT;
@@ -210,9 +195,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 ActivateSensor(_controlSensor);
             }
             else
-            {
                 _controlSensor.Value = null;
-            }
 
             ADLPMActivity adlp = new ADLPMActivity();
             if (ADL.ADL_Overdrive5_CurrentActivity_Get(_adapterIndex, ref adlp) == ADL.ADL_OK)
@@ -223,9 +206,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_coreClock);
                 }
                 else
-                {
                     _coreClock.Value = null;
-                }
 
                 if (adlp.MemoryClock > 0)
                 {
@@ -233,9 +214,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_memoryClock);
                 }
                 else
-                {
                     _memoryClock.Value = null;
-                }
 
                 if (adlp.Vddc > 0)
                 {
@@ -243,9 +222,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_coreVoltage);
                 }
                 else
-                {
                     _coreVoltage.Value = null;
-                }
 
                 _coreLoad.Value = Math.Min(adlp.ActivityPercent, 100);
                 ActivateSensor(_coreLoad);
@@ -263,7 +240,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         {
             _fanControl.ControlModeChanged -= ControlModeChanged;
             _fanControl.SoftwareControlValueChanged -= SoftwareControlValueChanged;
-            if (this._fanControl.ControlMode != ControlMode.Undefined)
+            if (_fanControl.ControlMode != ControlMode.Undefined)
                 SetDefaultFanSpeed();
             base.Close();
         }
