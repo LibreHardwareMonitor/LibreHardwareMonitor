@@ -24,17 +24,25 @@ namespace LibreHardwareMonitor.Hardware
             {
                 size = Interop.Kernel32.GetSystemFirmwareTable(provider, table, IntPtr.Zero, 0);
             }
-            catch (DllNotFoundException) { return null; }
-            catch (EntryPointNotFoundException) { return null; }
+            catch (DllNotFoundException)
+            {
+                return null;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return null;
+            }
 
             if (size <= 0)
                 return null;
+
 
             IntPtr nativeBuffer = Marshal.AllocHGlobal(size);
             Interop.Kernel32.GetSystemFirmwareTable(provider, table, nativeBuffer, size);
 
             if (Marshal.GetLastWin32Error() != 0)
                 return null;
+
 
             byte[] buffer = new byte[size];
             Marshal.Copy(nativeBuffer, buffer, 0, size);
@@ -49,8 +57,14 @@ namespace LibreHardwareMonitor.Hardware
             {
                 size = Interop.Kernel32.EnumSystemFirmwareTables(provider, IntPtr.Zero, 0);
             }
-            catch (DllNotFoundException) { return null; }
-            catch (EntryPointNotFoundException) { return null; }
+            catch (DllNotFoundException)
+            {
+                return null;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return null;
+            }
 
             IntPtr nativeBuffer = Marshal.AllocHGlobal(size);
             Interop.Kernel32.EnumSystemFirmwareTables(provider, nativeBuffer, size);
@@ -61,6 +75,7 @@ namespace LibreHardwareMonitor.Hardware
             string[] result = new string[size / 4];
             for (int i = 0; i < result.Length; i++)
                 result[i] = Encoding.ASCII.GetString(buffer, 4 * i, 4);
+
             return result;
         }
     }

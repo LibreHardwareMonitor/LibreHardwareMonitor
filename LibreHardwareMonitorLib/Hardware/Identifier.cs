@@ -11,17 +11,8 @@ namespace LibreHardwareMonitor.Hardware
 {
     public class Identifier : IComparable<Identifier>
     {
-        private readonly string _identifier;
         private const char Separator = '/';
-
-        private static void CheckIdentifiers(IEnumerable<string> identifiers)
-        {
-            foreach (string s in identifiers)
-            {
-                if (s.Contains(" ") || s.Contains(Separator.ToString()))
-                    throw new ArgumentException("Invalid identifier");
-            }
-        }
+        private readonly string _identifier;
 
         public Identifier(params string[] identifiers)
         {
@@ -32,6 +23,7 @@ namespace LibreHardwareMonitor.Hardware
                 s.Append(Separator);
                 s.Append(identifiers[i]);
             }
+
             _identifier = s.ToString();
         }
 
@@ -39,13 +31,34 @@ namespace LibreHardwareMonitor.Hardware
         {
             CheckIdentifiers(extensions);
             StringBuilder s = new StringBuilder();
-            s.Append(identifier.ToString());
+            s.Append(identifier);
             for (int i = 0; i < extensions.Length; i++)
             {
                 s.Append(Separator);
                 s.Append(extensions[i]);
             }
+
             _identifier = s.ToString();
+        }
+
+        public int CompareTo(Identifier other)
+        {
+            if (other == null)
+                return 1;
+
+
+            return string.Compare(_identifier,
+                                  other._identifier,
+                                  StringComparison.Ordinal);
+        }
+
+        private static void CheckIdentifiers(IEnumerable<string> identifiers)
+        {
+            foreach (string s in identifiers)
+            {
+                if (s.Contains(" ") || s.Contains(Separator.ToString()))
+                    throw new ArgumentException("Invalid identifier");
+            }
         }
 
         public override string ToString()
@@ -53,15 +66,18 @@ namespace LibreHardwareMonitor.Hardware
             return _identifier;
         }
 
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             if (obj == null)
                 return false;
 
+
             Identifier id = obj as Identifier;
             if (id == null)
                 return false;
-            return (_identifier == id._identifier);
+
+
+            return _identifier == id._identifier;
         }
 
         public override int GetHashCode()
@@ -69,21 +85,13 @@ namespace LibreHardwareMonitor.Hardware
             return _identifier.GetHashCode();
         }
 
-        public int CompareTo(Identifier other)
-        {
-            if (other == null)
-                return 1;
-            else
-                return string.Compare(_identifier, other._identifier,
-                  StringComparison.Ordinal);
-        }
-
         public static bool operator ==(Identifier id1, Identifier id2)
         {
-            if (id1.Equals(null))
-                return id2.Equals(null);
-            else
-                return id1.Equals(id2);
+            if (id1 == null && id2 == null)
+                return true;
+
+
+            return id1 != null && id1.Equals(id2);
         }
 
         public static bool operator !=(Identifier id1, Identifier id2)
@@ -95,16 +103,18 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (id1 == null)
                 return id2 != null;
-            else
-                return (id1.CompareTo(id2) < 0);
+
+
+            return id1.CompareTo(id2) < 0;
         }
 
         public static bool operator >(Identifier id1, Identifier id2)
         {
             if (id1 == null)
                 return false;
-            else
-                return (id1.CompareTo(id2) > 0);
+
+
+            return id1.CompareTo(id2) > 0;
         }
     }
 }

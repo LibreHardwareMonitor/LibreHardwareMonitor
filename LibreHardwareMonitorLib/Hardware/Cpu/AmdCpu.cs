@@ -7,28 +7,31 @@ namespace LibreHardwareMonitor.Hardware.CPU
 {
     internal abstract class AmdCpu : GenericCpu
     {
-        private const byte PCI_BUS = 0;
-        private const byte PCI_BASE_DEVICE = 0x18;
-        private const byte DEVICE_VENDOR_ID_REGISTER = 0;
-        private const ushort AMD_VENDOR_ID = 0x1022;
-
-        public AmdCpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings) { }
+        protected AmdCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
+        { }
 
         protected uint GetPciAddress(byte function, ushort deviceId)
         {
             // assemble the pci address
-            uint address = Ring0.GetPciAddress(PCI_BUS, (byte)(PCI_BASE_DEVICE + processorIndex), function);
+            uint address = Ring0.GetPciAddress(PCI_BUS, (byte)(PCI_BASE_DEVICE + _processorIndex), function);
 
             // verify that we have the correct bus, device and function
-            uint deviceVendor;
-            if (!Ring0.ReadPciConfig(address, DEVICE_VENDOR_ID_REGISTER, out deviceVendor))
-                return Ring0.InvalidPciAddress;
+            if (!Ring0.ReadPciConfig(address, DEVICE_VENDOR_ID_REGISTER, out uint deviceVendor))
+                return Interop.Ring0.INVALID_PCI_ADDRESS;
 
             if (deviceVendor != (deviceId << 16 | AMD_VENDOR_ID))
-                return Ring0.InvalidPciAddress;
+                return Interop.Ring0.INVALID_PCI_ADDRESS;
+
 
             return address;
         }
 
+        // ReSharper disable InconsistentNaming
+        private const ushort AMD_VENDOR_ID = 0x1022;
+        private const byte DEVICE_VENDOR_ID_REGISTER = 0;
+        private const byte PCI_BASE_DEVICE = 0x18;
+
+        private const byte PCI_BUS = 0;
+        // ReSharper restore InconsistentNaming
     }
 }

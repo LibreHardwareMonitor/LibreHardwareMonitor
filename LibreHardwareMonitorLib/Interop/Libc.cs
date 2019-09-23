@@ -4,15 +4,13 @@
 // All Rights Reserved
 
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 // ReSharper disable InconsistentNaming
 
 namespace LibreHardwareMonitor.Interop
 {
-    internal class Libc
+    internal class LibC
     {
         private const string DllName = "libc";
 

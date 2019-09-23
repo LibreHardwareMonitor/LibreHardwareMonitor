@@ -13,22 +13,24 @@ namespace LibreHardwareMonitor.Hardware
 
         public SensorVisitor(SensorEventHandler handler)
         {
-            if (handler == null)
-                throw new ArgumentNullException("handler");
-            _handler = handler;
+            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
         public void VisitComputer(IComputer computer)
         {
             if (computer == null)
-                throw new ArgumentNullException("computer");
+                throw new ArgumentNullException(nameof(computer));
+
+
             computer.Traverse(this);
         }
 
         public void VisitHardware(IHardware hardware)
         {
             if (hardware == null)
-                throw new ArgumentNullException("hardware");
+                throw new ArgumentNullException(nameof(hardware));
+
+
             hardware.Traverse(this);
         }
 
@@ -37,6 +39,7 @@ namespace LibreHardwareMonitor.Hardware
             _handler(sensor);
         }
 
-        public void VisitParameter(IParameter parameter) { }
+        public void VisitParameter(IParameter parameter)
+        { }
     }
 }

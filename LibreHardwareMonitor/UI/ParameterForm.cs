@@ -62,7 +62,7 @@ namespace LibreHardwareMonitor.UI
             if (e.RowIndex >= 0 && e.RowIndex < _parameters.Count)
                 descriptionLabel.Text = _parameters[e.RowIndex].Description;
             else
-                descriptionLabel.Text = "";
+                descriptionLabel.Text = string.Empty;
         }
 
         private void DataGridView_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
@@ -76,7 +76,7 @@ namespace LibreHardwareMonitor.UI
 
         private void DataGridView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            dataGridView.Rows[e.RowIndex].Cells[0].ErrorText = "";
+            dataGridView.Rows[e.RowIndex].Cells[0].ErrorText = string.Empty;
         }
 
         private void OkButton_Click(object sender, EventArgs e)

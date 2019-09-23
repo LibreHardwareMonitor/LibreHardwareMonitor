@@ -8,8 +8,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.Controller
+// ReSharper disable InconsistentNaming
+
+namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 {
     internal class TBalancerGroup : IGroup
     {
@@ -21,19 +24,31 @@ namespace LibreHardwareMonitor.Hardware.Controller
             uint numDevices;
             try
             {
-                if (FTD2XX.FT_CreateDeviceInfoList(out numDevices) != FT_STATUS.FT_OK)
+                if (Ftd2xx.FT_CreateDeviceInfoList(out numDevices) != Ftd2xx.FT_STATUS.FT_OK)
                 {
                     _report.AppendLine("Status: FT_CreateDeviceInfoList failed");
                     return;
                 }
             }
-            catch (DllNotFoundException) { return; }
-            catch (ArgumentNullException) { return; }
-            catch (EntryPointNotFoundException) { return; }
-            catch (BadImageFormatException) { return; }
+            catch (DllNotFoundException)
+            {
+                return;
+            }
+            catch (ArgumentNullException)
+            {
+                return;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return;
+            }
+            catch (BadImageFormatException)
+            {
+                return;
+            }
 
-            FT_DEVICE_INFO_NODE[] info = new FT_DEVICE_INFO_NODE[numDevices];
-            if (FTD2XX.FT_GetDeviceInfoList(info, ref numDevices) != FT_STATUS.FT_OK)
+            Ftd2xx.FT_DEVICE_INFO_NODE[] info = new Ftd2xx.FT_DEVICE_INFO_NODE[numDevices];
+            if (Ftd2xx.FT_GetDeviceInfoList(info, ref numDevices) != Ftd2xx.FT_STATUS.FT_OK)
             {
                 _report.AppendLine("Status: FT_GetDeviceInfoList failed");
                 return;
@@ -51,31 +66,30 @@ namespace LibreHardwareMonitor.Hardware.Controller
                 _report.AppendLine(info[i].Type.ToString());
 
                 // the T-Balancer always uses an FT232BM
-                if (info[i].Type != FT_DEVICE.FT_DEVICE_232BM)
+                if (info[i].Type != Ftd2xx.FT_DEVICE.FT_DEVICE_232BM)
                 {
                     _report.AppendLine("Status: Wrong device type");
                     continue;
                 }
 
-                FT_HANDLE handle;
-                FT_STATUS status = FTD2XX.FT_Open(i, out handle);
-                if (status != FT_STATUS.FT_OK)
+                Ftd2xx.FT_STATUS status = Ftd2xx.FT_Open(i, out Ftd2xx.FT_HANDLE handle);
+                if (status != Ftd2xx.FT_STATUS.FT_OK)
                 {
                     _report.AppendLine("Open Status: " + status);
                     continue;
                 }
 
-                FTD2XX.FT_SetBaudRate(handle, 19200);
-                FTD2XX.FT_SetDataCharacteristics(handle, 8, 1, 0);
-                FTD2XX.FT_SetFlowControl(handle, FT_FLOW_CONTROL.FT_FLOW_RTS_CTS, 0x11, 0x13);
-                FTD2XX.FT_SetTimeouts(handle, 1000, 1000);
-                FTD2XX.FT_Purge(handle, FT_PURGE.FT_PURGE_ALL);
+                Ftd2xx.FT_SetBaudRate(handle, 19200);
+                Ftd2xx.FT_SetDataCharacteristics(handle, 8, 1, 0);
+                Ftd2xx.FT_SetFlowControl(handle, Ftd2xx.FT_FLOW_CONTROL.FT_FLOW_RTS_CTS, 0x11, 0x13);
+                Ftd2xx.FT_SetTimeouts(handle, 1000, 1000);
+                Ftd2xx.FT_Purge(handle, Ftd2xx.FT_PURGE.FT_PURGE_ALL);
 
-                status = FTD2XX.Write(handle, new byte[] { 0x38 });
-                if (status != FT_STATUS.FT_OK)
+                status = Ftd2xx.Write(handle, new byte[] { 0x38 });
+                if (status != Ftd2xx.FT_STATUS.FT_OK)
                 {
                     _report.AppendLine("Write Status: " + status);
-                    FTD2XX.FT_Close(handle);
+                    Ftd2xx.FT_Close(handle);
                     continue;
                 }
 
@@ -83,27 +97,29 @@ namespace LibreHardwareMonitor.Hardware.Controller
                 byte protocolVersion = 0;
 
                 int j = 0;
-                while (FTD2XX.BytesToRead(handle) == 0 && j < 2)
+                while (Ftd2xx.BytesToRead(handle) == 0 && j < 2)
                 {
                     Thread.Sleep(100);
                     j++;
                 }
-                if (FTD2XX.BytesToRead(handle) > 0)
+
+                if (Ftd2xx.BytesToRead(handle) > 0)
                 {
-                    if (FTD2XX.ReadByte(handle) == TBalancer.StartFlag)
+                    if (Ftd2xx.ReadByte(handle) == TBalancer.StartFlag)
                     {
-                        while (FTD2XX.BytesToRead(handle) < 284 && j < 5)
+                        while (Ftd2xx.BytesToRead(handle) < 284 && j < 5)
                         {
                             Thread.Sleep(100);
                             j++;
                         }
-                        int length = FTD2XX.BytesToRead(handle);
+
+                        int length = Ftd2xx.BytesToRead(handle);
                         if (length >= 284)
                         {
                             byte[] data = new byte[285];
                             data[0] = TBalancer.StartFlag;
                             for (int k = 1; k < data.Length; k++)
-                                data[k] = FTD2XX.ReadByte(handle);
+                                data[k] = Ftd2xx.ReadByte(handle);
 
                             // check protocol version 2X (protocols seen: 2C, 2A, 28)
                             isValid = (data[274] & 0xF0) == 0x20;
@@ -129,8 +145,8 @@ namespace LibreHardwareMonitor.Hardware.Controller
                     _report.AppendLine("Status: No Response");
                 }
 
-                FTD2XX.FT_Purge(handle, FT_PURGE.FT_PURGE_ALL);
-                FTD2XX.FT_Close(handle);
+                Ftd2xx.FT_Purge(handle, Ftd2xx.FT_PURGE.FT_PURGE_ALL);
+                Ftd2xx.FT_Close(handle);
 
                 if (isValid)
                 {
@@ -156,14 +172,14 @@ namespace LibreHardwareMonitor.Hardware.Controller
                 r.AppendLine();
                 return r.ToString();
             }
-            else
-                return null;
+
+            return null;
         }
 
         public void Close()
         {
-            foreach (TBalancer tbalancer in _hardware)
-                tbalancer.Close();
+            foreach (TBalancer balancer in _hardware)
+                balancer.Close();
         }
     }
 }

@@ -15,8 +15,12 @@ namespace LibreHardwareMonitor.Hardware
         private ControlMode _mode;
         private float _softwareValue;
 
-        public Control(ISensor sensor, ISettings settings, float minSoftwareValue,
-          float maxSoftwareValue)
+        public Control
+        (
+            ISensor sensor,
+            ISettings settings,
+            float minSoftwareValue,
+            float maxSoftwareValue)
         {
             Identifier = new Identifier(sensor.Identifier, "control");
             _settings = settings;
@@ -26,8 +30,10 @@ namespace LibreHardwareMonitor.Hardware
             if (!float.TryParse(settings.GetValue(new Identifier(Identifier, "value").ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out _softwareValue))
                 _softwareValue = 0;
 
-            int mode;
-            if (!int.TryParse(settings.GetValue(new Identifier(Identifier, "mode").ToString(), ((int)ControlMode.Undefined).ToString(CultureInfo.InvariantCulture)), NumberStyles.Integer, CultureInfo.InvariantCulture, out mode))
+            if (!int.TryParse(settings.GetValue(new Identifier(Identifier, "mode").ToString(), ((int)ControlMode.Undefined).ToString(CultureInfo.InvariantCulture)),
+                              NumberStyles.Integer,
+                              CultureInfo.InvariantCulture,
+                              out int mode))
             {
                 _mode = ControlMode.Undefined;
             }
@@ -35,39 +41,35 @@ namespace LibreHardwareMonitor.Hardware
                 _mode = (ControlMode)mode;
         }
 
-        public Identifier Identifier { get; private set; }
-
         public ControlMode ControlMode
         {
-            get
-            {
-                return _mode;
-            }
+            get { return _mode; }
             private set
             {
                 if (_mode != value)
                 {
                     _mode = value;
-                    if (ControlModeChanged != null)
-                        ControlModeChanged(this);
+                    ControlModeChanged?.Invoke(this);
                     _settings.SetValue(new Identifier(Identifier, "mode").ToString(), ((int)_mode).ToString(CultureInfo.InvariantCulture));
                 }
             }
         }
 
+        public Identifier Identifier { get; }
+
+        public float MaxSoftwareValue { get; }
+
+        public float MinSoftwareValue { get; }
+
         public float SoftwareValue
         {
-            get
-            {
-                return _softwareValue;
-            }
+            get { return _softwareValue; }
             private set
             {
                 if (_softwareValue != value)
                 {
                     _softwareValue = value;
-                    if (SoftwareControlValueChanged != null)
-                        SoftwareControlValueChanged(this);
+                    SoftwareControlValueChanged?.Invoke(this);
                     _settings.SetValue(new Identifier(Identifier, "value").ToString(), value.ToString(CultureInfo.InvariantCulture));
                 }
             }
@@ -78,10 +80,6 @@ namespace LibreHardwareMonitor.Hardware
             ControlMode = ControlMode.Default;
         }
 
-        public float MinSoftwareValue { get; private set; }
-
-        public float MaxSoftwareValue { get; private set; }
-
         public void SetSoftware(float value)
         {
             ControlMode = ControlMode.Software;
@@ -89,6 +87,7 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         internal event ControlEventHandler ControlModeChanged;
+
         internal event ControlEventHandler SoftwareControlValueChanged;
     }
 }

@@ -11,25 +11,17 @@ using System.IO.Compression;
 
 namespace LibreHardwareMonitor.Hardware
 {
-
     internal class Sensor : ISensor
     {
         private readonly string _defaultName;
-        private string _name;
-        private readonly int _index;
-        private readonly bool _defaultHidden;
-        private readonly SensorType _sensorType;
         private readonly Hardware _hardware;
-        private readonly IReadOnlyList<IParameter> _parameters;
-        private float? _currentValue;
-        private float? _minValue;
-        private float? _maxValue;
-        private readonly List<SensorValue> _values = new List<SensorValue>();
-        private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
         private readonly ISettings _settings;
-        private IControl _control;
-        private float _sum;
+        private readonly List<SensorValue> _values = new List<SensorValue>();
         private int _count;
+        private float? _currentValue;
+        private string _name;
+        private float _sum;
+        private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
 
         public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
             this(name, index, sensorType, hardware, null, settings)
@@ -41,14 +33,18 @@ namespace LibreHardwareMonitor.Hardware
 
         public Sensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ParameterDescription[] parameterDescriptions, ISettings settings)
         {
-            _index = index;
-            _defaultHidden = defaultHidden;
-            _sensorType = sensorType;
+            Index = index;
+            IsDefaultHidden = defaultHidden;
+            SensorType = sensorType;
             _hardware = hardware;
-            Parameter[] parameters = new Parameter[parameterDescriptions == null ? 0 : parameterDescriptions.Length];
+            Parameter[] parameters = new Parameter[parameterDescriptions?.Length ?? 0];
             for (int i = 0; i < parameters.Length; i++)
-                parameters[i] = new Parameter(parameterDescriptions[i], this, settings);
-            _parameters = parameters;
+            {
+                if (parameterDescriptions != null)
+                    parameters[i] = new Parameter(parameterDescriptions[i], this, settings);
+            }
+
+            Parameters = parameters;
 
             _settings = settings;
             _defaultName = name;
@@ -56,156 +52,53 @@ namespace LibreHardwareMonitor.Hardware
 
             GetSensorValuesFromSettings();
 
-            hardware.Closing += delegate (IHardware h)
-            {
-                SetSensorValuesToSettings();
-            };
+            hardware.Closing += delegate { SetSensorValuesToSettings(); };
         }
 
-        private void SetSensorValuesToSettings()
-        {
-            using (MemoryStream m = new MemoryStream())
-            {
-                using (GZipStream c = new GZipStream(m, CompressionMode.Compress))
-                using (BufferedStream b = new BufferedStream(c, 65536))
-                using (BinaryWriter writer = new BinaryWriter(b))
-                {
-                    long t = 0;
-                    foreach (SensorValue sensorValue in _values)
-                    {
-                        long v = sensorValue.Time.ToBinary();
-                        writer.Write(v - t);
-                        t = v;
-                        writer.Write(sensorValue.Value);
-                    }
-                    writer.Flush();
-                }
-                _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(m.ToArray()));
-            }
-        }
-
-        private void GetSensorValuesFromSettings()
-        {
-            string name = new Identifier(Identifier, "values").ToString();
-            string s = _settings.GetValue(name, null);
-
-            if (!string.IsNullOrEmpty(s))
-            {
-                try
-                {
-                    byte[] array = Convert.FromBase64String(s);
-                    s = null;
-                    DateTime now = DateTime.UtcNow;
-                    using (MemoryStream m = new MemoryStream(array))
-                    using (GZipStream c = new GZipStream(m, CompressionMode.Decompress))
-                    {
-                        using (MemoryStream unzip = new MemoryStream())
-                        {
-                            c.CopyTo(unzip);
-                            unzip.Seek(0, SeekOrigin.Begin);
-                            using (BinaryReader reader = new BinaryReader(unzip))
-                            {
-                                try
-                                {
-                                    long t = 0;
-                                    long readLen = reader.BaseStream.Length - reader.BaseStream.Position;
-                                    while (true && readLen > 0)
-                                    {
-                                        t += reader.ReadInt64();
-                                        DateTime time = DateTime.FromBinary(t);
-                                        if (time > now)
-                                            break;
-                                        float value = reader.ReadSingle();
-                                        AppendValue(value, time);
-                                        readLen = reader.BaseStream.Length - reader.BaseStream.Position;
-                                    }
-                                }
-                                catch (EndOfStreamException e) { }
-                            }
-                        }
-                    }
-                }
-                catch { }
-            }
-
-            if (_values.Count > 0)
-                AppendValue(float.NaN, DateTime.UtcNow);
-
-            //remove the value string from the settings to reduce memory usage
-            _settings.Remove(name);
-        }
-
-        private void AppendValue(float value, DateTime time)
-        {
-            if (_values.Count >= 2 && _values[_values.Count - 1].Value == value && _values[_values.Count - 2].Value == value)
-            {
-                _values[_values.Count - 1] = new SensorValue(value, time);
-                return;
-            }
-            _values.Add(new SensorValue(value, time));
-        }
+        public IControl Control { get; internal set; }
 
         public IHardware Hardware
         {
             get { return _hardware; }
         }
 
-        public SensorType SensorType
-        {
-            get { return _sensorType; }
-        }
-
         public Identifier Identifier
         {
-            get
-            {
-                return new Identifier(_hardware.Identifier, _sensorType.ToString().ToLowerInvariant(), _index.ToString(CultureInfo.InvariantCulture));
-            }
+            get { return new Identifier(_hardware.Identifier, SensorType.ToString().ToLowerInvariant(), Index.ToString(CultureInfo.InvariantCulture)); }
         }
+
+        public int Index { get; }
+
+        public bool IsDefaultHidden { get; }
+
+        public float? Max { get; private set; }
+
+        public float? Min { get; private set; }
 
         public string Name
         {
-            get
-            {
-                return _name;
-            }
+            get { return _name; }
             set
             {
-                if (!string.IsNullOrEmpty(value))
-                    _name = value;
-                else
-                    _name = _defaultName;
+                _name = !string.IsNullOrEmpty(value) ? value : _defaultName;
+
                 _settings.SetValue(new Identifier(Identifier, "name").ToString(), _name);
             }
         }
 
-        public int Index
-        {
-            get { return _index; }
-        }
+        public IReadOnlyList<IParameter> Parameters { get; }
 
-        public bool IsDefaultHidden
-        {
-            get { return _defaultHidden; }
-        }
-
-        public IReadOnlyList<IParameter> Parameters
-        {
-            get { return _parameters; }
-        }
+        public SensorType SensorType { get; }
 
         public float? Value
         {
-            get
-            {
-                return _currentValue;
-            }
+            get { return _currentValue; }
             set
             {
                 if (_valuesTimeWindow != TimeSpan.Zero)
                 {
                     DateTime now = DateTime.UtcNow;
-                    while (_values.Count > 0 && (now - _values[0].Time) > _valuesTimeWindow)
+                    while (_values.Count > 0 && now - _values[0].Time > _valuesTimeWindow)
                         _values.RemoveAt(0);
 
                     if (value.HasValue)
@@ -222,24 +115,12 @@ namespace LibreHardwareMonitor.Hardware
                 }
 
                 _currentValue = value;
-                if (_minValue > value || !_minValue.HasValue)
-                    _minValue = value;
-                if (_maxValue < value || !_maxValue.HasValue)
-                    _maxValue = value;
+                if (Min > value || !Min.HasValue)
+                    Min = value;
+
+                if (Max < value || !Max.HasValue)
+                    Max = value;
             }
-        }
-
-        public float? Min { get { return _minValue; } }
-        public float? Max { get { return _maxValue; } }
-
-        public void ResetMin()
-        {
-            _minValue = null;
-        }
-
-        public void ResetMax()
-        {
-            _maxValue = null;
         }
 
         public IEnumerable<SensorValue> Values
@@ -249,10 +130,7 @@ namespace LibreHardwareMonitor.Hardware
 
         public TimeSpan ValuesTimeWindow
         {
-            get
-            {
-                return _valuesTimeWindow;
-            }
+            get { return _valuesTimeWindow; }
             set
             {
                 _valuesTimeWindow = value;
@@ -261,29 +139,122 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        public void ResetMin()
+        {
+            Min = null;
+        }
+
+        public void ResetMax()
+        {
+            Max = null;
+        }
+
         public void Accept(IVisitor visitor)
         {
             if (visitor == null)
-                throw new ArgumentNullException("visitor");
+                throw new ArgumentNullException(nameof(visitor));
+
+
             visitor.VisitSensor(this);
         }
 
         public void Traverse(IVisitor visitor)
         {
-            foreach (IParameter parameter in _parameters)
+            foreach (IParameter parameter in Parameters)
                 parameter.Accept(visitor);
         }
 
-        public IControl Control
+        private void SetSensorValuesToSettings()
         {
-            get
+            using (MemoryStream m = new MemoryStream())
             {
-                return _control;
+                using (GZipStream c = new GZipStream(m, CompressionMode.Compress))
+                {
+                    using (BufferedStream b = new BufferedStream(c, 65536))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(b))
+                        {
+                            long t = 0;
+                            foreach (SensorValue sensorValue in _values)
+                            {
+                                long v = sensorValue.Time.ToBinary();
+                                writer.Write(v - t);
+                                t = v;
+                                writer.Write(sensorValue.Value);
+                            }
+
+                            writer.Flush();
+                        }
+                    }
+                }
+
+                _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(m.ToArray()));
             }
-            internal set
+        }
+
+        private void GetSensorValuesFromSettings()
+        {
+            string name = new Identifier(Identifier, "values").ToString();
+            string s = _settings.GetValue(name, null);
+
+            if (!string.IsNullOrEmpty(s))
             {
-                _control = value;
+                try
+                {
+                    byte[] array = Convert.FromBase64String(s);
+                    DateTime now = DateTime.UtcNow;
+                    using (MemoryStream m = new MemoryStream(array))
+                        using (GZipStream c = new GZipStream(m, CompressionMode.Decompress))
+                        {
+                            using (MemoryStream unzip = new MemoryStream())
+                            {
+                                c.CopyTo(unzip);
+                                unzip.Seek(0, SeekOrigin.Begin);
+                                using (BinaryReader reader = new BinaryReader(unzip))
+                                {
+                                    try
+                                    {
+                                        long t = 0;
+                                        long readLen = reader.BaseStream.Length - reader.BaseStream.Position;
+                                        while (true && readLen > 0)
+                                        {
+                                            t += reader.ReadInt64();
+                                            DateTime time = DateTime.FromBinary(t);
+                                            if (time > now)
+                                                break;
+
+
+                                            float value = reader.ReadSingle();
+                                            AppendValue(value, time);
+                                            readLen = reader.BaseStream.Length - reader.BaseStream.Position;
+                                        }
+                                    }
+                                    catch (EndOfStreamException)
+                                    { }
+                                }
+                            }
+                        }
+                }
+                catch
+                { }
             }
+
+            if (_values.Count > 0)
+                AppendValue(float.NaN, DateTime.UtcNow);
+
+            //remove the value string from the settings to reduce memory usage
+            _settings.Remove(name);
+        }
+
+        private void AppendValue(float value, DateTime time)
+        {
+            if (_values.Count >= 2 && _values[_values.Count - 1].Value == value && _values[_values.Count - 2].Value == value)
+            {
+                _values[_values.Count - 1] = new SensorValue(value, time);
+                return;
+            }
+
+            _values.Add(new SensorValue(value, time));
         }
     }
 }

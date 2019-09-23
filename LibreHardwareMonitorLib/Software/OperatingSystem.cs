@@ -12,10 +12,10 @@ namespace LibreHardwareMonitor.Software
         static OperatingSystem()
         {
             // The operating system doesn't change during execution so let's query it just one time.
-            var platform = Environment.OSVersion.Platform;
+            PlatformID platform = Environment.OSVersion.Platform;
             IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
 
-            if (System.Environment.Is64BitProcess)
+            if (Environment.Is64BitProcess)
                 Is64Bit = true;
         }
 

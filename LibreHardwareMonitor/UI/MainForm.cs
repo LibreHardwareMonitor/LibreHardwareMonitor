@@ -217,43 +217,43 @@ namespace LibreHardwareMonitor.UI
             _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
             _readMainboardSensors.Changed += delegate
             {
-                _computer.MainboardEnabled = _readMainboardSensors.Value;
+                _computer.IsMotherboardEnabled = _readMainboardSensors.Value;
             };
 
             _readCpuSensors = new UserOption("cpuMenuItem", true, cpuMenuItem, _settings);
             _readCpuSensors.Changed += delegate
             {
-                _computer.CPUEnabled = _readCpuSensors.Value;
+                _computer.IsCpuEnabled = _readCpuSensors.Value;
             };
 
             _readRamSensors = new UserOption("ramMenuItem", true, ramMenuItem, _settings);
             _readRamSensors.Changed += delegate
             {
-                _computer.RAMEnabled = _readRamSensors.Value;
+                _computer.IsMemoryEnabled = _readRamSensors.Value;
             };
 
             _readGpuSensors = new UserOption("gpuMenuItem", true, gpuMenuItem, _settings);
             _readGpuSensors.Changed += delegate
             {
-                _computer.GPUEnabled = _readGpuSensors.Value;
+                _computer.IsGpuEnabled = _readGpuSensors.Value;
             };
 
             _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
             _readFanControllersSensors.Changed += delegate
             {
-                _computer.FanControllerEnabled = _readFanControllersSensors.Value;
+                _computer.IsControllerEnabled = _readFanControllersSensors.Value;
             };
 
             _readHddSensors = new UserOption("hddMenuItem", true, hddMenuItem, _settings);
             _readHddSensors.Changed += delegate
             {
-                _computer.HDDEnabled = _readHddSensors.Value;
+                _computer.IsStorageEnabled = _readHddSensors.Value;
             };
 
             _readNicSensors = new UserOption("nicMenuItem", true, nicMenuItem, _settings);
             _readNicSensors.Changed += delegate
             {
-                _computer.NICEnabled = _readNicSensors.Value;
+                _computer.IsNetworkEnabled = _readNicSensors.Value;
             };
 
             _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);

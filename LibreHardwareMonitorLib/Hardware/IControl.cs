@@ -14,12 +14,18 @@ namespace LibreHardwareMonitor.Hardware
 
     public interface IControl
     {
-        Identifier Identifier { get; }
         ControlMode ControlMode { get; }
-        float SoftwareValue { get; }
-        void SetDefault();
-        float MinSoftwareValue { get; }
+
+        Identifier Identifier { get; }
+
         float MaxSoftwareValue { get; }
+
+        float MinSoftwareValue { get; }
+
+        float SoftwareValue { get; }
+
+        void SetDefault();
+
         void SetSoftware(float value);
     }
 }

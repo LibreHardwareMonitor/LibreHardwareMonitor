@@ -14,36 +14,24 @@ namespace LibreHardwareMonitor.Interop
 {
     public class Kernel32
     {
-        private const string DllName = "kernel32.dll";
+        public const int ERROR_SERVICE_ALREADY_RUNNING = unchecked((int)0x80070420);
 
+        public const int ERROR_SERVICE_EXISTS = unchecked((int)0x80070431);
         internal const string IntelNVMeMiniPortSignature1 = "NvmeMini";
         internal const string IntelNVMeMiniPortSignature2 = "IntelNvm";
+
         internal const int MAX_DRIVE_ATTRIBUTES = 512;
-        internal const uint NVMePassThroughSrbIoCode = 0xe0002000;
+        internal const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
         internal const int SCSI_PASS_THROUGH_BUFFER_SIZE = 512;
         internal const byte SMART_LBA_HI = 0xC2;
         internal const byte SMART_LBA_MID = 0x4F;
-
-        internal enum DFP : uint
-        {
-            DFP_GET_VERSION = 0x00074080,
-            DFP_SEND_DRIVE_COMMAND = 0x0007c084,
-            DFP_RECEIVE_DRIVE_DATA = 0x0007c088
-        }
-
-        internal enum IOCTL : uint
-        {
-            IOCTL_SCSI_PASS_THROUGH = 0x04d004,
-            IOCTL_SCSI_MINIPORT = 0x04d008,
-            IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014,
-            IOCTL_SCSI_GET_ADDRESS = 0x41018,
-            IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400
-        }
+        private const string DllName = "kernel32.dll";
 
         [Flags]
         public enum NVME_CRITICAL_WARNING
         {
             None = 0x00,
+
             /// <summary>
             /// If set to 1, then the available spare space has fallen below the threshold.
             /// </summary>
@@ -68,6 +56,210 @@ namespace LibreHardwareMonitor.Interop
             /// If set to 1, then the volatile memory backup device has failed. This field is only valid if the controller has a volatile memory backup solution.
             /// </summary>
             VolatileMemoryBackupDeviceFailed = 0x10
+        }
+
+        /// <summary>
+        /// Create a instance from a struct with zero initialized memory arrays
+        /// no need to init every inner array with the correct sizes
+        /// </summary>
+        /// <typeparam name="T">type of struct that is needed</typeparam>
+        /// <returns></returns>
+        internal static T CreateStruct<T>()
+        {
+            int size = Marshal.SizeOf<T>();
+            var ptr = Marshal.AllocHGlobal(size);
+            RtlZeroMemory(ptr, size);
+            var result = Marshal.PtrToStructure<T>(ptr);
+            Marshal.FreeHGlobal(ptr);
+            return result;
+        }
+
+        internal static SafeHandle OpenDevice(string devicePath)
+        {
+            SafeHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+            if (hDevice.IsInvalid || hDevice.IsClosed)
+                hDevice = null;
+
+            return hDevice;
+        }
+
+        [DllImport(DllName, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern SafeFileHandle CreateFile
+        (
+            [MarshalAs(UnmanagedType.LPTStr)] string lpFileName,
+            [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
+            [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
+            IntPtr lpSecurityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
+            [MarshalAs(UnmanagedType.U4)] FileAttributes dwFlagsAndAttributes,
+            IntPtr hTemplateFile);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            DFP dwIoControlCode,
+            ref SENDCMDINPARAMS lpInBuffer,
+            int nInBufferSize,
+            out ATTRIBUTECMDOUTPARAMS lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            DFP dwIoControlCode,
+            ref SENDCMDINPARAMS lpInBuffer,
+            int nInBufferSize,
+            out THRESHOLDCMDOUTPARAMS lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            DFP dwIoControlCode,
+            ref SENDCMDINPARAMS lpInBuffer,
+            int nInBufferSize,
+            out SENDCMDOUTPARAMS lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            DFP dwIoControlCode,
+            ref SENDCMDINPARAMS lpInBuffer,
+            int nInBufferSize,
+            out IDENTIFYCMDOUTPARAMS lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref STORAGE_PROPERTY_QUERY lpInBuffer,
+            int nInBufferSize,
+            out STORAGE_DEVICE_DESCRIPTOR_HEADER lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref STORAGE_PROPERTY_QUERY lpInBuffer,
+            int nInBufferSize,
+            IntPtr lpOutBuffer,
+            uint nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            IOCTL dwIoControlCode,
+            IntPtr lpInBuffer,
+            int nInBufferSize,
+            IntPtr lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, SetLastError = true)]
+        internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
+
+        [DllImport(DllName, EntryPoint = "CopyMemory", SetLastError = false)]
+        internal static extern void CopyMemory(IntPtr Destination, IntPtr Source, uint Length);
+
+        [DllImport(DllName, SetLastError = true)]
+        internal static extern IntPtr LoadLibrary(string lpFileName);
+
+        [DllImport(DllName, ExactSpelling = true)]
+        internal static extern IntPtr GetProcAddress(IntPtr module, string methodName);
+        
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool FreeLibrary(IntPtr module);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern UIntPtr SetThreadAffinityMask(IntPtr handle, UIntPtr mask);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern IntPtr GetCurrentThread();
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, MEM flAllocationType, PAGE flProtect);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, MEM dwFreeType);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeFileHandle device,
+            IOControlCode ioControlCode,
+            [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
+            uint inBufferSize,
+            [MarshalAs(UnmanagedType.AsAny)] [Out] object outBuffer,
+            uint nOutBufferSize,
+            out uint bytesReturned,
+            IntPtr overlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        internal static extern IntPtr CreateFile
+        (
+            string lpFileName,
+            uint dwDesiredAccess,
+            FileShare dwShareMode,
+            IntPtr lpSecurityAttributes,
+            FileMode dwCreationDisposition,
+            FileAttributes dwFlagsAndAttributes,
+            IntPtr hTemplateFile);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        internal static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        internal static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
+
+        internal enum DFP : uint
+        {
+            DFP_GET_VERSION = 0x00074080,
+            DFP_SEND_DRIVE_COMMAND = 0x0007c084,
+            DFP_RECEIVE_DRIVE_DATA = 0x0007c088
+        }
+
+        internal enum IOCTL : uint
+        {
+            IOCTL_SCSI_PASS_THROUGH = 0x04d004,
+            IOCTL_SCSI_MINIPORT = 0x04d008,
+            IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014,
+            IOCTL_SCSI_GET_ADDRESS = 0x41018,
+            IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400
         }
 
         [Flags]
@@ -260,138 +452,6 @@ namespace LibreHardwareMonitor.Interop
             PropertyMaskQuery,
             PropertyQueryMaxDefined
         }
-
-        /// <summary>
-        /// Create a instance from a struct with zero initialized memory arrays
-        /// no need to init every inner array with the correct sizes
-        /// </summary>
-        /// <typeparam name="T">type of struct that is needed</typeparam>
-        /// <returns></returns>
-        internal static T CreateStruct<T>()
-        {
-            int size = Marshal.SizeOf<T>();
-            var ptr = Marshal.AllocHGlobal(size);
-            RtlZeroMemory(ptr, size);
-            var result = Marshal.PtrToStructure<T>(ptr);
-            Marshal.FreeHGlobal(ptr);
-            return result;
-        }
-
-        internal static SafeHandle OpenDevice(string devicePath)
-        {
-            SafeHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
-            if (hDevice.IsInvalid || hDevice.IsClosed)
-                hDevice = null;
-
-            return hDevice;
-        }
-
-        [DllImport(DllName, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern SafeFileHandle CreateFile(
-            [MarshalAs(UnmanagedType.LPTStr)] string lpFileName,
-            [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
-            [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
-            IntPtr lpSecurityAttributes,
-            [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
-            [MarshalAs(UnmanagedType.U4)] FileAttributes dwFlagsAndAttributes,
-            IntPtr hTemplateFile);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            DFP dwIoControlCode,
-            ref SENDCMDINPARAMS lpInBuffer,
-            int nInBufferSize,
-            out ATTRIBUTECMDOUTPARAMS lpOutBuffer,
-            int nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            DFP dwIoControlCode,
-            ref SENDCMDINPARAMS lpInBuffer,
-            int nInBufferSize,
-            out THRESHOLDCMDOUTPARAMS lpOutBuffer,
-            int nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            DFP dwIoControlCode,
-            ref SENDCMDINPARAMS lpInBuffer,
-            int nInBufferSize,
-            out SENDCMDOUTPARAMS lpOutBuffer,
-            int nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            DFP dwIoControlCode,
-            ref SENDCMDINPARAMS lpInBuffer,
-            int nInBufferSize,
-            out IDENTIFYCMDOUTPARAMS lpOutBuffer,
-            int nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            IOCTL dwIoControlCode,
-            ref STORAGE_PROPERTY_QUERY lpInBuffer,
-            int nInBufferSize,
-            out STORAGE_DEVICE_DESCRIPTOR_HEADER lpOutBuffer,
-            int nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            IOCTL dwIoControlCode,
-            ref STORAGE_PROPERTY_QUERY lpInBuffer,
-            int nInBufferSize,
-            IntPtr lpOutBuffer,
-            uint nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DeviceIoControl(
-            SafeHandle hDevice,
-            IOCTL dwIoControlCode,
-            IntPtr lpInBuffer,
-            int nInBufferSize,
-            IntPtr lpOutBuffer,
-            int nOutBufferSize,
-            out uint lpBytesReturned,
-            IntPtr lpOverlapped);
-
-        [DllImport(DllName, SetLastError = true)]
-        internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
-
-        [DllImport(DllName, EntryPoint = "CopyMemory", SetLastError = false)]
-        internal static extern void CopyMemory(IntPtr Destination, IntPtr Source, uint Length);
-
-        [DllImport(DllName, SetLastError = true)]
-        internal static extern IntPtr LoadLibrary(string lpFileName);
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct MEMORYSTATUSEX
@@ -679,58 +739,72 @@ namespace LibreHardwareMonitor.Interop
             /// bit 0:15 Maximum  Power (MP) in centiwatts
             /// </summary>
             public ushort MP;
+
             /// <summary>
             /// bit 16:23
             /// </summary>
             public byte Reserved0;
+
             /// <summary>
             /// bit 24 Max Power Scale (MPS), bit 25 Non-Operational State (NOPS)
             /// </summary>
             public byte MPS_NOPS;
+
             /// <summary>
             /// bit 32:63 Entry Latency (ENLAT) in microseconds
             /// </summary>
             public uint ENLAT;
+
             /// <summary>
             /// bit 64:95 Exit Latency (EXLAT) in microseconds
             /// </summary>
             public uint EXLAT;
+
             /// <summary>
             /// bit 96:100 Relative Read Throughput (RRT)
             /// </summary>
             public byte RRT;
+
             /// <summary>
             /// bit 104:108 Relative Read Latency (RRL)
             /// </summary>
             public byte RRL;
+
             /// <summary>
             /// bit 112:116 Relative Write Throughput (RWT)
             /// </summary>
             public byte RWT;
+
             /// <summary>
             /// bit 120:124 Relative Write Latency (RWL)
             /// </summary>
             public byte RWL;
+
             /// <summary>
             /// bit 128:143 Idle Power (IDLP)
             /// </summary>
             public ushort IDLP;
+
             /// <summary>
             /// bit 150:151 Idle Power Scale (IPS)
             /// </summary>
             public byte IPS;
+
             /// <summary>
             /// bit 152:159
             /// </summary>
             public byte Reserved7;
+
             /// <summary>
             /// bit 160:175 Active Power (ACTP)
             /// </summary>
             public ushort ACTP;
+
             /// <summary>
             /// bit 176:178 Active Power Workload (APW), bit 182:183  Active Power Scale (APS)
             /// </summary>
             public byte APW_APS;
+
             /// <summary>
             /// bit 184:255.
             /// </summary>
@@ -745,224 +819,276 @@ namespace LibreHardwareMonitor.Interop
             /// byte 0:1 M - PCI Vendor ID (VID)
             /// </summary>
             public ushort VID;
+
             /// <summary>
             /// byte 2:3 M - PCI Subsystem Vendor ID (SSVID)
             /// </summary>
             public ushort SSVID;
+
             /// <summary>
             /// byte 4: 23 M - Serial Number (SN)
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
             public byte[] SN;
+
             /// <summary>
             /// byte 24:63 M - Model Number (MN)
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 40)]
             public byte[] MN;
+
             /// <summary>
             /// byte 64:71 M - Firmware Revision (FR)
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
             public byte[] FR;
+
             /// <summary>
             /// byte 72 M - Recommended Arbitration Burst (RAB)
             /// </summary>
             public byte RAB;
+
             /// <summary>
             /// byte 73:75 M - IEEE OUI Identifier (IEEE). Controller Vendor code.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
             public byte[] IEEE;
+
             /// <summary>
             /// byte 76 O - Controller Multi-Path I/O and Namespace Sharing Capabilities (CMIC)
             /// </summary>
             public byte CMIC;
+
             /// <summary>
             /// byte 77 M - Maximum Data Transfer Size (MDTS)
             /// </summary>
             public byte MDTS;
+
             /// <summary>
             /// byte 78:79 M - Controller ID (CNTLID)
             /// </summary>
             public ushort CNTLID;
+
             /// <summary>
             /// byte 80:83 M - Version (VER)
             /// </summary>
             public uint VER;
+
             /// <summary>
             /// byte 84:87 M - RTD3 Resume Latency (RTD3R)
             /// </summary>
             public uint RTD3R;
+
             /// <summary>
             /// byte 88:91 M - RTD3 Entry Latency (RTD3E)
             /// </summary>
             public uint RTD3E;
+
             /// <summary>
             /// byte 92:95 M - Optional Asynchronous Events Supported (OAES)
             /// </summary>
             public uint OAES;
+
             /// <summary>
             /// byte 96:239.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 144)]
             public byte[] Reserved0;
+
             /// <summary>
             /// byte 240:255.  Refer to the NVMe Management Interface Specification for definition.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] ReservedForManagement;
+
             /// <summary>
             /// byte 256:257 M - Optional Admin Command Support (OACS)
             /// </summary>
             public ushort OACS;
+
             /// <summary>
             /// byte 258 M - Abort Command Limit (ACL)
             /// </summary>
             public byte ACL;
+
             /// <summary>
             /// byte 259 M - Asynchronous Event Request Limit (AERL)
             /// </summary>
             public byte AERL;
+
             /// <summary>
             /// byte 260 M - Firmware Updates (FRMW)
             /// </summary>
             public byte FRMW;
+
             /// <summary>
             /// byte 261 M - Log Page Attributes (LPA)
             /// </summary>
             public byte LPA;
+
             /// <summary>
             /// byte 262 M - Error Log Page Entries (ELPE)
             /// </summary>
             public byte ELPE;
+
             /// <summary>
             /// byte 263 M - Number of Power States Support (NPSS)
             /// </summary>
             public byte NPSS;
+
             /// <summary>
             /// byte 264 M - Admin Vendor Specific Command Configuration (AVSCC)
             /// </summary>
             public byte AVSCC;
+
             /// <summary>
             /// byte 265 O - Autonomous Power State Transition Attributes (APSTA)
             /// </summary>
             public byte APSTA;
+
             /// <summary>
             /// byte 266:267 M - Warning Composite Temperature Threshold (WCTEMP)
             /// </summary>
             public ushort WCTEMP;
+
             /// <summary>
             /// byte 268:269 M - Critical Composite Temperature Threshold (CCTEMP)
             /// </summary>
             public ushort CCTEMP;
+
             /// <summary>
             /// byte 270:271 O - Maximum Time for Firmware Activation (MTFA)
             /// </summary>
             public ushort MTFA;
+
             /// <summary>
             /// byte 272:275 O - Host Memory Buffer Preferred Size (HMPRE)
             /// </summary>
             public uint HMPRE;
+
             /// <summary>
             /// byte 276:279 O - Host Memory Buffer Minimum Size (HMMIN)
             /// </summary>
             public uint HMMIN;
+
             /// <summary>
             /// byte 280:295 O - Total NVM Capacity (TNVMCAP)
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] TNVMCAP;
+
             /// <summary>
             /// byte 296:311 O - Unallocated NVM Capacity (UNVMCAP)
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] UNVMCAP;
+
             /// <summary>
             /// byte 312:315 O - Replay Protected Memory Block Support (RPMBS)
             /// </summary>
             public uint RPMBS;
+
             /// <summary>
             /// byte 316:511
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 196)]
             public byte[] Reserved1;
+
             /// <summary>
             /// byte 512 M - Submission Queue Entry Size (SQES)
             /// </summary>
             public byte SQES;
+
             /// <summary>
             /// byte 513 M - Completion Queue Entry Size (CQES)
             /// </summary>
             public byte CQES;
+
             /// <summary>
             /// byte 514:515
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
             public byte[] Reserved2;
+
             /// <summary>
             /// byte 516:519 M - Number of Namespaces (NN)
             /// </summary>
             public uint NN;
+
             /// <summary>
             /// byte 520:521 M - Optional NVM Command Support (ONCS)
             /// </summary>
             public ushort ONCS;
+
             /// <summary>
             /// byte 522:523 M - Fused Operation Support (FUSES)
             /// </summary>
             public ushort FUSES;
+
             /// <summary>
             /// byte 524 M - Format NVM Attributes (FNA)
             /// </summary>
             public byte FNA;
+
             /// <summary>
             /// byte 525 M - Volatile Write Cache (VWC)
             /// </summary>
             public byte VWC;
+
             /// <summary>
             /// byte 526:527 M - Atomic Write Unit Normal (AWUN)
             /// </summary>
             public ushort AWUN;
+
             /// <summary>
             /// byte 528:529 M - Atomic Write Unit Power Fail (AWUPF)
             /// </summary>
             public ushort AWUPF;
+
             /// <summary>
             /// byte 530 M - NVM Vendor Specific Command Configuration (NVSCC)
             /// </summary>
             public byte NVSCC;
+
             /// <summary>
             /// byte 531
             /// </summary>
             public byte Reserved3;
+
             /// <summary>
             /// byte 532:533 O - Atomic Compare & Write Unit (ACWU)
             /// </summary>
             public ushort ACWU;
+
             /// <summary>
             /// byte 534:535
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
             public byte[] Reserved4;
+
             /// <summary>
             /// byte 536:539 O - SGL Support (SGLS)
             /// </summary>
             public uint SGLS;
+
             /// <summary>
             /// byte 540:703
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 164)]
             public byte[] Reserved5;
+
             /// <summary>
             /// byte 704:2047
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1344)]
             public byte[] Reserved6;
+
             /// <summary>
             /// byte 2048:3071 Power State Descriptors
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public NVME_POWER_STATE_DESC[] PDS;
+
             /// <summary>
             /// byte 3072:4095 Vendor Specific
             /// </summary>
@@ -978,28 +1104,34 @@ namespace LibreHardwareMonitor.Interop
             /// Each bit corresponds to a critical warning type; multiple bits may be set.
             /// </summary>
             public byte CriticalWarning;
+
             /// <summary>
             /// Composite Temperature:  Contains the temperature of the overall device (controller and NVM included) in units of Kelvin.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
             public byte[] CompositeTemp;
+
             /// <summary>
             /// Available Spare:  Contains a normalized percentage (0 to 100%) of the remaining spare capacity available
             /// </summary>
             public byte AvailableSpare;
+
             /// <summary>
             /// Available Spare Threshold:  When the Available Spare falls below the threshold indicated in this field,
             /// an asynchronous event completion may occur. The value is indicated as a normalized percentage (0 to 100%).
             /// </summary>
             public byte AvailableSpareThreshold;
+
             /// <summary>
             /// Percentage Used:  Contains a vendor specific estimate of the percentage of NVM subsystem life used based on
             /// the actual usage and the manufacturer’s prediction of NVM life. A value of 100 indicates that the estimated endurance of
             /// the NVM in the NVM subsystem has been consumed, but may not indicate an NVM subsystem failure. The value is allowed to exceed 100.
             /// </summary>
             public byte PercentageUsed;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 26)]
             public byte[] Reserved1;
+
             /// <summary>
             /// Data Units Read:  Contains the number of 512 byte data units the host has read from the controller;
             /// this value does not include metadata. This value is reported in thousands
@@ -1007,6 +1139,7 @@ namespace LibreHardwareMonitor.Interop
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] DataUnitRead;
+
             /// <summary>
             /// Data Units Written:  Contains the number of 512 byte data units the host has written to the controller;
             /// this value does not include metadata. This value is reported in thousands
@@ -1014,64 +1147,78 @@ namespace LibreHardwareMonitor.Interop
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] DataUnitWritten;
+
             /// <summary>
             /// Host Read Commands:  Contains the number of read commands completed by the controller.
             /// For the NVM command set, this is the number of Compare and Read commands.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] HostReadCommands;
+
             /// <summary>
             /// Host Write Commands:  Contains the number of write commands completed by the controller.
             /// For the NVM command set, this is the number of Write commands.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] HostWriteCommands;
+
             /// <summary>
             /// Controller Busy Time:  Contains the amount of time the controller is busy with I/O commands.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] ControllerBusyTime;
+
             /// <summary>
             /// Power Cycles:  Contains the number of power cycles.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] PowerCycles;
+
             /// <summary>
             /// Power On Hours:  Contains the number of power-on hours.
             /// This does not include time that the controller was powered and in a low power state condition.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] PowerOnHours;
+
             /// <summary>
             /// Unsafe Shutdowns:  Contains the number of unsafe shutdowns.
             /// This count is incremented when a shutdown notification is not received prior to loss of power.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] UnsafeShutdowns;
+
             /// <summary>
             /// Media Errors:  Contains the number of occurrences where the controller detected an unrecoverable data integrity error.
             /// Errors such as uncorrectable ECC, CRC checksum failure, or LBA tag mismatch are included in this field.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] MediaAndDataIntegrityErrors;
+
             /// <summary>
             /// Number of Error Information Log Entries:  Contains the number of Error Information log entries over the life of the controller
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] NumberErrorInformationLogEntries;
+
             /// <summary>
-            /// Warning Composite Temperature Time:  Contains the amount of time in minutes that the controller is operational and the Composite Temperature is greater than or equal to the Warning Composite Temperature Threshold.
+            /// Warning Composite Temperature Time:  Contains the amount of time in minutes that the controller is operational and the Composite Temperature is greater than or equal to the Warning Composite
+            /// Temperature Threshold.
             /// </summary>
             public uint WarningCompositeTemperatureTime;
+
             /// <summary>
-            /// Critical Composite Temperature Time:  Contains the amount of time in minutes that the controller is operational and the Composite Temperature is greater than the Critical Composite Temperature Threshold.
+            /// Critical Composite Temperature Time:  Contains the amount of time in minutes that the controller is operational and the Composite Temperature is greater than the Critical Composite Temperature
+            /// Threshold.
             /// </summary>
             public uint CriticalCompositeTemperatureTime;
+
             /// <summary>
             /// Contains the current temperature reported by temperature sensor 1-8.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
             public ushort[] TemperatureSensor;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 296)]
             internal byte[] Reserved2;
         }
@@ -1097,84 +1244,68 @@ namespace LibreHardwareMonitor.Interop
             public STORAGE_PROPERTY_ID PropertyId;
             public STORAGE_QUERY_TYPE QueryType;
             public STORAGE_PROTOCOL_SPECIFIC_DATA ProtocolSpecific;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
             internal byte[] Buffer;
         }
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        internal static extern UIntPtr SetThreadAffinityMask(IntPtr handle, UIntPtr mask);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        internal static extern IntPtr GetCurrentThread();
-
-        [Flags()]
-        internal enum AllocationType : uint
+        [Flags]
+        internal enum MEM : uint
         {
-            COMMIT = 0x1000,
-            RESERVE = 0x2000,
-            RESET = 0x80000,
-            LARGE_PAGES = 0x20000000,
-            PHYSICAL = 0x400000,
-            TOP_DOWN = 0x100000,
-            WRITE_WATCH = 0x200000
-        }
-
-        [Flags()]
-        internal enum MemoryProtection : uint
-        {
-            EXECUTE = 0x10,
-            EXECUTE_READ = 0x20,
-            EXECUTE_READWRITE = 0x40,
-            EXECUTE_WRITECOPY = 0x80,
-            NOACCESS = 0x01,
-            READONLY = 0x02,
-            READWRITE = 0x04,
-            WRITECOPY = 0x08,
-            GUARD = 0x100,
-            NOCACHE = 0x200,
-            WRITECOMBINE = 0x400
+            MEM_COMMIT = 0x1000,
+            MEM_RESERVE = 0x2000,
+            MEM_DECOMMIT = 0x4000,
+            MEM_RELEASE = 0x8000,
+            MEM_RESET = 0x80000,
+            MEM_LARGE_PAGES = 0x20000000,
+            MEM_PHYSICAL = 0x400000,
+            MEM_TOP_DOWN = 0x100000,
+            MEM_WRITE_WATCH = 0x200000
         }
 
         [Flags]
-        internal enum FreeType
+        internal enum PAGE : uint
         {
-            DECOMMIT = 0x4000,
-            RELEASE = 0x8000
-        }
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        internal static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        internal static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, FreeType dwFreeType);
-
-
-        internal enum Win32FileAccess : uint
-        {
-            GENERIC_READ = 0x80000000,
-            GENERIC_WRITE = 0x40000000
-        }
-
-        internal enum CreationDisposition : uint
-        {
-            CREATE_NEW = 1,
-            CREATE_ALWAYS = 2,
-            OPEN_EXISTING = 3,
-            OPEN_ALWAYS = 4,
-            TRUNCATE_EXISTING = 5
+            PAGE_EXECUTE = 0x10,
+            PAGE_EXECUTE_READ = 0x20,
+            PAGE_EXECUTE_READWRITE = 0x40,
+            PAGE_EXECUTE_WRITECOPY = 0x80,
+            PAGE_NOACCESS = 0x01,
+            PAGE_READONLY = 0x02,
+            PAGE_READWRITE = 0x04,
+            PAGE_WRITECOPY = 0x08,
+            PAGE_GUARD = 0x100,
+            PAGE_NOCACHE = 0x200,
+            PAGE_WRITECOMBINE = 0x400
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         internal struct IOControlCode
         {
-            private uint _code;
+            /// <summary>
+            /// Gets the resulting IO control code.
+            /// </summary>
+            public uint Code { get; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="IOControlCode" /> struct.
+            /// </summary>
+            /// <param name="deviceType">Type of the device.</param>
+            /// <param name="function">The function.</param>
+            /// <param name="access">The access.</param>
             public IOControlCode(uint deviceType, uint function, Access access) : this(deviceType, function, Method.Buffered, access)
             { }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="IOControlCode" /> struct.
+            /// </summary>
+            /// <param name="deviceType">Type of the device.</param>
+            /// <param name="function">The function.</param>
+            /// <param name="method">The method.</param>
+            /// <param name="access">The access.</param>
             public IOControlCode(uint deviceType, uint function, Method method, Access access)
             {
-                _code = (deviceType << 16) | ((uint)access << 14) | (function << 2) | (uint)method;
+                Code = (deviceType << 16) | ((uint)access << 14) | (function << 2) | (uint)method;
             }
 
             public enum Method : uint
@@ -1193,30 +1324,11 @@ namespace LibreHardwareMonitor.Interop
             }
         }
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        internal static extern bool DeviceIoControl(SafeFileHandle device, IOControlCode ioControlCode,
-            [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
-            uint inBufferSize,
-            [MarshalAs(UnmanagedType.AsAny)]
-            [Out] object outBuffer,
-            uint nOutBufferSize, out uint bytesReturned, IntPtr overlapped);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        internal static extern IntPtr CreateFile(string lpFileName, Win32FileAccess dwDesiredAccess, uint dwShareMode,
-            IntPtr lpSecurityAttributes, CreationDisposition dwCreationDisposition,
-            FileAttributes dwFlagsAndAttributes, IntPtr hTemplateFile);
-
-        internal enum Provider : int
+        internal enum Provider
         {
             ACPI = (byte)'A' << 24 | (byte)'C' << 16 | (byte)'P' << 8 | (byte)'I',
             FIRM = (byte)'F' << 24 | (byte)'I' << 16 | (byte)'R' << 8 | (byte)'M',
             RSMB = (byte)'R' << 24 | (byte)'S' << 16 | (byte)'M' << 8 | (byte)'B'
         }
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        internal static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        internal static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
     }
 }

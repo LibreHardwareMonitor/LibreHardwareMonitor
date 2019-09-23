@@ -9,18 +9,26 @@ namespace LibreHardwareMonitor.Hardware
 
     public interface IComputer : IElement
     {
+        bool IsCpuEnabled { get; }
+
+        bool IsControllerEnabled { get; }
+
+        bool IsGpuEnabled { get; }
+
         IHardware[] Hardware { get; }
-        bool MainboardEnabled { get; }
-        bool CPUEnabled { get; }
-        bool RAMEnabled { get; }
-        bool GPUEnabled { get; }
-        bool FanControllerEnabled { get; }
-        bool HDDEnabled { get; }
-        bool NICEnabled { get; }
+
+        bool IsStorageEnabled { get; }
+
+        bool IsMotherboardEnabled { get; }
+
+        bool IsNetworkEnabled { get; }
+
+        bool IsMemoryEnabled { get; }
 
         string GetReport();
 
         event HardwareEventHandler HardwareAdded;
+
         event HardwareEventHandler HardwareRemoved;
     }
 }

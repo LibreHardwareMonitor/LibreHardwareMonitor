@@ -8,9 +8,11 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
-using System.Threading;
+using System.Security.Principal;
 using System.Text;
-using System.Security.Principal;        //SecurityIdentifier
+using System.Threading;
+
+//SecurityIdentifier
 
 namespace LibreHardwareMonitor.Hardware
 {
@@ -19,19 +21,13 @@ namespace LibreHardwareMonitor.Hardware
         private static KernelDriver _driver;
         private static string _fileName;
         private static Mutex _isaBusMutex;
-        private static readonly StringBuilder _report = new StringBuilder();
 
-        private const uint OLS_TYPE = 40000;
-        private static Interop.Kernel32.IOControlCode
-            IOCTL_OLS_GET_REFCOUNT = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x801, Interop.Kernel32.IOControlCode.Access.Any),
-            IOCTL_OLS_GET_DRIVER_VERSION = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x800, Interop.Kernel32.IOControlCode.Access.Any),
-            IOCTL_OLS_READ_MSR = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x821, Interop.Kernel32.IOControlCode.Access.Any),
-            IOCTL_OLS_WRITE_MSR = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x822, Interop.Kernel32.IOControlCode.Access.Any),
-            IOCTL_OLS_READ_IO_PORT_BYTE = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x833, Interop.Kernel32.IOControlCode.Access.Read),
-            IOCTL_OLS_WRITE_IO_PORT_BYTE = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x836, Interop.Kernel32.IOControlCode.Access.Write),
-            IOCTL_OLS_READ_PCI_CONFIG = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x851, Interop.Kernel32.IOControlCode.Access.Read),
-            IOCTL_OLS_WRITE_PCI_CONFIG = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x852, Interop.Kernel32.IOControlCode.Access.Write),
-            IOCTL_OLS_READ_MEMORY = new Interop.Kernel32.IOControlCode(OLS_TYPE, 0x841, Interop.Kernel32.IOControlCode.Access.Read);
+        private static readonly StringBuilder Report = new StringBuilder();
+
+        public static bool IsOpen
+        {
+            get { return _driver != null; }
+        }
 
         private static Assembly GetAssembly()
         {
@@ -40,7 +36,6 @@ namespace LibreHardwareMonitor.Hardware
 
         private static string GetTempFileName()
         {
-
             // try to create one in the application folder
             string location = GetAssembly().Location;
             if (!string.IsNullOrEmpty(location))
@@ -48,12 +43,12 @@ namespace LibreHardwareMonitor.Hardware
                 try
                 {
                     string fileName = Path.ChangeExtension(location, ".sys");
-                    using (FileStream stream = File.Create(fileName))
-                    {
+
+                    using (File.Create(fileName))
                         return fileName;
-                    }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                { }
             }
 
             // if this failed, try to get a file in the temporary folder
@@ -79,7 +74,7 @@ namespace LibreHardwareMonitor.Hardware
 
         private static bool ExtractDriver(string fileName)
         {
-            string resourceName = "LibreHardwareMonitor.Hardware." + (Software.OperatingSystem.Is64Bit ? "WinRing0x64.sys" : "WinRing0.sys");
+            string resourceName = nameof(LibreHardwareMonitor) + "." + nameof(Hardware) + "." + (Software.OperatingSystem.Is64Bit ? "WinRing0x64.sys" : "WinRing0.sys");
 
             string[] names = GetAssembly().GetManifestResourceNames();
             byte[] buffer = null;
@@ -89,14 +84,18 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     using (Stream stream = GetAssembly().GetManifestResourceStream(names[i]))
                     {
-                        buffer = new byte[stream.Length];
-                        stream.Read(buffer, 0, buffer.Length);
+                        if (stream != null)
+                        {
+                            buffer = new byte[stream.Length];
+                            stream.Read(buffer, 0, buffer.Length);
+                        }
                     }
                 }
             }
 
             if (buffer == null)
                 return false;
+
 
             try
             {
@@ -112,16 +111,17 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
             }
 
-            // make sure the file is actually writen to the file system
+            // make sure the file is actually written to the file system
             for (int i = 0; i < 20; i++)
             {
                 try
                 {
                     if (File.Exists(fileName) &&
-                      new FileInfo(fileName).Length == buffer.Length)
+                        new FileInfo(fileName).Length == buffer.Length)
                     {
                         return true;
                     }
+
                     Thread.Sleep(100);
                 }
                 catch (IOException)
@@ -129,6 +129,7 @@ namespace LibreHardwareMonitor.Hardware
                     Thread.Sleep(10);
                 }
             }
+
             // file still has not the right size, something is wrong
             return false;
         }
@@ -142,8 +143,9 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver != null)
                 return;
 
+
             // clear the current report
-            _report.Length = 0;
+            Report.Length = 0;
 
             _driver = new KernelDriver("WinRing0_1_2_0");
             _driver.Open();
@@ -154,15 +156,14 @@ namespace LibreHardwareMonitor.Hardware
                 _fileName = GetTempFileName();
                 if (_fileName != null && ExtractDriver(_fileName))
                 {
-                    string installError;
-                    if (_driver.Install(_fileName, out installError))
+                    if (_driver.Install(_fileName, out string installError))
                     {
                         _driver.Open();
 
                         if (!_driver.IsOpen)
                         {
                             _driver.Delete();
-                            _report.AppendLine("Status: Opening driver failed after install");
+                            Report.AppendLine("Status: Opening driver failed after install");
                         }
                     }
                     else
@@ -175,39 +176,41 @@ namespace LibreHardwareMonitor.Hardware
                         // wait a short moment to give the OS a chance to remove the driver
                         Thread.Sleep(2000);
 
-                        string errorSecondInstall;
-                        if (_driver.Install(_fileName, out errorSecondInstall))
+                        if (_driver.Install(_fileName, out string errorSecondInstall))
                         {
                             _driver.Open();
 
                             if (!_driver.IsOpen)
                             {
                                 _driver.Delete();
-                                _report.AppendLine("Status: Opening driver failed after reinstall");
+                                Report.AppendLine("Status: Opening driver failed after reinstall");
                             }
                         }
                         else
                         {
-                            _report.AppendLine("Status: Installing driver \"" + _fileName + "\" failed" + (File.Exists(_fileName) ? " and file exists" : ""));
-                            _report.AppendLine("First Exception: " + errorFirstInstall);
-                            _report.AppendLine("Second Exception: " + errorSecondInstall);
+                            Report.AppendLine("Status: Installing driver \"" + _fileName + "\" failed" + (File.Exists(_fileName) ? " and file exists" : string.Empty));
+                            Report.AppendLine("First Exception: " + errorFirstInstall);
+                            Report.AppendLine("Second Exception: " + errorSecondInstall);
                         }
                     }
                 }
                 else
                 {
-                    _report.AppendLine("Status: Extracting driver failed");
+                    Report.AppendLine("Status: Extracting driver failed");
                 }
 
                 try
                 {
-                    // try to delte the driver file
-                    if (File.Exists(_fileName))
+                    // try to delete the driver file
+                    if (File.Exists(_fileName) && _fileName != null)
                         File.Delete(_fileName);
+
                     _fileName = null;
                 }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
+                catch (IOException)
+                { }
+                catch (UnauthorizedAccessException)
+                { }
             }
 
             if (!_driver.IsOpen)
@@ -237,13 +240,9 @@ namespace LibreHardwareMonitor.Hardware
                     _isaBusMutex = Mutex.OpenExisting(mutexName, MutexRights.Synchronize);
 #endif
                 }
-                catch { }
+                catch
+                { }
             }
-        }
-
-        public static bool IsOpen
-        {
-            get { return _driver != null; }
         }
 
         public static void Close()
@@ -251,11 +250,12 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver != null)
             {
                 uint refCount = 0;
-                _driver.DeviceIOControl(IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
+                _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
                 _driver.Close();
 
                 if (refCount <= 1)
                     _driver.Delete();
+
                 _driver = null;
             }
 
@@ -273,10 +273,13 @@ namespace LibreHardwareMonitor.Hardware
                     File.Delete(_fileName);
                     _fileName = null;
                 }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
+                catch (IOException)
+                { }
+                catch (UnauthorizedAccessException)
+                { }
             }
         }
+
         public static ulong ThreadAffinitySet(ulong mask)
         {
             return ThreadAffinity.Set(mask);
@@ -284,39 +287,45 @@ namespace LibreHardwareMonitor.Hardware
 
         public static string GetReport()
         {
-            if (_report.Length > 0)
+            if (Report.Length > 0)
             {
                 StringBuilder r = new StringBuilder();
                 r.AppendLine("Ring0");
                 r.AppendLine();
-                r.Append(_report);
+                r.Append(Report);
                 r.AppendLine();
                 return r.ToString();
             }
-            else
-                return null;
+
+            return null;
         }
 
         public static bool WaitIsaBusMutex(int millisecondsTimeout)
         {
             if (_isaBusMutex == null)
                 return true;
+
+
             try
             {
                 return _isaBusMutex.WaitOne(millisecondsTimeout, false);
             }
-            catch (AbandonedMutexException) { return true; }
-            catch (InvalidOperationException) { return false; }
+            catch (AbandonedMutexException)
+            {
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         public static void ReleaseIsaBusMutex()
         {
-            if (_isaBusMutex == null)
-                return;
-            _isaBusMutex.ReleaseMutex();
+            _isaBusMutex?.ReleaseMutex();
         }
 
-        public static bool Rdmsr(uint index, out uint eax, out uint edx)
+        public static bool ReadMsr(uint index, out uint eax, out uint edx)
         {
             if (_driver == null)
             {
@@ -326,36 +335,28 @@ namespace LibreHardwareMonitor.Hardware
             }
 
             ulong buffer = 0;
-            bool result = _driver.DeviceIOControl(IOCTL_OLS_READ_MSR, index, ref buffer);
+            bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MSR, index, ref buffer);
             edx = (uint)((buffer >> 32) & 0xFFFFFFFF);
             eax = (uint)(buffer & 0xFFFFFFFF);
             return result;
         }
 
-        public static bool RdmsrTx(uint index, out uint eax, out uint edx, ulong threadAffinityMask)
+        public static bool ReadMsr(uint index, out uint eax, out uint edx, ulong threadAffinityMask)
         {
             ulong mask = ThreadAffinity.Set(threadAffinityMask);
-            bool result = Rdmsr(index, out eax, out edx);
+            bool result = ReadMsr(index, out eax, out edx);
             ThreadAffinity.Set(mask);
             return result;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct WrmsrInput
-        {
-            public uint Register;
-            public ulong Value;
-        }
-
-        public static bool Wrmsr(uint index, uint eax, uint edx)
+        public static bool WriteMsr(uint index, uint eax, uint edx)
         {
             if (_driver == null)
                 return false;
 
-            WrmsrInput input = new WrmsrInput();
-            input.Register = index;
-            input.Value = ((ulong)edx << 32) | eax;
-            return _driver.DeviceIOControl(IOCTL_OLS_WRITE_MSR, input);
+
+            WriteMsrInput input = new WriteMsrInput { Register = index, Value = ((ulong)edx << 32) | eax };
+            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
         }
 
         public static byte ReadIoPort(uint port)
@@ -363,16 +364,10 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver == null)
                 return 0;
 
-            uint value = 0;
-            _driver.DeviceIOControl(IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
-            return (byte)(value & 0xFF);
-        }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct WriteIoPortInput
-        {
-            public uint PortNumber;
-            public byte Value;
+            uint value = 0;
+            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
+            return (byte)(value & 0xFF);
         }
 
         public static void WriteIoPort(uint port, byte value)
@@ -380,24 +375,14 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver == null)
                 return;
 
-            WriteIoPortInput input = new WriteIoPortInput();
-            input.PortNumber = port;
-            input.Value = value;
-            _driver.DeviceIOControl(IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
-        }
 
-        public const uint InvalidPciAddress = 0xFFFFFFFF;
+            WriteIoPortInput input = new WriteIoPortInput { PortNumber = port, Value = value };
+            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
+        }
 
         public static uint GetPciAddress(byte bus, byte device, byte function)
         {
             return (uint)(((bus & 0xFF) << 8) | ((device & 0x1F) << 3) | (function & 7));
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct ReadPciConfigInput
-        {
-            public uint PciAddress;
-            public uint RegAddress;
         }
 
         public static bool ReadPciConfig(uint pciAddress, uint regAddress, out uint value)
@@ -408,12 +393,51 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
             }
 
-            ReadPciConfigInput input = new ReadPciConfigInput();
-            input.PciAddress = pciAddress;
-            input.RegAddress = regAddress;
+            ReadPciConfigInput input = new ReadPciConfigInput { PciAddress = pciAddress, RegAddress = regAddress };
 
             value = 0;
-            return _driver.DeviceIOControl(IOCTL_OLS_READ_PCI_CONFIG, input, ref value);
+            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_PCI_CONFIG, input, ref value);
+        }
+
+        public static bool WritePciConfig(uint pciAddress, uint regAddress, uint value)
+        {
+            if (_driver == null || (regAddress & 3) != 0)
+                return false;
+
+
+            WritePciConfigInput input = new WritePciConfigInput { PciAddress = pciAddress, RegAddress = regAddress, Value = value };
+            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_PCI_CONFIG, input);
+        }
+
+        public static bool ReadMemory<T>(ulong address, ref T buffer)
+        {
+            if (_driver == null)
+                return false;
+
+
+            ReadMemoryInput input = new ReadMemoryInput { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
+            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WriteMsrInput
+        {
+            public uint Register;
+            public ulong Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WriteIoPortInput
+        {
+            public uint PortNumber;
+            public byte Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct ReadPciConfigInput
+        {
+            public uint PciAddress;
+            public uint RegAddress;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -424,36 +448,12 @@ namespace LibreHardwareMonitor.Hardware
             public uint Value;
         }
 
-        public static bool WritePciConfig(uint pciAddress, uint regAddress, uint value)
-        {
-            if (_driver == null || (regAddress & 3) != 0)
-                return false;
-
-            WritePciConfigInput input = new WritePciConfigInput();
-            input.PciAddress = pciAddress;
-            input.RegAddress = regAddress;
-            input.Value = value;
-            return _driver.DeviceIOControl(IOCTL_OLS_WRITE_PCI_CONFIG, input);
-        }
-
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct ReadMemoryInput
         {
-            public ulong address;
-            public uint unitSize;
-            public uint count;
-        }
-
-        public static bool ReadMemory<T>(ulong address, ref T buffer)
-        {
-            if (_driver == null)
-                return false;
-
-            ReadMemoryInput input = new ReadMemoryInput();
-            input.address = address;
-            input.unitSize = 1;
-            input.count = (uint)Marshal.SizeOf(buffer);
-            return _driver.DeviceIOControl(IOCTL_OLS_READ_MEMORY, input, ref buffer);
+            public ulong Address;
+            public uint UnitSize;
+            public uint Count;
         }
     }
 }

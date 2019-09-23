@@ -10,15 +10,14 @@ namespace LibreHardwareMonitor.Hardware
 {
     internal class Parameter : IParameter
     {
-        private readonly ISensor _sensor;
-        private ParameterDescription _description;
-        private float _value;
-        private bool _isDefault;
         private readonly ISettings _settings;
+        private readonly ParameterDescription _description;
+        private bool _isDefault;
+        private float _value;
 
         public Parameter(ParameterDescription description, ISensor sensor, ISettings settings)
         {
-            _sensor = sensor;
+            Sensor = sensor;
             _description = description;
             _settings = settings;
             _isDefault = !settings.Contains(Identifier.ToString());
@@ -30,43 +29,19 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        public ISensor Sensor
+        public float DefaultValue
         {
-            get
-            {
-                return _sensor;
-            }
+            get { return _description.DefaultValue; }
+        }
+
+        public string Description
+        {
+            get { return _description.Description; }
         }
 
         public Identifier Identifier
         {
-            get
-            {
-                return new Identifier(_sensor.Identifier, "parameter", Name.Replace(" ", "").ToLowerInvariant());
-            }
-        }
-
-        public string Name { get { return _description.Name; } }
-
-        public string Description { get { return _description.Description; } }
-
-        public float Value
-        {
-            get
-            {
-                return _value;
-            }
-            set
-            {
-                _isDefault = false;
-                _value = value;
-                _settings.SetValue(Identifier.ToString(), value.ToString(CultureInfo.InvariantCulture));
-            }
-        }
-
-        public float DefaultValue
-        {
-            get { return _description.DefaultValue; }
+            get { return new Identifier(Sensor.Identifier, "parameter", Name.Replace(" ", string.Empty).ToLowerInvariant()); }
         }
 
         public bool IsDefault
@@ -83,13 +58,34 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        public string Name
+        {
+            get { return _description.Name; }
+        }
+
+        public ISensor Sensor { get; }
+
+        public float Value
+        {
+            get { return _value; }
+            set
+            {
+                _isDefault = false;
+                _value = value;
+                _settings.SetValue(Identifier.ToString(), value.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
         public void Accept(IVisitor visitor)
         {
             if (visitor == null)
-                throw new ArgumentNullException("visitor");
+                throw new ArgumentNullException(nameof(visitor));
+
+
             visitor.VisitParameter(this);
         }
 
-        public void Traverse(IVisitor visitor) { }
+        public void Traverse(IVisitor visitor)
+        { }
     }
 }

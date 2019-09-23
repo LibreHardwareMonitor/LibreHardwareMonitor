@@ -50,7 +50,7 @@ dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 dotnet_style_predefined_type_for_member_access = true:suggestion
 
 # methods
-dotnet_naming_rule.methods_must_be_capitalized.severity = error #suggestion
+dotnet_naming_rule.methods_must_be_capitalized.severity = suggestion
 dotnet_naming_rule.methods_must_be_capitalized.symbols   = methods_symbols
 dotnet_naming_rule.methods_must_be_capitalized.style   =  methods_case_style
 dotnet_naming_symbols.methods_symbols.applicable_kinds           = method
@@ -58,7 +58,7 @@ dotnet_naming_symbols.methods_symbols.applicable_accessibilities = public, priva
 dotnet_naming_style.methods_case_style.capitalization = pascal_case
 
 # public fields
-dotnet_naming_rule.public_members_must_be_capitalized.severity = error #suggestion
+dotnet_naming_rule.public_members_must_be_capitalized.severity = suggestion
 dotnet_naming_rule.public_members_must_be_capitalized.symbols   = public_symbols
 dotnet_naming_rule.public_members_must_be_capitalized.style   =  public_case_style
 dotnet_naming_symbols.public_symbols.applicable_kinds           = property,field,event,delegate
@@ -66,7 +66,7 @@ dotnet_naming_symbols.public_symbols.applicable_accessibilities = public
 dotnet_naming_style.public_case_style.capitalization = pascal_case
 
 # name all constant fields using PascalCase
-dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error #suggestion
+dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
 dotnet_naming_symbols.constant_fields.applicable_kinds   = field
@@ -74,7 +74,7 @@ dotnet_naming_symbols.constant_fields.required_modifiers = const
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 # internal and private fields should be _camelCase
-dotnet_naming_rule.camel_case_for_private_internal_fields.severity = error #suggestion
+dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
 dotnet_naming_rule.camel_case_for_private_internal_fields.symbols  = private_internal_fields
 dotnet_naming_rule.camel_case_for_private_internal_fields.style    = camel_case_underscore_style
 dotnet_naming_symbols.private_internal_fields.applicable_kinds = field

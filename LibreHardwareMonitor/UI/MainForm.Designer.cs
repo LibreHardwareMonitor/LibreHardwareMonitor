@@ -260,7 +260,7 @@ namespace LibreHardwareMonitor.UI {
             // mainboardMenuItem
             // 
             this.mainboardMenuItem.Index = 0;
-            this.mainboardMenuItem.Text = "Mainboard";
+            this.mainboardMenuItem.Text = "Motherboard";
             // 
             // cpuMenuItem
             // 

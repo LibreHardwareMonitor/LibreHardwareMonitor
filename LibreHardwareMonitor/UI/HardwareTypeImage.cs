@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.UI
 
             switch (hardwareType)
             {
-                case HardwareType.CPU:
+                case HardwareType.Cpu:
                     image = Utilities.EmbeddedResources.GetImage("cpu.png");
                     break;
                 case HardwareType.GpuNvidia:
@@ -34,13 +34,13 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.GpuAmd:
                     image = Utilities.EmbeddedResources.GetImage("amd.png");
                     break;
-                case HardwareType.HDD:
+                case HardwareType.Storage:
                     image = Utilities.EmbeddedResources.GetImage("hdd.png");
                     break;
                 case HardwareType.Heatmaster:
                     image = Utilities.EmbeddedResources.GetImage("bigng.png");
                     break;
-                case HardwareType.Mainboard:
+                case HardwareType.Motherboard:
                     image = Utilities.EmbeddedResources.GetImage("mainboard.png");
                     break;
                 case HardwareType.SuperIO:
@@ -49,13 +49,13 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.TBalancer:
                     image = Utilities.EmbeddedResources.GetImage("bigng.png");
                     break;
-                case HardwareType.RAM:
+                case HardwareType.Memory:
                     image = Utilities.EmbeddedResources.GetImage("ram.png");
                     break;
-                case HardwareType.Aquacomputer:
+                case HardwareType.AquaComputer:
                     image = Utilities.EmbeddedResources.GetImage("acicon.png");
                     break;
-                case HardwareType.NIC:
+                case HardwareType.Network:
                     image = Utilities.EmbeddedResources.GetImage("nic.png");
                     break;
                 default:

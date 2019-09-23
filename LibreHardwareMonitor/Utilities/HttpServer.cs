@@ -292,7 +292,7 @@ namespace LibreHardwareMonitor.Utilities
                 if (requestedFile.Contains("images_icon"))
                 {
                     ServeResourceImage(context.Response,
-                      requestedFile.Replace("images_icon/", ""));
+                      requestedFile.Replace("images_icon/", string.Empty));
                     return;
                 }
 
@@ -407,7 +407,7 @@ namespace LibreHardwareMonitor.Utilities
             json["Min"] = "Min";
             json["Value"] = "Value";
             json["Max"] = "Max";
-            json["ImageURL"] = "";
+            json["ImageURL"] = string.Empty;
 
             JArray children = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
             json["Children"] = children;
@@ -441,9 +441,9 @@ namespace LibreHardwareMonitor.Utilities
             {
                 ["id"] = nodeIndex++,
                 ["Text"] = n.Text,
-                ["Min"] = "",
-                ["Value"] = "",
-                ["Max"] = ""
+                ["Min"] = string.Empty,
+                ["Value"] = string.Empty,
+                ["Max"] = string.Empty
             };
 
             if (n is SensorNode)
@@ -507,27 +507,27 @@ namespace LibreHardwareMonitor.Utilities
 
             switch (hn.Hardware.HardwareType)
             {
-                case HardwareType.CPU:
+                case HardwareType.Cpu:
                     return "cpu.png";
                 case HardwareType.GpuNvidia:
                     return "nvidia.png";
                 case HardwareType.GpuAmd:
                     return "ati.png";
-                case HardwareType.HDD:
+                case HardwareType.Storage:
                     return "hdd.png";
                 case HardwareType.Heatmaster:
                     return "bigng.png";
-                case HardwareType.Mainboard:
+                case HardwareType.Motherboard:
                     return "mainboard.png";
                 case HardwareType.SuperIO:
                     return "chip.png";
                 case HardwareType.TBalancer:
                     return "bigng.png";
-                case HardwareType.RAM:
+                case HardwareType.Memory:
                     return "ram.png";
-                case HardwareType.Aquacomputer:
+                case HardwareType.AquaComputer:
                     return "acicon.png";
-                case HardwareType.NIC:
+                case HardwareType.Network:
                     return "nic.png";
                 default:
                     return "cpu.png";

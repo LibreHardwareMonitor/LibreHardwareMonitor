@@ -4,20 +4,18 @@
 // All Rights Reserved
 
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 // ReSharper disable InconsistentNaming
 
 namespace LibreHardwareMonitor.Interop
 {
-    internal class Ntdll
+    internal class NtDll
     {
         private const string DllName = "ntdll";
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SystemProcessorPerformanceInformation
+        internal struct SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION
         {
             public long IdleTime;
             public long KernelTime;
@@ -27,17 +25,57 @@ namespace LibreHardwareMonitor.Interop
             public ulong Reserved2;
         }
 
-        internal enum SystemInformationClass
+        internal enum SYSTEM_INFORMATION_CLASS
         {
-            SystemBasicInformation = 0,
-            SystemCpuInformation = 1,
-            SystemPerformanceInformation = 2,
-            SystemTimeOfDayInformation = 3,
-            SystemProcessInformation = 5,
-            SystemProcessorPerformanceInformation = 8
+            SystemBasicInformation,
+            SystemProcessorInformation,
+            SystemPerformanceInformation,
+            SystemTimeOfDayInformation,
+            SystemPathInformation,
+            SystemProcessInformation,
+            SystemCallCountInformation,
+            SystemDeviceInformation,
+            SystemProcessorPerformanceInformation,
+            SystemFlagsInformation,
+            SystemCallTimeInformation,
+            SystemModuleInformation,
+            SystemLocksInformation,
+            SystemStackTraceInformation,
+            SystemPagedPoolInformation,
+            SystemNonPagedPoolInformation,
+            SystemHandleInformation,
+            SystemObjectInformation,
+            SystemPageFileInformation,
+            SystemVdmInstemulInformation,
+            SystemVdmBopInformation,
+            SystemFileCacheInformation,
+            SystemPoolTagInformation,
+            SystemInterruptInformation,
+            SystemDpcBehaviorInformation,
+            SystemFullMemoryInformation,
+            SystemLoadGdiDriverInformation,
+            SystemUnloadGdiDriverInformation,
+            SystemTimeAdjustmentInformation,
+            SystemSummaryMemoryInformation,
+            SystemNextEventIdInformation,
+            SystemEventIdsInformation,
+            SystemCrashDumpInformation,
+            SystemExceptionInformation,
+            SystemCrashDumpStateInformation,
+            SystemKernelDebuggerInformation,
+            SystemContextSwitchInformation,
+            SystemRegistryQuotaInformation,
+            SystemExtendServiceTableInformation,
+            SystemPrioritySeperation,
+            SystemPlugPlayBusInformation,
+            SystemDockInformation,
+            SystemPowerInformation,
+            SystemProcessorSpeedInformation,
+            SystemCurrentTimeZoneInformation,
+            SystemLookasideInformation
         }
 
         [DllImport(DllName)]
-        internal static extern int NtQuerySystemInformation(SystemInformationClass informationClass, [Out] SystemProcessorPerformanceInformation[] informations, int structSize, out IntPtr returnLength);
+        internal static extern int NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, [Out] SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] SystemInformation, int SystemInformationLength, out IntPtr ReturnLength);
     }
 }

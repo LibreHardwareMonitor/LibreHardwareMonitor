@@ -15,15 +15,16 @@ namespace LibreHardwareMonitor.Hardware
             if (mask == 0)
                 return 0;
 
+
             if (Software.OperatingSystem.IsLinux)
             {
                 ulong result = 0;
-                if (Interop.Libc.sched_getaffinity(0, (IntPtr)Marshal.SizeOf(result), ref result) != 0)
+                if (Interop.LibC.sched_getaffinity(0, (IntPtr)Marshal.SizeOf(result), ref result) != 0)
                     return 0;
-                if (Interop.Libc.sched_setaffinity(0, (IntPtr)Marshal.SizeOf(mask), ref mask) != 0)
-                    return 0;
-                return result;
+
+                return Interop.LibC.sched_setaffinity(0, (IntPtr)Marshal.SizeOf(mask), ref mask) != 0 ? (ulong) 0 : result;
             }
+
             UIntPtr uIntPtrMask;
             try
             {
@@ -31,7 +32,7 @@ namespace LibreHardwareMonitor.Hardware
             }
             catch (OverflowException)
             {
-                throw new ArgumentOutOfRangeException("mask");
+                throw new ArgumentOutOfRangeException(nameof(mask));
             }
             return (ulong)Interop.Kernel32.SetThreadAffinityMask(Interop.Kernel32.GetCurrentThread(), uIntPtrMask);
         }

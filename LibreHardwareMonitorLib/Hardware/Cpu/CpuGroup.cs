@@ -13,85 +13,21 @@ namespace LibreHardwareMonitor.Hardware.CPU
     internal class CpuGroup : IGroup
     {
         private readonly List<GenericCpu> _hardware = new List<GenericCpu>();
-        private readonly CpuID[][][] _threads;
-
-        private static CpuID[][] GetProcessorThreads()
-        {
-            List<CpuID> threads = new List<CpuID>();
-            for (int i = 0; i < 64; i++)
-            {
-                try
-                {
-                    threads.Add(new CpuID(i));
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // All cores found.
-                    break;
-                }
-            }
-
-            SortedDictionary<uint, List<CpuID>> processors = new SortedDictionary<uint, List<CpuID>>();
-            foreach (CpuID thread in threads)
-            {
-                List<CpuID> list;
-                processors.TryGetValue(thread.ProcessorId, out list);
-                if (list == null)
-                {
-                    list = new List<CpuID>();
-                    processors.Add(thread.ProcessorId, list);
-                }
-                list.Add(thread);
-            }
-
-            CpuID[][] processorThreads = new CpuID[processors.Count][];
-            int index = 0;
-            foreach (List<CpuID> list in processors.Values)
-            {
-                processorThreads[index] = list.ToArray();
-                index++;
-            }
-            return processorThreads;
-        }
-
-        private static CpuID[][] GroupThreadsByCore(IEnumerable<CpuID> threads)
-        {
-
-            SortedDictionary<uint, List<CpuID>> cores = new SortedDictionary<uint, List<CpuID>>();
-            foreach (CpuID thread in threads)
-            {
-                List<CpuID> coreList;
-                cores.TryGetValue(thread.CoreId, out coreList);
-                if (coreList == null)
-                {
-                    coreList = new List<CpuID>();
-                    cores.Add(thread.CoreId, coreList);
-                }
-                coreList.Add(thread);
-            }
-
-            CpuID[][] coreThreads = new CpuID[cores.Count][];
-            int index = 0;
-            foreach (List<CpuID> list in cores.Values)
-            {
-                coreThreads[index] = list.ToArray();
-                index++;
-            }
-            return coreThreads;
-        }
+        private readonly CpuId[][][] _threads;
 
         public CpuGroup(ISettings settings)
         {
-            CpuID[][] processorThreads = GetProcessorThreads();
-            _threads = new CpuID[processorThreads.Length][][];
+            CpuId[][] processorThreads = GetProcessorThreads();
+            _threads = new CpuId[processorThreads.Length][][];
 
             int index = 0;
-            foreach (CpuID[] threads in processorThreads)
+            foreach (CpuId[] threads in processorThreads)
             {
                 if (threads.Length == 0)
                     continue;
 
-                CpuID[][] coreThreads = GroupThreadsByCore(threads);
+
+                CpuId[][] coreThreads = GroupThreadsByCore(threads);
                 _threads[index] = coreThreads;
 
                 switch (threads[0].Vendor)
@@ -120,43 +56,30 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                 _hardware.Add(new GenericCpu(index, coreThreads, settings));
                                 break;
                         }
+
                         break;
                     default:
                         _hardware.Add(new GenericCpu(index, coreThreads, settings));
                         break;
                 }
+
                 index++;
             }
         }
 
         public IEnumerable<IHardware> Hardware => _hardware;
 
-        private static void AppendCpuidData(StringBuilder r, uint[,] data, uint offset)
-        {
-            for (int i = 0; i < data.GetLength(0); i++)
-            {
-                r.Append(" ");
-                r.Append((i + offset).ToString("X8", CultureInfo.InvariantCulture));
-                for (int j = 0; j < 4; j++)
-                {
-                    r.Append("  ");
-                    r.Append(data[i, j].ToString("X8", CultureInfo.InvariantCulture));
-                }
-                r.AppendLine();
-            }
-        }
-
         public string GetReport()
         {
             if (_threads == null)
                 return null;
+
 
             StringBuilder r = new StringBuilder();
             r.AppendLine("CPUID");
             r.AppendLine();
             for (int i = 0; i < _threads.Length; i++)
             {
-
                 r.AppendLine("Processor " + i);
                 r.AppendLine();
                 r.AppendFormat("Processor Vendor: {0}{1}", _threads[i][0][0].Vendor, Environment.NewLine);
@@ -179,12 +102,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         r.AppendLine(" Thread ID: " + _threads[i][j][k].ThreadId);
                         r.AppendLine();
                         r.AppendLine(" Function  EAX       EBX       ECX       EDX");
-                        AppendCpuidData(r, _threads[i][j][k].Data, CpuID.CPUID_0);
-                        AppendCpuidData(r, _threads[i][j][k].ExtData, CpuID.CPUID_EXT);
+                        AppendCpuidData(r, _threads[i][j][k].Data, CpuId.CPUID_0);
+                        AppendCpuidData(r, _threads[i][j][k].ExtData, CpuId.CPUID_EXT);
                         r.AppendLine();
                     }
                 }
             }
+
             return r.ToString();
         }
 
@@ -193,6 +117,88 @@ namespace LibreHardwareMonitor.Hardware.CPU
             foreach (GenericCpu cpu in _hardware)
             {
                 cpu.Close();
+            }
+        }
+
+        private static CpuId[][] GetProcessorThreads()
+        {
+            List<CpuId> threads = new List<CpuId>();
+            for (int i = 0; i < 64; i++)
+            {
+                try
+                {
+                    threads.Add(new CpuId(i));
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // All cores found.
+                    break;
+                }
+            }
+
+            SortedDictionary<uint, List<CpuId>> processors = new SortedDictionary<uint, List<CpuId>>();
+            foreach (CpuId thread in threads)
+            {
+                processors.TryGetValue(thread.ProcessorId, out List<CpuId> list);
+                if (list == null)
+                {
+                    list = new List<CpuId>();
+                    processors.Add(thread.ProcessorId, list);
+                }
+
+                list.Add(thread);
+            }
+
+            CpuId[][] processorThreads = new CpuId[processors.Count][];
+            int index = 0;
+            foreach (List<CpuId> list in processors.Values)
+            {
+                processorThreads[index] = list.ToArray();
+                index++;
+            }
+
+            return processorThreads;
+        }
+
+        private static CpuId[][] GroupThreadsByCore(IEnumerable<CpuId> threads)
+        {
+            SortedDictionary<uint, List<CpuId>> cores = new SortedDictionary<uint, List<CpuId>>();
+            foreach (CpuId thread in threads)
+            {
+                cores.TryGetValue(thread.CoreId, out List<CpuId> coreList);
+                if (coreList == null)
+                {
+                    coreList = new List<CpuId>();
+                    cores.Add(thread.CoreId, coreList);
+                }
+
+                coreList.Add(thread);
+            }
+
+            CpuId[][] coreThreads = new CpuId[cores.Count][];
+            int index = 0;
+            foreach (List<CpuId> list in cores.Values)
+            {
+                coreThreads[index] = list.ToArray();
+                index++;
+            }
+
+            return coreThreads;
+        }
+
+        private static void AppendCpuidData(StringBuilder r, uint[,] data, uint offset)
+        {
+            for (int i = 0; i < data.GetLength(0); i++)
+            {
+                r.Append(" ");
+                r.Append((i + offset).ToString("X8", CultureInfo.InvariantCulture));
+                for (int j = 0; j < 4; j++)
+                {
+                    r.Append("  ");
+                    r.Append(data[i, j].ToString("X8", CultureInfo.InvariantCulture));
+                }
+
+                r.AppendLine();
             }
         }
     }

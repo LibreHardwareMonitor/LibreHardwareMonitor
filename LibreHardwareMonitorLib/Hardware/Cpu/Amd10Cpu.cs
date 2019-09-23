@@ -13,119 +13,95 @@ using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware.CPU
 {
-
     internal sealed class Amd10Cpu : AmdCpu
     {
-        private readonly Sensor _coreTemperature;
-        private readonly Sensor[] _coreClocks;
         private readonly Sensor _busClock;
-        private readonly Sensor[] _cStatesResidency;
+        private readonly Sensor[] _coreClocks;
+        private readonly Sensor _coreTemperature;
         private readonly Sensor _coreVoltage;
-        private readonly Sensor _northbridgeVoltage;
-
-        private const uint PERF_CTL_0 = 0xC0010000;
-        private const uint PERF_CTR_0 = 0xC0010004;
-        private const uint HWCR = 0xC0010015;
-        private const uint P_STATE_0 = 0xC0010064;
-        private const uint COFVID_STATUS = 0xC0010071;
-
-        private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
-        private const ushort FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1203;
-        private const ushort FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1303;
-        private const ushort FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1703;
-        private const ushort FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1703;
-        private const ushort FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1603;
-        private const ushort FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID = 0x1403;
-        private const ushort FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x141D;
-        private const ushort FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID = 0x1573;
-        private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
-        private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
-        private const ushort FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1577;
-
-        private const uint REPORTED_TEMPERATURE_CONTROL_REGISTER = 0xA4;
-        private const uint CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
-        private const uint F15H_M60H_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
+        private readonly byte _cStatesIoOffset;
+        private readonly Sensor[] _cStatesResidency;
+        private readonly bool _isSVI2;
 
         private readonly uint _miscellaneousControlAddress;
-        private readonly ushort _miscellaneousControlDeviceId;
-        private const uint CStatesIoPort = 0xCD6;
-        private readonly byte _cStatesIoOffset;
-        private readonly bool _isSVI2;
+        private readonly Sensor _northbridgeVoltage;
         private readonly FileStream _temperatureStream;
         private readonly double _timeStampCounterMultiplier;
-        private readonly bool _corePerformanceBoostSupport;
 
-        public Amd10Cpu(int processorIndex, CpuID[][] cpuid, ISettings settings) : base(processorIndex, cpuid, settings)
+        public Amd10Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
             // AMD family 1Xh processors support only one temperature sensor
+            ushort miscellaneousControlDeviceId;
             _coreTemperature = new Sensor("CPU Cores", 0, SensorType.Temperature, this, new[] { new ParameterDescription("Offset [°C]", "Temperature offset.", 0) }, settings);
             _coreVoltage = new Sensor("CPU Cores", 0, SensorType.Voltage, this, settings);
             ActivateSensor(_coreVoltage);
             _northbridgeVoltage = new Sensor("Northbridge", 0, SensorType.Voltage, this, settings);
             ActivateSensor(_northbridgeVoltage);
-            _isSVI2 = (family == 0x15 && model >= 0x10) || family == 0x16;
+            _isSVI2 = (_family == 0x15 && _model >= 0x10) || _family == 0x16;
 
-            switch (family)
+            switch (_family)
             {
                 case 0x10:
-                    _miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                    miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
                 case 0x11:
-                    _miscellaneousControlDeviceId = FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                    miscellaneousControlDeviceId = FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
                 case 0x12:
-                    _miscellaneousControlDeviceId = FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                    miscellaneousControlDeviceId = FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
                 case 0x14:
-                    _miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                    miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
                 case 0x15:
-                    switch (model & 0xF0)
+                    switch (_model & 0xF0)
                     {
                         case 0x00:
-                            _miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
+                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
                         case 0x10:
-                            _miscellaneousControlDeviceId = FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID;
+                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID;
                             break;
                         case 0x30:
-                            _miscellaneousControlDeviceId = FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID;
+                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
                         case 0x70:
                         case 0x60:
-                            _miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
+                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
                             break;
                         default:
-                            _miscellaneousControlDeviceId = 0;
+                            miscellaneousControlDeviceId = 0;
                             break;
                     }
+
                     break;
                 case 0x16:
-                    switch (model & 0xF0)
+                    switch (_model & 0xF0)
                     {
                         case 0x00:
-                            _miscellaneousControlDeviceId = FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID;
+                            miscellaneousControlDeviceId = FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
                         case 0x30:
-                            _miscellaneousControlDeviceId = FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID;
+                            miscellaneousControlDeviceId = FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
                         default:
-                            _miscellaneousControlDeviceId = 0;
+                            miscellaneousControlDeviceId = 0;
                             break;
                     }
+
                     break;
                 case 0x17:
-                    _miscellaneousControlDeviceId = FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID;
+                    miscellaneousControlDeviceId = FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                     break;
                 default:
-                    _miscellaneousControlDeviceId = 0;
+                    miscellaneousControlDeviceId = 0;
                     break;
             }
 
             // get the pci address for the Miscellaneous Control registers
-            _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, _miscellaneousControlDeviceId);
+            _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, miscellaneousControlDeviceId);
             _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
-            _coreClocks = new Sensor[coreCount];
+            _coreClocks = new Sensor[_coreCount];
             for (int i = 0; i < _coreClocks.Length; i++)
             {
                 _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
@@ -133,31 +109,28 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     ActivateSensor(_coreClocks[i]);
             }
 
-            _corePerformanceBoostSupport = (cpuid[0][0].ExtData[7, 3] & (1 << 9)) > 0;
+            bool corePerformanceBoostSupport = (cpuId[0][0].ExtData[7, 3] & (1 << 9)) > 0;
 
             // set affinity to the first thread for all frequency estimations
-            ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
+            ulong mask = ThreadAffinity.Set(1UL << cpuId[0][0].Thread);
 
             // disable core performance boost
-            uint hwcrEax, hwcrEdx;
-            Ring0.Rdmsr(HWCR, out hwcrEax, out hwcrEdx);
-            if (_corePerformanceBoostSupport)
-                Ring0.Wrmsr(HWCR, hwcrEax | (1 << 25), hwcrEdx);
+            Ring0.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
+            if (corePerformanceBoostSupport)
+                Ring0.WriteMsr(HWCR, hwcrEax | (1 << 25), hwcrEdx);
 
-            uint ctlEax, ctlEdx;
-            Ring0.Rdmsr(PERF_CTL_0, out ctlEax, out ctlEdx);
-            uint ctrEax, ctrEdx;
-            Ring0.Rdmsr(PERF_CTR_0, out ctrEax, out ctrEdx);
+            Ring0.ReadMsr(PERF_CTL_0, out uint ctlEax, out uint ctlEdx);
+            Ring0.ReadMsr(PERF_CTR_0, out uint ctrEax, out uint ctrEdx);
 
             _timeStampCounterMultiplier = EstimateTimeStampCounterMultiplier();
 
             // restore the performance counter registers
-            Ring0.Wrmsr(PERF_CTL_0, ctlEax, ctlEdx);
-            Ring0.Wrmsr(PERF_CTR_0, ctrEax, ctrEdx);
+            Ring0.WriteMsr(PERF_CTL_0, ctlEax, ctlEdx);
+            Ring0.WriteMsr(PERF_CTR_0, ctrEax, ctrEdx);
 
             // restore core performance boost
-            if (_corePerformanceBoostSupport)
-                Ring0.Wrmsr(HWCR, hwcrEax, hwcrEdx);
+            if (corePerformanceBoostSupport)
+                Ring0.WriteMsr(HWCR, hwcrEax, hwcrEdx);
 
             // restore the thread affinity.
             ThreadAffinity.Set(mask);
@@ -176,7 +149,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         using (StreamReader reader = new StreamReader(path + "/device/name"))
                             name = reader.ReadLine();
                     }
-                    catch (IOException) { }
+                    catch (IOException)
+                    { }
+
                     switch (name)
                     {
                         case "k10temp":
@@ -194,14 +169,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 if (dev == 0x43851002)
                     _cStatesIoOffset = (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C);
                 else if (dev == 0x780B1022 || dev == 0x790B1022)
-                    _cStatesIoOffset = (byte)0x9C;
+                    _cStatesIoOffset = 0x9C;
             }
+
             if (_cStatesIoOffset != 0)
             {
-                _cStatesResidency = new Sensor[]{ new Sensor("CPU Package C2", 0, SensorType.Level, this, settings), new Sensor("CPU Package C3", 1, SensorType.Level, this, settings) };
+                _cStatesResidency = new[] { new Sensor("CPU Package C2", 0, SensorType.Level, this, settings), new Sensor("CPU Package C3", 1, SensorType.Level, this, settings) };
                 ActivateSensor(_cStatesResidency[0]);
                 ActivateSensor(_cStatesResidency[1]);
             }
+
             Update();
         }
 
@@ -215,49 +192,53 @@ namespace LibreHardwareMonitor.Hardware.CPU
             List<double> estimate = new List<double>(3);
             for (int i = 0; i < 3; i++)
                 estimate.Add(EstimateTimeStampCounterMultiplier(0.025));
+
             estimate.Sort();
             return estimate[1];
         }
 
         private double EstimateTimeStampCounterMultiplier(double timeWindow)
         {
-            uint eax, edx;
-
             // select event "076h CPU Clocks not Halted" and enable the counter
-            Ring0.Wrmsr(PERF_CTL_0,
-              (1 << 22) | // enable performance counter
-              (1 << 17) | // count events in user mode
-              (1 << 16) | // count events in operating-system mode
-              0x76, 0x00000000);
+            Ring0.WriteMsr(PERF_CTL_0,
+                           (1 << 22) | // enable performance counter
+                           (1 << 17) | // count events in user mode
+                           (1 << 16) | // count events in operating-system mode
+                           0x76,
+                           0x00000000);
 
             // set the counter to 0
-            Ring0.Wrmsr(PERF_CTR_0, 0, 0);
+            Ring0.WriteMsr(PERF_CTR_0, 0, 0);
 
             long ticks = (long)(timeWindow * Stopwatch.Frequency);
-            uint lsbBegin, msbBegin, lsbEnd, msbEnd;
 
             long timeBegin = Stopwatch.GetTimestamp() +
-              (long)Math.Ceiling(0.001 * ticks);
-            long timeEnd = timeBegin + ticks;
-            while (Stopwatch.GetTimestamp() < timeBegin) { }
-            Ring0.Rdmsr(PERF_CTR_0, out lsbBegin, out msbBegin);
+                             (long)Math.Ceiling(0.001 * ticks);
 
-            while (Stopwatch.GetTimestamp() < timeEnd) { }
-            Ring0.Rdmsr(PERF_CTR_0, out lsbEnd, out msbEnd);
-            Ring0.Rdmsr(COFVID_STATUS, out eax, out edx);
+            long timeEnd = timeBegin + ticks;
+            while (Stopwatch.GetTimestamp() < timeBegin)
+            { }
+
+            Ring0.ReadMsr(PERF_CTR_0, out uint lsbBegin, out uint msbBegin);
+
+            while (Stopwatch.GetTimestamp() < timeEnd)
+            { }
+
+            Ring0.ReadMsr(PERF_CTR_0, out uint lsbEnd, out uint msbEnd);
+            Ring0.ReadMsr(COFVID_STATUS, out uint eax, out uint _);
             double coreMultiplier = GetCoreMultiplier(eax);
 
             ulong countBegin = ((ulong)msbBegin << 32) | lsbBegin;
             ulong countEnd = ((ulong)msbEnd << 32) | lsbEnd;
 
-            double coreFrequency = 1e-6 * (((double)(countEnd - countBegin)) * Stopwatch.Frequency) / (timeEnd - timeBegin);
+            double coreFrequency = 1e-6 * ((double)(countEnd - countBegin) * Stopwatch.Frequency) / (timeEnd - timeBegin);
             double busFrequency = coreFrequency / coreMultiplier;
             return 0.25 * Math.Round(4 * TimeStampCounterFrequency / busFrequency);
         }
 
-        protected override uint[] GetMSRs()
+        protected override uint[] GetMsrs()
         {
-            return new uint[] { PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0, COFVID_STATUS };
+            return new[] { PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0, COFVID_STATUS };
         }
 
         public override string GetReport()
@@ -265,69 +246,89 @@ namespace LibreHardwareMonitor.Hardware.CPU
             StringBuilder r = new StringBuilder();
             r.Append(base.GetReport());
             r.Append("Miscellaneous Control Address: 0x");
-            r.AppendLine((_miscellaneousControlAddress).ToString("X", CultureInfo.InvariantCulture));
+            r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
             r.Append("Time Stamp Counter Multiplier: ");
             r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
-            if (family == 0x14)
+            if (_family == 0x14)
             {
-                uint value = 0;
-                Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out value);
+                Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
                 r.Append("PCI Register D18F3xD4: ");
                 r.AppendLine(value.ToString("X8", CultureInfo.InvariantCulture));
             }
+
             r.AppendLine();
             return r.ToString();
         }
 
-        private double GetCoreMultiplier(uint cofvidEax)
+        private double GetCoreMultiplier(uint cofVidEax)
         {
-            switch (family)
+            switch (_family)
             {
                 case 0x10:
                 case 0x11:
                 case 0x15:
                 case 0x16:
-                    {
-                        // 8:6 CpuDid: current core divisor ID
-                        // 5:0 CpuFid: current core frequency ID
-                        uint cpuDid = (cofvidEax >> 6) & 7;
-                        uint cpuFid = cofvidEax & 0x1F;
-                        return 0.5 * (cpuFid + 0x10) / (1 << (int)cpuDid);
-                    }
+                {
+                    // 8:6 CpuDid: current core divisor ID
+                    // 5:0 CpuFid: current core frequency ID
+                    uint cpuDid = (cofVidEax >> 6) & 7;
+                    uint cpuFid = cofVidEax & 0x1F;
+                    return 0.5 * (cpuFid + 0x10) / (1 << (int)cpuDid);
+                }
                 case 0x12:
+                {
+                    // 8:4 CpuFid: current CPU core frequency ID
+                    // 3:0 CpuDid: current CPU core divisor ID
+                    uint cpuFid = (cofVidEax >> 4) & 0x1F;
+                    uint cpuDid = cofVidEax & 0xF;
+                    double divisor;
+                    switch (cpuDid)
                     {
-                        // 8:4 CpuFid: current CPU core frequency ID
-                        // 3:0 CpuDid: current CPU core divisor ID
-                        uint cpuFid = (cofvidEax >> 4) & 0x1F;
-                        uint cpuDid = cofvidEax & 0xF;
-                        double divisor;
-                        switch (cpuDid)
-                        {
-                            case 0: divisor = 1; break;
-                            case 1: divisor = 1.5; break;
-                            case 2: divisor = 2; break;
-                            case 3: divisor = 3; break;
-                            case 4: divisor = 4; break;
-                            case 5: divisor = 6; break;
-                            case 6: divisor = 8; break;
-                            case 7: divisor = 12; break;
-                            case 8: divisor = 16; break;
-                            default: divisor = 1; break;
-                        }
-                        return (cpuFid + 0x10) / divisor;
+                        case 0:
+                            divisor = 1;
+                            break;
+                        case 1:
+                            divisor = 1.5;
+                            break;
+                        case 2:
+                            divisor = 2;
+                            break;
+                        case 3:
+                            divisor = 3;
+                            break;
+                        case 4:
+                            divisor = 4;
+                            break;
+                        case 5:
+                            divisor = 6;
+                            break;
+                        case 6:
+                            divisor = 8;
+                            break;
+                        case 7:
+                            divisor = 12;
+                            break;
+                        case 8:
+                            divisor = 16;
+                            break;
+                        default:
+                            divisor = 1;
+                            break;
                     }
+
+                    return (cpuFid + 0x10) / divisor;
+                }
                 case 0x14:
-                    {
-                        // 8:4: current CPU core divisor ID most significant digit
-                        // 3:0: current CPU core divisor ID least significant digit
-                        uint divisorIdMSD = (cofvidEax >> 4) & 0x1F;
-                        uint divisorIdLSD = cofvidEax & 0xF;
-                        uint value = 0;
-                        Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out value);
-                        uint frequencyId = value & 0x1F;
-                        return (frequencyId + 0x10) /
-                          (divisorIdMSD + (divisorIdLSD * 0.25) + 1);
-                    }
+                {
+                    // 8:4: current CPU core divisor ID most significant digit
+                    // 3:0: current CPU core divisor ID least significant digit
+                    uint divisorIdMsd = (cofVidEax >> 4) & 0x1F;
+                    uint divisorIdLsd = cofVidEax & 0xF;
+                    Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
+                    uint frequencyId = value & 0x1F;
+                    return (frequencyId + 0x10) /
+                           (divisorIdMsd + (divisorIdLsd * 0.25) + 1);
+                }
                 default:
                     return 1;
             }
@@ -346,7 +347,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     b = stream.ReadByte();
                 }
             }
-            catch { }
+            catch
+            { }
+
             return sb.ToString();
         }
 
@@ -356,7 +359,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             if (_temperatureStream == null)
             {
-                if (_miscellaneousControlAddress != Ring0.InvalidPciAddress)
+                if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
                 {
                     uint value;
                     if (_miscellaneousControlAddress == FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID)
@@ -368,9 +371,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     {
                         Ring0.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
                     }
-                    if ((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x3000)
+
+                    if ((_family == 0x15 || _family == 0x16) && (value & 0x30000) == 0x3000)
                     {
-                        if (family == 0x15 && (model & 0xF0) == 0x00)
+                        if (_family == 0x15 && (_model & 0xF0) == 0x00)
                         {
                             _coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
                         }
@@ -383,6 +387,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     {
                         _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value;
                     }
+
                     ActivateSensor(_coreTemperature);
                 }
                 else
@@ -407,17 +412,15 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (HasTimeStampCounter)
             {
                 double newBusClock = 0;
-                float maxCoreVoltage = 0, maxNBVoltage = 0;
+                float maxCoreVoltage = 0, maxNbVoltage = 0;
 
                 for (int i = 0; i < _coreClocks.Length; i++)
                 {
                     Thread.Sleep(1);
 
-                    uint curEax, curEdx;
-                    if (Ring0.RdmsrTx(COFVID_STATUS, out curEax, out curEdx, 1UL << cpuid[i][0].Thread))
+                    if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, 1UL << _cpuId[i][0].Thread))
                     {
-                        double multiplier;
-                        multiplier = GetCoreMultiplier(curEax);
+                        double multiplier = GetCoreMultiplier(curEax);
 
                         _coreClocks[i].Value = (float)(multiplier * TimeStampCounterFrequency / _timeStampCounterMultiplier);
                         newBusClock = (float)(TimeStampCounterFrequency / _timeStampCounterMultiplier);
@@ -429,30 +432,34 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                     float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - 0.00625f * vid : 0;
                     float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - 0.0125f * vid : 0;
-                    float newCoreVoltage, newNBVoltage;
+
+                    float newCoreVoltage, newNbVoltage;
                     uint coreVid60 = (curEax >> 9) & 0x7F;
                     if (_isSVI2)
                     {
                         newCoreVoltage = SVI2Volt(curEax >> 13 & 0x80 | coreVid60);
-                        newNBVoltage = SVI2Volt(curEax >> 24);
+                        newNbVoltage = SVI2Volt(curEax >> 24);
                     }
                     else
                     {
                         newCoreVoltage = SVI1Volt(coreVid60);
-                        newNBVoltage = SVI1Volt(curEax >> 25);
+                        newNbVoltage = SVI1Volt(curEax >> 25);
                     }
+
                     if (newCoreVoltage > maxCoreVoltage)
                         maxCoreVoltage = newCoreVoltage;
-                    if (newNBVoltage > maxNBVoltage)
-                        maxNBVoltage = newNBVoltage;
+
+                    if (newNbVoltage > maxNbVoltage)
+                        maxNbVoltage = newNbVoltage;
                 }
+
                 _coreVoltage.Value = maxCoreVoltage;
-                _northbridgeVoltage.Value = maxNBVoltage;
+                _northbridgeVoltage.Value = maxNbVoltage;
 
                 if (newBusClock > 0)
                 {
-                    this._busClock.Value = (float)newBusClock;
-                    ActivateSensor(this._busClock);
+                    _busClock.Value = (float)newBusClock;
+                    ActivateSensor(_busClock);
                 }
             }
 
@@ -460,19 +467,42 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 for (int i = 0; i < _cStatesResidency.Length; i++)
                 {
-                    Ring0.WriteIoPort(CStatesIoPort, (byte)(_cStatesIoOffset + i));
-                    _cStatesResidency[i].Value = Ring0.ReadIoPort(CStatesIoPort + 1) / 256f * 100;
+                    Ring0.WriteIoPort(CSTATES_IO_PORT, (byte)(_cStatesIoOffset + i));
+                    _cStatesResidency[i].Value = Ring0.ReadIoPort(CSTATES_IO_PORT + 1) / 256f * 100;
                 }
             }
         }
 
         public override void Close()
         {
-            if (_temperatureStream != null)
-            {
-                _temperatureStream.Close();
-            }
+            _temperatureStream?.Close();
             base.Close();
         }
+
+        // ReSharper disable InconsistentNaming
+        private const uint CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
+        private const uint COFVID_STATUS = 0xC0010071;
+        private const uint CSTATES_IO_PORT = 0xCD6;
+        private const uint F15H_M60H_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
+        private const uint HWCR = 0xC0010015;
+        private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
+        private const uint P_STATE_0 = 0xC0010064;
+        private const uint PERF_CTL_0 = 0xC0010000;
+        private const uint PERF_CTR_0 = 0xC0010004;
+        private const uint REPORTED_TEMPERATURE_CONTROL_REGISTER = 0xA4;
+
+        private const ushort FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1203;
+        private const ushort FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1303;
+        private const ushort FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1703;
+        private const ushort FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1703;
+        private const ushort FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1603;
+        private const ushort FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID = 0x1403;
+        private const ushort FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x141D;
+        private const ushort FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID = 0x1573;
+        private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
+        private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
+        private const ushort FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1577;
+
+        // ReSharper restore InconsistentNaming
     }
 }

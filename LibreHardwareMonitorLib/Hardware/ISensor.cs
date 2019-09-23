@@ -23,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware
         Power, // W
         Data, // GB = 2^30 Bytes
         SmallData, // MB = 2^20 Bytes
-        Throughput, // B/s
+        Throughput // B/s
     }
 
     public struct SensorValue
@@ -34,26 +34,41 @@ namespace LibreHardwareMonitor.Hardware
             Time = time;
         }
 
-        public float Value { get; private set; }
-        public DateTime Time { get; private set; }
+        public float Value { get; }
+
+        public DateTime Time { get; }
     }
 
     public interface ISensor : IElement
     {
-        IHardware Hardware { get; }
-        SensorType SensorType { get; }
-        Identifier Identifier { get; }
-        string Name { get; set; }
-        int Index { get; }
-        bool IsDefaultHidden { get; }
-        IReadOnlyList<IParameter> Parameters { get; }
-        float? Value { get; }
-        float? Min { get; }
-        float? Max { get; }
-        void ResetMin();
-        void ResetMax();
-        IEnumerable<SensorValue> Values { get; }
-        TimeSpan ValuesTimeWindow { get; set; }
         IControl Control { get; }
+
+        IHardware Hardware { get; }
+
+        Identifier Identifier { get; }
+
+        int Index { get; }
+
+        bool IsDefaultHidden { get; }
+
+        float? Max { get; }
+
+        float? Min { get; }
+
+        string Name { get; set; }
+
+        IReadOnlyList<IParameter> Parameters { get; }
+
+        SensorType SensorType { get; }
+
+        float? Value { get; }
+
+        IEnumerable<SensorValue> Values { get; }
+
+        TimeSpan ValuesTimeWindow { get; set; }
+
+        void ResetMin();
+
+        void ResetMax();
     }
 }

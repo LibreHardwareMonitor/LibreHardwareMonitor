@@ -9,31 +9,39 @@ namespace LibreHardwareMonitor.Hardware
 
     public enum HardwareType
     {
-        Mainboard,
+        Motherboard,
         SuperIO,
-        Aquacomputer,
-        CPU,
-        RAM,
+        AquaComputer,
+        Cpu,
+        Memory,
         GpuNvidia,
         GpuAmd,
         TBalancer,
         Heatmaster,
-        HDD,
-        NIC
+        Storage,
+        Network
     }
 
     public interface IHardware : IElement
     {
-        string Name { get; set; }
-        Identifier Identifier { get; }
         HardwareType HardwareType { get; }
-        string GetReport();
-        void Update();
-        IHardware[] SubHardware { get; }
+
+        Identifier Identifier { get; }
+
+        string Name { get; set; }
+
         IHardware Parent { get; }
+
         ISensor[] Sensors { get; }
 
+        IHardware[] SubHardware { get; }
+
+        string GetReport();
+
+        void Update();
+
         event SensorEventHandler SensorAdded;
+
         event SensorEventHandler SensorRemoved;
     }
 }

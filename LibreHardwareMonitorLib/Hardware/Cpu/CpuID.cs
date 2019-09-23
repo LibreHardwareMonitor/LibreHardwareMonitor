@@ -15,30 +15,33 @@ namespace LibreHardwareMonitor.Hardware.CPU
         AMD
     }
 
-    public class CpuID
+    public class CpuId
     {
+        // ReSharper disable InconsistentNaming
         public const uint CPUID_0 = 0;
         public const uint CPUID_EXT = 0x80000000;
-        private readonly uint _coreMaskWith;
-        private readonly uint _threadMaskWith;
+        // ReSharper restore InconsistentNaming
 
-        public CpuID(int thread)
+        public CpuId(int thread)
         {
+            uint threadMaskWith;
+            uint coreMaskWith;
             Thread = thread;
             uint maxCpuidExt;
-            uint eax, ebx, ecx, edx;
 
             if (thread >= 64)
-                throw new ArgumentOutOfRangeException("thread");
+                throw new ArgumentOutOfRangeException(nameof(thread));
+
 
             ulong mask = 1UL << thread;
             uint maxCpuid;
-            if (Opcode.CpuidTx(CPUID_0, 0, out eax, out ebx, out ecx, out edx, mask))
+            if (OpCode.CpuidTx(CPUID_0, 0, out uint eax, out uint ebx, out uint ecx, out uint edx, mask))
             {
                 if (eax > 0)
                     maxCpuid = eax;
                 else
                     return;
+
 
                 StringBuilder vendorBuilder = new StringBuilder();
                 AppendRegister(vendorBuilder, ebx);
@@ -58,8 +61,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         break;
                 }
 
-                eax = ebx = ecx = edx = 0;
-                if (Opcode.CpuidTx(CPUID_EXT, 0, out eax, out ebx, out ecx, out edx, mask))
+                if (OpCode.CpuidTx(CPUID_EXT, 0, out eax, out _, out _, out _, mask))
                 {
                     if (eax > CPUID_EXT)
                         maxCpuidExt = eax - CPUID_EXT;
@@ -68,33 +70,33 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException("thread");
+                    throw new ArgumentOutOfRangeException(nameof(thread));
                 }
             }
             else
             {
-                throw new ArgumentOutOfRangeException("thread");
+                throw new ArgumentOutOfRangeException(nameof(thread));
             }
 
             maxCpuid = Math.Min(maxCpuid, 1024);
             maxCpuidExt = Math.Min(maxCpuidExt, 1024);
 
             Data = new uint[maxCpuid + 1, 4];
-            for (uint i = 0; i < (maxCpuid + 1); i++)
+            for (uint i = 0; i < maxCpuid + 1; i++)
             {
-                Opcode.CpuidTx(CPUID_0 + i, 0, out Data[i, 0], out Data[i, 1], out Data[i, 2], out Data[i, 3], mask);
+                OpCode.CpuidTx(CPUID_0 + i, 0, out Data[i, 0], out Data[i, 1], out Data[i, 2], out Data[i, 3], mask);
             }
 
             ExtData = new uint[maxCpuidExt + 1, 4];
-            for (uint i = 0; i < (maxCpuidExt + 1); i++)
+            for (uint i = 0; i < maxCpuidExt + 1; i++)
             {
-                Opcode.CpuidTx(CPUID_EXT + i, 0, out ExtData[i, 0], out ExtData[i, 1], out ExtData[i, 2], out ExtData[i, 3], mask);
+                OpCode.CpuidTx(CPUID_EXT + i, 0, out ExtData[i, 0], out ExtData[i, 1], out ExtData[i, 2], out ExtData[i, 3], mask);
             }
 
             StringBuilder nameBuilder = new StringBuilder();
             for (uint i = 2; i <= 4; i++)
             {
-                if (Opcode.CpuidTx(CPUID_EXT + i, 0, out eax, out ebx, out ecx, out edx, mask))
+                if (OpCode.CpuidTx(CPUID_EXT + i, 0, out eax, out ebx, out ecx, out edx, mask))
                 {
                     AppendRegister(nameBuilder, eax);
                     AppendRegister(nameBuilder, ebx);
@@ -105,14 +107,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             nameBuilder.Replace('\0', ' ');
             BrandString = nameBuilder.ToString().Trim();
-            nameBuilder.Replace("(R)", " ");
-            nameBuilder.Replace("(TM)", " ");
-            nameBuilder.Replace("(tm)", "");
-            nameBuilder.Replace("CPU", "");
-            nameBuilder.Replace("Quad-Core Processor", "");
-            nameBuilder.Replace("Six-Core Processor", "");
-            nameBuilder.Replace("Eight-Core Processor", "");
-            for (int i = 0; i < 10; i++) nameBuilder.Replace("  ", " ");
+            nameBuilder.Replace("(R)", string.Empty);
+            nameBuilder.Replace("(TM)", string.Empty);
+            nameBuilder.Replace("(tm)", string.Empty);
+            nameBuilder.Replace("CPU", string.Empty);
+            nameBuilder.Replace("Quad-Core Processor", string.Empty);
+            nameBuilder.Replace("Six-Core Processor", string.Empty);
+            nameBuilder.Replace("Eight-Core Processor", string.Empty);
+
+            for (int i = 0; i < 10; i++)
+                nameBuilder.Replace("  ", " ");
+
             Name = nameBuilder.ToString();
             if (Name.Contains("@"))
                 Name = Name.Remove(Name.LastIndexOf('@'));
@@ -120,7 +125,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             Name = Name.Trim();
             Family = ((Data[1, 0] & 0x0FF00000) >> 20) + ((Data[1, 0] & 0x0F00) >> 8);
             Model = ((Data[1, 0] & 0x0F0000) >> 12) + ((Data[1, 0] & 0xF0) >> 4);
-            Stepping = (Data[1, 0] & 0x0F);
+            Stepping = Data[1, 0] & 0x0F;
             ApicId = (Data[1, 1] >> 24) & 0xFF;
 
             switch (Vendor)
@@ -133,8 +138,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     else
                         maxCoreIdPerPackage = 1;
 
-                    _threadMaskWith = NextLog2(maxCoreAndThreadIdPerPackage / maxCoreIdPerPackage);
-                    _coreMaskWith = NextLog2(maxCoreIdPerPackage);
+                    threadMaskWith = NextLog2(maxCoreAndThreadIdPerPackage / maxCoreIdPerPackage);
+                    coreMaskWith = NextLog2(maxCoreIdPerPackage);
                     break;
                 case Vendor.AMD:
                     uint corePerPackage;
@@ -143,8 +148,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     else
                         corePerPackage = 1;
 
-                    _threadMaskWith = 0;
-                    _coreMaskWith = NextLog2(corePerPackage);
+                    threadMaskWith = 0;
+                    coreMaskWith = NextLog2(corePerPackage);
 
                     if (Family == 0x17)
                     {
@@ -152,48 +157,62 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         // cores per DIE
                         // we need this for Ryzen 5 (4 cores, 8 threads) ans Ryzen 6 (6 cores, 12 threads)
                         // Ryzen 5: [core0][core1][dummy][dummy][core2][core3] (Core0 EBX = 00080800, Core2 EBX = 08080800)
-                        uint max_cores_per_die = (ExtData[8, 2] >> 12) & 0xF;
-                        switch (max_cores_per_die)
+                        uint maxCoresPerDie = (ExtData[8, 2] >> 12) & 0xF;
+                        switch (maxCoresPerDie)
                         {
                             case 0x04: // Ryzen
-                                _coreMaskWith = NextLog2(16);
+                                coreMaskWith = NextLog2(16);
                                 break;
                             case 0x05: // Threadripper
-                                _coreMaskWith = NextLog2(32);
+                                coreMaskWith = NextLog2(32);
                                 break;
                             case 0x06: // Epic
-                                _coreMaskWith = NextLog2(64);
+                                coreMaskWith = NextLog2(64);
                                 break;
                         }
                     }
+
                     break;
                 default:
-                    _threadMaskWith = 0;
-                    _coreMaskWith = 0;
+                    threadMaskWith = 0;
+                    coreMaskWith = 0;
                     break;
             }
-            ProcessorId = (ApicId >> (int)(_coreMaskWith + _threadMaskWith));
-            CoreId = ((ApicId >> (int)(_threadMaskWith)) - (ProcessorId << (int)(_coreMaskWith)));
-            ThreadId = ApicId - (ProcessorId << (int)(_coreMaskWith + _threadMaskWith)) - (CoreId << (int)(_threadMaskWith));
+
+            ProcessorId = ApicId >> (int)(coreMaskWith + threadMaskWith);
+            CoreId = (ApicId >> (int)threadMaskWith) - (ProcessorId << (int)coreMaskWith);
+            ThreadId = ApicId - (ProcessorId << (int)(coreMaskWith + threadMaskWith)) - (CoreId << (int)threadMaskWith);
         }
 
         public uint ApicId { get; }
-        public string BrandString { get; } = "";
+
+        public string BrandString { get; } = string.Empty;
+
         public uint CoreId { get; }
+
         public uint[,] Data { get; } = new uint[0, 0];
+
         public uint[,] ExtData { get; } = new uint[0, 0];
+
         public uint Family { get; }
+
         public uint Model { get; }
-        public string Name { get; } = "";
+
+        public string Name { get; } = string.Empty;
+
         public uint ProcessorId { get; }
+
         public uint Stepping { get; }
+
         public int Thread { get; }
+
         public uint ThreadId { get; }
+
         public Vendor Vendor { get; } = Vendor.Unknown;
 
         private static void AppendRegister(StringBuilder b, uint value)
         {
-            b.Append((char)((value) & 0xff));
+            b.Append((char)(value & 0xff));
             b.Append((char)((value >> 8) & 0xff));
             b.Append((char)((value >> 16) & 0xff));
             b.Append((char)((value >> 24) & 0xff));
@@ -204,6 +223,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (x <= 0)
                 return 0;
 
+
             x--;
             uint count = 0;
             while (x > 0)
@@ -211,6 +231,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 x >>= 1;
                 count++;
             }
+
             return count;
         }
     }

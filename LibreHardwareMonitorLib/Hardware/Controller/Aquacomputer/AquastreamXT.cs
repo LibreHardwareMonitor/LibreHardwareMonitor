@@ -4,47 +4,25 @@
 // All Rights Reserved
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using HidLibrary;
 
-namespace LibreHardwareMonitor.Hardware.Controller
+namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
     //TODO:
     //Check tested and fix unknown variables in Update()
     //Check if property "Variant" is valid interpreted
     //Implement Fan Control in SetControl()
 
-    internal class AquastreamXT : Hardware
+    internal sealed class AquastreamXT : Hardware
     {
-        [Flags]
-        enum PumpAlarms : byte
-        {
-            ALARM_SENSOR1 = 1,
-            ALARM_SENSOR2 = 2,
-            ALARM_PUMP = 4,
-            ALARM_FAN = 8,
-            ALARM_FLOW = 16,
-            ALARM_FAN_SHORT = 32,
-            ALARM_FAN_TEMP90 = 64,
-            ALARM_FAN_TEMP70 = 128
-        }
-
-        [Flags]
-        enum PumpMode : byte
-        {
-            MODE_PUMP_ADV = 1,
-            MODE_FAN_AMP = 2,
-            MODE_FAN_CONTROLLER = 4
-        }
-
-        private HidDevice _device;
-        private byte[] _rawData;
-        public UInt16 FirmwareVersion { get; private set; }
-
+        private readonly HidDevice _device;
         private readonly Sensor _fanControl, _pumpPower, _pumpFlow;
+        private readonly Sensor[] _frequencies = new Sensor[2];
         private readonly Sensor[] _rpmSensors = new Sensor[2];
         private readonly Sensor[] _temperatures = new Sensor[3];
         private readonly Sensor[] _voltages = new Sensor[2];
-        private readonly Sensor[] _frequencies = new Sensor[2];
+        private byte[] _rawData;
 
         public AquastreamXT(HidDevice dev, ISettings settings) : base("Aquastream XT", new Identifier(dev.DevicePath), settings)
         {
@@ -52,7 +30,8 @@ namespace LibreHardwareMonitor.Hardware.Controller
             do
             {
                 _device.ReadFeatureData(out _rawData, 0x4);
-            } while (_rawData[0] != 0x4);
+            }
+            while (_rawData[0] != 0x4);
 
             Name = $"Aquastream XT {Variant}";
             FirmwareVersion = BitConverter.ToUInt16(_rawData, 50);
@@ -82,40 +61,8 @@ namespace LibreHardwareMonitor.Hardware.Controller
 
             _fanControl = new Sensor("External Fan", 0, SensorType.Control, this, new ParameterDescription[0], settings);
             Control control = new Control(_fanControl, settings, 0, 100);
-            control.ControlModeChanged += (cc) => {
-                switch (cc.ControlMode)
-                {
-                    case ControlMode.Undefined:
-                        return;
-                    case ControlMode.Default:
-                        SetControl(null);
-                        break;
-                    case ControlMode.Software:
-                        SetControl((byte)(cc.SoftwareValue * 2.55));
-                        break;
-                    default:
-                        return;
-                }
-            };
-            control.SoftwareControlValueChanged += (cc) => {
-                if (cc.ControlMode == ControlMode.Software)
-                    SetControl((byte)(cc.SoftwareValue * 2.55));
-            };
-
-            switch (control.ControlMode)
-            {
-                case ControlMode.Undefined:
-                    break;
-                case ControlMode.Default:
-                    SetControl(null);
-                    break;
-                case ControlMode.Software:
-                    SetControl((byte)(control.SoftwareValue * 2.55));
-                    break;
-                default:
-                    break;
-            }
             _fanControl.Control = control;
+
             ActivateSensor(_fanControl);
             _frequencies[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
             ActivateSensor(_frequencies[0]);
@@ -123,36 +70,11 @@ namespace LibreHardwareMonitor.Hardware.Controller
             ActivateSensor(_frequencies[1]);
         }
 
-        //TODO: Implement Fan Control
-        private void SetControl(byte? v)
-        {
-            throw new NotImplementedException();
-        }
-
-        //TODO: Check if valid
-        public string Variant
-        {
-            get
-            {
-                PumpMode mode = (PumpMode)_rawData[33];
-
-                if (mode.HasFlag(PumpMode.MODE_PUMP_ADV))
-                    return "Ultra + Internal Flow Sensor";
-                else if (mode.HasFlag(PumpMode.MODE_FAN_CONTROLLER))
-                    return "Ultra";
-                else if (mode.HasFlag(PumpMode.MODE_FAN_AMP))
-                    return "Advanced";
-                else
-                    return "Standard";
-            }
-        }
+        public ushort FirmwareVersion { get; private set; }
 
         public override HardwareType HardwareType
         {
-            get
-            {
-                return HardwareType.Aquacomputer;
-            }
+            get { return HardwareType.AquaComputer; }
         }
 
         public string Status
@@ -160,14 +82,31 @@ namespace LibreHardwareMonitor.Hardware.Controller
             get
             {
                 FirmwareVersion = BitConverter.ToUInt16(_rawData, 50);
-                if (FirmwareVersion < 1008)
-                {
-                    return $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 1018";
-                }
-                return "Status: OK";
+                return FirmwareVersion < 1008 ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 1018" : "Status: OK";
             }
         }
 
+        //TODO: Check if valid
+        public string Variant
+        {
+            get
+            {
+                MODE mode = (MODE)_rawData[33];
+
+                if (mode.HasFlag(MODE.MODE_PUMP_ADV))
+                    return "Ultra + Internal Flow Sensor";
+
+                if (mode.HasFlag(MODE.MODE_FAN_CONTROLLER))
+                    return "Ultra";
+
+                if (mode.HasFlag(MODE.MODE_FAN_AMP))
+                    return "Advanced";
+
+
+                return "Standard";
+            }
+        }
+        
         public override void Close()
         {
             _device.CloseDevice();
@@ -182,27 +121,37 @@ namespace LibreHardwareMonitor.Hardware.Controller
             if (_rawData[0] != 0x4)
                 return;
 
+
             //var rawSensorsFan = BitConverter.ToUInt16(rawData, 1);                        //unknown - redundant?
             //var rawSensorsExt = BitConverter.ToUInt16(rawData, 3);                        //unknown - redundant?
             //var rawSensorsWater = BitConverter.ToUInt16(rawData, 5);                      //unknown - redundant?
 
-            _voltages[0].Value = BitConverter.ToUInt16(_rawData, 7) / 61f;                    //External Fan Voltage: tested - OK
-            _voltages[1].Value = BitConverter.ToUInt16(_rawData, 9) / 61f;                    //Pump Voltage: tested - OK
+            _voltages[0].Value = BitConverter.ToUInt16(_rawData, 7) / 61f; //External Fan Voltage: tested - OK
+            _voltages[1].Value = BitConverter.ToUInt16(_rawData, 9) / 61f; //Pump Voltage: tested - OK
             _pumpPower.Value = _voltages[1].Value * BitConverter.ToInt16(_rawData, 11) / 625f; //Pump Voltage * Pump Current: tested - OK
 
-            _temperatures[0].Value = BitConverter.ToUInt16(_rawData, 13) / 100f;              //External Fan VRM Temperature: untested
-            _temperatures[1].Value = BitConverter.ToUInt16(_rawData, 15) / 100f;              //External Temperature Sensor: untested
-            _temperatures[2].Value = BitConverter.ToUInt16(_rawData, 17) / 100f;              //Internal Water Temperature Sensor: tested - OK
+            _temperatures[0].Value = BitConverter.ToUInt16(_rawData, 13) / 100f; //External Fan VRM Temperature: untested
+            _temperatures[1].Value = BitConverter.ToUInt16(_rawData, 15) / 100f; //External Temperature Sensor: untested
+            _temperatures[2].Value = BitConverter.ToUInt16(_rawData, 17) / 100f; //Internal Water Temperature Sensor: tested - OK
 
-            _frequencies[0].Value = (1f / BitConverter.ToInt16(_rawData, 19)) * 750000;        //Pump Frequency: tested - OK
-            _rpmSensors[1].Value = _frequencies[0].Value * 60f;                                      //Pump RPM: tested - OK
-            _frequencies[1].Value = (1f / BitConverter.ToUInt16(_rawData, 21)) * 750000;    //Pump Max Frequency: tested - OK
+            _frequencies[0].Value = (1f / BitConverter.ToInt16(_rawData, 19)) * 750000; //Pump Frequency: tested - OK
+            _rpmSensors[1].Value = _frequencies[0].Value * 60f; //Pump RPM: tested - OK
+            _frequencies[1].Value = (1f / BitConverter.ToUInt16(_rawData, 21)) * 750000; //Pump Max Frequency: tested - OK
 
-            _pumpFlow.Value = BitConverter.ToUInt32(_rawData, 23);                            //Internal Pump Flow Sensor: unknown
+            _pumpFlow.Value = BitConverter.ToUInt32(_rawData, 23); //Internal Pump Flow Sensor: unknown
 
-            _rpmSensors[0].Value = BitConverter.ToUInt32(_rawData, 27);                              //External Fan RPM: untested
+            _rpmSensors[0].Value = BitConverter.ToUInt32(_rawData, 27); //External Fan RPM: untested
 
-            _fanControl.Value = 100f / byte.MaxValue * _rawData[31];                          //External Fan Control: tested, External Fan Voltage scales by this value - OK
+            _fanControl.Value = 100f / byte.MaxValue * _rawData[31]; //External Fan Control: tested, External Fan Voltage scales by this value - OK
+        }
+
+        [Flags]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        private enum MODE : byte
+        {
+            MODE_PUMP_ADV = 1,
+            MODE_FAN_AMP = 2,
+            MODE_FAN_CONTROLLER = 4
         }
     }
 }

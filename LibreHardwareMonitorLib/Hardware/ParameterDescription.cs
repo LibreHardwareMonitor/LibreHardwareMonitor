@@ -3,9 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
 
-using System;
-using System.Globalization;
-
 namespace LibreHardwareMonitor.Hardware
 {
     public struct ParameterDescription
@@ -17,10 +14,10 @@ namespace LibreHardwareMonitor.Hardware
             DefaultValue = defaultValue;
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public string Description { get; private set; }
+        public string Description { get; }
 
-        public float DefaultValue { get; private set; }
+        public float DefaultValue { get; }
     }
 }
