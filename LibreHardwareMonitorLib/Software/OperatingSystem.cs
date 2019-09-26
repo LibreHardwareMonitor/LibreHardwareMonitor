@@ -15,7 +15,7 @@ namespace LibreHardwareMonitor.Software
             PlatformID platform = Environment.OSVersion.Platform;
             IsLinux = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
 
-            if (Environment.Is64BitProcess)
+            if (Environment.Is64BitOperatingSystem)
                 Is64Bit = true;
         }
 
