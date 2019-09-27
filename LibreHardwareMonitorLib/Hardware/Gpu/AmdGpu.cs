@@ -148,9 +148,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_powerChip);
                 }
                 else
-                {
                     _powerChip.Value = null;
-                }
 
                 if (AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterIndex, AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_PPT_POWER, ref powerOf8) == AtiAdlxx.ADL_OK)
                 {
@@ -158,9 +156,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_powerPPT);
                 }
                 else
-                {
                     _powerPPT.Value = null;
-                }
 
                 if (AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterIndex, AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_SOCKET_POWER, ref powerOf8) == AtiAdlxx.ADL_OK)
                 {
@@ -168,9 +164,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_powerSocket);
                 }
                 else
-                {
                     _powerSocket.Value = null;
-                }
 
                 if (AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterIndex, AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_CHIP_POWER, ref powerOf8) == AtiAdlxx.ADL_OK)
                 {
@@ -178,9 +172,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     ActivateSensor(_powerTotal);
                 }
                 else
-                {
                     _powerTotal.Value = null;
-                }
+            }
 
             if(_currentOverdriveApiLevel >= 7)
             {
