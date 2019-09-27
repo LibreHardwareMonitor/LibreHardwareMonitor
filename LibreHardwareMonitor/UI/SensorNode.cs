@@ -88,7 +88,7 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.Load: Format = "{0:F1} %"; break;
                 case SensorType.Temperature: Format = "{0:F1} °C"; break;
                 case SensorType.Fan: Format = "{0:F0} RPM"; break;
-                case SensorType.Flow: Format = "{0:F0} L/h"; break;
+                case SensorType.Flow: Format = "{0:F1} L/h"; break;
                 case SensorType.Control: Format = "{0:F1} %"; break;
                 case SensorType.Level: Format = "{0:F1} %"; break;
                 case SensorType.Power: Format = "{0:F1} W"; break;
