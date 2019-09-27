@@ -20,7 +20,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _coreVoltage;
         private readonly Sensor _fan;
         private readonly Control _fanControl;
-        private readonly bool _isOverdriveNSupported;
+        private readonly int _currentOverdriveApiLevel;
         private readonly Sensor _memoryClock;
 
         private readonly Sensor _powerTotal;
@@ -64,8 +64,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int supported = 0;
             int enabled = 0;
             int version = 0;
-            _isOverdriveNSupported = AtiAdlxx.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == AtiAdlxx.ADL_OK && version >= 7;
-            if (_isOverdriveNSupported)
+            if(AtiAdlxx.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == AtiAdlxx.ADL_OK)
+            {
+                _currentOverdriveApiLevel = version;
+            } else
+                _currentOverdriveApiLevel = -1;
+
+            if (_currentOverdriveApiLevel >= 6)
             {
                 if (AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, adapterIndex, ref _context) == AtiAdlxx.ADL_OK)
                 {
@@ -134,7 +139,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public override void Update()
         {
-            if (_isOverdriveNSupported)
+            if (_currentOverdriveApiLevel >= 6)
             {
                 int powerOf8 = 0;
                 if (AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterIndex, AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_TOTAL_POWER, ref powerOf8) == AtiAdlxx.ADL_OK)
@@ -177,6 +182,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _powerTotal.Value = null;
                 }
 
+            if(_currentOverdriveApiLevel >= 7)
+            {
                 int temp = 0;
                 if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLGPUTemperatureSensors.Core, ref temp) == AtiAdlxx.ADL_OK)
                 {
