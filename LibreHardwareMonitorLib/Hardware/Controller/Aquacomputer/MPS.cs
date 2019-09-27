@@ -52,7 +52,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
         {
             get
             {
-                return HardwareType.Aquacomputer;
+                return HardwareType.AquaComputer;
             }
         }
 

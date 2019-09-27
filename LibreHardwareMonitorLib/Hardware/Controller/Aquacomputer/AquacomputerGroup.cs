@@ -41,7 +41,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                     case 0xf003:
                     {
                         var device = new MPS(dev, settings);
-                        _report.AppendLine($"Device name: {ProductName}");
+                        _report.AppendLine($"Device name: {productName}");
                         _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
                         _report.AppendLine($"{device.Status}");
                         _report.AppendLine();
