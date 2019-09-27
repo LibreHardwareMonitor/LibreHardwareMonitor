@@ -43,6 +43,12 @@ namespace LibreHardwareMonitor.Interop
 
         public delegate IntPtr ADL_Main_Memory_AllocDelegate(int size);
 
+        public static Context Context_Alloc = Marshal.AllocHGlobal;
+
+        public delegate IntPtr Context(int size);
+
+
+
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
 
@@ -74,7 +80,7 @@ namespace LibreHardwareMonitor.Interop
         public static extern int ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, int thermalControllerIndex, ref int temp);
+        public static extern int ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, ADLGPUTemperatureSensors thermalControllerIndex, ref int temp);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
@@ -90,7 +96,12 @@ namespace LibreHardwareMonitor.Interop
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ADL_Overdrive_Caps(int adapterIndex, ref int supported, ref int enabled, ref int version);
-
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ADL2_Overdrive6_CurrentPower_Get(IntPtr context, int adapterIndex, ADLODNCurrentPowerType powerType, ref int currentValue);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ADL2_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int connectedAdapters, ref IntPtr context);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ADL2_Main_Control_Destroy(IntPtr context);
         public static int ADL_Main_Control_Create(int enumConnectedAdapters)
         {
             try
@@ -218,6 +229,25 @@ namespace LibreHardwareMonitor.Interop
             public int MaxPercent;
             public int MinRPM;
             public int MaxRPM;
+        }
+
+        internal enum ADLODNCurrentPowerType
+        {
+            ODN_GPU_TOTAL_POWER = 0,
+            ODN_GPU_PPT_POWER,
+            ODN_GPU_SOCKET_POWER,
+            ODN_GPU_CHIP_POWER
+        }
+
+        internal enum ADLGPUTemperatureSensors
+        {
+            Core = 1,
+            HBM = 2,
+            VDDC = 3,
+            MVDD = 4,
+            Liquid = 5,
+            PLX = 6,
+            HotSpot = 7
         }
     }
 }
