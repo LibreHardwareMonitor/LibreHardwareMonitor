@@ -33,7 +33,9 @@ namespace LibreHardwareMonitor.UI
                 _parameterRows = new BindingList<ParameterRow>();
 
                 foreach (IParameter parameter in _parameters)
+                {
                     _parameterRows.Add(new ParameterRow(parameter));
+                }
 
                 bindingSource.DataSource = _parameterRows;
             }
@@ -42,8 +44,16 @@ namespace LibreHardwareMonitor.UI
         private class ParameterRow : INotifyPropertyChanged
         {
             public readonly IParameter Parameter;
+            private float _value = float.NaN;
+            private bool _default = true;
 
             public event PropertyChangedEventHandler PropertyChanged;
+
+            private void NotifyPropertyChanged(String propertyName)
+            {
+                if (PropertyChanged != null)
+                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
 
             public ParameterRow(IParameter parameter)
             {
@@ -52,9 +62,35 @@ namespace LibreHardwareMonitor.UI
                 Default = parameter.IsDefault;
             }
 
-            public float Value { get; }
+            public string Name
+            {
+                get { return Parameter.Name; }
+            }
 
-            public bool Default { get; }
+            public float Value
+            {
+                get { return _value; }
+                set
+                {
+                    _default = false;
+                    _value = value;
+                    NotifyPropertyChanged(nameof(Default));
+                    NotifyPropertyChanged(nameof(Value));
+                }
+            }
+
+            public bool Default
+            {
+                get { return _default; }
+                set
+                {
+                    _default = value;
+                    if (_default)
+                        _value = Parameter.DefaultValue;
+                    NotifyPropertyChanged(nameof(Default));
+                    NotifyPropertyChanged(nameof(Value));
+                }
+            }
         }
 
         private void DataGridView_RowEnter(object sender, DataGridViewCellEventArgs e)
