@@ -23,7 +23,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
         private UInt16 _externalTemperature = 0;
 
-        private sealed class MPSDataIndexes {
+        private sealed class MPSDataIndexes
+        {
             public const int PumpFlow = 35;
             public const int ExternalTemperature = 43;
             public const int InternalWaterTemperature = 45;
@@ -40,14 +41,14 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
             Name = $"MPS";
             FirmwareVersion = ExtractFirmwareVersion();
-      
+
             _temperatures[0] = new Sensor("External", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
             ActivateSensor(_temperatures[0]);
             _temperatures[1] = new Sensor("Internal Water", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
             ActivateSensor(_temperatures[1]);
 
             _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
-            ActivateSensor(_pumpFlow);        
+            ActivateSensor(_pumpFlow);
         }
 
         public override HardwareType HardwareType
@@ -58,8 +59,10 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             }
         }
 
-        public string Status {
-            get {
+        public string Status
+        {
+            get
+            {
                 FirmwareVersion = ExtractFirmwareVersion();
                 if (FirmwareVersion < 1012)
                 {
@@ -92,12 +95,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             }
             else
                 _temperatures[0].Value = null;
-            
+
             _temperatures[1].Value = BitConverter.ToUInt16(_rawData, MPSDataIndexes.InternalWaterTemperature) / 100f;
-            
+
         }
 
-        private ushort ExtractFirmwareVersion() {
+        private ushort ExtractFirmwareVersion()
+        {
             return BitConverter.ToUInt16(_rawData, 3);
         }
     }
