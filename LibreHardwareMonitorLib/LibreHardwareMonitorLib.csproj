@@ -33,6 +33,7 @@
     <Compile Include="Hardware\Control.cs" />
     <Compile Include="Hardware\Controller\AquaComputer\AquaComputerGroup.cs" />
     <Compile Include="Hardware\Controller\AquaComputer\AquastreamXT.cs" />
+    <Compile Include="Hardware\Controller\AquaComputer\MPS.cs" />
     <Compile Include="Hardware\Controller\Heatmaster\Heatmaster.cs" />
     <Compile Include="Hardware\Controller\Heatmaster\HeatmasterGroup.cs" />
     <Compile Include="Interop\Ftd2xx.cs" />
