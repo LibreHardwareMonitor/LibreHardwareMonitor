@@ -26,6 +26,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         AB350M_HDV,
         PHANTOM_GAMING_6,
         A320M_HDV,
+        B450_STEEL_LEGEND,
+        B450M_STEEL_LEGEND,
+        B450_PRO4,
+        B450M_PRO4,
 
         // ASUS
         Crosshair_III_Formula,

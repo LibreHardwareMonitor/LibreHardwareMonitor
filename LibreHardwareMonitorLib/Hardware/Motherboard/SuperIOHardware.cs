@@ -483,7 +483,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                     }
-                    
+
                     break;
 
                 case Manufacturer.DFI:
@@ -1472,15 +1472,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         case Model.AB350M:
                         case Model.Fatal1ty_AB350_Gaming_K4:
                         case Model.AB350M_HDV:
-                            v.Add(new Voltage("1 Vcore", 0, 10, 10));
+                        case Model.B450_STEEL_LEGEND:
+                        case Model.B450M_STEEL_LEGEND:
+                        case Model.B450_PRO4:
+                        case Model.B450M_PRO4:
+                            v.Add(new Voltage("Vcore", 0, 10, 10));
                             //v.Add(new Voltage("#Unused", 1, 0, 1, 0, true));
-                            v.Add(new Voltage("3 AVCC", 2, 10, 10));
-                            v.Add(new Voltage("4 3VCC", 3, 10, 10));
-                            v.Add(new Voltage("5 +12V", 4, 28, 5));
-                            //v.Add(new Voltage("#Unused 5", 5, 0, 1, 0, true));
+                            v.Add(new Voltage("AVCC", 2, 10, 10));
+                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+12V", 4, 28, 5));
+                            v.Add(new Voltage("Vcore Refin", 5, 0, 1, 0));
                             //v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
-                            v.Add(new Voltage("9 VBat", 8, 34, 34));
+                            v.Add(new Voltage("VBat", 8, 34, 34));
                             //v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
                             //v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
                             v.Add(new Voltage("Chipset 1.05V", 11, 0, 1));
@@ -1494,7 +1498,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("AUX", 3));
                             t.Add(new Temperature("VRM", 4));
                             t.Add(new Temperature("AUXTIN2", 5));
-                            t.Add(new Temperature("Temperature #6", 6));
+                            //t.Add(new Temperature("Temperature #6", 6));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
@@ -2122,7 +2126,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             public Voltage(string name, int index, bool hidden = false) : this(name, index, 0, 1, 0, hidden)
             { }
-            
+
             public Voltage(string name, int index, float ri, float rf, float vf = 0, bool hidden = false)
             {
                 Name = name;

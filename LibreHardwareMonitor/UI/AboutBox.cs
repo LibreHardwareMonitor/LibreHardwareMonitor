@@ -19,7 +19,7 @@ namespace LibreHardwareMonitor.UI
             projectLinkLabel.Links.Remove(projectLinkLabel.Links[0]);
             projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
             licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);
-            licenseLinkLabel.Links.Add(0, licenseLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LICENSE");
+            licenseLinkLabel.Links.Add(0, licenseLinkLabel.Text.Length, "https://www.mozilla.org/en-US/MPL/2.0/");
         }
 
         private void LinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

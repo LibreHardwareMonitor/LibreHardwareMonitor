@@ -87,6 +87,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.AB350M_PRO4;
                 case "AB350M":
                     return Model.AB350M;
+                case "B450 Steel Legend":
+                    return Model.B450_STEEL_LEGEND;
+                case "B450M Steel Legend":
+                    return Model.B450M_STEEL_LEGEND;
+                case "B450 Pro4":
+                    return Model.B450_PRO4;
+                case "B450M Pro4":
+                    return Model.B450M_PRO4;
                 case "Fatal1ty AB350 Gaming K4":
                     return Model.Fatal1ty_AB350_Gaming_K4;
                 case "AB350M-HDV":
