@@ -68,6 +68,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
         {
             StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
+            //Exit, when GetStorageInfo return null data. May ocur when the storage(PhysicalDisk) is in use by Oracle Virtualbox.
+            if (info == null) return null;
             info.DiskSize = diskSize;
             info.DeviceId = deviceId;
             info.Scsi = $@"\\.\SCSI{scsiPort}:";
