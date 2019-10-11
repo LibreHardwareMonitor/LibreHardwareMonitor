@@ -283,6 +283,41 @@ namespace LibreHardwareMonitor.Utilities
             {
                 string requestedFile = request.RawUrl.Substring(1);
 
+                /* Kyoudai Ken OCT 11 2019: Added dashboard capability that can be added using an external html file --> */
+                if (requestedFile == "dashboard" || requestedFile == "Chart.bundle.min.js")
+                {
+                    if (requestedFile == "dashboard") requestedFile = "dashboard.html";
+                    //Search for dashboard.html and if found, pass it through as response
+                    string fileName = System.Windows.Forms.Application.StartupPath + "\\Utilities\\" + requestedFile;
+                    if (File.Exists(fileName))
+                    {
+                        string html = File.ReadAllText(fileName);
+                        context.Response.AddHeader("Cache-Control", "no-cache");
+                        context.Response.ContentLength64 = Encoding.UTF8.GetBytes(html).Length;
+                        if (requestedFile == "dashboard.html") context.Response.ContentType = "text/html; charset=utf-8";
+                        if (requestedFile == "Chart.bundle.min.js") context.Response.ContentType = "application/javascript; charset=utf-8";
+                        try
+                        {
+                            Stream output = context.Response.OutputStream;
+                            output.Write(Encoding.UTF8.GetBytes(html), 0, (int)context.Response.ContentLength64);
+                            output.Close();
+                        }
+                        catch (HttpListenerException)
+                        {
+                        }
+
+                        context.Response.Close();
+                        return;
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 404;
+                        context.Response.Close();
+                        return;
+                    }
+                }
+                /* <-- Kyoudai Ken OCT 11 2019 */
+
                 if (requestedFile == "data.json")
                 {
                     SendJson(context.Response);
