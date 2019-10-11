@@ -38,6 +38,16 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                         _hardware.Add(device);
                         break;
                     }
+                    case 0xf003:
+                    {
+                        var device = new MPS(dev, settings);
+                        _report.AppendLine($"Device name: {productName}");
+                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
+                        _report.AppendLine($"{device.Status}");
+                        _report.AppendLine();
+                        _hardware.Add(device);
+                        break;
+                    }
                     default:
                     {
                         _report.AppendLine($"Unknown Hardware PID: {dev.Attributes.ProductHexId} Name: {productName}");

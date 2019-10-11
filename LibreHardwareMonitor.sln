@@ -61,24 +61,4 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A8EF661-2BD7-498F-8FB9-28182B3B0BE5}
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = OpenHardwareMonitor.csproj
-		Policies = $0
-		$0.DotNetNamingPolicy = $1
-		$1.DirectoryNamespaceAssociation = None
-		$1.ResourceNamePolicy = FileFormatDefault
-		$0.TextStylePolicy = $3
-		$2.FileWidth = 120
-		$2.TabWidth = 2
-		$2.NoTabsAfterNonTabs = True
-		$2.inheritsSet = VisualStudio
-		$2.inheritsScope = text/plain
-		$2.scope = text/plain
-		$3.inheritsSet = null
-		$3.scope = text/x-csharp
-		$0.CSharpFormattingPolicy = $4
-		$4.inheritsSet = Mono
-		$4.inheritsScope = text/x-csharp
-		$4.scope = text/x-csharp
-	EndGlobalSection
 EndGlobal
