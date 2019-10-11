@@ -1,16 +1,16 @@
 version: 1.0.{build}
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 configuration: Release
 
 platform: Any CPU
 
 before_build:
-  - ps: nuget restore OpenHardwareMonitor.sln
+  - ps: nuget restore LibreHardwareMonitor.sln
   
 build:
-  project: OpenHardwareMonitor.sln
+  project: LibreHardwareMonitor.sln
   verbosity: minimal
 
 artifacts:
