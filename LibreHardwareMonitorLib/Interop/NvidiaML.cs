@@ -12,8 +12,6 @@ namespace LibreHardwareMonitor.Interop
     internal static class NvidiaML
     {
         private const string LinuxDllName = "nvidia-ml";
-        private const string WindowsDllName = "nvml.dll";
-        private const string WindowsDllProgPath = @"NVIDIA Corporation\NVSMI\";
         private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
         private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
         private static WindowsNvmlDelegate _windowsNvmlInit;
@@ -47,14 +45,14 @@ namespace LibreHardwareMonitor.Interop
                 // windows standard search order for applications. This will
                 // help installations that either have the library in
                 // %windir%/system32 or provide their own library
-                WindowsDll = Kernel32.LoadLibrary(WindowsDllName);
+                WindowsDll = Kernel32.LoadLibrary("nvidiaMl.dll");
 
                 // If there is no dll in the path, then attempt to load it
                 // from program files
                 if (WindowsDll == IntPtr.Zero)
                 {
                     string programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
-                    string dllPath = Path.Combine(programFilesDirectory, WindowsDllProgPath, WindowsDllName);
+                    string dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI\nvidiaMl.dll");
                     WindowsDll = Kernel32.LoadLibrary(dllPath);
                 }
 
