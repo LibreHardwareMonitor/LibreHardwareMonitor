@@ -736,7 +736,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("+5V", 3, 1.5f, 1));
                             v.Add(new Voltage("VSOC", 4));
                             v.Add(new Voltage("VDDP", 5));
-                            v.Add(new Voltage("VDRAM", 6));
+                            v.Add(new Voltage("DIMM", 6));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             v.Add(new Voltage("AVCC3", 9, 7.53f, 1));
