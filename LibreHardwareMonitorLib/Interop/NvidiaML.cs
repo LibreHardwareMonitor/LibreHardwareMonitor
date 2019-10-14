@@ -13,7 +13,7 @@ namespace LibreHardwareMonitor.Interop
     {
         private const string LinuxDllName = "nvidia-ml";
         private const string WindowsDllName = "nvml.dll";
-        private const string WindowsDllProgPath = @"NVIDIA Corporation\NVSMI\";
+
         private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
         private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
         private static WindowsNvmlDelegate _windowsNvmlInit;
@@ -54,7 +54,8 @@ namespace LibreHardwareMonitor.Interop
                 if (WindowsDll == IntPtr.Zero)
                 {
                     string programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
-                    string dllPath = Path.Combine(programFilesDirectory, WindowsDllProgPath, WindowsDllName);
+                    string dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI", WindowsDllName);
+
                     WindowsDll = Kernel32.LoadLibrary(dllPath);
                 }
 
