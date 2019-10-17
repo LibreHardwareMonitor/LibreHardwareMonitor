@@ -154,7 +154,7 @@ namespace LibreHardwareMonitor.UI
                 _axes.Add(type, axis);
             }
 
-            var model = new PlotModel(_dpiXScale, _dpiYScale);
+            var model = new ScaledPlotModel(_dpiXScale, _dpiYScale);
             model.Axes.Add(_timeAxis);
             foreach (LinearAxis axis in _axes.Values)
                 model.Axes.Add(axis);
