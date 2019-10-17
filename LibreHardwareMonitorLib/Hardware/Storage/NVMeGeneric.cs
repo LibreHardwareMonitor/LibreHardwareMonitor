@@ -65,15 +65,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     }
                 }
             }
-
             base.CreateSensors();
         }
 
         private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetSensorValue getValue)
         {
             var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue);
-            ActivateSensor(sensor);
             sensor.Value = 0;
+            ActivateSensor(sensor);
             _sensors.Add(sensor);
         }
 
@@ -175,7 +174,13 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             public void Update(NVMeHealthInfo health)
             {
-                Value = _getValue(health);
+                float v = _getValue(health);
+                if (SensorType == SensorType.Temperature)
+                {
+                    if (v < 1000 || v > 1000)
+                        return;
+                }
+                Value =v;
             }
         }
     }
