@@ -65,6 +65,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     }
                 }
             }
+
             base.CreateSensors();
         }
 
@@ -177,10 +178,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 float v = _getValue(health);
                 if (SensorType == SensorType.Temperature)
                 {
-                    if (v < 1000 || v > 1000)
+                    if (v < -1000 || v > 1000)
                         return;
                 }
-                Value =v;
+                Value = v;
             }
         }
     }

@@ -70,6 +70,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
             if (info == null)
                 return null;
+
             info.DiskSize = diskSize;
             info.DeviceId = deviceId;
             info.Scsi = $@"\\.\SCSI{scsiPort}:";
