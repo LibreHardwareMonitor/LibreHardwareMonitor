@@ -4,6 +4,7 @@
 // All Rights Reserved
 
 using System;
+using System.Linq;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -23,6 +24,8 @@ namespace LibreHardwareMonitor.Utilities
 {
     public class HttpServer
     {
+        private string[] allowedFileResources = new string[] { "dashboard.html", "Chart.bundle.min.js", "bg.jpg", "bg.png", "bg.webm", "bg.mp4" };
+
         private readonly HttpListener _listener;
         private Thread _listenerThread;
         private readonly Node _root;
@@ -284,22 +287,21 @@ namespace LibreHardwareMonitor.Utilities
                 string requestedFile = request.RawUrl.Substring(1);
 
                 /* Kyoudai Ken OCT 11 2019: Added dashboard capability that can be added using an external html file --> */
-                if (requestedFile == "dashboard" || requestedFile == "Chart.bundle.min.js")
+                if (allowedFileResources.Any(s => s.Equals(requestedFile)))
                 {
-                    if (requestedFile == "dashboard") requestedFile = "dashboard.html";
                     //Search for dashboard.html and if found, pass it through as response
                     string fileName = System.Windows.Forms.Application.StartupPath + "\\Utilities\\" + requestedFile;
                     if (File.Exists(fileName))
                     {
-                        string html = File.ReadAllText(fileName);
+                        byte[] content = File.ReadAllBytes(fileName);
                         context.Response.AddHeader("Cache-Control", "no-cache");
-                        context.Response.ContentLength64 = Encoding.UTF8.GetBytes(html).Length;
-                        if (requestedFile == "dashboard.html") context.Response.ContentType = "text/html; charset=utf-8";
-                        if (requestedFile == "Chart.bundle.min.js") context.Response.ContentType = "application/javascript; charset=utf-8";
+                        context.Response.ContentLength64 = content.Length;
+                        // Optimistically gets content type from the file name
+                        context.Response.ContentType = MimeMapping.GetMimeMapping(fileName);
                         try
                         {
                             Stream output = context.Response.OutputStream;
-                            output.Write(Encoding.UTF8.GetBytes(html), 0, (int)context.Response.ContentLength64);
+                            output.Write(content, 0, (int)context.Response.ContentLength64);
                             output.Close();
                         }
                         catch (HttpListenerException)
@@ -311,7 +313,7 @@ namespace LibreHardwareMonitor.Utilities
                     }
                     else
                     {
-                        context.Response.StatusCode = 404;
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         context.Response.Close();
                         return;
                     }

@@ -300,6 +300,9 @@
     <EmbeddedResource Include="Resources\amd.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Utilities\bg.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Utilities\Chart.bundle.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
