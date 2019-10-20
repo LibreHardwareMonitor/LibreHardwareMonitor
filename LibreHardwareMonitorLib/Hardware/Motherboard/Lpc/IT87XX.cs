@@ -98,7 +98,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 chip == Chip.IT8771E ||
                 chip == Chip.IT8772E ||
                 chip == Chip.IT8686E ||
-                chip == Chip.IT8688E)
+                chip == Chip.IT8688E ||
+                chip == Chip.IT8792E
+                )
             {
                 _voltageGain = 0.012f;
             }

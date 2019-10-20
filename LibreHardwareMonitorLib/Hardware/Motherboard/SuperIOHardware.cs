@@ -211,6 +211,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.IT8726F:
                 case Chip.IT8665E:
                 case Chip.IT8686E:
+                case Chip.IT8792E:
                     GetIteConfigurationsA(superIO, manufacturer, model, v, t, f, c, ref readFan, ref postUpdate, ref mutex);
                     break;
 
