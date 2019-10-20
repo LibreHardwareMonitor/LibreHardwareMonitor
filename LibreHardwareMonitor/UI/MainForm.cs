@@ -457,7 +457,7 @@ namespace LibreHardwareMonitor.UI
                     _settings.SetValue("plotForm.Height", _plotForm.Bounds.Height);
                 }
             }
-            
+
             _plotForm.Move += MoveOrResizePlotForm;
             _plotForm.Resize += MoveOrResizePlotForm;
 
@@ -614,7 +614,7 @@ namespace LibreHardwareMonitor.UI
 
         private void ExitClick(object sender, EventArgs e)
         {
-            Close();
+            CloseApplication();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -672,8 +672,7 @@ namespace LibreHardwareMonitor.UI
                 Height = _settings.GetValue("mainForm.Height", 640)
             };
 
-            Rectangle fullWorkingArea = new Rectangle(int.MaxValue, int.MaxValue,
-              int.MinValue, int.MinValue);
+            Rectangle fullWorkingArea = new Rectangle(int.MaxValue, int.MaxValue, int.MinValue, int.MinValue);
 
             foreach (Screen screen in Screen.AllScreens)
                 fullWorkingArea = Rectangle.Union(fullWorkingArea, screen.Bounds);
@@ -685,10 +684,13 @@ namespace LibreHardwareMonitor.UI
                 newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) - (newBounds.Height / 2);
             }
             Bounds = newBounds;
+            FormClosed += MainForm_FormClosed;
         }
 
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void CloseApplication()
         {
+            FormClosed -= MainForm_FormClosed;
+
             Visible = false;
             _systemTray.IsMainIconEnabled = false;
             timer.Enabled = false;
@@ -697,6 +699,13 @@ namespace LibreHardwareMonitor.UI
             if (_runWebServer.Value)
                 Server.Quit();
             _systemTray.Dispose();
+
+            Application.Exit();
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            CloseApplication();
         }
 
         private void AboutMenuItem_Click(object sender, EventArgs e)
