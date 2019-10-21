@@ -69,6 +69,12 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="OxyPlot, Version=1.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
+      <HintPath>..\packages\OxyPlot.Core.1.0.0\lib\net45\OxyPlot.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot.WindowsForms, Version=1.0.0.0, Culture=neutral, PublicKeyToken=245eacd6b5d2d338, processorArchitecture=MSIL">
+      <HintPath>..\packages\OxyPlot.WindowsForms.1.0.0\lib\net45\OxyPlot.WindowsForms.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Drawing" />
@@ -81,6 +87,7 @@
     <Compile Include="..\LibreHardwareMonitorLib\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="UI\ScaledPlotModel.cs" />
     <Compile Include="UI\GadgetWindow.cs" />
     <Compile Include="UI\Gadget.cs" />
     <Compile Include="UI\HardwareTypeImage.cs" />
@@ -196,14 +203,6 @@
     <ProjectReference Include="..\Aga.Controls\Aga.Controls.csproj">
       <Project>{e73bb233-d88b-44a7-a98f-d71ee158381d}</Project>
       <Name>Aga.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OxyPlot\OxyPlot.WindowsForms\OxyPlot.WindowsForms.csproj">
-      <Project>{d4554296-094e-4cac-8eae-44eb250666c6}</Project>
-      <Name>OxyPlot.WindowsForms</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OxyPlot\OxyPlot\OxyPlot.csproj">
-      <Project>{bcc43e58-e473-403e-a84d-63fedc723040}</Project>
-      <Name>OxyPlot</Name>
     </ProjectReference>
     <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
       <Project>{B0397530-545A-471D-BB74-027AE456DF1A}</Project>

@@ -21,7 +21,7 @@ namespace LibreHardwareMonitor.UI
     {
         private readonly PersistentSettings _settings;
         private readonly UnitManager _unitManager;
-        private readonly Plot _plot;
+        private readonly PlotView _plot;
         private readonly PlotModel _model;
         private readonly TimeSpanAxis _timeAxis = new TimeSpanAxis();
         private readonly SortedDictionary<SensorType, LinearAxis> _axes = new SortedDictionary<SensorType, LinearAxis>();
@@ -40,7 +40,7 @@ namespace LibreHardwareMonitor.UI
             SetDpi();
             _model = CreatePlotModel();
 
-            _plot = new Plot { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenu = CreateMenu() };
+            _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenu = CreateMenu() };
 
             UpdateAxesPosition();
 
@@ -51,12 +51,12 @@ namespace LibreHardwareMonitor.UI
 
         public void SetCurrentSettings()
         {
-            _settings.SetValue("plotPanel.MinTimeSpan", (float)_timeAxis.ViewMinimum);
-            _settings.SetValue("plotPanel.MaxTimeSpan", (float)_timeAxis.ViewMaximum);
+            _settings.SetValue("plotPanel.MinTimeSpan", (float)_timeAxis.ActualMinimum);
+            _settings.SetValue("plotPanel.MaxTimeSpan", (float)_timeAxis.ActualMaximum);
             foreach (LinearAxis axis in _axes.Values)
             {
-                _settings.SetValue("plotPanel.Min" + axis.Key, (float)axis.ViewMinimum);
-                _settings.SetValue("plotPanel.Max" + axis.Key, (float)axis.ViewMaximum);
+                _settings.SetValue("plotPanel.Min" + axis.Key, (float)axis.ActualMinimum);
+                _settings.SetValue("plotPanel.Max" + axis.Key, (float)axis.ActualMaximum);
             }
         }
 
@@ -154,7 +154,7 @@ namespace LibreHardwareMonitor.UI
                 _axes.Add(type, axis);
             }
 
-            var model = new PlotModel(_dpiXScale, _dpiYScale);
+            var model = new ScaledPlotModel(_dpiXScale, _dpiYScale);
             model.Axes.Add(_timeAxis);
             foreach (LinearAxis axis in _axes.Values)
                 model.Axes.Add(axis);
@@ -191,26 +191,27 @@ namespace LibreHardwareMonitor.UI
             _model.Series.Clear();
             var types = new System.Collections.Generic.HashSet<SensorType>();
 
-            foreach (ISensor sensor in sensors)
+
+            Func<SensorType, SensorValue, DataPoint> createDataPoint = (SensorType type, SensorValue value) =>
             {
-                var series = new LineSeries();
-                if (sensor.SensorType == SensorType.Temperature)
+                float displayedValue;
+
+                if (type == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
                 {
-                    series.ItemsSource = sensor.Values.Select(value => new DataPoint
-                    {
-                        X = (_now - value.Time).TotalSeconds,
-                        Y = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ?
-                        value.Value : UnitManager.CelsiusToFahrenheit(value.Value).Value
-                    });
+                    displayedValue = UnitManager.CelsiusToFahrenheit(value.Value).Value;
                 }
                 else
                 {
-                    series.ItemsSource = sensor.Values.Select(value => new DataPoint
-                    {
-                        X = (_now - value.Time).TotalSeconds,
-                        Y = value.Value
-                    });
+                    displayedValue = value.Value;
                 }
+                return new DataPoint((_now - value.Time).TotalSeconds, displayedValue);
+            };
+
+            foreach (ISensor sensor in sensors)
+            {
+                var series = new LineSeries();
+
+                series.ItemsSource = sensor.Values.Select(value => createDataPoint(sensor.SensorType, value));
                 series.Color = colors[sensor].ToOxyColor();
                 series.StrokeThickness = 1;
                 series.YAxisKey = _axes[sensor.SensorType].Key;
