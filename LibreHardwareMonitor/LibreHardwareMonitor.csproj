@@ -81,6 +81,7 @@
     <Compile Include="..\LibreHardwareMonitorLib\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="UI\Dashboard.cs" />
     <Compile Include="UI\GadgetWindow.cs" />
     <Compile Include="UI\Gadget.cs" />
     <Compile Include="UI\HardwareTypeImage.cs" />

@@ -12,6 +12,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using LibreHardwareMonitor.UI;
 using LibreHardwareMonitor.Hardware;
 using System.Web;
@@ -290,7 +291,7 @@ namespace LibreHardwareMonitor.Utilities
                 if (allowedFileResources.Any(s => s.Equals(requestedFile)))
                 {
                     //Search for dashboard.html and if found, pass it through as response
-                    string fileName = System.Windows.Forms.Application.StartupPath + "\\Utilities\\" + requestedFile;
+                    string fileName = Application.StartupPath + "\\Utilities\\" + requestedFile;
                     if (File.Exists(fileName))
                     {
                         byte[] content = File.ReadAllBytes(fileName);
