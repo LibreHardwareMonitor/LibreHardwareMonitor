@@ -68,6 +68,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
         {
             StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
+            if (info == null)
+                return null;
+
             info.DiskSize = diskSize;
             info.DeviceId = deviceId;
             info.Scsi = $@"\\.\SCSI{scsiPort}:";
