@@ -4,103 +4,58 @@
 // All Rights Reserved
 
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Security;
 using System.Security.Principal;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using LibreHardwareMonitor.TaskScheduler;
+using Microsoft.Win32.TaskScheduler;
+using Action = Microsoft.Win32.TaskScheduler.Action;
 
 namespace LibreHardwareMonitor.UI
 {
     public class StartupManager
     {
-        private readonly TaskSchedulerClass _scheduler;
+        private const string RegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private bool _startup;
-        private const string REGISTRY_RUN = @"Software\Microsoft\Windows\CurrentVersion\Run";
-
-        private bool IsAdministrator()
-        {
-            try
-            {
-                WindowsIdentity identity = WindowsIdentity.GetCurrent();
-                WindowsPrincipal principal = new WindowsPrincipal(identity);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         public StartupManager()
         {
-            int p = (int)Environment.OSVersion.Platform;
-            if ((p == 4) || (p == 128))
+            if (Environment.OSVersion.Platform >= PlatformID.Unix)
             {
-                _scheduler = null;
                 IsAvailable = false;
                 return;
             }
 
-            if (IsAdministrator())
+            if (IsAdministrator() && TaskService.Instance.Connected)
             {
-                try
-                {
-                    _scheduler = new TaskSchedulerClass();
-                    _scheduler.Connect(null, null, null, null);
-                }
-                catch
-                {
-                    _scheduler = null;
-                }
+                IsAvailable = true;
 
-                if (_scheduler != null)
+                Task task = GetTask();
+                if (task != null)
                 {
-                    try
+                    foreach (Action action in task.Definition.Actions)
                     {
-                        // check if the taskscheduler is running
-                        IRunningTaskCollection _ = _scheduler.GetRunningTasks(0);
-                        ITaskFolder folder = _scheduler.GetFolder("\\Open Hardware Monitor");
-                        IRegisteredTask task = folder.GetTask("Startup");
-                        _startup = (task != null) && (task.Definition.Triggers.Count > 0) &&
-                            (task.Definition.Triggers[1].Type == TASK_TRIGGER_TYPE2.TASK_TRIGGER_LOGON) &&
-                            (task.Definition.Actions.Count > 0) &&
-                            (task.Definition.Actions[1].Type == TASK_ACTION_TYPE.TASK_ACTION_EXEC) &&
-                            (task.Definition.Actions[1] is IExecAction) && (((IExecAction) task.Definition.Actions[1]).Path == Application.ExecutablePath);
-                    }
-                    catch (IOException)
-                    {
-                        _startup = false;
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        _scheduler = null;
-                    }
-                    catch (COMException)
-                    {
-                        _scheduler = null;
+                        if (action.ActionType == TaskActionType.Execute && action is ExecAction execAction)
+                        {
+                            if (execAction.Path.Equals(Application.ExecutablePath, StringComparison.OrdinalIgnoreCase))
+                                _startup = true;
+                        }
                     }
                 }
             }
             else
             {
-                _scheduler = null;
-            }
-
-            if (_scheduler == null)
-            {
                 try
                 {
-                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(REGISTRY_RUN))
+                    using (RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(RegistryPath))
                     {
-                        _startup = false;
-                        string value = (string) key?.GetValue("LibreHardwareMonitor");
+                        string value = (string)registryKey?.GetValue(nameof(LibreHardwareMonitor));
 
                         if (value != null)
                             _startup = value == Application.ExecutablePath;
                     }
+
                     IsAvailable = true;
                 }
                 catch (SecurityException)
@@ -108,85 +63,26 @@ namespace LibreHardwareMonitor.UI
                     IsAvailable = false;
                 }
             }
-            else
-            {
-                IsAvailable = true;
-            }
-        }
-
-        private void CreateSchedulerTask()
-        {
-            ITaskDefinition definition = _scheduler.NewTask(0);
-            definition.RegistrationInfo.Description = "This task starts the Open Hardware Monitor on Windows startup.";
-            definition.Principal.RunLevel = TASK_RUNLEVEL.TASK_RUNLEVEL_HIGHEST;
-            definition.Settings.DisallowStartIfOnBatteries = false;
-            definition.Settings.StopIfGoingOnBatteries = false;
-            definition.Settings.ExecutionTimeLimit = "PT0S";
-            IExecAction action = (IExecAction)definition.Actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC);
-            action.Path = Application.ExecutablePath;
-            action.WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-
-            ITaskFolder root = _scheduler.GetFolder("\\");
-            ITaskFolder folder;
-            try
-            {
-                folder = root.GetFolder("Open Hardware Monitor");
-            }
-            catch (IOException)
-            {
-                folder = root.CreateFolder("Open Hardware Monitor", "");
-            }
-            folder.RegisterTaskDefinition("Startup", definition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_INTERACTIVE_TOKEN, "");
-        }
-
-        private void DeleteSchedulerTask()
-        {
-            ITaskFolder root = _scheduler.GetFolder("\\");
-            try
-            {
-                ITaskFolder folder = root.GetFolder("Open Hardware Monitor");
-                folder.DeleteTask("Startup", 0);
-            }
-            catch (IOException) { }
-            try
-            {
-                root.DeleteFolder("Open Hardware Monitor", 0);
-            }
-            catch (IOException) { }
-        }
-
-        private void CreateRegistryRun()
-        {
-            RegistryKey key = Registry.CurrentUser.CreateSubKey(REGISTRY_RUN);
-            key.SetValue("LibreHardwareMonitor", Application.ExecutablePath);
-        }
-
-        private void DeleteRegistryRun()
-        {
-            RegistryKey key = Registry.CurrentUser.CreateSubKey(REGISTRY_RUN);
-            key.DeleteValue("LibreHardwareMonitor");
         }
 
         public bool IsAvailable { get; }
 
         public bool Startup
         {
-            get
-            {
-                return _startup;
-            }
+            get { return _startup; }
             set
             {
                 if (_startup != value)
                 {
                     if (IsAvailable)
                     {
-                        if (_scheduler != null)
+                        if (TaskService.Instance.Connected)
                         {
                             if (value)
-                                CreateSchedulerTask();
+                                CreateTask();
                             else
-                                DeleteSchedulerTask();
+                                DeleteTask();
+
                             _startup = value;
                         }
                         else
@@ -194,9 +90,10 @@ namespace LibreHardwareMonitor.UI
                             try
                             {
                                 if (value)
-                                    CreateRegistryRun();
+                                    CreateRegistryKey();
                                 else
-                                    DeleteRegistryRun();
+                                    DeleteRegistryKey();
+
                                 _startup = value;
                             }
                             catch (UnauthorizedAccessException)
@@ -211,6 +108,70 @@ namespace LibreHardwareMonitor.UI
                     }
                 }
             }
+        }
+
+        private static bool IsAdministrator()
+        {
+            try
+            {
+                WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static Task GetTask()
+        {
+            try
+            {
+                return TaskService.Instance.AllTasks.FirstOrDefault(x => x.Name.Equals(nameof(LibreHardwareMonitor), StringComparison.OrdinalIgnoreCase));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void CreateTask()
+        {
+            TaskDefinition taskDefinition = TaskService.Instance.NewTask();
+            taskDefinition.RegistrationInfo.Description = "Starts LibreHardwareMonitor on Windows startup.";
+
+            taskDefinition.Triggers.Add(new LogonTrigger());
+
+            taskDefinition.Settings.StartWhenAvailable = true;
+            taskDefinition.Settings.DisallowStartIfOnBatteries = false;
+            taskDefinition.Settings.StopIfGoingOnBatteries = false;
+
+            taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
+            taskDefinition.Principal.LogonType = TaskLogonType.InteractiveToken;
+            
+            taskDefinition.Actions.Add(Application.ExecutablePath, "", Application.ExecutablePath);
+
+            TaskService.Instance.RootFolder.RegisterTaskDefinition(nameof(LibreHardwareMonitor), taskDefinition);
+        }
+
+        private static void DeleteTask()
+        {
+            Task task = GetTask();
+            task?.Folder.DeleteTask(task.Name, false);
+        }
+
+        private static void CreateRegistryKey()
+        {
+            RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(RegistryPath);
+            registryKey?.SetValue(nameof(LibreHardwareMonitor), Application.ExecutablePath);
+        }
+
+        private static void DeleteRegistryKey()
+        {
+            RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(RegistryPath);
+            registryKey?.DeleteValue(nameof(LibreHardwareMonitor));
         }
     }
 }

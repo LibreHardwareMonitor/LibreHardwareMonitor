@@ -26,7 +26,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private readonly MicroArchitecture _microArchitecture;
         private readonly Sensor _packageTemperature;
-        private readonly string[] _powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU DRAM" };
         private readonly Sensor[] _powerSensors;
         private readonly double _timeStampCounterMultiplier;
 
@@ -346,6 +345,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 if (_energyUnitMultiplier != 0)
                 {
+                    string[] powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory" }; 
+                    
                     for (int i = 0; i < _energyStatusMsrs.Length; i++)
                     {
                         if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
@@ -354,7 +355,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                         _lastEnergyTime[i] = DateTime.UtcNow;
                         _lastEnergyConsumed[i] = eax;
-                        _powerSensors[i] = new Sensor(_powerSensorLabels[i],
+                        _powerSensors[i] = new Sensor(powerSensorLabels[i],
                                                       i,
                                                       SensorType.Power,
                                                       this,
