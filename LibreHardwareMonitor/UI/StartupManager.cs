@@ -4,6 +4,7 @@
 // All Rights Reserved
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Security;
 using System.Security.Principal;
@@ -150,8 +151,8 @@ namespace LibreHardwareMonitor.UI
 
             taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
             taskDefinition.Principal.LogonType = TaskLogonType.InteractiveToken;
-            
-            taskDefinition.Actions.Add(Application.ExecutablePath, "", Application.ExecutablePath);
+
+            taskDefinition.Actions.Add(new ExecAction(Application.ExecutablePath, "", Path.GetDirectoryName(Application.ExecutablePath)));
 
             TaskService.Instance.RootFolder.RegisterTaskDefinition(nameof(LibreHardwareMonitor), taskDefinition);
         }
