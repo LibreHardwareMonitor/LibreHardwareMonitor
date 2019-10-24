@@ -26,6 +26,8 @@ namespace LibreHardwareMonitor.UI
         private readonly TimeSpanAxis _timeAxis = new TimeSpanAxis();
         private readonly SortedDictionary<SensorType, LinearAxis> _axes = new SortedDictionary<SensorType, LinearAxis>();
         private UserOption _stackedAxes;
+        private UserOption _showAxes;
+        private UserOption _timeAxesEnableZoom;
         private DateTime _now;
         private float _dpiX;
         private float _dpiY;
@@ -73,24 +75,50 @@ namespace LibreHardwareMonitor.UI
             };
             menu.MenuItems.Add(stackedAxesMenuItem);
 
-            MenuItem timeWindow = new MenuItem("Time Window");
-            MenuItem[] timeWindowMenuItems =
-                { new MenuItem("Auto", (s, e) => { _timeAxis.Zoom(0, double.NaN); InvalidatePlot(); }),
-                new MenuItem("5 min", (s, e) => { _timeAxis.Zoom(0, 5 * 60); InvalidatePlot(); }),
-                new MenuItem("10 min", (s, e) => { _timeAxis.Zoom(0, 10 * 60); InvalidatePlot(); }),
-                new MenuItem("20 min", (s, e) => { _timeAxis.Zoom(0, 20 * 60); InvalidatePlot(); }),
-                new MenuItem("30 min", (s, e) => { _timeAxis.Zoom(0, 30 * 60); InvalidatePlot(); }),
-                new MenuItem("45 min", (s, e) => { _timeAxis.Zoom(0, 45 * 60); InvalidatePlot(); }),
-                new MenuItem("1 h", (s, e) => { _timeAxis.Zoom(0, 60 * 60); InvalidatePlot(); }),
-                new MenuItem("1.5 h", (s, e) => { _timeAxis.Zoom(0, 1.5 * 60 * 60); InvalidatePlot(); }),
-                new MenuItem("2 h", (s, e) => { _timeAxis.Zoom(0, 2 * 60 * 60); InvalidatePlot(); }),
-                new MenuItem("3 h", (s, e) => { _timeAxis.Zoom(0, 3 * 60 * 60); InvalidatePlot(); }),
-                new MenuItem("6 h", (s, e) => { _timeAxis.Zoom(0, 6 * 60 * 60); InvalidatePlot(); }),
-                new MenuItem("12 h", (s, e) => { _timeAxis.Zoom(0, 12 * 60 * 60); InvalidatePlot(); }),
-                new MenuItem("24 h", (s, e) => { _timeAxis.Zoom(0, 24 * 60 * 60); InvalidatePlot(); }) };
-            foreach (MenuItem mi in timeWindowMenuItems)
-                timeWindow.MenuItems.Add(mi);
-            menu.MenuItems.Add(timeWindow);
+            MenuItem showAxesMenuItem = new MenuItem("Show Axes");
+            _showAxes = new UserOption("showAxes", true, showAxesMenuItem, _settings);
+            _showAxes.Changed += (sender, e) =>
+            {
+                if (_showAxes.Value)
+                    _model.PlotMargins = new OxyThickness(double.NaN);
+                else
+                    _model.PlotMargins = new OxyThickness(0);
+            };
+            menu.MenuItems.Add(showAxesMenuItem);
+
+            MenuItem timeAxisMenuItem = new MenuItem("Time Axis");
+            MenuItem[] timeAxisMenuItems =
+                { new MenuItem("Enable Zoom"),
+                new MenuItem("Auto", (s, e) => { TimeAxisZoom(0, double.NaN); }),
+                new MenuItem("5 min", (s, e) => { TimeAxisZoom(0, 5 * 60); }),
+                new MenuItem("10 min", (s, e) => { TimeAxisZoom(0, 10 * 60); }),
+                new MenuItem("20 min", (s, e) => { TimeAxisZoom(0, 20 * 60); }),
+                new MenuItem("30 min", (s, e) => { TimeAxisZoom(0, 30 * 60); }),
+                new MenuItem("45 min", (s, e) => { TimeAxisZoom(0, 45 * 60); }),
+                new MenuItem("1 h", (s, e) => { TimeAxisZoom(0, 60 * 60); }),
+                new MenuItem("1.5 h", (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
+                new MenuItem("2 h", (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
+                new MenuItem("3 h", (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
+                new MenuItem("6 h", (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
+                new MenuItem("12 h", (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
+                new MenuItem("24 h", (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
+            foreach (MenuItem mi in timeAxisMenuItems)
+                timeAxisMenuItem.MenuItems.Add(mi);
+            menu.MenuItems.Add(timeAxisMenuItem);
+            _timeAxesEnableZoom = new UserOption("timeAxesEnableZoom", true, timeAxisMenuItems[0], _settings);
+            _timeAxesEnableZoom.Changed += (sender, e) =>
+            {
+                _timeAxis.IsZoomEnabled = _timeAxesEnableZoom.Value;
+                InvalidatePlot();
+            };
+
+            MenuItem yAxisMenuItem = new MenuItem("Value Axis");
+            MenuItem[] yAxisMenuItems =
+                { new MenuItem("Autoscale All", (s, e) => { AutoscaleAllYAxes(); }) };
+            foreach (MenuItem mi in yAxisMenuItems)
+                yAxisMenuItem.MenuItems.Add(mi);
+            menu.MenuItems.Add(yAxisMenuItem);
+
             return menu;
         }
 
@@ -158,7 +186,7 @@ namespace LibreHardwareMonitor.UI
             model.Axes.Add(_timeAxis);
             foreach (LinearAxis axis in _axes.Values)
                 model.Axes.Add(axis);
-            model.PlotMargins = new OxyThickness(0);
+            //model.PlotMargins = new OxyThickness(0);
             model.IsLegendVisible = false;
 
             return model;
@@ -275,7 +303,6 @@ namespace LibreHardwareMonitor.UI
                     axis.MinorGridlineStyle = LineStyle.None;
                 }
             }
-
         }
 
         public void InvalidatePlot()
@@ -294,6 +321,22 @@ namespace LibreHardwareMonitor.UI
             }
 
             _plot?.InvalidatePlot(true);
+        }
+
+        public void TimeAxisZoom(double min, double max)
+        {
+            bool timeAxisIsZoomEnabled = _timeAxis.IsZoomEnabled;
+
+            _timeAxis.IsZoomEnabled = true;
+            _timeAxis.Zoom(min, max);
+            InvalidatePlot();
+            _timeAxis.IsZoomEnabled = timeAxisIsZoomEnabled;
+        }
+
+        public void AutoscaleAllYAxes()
+        {
+            foreach (LinearAxis axis in _axes.Values)
+                axis.Zoom(double.NaN, double.NaN);
         }
     }
 }
