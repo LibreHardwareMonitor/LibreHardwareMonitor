@@ -108,7 +108,7 @@ namespace LibreHardwareMonitor.UI
                 timeAxisMenuItem.MenuItems.Add(mi);
             menu.MenuItems.Add(timeAxisMenuItem);
 
-            _timeAxisEnableZoom = new UserOption("_timeAxisEnableZoom", true, timeAxisMenuItems[0], _settings);
+            _timeAxisEnableZoom = new UserOption("timeAxisEnableZoom", true, timeAxisMenuItems[0], _settings);
             _timeAxisEnableZoom.Changed += (sender, e) =>
             {
                 _timeAxis.IsZoomEnabled = _timeAxisEnableZoom.Value;
@@ -123,7 +123,7 @@ namespace LibreHardwareMonitor.UI
                 yAxesMenuItem.MenuItems.Add(mi);
             menu.MenuItems.Add(yAxesMenuItem);
 
-            _yAxesEnableZoom = new UserOption("_yAxesEnableZoom", true, yAxesMenuItems[0], _settings);
+            _yAxesEnableZoom = new UserOption("yAxesEnableZoom", true, yAxesMenuItems[0], _settings);
             _yAxesEnableZoom.Changed += (sender, e) =>
             {
                 foreach (LinearAxis axis in _axes.Values)
