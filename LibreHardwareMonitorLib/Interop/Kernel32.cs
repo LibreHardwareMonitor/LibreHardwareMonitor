@@ -22,7 +22,6 @@ namespace LibreHardwareMonitor.Interop
 
         internal const int MAX_DRIVE_ATTRIBUTES = 512;
         internal const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
-        internal const int SCSI_PASS_THROUGH_BUFFER_SIZE = 512;
         internal const byte SMART_LBA_HI = 0xC2;
         internal const byte SMART_LBA_MID = 0x4F;
         private const string DllName = "kernel32.dll";
@@ -728,7 +727,7 @@ namespace LibreHardwareMonitor.Interop
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] SenseBuf;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = SCSI_PASS_THROUGH_BUFFER_SIZE)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
             public byte[] DataBuf;
         }
 
