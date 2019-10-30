@@ -15,7 +15,7 @@ namespace LibreHardwareMonitor.UI
         private event ShowDesktopChangedEventHandler ShowDesktopChangedEvent;
         private readonly System.Threading.Timer _timer;
         private bool _showDesktop;
-        private readonly string _referenceWindowCaption = "OpenHardwareMonitorShowDesktopReferenceWindow";
+        private readonly string _referenceWindowCaption = "LibreHardwareMonitorShowDesktopReferenceWindow";
 
         private ShowDesktop()
         {
