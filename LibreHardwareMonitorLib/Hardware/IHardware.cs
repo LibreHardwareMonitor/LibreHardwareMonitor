@@ -18,6 +18,7 @@ namespace LibreHardwareMonitor.Hardware
         GpuAmd,
         TBalancer,
         Heatmaster,
+        KyoudaiKen_FC01,
         Storage,
         Network
     }
