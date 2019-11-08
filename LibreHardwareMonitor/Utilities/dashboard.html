@@ -24,7 +24,7 @@
             clear: none;
             width: 50%;
             height: 50%;
-            background: #081827d0;
+            background: #081827c5;
         }
 
         div.canvas {
@@ -100,6 +100,12 @@
         const colorVRAMLine = 'rgba(255, 0, 255, 1)';
         const colorVRAMFill = 'rgba(255, 0, 255, 0.025)';
         const colorRAMGL = 'rgba(12, 159, 255, 0.5)';
+        const colorWaterFill = 'rgba(12, 159, 255, 0.025)';
+        const colorWaterLine = 'rgba(12, 159, 255, 1)';
+        const colorCaseFill = 'rgba(255, 0, 255, 0.025)';
+        const colorCaseLine = 'rgba(255, 0, 255, 1)';
+        const colorAmbFill = 'rgba(80, 224, 255, 0.025)';
+        const colorAmbLine = 'rgba(80, 224, 255, 1)';
 
         const colorGridLine0 = '#506080';
         const colorGridLine1 = '#806050';
@@ -154,6 +160,27 @@
                         data: [],
                         backgroundColor: [colorPCHFill],
                         borderColor: [colorPCHLine],
+                        borderWidth: widthBorders
+                    },
+                    {
+                        label: 'Water Temperature',
+                        data: [],
+                        backgroundColor: [colorWaterFill],
+                        borderColor: [colorWaterLine],
+                        borderWidth: widthBorders
+                    },
+                    {
+                        label: 'Case Temperature',
+                        data: [],
+                        backgroundColor: [colorCaseFill],
+                        borderColor: [colorCaseLine],
+                        borderWidth: widthBorders
+                    },
+                    {
+                        label: 'Ambient Temperature',
+                        data: [],
+                        backgroundColor: [colorAmbFill],
+                        borderColor: [colorAmbLine],
                         borderWidth: widthBorders
                     },
                     {
@@ -638,6 +665,12 @@
                 plotNextSensor(TempChart, "VRM: ", data.Children[0].Children[0].Children[1].Children[5].Value);
                 //ASUS PCH Temp
                 plotNextSensor(TempChart, "PCH: ", data.Children[0].Children[0].Children[1].Children[3].Value);
+                //KyoudaiKen FC01 Water Temp
+                plotNextSensor(TempChart, "Water: ", data.Children[4].Children[0].Children[0].Value);
+                //KyoudaiKen FC01 Case Temp
+                plotNextSensor(TempChart, "Water: ", data.Children[4].Children[0].Children[1].Value);
+                //KyoudaiKen FC01 Ambient Temp
+                plotNextSensor(TempChart, "Water: ", data.Children[4].Children[0].Children[2].Value);
                 //ASUS Fan 0
                 plotNextSensor(TempChart, "Pump: ", data.Children[0].Children[0].Children[2].Children[0].Value);
                 //ASUS buggy fan shit (rad)
