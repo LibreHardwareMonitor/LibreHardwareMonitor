@@ -50,18 +50,20 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
 
                                 serialPort.WriteLine("i");
                                 int j = 0;
-                                while (serialPort.BytesToRead == 0 && j < 10)
+                                while (serialPort.BytesToRead < 15 && j < 400)
                                 {
-                                    Thread.Sleep(20);
+                                    Thread.Sleep(1);
                                     j++;
                                 }
 
                                 string response = String.Empty;
+                                System.Diagnostics.Debug.WriteLine(serialPort.BytesToRead);
                                 while (serialPort.BytesToRead > 0)
                                 {
                                     char b = (char)serialPort.ReadByte();
                                     switch (b)
                                     {
+                                        case '\r': break;
                                         case '\n': break;
                                         default:
                                             response += b;

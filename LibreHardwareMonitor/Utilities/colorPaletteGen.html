@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Color Palette Generator</title>
+    <style type="text/css">
+        body {
+            background: #081827FF;
+        }
+        div#container div {
+            width: 128px;
+            height: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div id="bg"></div>
+    <div id="container">
+
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function(event) { 
+            function genColorPalette() {
+                let colors = []
+                let Lstart = 20;
+                let Lend = 100;
+                let Sstart = 70;
+                let Send = 100;
+                let Hstart = -60;
+                let Hend = 90;
+                let amount = 12;
+                let Ld = (100-Lstart-100+Lend)/amount;
+                let Sd = (100-Sstart-100+Send)/amount;
+                let Hd = (360-Hstart-360+Hend)/amount;
+                let A = 100;
+                for (let i = amount-1; i >= 0; i--) {
+                    let L = 50 // i * Ld + Lstart;
+                    let S = 100 // i * Sd + Sstart;
+                    let H = i * Hd + Hstart;
+                    colors.push(`hsla(${H},${S}%,${L}%,${A}%)`);
+                }
+
+                return colors;
+            }
+
+            function showPalette(p) {
+                let node = document.getElementById("container");
+                node.innerHTML="";
+                for(let i=0;i<p.length;i++) {
+                    let colorChild = document.createElement("div");
+                    colorChild.style.backgroundColor = p[i];
+                    node.appendChild(colorChild);
+                }
+            }
+
+            window['colors'] = genColorPalette();
+            showPalette(window['colors']);
+        });
+    </script>
+</body>
+</html>

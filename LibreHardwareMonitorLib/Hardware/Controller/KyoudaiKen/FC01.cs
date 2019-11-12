@@ -17,31 +17,35 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
         private readonly Sensor[] _controls;
         private readonly Sensor[] _fans;
         private readonly Sensor[] _temperatures;
+        private float[] t, m, s;
         private readonly string _portName;
         private SerialPort _serialPort;
 
         public FC01(string portName, ISettings settings) : base("KyoudaiKen", new Identifier("kyoudaiken", portName.TrimStart('/').ToLowerInvariant()), settings)
         {
+            t = new float[3];
+            m = new float[3];
+            s = new float[3];
             _portName = portName;
             try
             {
                 _serialPort = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One);
                 _serialPort.ReadBufferSize = 1024;
                 _serialPort.Open();
-                _serialPort.NewLine = ('\r').ToString();
-                _fans = new Sensor[3];
-                _fans[0] = new Sensor("Fan Speed Ch 1", 0, SensorType.Control, this, settings) { Value = 0 }; ActivateSensor(_fans[0]);
-                _fans[1] = new Sensor("Fan Speed Ch 2", 1, SensorType.Control, this, settings) { Value = 0 }; ActivateSensor(_fans[1]);
-                _fans[2] = new Sensor("Fan Speed Ch 3", 2, SensorType.Control, this, settings) { Value = 0 }; ActivateSensor(_fans[2]);
-                _controls = new Sensor[3];
-                _controls[0] = new Sensor("Matrix Value Ch 1", 3, SensorType.SmallData, this, settings) { Value = 0 }; ActivateSensor(_controls[0]);
-                _controls[1] = new Sensor("Matrix Value Ch 2", 4, SensorType.SmallData, this, settings) { Value = 0 }; ActivateSensor(_controls[1]);
-                _controls[2] = new Sensor("Matrix Value Ch 3", 5, SensorType.SmallData, this, settings) { Value = 0 }; ActivateSensor(_controls[2]);
-                _temperatures = new Sensor[3];
-                _temperatures[0] = new Sensor("Temperature Sensor 1", 6, SensorType.Temperature, this, settings) { Value = 0 }; ActivateSensor(_temperatures[0]);
-                _temperatures[1] = new Sensor("Temperature Sensor 2", 7, SensorType.Temperature, this, settings) { Value = 0 }; ActivateSensor(_temperatures[1]);
-                _temperatures[2] = new Sensor("Temperature Sensor 3", 8, SensorType.Temperature, this, settings) { Value = 0 }; ActivateSensor(_temperatures[2]);
+                _serialPort.NewLine = ("\r\n").ToString();
                 updateSensors();
+                _fans = new Sensor[3];
+                _fans[0] = new Sensor("Fan Speed Ch 1", 0, SensorType.Control, this, settings) { Value = s[0] }; ActivateSensor(_fans[0]);
+                _fans[1] = new Sensor("Fan Speed Ch 2", 1, SensorType.Control, this, settings) { Value = s[1] }; ActivateSensor(_fans[1]);
+                _fans[2] = new Sensor("Fan Speed Ch 3", 2, SensorType.Control, this, settings) { Value = s[2] }; ActivateSensor(_fans[2]);
+                _controls = new Sensor[3];
+                _controls[0] = new Sensor("Matrix Value Ch 1", 3, SensorType.Factor, this, settings) { Value = m[0] }; ActivateSensor(_controls[0]);
+                _controls[1] = new Sensor("Matrix Value Ch 2", 4, SensorType.Factor, this, settings) { Value = m[1] }; ActivateSensor(_controls[1]);
+                _controls[2] = new Sensor("Matrix Value Ch 3", 5, SensorType.Factor, this, settings) { Value = m[2] }; ActivateSensor(_controls[2]);
+                _temperatures = new Sensor[3];
+                _temperatures[0] = new Sensor("Temperature Sensor 1", 6, SensorType.Temperature, this, settings) { Value = t[0] }; ActivateSensor(_temperatures[0]);
+                _temperatures[1] = new Sensor("Temperature Sensor 2", 7, SensorType.Temperature, this, settings) { Value = t[1] }; ActivateSensor(_temperatures[1]);
+                _temperatures[2] = new Sensor("Temperature Sensor 3", 8, SensorType.Temperature, this, settings) { Value = t[2] }; ActivateSensor(_temperatures[2]);
             }
             catch (IOException)
             { }
@@ -56,6 +60,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
                 return;
 
             updateSensors();
+
+            for(int i=0;i<3;i++)
+            {
+                _fans[i].Value = s[i];
+                _controls[i].Value = m[i];
+                _temperatures[i].Value = t[i];
+            }
         }
 
         private void updateSensors()
@@ -64,41 +75,37 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
             _serialPort.DiscardInBuffer();
             _serialPort.DiscardOutBuffer();
 
-            _serialPort.WriteLine("rs");
-            int j = 0;
-            while (_serialPort.BytesToRead < 127 && j < 10)
+            _serialPort.WriteLine("bs");
+            int i = 0;
+            while (_serialPort.BytesToRead != 36 && i < 400)
             {
-                Thread.Sleep(20);
-                j++;
+                Thread.Sleep(1);
+                i++;
             }
 
-            string data = String.Empty;
-            while (_serialPort.BytesToRead > 0)
+            if (_serialPort.BytesToRead == 36)
             {
-                char b = (char)_serialPort.ReadByte();
-                if(b!='\n') data += b;
-            }
-            data = data.TrimEnd('\r');
-            if (data.Length < 96) return; //not all data received, we try again on the next interval
-            string[] vT, vM, vS;
-            int iT = data.IndexOf("t") + 2;
-            int iM = data.IndexOf("m") + 2;
-            int iS = data.IndexOf("s") + 2;
-            vT = data.Substring(iT, iM - iT - 4).Split(' ');
-            vM = data.Substring(iM, iS - iM - 4).Split(' ');
-            vS = data.Substring(iS).Split(' ');
+                byte[] data = new byte[36];
 
-            for(int i = 0; i < vT.Length; i++)
-            {
-                _temperatures[i].Value = float.Parse(vT[i], CultureInfo.InvariantCulture);
-            }
-            for (int i = 0; i < vM.Length; i++)
-            {
-                _controls[i].Value = float.Parse(vM[i], CultureInfo.InvariantCulture);
-            }
-            for (int i = 0; i < vS.Length; i++)
-            {
-                _fans[i].Value = float.Parse(vS[i], CultureInfo.InvariantCulture);
+                i = 0;
+                while (_serialPort.BytesToRead > 0)
+                {
+                    data[i] = (byte)_serialPort.ReadByte();
+                    i++;
+                }
+
+                for (i = 0; i < 3; i++)
+                {
+                    t[i] = BitConverter.ToSingle(data, i * 4);
+                }
+                for (; i < 6; i++)
+                {
+                    m[i - 3] = BitConverter.ToSingle(data, i * 4);
+                }
+                for (; i < 9; i++)
+                {
+                    s[i - 6] = BitConverter.ToSingle(data, i * 4);
+                }
             }
         }
 
@@ -132,9 +139,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
         {
             if (_serialPort != null)
             {
+                _serialPort.Close();
                 _serialPort.Dispose();
                 _serialPort = null;
+
             }
+            base.Close();
         }
     }
 }

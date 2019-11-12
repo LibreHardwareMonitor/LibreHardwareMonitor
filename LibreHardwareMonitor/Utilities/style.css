@@ -1,0 +1,53 @@
+/* LHM Dashboard by KyoudaiKen */
+
+#bg {
+    display: block;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: scroll;
+    background-size: 100% 100vh;
+    background-image: url('../bg.jpg');
+}
+
+div.box {
+    margin: 0;
+    float: left;
+    clear: none;
+    width: 33.3333333333333333333333333333%;
+    height: 50%;
+    background: #081827E0;
+}
+
+div.canvas {
+    background: transparent;
+    height: 100%;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+div.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+}
+
+/* CSS for mobile view  */
+@media (max-width:1024px) {
+    div.container {
+        justify-content: space-around;
+    }
+
+    div.box {
+        width: 100%;
+    }
+}

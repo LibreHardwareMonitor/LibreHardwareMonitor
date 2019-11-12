@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Utilities
 {
     public class HttpServer
     {
-        private string[] allowedFileResources = new string[] { "dashboard.html", "Chart.bundle.min.js", "bg.jpg", "bg.png", "bg.webm", "bg.mp4" };
+        private string[] allowedFileResources = new string[] { "dashboard.html", "dashboard_test.html", "Chart.bundle.min.js", "core.js", "style.css", "bg.jpg", "bg.png", "bg.webm", "bg.mp4" };
 
         private readonly HttpListener _listener;
         private Thread _listenerThread;
@@ -507,11 +507,17 @@ namespace LibreHardwareMonitor.Utilities
             }
 
             JArray children = new JArray();
-            foreach (Node child in n.Nodes)
+            try
             {
-                children.Add(GenerateJsonForNode(child, ref nodeIndex));
+                foreach (Node child in n.Nodes)
+                {
+                    children.Add(GenerateJsonForNode(child, ref nodeIndex));
+                }
             }
-
+            catch
+            {
+                return null;
+            }
             jsonNode["Children"] = children;
 
             return jsonNode;
