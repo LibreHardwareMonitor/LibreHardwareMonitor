@@ -143,24 +143,46 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             _microArchitecture = MicroArchitecture.Skylake;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        case 0x4C:
+                        case 0x4C: // Intel Airmont (Cherry Trail, Braswell)
                             _microArchitecture = MicroArchitecture.Airmont;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        case 0x8E:
-                        case 0x9E: // Intel Core i5, i7 7xxxx (14nm)
+                        case 0x8E: // Intel Core i5, i7 7xxxx (14nm) (Kaby Lake) and 8xxxx (14nm++) (Coffee Lake)
+                        case 0x9E: 
                             _microArchitecture = MicroArchitecture.KabyLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        case 0x5C: // Intel ApolloLake
-                            _microArchitecture = MicroArchitecture.ApolloLake;
+                        case 0x5C: // Goldmont (Apollo Lake)
+                        case 0x5F: // (Denverton)
+                            _microArchitecture = MicroArchitecture.Goldmont;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        case 0xAE: // Intel Core i5, i7 8xxxx (14nm++)
-                            _microArchitecture = MicroArchitecture.CoffeeLake;
+                        case 0x7A: // Goldmont plus (Gemini Lake)
+                            _microArchitecture = MicroArchitecture.GoldmontPlus;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        default:
+                        case 0x66: // Intel Core i3 8xxx (10nm) (Cannon Lake)
+                            _microArchitecture = MicroArchitecture.CannonLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x7D: // Intel Core i3, i5, i7 10xxx (10nm) (Ice Lake)
+                        case 0x7E:
+                        case 0x6A: // Ice Lake server
+                        case 0x6C:
+                                _microArchitecture = MicroArchitecture.IceLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x86: // Tremont (10nm) (Elkhart Lake, Skyhawk Lake)
+                            _microArchitecture = MicroArchitecture.Tremont;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                            case 0x8C: // Tiger Lake (10nm)
+                        case 0x8D:
+                            _microArchitecture = MicroArchitecture.TigerLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                            default:
                             _microArchitecture = MicroArchitecture.Unknown;
                             tjMax = Floats(100);
                             break;
@@ -217,10 +239,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.Silvermont:
                 case MicroArchitecture.Skylake:
                 case MicroArchitecture.Airmont:
-                case MicroArchitecture.ApolloLake:
+                case MicroArchitecture.Goldmont:
                 case MicroArchitecture.KabyLake:
-                case MicroArchitecture.CoffeeLake:
-                {
+                case MicroArchitecture.GoldmontPlus:
+                case MicroArchitecture.CannonLake:
+                case MicroArchitecture.IceLake:
+                case MicroArchitecture.TigerLake:
+                case MicroArchitecture.Tremont:
+                    {
                     if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out uint eax, out uint _))
                     {
                         _timeStampCounterMultiplier = (eax >> 8) & 0xff;
@@ -324,8 +350,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _microArchitecture == MicroArchitecture.Skylake ||
                 _microArchitecture == MicroArchitecture.Silvermont ||
                 _microArchitecture == MicroArchitecture.Airmont ||
+                _microArchitecture == MicroArchitecture.Goldmont ||
                 _microArchitecture == MicroArchitecture.KabyLake ||
-                _microArchitecture == MicroArchitecture.ApolloLake)
+                _microArchitecture == MicroArchitecture.GoldmontPlus ||
+                _microArchitecture == MicroArchitecture.CannonLake ||
+                _microArchitecture == MicroArchitecture.IceLake ||
+                _microArchitecture == MicroArchitecture.TigerLake ||
+                _microArchitecture == MicroArchitecture.Tremont)
             {
                 _powerSensors = new Sensor[_energyStatusMsrs.Length];
                 _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
@@ -490,31 +521,35 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             {
                                 uint multiplier = eax & 0xff;
                                 _coreClocks[i].Value = (float)(multiplier * newBusClock);
-                            }
-
                                 break;
+                            }                                
+
                             case MicroArchitecture.SandyBridge:
                             case MicroArchitecture.IvyBridge:
                             case MicroArchitecture.Haswell:
                             case MicroArchitecture.Broadwell:
                             case MicroArchitecture.Silvermont:
+                            case MicroArchitecture.Airmont:
                             case MicroArchitecture.Skylake:
-                            case MicroArchitecture.ApolloLake:
+                            case MicroArchitecture.Goldmont:
                             case MicroArchitecture.KabyLake:
-                            case MicroArchitecture.CoffeeLake:
+                            case MicroArchitecture.GoldmontPlus:
+                            case MicroArchitecture.CannonLake:
+                            case MicroArchitecture.IceLake:
+                            case MicroArchitecture.TigerLake:
+                            case MicroArchitecture.Tremont:
                             {
                                 uint multiplier = (eax >> 8) & 0xff;
                                 _coreClocks[i].Value = (float)(multiplier * newBusClock);
-                            }
-
                                 break;
+                            }
+                                
                             default:
                             {
                                 double multiplier = ((eax >> 8) & 0x1f) + 0.5 * ((eax >> 14) & 1);
                                 _coreClocks[i].Value = (float)(multiplier * newBusClock);
-                            }
-
                                 break;
+                            }
                         }
                     }
                     else
@@ -572,8 +607,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
             Skylake,
             Airmont,
             KabyLake,
-            ApolloLake,
-            CoffeeLake
+            Goldmont,
+            GoldmontPlus,
+            CannonLake,
+            IceLake,
+            TigerLake,
+            Tremont
         }
 
         // ReSharper disable InconsistentNaming
