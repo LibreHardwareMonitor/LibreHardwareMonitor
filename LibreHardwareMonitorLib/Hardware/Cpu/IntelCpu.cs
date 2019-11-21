@@ -56,7 +56,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                             tjMax = Floats(85 + 10);
                                             break;
                                     }
-
                                     break;
                                 case 0x0B: // G0
                                     tjMax = Floats(90 + 10);
@@ -68,7 +67,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                     tjMax = Floats(85 + 10);
                                     break;
                             }
-
                             break;
                         case 0x17: // Intel Core 2 (45nm)
                             _microArchitecture = MicroArchitecture.Core;
@@ -88,7 +86,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                     tjMax = Floats(90);
                                     break;
                             }
-
                             break;
                         case 0x1A: // Intel Core i7 LGA1366 (45nm)
                         case 0x1E: // Intel Core i5, i7 LGA1156 (45nm)
@@ -169,27 +166,25 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         case 0x7E:
                         case 0x6A: // Ice Lake server
                         case 0x6C:
-                                _microArchitecture = MicroArchitecture.IceLake;
+                            _microArchitecture = MicroArchitecture.IceLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
                         case 0x86: // Tremont (10nm) (Elkhart Lake, Skyhawk Lake)
                             _microArchitecture = MicroArchitecture.Tremont;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                            case 0x8C: // Tiger Lake (10nm)
+                        case 0x8C: // Tiger Lake (10nm)
                         case 0x8D:
                             _microArchitecture = MicroArchitecture.TigerLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
-
-                            default:
+                        default:
                             _microArchitecture = MicroArchitecture.Unknown;
                             tjMax = Floats(100);
                             break;
                     }
                 }
-
-                    break;
+                break;
                 case 0x0F:
                 {
                     switch (_model)
@@ -209,14 +204,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             break;
                     }
                 }
-
-                    break;
+                break;
                 default:
                     _microArchitecture = MicroArchitecture.Unknown;
                     tjMax = Floats(100);
-                    break;
+                break;
             }
-
             // set timeStampCounterMultiplier
             switch (_microArchitecture)
             {
@@ -229,8 +222,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         _timeStampCounterMultiplier = ((edx >> 8) & 0x1f) + 0.5 * ((edx >> 14) & 1);
                     }
                 }
-
-                    break;
+                break;
                 case MicroArchitecture.Nehalem:
                 case MicroArchitecture.SandyBridge:
                 case MicroArchitecture.IvyBridge:
@@ -246,14 +238,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.IceLake:
                 case MicroArchitecture.TigerLake:
                 case MicroArchitecture.Tremont:
-                    {
+                {
                     if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out uint eax, out uint _))
                     {
                         _timeStampCounterMultiplier = (eax >> 8) & 0xff;
                     }
                 }
-
-                    break;
+                break;
                 default:
                     _timeStampCounterMultiplier = 0;
                     break;
