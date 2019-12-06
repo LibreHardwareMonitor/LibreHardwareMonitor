@@ -360,8 +360,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _temperatureMemory.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_MEM].value;
                     ActivateSensor(_temperatureMemory);
 
-                    _temperatureMvdd.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_VRMVDD].value;
-                    ActivateSensor(_temperatureMvdd);
+                    _temperatureMvdd.Value = null;
+                    if (logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_VRMVDD].value > 0)
+                    {
+                        _temperatureMvdd.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_VRMVDD].value;
+                        ActivateSensor(_temperatureMvdd);
+                    }
 
                     _temperatureLiquid.Value = null;
                     if(logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_LIQUID].value > 0)
