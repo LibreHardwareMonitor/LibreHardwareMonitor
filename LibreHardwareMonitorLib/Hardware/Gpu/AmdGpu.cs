@@ -27,7 +27,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _powerTotal;
 
         private readonly Sensor _temperatureCore;
-        private readonly Sensor _temperatureHbm;
+        private readonly Sensor _temperatureMemory;
         private readonly Sensor _temperatureHotSpot;
         private readonly Sensor _temperatureLiquid;
         private readonly Sensor _temperatureMvdd;
@@ -44,7 +44,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             DeviceNumber = deviceNumber;
 
             _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
-            _temperatureHbm = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
+            _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
             _temperatureVddc = new Sensor("GPU VR VDDC", 2, SensorType.Temperature, this, settings);
             _temperatureMvdd = new Sensor("GPU VR MVDD", 3, SensorType.Temperature, this, settings);
             _temperatureLiquid = new Sensor("GPU Liquid", 4, SensorType.Temperature, this, settings);
@@ -203,12 +203,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.MEM, ref temp) == AtiAdlxx.ADL_OK)
                     {
-                        _temperatureHbm.Value = temp;
-                        ActivateSensor(_temperatureHbm);
+                        _temperatureMemory.Value = temp;
+                        ActivateSensor(_temperatureMemory);
                     }
                     else
                     {
-                        _temperatureHbm.Value = null;
+                        _temperatureMemory.Value = null;
                     }
 
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.VRVDDC, ref temp) == AtiAdlxx.ADL_OK)
@@ -356,8 +356,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _temperatureVddc.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_VRVDDC].value;
                     ActivateSensor(_temperatureVddc);
 
-                    _temperatureHbm.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_MEM].value;
-                    ActivateSensor(_temperatureHbm);
+                    _temperatureMemory.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_MEM].value;
+                    ActivateSensor(_temperatureMemory);
 
                     _temperatureMvdd.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_VRMVDD].value;
                     ActivateSensor(_temperatureMvdd);
