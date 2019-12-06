@@ -409,8 +409,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _coreLoad.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX].value;
                     ActivateSensor(_coreLoad);
 
-                    _powerCore.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_POWER].value;
-                    ActivateSensor(_powerCore);
+                    _powerCore.Value = null;
+                    if (logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_POWER].value > 0)
+                    {
+                        _powerCore.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_POWER].value;
+                        ActivateSensor(_powerCore);
+                    }
 
                     _powerSocket.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_ASIC_POWER].value;
                     ActivateSensor(_powerSocket);
