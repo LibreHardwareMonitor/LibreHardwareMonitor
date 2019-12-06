@@ -59,6 +59,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             
             _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
             _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
+            
             _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
             _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings);
@@ -347,7 +348,6 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 AtiAdlxx.ADLPMLogDataOutput logDataOutput = new AtiAdlxx.ADLPMLogDataOutput();
                 if (AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterIndex, ref logDataOutput) == AtiAdlxx.ADL_OK)
                 {
-                    //Enum.GetName(typeof(AtiAdlxx.ADLSensorType), i), 
                     _temperatureCore.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_EDGE].value;
                     ActivateSensor(_temperatureCore);
                     
@@ -406,10 +406,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _powerCore.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_POWER].value;
                     ActivateSensor(_powerCore);
 
-                    //_powerPpt.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_].value;
                     _powerSocket.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_ASIC_POWER].value;
                     ActivateSensor(_powerSocket);
-                    //_powerTotal.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_].value;
                 }
             }
         }
