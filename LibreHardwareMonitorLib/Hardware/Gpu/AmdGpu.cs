@@ -52,8 +52,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _temperatureHotSpot = new Sensor("GPU Hot Spot", 6, SensorType.Temperature, this, settings);
 
             _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
-            _memoryClock = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
-
+            _socClock = new Sensor("GPU SOC", 1, SensorType.Clock, this, settings);
+            _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings);
+            
             _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             
             _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
@@ -376,9 +377,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         ActivateSensor(_temperaturePlx);
                     }
                     
+                    _coreClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_GFXCLK].value;
+                    ActivateSensor(_coreClock);
 
                     _coreClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_SOCCLK].value;
-                    ActivateSensor(_coreClock);
+                    ActivateSensor(_socClock);
 
                     _memoryClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_MEMCLK].value;
                     ActivateSensor(_memoryClock);
