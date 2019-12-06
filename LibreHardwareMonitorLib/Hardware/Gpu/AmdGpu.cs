@@ -400,12 +400,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _controlSensor.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_FAN_PERCENTAGE].value;
                     ActivateSensor(_controlSensor);
 
-
-                    _coreVoltage.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_VOLTAGE].value;
+                    _coreVoltage.Value = 0.001f * logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_VOLTAGE].value;
                     ActivateSensor(_coreVoltage);
 
                     _memoryVoltage.Value = 0.001f * logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_MEM_VOLTAGE].value;
                     ActivateSensor(_memoryVoltage);
+
                     _coreLoad.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX].value;
                     ActivateSensor(_coreLoad);
 
