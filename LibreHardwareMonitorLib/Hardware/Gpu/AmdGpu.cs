@@ -14,13 +14,15 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly int _adapterIndex;
         private readonly Sensor _controlSensor;
         private readonly Sensor _coreClock;
+        private readonly Sensor _socClock;
         private readonly Sensor _coreLoad;
         private readonly Sensor _coreVoltage;
         private readonly int _currentOverdriveApiLevel;
         private readonly Sensor _fan;
         private readonly Control _fanControl;
         private readonly Sensor _memoryClock;
-        
+        private readonly Sensor _memoryVoltage;
+
         private readonly Sensor _powerCore;
         private readonly Sensor _powerPpt;
         private readonly Sensor _powerSocket;
@@ -58,6 +60,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             
             _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
+            _memoryVoltage = new Sensor("Memory", 1, SensorType.Voltage, this, settings);
+
             _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             
             _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
@@ -400,6 +404,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _coreVoltage.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_VOLTAGE].value;
                     ActivateSensor(_coreVoltage);
 
+                    _memoryVoltage.Value = 0.001f * logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_MEM_VOLTAGE].value;
+                    ActivateSensor(_memoryVoltage);
                     _coreLoad.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX].value;
                     ActivateSensor(_coreLoad);
 
