@@ -388,7 +388,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _coreClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_GFXCLK].value;
                     ActivateSensor(_coreClock);
 
-                    _coreClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_SOCCLK].value;
+                    _socClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_SOCCLK].value;
                     ActivateSensor(_socClock);
 
                     _memoryClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_MEMCLK].value;
