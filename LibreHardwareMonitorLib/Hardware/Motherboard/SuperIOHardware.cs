@@ -827,9 +827,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                     v.Add(new Voltage("Chipset Core", 2, 0, 1));
                                     v.Add(new Voltage("VIN3", 3, 0, 1));
                                     v.Add(new Voltage("CPU VDD18", 4, 0, 1));
-                                    v.Add(new Voltage("Chipset Core +2.5V", 5, 0, 1));
-                                    v.Add(new Voltage("3VSB", 6, 0, 10));
-                                    v.Add(new Voltage("VBAT", 7, 10, 10));
+                                    v.Add(new Voltage("Chipset Core +2.5V", 5, 0.5F, 1));
+                                    v.Add(new Voltage("3VSB", 6, 1, 10));
+                                    v.Add(new Voltage("VBat", 7, 0.7F, 1));
 
                                     t.Add(new Temperature("PCIE_X8", 0));
                                     t.Add(new Temperature("System 2", 2));
