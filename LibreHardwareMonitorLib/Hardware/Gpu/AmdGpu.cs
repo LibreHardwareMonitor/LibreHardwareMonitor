@@ -398,16 +398,15 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     if (logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_FAN_RPM].value != UInt16.MaxValue)
                     {
                         _fan.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_FAN_RPM].value;
-                        ActivateSensor(_fan);
-
                         _controlSensor.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_FAN_PERCENTAGE].value;
-                        ActivateSensor(_controlSensor);
                     } 
                     else
                     {
                         _fan.Value = null;
                         _controlSensor.Value = null;
                     }
+                    ActivateSensor(_fan);
+                    ActivateSensor(_controlSensor);
 
                     _coreVoltage.Value = 0.001f * logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_SOC_VOLTAGE].value;
                     ActivateSensor(_coreVoltage);
