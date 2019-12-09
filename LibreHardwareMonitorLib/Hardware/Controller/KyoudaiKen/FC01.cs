@@ -72,40 +72,47 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
         private void updateSensors()
         {
             if (!_serialPort.IsOpen) return;
-            _serialPort.DiscardInBuffer();
-            _serialPort.DiscardOutBuffer();
 
-            _serialPort.WriteLine("bs");
-            int i = 0;
-            while (_serialPort.BytesToRead != 36 && i < 400)
+            try
             {
-                Thread.Sleep(1);
-                i++;
-            }
+                _serialPort.DiscardInBuffer();
+                _serialPort.DiscardOutBuffer();
 
-            if (_serialPort.BytesToRead == 36)
-            {
-                byte[] data = new byte[36];
-
-                i = 0;
-                while (_serialPort.BytesToRead > 0)
+                _serialPort.WriteLine("bs");
+                int i = 0;
+                while (_serialPort.BytesToRead != 36 && i < 60)
                 {
-                    data[i] = (byte)_serialPort.ReadByte();
+                    Thread.Sleep(10);
                     i++;
                 }
 
-                for (i = 0; i < 3; i++)
+                if (_serialPort.BytesToRead == 36)
                 {
-                    t[i] = BitConverter.ToSingle(data, i * 4);
+                    byte[] data = new byte[36];
+
+                    i = 0;
+                    while (_serialPort.BytesToRead > 0)
+                    {
+                        data[i] = (byte)_serialPort.ReadByte();
+                        i++;
+                    }
+
+                    for (i = 0; i < 3; i++)
+                    {
+                        t[i] = BitConverter.ToSingle(data, i * 4);
+                    }
+                    for (; i < 6; i++)
+                    {
+                        m[i - 3] = BitConverter.ToSingle(data, i * 4);
+                    }
+                    for (; i < 9; i++)
+                    {
+                        s[i - 6] = BitConverter.ToSingle(data, i * 4);
+                    }
                 }
-                for (; i < 6; i++)
-                {
-                    m[i - 3] = BitConverter.ToSingle(data, i * 4);
-                }
-                for (; i < 9; i++)
-                {
-                    s[i - 6] = BitConverter.ToSingle(data, i * 4);
-                }
+            } catch (Exception)
+            {
+                //KyoudaiKen FC01 - Timeout or general IO error.
             }
         }
 
@@ -139,12 +146,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
         {
             if (_serialPort != null)
             {
-                _serialPort.Close();
                 _serialPort.Dispose();
                 _serialPort = null;
-
             }
-            base.Close();
         }
     }
 }

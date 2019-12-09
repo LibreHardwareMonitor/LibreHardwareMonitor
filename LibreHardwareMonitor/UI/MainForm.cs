@@ -614,7 +614,15 @@ namespace LibreHardwareMonitor.UI
 
         private void ExitClick(object sender, EventArgs e)
         {
-            Close();
+            Visible = false;
+            _systemTray.IsMainIconEnabled = false;
+            timer.Enabled = false;
+            _computer.Close();
+            SaveConfiguration();
+            if (_runWebServer.Value)
+                Server.Quit();
+            _systemTray.Dispose();
+            Environment.Exit(0);
         }
 
         private void Timer_Tick(object sender, EventArgs e)

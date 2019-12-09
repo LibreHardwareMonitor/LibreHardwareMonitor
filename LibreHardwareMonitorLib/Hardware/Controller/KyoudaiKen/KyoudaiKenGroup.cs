@@ -52,7 +52,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.KyoudaiKen
                                 int j = 0;
                                 while (serialPort.BytesToRead < 15 && j < 400)
                                 {
-                                    Thread.Sleep(1);
+                                    Thread.Sleep(10);
                                     j++;
                                 }
 

@@ -61,7 +61,7 @@ const fontSizeLegendY = 16;
 const fontSizeLegendX = 16;
 
 //Config
-var chartTimeFrame = 60;
+var chartTimeFrame = 120;
 var boolPrefillChart = true;
 
 //Globals
