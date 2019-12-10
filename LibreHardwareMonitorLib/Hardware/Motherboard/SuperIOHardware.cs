@@ -801,7 +801,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         case Model.X470_AORUS_GAMING_7_WIFI: //ITE IT8686E & IT8792
-                            switch(superIO.Chip)
+                            switch (superIO.Chip)
                             {
                                 case Chip.IT8686E:
                                     v.Add(new Voltage("Vcore", 0, 0, 1));
@@ -835,7 +835,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                     t.Add(new Temperature("System 2", 2));
                                     break;
                             }
-
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
