@@ -75,8 +75,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             else
             {
                 Ring0.WriteIoPort(RegisterPort, 0x55);
-            }
-            
+            }            
         }
 
         public void IT87Exit()
