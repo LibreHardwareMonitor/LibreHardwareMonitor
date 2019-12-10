@@ -248,6 +248,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.B450A_PRO;
                 case var _ when name.Equals("B350 GAMING PLUS (MS-7A34)", StringComparison.OrdinalIgnoreCase):
                     return Model.B350_Gaming_Plus;
+                case var _ when name.Equals("X470 AORUS GAMING 7 WIFI-CF", StringComparison.OrdinalIgnoreCase):
+                    return Model.X470_AORUS_GAMING_7_WIFI;
                 case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Model.Unknown;

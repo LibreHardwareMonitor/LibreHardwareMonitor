@@ -80,6 +80,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 _fansDisabled = new bool[5];
                 Controls = new float?[3];
             }
+            else if (chip == Chip.IT8792E)
+            {
+                Voltages = new float?[8];
+                Temperatures = new float?[3];
+                Fans = new float?[3];
+                _fansDisabled = new bool[3];
+                Controls = new float?[3];
+            }
             else
             {
                 Voltages = new float?[9];
@@ -98,7 +106,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 chip == Chip.IT8771E ||
                 chip == Chip.IT8772E ||
                 chip == Chip.IT8686E ||
-                chip == Chip.IT8688E)
+                chip == Chip.IT8688E ||
+                chip == Chip.IT8792E
+                )
             {
                 _voltageGain = 0.012f;
             }
@@ -122,7 +132,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 _has16BitFanCounter = true;
             }
 
-            if (chip == Chip.IT8620E)
+            if (chip == Chip.IT8620E || chip == Chip.IT8792E)
             {
                 _hasNewerAutoPwm = true;
             }

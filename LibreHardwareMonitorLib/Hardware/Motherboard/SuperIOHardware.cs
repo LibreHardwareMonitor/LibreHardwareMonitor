@@ -211,6 +211,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.IT8726F:
                 case Chip.IT8665E:
                 case Chip.IT8686E:
+                case Chip.IT8792E:
                     GetIteConfigurationsA(superIO, manufacturer, model, v, t, f, c, ref readFan, ref postUpdate, ref mutex);
                     break;
 
@@ -791,6 +792,49 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 2));
                             t.Add(new Temperature("PCIE_X16", 3));
                             t.Add(new Temperature("VRM", 4));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
+                            break;
+                        case Model.X470_AORUS_GAMING_7_WIFI: //ITE IT8686E & IT8792
+                            switch (superIO.Chip)
+                            {
+                                case Chip.IT8686E:
+                                    v.Add(new Voltage("Vcore", 0, 0, 1));
+                                    v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                                    v.Add(new Voltage("+12V", 2, 5, 1));
+                                    v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                                    v.Add(new Voltage("SOC Vcore", 4, 0, 1));
+                                    v.Add(new Voltage("VDDP", 5, 0, 1));
+                                    v.Add(new Voltage("DIMM AB", 6, 0, 1));
+                                    v.Add(new Voltage("3VSB", 7, 10, 10));
+                                    v.Add(new Voltage("VBat", 8, 10, 10));
+                                    v.Add(new Voltage("AVCC3", 9, 54, 10));
+
+                                    t.Add(new Temperature("System 1", 0));
+                                    t.Add(new Temperature("Chipset", 1));
+                                    t.Add(new Temperature("CPU", 2));
+                                    t.Add(new Temperature("PCIE_X16", 3));
+                                    t.Add(new Temperature("VRM", 4));
+                                    break;
+                                case Chip.IT8792E:
+                                    v.Add(new Voltage("VIN0", 0, 0, 1));
+                                    v.Add(new Voltage("DDR VTT", 1, 0, 1));
+                                    v.Add(new Voltage("Chipset Core", 2, 0, 1));
+                                    v.Add(new Voltage("VIN3", 3, 0, 1));
+                                    v.Add(new Voltage("CPU VDD18", 4, 0, 1));
+                                    v.Add(new Voltage("Chipset Core +2.5V", 5, 0.5F, 1));
+                                    v.Add(new Voltage("3VSB", 6, 1, 10));
+                                    v.Add(new Voltage("VBat", 7, 0.7F, 1));
+
+                                    t.Add(new Temperature("PCIE_X8", 0));
+                                    t.Add(new Temperature("System 2", 2));
+                                    break;
+                            }
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
