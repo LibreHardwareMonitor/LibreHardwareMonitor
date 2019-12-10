@@ -259,7 +259,6 @@ namespace LibreHardwareMonitor.Interop
             HOTSPOT = 7
         }
 
-
         internal const int ADL_PMLOG_MAX_SENSORS = 256;
 
         [StructLayout(LayoutKind.Sequential)]

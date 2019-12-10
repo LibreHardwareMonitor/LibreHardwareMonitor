@@ -54,13 +54,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _temperatureHotSpot = new Sensor("GPU Hot Spot", 6, SensorType.Temperature, this, settings);
 
             _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
-            _socClock = new Sensor("GPU SOC", 1, SensorType.Clock, this, settings);
+            _socClock = new Sensor("GPU SoC", 1, SensorType.Clock, this, settings);
             _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings);
             
             _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             
             _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
-            _memoryVoltage = new Sensor("Memory", 1, SensorType.Voltage, this, settings);
+            _memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
 
             _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             
@@ -372,7 +372,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     }
 
                     _temperatureLiquid.Value = null;
-                    if(logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_LIQUID].value > 0)
+                    if (logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_LIQUID].value > 0)
                     {
                         _temperatureLiquid.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_LIQUID].value;
                         ActivateSensor(_temperatureLiquid);
