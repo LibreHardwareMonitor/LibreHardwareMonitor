@@ -115,6 +115,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _hw.ActivateSensor(_coreTemperatureTctl);
                 _hw.ActivateSensor(_coreTemperatureTdie);
                 _hw.ActivateSensor(_coreVoltage);
+                _hw.ActivateSensor(_socVoltage);
             }
 
             public List<NumaNode> Nodes { get; }
@@ -236,17 +237,25 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 //Core
                 if ((smuSvi0Tfn & 0x01) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
-                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
+                    if (cpu.Model == 0x71)
+                        svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
+                    else
+                        svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
+
+                    vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
                     _coreVoltage.Value = (float)vcc;
                 }
 
                 // SoC
                 // not every zen cpu has this voltage
-                if ((smuSvi0Tfn & 0x02) == 0)
+                if (cpu.Model == 0x71 || (smuSvi0Tfn & 0x02) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
-                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
+                    if (cpu.Model == 0x71)
+                        svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
+                    else
+                        svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
+
+                    vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
                     _socVoltage.Value = (float)vcc;
                     _hw.ActivateSensor(_socVoltage);
                 }
