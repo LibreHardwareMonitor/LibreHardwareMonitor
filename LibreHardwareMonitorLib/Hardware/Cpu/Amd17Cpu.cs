@@ -1,4 +1,4 @@
-﻿// Mozilla Public License 2.0
+// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
@@ -233,21 +233,22 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 double vcc;
                 uint svi0PlaneXVddCor;
 
-                //Core
+                // Core
                 if ((smuSvi0Tfn & 0x01) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
+                    svi0PlaneXVddCor = ((cpu.Model == 0x71 ? smuSvi0TelPlane1 : smuSvi0TelPlane0) >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
                     _coreVoltage.Value = (float)vcc;
                 }
 
                 // SoC
                 // not every zen cpu has this voltage
-                if ((smuSvi0Tfn & 0x02) == 0)
+                if (cpu.Model == 0x71 || (smuSvi0Tfn & 0x02) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
+                    svi0PlaneXVddCor = ((cpu.Model == 0x71 ? smuSvi0TelPlane0 : smuSvi0TelPlane1) >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
                     _socVoltage.Value = (float)vcc;
+
                     _hw.ActivateSensor(_socVoltage);
                 }
             }
