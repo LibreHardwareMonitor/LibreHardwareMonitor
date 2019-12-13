@@ -237,11 +237,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 //Core
                 if ((smuSvi0Tfn & 0x01) == 0)
                 {
-                    if (cpu.Model == 0x71)
-                        svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
-                    else
-                        svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
-
+                    svi0PlaneXVddCor = ((cpu.Model == 0x71 ? smuSvi0TelPlane1 : smuSvi0TelPlane0) >> 16) & 0xff;
                     vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
                     _coreVoltage.Value = (float)vcc;
                 }
@@ -250,11 +246,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 // not every zen cpu has this voltage
                 if (cpu.Model == 0x71 || (smuSvi0Tfn & 0x02) == 0)
                 {
-                    if (cpu.Model == 0x71)
-                        svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
-                    else
-                        svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
-
+                    svi0PlaneXVddCor = ((cpu.Model == 0x71 ? smuSvi0TelPlane0 : smuSvi0TelPlane1) >> 16) & 0xff;
                     vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
                     _socVoltage.Value = (float)vcc;
                     _hw.ActivateSensor(_socVoltage);
