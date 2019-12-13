@@ -197,29 +197,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 temperature = (temperature >> 21) * 125;
 
                 float offset = 0.0f;
+
+                // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
                 if (string.IsNullOrWhiteSpace(cpu.Name))
                     offset = 0;
                 else if (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X"))
                     offset = -20.0f;
-                else if (cpu.Name.Contains("1920X") ||
-                         cpu.Name.Contains("1950X") ||
-                         cpu.Name.Contains("1900X") ||
-                         cpu.Name.Contains("2920") ||
-                         cpu.Name.Contains("2950") ||
-                         cpu.Name.Contains("2970") ||
-                         cpu.Name.Contains("2990"))
-                {
+                else if (cpu.Name.Contains("Threadripper 19") || cpu.Name.Contains("Threadripper 29"))
                     offset = -27.0f;
-                }
-                else if (cpu.Name.Contains("2600X") ||
-                         cpu.Name.Contains("2700X") ||
-                         cpu.Name.Contains("2800X") ||
-                         cpu.Name.Contains("1910") ||
-                         cpu.Name.Contains("1920") ||
-                         cpu.Name.Contains("1950"))
-                {
+                else if (cpu.Name.Contains("2700X"))
                     offset = -10.0f;
-                }
 
                 float t = temperature * 0.001f;
                 if (tempOffsetFlag)
