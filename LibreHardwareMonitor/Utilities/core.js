@@ -734,7 +734,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             //Temperatures and Fans ------------
             //Ryzen TR CPU maxCCD temp
-            plotNextSensor(TempChart, "CPU maxCCD: ", data.Children[1].Children[2].Children[3].Value);
+            plotNextSensor(TempChart, "CPU maxCCD: ", data.Children[1].Children[2].Children[6].Value);
             //NVIDIA GPU Temp
             plotNextSensor(TempChart, "GPU: ", data.Children[3].Children[1].Children[0].Value);
             //MSI VRM Temp
