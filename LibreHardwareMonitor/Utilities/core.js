@@ -1,20 +1,5 @@
 // LHM Dashboard by KyoudaiKen
 
-/*
-
-"#62cbacff",
-"#cec46bff",
-"#d09771ff",
-"#d47e89ff",
-"#b891daff",
-"#83b0d6ff",
-"#8dd993ff",
-"#9ecc67ff",
-"#de9dcaff",
-"#8fdacaff"
-
-*/
-
 //Automatic color palette definitions
 const colorPallettes = {
     "default": {
@@ -73,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         data: {
             datasets: [
                 {
-                    label: 'CPU Temperature',
+                    label: 'CPU maxCCD Temperature',
                     data: [],
                     backgroundColor: [cpl['fill'][0]],
                     borderColor: [cpl['lines'][0]],
@@ -748,14 +733,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
             var data = JSON.parse(x.response).Children[0];
 
             //Temperatures and Fans ------------
-            //Ryzen TR CPU temp
-            plotNextSensor(TempChart, "CPU: ", data.Children[1].Children[2].Children[1].Value);
+            //Ryzen TR CPU maxCCD temp
+            plotNextSensor(TempChart, "CPU maxCCD: ", data.Children[1].Children[2].Children[3].Value);
             //NVIDIA GPU Temp
             plotNextSensor(TempChart, "GPU: ", data.Children[3].Children[1].Children[0].Value);
-            //ASUS VRM Temp
-            plotNextSensor(TempChart, "VRM: ", data.Children[0].Children[0].Children[1].Children[5].Value);
-            //ASUS PCH Temp
-            plotNextSensor(TempChart, "PCH: ", data.Children[0].Children[0].Children[1].Children[3].Value);
+            //MSI VRM Temp
+            plotNextSensor(TempChart, "VRM: ", data.Children[0].Children[0].Children[1].Children[2].Value);
+            //MSI PCH Temp
+            plotNextSensor(TempChart, "PCH: ", data.Children[0].Children[0].Children[1].Children[4].Value);
 
             //Temperatures 2
             sensorIndex = 0;
@@ -768,12 +753,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             //Control and monitor
             sensorIndex = 0;
-            //ASUS Fan 0
-            plotNextSensor(ControlChart, "Pump: ", data.Children[0].Children[0].Children[2].Children[0].Value, "", " RPM");
+            //MSI Fan 0
+            plotNextSensor(ControlChart, "Rad: ", data.Children[0].Children[0].Children[2].Children[0].Value, "", " RPM");
             //ASUS buggy fan shit (rad)
-            for (var f = 1; f < data.Children[0].Children[0].Children[2].Children.length; f++) {
+            /*for (var f = 1; f < data.Children[0].Children[0].Children[2].Children.length; f++) {
                 if (cleanReading(data.Children[0].Children[0].Children[2].Children[f].Value) > 50) plotNextSensor(ControlChart, "Rad: ", data.Children[0].Children[0].Children[2].Children[f].Value, "", " RPM");
-            }
+            }*/
+            //MSI cannot read pump RPM yet =C
+	        plotNextSensor(ControlChart, "Pump: ", 'NaN', "", " RPM");
+
             //KyoudaiKen FC01 Water Temp
             plotNextSensor(ControlChart, "Rad Fans: ", data.Children[4].Children[1].Children[0].Value, "", "%");
             //KyoudaiKen FC01 Case Temp
