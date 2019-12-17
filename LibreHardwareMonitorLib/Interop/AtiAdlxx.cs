@@ -106,6 +106,9 @@ namespace LibreHardwareMonitor.Interop
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ADL2_Main_Control_Destroy(IntPtr context);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ADL2_New_QueryPMLogData_Get(IntPtr context, int adapterIndex, ref ADLPMLogDataOutput aDLPMLogDataOutput);
+
         public static int ADL_Main_Control_Create(int enumConnectedAdapters)
         {
             try
@@ -254,6 +257,55 @@ namespace LibreHardwareMonitor.Interop
             LIQUID = 5,
             PLX = 6,
             HOTSPOT = 7
+        }
+
+        internal const int ADL_PMLOG_MAX_SENSORS = 256;
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ADLSingleSensorData
+        {
+            public int supported;
+            public int value;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ADLPMLogDataOutput
+        {
+            public int size;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS)]
+            public ADLSingleSensorData[] sensors;
+        }
+
+        internal enum ADLSensorType
+        {
+            SENSOR_MAXTYPES = 0,
+            PMLOG_CLK_GFXCLK = 1,
+            PMLOG_CLK_MEMCLK = 2,
+            PMLOG_CLK_SOCCLK = 3,
+            PMLOG_CLK_UVDCLK1 = 4,
+            PMLOG_CLK_UVDCLK2 = 5,
+            PMLOG_CLK_VCECLK = 6,
+            PMLOG_CLK_VCNCLK = 7,
+            PMLOG_TEMPERATURE_EDGE = 8,
+            PMLOG_TEMPERATURE_MEM = 9,
+            PMLOG_TEMPERATURE_VRVDDC = 10,
+            PMLOG_TEMPERATURE_VRMVDD = 11,
+            PMLOG_TEMPERATURE_LIQUID = 12,
+            PMLOG_TEMPERATURE_PLX = 13,
+            PMLOG_FAN_RPM = 14,
+            PMLOG_FAN_PERCENTAGE = 15,
+            PMLOG_SOC_VOLTAGE = 16,
+            PMLOG_SOC_POWER = 17,
+            PMLOG_SOC_CURRENT = 18,
+            PMLOG_INFO_ACTIVITY_GFX = 19,
+            PMLOG_INFO_ACTIVITY_MEM = 20,
+            PMLOG_GFX_VOLTAGE = 21,
+            PMLOG_MEM_VOLTAGE = 22,
+            PMLOG_ASIC_POWER = 23,
+            PMLOG_TEMPERATURE_VRSOC = 24,
+            PMLOG_TEMPERATURE_VRMVDD0 = 25,
+            PMLOG_TEMPERATURE_VRMVDD1 = 26,
+            PMLOG_TEMPERATURE_HOTSPOT = 27
         }
     }
 }

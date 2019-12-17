@@ -1,4 +1,4 @@
-﻿// Mozilla Public License 2.0
+// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
@@ -197,29 +197,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 temperature = (temperature >> 21) * 125;
 
                 float offset = 0.0f;
+
+                // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
                 if (string.IsNullOrWhiteSpace(cpu.Name))
                     offset = 0;
                 else if (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X"))
                     offset = -20.0f;
-                else if (cpu.Name.Contains("1920X") ||
-                         cpu.Name.Contains("1950X") ||
-                         cpu.Name.Contains("1900X") ||
-                         cpu.Name.Contains("2920") ||
-                         cpu.Name.Contains("2950") ||
-                         cpu.Name.Contains("2970") ||
-                         cpu.Name.Contains("2990"))
-                {
+                else if (cpu.Name.Contains("Threadripper 19") || cpu.Name.Contains("Threadripper 29"))
                     offset = -27.0f;
-                }
-                else if (cpu.Name.Contains("2600X") ||
-                         cpu.Name.Contains("2700X") ||
-                         cpu.Name.Contains("2800X") ||
-                         cpu.Name.Contains("1910") ||
-                         cpu.Name.Contains("1920") ||
-                         cpu.Name.Contains("1950"))
-                {
+                else if (cpu.Name.Contains("2700X"))
                     offset = -10.0f;
-                }
 
                 float t = temperature * 0.001f;
                 if (tempOffsetFlag)
@@ -233,21 +220,22 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 double vcc;
                 uint svi0PlaneXVddCor;
 
-                //Core
+                // Core
                 if ((smuSvi0Tfn & 0x01) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
+                    svi0PlaneXVddCor = ((cpu.Model == 0x71 ? smuSvi0TelPlane1 : smuSvi0TelPlane0) >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
                     _coreVoltage.Value = (float)vcc;
                 }
 
                 // SoC
                 // not every zen cpu has this voltage
-                if ((smuSvi0Tfn & 0x02) == 0)
+                if (cpu.Model == 0x71 || (smuSvi0Tfn & 0x02) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
+                    svi0PlaneXVddCor = ((cpu.Model == 0x71 ? smuSvi0TelPlane0 : smuSvi0TelPlane1) >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
                     _socVoltage.Value = (float)vcc;
+
                     _hw.ActivateSensor(_socVoltage);
                 }
             }

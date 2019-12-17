@@ -68,7 +68,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             Ring0.WriteIoPort(RegisterPort, 0x87);
             Ring0.WriteIoPort(RegisterPort, 0x01);
             Ring0.WriteIoPort(RegisterPort, 0x55);
-            Ring0.WriteIoPort(RegisterPort, 0x55);
+            if (RegisterPort == 0x4E)
+            {
+                Ring0.WriteIoPort(RegisterPort, 0xAA);
+            }
+            else
+            {
+                Ring0.WriteIoPort(RegisterPort, 0x55);
+            }            
         }
 
         public void IT87Exit()
