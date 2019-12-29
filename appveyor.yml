@@ -14,4 +14,4 @@ build:
   verbosity: minimal
 
 artifacts:
-  - path: 'LibreHardwareMonitor\Bin\Release\'
+  - path: 'Bin\Release\'

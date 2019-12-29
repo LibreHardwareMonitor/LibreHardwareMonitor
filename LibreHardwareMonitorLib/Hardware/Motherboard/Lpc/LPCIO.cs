@@ -495,7 +495,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private bool DetectIT87(LpcPort port)
         {
             // IT87XX can enter only on port 0x2E
-            if (port.RegisterPort != 0x2E)
+            // IT8792 using 0x4E
+            if (port.RegisterPort != 0x2E && port.RegisterPort != 0x4E)
                 return false;
 
 
@@ -549,6 +550,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     break;
                 case 0x8772:
                     chip = Chip.IT8772E;
+                    break;
+                case 0x8733:
+                    chip = Chip.IT8792E;
                     break;
                 default:
                     chip = Chip.Unknown;
