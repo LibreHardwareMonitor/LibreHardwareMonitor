@@ -65,6 +65,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     borderWidth: widthBorders
                 },
                 {
+                    label: 'CPU Tctl/Tdie',
+                    data: [],
+                    backgroundColor: [cpl['fill'][4]],
+                    borderColor: [cpl['lines'][4]],
+                    borderWidth: widthBorders
+                },
+                {
                     label: 'GPU Temperature',
                     data: [],
                     backgroundColor: [cpl['fill'][1]],
@@ -735,6 +742,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             //Temperatures and Fans ------------
             //Ryzen TR CPU maxCCD temp
             plotNextSensor(TempChart, "CPU maxCCD: ", data.Children[1].Children[2].Children[6].Value);
+            plotNextSensor(TempChart, "CPU Tctl: ", data.Children[1].Children[2].Children[0].Value);
             //NVIDIA GPU Temp
             plotNextSensor(TempChart, "GPU: ", data.Children[3].Children[1].Children[0].Value);
             //MSI VRM Temp
