@@ -4,13 +4,13 @@
 # * python.exe -m pip install wmi
 #
 # Usage:
-# * !! Make sure openhardwaremonitor is running !!
+# * !! Make sure librehardwaremonitor is running !!
 # * python basicwmi.py
 ################################################################
 
 import wmi
 
-hwmon = wmi.WMI(namespace="root\OpenHardwareMonitor")
+hwmon = wmi.WMI(namespace="root\LibreHardwareMonitor")
 sensors = hwmon.Sensor(SensorType="Control")
 
 for s in sensors:
