@@ -18,6 +18,7 @@
     <PackageProjectUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageProjectUrl>
     <PackageTags>libre open hardware monitor monitoring system logging cpu gpu</PackageTags>
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
+    <AutoGenerateBindingRedirects></AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,7 @@
     <Compile Include="Hardware\Controller\AquaComputer\MPS.cs" />
     <Compile Include="Hardware\Controller\Heatmaster\Heatmaster.cs" />
     <Compile Include="Hardware\Controller\Heatmaster\HeatmasterGroup.cs" />
+    <Compile Include="Hardware\Network\NetworkEX.cs" />
     <Compile Include="Interop\Ftd2xx.cs" />
     <Compile Include="Hardware\Controller\TBalancer\TBalancer.cs" />
     <Compile Include="Hardware\Controller\TBalancer\TBalancerGroup.cs" />
