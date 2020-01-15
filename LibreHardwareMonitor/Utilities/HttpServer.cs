@@ -559,7 +559,7 @@ namespace LibreHardwareMonitor.Utilities
                 case SensorType.Power:
                     return "power.png";
                 case SensorType.Throughput:
-                    return "internetspeed.png";
+                    return "throughput.png";
                 default:
                     return "power.png";
             }
