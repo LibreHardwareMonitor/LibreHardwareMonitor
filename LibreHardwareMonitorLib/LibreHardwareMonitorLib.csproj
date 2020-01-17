@@ -33,11 +33,6 @@
     <None Include="..\Licenses\LICENSE" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System" />
-    <Reference Include="System.Management" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Include="Hardware\Control.cs" />
     <Compile Include="Hardware\Controller\AquaComputer\AquaComputerGroup.cs" />
@@ -155,15 +150,15 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Win32.Registry">
-      <Version>4.5.0</Version>
+      <Version>4.7.0</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Ports">
-      <Version>4.5.0</Version>
+      <Version>4.7.0</Version>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="hidlibrary" Version="3.2.46" />
-    <PackageReference Include="System.Management" Version="4.5.0" />
+    <PackageReference Include="System.Management" Version="4.7.0" />
   </ItemGroup>
 </Project>
