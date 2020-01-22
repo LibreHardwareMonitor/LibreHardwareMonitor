@@ -124,7 +124,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 {
                     Sensor sensor = new Sensor(fan.Name, fan.Index, SensorType.Fan, this, settings);
                     _fans.Add(sensor);
-                    ActivateSensor(sensor);
                 }
             }
         }
@@ -2128,7 +2127,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             foreach (Sensor sensor in _fans)
             {
                 float? value = _readFan(sensor.Index);
-                sensor.Value = value;
+                if (value.HasValue)
+                {
+                    sensor.Value = value;
+                    ActivateSensor(sensor);
+                }
             }
 
             foreach (Sensor sensor in _controls)
