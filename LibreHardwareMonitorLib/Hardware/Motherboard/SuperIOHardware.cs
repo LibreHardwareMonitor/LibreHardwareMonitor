@@ -2130,8 +2130,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 if (value.HasValue)
                 {
                     sensor.Value = value;
-                    if (value.Value > 0)
-                        ActivateSensor(sensor);
+                    ActivateSensor(sensor);
                 }
             }
 
