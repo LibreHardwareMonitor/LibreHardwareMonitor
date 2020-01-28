@@ -158,27 +158,31 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 uint sviPlane0Offset;
                 uint sviPlane1Offset;
 
+                bool isZen2 = false;
+
                 // TODO: find a better way because these will probably keep changing in the future.
                 switch (cpu.Model)
                 {
                     case 0x31: // Threadripper 3000.
-                        {
-                            sviPlane0Offset = F17H_M01H_SVI + 0x14;
-                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                            break;
-                        }
+                    {
+                        sviPlane0Offset = F17H_M01H_SVI + 0x14;
+                        sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                        isZen2 = true;
+                        break;
+                    }
                     case 0x71: // Zen 2.
-                        {
-                            sviPlane0Offset = F17H_M01H_SVI + 0x10;
-                            sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                            break;
-                        }
+                    {
+                        sviPlane0Offset = F17H_M01H_SVI + 0x10;
+                        sviPlane1Offset = F17H_M01H_SVI + 0xC;
+                        isZen2 = true;
+                        break;
+                    }
                     default: // Zen and Zen+.
-                        {
-                            sviPlane0Offset = F17H_M01H_SVI + 0xC;
-                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                            break;
-                        }
+                    {
+                        sviPlane0Offset = F17H_M01H_SVI + 0xC;
+                        sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                        break;
+                    }
                 }
 
                 // SVI0_PLANE0_VDDCOR [24:16]
@@ -257,55 +261,55 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
 
                 // Tested only on R5 3600 & Threadripper 3960X.
-                for (uint i = 0; i < _ccdTemperatures.Length; i++)
+                if (isZen2)
                 {
-                    Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
-                    Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdTempData);
-
-                    uint ccdTemp = ccdTempData & 0xFFF;
-                    if (ccdTemp == 0)
-                        continue;
-
-                    if (_ccdTemperatures[i] == null)
+                    for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
-                        _hw.ActivateSensor(_ccdTemperatures[i] = new Sensor(
-                            $"Core CCD{i + 1} (Tdie)",
-                            _hw._sensorTemperatures++,
-                            SensorType.Temperature,
-                            _hw,
-                            _hw._settings));
+                        Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
+                        Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdTempData);
+
+                        uint ccdTemp = ccdTempData & 0xFFF;
+                        if (ccdTemp == 0)
+                            continue;
+
+                        if (_ccdTemperatures[i] == null)
+                        {
+                            _hw.ActivateSensor(_ccdTemperatures[i] = new Sensor($"Core CCD{i + 1} (Tdie)",
+                                                                                _hw._sensorTemperatures++,
+                                                                                SensorType.Temperature,
+                                                                                _hw,
+                                                                                _hw._settings));
+                        }
+
+                        _ccdTemperatures[i].Value = ((ccdTemp * 125) - 305000) * 0.001f;
                     }
 
-                    _ccdTemperatures[i].Value = ((ccdTemp * 125) - 305000) * 0.001f;
-                }
-
-                Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
-                if (activeCcds.Length > 1)
-                {
-                    // No need to get the max / average ccds temp if there is only one CCD.
-
-                    if (_ccdsMaxTemperature == null)
+                    Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
+                    if (activeCcds.Length > 1)
                     {
-                        _hw.ActivateSensor(_ccdsMaxTemperature = new Sensor(
-                            "Core CCDs Max (Tdie)",
-                            _hw._sensorTemperatures++,
-                            SensorType.Temperature,
-                            _hw,
-                            _hw._settings));
-                    }
+                        // No need to get the max / average ccds temp if there is only one CCD.
 
-                    if (_ccdsAverageTemperature == null)
-                    {
-                        _hw.ActivateSensor(_ccdsAverageTemperature = new Sensor(
-                            "Core CCDs Average (Tdie)",
-                            _hw._sensorTemperatures++,
-                            SensorType.Temperature,
-                            _hw,
-                            _hw._settings));
-                    }
+                        if (_ccdsMaxTemperature == null)
+                        {
+                            _hw.ActivateSensor(_ccdsMaxTemperature = new Sensor("Core CCDs Max (Tdie)",
+                                                                                _hw._sensorTemperatures++,
+                                                                                SensorType.Temperature,
+                                                                                _hw,
+                                                                                _hw._settings));
+                        }
 
-                    _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
-                    _ccdsAverageTemperature.Value = activeCcds.Average(x => x.Value);
+                        if (_ccdsAverageTemperature == null)
+                        {
+                            _hw.ActivateSensor(_ccdsAverageTemperature = new Sensor("Core CCDs Average (Tdie)",
+                                                                                    _hw._sensorTemperatures++,
+                                                                                    SensorType.Temperature,
+                                                                                    _hw,
+                                                                                    _hw._settings));
+                        }
+
+                        _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
+                        _ccdsAverageTemperature.Value = activeCcds.Average(x => x.Value);
+                    }
                 }
 
                 // voltage
@@ -524,7 +528,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const uint MSR_PSTATE_0 = 0xC0010064;
         private const uint MSR_PWR_UNIT = 0xC0010299;
         private const uint PERF_CTL_0 = 0xC0010000;
-
         private const uint PERF_CTR_0 = 0xC0010004;
         // ReSharper restore InconsistentNaming
     }
