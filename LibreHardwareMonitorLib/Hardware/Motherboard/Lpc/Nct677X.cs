@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
@@ -13,15 +14,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     internal class Nct677X : ISuperIO
     {
         private readonly ushort?[] _alternateTemperatureRegister;
-        private readonly ushort _fanRpmBaseRegister;
-        private readonly byte[] _initialFanControlMode = new byte[6];
-        private readonly byte[] _initialFanPwmCommand = new byte[6];
+        private readonly ushort[] _fanRpmRegister;
+        private readonly byte[] _initialFanControlMode = new byte[7];
+        private readonly byte[] _initialFanPwmCommand = new byte[7];
         private readonly bool _isNuvotonVendor;
         private readonly LpcPort _lpcPort;
         private readonly int _minFanRpm;
         private readonly ushort _port;
 
-        private readonly bool[] _restoreDefaultFanControlRequired = new bool[6];
+        private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
         private readonly byte _revision;
         private readonly int[] _temperatureHalfBit;
         private readonly ushort[] _temperatureHalfRegister;
@@ -49,6 +50,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 FAN_CONTROL_MODE_REG = new ushort[] { 0x113, 0x123, 0x133 };
 
                 _vBatMonitorControlRegister = 0x0318;
+            }
+            else if (chip == Chip.NCT6797D || chip == Chip.NCT6798D)
+            {
+                VENDOR_ID_HIGH_REGISTER = 0x804F;
+                VENDOR_ID_LOW_REGISTER = 0x004F;
+
+                FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0xa09, 0xb09 };
+                FAN_PWM_COMMAND_REG = new ushort[] { 0x109, 0x209, 0x309, 0x809, 0x909, 0xa09, 0xb09 };
+                FAN_CONTROL_MODE_REG = new ushort[] { 0x102, 0x202, 0x302, 0x802, 0x902, 0xA02, 0xB02 };
+
+                _vBatMonitorControlRegister = 0x005D;
             }
             else
             {
@@ -92,7 +104,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         _temperaturesSource = new[] { (byte)SourceNct6776F.PECI_0, (byte)SourceNct6776F.CPUTIN, (byte)SourceNct6776F.AUXTIN, (byte)SourceNct6776F.SYSTIN };
                     }
 
-                    _fanRpmBaseRegister = 0x656;
+                    _fanRpmRegister = Enumerable.Range(0, 5).Select(i => (ushort)(0x656 + (i << 1))).ToArray();
 
                     Controls = new float?[3];
 
@@ -122,13 +134,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         Fans = new float?[5];
                         Controls = new float?[5];
                     }
+                    else if (chip == Chip.NCT6797D || chip == Chip.NCT6798D)
+                    {
+                        Fans = new float?[7];
+                        Controls = new float?[7];
+                    }
                     else
                     {
                         Fans = new float?[6];
                         Controls = new float?[6];
                     }
 
-                    _fanRpmBaseRegister = 0x4C0;
+                    _fanRpmRegister = new ushort[] { 0x4c0, 0x4c2, 0x4c4, 0x4c6, 0x4c8, 0x4ca, 0x4ce };
 
                     // min value RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
@@ -160,7 +177,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Fans = new float?[3];
                     Controls = new float?[3];
 
-                    _fanRpmBaseRegister = 0x030;
+                    _fanRpmRegister = Enumerable.Range(0, 3).Select(i => (ushort)(0x030 + (i << 1))).ToArray();
 
                     // min value RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
@@ -296,8 +313,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Fans.Length; i++)
             {
-                byte high = ReadByte((ushort)(_fanRpmBaseRegister + (i << 1)));
-                byte low = ReadByte((ushort)(_fanRpmBaseRegister + (i << 1) + 1));
+                byte high = ReadByte((ushort)(_fanRpmRegister[i]));
+                byte low = ReadByte((ushort)(_fanRpmRegister[i] + 1));
                 int value = (high << 8) | low;
                 Fans[i] = value > _minFanRpm ? value : 0;
             }
