@@ -1,4 +1,4 @@
-﻿// Mozilla Public License 2.0
+// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors
 // All Rights Reserved
@@ -6,7 +6,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
@@ -104,7 +103,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         _temperaturesSource = new[] { (byte)SourceNct6776F.PECI_0, (byte)SourceNct6776F.CPUTIN, (byte)SourceNct6776F.AUXTIN, (byte)SourceNct6776F.SYSTIN };
                     }
 
-                    _fanRpmRegister = Enumerable.Range(0, 5).Select(i => (ushort)(0x656 + (i << 1))).ToArray();
+                    _fanRpmRegister = new ushort[5];
+                    for (int i = 0; i < _fanRpmRegister.Length; i++)
+                        _fanRpmRegister[i] = (ushort)(0x656 + (i << 1));
 
                     Controls = new float?[3];
 
@@ -118,6 +119,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _temperatureHalfBit = new[] { -1, 7, 7, 7, 7, 7, 0, 1, 2 };
                     _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300, 0x622, 0x623, 0x624, 0x625, 0x626 };
                     _alternateTemperatureRegister = new ushort?[] { null, null, null, null };
+
                     break;
                 }
                 case Chip.NCT6779D:
@@ -177,8 +179,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Fans = new float?[3];
                     Controls = new float?[3];
 
-                    _fanRpmRegister = Enumerable.Range(0, 3).Select(i => (ushort)(0x030 + (i << 1))).ToArray();
-
+                    _fanRpmRegister = new ushort[3];
+                    for (int i = 0; i < _fanRpmRegister.Length; i++)
+                        _fanRpmRegister[i] = (ushort)(0x030 + (i << 1));
+                    
                     // min value RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
 
@@ -193,6 +197,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _temperatureHalfBit = new[] { -1, 7, 7, 7 };
                     _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300 };
                     _alternateTemperatureRegister = new ushort?[] { null, 0x018, 0x019, 0x01A };
+
                     break;
                 }
             }
