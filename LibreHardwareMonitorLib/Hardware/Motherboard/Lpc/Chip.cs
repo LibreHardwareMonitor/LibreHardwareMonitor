@@ -51,6 +51,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         NCT6793D = 0xD121,
         NCT6795D = 0xD352,
         NCT6796D = 0xD423,
+        NCT6796DR = 0xD42A,
         NCT6797D = 0xD451,
         NCT6798D = 0xD42B,
 
@@ -110,6 +111,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.NCT6793D: return "Nuvoton NCT6793D";
                 case Chip.NCT6795D: return "Nuvoton NCT6795D";
                 case Chip.NCT6796D: return "Nuvoton NCT6796D";
+                case Chip.NCT6796DR: return "Nuvoton NCT6796D-R";
                 case Chip.NCT6797D: return "Nuvoton NCT6797D";
                 case Chip.NCT6798D: return "Nuvoton NCT6798D";
 

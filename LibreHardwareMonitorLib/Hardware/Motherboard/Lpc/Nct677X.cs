@@ -128,23 +128,31 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.NCT6793D:
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
+                case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
                 {
-                    if (chip == Chip.NCT6779D)
+                    switch (chip)
                     {
-                        Fans = new float?[5];
-                        Controls = new float?[5];
-                    }
-                    else if (chip == Chip.NCT6797D || chip == Chip.NCT6798D)
-                    {
-                        Fans = new float?[7];
-                        Controls = new float?[7];
-                    }
-                    else
-                    {
-                        Fans = new float?[6];
-                        Controls = new float?[6];
+                        case Chip.NCT6779D:
+                        {
+                            Fans = new float?[5];
+                            Controls = new float?[5];
+                            break;
+                        }
+                        case Chip.NCT6797D:
+                        case Chip.NCT6798D:
+                        {
+                            Fans = new float?[7];
+                            Controls = new float?[7];
+                            break;
+                        }
+                        default:
+                        {
+                            Fans = new float?[6];
+                            Controls = new float?[6];
+                            break;
+                        }
                     }
 
                     _fanRpmRegister = new ushort[] { 0x4c0, 0x4c2, 0x4c4, 0x4c6, 0x4c8, 0x4ca, 0x4ce };
@@ -527,7 +535,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void DisableIOSpaceLock()
         {
-            if (Chip != Chip.NCT6791D && Chip != Chip.NCT6796D && Chip != Chip.NCT6793D && Chip != Chip.NCT6795D && Chip != Chip.NCT6798D && Chip != Chip.NCT6797D)
+            if (Chip != Chip.NCT6791D && Chip != Chip.NCT6796D && Chip != Chip.NCT6796DR && Chip != Chip.NCT6793D && Chip != Chip.NCT6795D && Chip != Chip.NCT6798D && Chip != Chip.NCT6797D)
                 return;
 
 

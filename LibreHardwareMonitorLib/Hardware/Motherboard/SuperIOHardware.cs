@@ -303,6 +303,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.NCT6793D:
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
+                case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
                     GetNuvotonConfigurationD(superIO, manufacturer, model, v, t, f, c);

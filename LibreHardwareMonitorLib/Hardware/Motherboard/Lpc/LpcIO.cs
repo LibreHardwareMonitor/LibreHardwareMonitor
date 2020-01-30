@@ -364,6 +364,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             chip = Chip.NCT6796D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
+                        case 0x2A:
+                            chip = Chip.NCT6796DR;
+                            logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                            break;
                         case 0x51:
                             chip = Chip.NCT6797D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
@@ -395,7 +399,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 ushort vendorId = port.ReadWord(FINTEK_VENDOR_ID_REGISTER);
 
                 // disable the hardware monitor i/o space lock on NCT679*D chips
-                if (address == verify && (chip == Chip.NCT6791D || chip == Chip.NCT6796D || chip == Chip.NCT6793D || chip == Chip.NCT6795D || chip == Chip.NCT6798D || chip == Chip.NCT6797D))
+                if (address == verify && (chip == Chip.NCT6791D || chip == Chip.NCT6796D || chip == Chip.NCT6796DR || chip == Chip.NCT6793D || chip == Chip.NCT6795D || chip == Chip.NCT6798D || chip == Chip.NCT6797D))
                 {
                     port.NuvotonDisableIOSpaceLock();
                 }
@@ -452,6 +456,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.NCT6793D:
                     case Chip.NCT6795D:
                     case Chip.NCT6796D:
+                    case Chip.NCT6796DR:
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
                     {
