@@ -16,6 +16,7 @@ namespace LibreHardwareMonitor.Interop
 
         private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
         private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
+        private static WindowsNvmlGetHandleByPciBusIdDelegate _windowsNvmlDeviceGetHandleByPciBusId;
         private static WindowsNvmlDelegate _windowsNvmlInit;
         private static WindowsNvmlDelegate _windowsNvmlShutdown;
 
@@ -118,6 +119,11 @@ namespace LibreHardwareMonitor.Interop
             else
                 return false;
 
+            IntPtr nvmlGetHandlePciBus = Kernel32.GetProcAddress(WindowsDll, "nvmlDeviceGetHandleByPciBusId_v2");
+            if (nvmlGetHandlePciBus != IntPtr.Zero)
+                _windowsNvmlDeviceGetHandleByPciBusId = (WindowsNvmlGetHandleByPciBusIdDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandlePciBus, typeof(WindowsNvmlGetHandleByPciBusIdDelegate));
+            else
+                return false;
 
             return true;
         }
@@ -165,6 +171,26 @@ namespace LibreHardwareMonitor.Interop
             return null;
         }
 
+
+        internal static NvmlDevice? NvmlDeviceGetHandleByPciBusId(string pciBusId)
+        {
+            if (IsAvailable)
+            {
+                NvmlDevice nvmlDevice;
+                if (Software.OperatingSystem.IsLinux)
+                {
+                    if (nvmlDeviceGetHandleByPciBusId(pciBusId, out nvmlDevice) == NvmlReturn.Success)
+                        return nvmlDevice;
+                }
+                else if (_windowsNvmlDeviceGetHandleByPciBusId(pciBusId, out nvmlDevice) == NvmlReturn.Success)
+                {
+                    return nvmlDevice;
+                }
+            }
+
+            return null;
+        }
+
         internal static int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice)
         {
             if (IsAvailable)
@@ -197,6 +223,9 @@ namespace LibreHardwareMonitor.Interop
         [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByIndex_v2", ExactSpelling = true)]
         private static extern NvmlReturn nvmlDeviceGetHandleByIndex(int index, out NvmlDevice device);
 
+        [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByPciBusId_v2", ExactSpelling = true)]
+        private static extern NvmlReturn nvmlDeviceGetHandleByPciBusId([MarshalAs(UnmanagedType.LPStr)] string pciBusId, out NvmlDevice device);
+
         [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetHandleByIndex", ExactSpelling = true)]
         private static extern NvmlReturn nvmlDeviceGetHandleByIndexLegacy(int index, out NvmlDevice device);
 
@@ -207,8 +236,10 @@ namespace LibreHardwareMonitor.Interop
 
         private delegate NvmlReturn WindowsNvmlGetHandleDelegate(int index, out NvmlDevice device);
 
-        private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
+        private delegate NvmlReturn WindowsNvmlGetHandleByPciBusIdDelegate([MarshalAs(UnmanagedType.LPStr)] string pciBusId, out NvmlDevice device);
 
+        private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
+        
         [StructLayout(LayoutKind.Sequential)]
         internal struct NvmlDevice
         {
