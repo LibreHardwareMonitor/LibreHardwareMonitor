@@ -301,7 +301,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     switch (revision & 0xF0)
                     {
                         case 0x50:
-                            chip = Chip.NCT610X;
+                            chip = Chip.NCT610XD;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
                     }
@@ -447,7 +447,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         _superIOs.Add(new W836XX(chip, revision, address));
                         break;
                     }
-                    case Chip.NCT610X:
+                    case Chip.NCT610XD:
                     case Chip.NCT6771F:
                     case Chip.NCT6776F:
                     case Chip.NCT6779D:
@@ -557,7 +557,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     chip = Chip.IT8772E;
                     break;
                 case 0x8733:
-                    chip = Chip.IT8792E;
+                    chip = Chip.IT879XE;
                     break;
                 default:
                     chip = Chip.Unknown;

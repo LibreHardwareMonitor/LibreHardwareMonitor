@@ -39,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             _port = port;
             _lpcPort = lpcPort;
 
-            if (chip == Chip.NCT610X)
+            if (chip == Chip.NCT610XD)
             {
                 VENDOR_ID_HIGH_REGISTER = 0x80FE;
                 VENDOR_ID_LOW_REGISTER = 0x00FE;
@@ -182,7 +182,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _alternateTemperatureRegister = new ushort?[] { null, 0x491, 0x490, 0x492, 0x493, 0x494, 0x495 };
                     break;
                 }
-                case Chip.NCT610X:
+                case Chip.NCT610XD:
                 {
                     Fans = new float?[3];
                     Controls = new float?[3];

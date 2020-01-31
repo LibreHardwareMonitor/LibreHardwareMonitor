@@ -40,11 +40,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         IT8728F = 0x8728,
         IT8771E = 0x8771,
         IT8772E = 0x8772,
-        IT8792E = 0x8733,
+        IT879XE = 0x8733,
 
         NCT6771F = 0xB470,
         NCT6776F = 0xC330,
-        NCT610X = 0xC452,
+        NCT610XD = 0xC452,
         NCT6779D = 0xC560,
         NCT6791D = 0xC803,
         NCT6792D = 0xC911,
@@ -99,10 +99,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8728F: return "ITE IT8728F";
                 case Chip.IT8771E: return "ITE IT8771E";
                 case Chip.IT8772E: return "ITE IT8772E";
-                case Chip.IT8792E: return "ITE IT8792E";
+                case Chip.IT879XE: return "ITE IT8792E/IT8795E";
 
-                case Chip.NCT610X: return "Nuvoton NCT610X";
-
+                case Chip.NCT610XD: return "Nuvoton NCT6102D/NCT6104D/NCT6106D";
                 case Chip.NCT6771F: return "Nuvoton NCT6771F";
                 case Chip.NCT6776F: return "Nuvoton NCT6776F";
                 case Chip.NCT6779D: return "Nuvoton NCT6779D";
