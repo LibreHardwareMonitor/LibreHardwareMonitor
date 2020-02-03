@@ -41,6 +41,7 @@ namespace LibreHardwareMonitor.Interop
         public static readonly NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers;
         public static readonly NvAPI_GPU_GetPStatesDelegate NvAPI_GPU_GetPStates;
         public static readonly NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading;
+        public static readonly NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId;
 
         public static readonly NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
         public static readonly NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
@@ -91,6 +92,9 @@ namespace LibreHardwareMonitor.Interop
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvGPUCoolerLevels NvGPUCoolerLevels);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetBusIdDelegate(NvPhysicalGpuHandle gpuHandle, out uint busId);
+        
         static NvApi()
         {
             NvAPI_InitializeDelegate nvApiInitialize;
@@ -129,6 +133,7 @@ namespace LibreHardwareMonitor.Interop
                 GetDelegate(0xF951A4D1, out NvAPI_GetDisplayDriverVersion);
                 GetDelegate(0x01053FA5, out _nvAPI_GetInterfaceVersionString);
                 GetDelegate(0x2DDFB66E, out NvAPI_GPU_GetPCIIdentifiers);
+                GetDelegate(0x1BE0B8E5, out NvAPI_GPU_GetBusId);
 
                 IsAvailable = true;
             }

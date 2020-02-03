@@ -71,8 +71,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetSensorValue getValue)
         {
-            var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue);
-            sensor.Value = 0;
+            var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue)
+            {
+                Value = 0
+            };
             ActivateSensor(sensor);
             _sensors.Add(sensor);
         }
@@ -86,6 +88,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
         protected override void UpdateSensors()
         {
             NVMeHealthInfo health = Smart.GetHealthInfo();
+            if (health == null)
+                return;
+
+
             foreach (NVMeSensor sensor in _sensors)
                 sensor.Update(health);
         }

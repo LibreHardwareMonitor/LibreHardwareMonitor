@@ -37,10 +37,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         _name = manufacturer + " " + smBios.Board.ProductName;
                 }
                 else
+                {
                     _name = manufacturer.ToString();
+                }
             }
             else
+            {
                 _name = Manufacturer.Unknown.ToString();
+            }
 
             _customName = settings.GetValue(new Identifier(Identifier, "name").ToString(), _name);
 

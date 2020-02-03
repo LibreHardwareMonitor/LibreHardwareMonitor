@@ -61,64 +61,74 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 Voltages = new float?[10];
                 Temperatures = new float?[5];
                 Fans = new float?[5];
-                _fansDisabled = new bool[5];
                 Controls = new float?[3];
+
+                _fansDisabled = new bool[5];
             }
             else if (chip == Chip.IT8665E)
             {
                 Voltages = new float?[10];
                 Temperatures = new float?[6];
                 Fans = new float?[6];
-                _fansDisabled = new bool[6];
                 Controls = new float?[3];
+
+                _fansDisabled = new bool[6];
             }
             else if (chip == Chip.IT8688E)
             {
                 Voltages = new float?[11];
                 Temperatures = new float?[6];
                 Fans = new float?[5];
-                _fansDisabled = new bool[5];
                 Controls = new float?[3];
+
+                _fansDisabled = new bool[5];
             }
-            else if (chip == Chip.IT8792E)
+            else if (chip == Chip.IT879XE)
             {
-                Voltages = new float?[8];
+                Voltages = new float?[9];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
-                _fansDisabled = new bool[3];
                 Controls = new float?[3];
+
+                _fansDisabled = new bool[3];
             }
             else
             {
                 Voltages = new float?[9];
                 Temperatures = new float?[3];
                 Fans = new float?[chip == Chip.IT8705F ? 3 : 5];
-                _fansDisabled = new bool[chip == Chip.IT8705F ? 3 : 5];
                 Controls = new float?[3];
+
+                _fansDisabled = new bool[chip == Chip.IT8705F ? 3 : 5];
             }
 
-            // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution
-            // ADC, all others 16mV
-            if (chip == Chip.IT8620E ||
-                chip == Chip.IT8628E ||
-                chip == Chip.IT8721F ||
-                chip == Chip.IT8728F ||
-                chip == Chip.IT8771E ||
-                chip == Chip.IT8772E ||
-                chip == Chip.IT8686E ||
-                chip == Chip.IT8688E ||
-                chip == Chip.IT8792E
-                )
+            switch (chip)
             {
-                _voltageGain = 0.012f;
-            }
-            else if (chip == Chip.IT8665E)
-            {
-                _voltageGain = 0.0109f;
-            }
-            else
-            {
-                _voltageGain = 0.016f;
+                // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution
+                // ADC, all others 16mV
+                case Chip.IT8620E:
+                case Chip.IT8628E:
+                case Chip.IT8721F:
+                case Chip.IT8728F:
+                case Chip.IT8771E:
+                case Chip.IT8772E:
+                case Chip.IT8686E:
+                case Chip.IT8688E:
+                {
+                    _voltageGain = 0.012f;
+                    break;
+                }
+                case Chip.IT8665E:
+                case Chip.IT879XE:
+                {
+                    _voltageGain = 0.0109f;
+                    break;
+                }
+                default:
+                {
+                    _voltageGain = 0.016f;
+                    break;
+                }
             }
 
             // older IT8705F and IT8721F revisions do not have 16-bit fan counters
@@ -132,7 +142,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 _has16BitFanCounter = true;
             }
 
-            if (chip == Chip.IT8620E || chip == Chip.IT8792E)
+            if (chip == Chip.IT8620E || chip == Chip.IT879XE)
             {
                 _hasNewerAutoPwm = true;
             }
@@ -165,12 +175,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8716F:
                 case Chip.IT8718F:
                 case Chip.IT8726F:
+                {
                     _gpioCount = 5;
                     break;
+                }
                 case Chip.IT8720F:
                 case Chip.IT8721F:
+                {
                     _gpioCount = 8;
                     break;
+                }
                 case Chip.IT8620E:
                 case Chip.IT8628E:
                 case Chip.IT8688E:
@@ -178,8 +192,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8728F:
                 case Chip.IT8771E:
                 case Chip.IT8772E:
+                {
                     _gpioCount = 0;
                     break;
+                }
             }
         }
 

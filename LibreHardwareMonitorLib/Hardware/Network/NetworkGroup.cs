@@ -21,6 +21,7 @@ namespace LibreHardwareMonitor.Hardware.Network
         {
             _settings = settings;
             AddNetworkInterfaces(settings);
+
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAddressChanged;
         }
@@ -54,6 +55,7 @@ namespace LibreHardwareMonitor.Hardware.Network
         {
             NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAddressChanged;
+
             foreach (var nic in _hardware)
                 nic.Close();
         }

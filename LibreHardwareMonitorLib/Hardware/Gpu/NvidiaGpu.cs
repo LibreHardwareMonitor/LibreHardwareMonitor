@@ -35,6 +35,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _handle = handle;
             _displayHandle = displayHandle;
 
+            bool hasPciBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
+
             NvApi.NvGPUThermalSettings thermalSettings = GetThermalSettings();
             _temperatures = new Sensor[thermalSettings.Count];
             for (int i = 0; i < _temperatures.Length; i++)
@@ -105,7 +107,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (NvidiaML.IsAvailable)
             {
-                _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByIndex(adapterIndex);
+                if (hasPciBusId)
+                    _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByPciBusId($" 0000:{busId:X2}:00.0") ?? NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex);
+                else
+                    _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex);
+
                 if (_nvmlDevice.HasValue)
                 {
                     _powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);

@@ -238,6 +238,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.Z170_A;
                 case var _ when name.Equals("Z77 Pro4-M", StringComparison.OrdinalIgnoreCase):
                     return Model.Z77Pro4M;
+                case var _ when name.Equals("X570 Pro4", StringComparison.OrdinalIgnoreCase):
+                    return Model.X570_Pro4;
                 case var _ when name.Equals("AX370-Gaming 5", StringComparison.OrdinalIgnoreCase):
                     return Model.AX370_Gaming_5;
                 case var _ when name.Equals("TUF X470-PLUS GAMING", StringComparison.OrdinalIgnoreCase):
@@ -250,6 +252,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.B350_Gaming_Plus;
                 case var _ when name.Equals("X470 AORUS GAMING 7 WIFI-CF", StringComparison.OrdinalIgnoreCase):
                     return Model.X470_AORUS_GAMING_7_WIFI;
+                case var _ when name.Equals("X570 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
+                    return Model.X570_AORUS_MASTER;
                 case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Model.Unknown;
