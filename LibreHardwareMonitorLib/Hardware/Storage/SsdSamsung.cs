@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix(""), RequireSmart(0xB1), RequireSmart(0xB3), RequireSmart(0xB5), RequireSmart(0xB6), RequireSmart(0xB7), RequireSmart(0xBB), RequireSmart(0xC3), RequireSmart(0xC7)]
     internal class SsdSamsung : AtaStorage
     {
-        private static new readonly IEnumerable<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly IReadOnlyList<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x05, SmartNames.ReallocatedSectorsCount),
             new SmartAttribute(0x09, SmartNames.PowerOnHours, RawToInt),
@@ -41,6 +41,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         public SsdSamsung(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, SmartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
     }
 }

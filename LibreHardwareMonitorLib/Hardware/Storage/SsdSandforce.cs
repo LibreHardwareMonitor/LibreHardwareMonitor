@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix(""), RequireSmart(0xAB), RequireSmart(0xB1)]
     internal class SsdSandforce : AtaStorage
     {
-        private static new readonly IEnumerable<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly IReadOnlyList<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x01, SmartNames.RawReadErrorRate),
             new SmartAttribute(0x05, SmartNames.RetiredBlockCount, RawToInt),
@@ -38,7 +38,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         private readonly Sensor _writeAmplification;
 
         public SsdSandforce(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, SmartAttributes, settings)
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
         {
             _writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
         }

@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix("")]
     public class GenericHardDisk : AtaStorage
     {
-        private static new readonly List<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly List<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x01, SmartNames.ReadErrorRate),
             new SmartAttribute(0x02, SmartNames.ThroughputPerformance),
@@ -83,6 +83,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         internal GenericHardDisk(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "hdd", index, SmartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "hdd", index, _smartAttributes, settings) { }
     }
 }

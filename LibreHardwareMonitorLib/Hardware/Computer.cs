@@ -272,7 +272,7 @@ namespace LibreHardwareMonitor.Hardware
                         w.Write(report);
                     }
 
-                    var hardwareArray = group.Hardware;
+                    IEnumerable<IHardware> hardwareArray = group.Hardware;
                     foreach (IHardware hardware in hardwareArray)
                         ReportHardware(hardware, w);
                 }

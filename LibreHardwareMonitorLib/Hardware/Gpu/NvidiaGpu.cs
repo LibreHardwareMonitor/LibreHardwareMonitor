@@ -251,7 +251,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
             {
-                var result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
                 if (result.HasValue)
                 {
                     _powerUsage.Value = (float)result.Value / 1000;

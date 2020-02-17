@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix(""), RequireSmart(0xAA), RequireSmart(0xAB), RequireSmart(0xAC), RequireSmart(0xAD), RequireSmart(0xAE), RequireSmart(0xCA)]
     internal class SsdMicron : AtaStorage
     {
-        private static new readonly IEnumerable<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly IReadOnlyList<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x01, SmartNames.ReadErrorRate, RawToInt),
             new SmartAttribute(0x05, SmartNames.ReallocatedSectorsCount, RawToInt),
@@ -35,6 +35,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         public SsdMicron(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, SmartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
     }
 }

@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix("PLEXTOR")]
     internal class SsdPlextor : AtaStorage
     {
-        private static new readonly IEnumerable<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly IReadOnlyList<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x09, SmartNames.PowerOnHours, RawToInt),
             new SmartAttribute(0x0C, SmartNames.PowerCycleCount, RawToInt),
@@ -19,7 +19,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         public SsdPlextor(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, SmartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
 
         private static float RawToGb(byte[] rawValue, byte value, IReadOnlyList<IParameter> parameters)
         {
