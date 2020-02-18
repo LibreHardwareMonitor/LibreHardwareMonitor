@@ -40,9 +40,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (validTransfer)
             {
                 //map NVME_IDENTIFY_CONTROLLER_DATA to nptwb.Buffer
-                var offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
+                IntPtr offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
                 var newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                var item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
+                Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
                 data = item;
                 Marshal.FreeHGlobal(buffer);
                 result = true;
@@ -78,9 +78,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (validTransfer)
             {
                 //map NVME_HEALTH_INFO_LOG to nptwb.Buffer
-                var offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
+                IntPtr offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
                 var newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                var item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
+                Kernel32.NVME_HEALTH_INFO_LOG item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
                 data = item;
                 Marshal.FreeHGlobal(buffer);
                 result = true;
@@ -95,7 +95,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
         {
-            var handle = Kernel32.OpenDevice(storageInfo.DeviceId);
+            SafeHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
             if (handle == null || handle.IsInvalid)
                 return null;
 

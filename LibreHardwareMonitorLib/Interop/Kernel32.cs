@@ -66,9 +66,9 @@ namespace LibreHardwareMonitor.Interop
         internal static T CreateStruct<T>()
         {
             int size = Marshal.SizeOf<T>();
-            var ptr = Marshal.AllocHGlobal(size);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
             RtlZeroMemory(ptr, size);
-            var result = Marshal.PtrToStructure<T>(ptr);
+            T result = Marshal.PtrToStructure<T>(ptr);
             Marshal.FreeHGlobal(ptr);
             return result;
         }

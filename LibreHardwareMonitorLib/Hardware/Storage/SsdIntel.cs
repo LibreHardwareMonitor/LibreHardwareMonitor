@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix("INTEL SSD"), RequireSmart(0xE1), RequireSmart(0xE8), RequireSmart(0xE9)]
     internal class SsdIntel : AtaStorage
     {
-        private static new readonly IEnumerable<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly IReadOnlyList<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x01, SmartNames.ReadErrorRate),
             new SmartAttribute(0x03, SmartNames.SpinUpTime),
@@ -34,6 +34,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         public SsdIntel(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, SmartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
     }
 }

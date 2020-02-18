@@ -54,6 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static string[] GetLogicalDrives(int driveIndex)
         {
             var list = new List<string>();
+
             try
             {
                 using (var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex))
@@ -77,7 +78,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
             catch
-            { }
+            {
+                // Ignored.
+            }
 
             return list.ToArray();
         }

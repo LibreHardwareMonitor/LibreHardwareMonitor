@@ -22,7 +22,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             var mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
             ManagementObjectCollection queryCollection = mosDisks.Get(); // get the results
 
-            foreach (var disk in queryCollection)
+            foreach (ManagementBaseObject disk in queryCollection)
             {
                 string deviceId = (string)disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
                 uint idx = Convert.ToUInt32(disk.Properties["Index"].Value);
