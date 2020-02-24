@@ -56,14 +56,14 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
             _socClock = new Sensor("GPU SoC", 1, SensorType.Clock, this, settings);
             _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings);
-            
+
             _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
-            
+
             _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
             _memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
 
             _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
-            
+
             _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
             _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings);
@@ -200,7 +200,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                     int temp = 0;
 
-                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.EDGE, ref temp) == AtiAdlxx.ADL_OK && temp < maxTemperature)
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.EDGE, ref temp) == AtiAdlxx.ADL_OK && temp < (maxTemperature * 1000))
                     {
                         _temperatureCore.Value = 0.001f * temp;
                         ActivateSensor(_temperatureCore);
@@ -351,7 +351,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 {
                     _temperatureCore.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_EDGE].value;
                     ActivateSensor(_temperatureCore);
-                    
+
                     _temperatureHotSpot.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_HOTSPOT].value;
                     ActivateSensor(_temperatureHotSpot);
 
@@ -381,7 +381,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         _temperaturePlx.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_PLX].value;
                         ActivateSensor(_temperaturePlx);
                     }
-                    
+
                     _coreClock.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_CLK_GFXCLK].value;
                     ActivateSensor(_coreClock);
 
@@ -396,7 +396,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     {
                         _fan.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_FAN_RPM].value;
                         _controlSensor.Value = logDataOutput.sensors[(int)AtiAdlxx.ADLSensorType.PMLOG_FAN_PERCENTAGE].value;
-                    } 
+                    }
                     else
                     {
                         _fan.Value = null;
