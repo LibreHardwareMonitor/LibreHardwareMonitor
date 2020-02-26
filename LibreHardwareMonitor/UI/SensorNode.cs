@@ -25,7 +25,9 @@ namespace LibreHardwareMonitor.UI
                 switch (Sensor.SensorType)
                 {
                     case SensorType.Temperature when _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit:
+                    {
                         return $"{value * 1.8 + 32:F1} °F";
+                    }
                     case SensorType.Throughput:
                     {
                         string result;
@@ -36,11 +38,15 @@ namespace LibreHardwareMonitor.UI
                                 switch (value)
                                 {
                                     case 100000000:
+                                    {
                                         result = "100Mbps";
                                         break;
+                                    }
                                     case 1000000000:
+                                    {
                                         result = "1Gbps";
                                         break;
+                                    }
                                     default:
                                     {
                                         if (value < 1024)
@@ -54,21 +60,24 @@ namespace LibreHardwareMonitor.UI
                                     }
                                         break;
                                 }
-                            }
+
                                 break;
+                            }
                             default:
                             {
-                                if (value < 1048576)
-                                    result = $"{value / 1024:F1} KB/s";
-                                else
-                                    result = $"{value / 1048576:F1} MB/s";
-                            }
+                                const int _1MB = 1048576;
+
+                                result = value < _1MB ? $"{value / 1024:F1} KB/s" : $"{value / _1MB:F1} MB/s";
+
                                 break;
+                            }
                         }
                         return result;
                     }
                     default:
+                    {
                         return string.Format(Format, value);
+                    }
                 }
             }
 
@@ -84,7 +93,7 @@ namespace LibreHardwareMonitor.UI
             switch (sensor.SensorType)
             {
                 case SensorType.Voltage: Format = "{0:F3} V"; break;
-                case SensorType.Clock: Format = "{0:F0} MHz"; break;
+                case SensorType.Clock: Format = "{0:F1} MHz"; break;
                 case SensorType.Load: Format = "{0:F1} %"; break;
                 case SensorType.Temperature: Format = "{0:F1} °C"; break;
                 case SensorType.Fan: Format = "{0:F0} RPM"; break;

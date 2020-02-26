@@ -125,6 +125,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.NCT6779D:
                 case Chip.NCT6791D:
                 case Chip.NCT6792D:
+                case Chip.NCT6792DA:
                 case Chip.NCT6793D:
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
@@ -535,7 +536,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void DisableIOSpaceLock()
         {
-            if (Chip != Chip.NCT6791D && Chip != Chip.NCT6796D && Chip != Chip.NCT6796DR && Chip != Chip.NCT6793D && Chip != Chip.NCT6795D && Chip != Chip.NCT6798D && Chip != Chip.NCT6797D)
+            if (Chip != Chip.NCT6791D && Chip != Chip.NCT6796D && Chip != Chip.NCT6792DA && Chip != Chip.NCT6796DR && Chip != Chip.NCT6793D && Chip != Chip.NCT6795D && Chip != Chip.NCT6798D && Chip != Chip.NCT6797D)
                 return;
 
 

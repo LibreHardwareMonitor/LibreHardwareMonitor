@@ -73,8 +73,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         public void IT87Exit()
         {
-            Ring0.WriteIoPort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
-            Ring0.WriteIoPort(ValuePort, 0x02);
+            // Do not exit config mode for secondary super IO.
+            if (RegisterPort != 0x4E)
+            {
+                Ring0.WriteIoPort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
+                Ring0.WriteIoPort(ValuePort, 0x02);
+            }
         }
 
         public void SmscEnter()

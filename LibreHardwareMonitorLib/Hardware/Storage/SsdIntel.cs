@@ -21,11 +21,20 @@ namespace LibreHardwareMonitor.Hardware.Storage
             new SmartAttribute(0xAA, SmartNames.AvailableReservedSpace),
             new SmartAttribute(0xAB, SmartNames.ProgramFailCount),
             new SmartAttribute(0xAC, SmartNames.EraseFailCount),
+            new SmartAttribute(0xAE, SmartNames.UnexpectedPowerLossCount, RawToInt),
+            new SmartAttribute(0xB7, SmartNames.SataDownshiftErrorCount, RawToInt),
             new SmartAttribute(0xB8, SmartNames.EndToEndError),
-            new SmartAttribute(0xBE, SmartNames.Temperature, (r, v, p) => r[0] + (p?[0].Value ?? 0),
-                SensorType.Temperature, 0, SmartNames.AirflowTemperature, false,
-                new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
+            new SmartAttribute(0xBB, SmartNames.UncorrectableErrorCount, RawToInt),
+            new SmartAttribute(0xBE,
+                               SmartNames.Temperature,
+                               (r, v, p) => r[0] + (p?[0].Value ?? 0),
+                               SensorType.Temperature,
+                               0,
+                               SmartNames.AirflowTemperature,
+                               false,
+                               new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
             new SmartAttribute(0xC0, SmartNames.UnsafeShutdownCount),
+            new SmartAttribute(0xC7, SmartNames.CrcErrorCount, RawToInt),
             new SmartAttribute(0xE1, SmartNames.HostWrites, (r, v, p) => RawToInt(r, v, p) / 0x20, SensorType.Data, 0, SmartNames.HostWrites),
             new SmartAttribute(0xE8, SmartNames.RemainingLife, null, SensorType.Level, 0, SmartNames.RemainingLife),
             new SmartAttribute(0xE9, SmartNames.MediaWearOutIndicator),
@@ -34,6 +43,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         public SsdIntel(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
+        { }
     }
 }

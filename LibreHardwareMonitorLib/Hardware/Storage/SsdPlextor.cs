@@ -19,7 +19,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         public SsdPlextor(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
+        { }
 
         private static float RawToGb(byte[] rawValue, byte value, IReadOnlyList<IParameter> parameters)
         {

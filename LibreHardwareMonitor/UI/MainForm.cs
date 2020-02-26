@@ -635,6 +635,10 @@ namespace LibreHardwareMonitor.UI
 
         private void SaveConfiguration()
         {
+            if (_plotPanel == null || _settings == null)
+                return;
+
+
             _plotPanel.SetCurrentSettings();
 
             foreach (TreeColumn column in treeView.Columns)

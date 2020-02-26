@@ -27,6 +27,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         IT8620E = 0x8620,
         IT8628E = 0x8628,
+        IT8655E = 0x8655,
         IT8665E = 0x8665,
         IT8686E = 0x8686,
         IT8688E = 0x8688,
@@ -48,6 +49,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         NCT6779D = 0xC560,
         NCT6791D = 0xC803,
         NCT6792D = 0xC911,
+        NCT6792DA = 0xC913,
         NCT6793D = 0xD121,
         NCT6795D = 0xD352,
         NCT6796D = 0xD423,
@@ -86,6 +88,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 case Chip.IT8620E: return "ITE IT8620E";
                 case Chip.IT8628E: return "ITE IT8628E";
+                case Chip.IT8655E: return "ITE IT8655E";
                 case Chip.IT8665E: return "ITE IT8665E";
                 case Chip.IT8686E: return "ITE IT8686E";
                 case Chip.IT8688E: return "ITE IT8688E";
@@ -107,6 +110,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.NCT6779D: return "Nuvoton NCT6779D";
                 case Chip.NCT6791D: return "Nuvoton NCT6791D";
                 case Chip.NCT6792D: return "Nuvoton NCT6792D";
+                case Chip.NCT6792DA: return "Nuvoton NCT6792D-A";
                 case Chip.NCT6793D: return "Nuvoton NCT6793D";
                 case Chip.NCT6795D: return "Nuvoton NCT6795D";
                 case Chip.NCT6796D: return "Nuvoton NCT6796D";
@@ -124,6 +128,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.W83687THF: return "Winbond W83687THF";
 
                 case Chip.Unknown: return "Unkown";
+                    break;
                 default: return "Unknown";
             }
         }
