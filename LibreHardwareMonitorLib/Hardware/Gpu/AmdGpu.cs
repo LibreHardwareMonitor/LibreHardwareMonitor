@@ -200,7 +200,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                     int temp = 0;
 
-                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.EDGE, ref temp) == AtiAdlxx.ADL_OK && temp < maxTemperature)
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.EDGE, ref temp) == AtiAdlxx.ADL_OK && temp < (maxTemperature * 1000))
                     {
                         _temperatureCore.Value = 0.001f * temp;
                         ActivateSensor(_temperatureCore);
