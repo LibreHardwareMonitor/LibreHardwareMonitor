@@ -55,57 +55,73 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 return;
 
 
-            // IT8686E has more sensors
-            if (chip == Chip.IT8686E)
+            switch (chip)
             {
-                Voltages = new float?[10];
-                Temperatures = new float?[5];
-                Fans = new float?[5];
-                Controls = new float?[3];
-
-                _fansDisabled = new bool[5];
+                // IT8686E has more sensors
+                case Chip.IT8686E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[5];
+                    Fans = new float?[5];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8665E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[6];
+                    Fans = new float?[6];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8655E:
+                {
+                    Voltages = new float?[6];
+                    Temperatures = new float?[6];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8688E:
+                {
+                    Voltages = new float?[11];
+                    Temperatures = new float?[6];
+                    Fans = new float?[5];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT879XE:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[3];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8705F:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[3];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
+                    break;
+                }
+                default:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[3];
+                    Fans = new float?[5];
+                    Controls = new float?[3];
+                    break;
+                }
             }
-            else if (chip == Chip.IT8665E)
-            {
-                Voltages = new float?[10];
-                Temperatures = new float?[6];
-                Fans = new float?[6];
-                Controls = new float?[3];
 
-                _fansDisabled = new bool[6];
-            }
-            else if (chip == Chip.IT8688E)
-            {
-                Voltages = new float?[11];
-                Temperatures = new float?[6];
-                Fans = new float?[5];
-                Controls = new float?[3];
-
-                _fansDisabled = new bool[5];
-            }
-            else if (chip == Chip.IT879XE)
-            {
-                Voltages = new float?[9];
-                Temperatures = new float?[3];
-                Fans = new float?[3];
-                Controls = new float?[3];
-
-                _fansDisabled = new bool[3];
-            }
-            else
-            {
-                Voltages = new float?[9];
-                Temperatures = new float?[3];
-                Fans = new float?[chip == Chip.IT8705F ? 3 : 5];
-                Controls = new float?[3];
-
-                _fansDisabled = new bool[chip == Chip.IT8705F ? 3 : 5];
-            }
+            _fansDisabled = new bool[Fans.Length];
 
             switch (chip)
             {
-                // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution
-                // ADC, all others 16mV
+                // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution.
+                // All others 16mV.
                 case Chip.IT8620E:
                 case Chip.IT8628E:
                 case Chip.IT8721F:
@@ -117,7 +133,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 {
                     _voltageGain = 0.012f;
                     break;
-                }
+                    }
+                case Chip.IT8655E:
                 case Chip.IT8665E:
                 case Chip.IT879XE:
                 {
@@ -185,13 +202,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _gpioCount = 8;
                     break;
                 }
-                case Chip.IT8620E:
-                case Chip.IT8628E:
-                case Chip.IT8688E:
-                case Chip.IT8705F:
-                case Chip.IT8728F:
-                case Chip.IT8771E:
-                case Chip.IT8772E:
+                default:
                 {
                     _gpioCount = 0;
                     break;
