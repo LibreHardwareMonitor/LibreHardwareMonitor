@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -20,7 +21,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly LpcPort _lpcPort;
         private readonly int _minFanRpm;
         private readonly ushort _port;
-
         private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
         private readonly byte _revision;
         private readonly int[] _temperatureHalfBit;
@@ -50,25 +50,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 _vBatMonitorControlRegister = 0x0318;
             }
-            else if (chip == Chip.NCT6797D || chip == Chip.NCT6798D)
-            {
-                VENDOR_ID_HIGH_REGISTER = 0x804F;
-                VENDOR_ID_LOW_REGISTER = 0x004F;
-
-                FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0xa09, 0xb09 };
-                FAN_PWM_COMMAND_REG = new ushort[] { 0x109, 0x209, 0x309, 0x809, 0x909, 0xa09, 0xb09 };
-                FAN_CONTROL_MODE_REG = new ushort[] { 0x102, 0x202, 0x302, 0x802, 0x902, 0xA02, 0xB02 };
-
-                _vBatMonitorControlRegister = 0x005D;
-            }
             else
             {
                 VENDOR_ID_HIGH_REGISTER = 0x804F;
                 VENDOR_ID_LOW_REGISTER = 0x004F;
 
-                FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0x017 };
-                FAN_PWM_COMMAND_REG = new ushort[] { 0x109, 0x209, 0x309, 0x809, 0x909, 0xA09 };
-                FAN_CONTROL_MODE_REG = new ushort[] { 0x102, 0x202, 0x302, 0x802, 0x902, 0xA02 };
+                if (chip == Chip.NCT6797D || chip == Chip.NCT6798D)
+                    FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0xA09, 0xB09 };
+                else
+                    FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0x017, 0x029 };
+
+                FAN_PWM_COMMAND_REG = new ushort[] { 0x109, 0x209, 0x309, 0x809, 0x909, 0xA09, 0xB09 };
+                FAN_CONTROL_MODE_REG = new ushort[] { 0x102, 0x202, 0x302, 0x802, 0x902, 0xA02, 0xB02 };
 
                 _vBatMonitorControlRegister = 0x005D;
             }
@@ -158,7 +151,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                     _fanRpmRegister = new ushort[] { 0x4c0, 0x4c2, 0x4c4, 0x4c6, 0x4c8, 0x4ca, 0x4ce };
 
-                    // min value RPM value with 13-bit fan counter
+                    // min RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
 
                     Voltages = new float?[15];
@@ -191,7 +184,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanRpmRegister = new ushort[3];
                     for (int i = 0; i < _fanRpmRegister.Length; i++)
                         _fanRpmRegister[i] = (ushort)(0x030 + (i << 1));
-                    
+
                     // min value RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
 
@@ -327,7 +320,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Fans.Length; i++)
             {
-                byte high = ReadByte((ushort)(_fanRpmRegister[i]));
+                byte high = ReadByte(_fanRpmRegister[i]);
                 byte low = ReadByte((ushort)(_fanRpmRegister[i] + 1));
                 int value = (high << 8) | low;
                 Fans[i] = value > _minFanRpm ? value : 0;
@@ -536,8 +529,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void DisableIOSpaceLock()
         {
-            if (Chip != Chip.NCT6791D && Chip != Chip.NCT6796D && Chip != Chip.NCT6792DA && Chip != Chip.NCT6796DR && Chip != Chip.NCT6793D && Chip != Chip.NCT6795D && Chip != Chip.NCT6798D && Chip != Chip.NCT6797D)
+            if (Chip != Chip.NCT6791D &&
+                Chip != Chip.NCT6792D &&
+                Chip != Chip.NCT6792DA &&
+                Chip != Chip.NCT6793D &&
+                Chip != Chip.NCT6795D &&
+                Chip != Chip.NCT6796D &&
+                Chip != Chip.NCT6796DR &&
+                Chip != Chip.NCT6797D &&
+                Chip != Chip.NCT6798D)
+            {
                 return;
+            }
 
 
             // the lock is disabled already if the vendor ID can be read

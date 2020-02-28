@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -14,6 +15,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         ATK0110 = 0x0110,
 
+        F71808E = 0x0901,
+        F71811 = 0x1007,
         F71858 = 0x0507,
         F71862 = 0x0601,
         F71869 = 0x0814,
@@ -23,7 +26,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         F71889AD = 0x1005,
         F71889ED = 0x0909,
         F71889F = 0x0723,
-        F71808E = 0x0901,
 
         IT8620E = 0x8620,
         IT8628E = 0x8628,
@@ -43,9 +45,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         IT8772E = 0x8772,
         IT879XE = 0x8733,
 
+        NCT610XD = 0xC452,
         NCT6771F = 0xB470,
         NCT6776F = 0xC330,
-        NCT610XD = 0xC452,
         NCT6779D = 0xC560,
         NCT6791D = 0xC803,
         NCT6792D = 0xC911,
@@ -79,7 +81,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.F71862: return "Fintek F71862";
                 case Chip.F71869: return "Fintek F71869";
                 case Chip.F71878AD: return "Fintek F71878AD";
-                case Chip.F71869A: return "Fintek F71869A";
+                case Chip.F71869A: return "Fintek F71869A/F71811";
                 case Chip.F71882: return "Fintek F71882";
                 case Chip.F71889AD: return "Fintek F71889AD";
                 case Chip.F71889ED: return "Fintek F71889ED";
@@ -127,8 +129,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.W83667HGB: return "Winbond W83667HG-B";
                 case Chip.W83687THF: return "Winbond W83687THF";
 
-                case Chip.Unknown: return "Unkown";
-                    break;
                 default: return "Unknown";
             }
         }

@@ -1,7 +1,7 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -274,7 +274,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                         if (_ccdTemperatures[i] == null)
                         {
-                            _hw.ActivateSensor(_ccdTemperatures[i] = new Sensor($"Core CCD{i + 1} (Tdie)",
+                            _hw.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
                                                                                 _hw._sensorTemperatures++,
                                                                                 SensorType.Temperature,
                                                                                 _hw,
@@ -291,7 +291,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                         if (_ccdsMaxTemperature == null)
                         {
-                            _hw.ActivateSensor(_ccdsMaxTemperature = new Sensor("Core CCDs Max (Tdie)",
+                            _hw.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
                                                                                 _hw._sensorTemperatures++,
                                                                                 SensorType.Temperature,
                                                                                 _hw,
@@ -300,7 +300,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                         if (_ccdsAverageTemperature == null)
                         {
-                            _hw.ActivateSensor(_ccdsAverageTemperature = new Sensor("Core CCDs Average (Tdie)",
+                            _hw.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
                                                                                     _hw._sensorTemperatures++,
                                                                                     SensorType.Temperature,
                                                                                     _hw,
