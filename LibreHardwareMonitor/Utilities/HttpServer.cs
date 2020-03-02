@@ -415,11 +415,12 @@ namespace LibreHardwareMonitor.Utilities
 #if DEBUG
             string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
-      var responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
+            string responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
 #endif
             byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
             response.AddHeader("Cache-Control", "no-cache");
+            response.AddHeader("Access-Control-Allow-Origin", "*");
             response.ContentLength64 = buffer.Length;
             response.ContentType = "application/json";
 
