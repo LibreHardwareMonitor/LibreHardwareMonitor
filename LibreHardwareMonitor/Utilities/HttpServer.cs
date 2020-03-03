@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Drawing;
@@ -414,11 +415,12 @@ namespace LibreHardwareMonitor.Utilities
 #if DEBUG
             string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
-      var responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
+            string responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
 #endif
             byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
             response.AddHeader("Cache-Control", "no-cache");
+            response.AddHeader("Access-Control-Allow-Origin", "*");
             response.ContentLength64 = buffer.Length;
             response.ContentType = "application/json";
 

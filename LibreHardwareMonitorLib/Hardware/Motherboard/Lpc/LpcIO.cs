@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -30,10 +31,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             Ring0.ReleaseIsaBusMutex();
         }
 
-        public ISuperIO[] SuperIO
-        {
-            get { return _superIOs.ToArray(); }
-        }
+        public ISuperIO[] SuperIO => _superIOs.ToArray();
 
         private void ReportUnknownChip(LpcPort port, string type, int chip)
         {
@@ -110,6 +108,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             byte id = port.ReadByte(CHIP_ID_REGISTER);
             byte revision = port.ReadByte(CHIP_REVISION_REGISTER);
             Chip chip = Chip.Unknown;
+
             switch (id)
             {
                 case 0x05:
@@ -221,6 +220,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         case 0x06:
                         {
                             chip = Chip.F71878AD;
+                            logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
+                            break;
+                        }
+                        case 0x18:
+                        {
+                            chip = Chip.F71811;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
                         }
@@ -512,8 +517,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 ushort vendorId = port.ReadWord(FINTEK_VENDOR_ID_REGISTER);
 
-                // disable the hardware monitor i/o space lock on NCT679*D chips
-                if (address == verify && (chip == Chip.NCT6791D || chip == Chip.NCT6796D || chip == Chip.NCT6796DR || chip == Chip.NCT6793D || chip == Chip.NCT6795D || chip == Chip.NCT6798D || chip == Chip.NCT6797D))
+                // disable the hardware monitor i/o space lock on NCT679XD chips
+                if (address == verify && (chip == Chip.NCT6791D ||
+                                          chip == Chip.NCT6792D ||
+                                          chip == Chip.NCT6792DA ||
+                                          chip == Chip.NCT6793D ||
+                                          chip == Chip.NCT6795D ||
+                                          chip == Chip.NCT6796D || 
+                                          chip == Chip.NCT6796DR || 
+                                          chip == Chip.NCT6798D || 
+                                          chip == Chip.NCT6797D))
                 {
                     port.NuvotonDisableIOSpaceLock();
                 }
@@ -528,6 +541,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _report.AppendLine(revision.ToString("X", CultureInfo.InvariantCulture));
                     _report.AppendLine("Error: Address verification failed");
                     _report.AppendLine();
+
                     return false;
                 }
 
@@ -544,6 +558,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _report.Append("Error: Invalid address 0x");
                     _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
                     _report.AppendLine();
+
                     return false;
                 }
 
@@ -598,6 +613,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             _report.Append("Error: Invalid vendor ID 0x");
                             _report.AppendLine(vendorId.ToString("X", CultureInfo.InvariantCulture));
                             _report.AppendLine();
+
                             return false;
                         }
 
@@ -699,6 +715,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 ushort gpioAddress;
                 ushort gpioVerify;
+
                 if (chip == Chip.IT8705F)
                 {
                     port.Select(IT8705_GPIO_LDN);
@@ -723,18 +740,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _report.Append("Error: Invalid address 0x");
                     _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
                     _report.AppendLine();
+
                     return false;
                 }
 
-                if (gpioAddress != gpioVerify ||
-                    gpioAddress < 0x100 ||
-                    (gpioAddress & 0xF007) != 0)
+                if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0)
                 {
                     _report.Append("Chip ID: 0x");
                     _report.AppendLine(chip.ToString("X"));
                     _report.Append("Error: Invalid GPIO address 0x");
                     _report.AppendLine(gpioAddress.ToString("X", CultureInfo.InvariantCulture));
                     _report.AppendLine();
+
                     return false;
                 }
 
@@ -758,8 +775,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private const byte WINBOND_NUVOTON_HARDWARE_MONITOR_LDN = 0x0B;
 
         private const ushort FINTEK_VENDOR_ID = 0x1934;
-        private const byte FINTEK_VENDOR_ID_REGISTER = 0x23;
 
+        private const byte FINTEK_VENDOR_ID_REGISTER = 0x23;
         private const byte IT87_CHIP_VERSION_REGISTER = 0x22;
 
         private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };

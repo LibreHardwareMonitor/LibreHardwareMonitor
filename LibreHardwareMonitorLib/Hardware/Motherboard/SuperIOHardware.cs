@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -215,6 +216,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             switch (superIO.Chip)
             {
+                case Chip.IT8655E:
+                case Chip.IT8665E:
+                case Chip.IT8686E:
                 case Chip.IT8688E:
                 case Chip.IT8705F:
                 case Chip.IT8712F:
@@ -222,9 +226,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.IT8718F:
                 case Chip.IT8720F:
                 case Chip.IT8726F:
-                case Chip.IT8665E:
-                case Chip.IT8655E:
-                case Chip.IT8686E:
                 case Chip.IT879XE:
                 {
                     GetIteConfigurationsA(superIO, manufacturer, model, v, t, f, c, ref readFan, ref postUpdate, ref mutex);
@@ -256,6 +257,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                     break;
                 }
+                case Chip.F71808E:
                 case Chip.F71862:
                 case Chip.F71869:
                 case Chip.F71869A:
@@ -263,7 +265,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.F71889AD:
                 case Chip.F71889ED:
                 case Chip.F71889F:
-                case Chip.F71808E:
                 {
                     GetFintekConfiguration(superIO, manufacturer, model, v, t, f, c);
                     
@@ -293,7 +294,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Voltage #3", 2, true));
                     v.Add(new Voltage("AVCC", 3, 34, 51));
                     v.Add(new Voltage("Voltage #5", 4, true));
-                    v.Add(new Voltage("5VSB", 5, 34, 51));
+                    v.Add(new Voltage("+5VSB", 5, 34, 51));
                     v.Add(new Voltage("VBat", 6));
                     t.Add(new Temperature("CPU", 0));
                     t.Add(new Temperature("Auxiliary", 1));
@@ -316,16 +317,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #0", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #1", 4, true));
                     v.Add(new Voltage("Voltage #2", 5, true));
                     v.Add(new Voltage("Reserved", 6, true));
                     v.Add(new Voltage("3VSB", 7, 34, 34));
                     v.Add(new Voltage("VBat", 8, 34, 34));
                     v.Add(new Voltage("Voltage #10", 9, true));
-                    t.Add(new Temperature("SYS", 1));
+                    t.Add(new Temperature("System", 1));
                     t.Add(new Temperature("CPU Core", 2));
-                    t.Add(new Temperature("AUX", 3));
+                    t.Add(new Temperature("Auxiliary", 3));
                     
                     for (int i = 0; i < superIO.Fans.Length; i++)
                         f.Add(new Fan("Fan #" + (i + 1), i));
@@ -338,6 +339,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.NCT6779D:
                 case Chip.NCT6791D:
                 case Chip.NCT6792D:
+                case Chip.NCT6792DA:
                 case Chip.NCT6793D:
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
@@ -1135,6 +1137,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 };
 
                 int fanIndex = 0;
+
                 postUpdate = () =>
                 {
                     // get GPIO 80-87
@@ -1164,7 +1167,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("NB Voltage", 2));
-                            v.Add(new Voltage("Analog +3.3V", 3, 10, 10));
+                            v.Add(new Voltage("AVCC", 3, 10, 10));
                             // v.Add(new Voltage("DIMM", 6, true));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
@@ -1182,7 +1185,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #1", 0, true));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
-                            v.Add(new Voltage("Analog +3.3V", 3, 10, 10, 0, true));
+                            v.Add(new Voltage("AVCC", 3, 10, 10, 0, true));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1521,7 +1524,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
                             v.Add(new Voltage("3VSB", 7, 34, 34));
@@ -1543,7 +1546,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
                             v.Add(new Voltage("Voltage #6", 5, true));
@@ -1564,7 +1567,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
                             v.Add(new Voltage("3VSB", 7, 34, 34));
@@ -1585,7 +1588,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
                             v.Add(new Voltage("3VSB", 7, 34, 34));
@@ -1606,7 +1609,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1635,9 +1638,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     {
                         case Model.B85M_DGS:
                         {
-                            v.Add(new Voltage("CPU VCCIN", 0, 1, 1));
+                            v.Add(new Voltage("Vcore", 0, 1, 1));
                             v.Add(new Voltage("+12V", 1, 56, 10));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("VIN1", 4, true));
                             v.Add(new Voltage("+5V", 5, 12, 3));
@@ -1661,7 +1664,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 0, 1));
                             v.Add(new Voltage("+12V", 1, 56, 10));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             //v.Add(new Voltage("#Unused #4", 4, 0, 1, 0, true));
                             v.Add(new Voltage("+5V", 5, 20, 10));
                             //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
@@ -1669,7 +1672,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("CPU", 1));
-                            t.Add(new Temperature("AUX", 2));
+                            t.Add(new Temperature("Auxiliary", 2));
                             t.Add(new Temperature("Motherboard", 3));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
@@ -1685,7 +1688,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1713,7 +1716,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -1748,7 +1751,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("Chipset 1.05V", 1, 0, 1));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             v.Add(new Voltage("+12V", 4, 56, 10));
                             v.Add(new Voltage("VcoreRef", 5, 0, 1));
                             v.Add(new Voltage("DIMM", 6, 0, 1));
@@ -1766,7 +1769,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Motherboard", 2));
                             //t.Add(new Temperature("#Unused #3", 3));
                             //t.Add(new Temperature("#Unused #4", 4));
-                            t.Add(new Temperature("AUX", 5));
+                            t.Add(new Temperature("Auxiliary", 5));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
@@ -1790,7 +1793,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             //v.Add(new Voltage("#Unused", 1, 0, 1, 0, true));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             v.Add(new Voltage("+12V", 4, 28, 5));
                             v.Add(new Voltage("Vcore Refin", 5, 0, 1));
                             //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
@@ -1805,7 +1808,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("CPU", 1));
                             t.Add(new Temperature("Motherboard", 2));
-                            t.Add(new Temperature("AUX", 3));
+                            t.Add(new Temperature("Auxiliary", 3));
                             t.Add(new Temperature("VRM", 4));
                             t.Add(new Temperature("AUXTIN2", 5));
                             //t.Add(new Temperature("Temperature #6", 6));
@@ -1824,7 +1827,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("Chipset 1.05V", 1, 0, 1));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             v.Add(new Voltage("+12V", 4, 56, 10));
                             v.Add(new Voltage("VDDCR_SOC", 5, 0, 1));
                             v.Add(new Voltage("DIMM", 6, 0, 1));
@@ -1838,10 +1841,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             //v.Add(new Voltage("unused", 14, 34, 34, 0, true));
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("Motherboard", 1));
-                            t.Add(new Temperature("AUX", 2));
+                            t.Add(new Temperature("Auxiliary", 2));
                             t.Add(new Temperature("Chipset", 3));
                             t.Add(new Temperature("Core VRM", 4));
-                            t.Add(new Temperature("Core SOC", 5));
+                            t.Add(new Temperature("Core SoC", 5));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
@@ -1856,7 +1859,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1897,7 +1900,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1928,7 +1931,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 2, 2));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVSB", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("CPU GFX", 6, 2, 2));
@@ -1965,7 +1968,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0, 2, 2));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVSB", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
                             v.Add(new Voltage("CPU GFX", 6, 2, 2));
@@ -1998,7 +2001,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -2039,7 +2042,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             //v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("CPU I/O", 6));
@@ -2068,7 +2071,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             //v.Add(new Voltage("Voltage #6", 5, false));
                             //v.Add(new Voltage("CPU I/O", 6));
@@ -2104,7 +2107,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("CPU I/O", 6));
@@ -2138,7 +2141,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -2175,7 +2178,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -2217,7 +2220,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         case Model.AOD790GX_128M: // W83627EHF
                         {
                             v.Add(new Voltage("Vcore", 0));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 4, 10, 10));
                             v.Add(new Voltage("+5V", 5, 20, 10));
                             v.Add(new Voltage("+12V", 6, 28, 5));
@@ -2235,7 +2238,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -2262,7 +2265,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -2312,7 +2315,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -2343,7 +2346,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11.5f, 1.91f));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 15, 7.5f));
                             v.Add(new Voltage("3VSB", 7, 34, 34));
@@ -2362,7 +2365,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 12, 2));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 15, 7.5f));
                             v.Add(new Voltage("3VSB", 7, 34, 34));
@@ -2382,7 +2385,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -2408,7 +2411,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
