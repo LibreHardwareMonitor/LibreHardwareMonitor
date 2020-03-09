@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: 'Mainbaord Temperatures (°C)'
+                text: 'Mainboard Temperatures (°C)'
             },
             scales: {
                 yAxes: [{
@@ -741,7 +741,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             //Temperatures and Fans ------------
             //Ryzen TR CPU maxCCD temp
-            plotNextSensor(TempChart, "CPU maxCCD: ", data.Children[1].Children[2].Children[6].Value);
+            sensorIndex = 0;
+            plotNextSensor(TempChart, "CPU maxCCD: ", data.Children[1].Children[2].Children[4].Value);
             plotNextSensor(TempChart, "CPU Tctl: ", data.Children[1].Children[2].Children[0].Value);
             //NVIDIA GPU Temp
             plotNextSensor(TempChart, "GPU: ", data.Children[3].Children[1].Children[0].Value);
