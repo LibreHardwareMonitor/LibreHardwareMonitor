@@ -16,6 +16,7 @@ using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Wmi;
 using LibreHardwareMonitor.Utilities;
+using System.Threading;
 
 namespace LibreHardwareMonitor.UI
 {
@@ -59,6 +60,19 @@ namespace LibreHardwareMonitor.UI
         private readonly Logger _logger;
 
         private bool _selectionDragging;
+
+        Thread _timerThread;
+
+        public void TimerBackgroundThread()
+        {
+            timer.Enabled = true;
+            do
+            {
+                Thread.Sleep(1);
+                Application.DoEvents();
+
+            } while (timer.Enabled);
+        }
 
         public MainForm()
         {
@@ -163,7 +177,8 @@ namespace LibreHardwareMonitor.UI
             _computer.HardwareRemoved += HardwareRemoved;
             _computer.Open();
 
-            timer.Enabled = true;
+            _timerThread = new Thread(new ThreadStart(TimerBackgroundThread));
+            _timerThread.Start();
 
             UserOption showHiddenSensors = new UserOption("hiddenMenuItem", false, hiddenMenuItem, _settings);
             showHiddenSensors.Changed += delegate
