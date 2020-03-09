@@ -1,7 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Runtime.InteropServices;
@@ -34,7 +34,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             buffers.Spt.TargetId = 0;
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
-            buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+            buffers.Spt.DataTransferLength = Kernel32.SCSI_PASS_THROUGH_BUFFER_SIZE;
             buffers.Spt.TimeOutValue = 2;
             buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
@@ -62,7 +62,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 buffers.Spt.TargetId = 0;
                 buffers.Spt.Lun = 0;
                 buffers.Spt.SenseInfoLength = 24;
-                buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+                buffers.Spt.DataTransferLength = Kernel32.SCSI_PASS_THROUGH_BUFFER_SIZE;
                 buffers.Spt.TimeOutValue = 2;
                 buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                 buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
@@ -81,9 +81,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
                 if (validTransfer)
                 {
-                    IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+                    var offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                    Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
+                    var item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
                     data = item;
                     Marshal.FreeHGlobal(buffer);
                     result = true;
@@ -111,7 +111,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             buffers.Spt.TargetId = 0;
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
-            buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+            buffers.Spt.DataTransferLength = Kernel32.SCSI_PASS_THROUGH_BUFFER_SIZE;
             buffers.Spt.TimeOutValue = 2;
             buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
@@ -143,7 +143,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 buffers.Spt.TargetId = 0;
                 buffers.Spt.Lun = 0;
                 buffers.Spt.SenseInfoLength = 24;
-                buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+                buffers.Spt.DataTransferLength = Kernel32.SCSI_PASS_THROUGH_BUFFER_SIZE;
                 buffers.Spt.TimeOutValue = 2;
                 buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                 buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
@@ -162,9 +162,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
                 if (validTransfer)
                 {
-                    IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+                    var offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                    Kernel32.NVME_HEALTH_INFO_LOG item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
+                    var item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
                     data = item;
                     Marshal.FreeHGlobal(buffer);
                     result = true;
@@ -180,7 +180,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
         {
-            SafeHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
+            var handle = Kernel32.OpenDevice(storageInfo.DeviceId);
             if (handle == null || handle.IsInvalid)
                 return null;
 
@@ -192,7 +192,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             buffers.Spt.TargetId = 0;
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
-            buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+            buffers.Spt.DataTransferLength = Kernel32.SCSI_PASS_THROUGH_BUFFER_SIZE;
             buffers.Spt.TimeOutValue = 2;
             buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
@@ -220,7 +220,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 buffers.Spt.TargetId = 0;
                 buffers.Spt.Lun = 0;
                 buffers.Spt.SenseInfoLength = 24;
-                buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+                buffers.Spt.DataTransferLength = Kernel32.SCSI_PASS_THROUGH_BUFFER_SIZE;
                 buffers.Spt.TimeOutValue = 2;
                 buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                 buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));

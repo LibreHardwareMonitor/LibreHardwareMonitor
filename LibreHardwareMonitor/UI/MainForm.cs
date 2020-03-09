@@ -1,11 +1,11 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael M�ller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -64,10 +64,11 @@ namespace LibreHardwareMonitor.UI
         {
             InitializeComponent();
 
-            // check if the LibreHardwareMonitorLib assembly has the correct version
+            // check if the OpenHardwareMonitorLib assembly has the correct version
             if (Assembly.GetAssembly(typeof(Computer)).GetName().Version != Assembly.GetExecutingAssembly().GetName().Version)
             {
-                MessageBox.Show("The version of the file LibreHardwareMonitorLib.dll is incompatible.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("The version of the file LibreHardwareMonitorLib.dll is incompatible.",
+                  "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
             }
 
@@ -456,7 +457,7 @@ namespace LibreHardwareMonitor.UI
                     _settings.SetValue("plotForm.Height", _plotForm.Bounds.Height);
                 }
             }
-
+            
             _plotForm.Move += MoveOrResizePlotForm;
             _plotForm.Resize += MoveOrResizePlotForm;
 
@@ -486,7 +487,7 @@ namespace LibreHardwareMonitor.UI
         private void InsertSorted(IList<Node> nodes, HardwareNode node)
         {
             int i = 0;
-            while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType <= node.Hardware.HardwareType)
+            while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType < node.Hardware.HardwareType)
                 i++;
 
             nodes.Insert(i, node);
@@ -613,7 +614,15 @@ namespace LibreHardwareMonitor.UI
 
         private void ExitClick(object sender, EventArgs e)
         {
-            CloseApplication();
+            Visible = false;
+            _systemTray.IsMainIconEnabled = false;
+            timer.Enabled = false;
+            _computer.Close();
+            SaveConfiguration();
+            if (_runWebServer.Value)
+                Server.Quit();
+            _systemTray.Dispose();
+            Environment.Exit(0);
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -634,10 +643,6 @@ namespace LibreHardwareMonitor.UI
 
         private void SaveConfiguration()
         {
-            if (_plotPanel == null || _settings == null)
-                return;
-
-
             _plotPanel.SetCurrentSettings();
 
             foreach (TreeColumn column in treeView.Columns)
@@ -675,7 +680,8 @@ namespace LibreHardwareMonitor.UI
                 Height = _settings.GetValue("mainForm.Height", 640)
             };
 
-            Rectangle fullWorkingArea = new Rectangle(int.MaxValue, int.MaxValue, int.MinValue, int.MinValue);
+            Rectangle fullWorkingArea = new Rectangle(int.MaxValue, int.MaxValue,
+              int.MinValue, int.MinValue);
 
             foreach (Screen screen in Screen.AllScreens)
                 fullWorkingArea = Rectangle.Union(fullWorkingArea, screen.Bounds);
@@ -687,13 +693,10 @@ namespace LibreHardwareMonitor.UI
                 newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) - (newBounds.Height / 2);
             }
             Bounds = newBounds;
-            FormClosed += MainForm_FormClosed;
         }
 
-        private void CloseApplication()
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            FormClosed -= MainForm_FormClosed;
-
             Visible = false;
             _systemTray.IsMainIconEnabled = false;
             timer.Enabled = false;
@@ -702,13 +705,6 @@ namespace LibreHardwareMonitor.UI
             if (_runWebServer.Value)
                 Server.Quit();
             _systemTray.Dispose();
-
-            Application.Exit();
-        }
-
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            CloseApplication();
         }
 
         private void AboutMenuItem_Click(object sender, EventArgs e)

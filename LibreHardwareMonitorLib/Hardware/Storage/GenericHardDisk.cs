@@ -1,8 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System.Collections.Generic;
 
@@ -11,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix("")]
     public class GenericHardDisk : AtaStorage
     {
-        private static readonly List<SmartAttribute> _smartAttributes = new List<SmartAttribute>
+        private static new readonly List<SmartAttribute> SmartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x01, SmartNames.ReadErrorRate),
             new SmartAttribute(0x02, SmartNames.ThroughputPerformance),
@@ -84,6 +83,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         };
 
         internal GenericHardDisk(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "hdd", index, _smartAttributes, settings) { }
+            : base(storageInfo, smart, name, firmwareRevision, "hdd", index, SmartAttributes, settings) { }
     }
 }

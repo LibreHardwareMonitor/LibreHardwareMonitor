@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitor", "Lib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aga.Controls", "Aga.Controls\Aga.Controls.csproj", "{E73BB233-D88B-44A7-A98F-D71EE158381D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OxyPlot", "OxyPlot\OxyPlot\OxyPlot.csproj", "{BCC43E58-E473-403E-A84D-63FEDC723040}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OxyPlot.WindowsForms", "OxyPlot\OxyPlot.WindowsForms\OxyPlot.WindowsForms.csproj", "{D4554296-094E-4CAC-8EAE-44EB250666C6}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{23F54DBD-8998-4E22-A4E4-60F4F77F9B65}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BAEC1DFE-5D1E-4CDB-8264-6C85B229D812}"
@@ -37,12 +41,22 @@ Global
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCC43E58-E473-403E-A84D-63FEDC723040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCC43E58-E473-403E-A84D-63FEDC723040}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCC43E58-E473-403E-A84D-63FEDC723040}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCC43E58-E473-403E-A84D-63FEDC723040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4554296-094E-4CAC-8EAE-44EB250666C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4554296-094E-4CAC-8EAE-44EB250666C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4554296-094E-4CAC-8EAE-44EB250666C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4554296-094E-4CAC-8EAE-44EB250666C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E73BB233-D88B-44A7-A98F-D71EE158381D} = {23F54DBD-8998-4E22-A4E4-60F4F77F9B65}
+		{BCC43E58-E473-403E-A84D-63FEDC723040} = {23F54DBD-8998-4E22-A4E4-60F4F77F9B65}
+		{D4554296-094E-4CAC-8EAE-44EB250666C6} = {23F54DBD-8998-4E22-A4E4-60F4F77F9B65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A8EF661-2BD7-498F-8FB9-28182B3B0BE5}

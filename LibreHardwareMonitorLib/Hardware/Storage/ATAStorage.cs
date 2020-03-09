@@ -1,8 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
@@ -18,8 +17,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
     public abstract class AtaStorage : AbstractStorage
     {
         // array of all hard drive types, matching type is searched in this order
-        private static readonly Type[] _hddTypes = { typeof(SsdPlextor), typeof(SsdIntel), typeof(SsdSandforce), typeof(SsdIndilinx), typeof(SsdSamsung), typeof(SsdMicron), typeof(GenericHardDisk) };
-
+        private static readonly Type[] HddTypes = { typeof(SsdPlextor), typeof(SsdIntel), typeof(SsdSandforce), typeof(SsdIndilinx), typeof(SsdSamsung), typeof(SsdMicron), typeof(GenericHardDisk) };
+        private readonly List<SmartAttribute> _smartAttributes;
         private IDictionary<SmartAttribute, Sensor> _sensors;
 
         /// <summary>
@@ -30,25 +29,25 @@ namespace LibreHardwareMonitor.Hardware.Storage
         /// <summary>
         /// Gets the SMART attributes.
         /// </summary>
-        public IReadOnlyList<SmartAttribute> SmartAttributes { get; }
+        public IReadOnlyList<SmartAttribute> SmartAttributes => _smartAttributes;
 
-        internal AtaStorage(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IReadOnlyList<SmartAttribute> smartAttributes, ISettings settings)
+        internal AtaStorage(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IEnumerable<SmartAttribute> smartAttributes, ISettings settings)
           : base(storageInfo, name, firmwareRevision, id, index, settings)
         {
             Smart = smart;
             if (smart.IsValid)
                 smart.EnableSmart();
-            
-            SmartAttributes = smartAttributes;
+
+            _smartAttributes = new List<SmartAttribute>(smartAttributes);
             CreateSensors();
         }
 
-        internal static AbstractStorage CreateInstance(StorageInfo storageInfo, ISettings settings)
+        internal static AbstractStorage CreateInstance(StorageInfo info, ISettings settings)
         {
-            ISmart smart = new WindowsSmart(storageInfo.Index);
+            ISmart smart = new WindowsSmart(info.Index);
             string name = null;
             string firmwareRevision = null;
-            Kernel32.SMART_ATTRIBUTE[] smartAttributes = { };
+            Kernel32.SMART_ATTRIBUTE[] values = { };
 
             if (smart.IsValid)
             {
@@ -56,8 +55,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 bool smartEnabled = smart.EnableSmart();
 
                 if (smartEnabled)
-                    smartAttributes = smart.ReadSmartData();
-                
+                    values = smart.ReadSmartData();
+
                 if (!nameValid)
                 {
                     name = null;
@@ -66,7 +65,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
             else
             {
-                string[] logicalDrives = WindowsStorage.GetLogicalDrives(storageInfo.Index);
+                string[] logicalDrives = WindowsStorage.GetLogicalDrives(info.Index);
                 if (logicalDrives == null || logicalDrives.Length == 0)
                 {
                     smart.Close();
@@ -78,8 +77,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 {
                     try
                     {
-                        var driveInfo = new DriveInfo(logicalDrive);
-                        if (driveInfo.TotalSize > 0)
+                        var di = new DriveInfo(logicalDrive);
+                        if (di.TotalSize > 0)
                         {
                             hasNonZeroSizeDrive = true;
                             break;
@@ -98,25 +97,27 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
 
             if (string.IsNullOrEmpty(name))
-                name = string.IsNullOrEmpty(storageInfo.Name) ? "Generic Hard Disk" : storageInfo.Name;
+                name = string.IsNullOrEmpty(info.Name) ? "Generic Hard Disk" : info.Name;
 
             if (string.IsNullOrEmpty(firmwareRevision))
-                firmwareRevision = string.IsNullOrEmpty(storageInfo.Revision) ? "Unknown" : storageInfo.Revision;
+                firmwareRevision = string.IsNullOrEmpty(info.Revision) ? "Unknown" : info.Revision;
 
-            foreach (Type type in _hddTypes)
+            foreach (Type type in HddTypes)
             {
+                // get the array of name prefixes for the current type
+                var namePrefixes = type.GetCustomAttributes(typeof(NamePrefixAttribute), true) as NamePrefixAttribute[];
+
                 // get the array of the required SMART attributes for the current type
+                var requiredAttributes = type.GetCustomAttributes(typeof(RequireSmartAttribute), true) as RequireSmartAttribute[];
 
                 // check if all required attributes are present
-                bool allAttributesFound = true;
-
-                if (type.GetCustomAttributes(typeof(RequireSmartAttribute), true) is RequireSmartAttribute[] requiredAttributes)
+                bool allRequiredAttributesFound = true;
+                if (requiredAttributes != null)
                 {
-                    foreach (RequireSmartAttribute requireAttribute in requiredAttributes)
+                    foreach (var requireAttribute in requiredAttributes)
                     {
                         bool attributeFound = false;
-
-                        foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
+                        foreach (Kernel32.SMART_ATTRIBUTE value in values)
                         {
                             if (value.Id == requireAttribute.AttributeId)
                             {
@@ -127,27 +128,26 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
                         if (!attributeFound)
                         {
-                            allAttributesFound = false;
+                            allRequiredAttributesFound = false;
                             break;
                         }
                     }
                 }
 
                 // if an attribute is missing, then try the next type
-                if (!allAttributesFound)
+                if (!allRequiredAttributesFound)
                     continue;
 
 
                 // check if there is a matching name prefix for this type
-                if (type.GetCustomAttributes(typeof(NamePrefixAttribute), true) is NamePrefixAttribute[] namePrefixes)
+                if (namePrefixes != null)
                 {
                     foreach (NamePrefixAttribute prefix in namePrefixes)
                     {
                         if (name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture))
                         {
-                            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-
-                            return Activator.CreateInstance(type, flags, null, new object[] { storageInfo, smart, name, firmwareRevision, storageInfo.Index, settings }, null) as AtaStorage;
+                            var flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+                            return Activator.CreateInstance(type, flags, null, new object[] { info, smart, name, firmwareRevision, info.Index, settings }, null) as AtaStorage;
                         }
                     }
                 }
@@ -164,25 +164,27 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             if (Smart.IsValid)
             {
-                byte[] smartIds = Smart.ReadSmartData().Select(x => x.Id).ToArray();
+                var smartIds = Smart.ReadSmartData().Select(attrValue => attrValue.Id);
 
                 // unique attributes by SensorType and SensorChannel.
-                IEnumerable<SmartAttribute> smartAttributes = SmartAttributes
-                                      .Where(x => x.SensorType.HasValue && smartIds.Contains(x.Id))
-                                      .GroupBy(x => new { x.SensorType.Value, x.SensorChannel })
-                                      .Select(x => x.First());
+                var uniqueAttributes = _smartAttributes
+                                      .Where(a => a.SensorType.HasValue && smartIds.Contains(a.Identifier))
+                                      .GroupBy(a => new { a.SensorType.Value, a.SensorChannel })
+                                      .Select(g => g.First());
 
-                _sensors = smartAttributes.ToDictionary(attribute => attribute,
-                                                        attribute => new Sensor(attribute.SensorName,
-                                                                           attribute.SensorChannel,
-                                                                           attribute.DefaultHiddenSensor,
-                                                                           attribute.SensorType.GetValueOrDefault(),
+                _sensors = uniqueAttributes.ToDictionary(attr => attr,
+                                                        attr => new Sensor(attr.SensorName,
+                                                                           attr.SensorChannel,
+                                                                           attr.DefaultHiddenSensor,
+                                                                           attr.SensorType.Value,
                                                                            this,
-                                                                           attribute.ParameterDescriptions,
+                                                                           attr.ParameterDescriptions,
                                                                            _settings));
 
                 foreach (KeyValuePair<SmartAttribute, Sensor> sensor in _sensors)
+                {
                     ActivateSensor(sensor.Value);
+                }
             }
 
             base.CreateSensors();
@@ -194,14 +196,13 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             if (Smart.IsValid)
             {
-                Kernel32.SMART_ATTRIBUTE[] smartAttributes = Smart.ReadSmartData();
-
+                Kernel32.SMART_ATTRIBUTE[] values = Smart.ReadSmartData();
                 foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
                 {
                     SmartAttribute attribute = keyValuePair.Key;
-                    foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
+                    foreach (Kernel32.SMART_ATTRIBUTE value in values)
                     {
-                        if (value.Id == attribute.Id)
+                        if (value.Id == attribute.Identifier)
                         {
                             Sensor sensor = keyValuePair.Value;
                             sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
@@ -209,7 +210,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     }
                 }
 
-                UpdateAdditionalSensors(smartAttributes);
+                UpdateAdditionalSensors(values);
             }
         }
 
@@ -248,9 +249,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
                         string description = "Unknown";
                         float? physical = null;
-                        foreach (SmartAttribute a in SmartAttributes)
+                        foreach (SmartAttribute a in _smartAttributes)
                         {
-                            if (a.Id == value.Id)
+                            if (a.Identifier == value.Id)
                             {
                                 description = a.Name;
                                 if (a.HasRawValueConversion | a.SensorType.HasValue)

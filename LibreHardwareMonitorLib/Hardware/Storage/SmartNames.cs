@@ -1,8 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 namespace LibreHardwareMonitor.Hardware.Storage
 {
@@ -61,8 +60,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static string EraseFailure => "Erase Failure";
 
-        public static string ErrorCorrectionCount => "Error Correction Count";
-
         public static string ExceptionModeStatus => "Exception Mode Status";
 
         public static string FactoryBadBlockCount => "Factory Bad Block Count";
@@ -70,8 +67,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static string FlyingHeight => "Flying Height";
 
         public static string FreeFallProtection => "Free Fall Protection";
-
-        public static string FTLProgramNANDPagesCount => "FTL Program NAND Pages Count";
 
         public static string GmrHeadAmplitude => "GMR Head Amplitude";
 
@@ -84,8 +79,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static string HeadStability => "Head Stability";
 
         public static string HighFlyWrites => "High Fly Writes";
-
-        public static string HostProgramNANDPagesCount => "Host Program NAND Pages Count";
 
         public static string HostReads => "Host Reads";
 
@@ -157,8 +150,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static string ReadFailure => "Read Failure";
 
-        public static string ReallocatedNANDBlockCount => "Reallocated NAND Block Count";
-
         public static string ReallocatedSectorsCount => "Reallocated Sectors Count";
 
         public static string ReallocationEventCount => "Reallocation Event Count";
@@ -205,8 +196,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static string StartStopCount => "Start/Stop Count";
 
-        public static string SuccessfulRAINRecoveryCount => "Successful RAIN Recovery Count";
-
         public static string SupercapStatus => "Supercap Status";
 
         public static string TaCounterDetected => "TA Counter Detected";
@@ -244,8 +233,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static string UnrecoverableEcc => "Unrecoverable ECC";
 
         public static string UnsafeShutdownCount => "Unsafe Shutdown Count";
-
-        public static string UnusedReserveNANDBlocks => "Unused Reserve NAND Blocks";
 
         public static string UsedReservedBlockCountChip => "Used Reserved Block Count (Chip)";
 

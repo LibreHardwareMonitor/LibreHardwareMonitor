@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: 'Mainboard Temperatures (°C)'
+                text: 'Mainbaord Temperatures (°C)'
             },
             scales: {
                 yAxes: [{

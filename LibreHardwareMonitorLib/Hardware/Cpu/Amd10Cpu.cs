@@ -1,8 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
@@ -43,90 +42,60 @@ namespace LibreHardwareMonitor.Hardware.CPU
             switch (_family)
             {
                 case 0x10:
-                {
                     miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x11:
-                {
                     miscellaneousControlDeviceId = FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x12:
-                {
                     miscellaneousControlDeviceId = FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x14:
-                {
                     miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x15:
-                {
                     switch (_model & 0xF0)
                     {
                         case 0x00:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x10:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x30:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x70:
                         case 0x60:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         default:
-                        {
                             miscellaneousControlDeviceId = 0;
                             break;
-                        }
                     }
+
                     break;
-                }
                 case 0x16:
-                {
                     switch (_model & 0xF0)
                     {
                         case 0x00:
-                        {
                             miscellaneousControlDeviceId = FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x30:
-                        {
                             miscellaneousControlDeviceId = FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         default:
-                        {
                             miscellaneousControlDeviceId = 0;
                             break;
-                        }
                     }
+
                     break;
-                }
                 case 0x17:
-                {
                     miscellaneousControlDeviceId = FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                     break;
-                }
                 default:
-                {
                     miscellaneousControlDeviceId = 0;
                     break;
-                }
             }
 
             // get the pci address for the Miscellaneous Control registers
@@ -365,24 +334,23 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
         }
 
-        private static string ReadFirstLine(Stream stream)
+        private string ReadFirstLine(Stream stream)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-
+            StringBuilder sb = new StringBuilder();
             try
             {
                 stream.Seek(0, SeekOrigin.Begin);
                 int b = stream.ReadByte();
                 while (b != -1 && b != 10)
                 {
-                    stringBuilder.Append((char)b);
+                    sb.Append((char)b);
                     b = stream.ReadByte();
                 }
             }
             catch
             { }
 
-            return stringBuilder.ToString();
+            return sb.ToString();
         }
 
         public override void Update()

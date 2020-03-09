@@ -1,8 +1,7 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System;
 using System.Collections.Generic;
@@ -38,7 +37,6 @@ namespace LibreHardwareMonitor.Hardware
             IsDefaultHidden = defaultHidden;
             SensorType = sensorType;
             _hardware = hardware;
-
             Parameter[] parameters = new Parameter[parameterDescriptions?.Length ?? 0];
             for (int i = 0; i < parameters.Length; i++)
             {
@@ -168,30 +166,29 @@ namespace LibreHardwareMonitor.Hardware
 
         private void SetSensorValuesToSettings()
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            using (MemoryStream m = new MemoryStream())
             {
-                using (GZipStream gZipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+                using (GZipStream c = new GZipStream(m, CompressionMode.Compress))
                 {
-                    using (BufferedStream outputStream = new BufferedStream(gZipStream, 65536))
+                    using (BufferedStream b = new BufferedStream(c, 65536))
                     {
-                        using (BinaryWriter binaryWriter = new BinaryWriter(outputStream))
+                        using (BinaryWriter writer = new BinaryWriter(b))
                         {
                             long t = 0;
-
                             foreach (SensorValue sensorValue in _values)
                             {
                                 long v = sensorValue.Time.ToBinary();
-                                binaryWriter.Write(v - t);
+                                writer.Write(v - t);
                                 t = v;
-                                binaryWriter.Write(sensorValue.Value);
+                                writer.Write(sensorValue.Value);
                             }
 
-                            binaryWriter.Flush();
+                            writer.Flush();
                         }
                     }
                 }
 
-                _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(memoryStream.ToArray()));
+                _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(m.ToArray()));
             }
         }
 
@@ -206,23 +203,20 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     byte[] array = Convert.FromBase64String(s);
                     DateTime now = DateTime.UtcNow;
-
-                    using (MemoryStream memoryStream = new MemoryStream(array))
-                    {
-                        using (GZipStream gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                    using (MemoryStream m = new MemoryStream(array))
+                        using (GZipStream c = new GZipStream(m, CompressionMode.Decompress))
                         {
-                            using (MemoryStream destination = new MemoryStream())
+                            using (MemoryStream unzip = new MemoryStream())
                             {
-                                gZipStream.CopyTo(destination);
-                                destination.Seek(0, SeekOrigin.Begin);
-
-                                using (BinaryReader reader = new BinaryReader(destination))
+                                c.CopyTo(unzip);
+                                unzip.Seek(0, SeekOrigin.Begin);
+                                using (BinaryReader reader = new BinaryReader(unzip))
                                 {
                                     try
                                     {
                                         long t = 0;
                                         long readLen = reader.BaseStream.Length - reader.BaseStream.Position;
-                                        while (readLen > 0)
+                                        while (true && readLen > 0)
                                         {
                                             t += reader.ReadInt64();
                                             DateTime time = DateTime.FromBinary(t);
@@ -240,12 +234,9 @@ namespace LibreHardwareMonitor.Hardware
                                 }
                             }
                         }
-                    }
                 }
                 catch
-                {
-                    // Ignored.
-                }
+                { }
             }
 
             if (_values.Count > 0)

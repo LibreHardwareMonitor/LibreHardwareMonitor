@@ -1,7 +1,7 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// Mozilla Public License 2.0
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// All Rights Reserved.
+// Copyright (C) LibreHardwareMonitor and Contributors
+// All Rights Reserved
 
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,6 @@ namespace LibreHardwareMonitor.Hardware.Network
         {
             _settings = settings;
             AddNetworkInterfaces(settings);
-
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAddressChanged;
         }
@@ -40,11 +39,10 @@ namespace LibreHardwareMonitor.Hardware.Network
                 report.AppendLine(hw.NetworkInterface.Description);
                 report.AppendLine(hw.NetworkInterface.OperationalStatus.ToString());
                 report.AppendLine();
-
-                foreach (ISensor sensor in hw.Sensors)
+                foreach (var sensor in hw.Sensors)
                 {
                     report.AppendLine(sensor.Name);
-                    report.AppendLine(sensor.Value.ToString());
+                    report.AppendLine(sensor.Value.ToString() + sensor.SensorType);
                     report.AppendLine();
                 }
             }
@@ -56,8 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Network
         {
             NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAddressChanged;
-
-            foreach (Network nic in _hardware)
+            foreach (var nic in _hardware)
                 nic.Close();
         }
 
@@ -73,21 +70,21 @@ namespace LibreHardwareMonitor.Hardware.Network
             // with others as they manipulate non-thread safe state.
             lock (_scanLock)
             {
-                IOrderedEnumerable<NetworkInterface> networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
                                                         .Where(DesiredNetworkType)
                                                         .OrderBy(x => x.Name);
 
                 var scanned = networkInterfaces.ToDictionary(x => x.Id, x => x);
-                IEnumerable<KeyValuePair<string, NetworkInterface>> newNetworkInterfaces = scanned.Where(x => !_networks.ContainsKey(x.Key));
+                var newNetworkInterfaces = scanned.Where(x => !_networks.ContainsKey(x.Key));
                 var removedNetworkInterfaces = _networks.Where(x => !scanned.ContainsKey(x.Key)).ToList();
 
-                foreach (KeyValuePair<string, Network> nic in removedNetworkInterfaces)
+                foreach (var nic in removedNetworkInterfaces)
                 {
                     nic.Value.Close();
                     _networks.Remove(nic.Key);
                 }
 
-                foreach (KeyValuePair<string, NetworkInterface> nic in newNetworkInterfaces)
+                foreach (var nic in newNetworkInterfaces)
                 {
                     _networks.Add(nic.Key, new Network(nic.Value, settings));
                 }
