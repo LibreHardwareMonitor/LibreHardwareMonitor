@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -31,7 +32,6 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             }
 
             NvApi.NvPhysicalGpuHandle[] handles = new NvApi.NvPhysicalGpuHandle[NvApi.MAX_PHYSICAL_GPUS];
-            int count;
             if (NvApi.NvAPI_EnumPhysicalGPUs == null)
             {
                 _report.AppendLine("Error: NvAPI_EnumPhysicalGPUs not available");
@@ -39,27 +39,26 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return;
             }
 
+            NvApi.NvStatus status = NvApi.NvAPI_EnumPhysicalGPUs(handles, out int count);
+            if (status != NvApi.NvStatus.OK)
             {
-                NvApi.NvStatus status = NvApi.NvAPI_EnumPhysicalGPUs(handles, out count);
-                if (status != NvApi.NvStatus.OK)
-                {
-                    _report.AppendLine("Status: " + status);
-                    _report.AppendLine();
-                    return;
-                }
+                _report.AppendLine("Status: " + status);
+                _report.AppendLine();
+                return;
             }
 
             IDictionary<NvApi.NvPhysicalGpuHandle, NvApi.NvDisplayHandle> displayHandles = new Dictionary<NvApi.NvPhysicalGpuHandle, NvApi.NvDisplayHandle>();
             if (NvApi.NvAPI_EnumNvidiaDisplayHandle != null && NvApi.NvAPI_GetPhysicalGPUsFromDisplay != null)
             {
-                NvApi.NvStatus status = NvApi.NvStatus.OK;
+                status = NvApi.NvStatus.OK;
                 int i = 0;
                 while (status == NvApi.NvStatus.OK)
                 {
                     NvApi.NvDisplayHandle displayHandle = new NvApi.NvDisplayHandle();
                     status = NvApi.NvAPI_EnumNvidiaDisplayHandle(i, ref displayHandle);
                     i++;
-
+                    NvApi.NvDisplayHandle a;
+                    
                     if (status == NvApi.NvStatus.OK)
                     {
                         NvApi.NvPhysicalGpuHandle[] handlesFromDisplay = new NvApi.NvPhysicalGpuHandle[NvApi.MAX_PHYSICAL_GPUS];

@@ -1,7 +1,7 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System.Collections.Generic;
 using System.Text;
@@ -71,9 +71,11 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetSensorValue getValue)
         {
-            var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue);
+            var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue)
+            {
+                Value = 0
+            };
             ActivateSensor(sensor);
-            sensor.Value = 0;
             _sensors.Add(sensor);
         }
 
@@ -86,6 +88,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
         protected override void UpdateSensors()
         {
             NVMeHealthInfo health = Smart.GetHealthInfo();
+            if (health == null)
+                return;
+
+
             foreach (NVMeSensor sensor in _sensors)
                 sensor.Update(health);
         }
@@ -175,7 +181,13 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             public void Update(NVMeHealthInfo health)
             {
-                Value = _getValue(health);
+                float v = _getValue(health);
+                if (SensorType == SensorType.Temperature)
+                {
+                    if (v < -1000 || v > 1000)
+                        return;
+                }
+                Value = v;
             }
         }
     }

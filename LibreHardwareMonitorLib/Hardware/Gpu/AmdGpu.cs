@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Globalization;
@@ -195,6 +196,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                 if (_currentOverdriveApiLevel >= 7)
                 {
+<<<<<<< HEAD
                     int temp = 0;
 
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.EDGE, ref temp) == AtiAdlxx.ADL_OK)
@@ -218,6 +220,34 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     }
 
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.VRVDDC, ref temp) == AtiAdlxx.ADL_OK)
+=======
+                    // If a sensor isn't available, some cards report 54000 degrees C. 110C is expected for Navi, so 100 more than that should be enough to use as a maximum.
+                    const int maxTemperature = 210;
+
+                    int temp = 0;
+
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.EDGE, ref temp) == AtiAdlxx.ADL_OK && temp < (maxTemperature * 1000))
+                    {
+                        _temperatureCore.Value = 0.001f * temp;
+                        ActivateSensor(_temperatureCore);
+                    }
+                    else
+                    {
+                        _temperatureCore.Value = null;
+                    }
+
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.MEM, ref temp) == AtiAdlxx.ADL_OK && temp < maxTemperature)
+                    {
+                        _temperatureMemory.Value = temp;
+                        ActivateSensor(_temperatureMemory);
+                    }
+                    else
+                    {
+                        _temperatureMemory.Value = null;
+                    }
+
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.VRVDDC, ref temp) == AtiAdlxx.ADL_OK && temp < maxTemperature)
+>>>>>>> master
                     {
                         _temperatureVddc.Value = temp;
                         ActivateSensor(_temperatureVddc);
@@ -227,7 +257,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         _temperatureVddc.Value = null;
                     }
 
+<<<<<<< HEAD
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.VRMVDD, ref temp) == AtiAdlxx.ADL_OK)
+=======
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.VRMVDD, ref temp) == AtiAdlxx.ADL_OK && temp < maxTemperature)
+>>>>>>> master
                     {
                         _temperatureMvdd.Value = temp;
                         ActivateSensor(_temperatureMvdd);
@@ -238,6 +272,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     }
 
                     _temperatureLiquid.Value = null;
+<<<<<<< HEAD
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.LIQUID, ref temp) == AtiAdlxx.ADL_OK)
                     {
                         if (temp > 0)
@@ -258,6 +293,22 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     }
 
                     if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.HOTSPOT, ref temp) == AtiAdlxx.ADL_OK)
+=======
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.LIQUID, ref temp) == AtiAdlxx.ADL_OK && temp > 0 && temp < maxTemperature)
+                    {
+                        _temperatureLiquid.Value = temp;
+                        ActivateSensor(_temperatureLiquid);
+                    }
+
+                    _temperaturePlx.Value = null;
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.PLX, ref temp) == AtiAdlxx.ADL_OK && temp > 0 && temp < maxTemperature)
+                    {
+                        _temperaturePlx.Value = temp;
+                        ActivateSensor(_temperaturePlx);
+                    }
+
+                    if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, AtiAdlxx.ADLODNTemperatureType.HOTSPOT, ref temp) == AtiAdlxx.ADL_OK && temp < maxTemperature)
+>>>>>>> master
                     {
                         _temperatureHotSpot.Value = temp;
                         ActivateSensor(_temperatureHotSpot);

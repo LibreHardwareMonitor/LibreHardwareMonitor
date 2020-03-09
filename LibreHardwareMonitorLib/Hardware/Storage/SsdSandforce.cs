@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System.Collections.Generic;
 using LibreHardwareMonitor.Interop;
@@ -11,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix(""), RequireSmart(0xAB), RequireSmart(0xB1)]
     internal class SsdSandforce : AtaStorage
     {
-        private static new readonly IEnumerable<SmartAttribute> SmartAttributes = new List<SmartAttribute>
+        private static readonly IReadOnlyList<SmartAttribute> _smartAttributes = new List<SmartAttribute>
         {
             new SmartAttribute(0x01, SmartNames.RawReadErrorRate),
             new SmartAttribute(0x05, SmartNames.RetiredBlockCount, RawToInt),
@@ -24,8 +25,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
             new SmartAttribute(0xB5, SmartNames.AlternativeProgramFailCount, RawToInt),
             new SmartAttribute(0xB6, SmartNames.AlternativeEraseFailCount, RawToInt),
             new SmartAttribute(0xBB, SmartNames.UncorrectableErrorCount, RawToInt),
-            new SmartAttribute(0xC2, SmartNames.Temperature, (raw, value, p) => value + (p?[0].Value ?? 0), SensorType.Temperature, 0, SmartNames.Temperature, true,
-                new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
+            new SmartAttribute(0xC2,
+                               SmartNames.Temperature,
+                               (raw, value, p) => value + (p?[0].Value ?? 0),
+                               SensorType.Temperature,
+                               0,
+                               SmartNames.Temperature,
+                               true,
+                               new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
             new SmartAttribute(0xC3, SmartNames.UnrecoverableEcc),
             new SmartAttribute(0xC4, SmartNames.ReallocationEventCount, RawToInt),
             new SmartAttribute(0xE7, SmartNames.RemainingLife, null, SensorType.Level, 0, SmartNames.RemainingLife),
@@ -38,7 +45,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         private readonly Sensor _writeAmplification;
 
         public SsdSandforce(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
-            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, SmartAttributes, settings)
+            : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
         {
             _writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
         }

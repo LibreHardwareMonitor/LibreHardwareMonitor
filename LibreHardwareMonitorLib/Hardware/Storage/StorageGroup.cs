@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             var mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
             ManagementObjectCollection queryCollection = mosDisks.Get(); // get the results
 
-            foreach (var disk in queryCollection)
+            foreach (ManagementBaseObject disk in queryCollection)
             {
                 string deviceId = (string)disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
                 uint idx = Convert.ToUInt32(disk.Properties["Index"].Value);
