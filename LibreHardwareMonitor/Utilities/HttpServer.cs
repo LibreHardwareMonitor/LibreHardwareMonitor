@@ -28,10 +28,11 @@ namespace LibreHardwareMonitor.Utilities
         private Thread _listenerThread;
         private readonly Node _root;
 
-        public HttpServer(Node node, int port)
+        public HttpServer(Node node, int port, string origin)
         {
             _root = node;
             ListenerPort = port;
+            AccessOrigin = origin;
 
             try
             {
@@ -274,6 +275,7 @@ namespace LibreHardwareMonitor.Utilities
                 byte[] utfBytes = Encoding.UTF8.GetBytes(postResult);
 
                 context.Response.AddHeader("Cache-Control", "no-cache");
+                context.Response.AddHeader("Access-Control-Allow-Origin", AccessOrigin);
                 context.Response.ContentLength64 = utfBytes.Length;
                 context.Response.ContentType = "application/json";
 
@@ -420,7 +422,7 @@ namespace LibreHardwareMonitor.Utilities
             byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
             response.AddHeader("Cache-Control", "no-cache");
-            response.AddHeader("Access-Control-Allow-Origin", "*");
+            response.AddHeader("Access-Control-Allow-Origin", AccessOrigin);
             response.ContentLength64 = buffer.Length;
             response.ContentType = "application/json";
 
@@ -569,6 +571,7 @@ namespace LibreHardwareMonitor.Utilities
         }
 
         public int ListenerPort { get; set; }
+        public string AccessOrigin { get; set; }
 
         ~HttpServer()
         {

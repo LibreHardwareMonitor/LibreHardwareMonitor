@@ -265,7 +265,7 @@ namespace LibreHardwareMonitor.UI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085));
+            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085), _settings.GetValue("accessOrigin", "*"));
             if (Server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
@@ -644,6 +644,7 @@ namespace LibreHardwareMonitor.UI
                 _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
 
             _settings.SetValue("listenerPort", Server.ListenerPort);
+            _settings.SetValue("accessOrigin", Server.AccessOrigin);
 
             string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
 
@@ -998,5 +999,10 @@ namespace LibreHardwareMonitor.UI
         }
 
         public HttpServer Server { get; }
+
+        private void ServerAccessControl_Click(object sender, EventArgs e)
+        {
+            new AccessControlForm(this).ShowDialog();
+        }
     }
 }

@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael Mï¿½ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 namespace LibreHardwareMonitor.UI
@@ -119,6 +119,7 @@ namespace LibreHardwareMonitor.UI
             this.serverPortMenuItem = new System.Windows.Forms.MenuItem();
             this.helpMenuItem = new System.Windows.Forms.MenuItem();
             this.aboutMenuItem = new System.Windows.Forms.MenuItem();
+            this.menuItem4 = new System.Windows.Forms.MenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenu();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.timer = new System.Windows.Forms.Timer(this.components);
@@ -665,7 +666,8 @@ namespace LibreHardwareMonitor.UI
             this.webMenuItem.Index = 12;
             this.webMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.runWebServerMenuItem,
-            this.serverPortMenuItem});
+            this.serverPortMenuItem,
+            this.menuItem4});
             this.webMenuItem.Text = "Remote Web Server";
             //
             // runWebServerMenuItem
@@ -691,6 +693,12 @@ namespace LibreHardwareMonitor.UI
             this.aboutMenuItem.Index = 0;
             this.aboutMenuItem.Text = "About";
             this.aboutMenuItem.Click += new System.EventHandler(this.AboutMenuItem_Click);
+            //
+            // menuItem4
+            //
+            this.menuItem4.Index = 2;
+            this.menuItem4.Text = "Access Control";
+            this.menuItem4.Click += new System.EventHandler(this.ServerAccessControl_Click);
             //
             // saveFileDialog
             //
@@ -871,6 +879,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.MenuItem timeWindow6hMenuItem;
         private System.Windows.Forms.MenuItem timeWindow12hMenuItem;
         private System.Windows.Forms.MenuItem timeWindow24hMenuItem;
+        private System.Windows.Forms.MenuItem menuItem4;
     }
 }
 

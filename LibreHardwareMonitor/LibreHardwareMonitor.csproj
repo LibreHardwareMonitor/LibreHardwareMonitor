@@ -77,6 +77,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Web" />
@@ -86,6 +87,12 @@
   <ItemGroup>
     <Compile Include="..\LibreHardwareMonitorLib\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="UI\AccessControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\AccessControlForm.Designer.cs">
+      <DependentUpon>AccessControlForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\ScaledPlotModel.cs" />
     <Compile Include="UI\GadgetWindow.cs" />
@@ -154,6 +161,9 @@
     <EmbeddedResource Include="UI\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\AccessControlForm.resx">
+      <DependentUpon>AccessControlForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\PortForm.resx">
       <DependentUpon>PortForm.cs</DependentUpon>
