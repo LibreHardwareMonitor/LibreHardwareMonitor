@@ -21,10 +21,17 @@ namespace LibreHardwareMonitor.Interop
         private static WindowsNvmlDelegate _windowsNvmlInit;
         private static WindowsNvmlDelegate _windowsNvmlShutdown;
 
-        private static readonly IntPtr WindowsDll;
+        private static IntPtr WindowsDll;
 
-        static NvidiaML()
+        internal static bool IsAvailable { get; private set; }
+
+        internal static bool Initialize()
         {
+            if (IsAvailable)
+            {
+                throw new InvalidOperationException($"{nameof(NvidiaML)} is already initialized");
+            }
+
             if (Software.OperatingSystem.IsLinux)
             {
                 try
@@ -62,14 +69,17 @@ namespace LibreHardwareMonitor.Interop
                 }
 
                 if (WindowsDll == IntPtr.Zero)
-                    return;
-
-
-                IsAvailable = InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
+                {
+                    IsAvailable = false;
+                }
+                else
+                {
+                    IsAvailable = InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
+                }
             }
-        }
 
-        internal static bool IsAvailable { get; }
+            return IsAvailable;
+        }
 
         private static bool IsNvmlCompatibleWindowsVersion()
         {
@@ -148,6 +158,8 @@ namespace LibreHardwareMonitor.Interop
                     _windowsNvmlShutdown();
                     Kernel32.FreeLibrary(WindowsDll);
                 }
+
+                IsAvailable = false;
             }
         }
 
