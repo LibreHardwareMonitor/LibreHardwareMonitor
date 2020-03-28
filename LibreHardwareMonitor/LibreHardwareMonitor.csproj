@@ -87,6 +87,7 @@
     <Compile Include="..\LibreHardwareMonitorLib\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="UI\IExpandPersistNode.cs" />
     <Compile Include="UI\ScaledPlotModel.cs" />
     <Compile Include="UI\GadgetWindow.cs" />
     <Compile Include="UI\Gadget.cs" />

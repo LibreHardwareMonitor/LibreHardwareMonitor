@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael MÃ¶ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -9,13 +9,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
-using LibreHardwareMonitor.Wmi;
 using LibreHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Wmi;
+
 
 namespace LibreHardwareMonitor.UI
 {
@@ -630,6 +632,8 @@ namespace LibreHardwareMonitor.UI
 
             if (_delayCount < 4)
                 _delayCount++;
+
+            RestoreCollapsedNodeState(treeView);
         }
 
         private void SaveConfiguration()
@@ -687,7 +691,23 @@ namespace LibreHardwareMonitor.UI
                 newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) - (newBounds.Height / 2);
             }
             Bounds = newBounds;
+
+            RestoreCollapsedNodeState(treeView);
+
             FormClosed += MainForm_FormClosed;
+        }
+
+        private void RestoreCollapsedNodeState(TreeViewAdv treeViewAdv)
+        {
+            var collapsedHwNodes = treeViewAdv.AllNodes
+                .Where(n => n.IsExpanded && n.Tag is IExpandPersistNode expandPersistNode && !expandPersistNode.Expanded)
+                .OrderByDescending(n => n.Level)
+                .ToList();
+
+            foreach (TreeNodeAdv node in collapsedHwNodes)
+            {
+                node.IsExpanded = false;
+            }
         }
 
         private void CloseApplication()
@@ -718,10 +738,20 @@ namespace LibreHardwareMonitor.UI
 
         private void TreeView_Click(object sender, EventArgs e)
         {
-            if (!(e is MouseEventArgs m) || m.Button != MouseButtons.Right)
+            if (!(e is MouseEventArgs m) || (m.Button != MouseButtons.Left && m.Button != MouseButtons.Right))
                 return;
 
             NodeControlInfo info = treeView.GetNodeControlInfoAt(new Point(m.X, m.Y));
+            if (m.Button == MouseButtons.Left && info.Node != null)
+            {
+                if (info.Node.Tag is IExpandPersistNode expandPersistNode)
+                {
+                    expandPersistNode.Expanded = info.Node.IsExpanded;
+                }
+
+                return;
+            }
+
             treeView.SelectedNode = info.Node;
             if (info.Node != null)
             {
