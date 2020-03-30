@@ -107,7 +107,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _control.Control = _fanControl;
             }
 
-            if (NvidiaML.IsAvailable)
+            if (NvidiaML.IsAvailable || NvidiaML.Initialize())
             {
                 if (hasPciBusId)
                     _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByPciBusId($" 0000:{busId:X2}:00.0") ?? NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex);

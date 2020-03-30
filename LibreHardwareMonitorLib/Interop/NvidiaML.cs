@@ -14,6 +14,8 @@ namespace LibreHardwareMonitor.Interop
         private const string LinuxDllName = "nvidia-ml";
         private const string WindowsDllName = "nvml.dll";
 
+        private static readonly object SyncRoot = new object();
+
         private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
         private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
         private static WindowsNvmlDeviceGetPcieThroughputDelegate _windowsNvmlDeviceGetPcieThroughputDelegate;
@@ -21,55 +23,63 @@ namespace LibreHardwareMonitor.Interop
         private static WindowsNvmlDelegate _windowsNvmlInit;
         private static WindowsNvmlDelegate _windowsNvmlShutdown;
 
-        private static readonly IntPtr WindowsDll;
+        private static IntPtr WindowsDll;
 
-        static NvidiaML()
+        internal static bool IsAvailable { get; private set; }
+
+        internal static bool Initialize()
         {
-            if (Software.OperatingSystem.IsLinux)
+            lock (SyncRoot)
             {
-                try
+                if (IsAvailable)
                 {
-                    IsAvailable = nvmlInit() == NvmlReturn.Success;
+                    return true;
                 }
-                catch (DllNotFoundException)
-                { }
-                catch (EntryPointNotFoundException)
+
+                if (Software.OperatingSystem.IsLinux)
                 {
                     try
                     {
-                        IsAvailable = nvmlInitLegacy() == NvmlReturn.Success;
+                        IsAvailable = nvmlInit() == NvmlReturn.Success;
                     }
-                    catch (EntryPointNotFoundException)
+                    catch (DllNotFoundException)
                     { }
+                    catch (EntryPointNotFoundException)
+                    {
+                        try
+                        {
+                            IsAvailable = nvmlInitLegacy() == NvmlReturn.Success;
+                        }
+                        catch (EntryPointNotFoundException)
+                        { }
+                    }
                 }
-            }
-            else if (IsNvmlCompatibleWindowsVersion())
-            {
-                // Attempt to load the Nvidia Management Library from the
-                // windows standard search order for applications. This will
-                // help installations that either have the library in
-                // %windir%/system32 or provide their own library
-                WindowsDll = Kernel32.LoadLibrary(WindowsDllName);
-
-                // If there is no dll in the path, then attempt to load it
-                // from program files
-                if (WindowsDll == IntPtr.Zero)
+                else if (IsNvmlCompatibleWindowsVersion())
                 {
-                    string programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
-                    string dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI", WindowsDllName);
+                    // Attempt to load the Nvidia Management Library from the
+                    // windows standard search order for applications. This will
+                    // help installations that either have the library in
+                    // %windir%/system32 or provide their own library
+                    WindowsDll = Kernel32.LoadLibrary(WindowsDllName);
 
-                    WindowsDll = Kernel32.LoadLibrary(dllPath);
+                    // If there is no dll in the path, then attempt to load it
+                    // from program files
+                    if (WindowsDll == IntPtr.Zero)
+                    {
+                        string programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
+                        string dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI", WindowsDllName);
+
+                        WindowsDll = Kernel32.LoadLibrary(dllPath);
+                    }
+
+                    IsAvailable = (WindowsDll != IntPtr.Zero) 
+                        && InitialiseDelegates() 
+                        && (_windowsNvmlInit() == NvmlReturn.Success);
                 }
 
-                if (WindowsDll == IntPtr.Zero)
-                    return;
-
-
-                IsAvailable = InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
+                return IsAvailable;
             }
         }
-
-        internal static bool IsAvailable { get; }
 
         private static bool IsNvmlCompatibleWindowsVersion()
         {
@@ -137,16 +147,21 @@ namespace LibreHardwareMonitor.Interop
 
         internal static void Close()
         {
-            if (IsAvailable)
+            lock (SyncRoot)
             {
-                if (Software.OperatingSystem.IsLinux)
+                if (IsAvailable)
                 {
-                    nvmlShutdown();
-                }
-                else if (WindowsDll != IntPtr.Zero)
-                {
-                    _windowsNvmlShutdown();
-                    Kernel32.FreeLibrary(WindowsDll);
+                    if (Software.OperatingSystem.IsLinux)
+                    {
+                        nvmlShutdown();
+                    }
+                    else if (WindowsDll != IntPtr.Zero)
+                    {
+                        _windowsNvmlShutdown();
+                        Kernel32.FreeLibrary(WindowsDll);
+                    }
+
+                    IsAvailable = false;
                 }
             }
         }
