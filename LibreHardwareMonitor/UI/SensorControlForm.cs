@@ -91,7 +91,7 @@ namespace LibreHardwareMonitor.GUI
 
             // Axes
             UpdateAxes();
-
+            
             //Annotaion
             annotation = new TextAnnotation
             {
@@ -100,7 +100,7 @@ namespace LibreHardwareMonitor.GUI
                 FontSize = 16,
                 TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Center,
                 TextVerticalAlignment = VerticalAlignment.Top,
-                TextPosition = new DataPoint((MinimumSensor + MaximumSensor) / 2, control.Control.MaxSoftwareValue)
+                TextPosition = new DataPoint((MinimumSensor + MaximumSensor) / 2, control.Control.MaxSoftwareValue),
             };
 
             units = new Dictionary<SensorType, string>
@@ -191,10 +191,7 @@ namespace LibreHardwareMonitor.GUI
             mPlot.Refresh();
         }
 
-        private DataPoint _beforeFoundPoint;
-        private DataPoint _foundPoint;
-        private bool _foundPointIsEndPoint;
-        private DataPoint _afterFoundPoint;
+        private int _selectedPointIndex = -1;
 
         private void MPlot_MouseDown(object sender, MouseEventArgs e)
         {
@@ -210,16 +207,7 @@ namespace LibreHardwareMonitor.GUI
                 // move point
                 if (pointIndex >= 0)
                 {
-                    // can move first and last point but keep Y/ControlValue value 
-                    if (pointIndex > 0 && pointIndex < lineSeries.Points.Count - 1)
-                    {
-                        _foundPointIsEndPoint = false;
-                        _beforeFoundPoint = lineSeries.Points.ElementAt(pointIndex - 1);
-                        _afterFoundPoint = lineSeries.Points.ElementAt(pointIndex + 1);
-                    }
-                    else
-                        _foundPointIsEndPoint = true;
-
+                    _selectedPointIndex = pointIndex;
                     AttachMouseMove();
                 }
                 // create new point
@@ -233,17 +221,15 @@ namespace LibreHardwareMonitor.GUI
                         newPoint.X > sensorAxis.Minimum &&
                         newPoint.Y < controlAxis.Maximum &&
                         newPoint.Y > controlAxis.Minimum)
-                        for (var i = 0; i < lineSeries.Points.Count; i++)
+                        for (int i = 0; i < lineSeries.Points.Count; i++)
                         {
                             if (newPoint.X >= lineSeries.Points.ElementAt(i).X &&
                                 newPoint.X <= lineSeries.Points.ElementAt(i + 1).X)
                             {
-                                var idx = i + 1;
+                                int idx = i + 1;
                                 lineSeries.Points.Insert(idx, newPoint);
                                 mPlot.Refresh();
-                                _beforeFoundPoint = lineSeries.Points.ElementAt(idx - 1);
-                                _foundPoint = lineSeries.Points.ElementAt(idx);
-                                _afterFoundPoint = lineSeries.Points.ElementAt(idx + 1);
+                                _selectedPointIndex = idx;
                                 AttachMouseMove();
                                 return;
                             }
@@ -255,19 +241,18 @@ namespace LibreHardwareMonitor.GUI
 
         private void AttachMouseMove()
         {
-            void MouseUpListener(object curveselectSender, MouseEventArgs curveselectE)
+            void MouseUpListener(object curveSelectSender, MouseEventArgs curveSelectEvent)
             {
                 mPlot.MouseUp -= MouseUpListener;
                 mPlot.MouseMove -= MPlot_MouseMove;
-                _beforeFoundPoint = DataPoint.Undefined;
-                _foundPoint = DataPoint.Undefined;
-                _afterFoundPoint = DataPoint.Undefined;
+                _selectedPointIndex = -1;
                 mModel.Annotations.Remove(annotation);
                 ((IPlotModel)mModel).Update(true);
                 mPlot.Refresh();
             }
 
             mModel.Annotations.Add(annotation);
+            annotation.EnsureAxes();
             mPlot.MouseUp += MouseUpListener;
             mPlot.MouseMove += MPlot_MouseMove;
         }
@@ -276,47 +261,62 @@ namespace LibreHardwareMonitor.GUI
         {
             DataPoint mousePos = lineSeries.InverseTransform(new ScreenPoint(e.X, e.Y));
 
-            if (!_foundPointIsEndPoint)
-                if (mousePos.X <= _beforeFoundPoint.X)
+            if (_selectedPointIndex < 0)
+            {
+                return;
+            }
+
+            var currentPoint = lineSeries.Points[_selectedPointIndex];
+
+            double newX = currentPoint.X;
+            double newY = currentPoint.Y;
+            
+            if (_selectedPointIndex > 0 && _selectedPointIndex < lineSeries.Points.Count - 1)
+            {
+                var previousPoint = lineSeries.Points[_selectedPointIndex - 1];
+                var nextPoint = lineSeries.Points[_selectedPointIndex + 1];
+                if (mousePos.X <= previousPoint.X)
                 {
-                    _foundPoint = new DataPoint(_beforeFoundPoint.X, _foundPoint.Y);
+                    newX = previousPoint.X;
                 }
-                else if (mousePos.X >= _afterFoundPoint.X)
+                else if (mousePos.X >= nextPoint.X)
                 {
-                    _foundPoint = new DataPoint(_afterFoundPoint.X, _foundPoint.Y);
+                    newX = nextPoint.X;
                 }
-                else 
+                else
                 {
-                    _foundPoint = new DataPoint(mousePos.X, _foundPoint.Y);
+                    newX = mousePos.X;
                 }
+            }
 
             if (mousePos.Y >= control.Control.MaxSoftwareValue)
             {
-                _foundPoint = new DataPoint(_foundPoint.X, control.Control.MaxSoftwareValue);
+                newY = control.Control.MaxSoftwareValue;
             }
             else if (mousePos.Y <= control.Control.MinSoftwareValue)
             {
-                _foundPoint = new DataPoint(_foundPoint.X, control.Control.MinSoftwareValue);
+                newY = control.Control.MinSoftwareValue;
             }
             else
             {
-                _foundPoint = new DataPoint(_foundPoint.X, mousePos.Y);
+                newY = mousePos.Y;
             }
-
-
+            
             double sensorValue;
 
             if (sensor.SensorType == SensorType.Voltage)
-                sensorValue = Math.Round(_foundPoint.X, 4);
+                sensorValue = Math.Round(newX, 4);
             else if (sensor.SensorType == SensorType.Power)
-                sensorValue = Math.Round(_foundPoint.X, 1);
+                sensorValue = Math.Round(newX, 1);
             else if (sensor.SensorType == SensorType.Flow)
-                sensorValue = Math.Round(_foundPoint.X, 1);
+                sensorValue = Math.Round(newX, 1);
             else
-                sensorValue = Math.Round(_foundPoint.X, 0);
+                sensorValue = Math.Round(newX, 0);
 
-            annotation.Text = Math.Round(_foundPoint.Y, 0) + " " + controlTypename + " - " + sensorValue + " " + sensorTypename;
+            annotation.Text = Math.Round(newY, 0) + " " + controlTypename + " - " + sensorValue + " " + sensorTypename;
 
+            lineSeries.Points[_selectedPointIndex] = new DataPoint(newX, newY);
+            
             mPlot.Refresh();
         }
 

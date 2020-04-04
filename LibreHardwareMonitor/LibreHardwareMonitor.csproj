@@ -109,6 +109,8 @@
     <Compile Include="UI\ParameterForm.Designer.cs">
       <DependentUpon>ParameterForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\SensorControlForm.cs" />
+    <Compile Include="UI\SensorControlForm.Designer.cs" />
     <Compile Include="UI\SensorGadget.cs" />
     <Compile Include="UI\SensorNotifyIcon.cs" />
     <Compile Include="UI\ShowDesktop.cs" />
@@ -165,6 +167,7 @@
     <EmbeddedResource Include="Resources\cpu.png" />
     <EmbeddedResource Include="Resources\fan.png" />
     <EmbeddedResource Include="Resources\temperature.png" />
+    <EmbeddedResource Include="UI\SensorControlForm.resx" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\chip.png" />
