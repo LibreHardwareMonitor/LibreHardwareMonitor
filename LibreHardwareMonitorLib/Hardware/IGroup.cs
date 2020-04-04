@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace LibreHardwareMonitor.Hardware
 {
-    internal interface IGroup
+    public interface IGroup
     {
         IEnumerable<IHardware> Hardware { get; }
 

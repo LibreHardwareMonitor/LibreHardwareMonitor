@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
+using LibreHardwareMonitor.GUI;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
@@ -854,7 +855,7 @@ namespace LibreHardwareMonitor.UI
                         };
                         MenuItem manualItem = new MenuItem("Manual");
                         controlItem.MenuItems.Add(manualItem);
-                        manualItem.Checked = control.ControlMode == ControlMode.Software;
+                        manualItem.Checked = control.ActualControlMode == ControlMode.Software;
                         for (int i = 0; i <= 100; i += 5)
                         {
                             if (i <= control.MaxSoftwareValue &&
@@ -862,11 +863,67 @@ namespace LibreHardwareMonitor.UI
                             {
                                 MenuItem item = new MenuItem(i + " %") { RadioCheck = true };
                                 manualItem.MenuItems.Add(item);
-                                item.Checked = control.ControlMode == ControlMode.Software && Math.Round(control.SoftwareValue) == i;
+                                item.Checked = control.ActualControlMode == ControlMode.Software && Math.Round(control.SoftwareValue) == i;
                                 int softwareValue = i;
                                 item.Click += delegate
                                 {
                                     control.SetSoftware(softwareValue);
+                                };
+                            }
+                        }
+                        MenuItem curveItem = new MenuItem("Manual Curve");
+                        controlItem.MenuItems.Add(curveItem);
+                        curveItem.Checked = control.ActualControlMode == ControlMode.SoftwareCurve;
+                        MenuItem newCurveItem = new MenuItem("New");
+                        newCurveItem.Click += delegate (object obj, EventArgs args) {
+                            var confirmSensorselect = MessageBox.Show("Select the other sensor after clicking OK.", "New Manual Curve", MessageBoxButtons.OKCancel);
+                            if (confirmSensorselect == DialogResult.OK){
+                                // Listen for user click on sensor
+                                EventHandler selectorListener = null;
+                                selectorListener = (curveselect_sender, curveselect_e) => {
+                                    MouseEventArgs curveselect_m = curveselect_e as MouseEventArgs;
+                                    if (curveselect_m == null || curveselect_m.Button != MouseButtons.Left){
+                                        this.treeView.Click -= selectorListener;
+                                        return;
+                                    }
+                                    // Try find sensor user clicked
+                                    NodeControlInfo curveselect_info = treeView.GetNodeControlInfoAt(new Point(curveselect_m.X, curveselect_m.Y));
+                                    if (curveselect_info.Node != null){
+                                        SensorNode curveselect_node = curveselect_info.Node.Tag as SensorNode;
+                                        if (curveselect_node != null && curveselect_node.Sensor != null){
+                                            new SensorControlForm(node.Sensor, curveselect_node.Sensor, null).ShowDialog();
+                                            return;
+                                        }
+                                    }
+
+                                    var tryagainSensorselect = MessageBox.Show("Could not find sensor. Try again?", "Manual Curve", MessageBoxButtons.RetryCancel);
+                                    if (tryagainSensorselect != DialogResult.Retry)
+                                        this.treeView.Click -= selectorListener;
+
+                                };
+                                this.treeView.Click += selectorListener;
+                            }
+                        };
+                        curveItem.MenuItems.Add(newCurveItem);
+                        var softwareCurve = node.Sensor.Control.GetSoftwareCurve();
+                        if(softwareCurve != null)
+                        {                
+                            // edit curve
+                            MenuItem editCurveItem = new MenuItem("Edit");
+                            curveItem.MenuItems.Add(editCurveItem);
+                            editCurveItem.Click += delegate (object obj, EventArgs args)
+                            {
+                                new SensorControlForm(node.Sensor, softwareCurve.Sensor, softwareCurve.Points).ShowDialog(); 
+                            };
+
+                            if(control.ActualControlMode != ControlMode.SoftwareCurve)
+                            {
+                                // enable curve
+                                MenuItem enableCurveItem = new MenuItem("Enable");
+                                curveItem.MenuItems.Add(enableCurveItem);
+                                enableCurveItem.Click += delegate (object obj, EventArgs args)
+                                {
+                                    node.Sensor.Control.SetSoftwareCurve(softwareCurve.Points, softwareCurve.Sensor); 
                                 };
                             }
                         }

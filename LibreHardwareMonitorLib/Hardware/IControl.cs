@@ -4,18 +4,23 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System.Collections.Generic;
+
 namespace LibreHardwareMonitor.Hardware
 {
     public enum ControlMode
     {
         Undefined,
         Software,
-        Default
+        Default,
+        SoftwareCurve,
     }
 
     public interface IControl
     {
         ControlMode ControlMode { get; }
+        
+        ControlMode ActualControlMode { get; }
 
         Identifier Identifier { get; }
 
@@ -28,5 +33,17 @@ namespace LibreHardwareMonitor.Hardware
         void SetDefault();
 
         void SetSoftware(float value);
+        
+        void SetSoftwareCurve(List<ISoftwareCurvePoint> points, ISensor sensor);
+        SoftwareCurve GetSoftwareCurve();
+        void NotifyHardwareAdded(List<IGroup> allHardware);
+        void NotifyHardwareRemoved(IHardware hardware);
+        void NotifyClosing();
     }
+
+    public interface ISoftwareCurvePoint
+    {
+        float SensorValue { get; set; }
+        float ControlValue { get; set; }
+    }        
 }
