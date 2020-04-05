@@ -176,18 +176,25 @@ namespace LibreHardwareMonitor.Utilities
 
         public float GetValue(string name, float value)
         {
-            if (_settings.TryGetValue(name, out string str))
-            {
-                if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
-                    return parsedValue;
+            if (!_settings.TryGetValue(name, out string str)) return value;
 
-
-                return value;
-            }
+            if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
+                return parsedValue;
 
             return value;
+
         }
 
+        public double GetValue(string name, double value)
+        {
+            if (!_settings.TryGetValue(name, out string str)) return value;
+
+            if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
+                return parsedValue;
+            
+            return value;
+        }
+        
         public void SetValue(string name, bool value)
         {
             _settings[name] = value ? "true" : "false";

@@ -47,7 +47,7 @@ namespace LibreHardwareMonitor.UI
             _model = CreatePlotModel();
 
             _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenu = CreateMenu() };
-
+            
             UpdateAxesPosition();
 
             SuspendLayout();
@@ -153,7 +153,7 @@ namespace LibreHardwareMonitor.UI
             _timeAxis.Minimum = 0;
             _timeAxis.AbsoluteMaximum = 24 * 60 * 60;
             _timeAxis.Zoom(
-              _settings.GetValue("plotPanel.MinTimeSpan", 0.0f),
+              _settings.GetValue("plotPanel.MinTimeSpan", double.NaN),
               _settings.GetValue("plotPanel.MaxTimeSpan", 10.0f * 60));
             _timeAxis.StringFormat = "h:mm";
 
@@ -193,12 +193,16 @@ namespace LibreHardwareMonitor.UI
                 var annotation = new LineAnnotation()
                 {
                     Type = LineAnnotationType.Horizontal,
-                    ClipByXAxis = true,
+                    ClipByXAxis = false,
+                    ClipByYAxis = false,
                     LineStyle = LineStyle.Solid,
-                    Color = OxyColors.Red,
+                    Color = OxyColors.Black,
                     YAxisKey = typeName,
                     StrokeThickness = 2,
                 };
+
+                axis.AxisChanged += (sender, args) => annotation.Y = axis.ActualMinimum;
+                axis.TransformChanged += (sender, args) => annotation.Y = axis.ActualMinimum;
 
                 axis.Zoom(_settings.GetValue("plotPanel.Min" + axis.Key, float.NaN), _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
 
