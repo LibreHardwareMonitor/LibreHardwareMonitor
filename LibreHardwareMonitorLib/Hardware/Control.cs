@@ -89,7 +89,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             get
             {
-                if(_mode == ControlMode.SoftwareCurve && !_softwareCurveAttached)
+                if (_mode == ControlMode.SoftwareCurve && !_softwareCurveAttached)
                     return ControlMode.Default;
                 else
                     return _mode;
@@ -171,8 +171,8 @@ namespace LibreHardwareMonitor.Hardware
                 }
             }
 
-            foreach(var group in allHardware)
-                foreach(var hardware in group.Hardware)
+            foreach (var group in allHardware)
+                foreach (var hardware in group.Hardware)
                     HardwareAdded(hardware);
         }
 
@@ -180,20 +180,20 @@ namespace LibreHardwareMonitor.Hardware
         {
             hardware.SensorAdded += SensorAdded;
 
-            foreach(ISensor sensor in hardware.Sensors)
+            foreach (ISensor sensor in hardware.Sensors)
                 SensorAdded(sensor);
 
-            foreach(IHardware subHardware in hardware.SubHardware)
+            foreach (IHardware subHardware in hardware.SubHardware)
                 HardwareAdded(subHardware);
         }
 
         private void SensorAdded(ISensor sensor)
         {
-            if(_softwareCurve != null) return;
+            if (_softwareCurve != null) return;
 
-            if(sensor.Identifier.ToString() == _sensorIdentifier)
+            if (sensor.Identifier.ToString() == _sensorIdentifier)
             {
-                if(!SoftwareCurve.TryParse(_settings.GetValue(
+                if (!SoftwareCurve.TryParse(_settings.GetValue(
                     new Identifier(Identifier, "curveValue").ToString(), ""),
                     out List<ISoftwareCurvePoint> points))
                 {
@@ -201,31 +201,31 @@ namespace LibreHardwareMonitor.Hardware
                 }
                 _softwareCurve = new SoftwareCurve(points, sensor);
                 Debug.WriteLine("hardware added software curve created");
-                if(_mode == ControlMode.SoftwareCurve)
+                if (_mode == ControlMode.SoftwareCurve)
                     AttachSoftwareCurve(_softwareCurve);
             }
         }
     
         public void NotifyHardwareRemoved(IHardware hardware)
         {
-            if(_softwareCurve == null)
+            if (_softwareCurve == null)
                 return;
 
             Debug.WriteLine("notify hardware removed");
 
-            foreach(ISensor sensor in hardware.Sensors)
-                if(sensor.Identifier.ToString() == _sensorIdentifier)
+            foreach (ISensor sensor in hardware.Sensors)
+                if (sensor.Identifier.ToString() == _sensorIdentifier)
                 {
                     NotifyClosing();
                 }
 
-            foreach(IHardware subHardware in hardware.SubHardware)
+            foreach (IHardware subHardware in hardware.SubHardware)
                 NotifyHardwareRemoved(subHardware);
         }
 
         public void NotifyClosing()
         {
-            if(_softwareCurve == null)
+            if (_softwareCurve == null)
                 return;
 
             DetachSoftwareCurve();
@@ -237,7 +237,7 @@ namespace LibreHardwareMonitor.Hardware
     
         private void AttachSoftwareCurve(SoftwareCurve newCurve)
         {
-            if(_softwareCurveAttached || _softwareCurve != null) DetachSoftwareCurve();
+            if (_softwareCurveAttached || _softwareCurve != null) DetachSoftwareCurve();
 
             _softwareCurve = newCurve;
             //this.softwareCurve.Sensor.Hardware.SensorRemoved += SensorRemoved;
@@ -302,7 +302,7 @@ namespace LibreHardwareMonitor.Hardware
             if (splitPoints.Length < 1)
                 return false;
             
-            for(var i = 0; i < splitPoints.Length - 1; i++)
+            for(int i = 0; i < splitPoints.Length - 1; i++)
             {
                 var splitPoint = splitPoints[i].Split(':');
                 if (splitPoint.Length < 2)
@@ -376,16 +376,16 @@ namespace LibreHardwareMonitor.Hardware
         
         private void Tick(object s, ElapsedEventArgs e)
         { 
-            if(Sensor?.Value != null){
+            if (Sensor.Value.HasValue){
                 float sensorValue = Sensor.Value.Value;
-                if(!previousValueAssigend || sensorValue != previousSensorValue)
+                if (!previousValueAssigend || sensorValue != previousSensorValue)
                 {
                     previousSensorValue = sensorValue;
 
                     // As of writing this, a Control is controlled with percentages. Round away decimals
                     float newValue = (float)Math.Round(Calculate(sensorValue));
                     
-                    if(Value == newValue && previousValueAssigend)
+                    if (Value == newValue && previousValueAssigend)
                         return;
 
                     Value = newValue;
@@ -396,7 +396,7 @@ namespace LibreHardwareMonitor.Hardware
             else
             {
                 previousNoValue++;
-                if(previousNoValue > 3) SoftwareCurveAbort?.Invoke(this);
+                if (previousNoValue > 3) SoftwareCurveAbort?.Invoke(this);
             }
         }
         private float Calculate(float sensorValue) {
@@ -441,7 +441,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             StringBuilder builder = new StringBuilder();
 
-            foreach(var point in Points)
+            foreach (var point in Points)
             {
                builder.Append(point.SensorValue.ToString(CultureInfo.InvariantCulture));
                builder.Append(':');

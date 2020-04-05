@@ -142,7 +142,7 @@ namespace Aga.Controls.Tree.NodeControls
 		{
 			if (state == CheckState.Indeterminate)
 				return CheckState.Unchecked;
-			else if(state == CheckState.Unchecked)
+			else if (state == CheckState.Unchecked)
 				return CheckState.Checked;
 			else 
 				return ThreeState ? CheckState.Indeterminate : CheckState.Unchecked;

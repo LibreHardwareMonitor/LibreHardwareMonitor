@@ -901,12 +901,12 @@ namespace LibreHardwareMonitor.UI
                                         this.treeView.Click -= selectorListener;
 
                                 };
-                                this.treeView.Click += selectorListener;
+                                treeView.Click += selectorListener;
                             }
                         };
                         curveItem.MenuItems.Add(newCurveItem);
                         var softwareCurve = node.Sensor.Control.GetSoftwareCurve();
-                        if(softwareCurve != null)
+                        if (softwareCurve != null)
                         {                
                             // edit curve
                             MenuItem editCurveItem = new MenuItem("Edit");
@@ -921,7 +921,7 @@ namespace LibreHardwareMonitor.UI
                                 // enable curve
                                 MenuItem enableCurveItem = new MenuItem("Enable");
                                 curveItem.MenuItems.Add(enableCurveItem);
-                                enableCurveItem.Click += delegate (object obj, EventArgs args)
+                                enableCurveItem.Click += delegate
                                 {
                                     node.Sensor.Control.SetSoftwareCurve(softwareCurve.Points, softwareCurve.Sensor); 
                                 };
