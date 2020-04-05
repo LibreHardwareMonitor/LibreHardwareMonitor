@@ -62,10 +62,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (_mode == ControlMode.SoftwareCurve)
                 {
-                    if (_softwareCurveAttached)
-                    {
-                        return ControlMode.Default;
-                    }
+                    if (!_softwareCurveAttached) return ControlMode.Default;
                     return ControlMode.Software;
                 }
 
