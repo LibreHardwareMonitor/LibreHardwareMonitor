@@ -157,7 +157,7 @@ namespace LibreHardwareMonitor.Hardware
         
         public void NotifyHardwareAdded(List<IGroup> allHardware)
         {
-            if(_nonSoftwareCurve || _softwareCurve != null)
+            if (_nonSoftwareCurve || _softwareCurve != null)
                 return;
 
             if (_sensorIdentifier == null)
@@ -322,6 +322,7 @@ namespace LibreHardwareMonitor.Hardware
 
             return true;
         }
+        
         internal static bool TryParse(string settings, out string sensorIdentifier)
         {
             sensorIdentifier = null;
@@ -337,6 +338,7 @@ namespace LibreHardwareMonitor.Hardware
 
             return !string.IsNullOrEmpty(sensorIdentifier);
         }
+        
         internal static ISensor FindSensor(IHardware hardware, string sensorIdentifier)
         {
             foreach (ISensor sensor in hardware.Sensors){
@@ -344,6 +346,7 @@ namespace LibreHardwareMonitor.Hardware
                 if (sensor.Identifier.ToString() == sensorIdentifier)
                     return sensor;
             }
+            
             foreach (IHardware subHardware in hardware.SubHardware)
                 return FindSensor(subHardware, sensorIdentifier);
 
@@ -351,21 +354,26 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         internal SoftwareCurve(List<ISoftwareCurvePoint> points, ISensor sensor){
-            this.Points = points;
-            this.Sensor = sensor;
+            Points = points;
+            Sensor = sensor;
         }
-        
+
         internal void Start()
         {
-            if(timer == null)
+            if (timer == null)
+            {
                 timer = new Timer();
-            else if (timer.Enabled)
-                return;
-
+            }
+            else
+            {
+                if (timer.Enabled) return;
+            }
+            
             timer.Elapsed += Tick;
             timer.Interval = 1000;
             timer.Start();
         }
+        
         private void Tick(object s, ElapsedEventArgs e)
         { 
             if(Sensor?.Value != null){
@@ -382,7 +390,7 @@ namespace LibreHardwareMonitor.Hardware
 
                     Value = newValue;
                     previousValueAssigend = true;
-                    SoftwareCurveValueChanged(this);
+                    SoftwareCurveValueChanged?.Invoke(this);
                 }
             }
             else
@@ -398,7 +406,7 @@ namespace LibreHardwareMonitor.Hardware
                 var point1 = Points[i - 1];
                 var point2 = Points[i];
 
-                if(sensorValue == point1.SensorValue)
+                if (sensorValue == point1.SensorValue)
                     return point1.ControlValue;
 
                 if (sensorValue > point1.SensorValue && sensorValue < point2.SensorValue)
@@ -420,17 +428,14 @@ namespace LibreHardwareMonitor.Hardware
         }
         internal void Stop()
         {
-            if(timer != null)
-            {
-                timer.Stop();
-                timer.Elapsed -= Tick;
-            }
+            if (timer == null) return;
+            timer.Stop();
+            timer.Elapsed -= Tick;
         }
         internal void Dispose()
         {
             Stop();
-            if(timer != null)
-                timer.Dispose();
+            timer?.Dispose();
         }
         public override string ToString()
         {
@@ -449,7 +454,7 @@ namespace LibreHardwareMonitor.Hardware
             return builder.ToString();
         }
 
-        internal class SoftwareCurvePoint : ISoftwareCurvePoint
+        private class SoftwareCurvePoint : ISoftwareCurvePoint
         {
             public float SensorValue { get; set; }
             public float ControlValue { get; set; }

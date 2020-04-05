@@ -916,7 +916,7 @@ namespace LibreHardwareMonitor.UI
                                 new SensorControlForm(node.Sensor, softwareCurve.Sensor, softwareCurve.Points).ShowDialog(); 
                             };
 
-                            if(control.ActualControlMode != ControlMode.SoftwareCurve)
+                            if (control.ActualControlMode != ControlMode.SoftwareCurve)
                             {
                                 // enable curve
                                 MenuItem enableCurveItem = new MenuItem("Enable");
