@@ -20,7 +20,8 @@ namespace LibreHardwareMonitor.Hardware
         TBalancer,
         Heatmaster,
         Storage,
-        Network
+        Network,
+        AeroCool
     }
 
     public interface IHardware : IElement

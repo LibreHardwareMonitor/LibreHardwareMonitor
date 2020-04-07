@@ -56,6 +56,9 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.AquaComputer:
                     image = Utilities.EmbeddedResources.GetImage("acicon.png");
                     break;
+                case HardwareType.AeroCool:
+                    image = Utilities.EmbeddedResources.GetImage("chip.png");
+                    break;
                 case HardwareType.Network:
                     image = Utilities.EmbeddedResources.GetImage("nic.png");
                     break;
