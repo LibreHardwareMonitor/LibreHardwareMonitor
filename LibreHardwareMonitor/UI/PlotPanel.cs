@@ -153,7 +153,7 @@ namespace LibreHardwareMonitor.UI
             _timeAxis.Minimum = 0;
             _timeAxis.AbsoluteMaximum = 24 * 60 * 60;
             _timeAxis.Zoom(
-              _settings.GetValue("plotPanel.MinTimeSpan", double.NaN),
+              _settings.GetValue("plotPanel.MinTimeSpan", 0.0f),
               _settings.GetValue("plotPanel.MaxTimeSpan", 10.0f * 60));
             _timeAxis.StringFormat = "h:mm";
 
@@ -190,7 +190,7 @@ namespace LibreHardwareMonitor.UI
                     Key = typeName,
                 };
 
-                var annotation = new LineAnnotation()
+                var annotation = new LineAnnotation
                 {
                     Type = LineAnnotationType.Horizontal,
                     ClipByXAxis = false,
@@ -208,6 +208,7 @@ namespace LibreHardwareMonitor.UI
 
                 if (units.ContainsKey(type))
                     axis.Unit = units[type];
+
                 _axes.Add(type, axis);
                 _annotations.Add(type, annotation);
             }
@@ -246,10 +247,10 @@ namespace LibreHardwareMonitor.UI
         public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
         {
             _model.Series.Clear();
-            var types = new System.Collections.Generic.HashSet<SensorType>();
+            var types = new HashSet<SensorType>();
 
 
-            Func<SensorType, SensorValue, DataPoint> createDataPoint = (SensorType type, SensorValue value) =>
+            DataPoint CreateDataPoint(SensorType type, SensorValue value)
             {
                 float displayedValue;
 
@@ -261,18 +262,22 @@ namespace LibreHardwareMonitor.UI
                 {
                     displayedValue = value.Value;
                 }
+
                 return new DataPoint((_now - value.Time).TotalSeconds, displayedValue);
-            };
+            }
+
 
             foreach (ISensor sensor in sensors)
             {
-                var series = new LineSeries();
+                var series = new LineSeries
+                {
+                    ItemsSource = sensor.Values.Select(value => CreateDataPoint(sensor.SensorType, value)),
+                    Color = colors[sensor].ToOxyColor(),
+                    StrokeThickness = 1,
+                    YAxisKey = _axes[sensor.SensorType].Key,
+                    Title = sensor.Hardware.Name + " " + sensor.Name
+                };
 
-                series.ItemsSource = sensor.Values.Select(value => createDataPoint(sensor.SensorType, value));
-                series.Color = colors[sensor].ToOxyColor();
-                series.StrokeThickness = 1;
-                series.YAxisKey = _axes[sensor.SensorType].Key;
-                series.Title = sensor.Hardware.Name + " " + sensor.Name;
                 _model.Series.Add(series);
 
                 types.Add(sensor.SensorType);
@@ -305,7 +310,7 @@ namespace LibreHardwareMonitor.UI
                     axis.PositionTier = 0;
                     axis.MajorGridlineStyle = LineStyle.Solid;
                     axis.MinorGridlineStyle = LineStyle.Solid;
-                    var annotation = _annotations[pair.Key];
+                    LineAnnotation annotation = _annotations[pair.Key];
                     annotation.Y = axis.ActualMinimum;
                     if (!_model.Annotations.Contains(annotation)) 
                         _model.Annotations.Add(annotation);
@@ -334,10 +339,9 @@ namespace LibreHardwareMonitor.UI
                     }
                     axis.MajorGridlineStyle = LineStyle.None;
                     axis.MinorGridlineStyle = LineStyle.None;
-                    var annotation = _annotations[pair.Key];
+                    LineAnnotation annotation = _annotations[pair.Key];
                     if (_model.Annotations.Contains(annotation)) 
                         _model.Annotations.Remove(_annotations[pair.Key]);
-                        
                 }
             }
         }

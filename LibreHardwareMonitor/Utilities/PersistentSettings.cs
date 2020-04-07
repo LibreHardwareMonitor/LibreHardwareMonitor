@@ -176,10 +176,11 @@ namespace LibreHardwareMonitor.Utilities
 
         public float GetValue(string name, float value)
         {
-            if (!_settings.TryGetValue(name, out string str)) return value;
-
-            if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
-                return parsedValue;
+            if (_settings.TryGetValue(name, out string str))
+            {
+                if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
+                    return parsedValue;
+            }
 
             return value;
 
@@ -187,11 +188,12 @@ namespace LibreHardwareMonitor.Utilities
 
         public double GetValue(string name, double value)
         {
-            if (!_settings.TryGetValue(name, out string str)) return value;
+            if (_settings.TryGetValue(name, out string str))
+            {
+                if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
+                    return parsedValue;
+            }
 
-            if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
-                return parsedValue;
-            
             return value;
         }
         
@@ -221,9 +223,6 @@ namespace LibreHardwareMonitor.Utilities
             {
                 if (int.TryParse(str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int parsedValue))
                     return Color.FromArgb(parsedValue);
-
-
-                return value;
             }
 
             return value;
