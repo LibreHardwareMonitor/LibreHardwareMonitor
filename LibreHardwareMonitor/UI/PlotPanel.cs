@@ -214,7 +214,7 @@ namespace LibreHardwareMonitor.UI
 
             var model = new ScaledPlotModel(_dpiXScale, _dpiYScale);
             model.Axes.Add(_timeAxis);
-            foreach (var axis in _axes.Values)
+            foreach (LinearAxis axis in _axes.Values)
                 model.Axes.Add(axis);
             model.IsLegendVisible = false;
 
@@ -307,7 +307,8 @@ namespace LibreHardwareMonitor.UI
                     axis.MinorGridlineStyle = LineStyle.Solid;
                     var annotation = _annotations[pair.Key];
                     annotation.Y = axis.ActualMinimum;
-                    if (!_model.Annotations.Contains(annotation)) _model.Annotations.Add(annotation);
+                    if (!_model.Annotations.Contains(annotation)) 
+                        _model.Annotations.Add(annotation);
                 }
             }
             else
@@ -334,7 +335,8 @@ namespace LibreHardwareMonitor.UI
                     axis.MajorGridlineStyle = LineStyle.None;
                     axis.MinorGridlineStyle = LineStyle.None;
                     var annotation = _annotations[pair.Key];
-                    if (_model.Annotations.Contains(annotation)) _model.Annotations.Remove(_annotations[pair.Key]);
+                    if (_model.Annotations.Contains(annotation)) 
+                        _model.Annotations.Remove(_annotations[pair.Key]);
                         
                 }
             }
@@ -353,7 +355,8 @@ namespace LibreHardwareMonitor.UI
                     if (type == SensorType.Temperature)
                         axis.Unit = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ? "°C" : "°F";
                     
-                    if (!_stackedAxes.Value) continue;
+                    if (!_stackedAxes.Value) 
+                        continue;
 
                     var annotation = _annotations[pair.Key];
                     annotation.Y = axis.ActualMaximum;
