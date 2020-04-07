@@ -11,8 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
     internal class P7H1 : Hardware
     {
         private HidDevice _device;
-        private byte[] _rawData = new byte[0];
-        private object datalock = new object();
+        private float[] _speeds = new float[5];
 
         private readonly Sensor[] _rpm = new Sensor[5];
         private const byte REPORT_ID = 0x0;
@@ -51,30 +50,27 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 
         public override void Update()
         {
-            lock (datalock)
-            {
                 for (int i = 0; i < 5; i++)
                 {
-                    int speed = _rawData[i * 3 + 2] * 256 + _rawData[i * 3 + 3];
-                    _rpm[i].Value = speed;
+                    _rpm[i].Value = _speeds[i];
                 }
-            }
         }
 
         private void OnDataReady(HidDeviceData report)
         {
-            _device.Read(OnDataReady);
             if(report.Status == HidDeviceData.ReadStatus.Success)
             {
-                if(report.Data.Length > 0 && report.Data[0] == REPORT_ID)
+                byte[] rawData = report.Data;
+                if(rawData.Length > 0 && rawData[0] == REPORT_ID)
                 {
-                    lock (datalock)
+                    for (int i = 0; i < 5; i++)
                     {
-                        _rawData = report.Data;
+                        int speed = rawData[i * 3 + 2] * 256 + rawData[i * 3 + 3];
+                        _speeds[i] = (float)speed;
                     }
                 }
             }
-
+            _device.Read(OnDataReady);
         }
 
     }
