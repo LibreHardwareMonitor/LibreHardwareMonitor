@@ -12,19 +12,21 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
     {
         private HidDevice _device;
         private float[] _speeds = new float[5];
+        private bool _running;
 
         private readonly Sensor[] _rpm = new Sensor[5];
         private const byte REPORT_ID = 0x0;
 
         public int HubNumber { get; private set; }
 
-        public P7H1(HidDevice dev, ISettings settings) : base("P7-H1", new Identifier(dev.DevicePath), settings)
+        public P7H1(HidDevice dev, ISettings settings) : base("AeroCool P7-H1", new Identifier(dev.DevicePath), settings)
         {
             _device = dev;
             HubNumber = _device.Attributes.ProductId - 0x1000;
-            Name = $"P7-H1 #{HubNumber}";
+            Name = $"AeroCool P7-H1 #{HubNumber}";
             _device.OpenDevice();
             _device.MonitorDeviceEvents = true;
+            _running = true;
             _device.Read(OnDataReady);
 
             for (int i=0; i<5; i++)
@@ -44,6 +46,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 
         public override void Close()
         {
+            _running = false;
             _device.CloseDevice();
             base.Close();
         }
@@ -58,10 +61,11 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 
         private void OnDataReady(HidDeviceData report)
         {
+            if (!_running) return; // Do not register eventhandler again if device stopped
             if(report.Status == HidDeviceData.ReadStatus.Success)
             {
                 byte[] rawData = report.Data;
-                if(rawData.Length > 0 && rawData[0] == REPORT_ID)
+                if(rawData.Length == 16 && rawData[0] == REPORT_ID)
                 {
                     for (int i = 0; i < 5; i++)
                     {
