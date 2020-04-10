@@ -384,9 +384,68 @@ namespace LibreHardwareMonitor.Hardware
             if (_networkEnabled)
                 Add(new NetworkGroup(_settings));
 
+            HardwareAdded += delegate(IHardware hardware) { 
+                // Find all Control sensors and give all hardware
+                NotifyNotifySoftwareCurveControllersAllHardware();
+            };
+
+            HardwareRemoved += delegate(IHardware removed) {
+                // Find all Control sensors and notify removed hardware
+                foreach (var group in _groups)
+                {
+                    foreach (var hardware in group.Hardware)
+                    {
+                        NotifySoftwareCurveControllersHardwareRemoved(hardware, removed);
+                    }
+                }
+            };
+            
             _open = true;
         }
 
+        private void NotifyNotifySoftwareCurveControllersAllHardware()
+        {
+            foreach (var group in _groups)
+            {
+                foreach (var hardware in group.Hardware)
+                {
+                    NotifySoftwareCurveControllersHardwareAdded(hardware, _groups);
+                }
+            }
+        }
+
+        private void NotifySoftwareCurveControllersHardwareAdded(IHardware iterate, List<IGroup> allhardware)
+        {
+            iterate.SensorAdded += delegate(ISensor sensor) {
+                if (sensor.Control != null) {
+                    sensor.Control.NotifyHardwareAdded(allhardware);
+                }
+            };
+
+            foreach (ISensor sensor in iterate.Sensors)
+            {
+                sensor.Control?.NotifyHardwareAdded(allhardware);
+            }
+
+            foreach (IHardware subHardware in iterate.SubHardware)
+            {
+                NotifySoftwareCurveControllersHardwareAdded(subHardware, allhardware);
+            }
+        }
+
+        private void NotifySoftwareCurveControllersHardwareRemoved(IHardware iterate, IHardware removed)
+        {
+            foreach (ISensor sensor in iterate.Sensors)
+            {
+                sensor.Control?.NotifyHardwareRemoved(removed);
+            }
+
+            foreach (IHardware subHardware in iterate.SubHardware)
+            {
+                NotifySoftwareCurveControllersHardwareRemoved(subHardware, removed);
+            }
+        }
+        
         private static void NewSection(TextWriter writer)
         {
             for (int i = 0; i < 8; i++)
