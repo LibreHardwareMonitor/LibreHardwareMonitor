@@ -853,7 +853,7 @@ namespace LibreHardwareMonitor.UI
                         {
                             control.SetDefault();
                         };
-                        MenuItem manualItem = new MenuItem("Manual");
+                        MenuItem manualItem = new MenuItem("Value");
                         controlItem.MenuItems.Add(manualItem);
                         manualItem.Checked = control.ActualControlMode == ControlMode.Software;
                         for (int i = 0; i <= 100; i += 5)
@@ -871,7 +871,7 @@ namespace LibreHardwareMonitor.UI
                                 };
                             }
                         }
-                        MenuItem curveItem = new MenuItem("Manual Curve");
+                        MenuItem curveItem = new MenuItem("Curve");
                         controlItem.MenuItems.Add(curveItem);
                         curveItem.Checked = control.ActualControlMode == ControlMode.SoftwareCurve;
                         MenuItem newCurveItem = new MenuItem("New");
