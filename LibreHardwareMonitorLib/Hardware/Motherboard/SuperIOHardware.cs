@@ -86,6 +86,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 break;
                             }
                             case ControlMode.Software:
+                            case ControlMode.SoftwareCurve:
                             {
                                 superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
                                 break;
@@ -99,7 +100,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                     control.SoftwareControlValueChanged += cc =>
                     {
-                        if (cc.ControlMode == ControlMode.Software)
+                        if (cc.ControlMode == ControlMode.Software || cc.ControlMode == ControlMode.SoftwareCurve)
                             superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
                     };
 
@@ -112,13 +113,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         case ControlMode.Default:
                         {
                             superIO.SetControl(index, null);
-                            
                             break;
                         }
                         case ControlMode.Software:
+                        case ControlMode.SoftwareCurve:
                         {
                             superIO.SetControl(index, (byte)(control.SoftwareValue * 2.55));
-                            
                             break;
                         }
                     }

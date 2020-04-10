@@ -595,6 +595,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     SetDefaultFanSpeed();
                     break;
                 case ControlMode.Software:
+                case ControlMode.SoftwareCurve:
                     SoftwareControlValueChanged(control);
                     break;
                 default:

@@ -113,7 +113,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         private void SoftwareControlValueChanged(IControl control)
         {
-            if (control.ControlMode == ControlMode.Software)
+            if (control.ControlMode == ControlMode.Software || control.ControlMode == ControlMode.SoftwareCurve)
             {
                 AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new AtiAdlxx.ADLFanSpeedValue
                 {
@@ -134,6 +134,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     SetDefaultFanSpeed();
                     break;
                 case ControlMode.Software:
+                case ControlMode.SoftwareCurve:
                     SoftwareControlValueChanged(control);
                     break;
                 default:

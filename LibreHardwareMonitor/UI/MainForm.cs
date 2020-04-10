@@ -847,7 +847,7 @@ namespace LibreHardwareMonitor.UI
                         treeContextMenu.MenuItems.Add(new MenuItem("-"));
                         IControl control = node.Sensor.Control;
                         MenuItem controlItem = new MenuItem("Control");
-                        MenuItem defaultItem = new MenuItem("Default") { Checked = control.ControlMode == ControlMode.Default };
+                        MenuItem defaultItem = new MenuItem("Default") { Checked = control.ActualControlMode == ControlMode.Default };
                         controlItem.MenuItems.Add(defaultItem);
                         defaultItem.Click += delegate
                         {
