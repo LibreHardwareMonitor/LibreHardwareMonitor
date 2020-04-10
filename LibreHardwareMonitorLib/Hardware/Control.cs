@@ -15,7 +15,6 @@ namespace LibreHardwareMonitor.Hardware
     internal class Control : IControl
     {
         private readonly ISettings _settings;
-        private ISensor _parentSensor;
         private ControlMode _mode;
         private float _softwareValue;
 
@@ -35,7 +34,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             Identifier = new Identifier(sensor.Identifier, "control");
             _settings = settings;
-            _parentSensor = sensor;
             MinSoftwareValue = minSoftwareValue;
             MaxSoftwareValue = maxSoftwareValue;
 
@@ -57,28 +55,26 @@ namespace LibreHardwareMonitor.Hardware
         {
             get
             {
-                if (_mode == ControlMode.SoftwareCurve)
+                if (_mode != ControlMode.SoftwareCurve)
                 {
-                    if (!_softwareCurveAttached)
-                    {
-                        return ControlMode.Default;
-                    }
-                    return ControlMode.Software;
+                    return _mode;
                 }
-
-                return _mode;
+                
+                return !_softwareCurveAttached ? ControlMode.Default : ControlMode.Software;
             }
 
             private set
             {
                 DetachSoftwareCurve();
 
-                if (_mode != value)
+                if (_mode == value)
                 {
-                    _mode = value;
-                    ControlModeChanged?.Invoke(this);
-                    _settings.SetValue(new Identifier(Identifier, "mode").ToString(), ((int)_mode).ToString(CultureInfo.InvariantCulture));
+                    return;
                 }
+
+                _mode = value;
+                ControlModeChanged?.Invoke(this);
+                _settings.SetValue(new Identifier(Identifier, "mode").ToString(), ((int)_mode).ToString(CultureInfo.InvariantCulture));
             }
         }
 
