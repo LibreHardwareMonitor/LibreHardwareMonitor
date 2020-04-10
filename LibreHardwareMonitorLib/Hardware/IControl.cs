@@ -40,10 +40,4 @@ namespace LibreHardwareMonitor.Hardware
         void NotifyHardwareRemoved(IHardware hardware);
         void NotifyClosing();
     }
-
-    public interface ISoftwareCurvePoint
-    {
-        float SensorValue { get; set; }
-        float ControlValue { get; set; }
-    }        
 }
