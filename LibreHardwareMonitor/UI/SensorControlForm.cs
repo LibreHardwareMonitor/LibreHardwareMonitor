@@ -31,6 +31,8 @@ namespace LibreHardwareMonitor.GUI
         private string controlTypename = "X";
         private string sensorTypename = "Y";
 
+        private const int PlotPadding = 5;
+
         public SensorControlForm(ISensor control, ISensor sensor, List<ISoftwareCurvePoint> points)
         {
             this.control = control;
@@ -43,8 +45,8 @@ namespace LibreHardwareMonitor.GUI
             mModel = new PlotModel();
             mPlot.Height = panel1.Height;
             mPlot.Width = panel1.Width;
-            mPlot.Padding = new Padding(0);
-            mModel.Padding = new OxyThickness(0);
+            mPlot.Padding = new Padding(PlotPadding);
+            mModel.Padding = new OxyThickness(PlotPadding);
             mPlot.Model = mModel;
             panel1.Controls.Add(mPlot);
 
@@ -131,6 +133,19 @@ namespace LibreHardwareMonitor.GUI
 
             mPlot.MouseDown += MPlot_MouseDown;
         }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (mPlot == null)
+            {
+                return;
+            }
+            mPlot.Height = panel1.Height;
+            mPlot.Width = panel1.Width;
+            mPlot.Refresh();
+        }
+
         private void UpdateAxes()
         {
             mModel.Axes.Clear();
