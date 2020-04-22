@@ -231,10 +231,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (value.HasValue)
             {
                 SaveDefaultFanPwmControl(index);
-
+                bool valid;
+                WriteByte(FAN_MAIN_CTRL_REG, (byte)(_fanMainControlValue[index] | ReadByte(FAN_MAIN_CTRL_REG, out valid))); // Bitwise opperand to get control of the fan.
                 if (_hasNewerAutoPwm)
                 {
-                    byte ctrlValue = ReadByte(FAN_PWM_CTRL_REG[index], out bool valid);
+                    byte ctrlValue = ReadByte(FAN_PWM_CTRL_REG[index], out valid);
 
                     if (valid)
                     {
