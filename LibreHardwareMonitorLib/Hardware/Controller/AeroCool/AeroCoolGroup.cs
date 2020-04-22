@@ -22,7 +22,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
             foreach (HidDevice dev in HidDevices.Enumerate(0x2e97))
             {
                 int hubno = dev.Attributes.ProductId - 0x1000;
-                if(dev.DevicePath.Contains("mi_02") && (hubno >= 1) && (hubno <= 8))
+                if (dev.DevicePath.Contains("mi_02") && (hubno >= 1) && (hubno <= 8))
                 {
                     var device = new P7H1(dev, settings);
                     _report.AppendLine($"Device name: {device.Name}");

@@ -10,8 +10,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 {
     internal class P7H1 : Hardware
     {
-        private HidDevice _device;
-        private float[] _speeds = new float[5];
+        private readonly HidDevice _device;
+        private readonly float[] _speeds = new float[5];
         private bool _running;
 
         private readonly Sensor[] _rpm = new Sensor[5];
@@ -31,7 +31,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 
             for (int i=0; i<5; i++)
             {
-                _rpm[i] = new Sensor($"Fan #{i}", i, SensorType.Fan, this, settings);
+                _rpm[i] = new Sensor($"Fan #{i+1}", i, SensorType.Fan, this, settings);
                 ActivateSensor(_rpm[i]);
             }
         }
@@ -53,16 +53,17 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 
         public override void Update()
         {
-                for (int i = 0; i < 5; i++)
-                {
-                    _rpm[i].Value = _speeds[i];
-                }
+            for (int i = 0; i < 5; i++)
+            {
+                _rpm[i].Value = _speeds[i];
+            }
         }
 
         private void OnDataReady(HidDeviceData report)
         {
-            if (!_running) return; // Do not register eventhandler again if device stopped
-            if(report.Status == HidDeviceData.ReadStatus.Success)
+            if (!_running) // Do not register eventhandler again if device stopped
+                return;
+            if (report.Status == HidDeviceData.ReadStatus.Success)
             {
                 byte[] rawData = report.Data;
                 if(rawData.Length == 16 && rawData[0] == REPORT_ID)
@@ -76,6 +77,5 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
             }
             _device.Read(OnDataReady);
         }
-
     }
 }
