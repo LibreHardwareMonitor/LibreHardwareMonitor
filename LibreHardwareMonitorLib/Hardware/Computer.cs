@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Permissions;
+using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
@@ -92,12 +93,14 @@ namespace LibreHardwareMonitor.Hardware
                         Add(new TBalancerGroup(_settings));
                         Add(new HeatmasterGroup(_settings));
                         Add(new AquaComputerGroup(_settings));
+                        Add(new AeroCoolGroup(_settings));
                     }
                     else
                     {
                         RemoveType<TBalancerGroup>();
                         RemoveType<HeatmasterGroup>();
                         RemoveType<AquaComputerGroup>();
+                        RemoveType<AeroCoolGroup>();
                     }
                 }
 
@@ -376,6 +379,7 @@ namespace LibreHardwareMonitor.Hardware
                 Add(new TBalancerGroup(_settings));
                 Add(new HeatmasterGroup(_settings));
                 Add(new AquaComputerGroup(_settings));
+                Add(new AeroCoolGroup(_settings));
             }
 
             if (_storageEnabled)

@@ -529,6 +529,8 @@ namespace LibreHardwareMonitor.Utilities
                     return "ram.png";
                 case HardwareType.AquaComputer:
                     return "acicon.png";
+                case HardwareType.AeroCool:
+                    return "chip.png";
                 case HardwareType.Network:
                     return "nic.png";
                 default:
