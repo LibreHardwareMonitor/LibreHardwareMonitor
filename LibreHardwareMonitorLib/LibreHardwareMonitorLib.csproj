@@ -35,6 +35,8 @@
 
   <ItemGroup>
     <Compile Include="Hardware\Control.cs" />
+    <Compile Include="Hardware\Controller\AeroCool\AeroCoolGroup.cs" />
+    <Compile Include="Hardware\Controller\AeroCool\P7-H1.cs" />
     <Compile Include="Hardware\Controller\AquaComputer\AquaComputerGroup.cs" />
     <Compile Include="Hardware\Controller\AquaComputer\AquastreamXT.cs" />
     <Compile Include="Hardware\Controller\AquaComputer\MPS.cs" />

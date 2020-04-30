@@ -28,6 +28,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
+            nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)Kernel32.STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE.NVMeIdentifyCnsController;
             nptwb.ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<Kernel32.STORAGE_PROTOCOL_SPECIFIC_DATA>();
             nptwb.ProtocolSpecific.ProtocolDataLength = (uint)nptwb.Buffer.Length;
             nptwb.PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
@@ -103,6 +104,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
+            nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)Kernel32.STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE.NVMeIdentifyCnsController;
             nptwb.ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<Kernel32.STORAGE_PROTOCOL_SPECIFIC_DATA>();
             nptwb.ProtocolSpecific.ProtocolDataLength = (uint)nptwb.Buffer.Length;
             nptwb.PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;

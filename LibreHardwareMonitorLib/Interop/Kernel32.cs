@@ -433,6 +433,13 @@ namespace LibreHardwareMonitor.Interop
             NVMeDataTypeFeature
         }
 
+        internal enum STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE
+        {
+            NVMeIdentifyCnsSpecificNamespace = 0,
+            NVMeIdentifyCnsController = 1,
+            NVMeIdentifyCnsActiveNamespaces = 2
+        }
+
         internal enum STORAGE_PROTOCOL_TYPE
         {
             ProtocolTypeUnknown = 0x00,
