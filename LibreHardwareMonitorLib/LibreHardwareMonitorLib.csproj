@@ -19,6 +19,7 @@
     <PackageTags>libre open hardware monitor monitoring system logging cpu gpu</PackageTags>
     <Pack>true</Pack>
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -160,7 +161,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="hidlibrary" Version="3.2.46" />
+    <PackageReference Include="HidSharp" Version="2.1.0" />
     <PackageReference Include="System.Management" Version="4.7.0" />
   </ItemGroup>
 </Project>

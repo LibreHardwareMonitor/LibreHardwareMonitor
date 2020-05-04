@@ -4,59 +4,50 @@
 // All Rights Reserved.
 
 using System;
-using HidLibrary;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
-    internal class MPS : Hardware
+    internal sealed class MPS : Hardware
     {
-        #region USB
-        private HidDevice _device;
-        private byte[] _rawData;
-        public UInt16 FirmwareVersion { get; private set; }
-        #endregion
-
-        private readonly Sensor _pumpFlow;
-        private readonly Sensor[] _temperatures = new Sensor[2];
-
         private const byte MPS_REPORT_ID = 0x2;
 
-        private UInt16 _externalTemperature = 0;
-
-        private sealed class MPSDataIndexes
-        {
-            public const int PumpFlow = 35;
-            public const int ExternalTemperature = 43;
-            public const int InternalWaterTemperature = 45;
-        }
+        private readonly Sensor _pumpFlow;
+        private readonly byte[] _rawData = new byte[64];
+        private readonly HidStream _stream;
+        private readonly Sensor[] _temperatures = new Sensor[2];
+        
+        private ushort _externalTemperature;
 
         public MPS(HidDevice dev, ISettings settings) : base("MPS", new Identifier(dev.DevicePath), settings)
         {
-            _device = dev;
-
-            do
+            if (dev.TryOpen(out _stream))
             {
-                _device.ReadFeatureData(out _rawData, MPS_REPORT_ID);
-            } while (_rawData[0] != MPS_REPORT_ID);
+                do
+                {
+                    _rawData[0] = MPS_REPORT_ID;
+                    _stream.GetFeature(_rawData);
+                }
+                while (_rawData[0] != MPS_REPORT_ID);
 
-            Name = $"MPS";
-            FirmwareVersion = ExtractFirmwareVersion();
+                Name = "MPS";
+                FirmwareVersion = ExtractFirmwareVersion();
 
-            _temperatures[0] = new Sensor("External", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(_temperatures[0]);
-            _temperatures[1] = new Sensor("Internal Water", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(_temperatures[1]);
+                _temperatures[0] = new Sensor("External", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                ActivateSensor(_temperatures[0]);
+                _temperatures[1] = new Sensor("Internal Water", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                ActivateSensor(_temperatures[1]);
 
-            _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
-            ActivateSensor(_pumpFlow);
+                _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
+                ActivateSensor(_pumpFlow);
+            }
         }
+
+        public ushort FirmwareVersion { get; private set; }
 
         public override HardwareType HardwareType
         {
-            get
-            {
-                return HardwareType.AquaComputer;
-            }
+            get { return HardwareType.AquaComputer; }
         }
 
         public string Status
@@ -68,41 +59,53 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 {
                     return $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 1012";
                 }
+
                 return "Status: OK";
             }
         }
 
         public override void Close()
         {
-            _device.CloseDevice();
+            _stream.Close();
+
             base.Close();
         }
 
         public override void Update()
         {
-            _device.ReadFeatureData(out _rawData, MPS_REPORT_ID);
+            _rawData[0] = MPS_REPORT_ID;
+            _stream.GetFeature(_rawData);
 
             if (_rawData[0] != MPS_REPORT_ID)
                 return;
+
 
             _pumpFlow.Value = BitConverter.ToUInt16(_rawData, MPSDataIndexes.PumpFlow) / 10f;
 
             _externalTemperature = BitConverter.ToUInt16(_rawData, MPSDataIndexes.ExternalTemperature);
             //sensor reading returns Int16.MaxValue (32767), when not connected
-            if (_externalTemperature != Int16.MaxValue)
+            if (_externalTemperature != short.MaxValue)
             {
                 _temperatures[0].Value = _externalTemperature / 100f;
             }
             else
+            {
                 _temperatures[0].Value = null;
+            }
 
             _temperatures[1].Value = BitConverter.ToUInt16(_rawData, MPSDataIndexes.InternalWaterTemperature) / 100f;
-
         }
 
         private ushort ExtractFirmwareVersion()
         {
             return BitConverter.ToUInt16(_rawData, 3);
+        }
+
+        private sealed class MPSDataIndexes
+        {
+            public const int ExternalTemperature = 43;
+            public const int InternalWaterTemperature = 45;
+            public const int PumpFlow = 35;
         }
     }
 }
