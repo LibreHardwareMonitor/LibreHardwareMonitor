@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Globalization;
@@ -25,6 +26,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _memoryLoad;
         private readonly Sensor _memoryUsed;
         private readonly NvidiaML.NvmlDevice? _nvmlDevice;
+        private readonly Sensor _pcieThroughputRx;
+        private readonly Sensor _pcieThroughputTx;
         private readonly Sensor _powerUsage;
         private readonly Sensor[] _temperatures;
 
@@ -34,6 +37,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _adapterIndex = adapterIndex;
             _handle = handle;
             _displayHandle = displayHandle;
+
+            bool hasPciBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
 
             NvApi.NvGPUThermalSettings thermalSettings = GetThermalSettings();
             _temperatures = new Sensor[thermalSettings.Count];
@@ -67,14 +72,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 ActivateSensor(_temperatures[i]);
             }
 
-            if (NvApi.NvAPI_GPU_GetTachReading != null && NvApi.NvAPI_GPU_GetTachReading(handle, out int value) == NvApi.NvStatus.OK)
-            {
-                if (value >= 0)
-                {
-                    _fan = new Sensor("GPU", 0, SensorType.Fan, this, settings);
-                    ActivateSensor(_fan);
-                }
-            }
+            if (NvApi.NvAPI_GPU_GetTachReading != null && NvApi.NvAPI_GPU_GetTachReading(handle, out _) == NvApi.NvStatus.OK)
+                _fan = new Sensor("GPU", 0, SensorType.Fan, this, settings);
+            else if (NvApi.NvAPI_GPU_ClientFanCoolersGetStatus != null && GetCoolerSettings().Count > 0)
+                _fan = new Sensor("GPU", 0, SensorType.Fan, this, settings);
 
             _clocks = new Sensor[3];
             _clocks[0] = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
@@ -83,14 +84,17 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             for (int i = 0; i < _clocks.Length; i++)
                 ActivateSensor(_clocks[i]);
 
-            _loads = new Sensor[3];
+            _loads = new Sensor[4];
             _loads[0] = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             _loads[1] = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
             _loads[2] = new Sensor("GPU Video Engine", 2, SensorType.Load, this, settings);
+            _loads[3] = new Sensor("GPU Bus", 4, SensorType.Load, this, settings);
+
             _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
             _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.SmallData, this, settings);
             _memoryUsed = new Sensor("GPU Memory Used", 2, SensorType.SmallData, this, settings);
             _memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
+
             _control = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
             NvApi.NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
@@ -103,12 +107,19 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _control.Control = _fanControl;
             }
 
-            if (NvidiaML.IsAvailable)
+            if (NvidiaML.IsAvailable || NvidiaML.Initialize())
             {
-                _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByIndex(adapterIndex);
+                if (hasPciBusId)
+                    _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByPciBusId($" 0000:{busId:X2}:00.0") ?? NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex);
+                else
+                    _nvmlDevice = NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex);
+
                 if (_nvmlDevice.HasValue)
                 {
                     _powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
+
+                    _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings);
+                    _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings);
                 }
             }
 
@@ -145,6 +156,18 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             return settings;
         }
 
+        private NvApi.NvFanCoolersStatus GetFanCoolersStatus()
+        {
+            var coolers = new NvApi.NvFanCoolersStatus { Version = NvApi.GPU_FAN_COOLERS_STATUS_VER, Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS] };
+
+            if (!(NvApi.NvAPI_GPU_ClientFanCoolersGetStatus != null && NvApi.NvAPI_GPU_ClientFanCoolersGetStatus(_handle, ref coolers) == NvApi.NvStatus.OK))
+            {
+                coolers.Count = 0;
+            }
+
+            return coolers;
+        }
+
         private NvApi.NvGPUCoolerSettings GetCoolerSettings()
         {
             NvApi.NvGPUCoolerSettings settings = new NvApi.NvGPUCoolerSettings { Version = NvApi.GPU_COOLER_SETTINGS_VER, Cooler = new NvApi.NvCooler[NvApi.MAX_COOLER_PER_GPU] };
@@ -173,10 +196,16 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             foreach (Sensor sensor in _temperatures)
                 sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
 
+            bool readTach = false;
             if (_fan != null)
             {
-                NvApi.NvAPI_GPU_GetTachReading(_handle, out int value);
-                _fan.Value = value;
+                if (NvApi.NvAPI_GPU_GetTachReading(_handle, out int value) == NvApi.NvStatus.OK)
+                {
+                    _fan.Value = value;
+                    ActivateSensor(_fan);
+
+                    readTach = true;
+                }
             }
 
             uint[] values = GetClocks();
@@ -198,7 +227,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             NvApi.NvPStates states = new NvApi.NvPStates { Version = NvApi.GPU_PSTATES_VER, PStates = new NvApi.NvPState[NvApi.MAX_PSTATES_PER_GPU] };
             if (NvApi.NvAPI_GPU_GetPStates != null && NvApi.NvAPI_GPU_GetPStates(_handle, ref states) == NvApi.NvStatus.OK)
             {
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < _loads.Length; i++)
                 {
                     if (states.PStates[i].Present)
                     {
@@ -220,11 +249,33 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 }
             }
 
+            bool readCoolerSettings = false;
             NvApi.NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
             if (coolerSettings.Count > 0)
             {
                 _control.Value = coolerSettings.Cooler[0].CurrentLevel;
                 ActivateSensor(_control);
+
+                readCoolerSettings = true;
+            }
+
+            if (!readTach || !readCoolerSettings)
+            {
+                NvApi.NvFanCoolersStatus coolersStatus = GetFanCoolersStatus();
+                if (coolersStatus.Count > 0)
+                {
+                    if (!readCoolerSettings)
+                    {
+                        _control.Value = coolersStatus.Items[0].CurrentLevel;
+                        ActivateSensor(_control);
+                    }
+
+                    if (!readTach && _fan != null)
+                    {
+                        _fan.Value = coolersStatus.Items[0].CurrentRpm;
+                        ActivateSensor(_fan);
+                    }
+                }
             }
 
             NvApi.NvMemoryInfo memoryInfo = new NvApi.NvMemoryInfo { Version = NvApi.GPU_MEMORY_INFO_VER, Values = new uint[NvApi.MAX_MEMORY_VALUES_PER_GPU] };
@@ -245,11 +296,26 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
             {
-                var result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
                 if (result.HasValue)
                 {
                     _powerUsage.Value = (float)result.Value / 1000;
                     ActivateSensor(_powerUsage);
+                }
+
+                // In MB/s, throughput sensors are passed as in KB/s.
+                uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
+                if (rx.HasValue)
+                {
+                    _pcieThroughputRx.Value = rx * 1024;
+                    ActivateSensor(_pcieThroughputRx);
+                }
+
+                uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
+                if (tx.HasValue)
+                {
+                    _pcieThroughputTx.Value = tx * 1024;
+                    ActivateSensor(_pcieThroughputTx);
                 }
             }
         }
@@ -448,6 +514,42 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     r.AppendLine(status.ToString());
                 }
 
+                r.AppendLine();
+            }
+
+            if (NvApi.NvAPI_GPU_ClientFanCoolersGetStatus != null)
+            {
+                var coolers = new NvApi.NvFanCoolersStatus
+                {
+                    Version = NvApi.GPU_FAN_COOLERS_STATUS_VER, 
+                    Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
+                };
+
+                NvApi.NvStatus status = NvApi.NvAPI_GPU_ClientFanCoolersGetStatus(_handle, ref coolers);
+
+                r.AppendLine("Fan Coolers Status");
+                r.AppendLine();
+                if (status == NvApi.NvStatus.OK)
+                {
+                    for (int i = 0; i < coolers.Count; i++)
+                    {
+                        r.AppendFormat(" Items[{0}].Type: {1}{2}", i,
+                                       coolers.Items[i].Type, Environment.NewLine);
+                        r.AppendFormat(" Items[{0}].CurrentRpm: {1}{2}", i,
+                                       coolers.Items[i].CurrentRpm, Environment.NewLine);
+                        r.AppendFormat(" Items[{0}].CurrentMinLevel: {1}{2}", i,
+                                       coolers.Items[i].CurrentMinLevel, Environment.NewLine);
+                        r.AppendFormat(" Items[{0}].CurrentMaxLevel: {1}{2}", i,
+                                       coolers.Items[i].CurrentMaxLevel, Environment.NewLine);
+                        r.AppendFormat(" Items[{0}].CurrentLevel: {1}{2}", i,
+                                       coolers.Items[i].CurrentLevel, Environment.NewLine);
+                    }
+                }
+                else
+                {
+                    r.Append(" Status: ");
+                    r.AppendLine(status.ToString());
+                }
                 r.AppendLine();
             }
 

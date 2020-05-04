@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -14,20 +15,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
     {
         private readonly List<Sensor> _controls = new List<Sensor>();
         private readonly List<Sensor> _fans = new List<Sensor>();
-        private readonly List<Sensor> _temperatures = new List<Sensor>();
-        private readonly List<Sensor> _voltages = new List<Sensor>();
+        private readonly Motherboard _motherboard;
 
-
-        // delegate for post update motherboard specific code
         private readonly UpdateDelegate _postUpdate;
         private readonly ReadValueDelegate _readControl;
         private readonly ReadValueDelegate _readFan;
         private readonly ReadValueDelegate _readTemperature;
-
-        // delegates for motherboard specific sensor reading code
         private readonly ReadValueDelegate _readVoltage;
+
         private readonly ISuperIO _superIO;
-        private readonly Motherboard _motherboard;
+        private readonly List<Sensor> _temperatures = new List<Sensor>();
+        private readonly List<Sensor> _voltages = new List<Sensor>();
 
         public SuperIOHardware(Motherboard motherboard, ISuperIO superIO, Manufacturer manufacturer, Model model, ISettings settings)
             : base(ChipName.GetName(superIO.Chip), new Identifier("lpc", superIO.Chip.ToString().ToLowerInvariant()), settings)
@@ -79,15 +77,23 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         switch (cc.ControlMode)
                         {
                             case ControlMode.Undefined:
+                            {
                                 return;
+                            }
                             case ControlMode.Default:
+                            {
                                 superIO.SetControl(index, null);
                                 break;
+                            }
                             case ControlMode.Software:
+                            {
                                 superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
                                 break;
+                            }
                             default:
+                            {
                                 return;
+                            }
                         }
                     };
 
@@ -100,13 +106,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     switch (control.ControlMode)
                     {
                         case ControlMode.Undefined:
+                        {
                             break;
+                        }
                         case ControlMode.Default:
+                        {
                             superIO.SetControl(index, null);
+                            
                             break;
+                        }
                         case ControlMode.Software:
+                        {
                             superIO.SetControl(index, (byte)(control.SoftwareValue * 2.55));
+                            
                             break;
+                        }
                     }
 
                     sensor.Control = control;
@@ -202,6 +216,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             switch (superIO.Chip)
             {
+                case Chip.IT8655E:
+                case Chip.IT8665E:
+                case Chip.IT8686E:
                 case Chip.IT8688E:
                 case Chip.IT8705F:
                 case Chip.IT8712F:
@@ -209,24 +226,29 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.IT8718F:
                 case Chip.IT8720F:
                 case Chip.IT8726F:
-                case Chip.IT8665E:
-                case Chip.IT8686E:
+                case Chip.IT879XE:
+                {
                     GetIteConfigurationsA(superIO, manufacturer, model, v, t, f, c, ref readFan, ref postUpdate, ref mutex);
+                    
                     break;
-
+                }
                 case Chip.IT8620E:
                 case Chip.IT8628E:
                 case Chip.IT8721F:
                 case Chip.IT8728F:
                 case Chip.IT8771E:
                 case Chip.IT8772E:
+                {
                     GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
+                    
                     break;
-
+                }
                 case Chip.F71858:
+                {
                     v.Add(new Voltage("VCC3V", 0, 150, 150));
                     v.Add(new Voltage("VSB3V", 1, 150, 150));
                     v.Add(new Voltage("Battery", 2, 150, 150));
+                    
                     for (int i = 0; i < superIO.Temperatures.Length; i++)
                         t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -234,6 +256,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     break;
+                }
+                case Chip.F71808E:
                 case Chip.F71862:
                 case Chip.F71869:
                 case Chip.F71869A:
@@ -241,28 +265,36 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.F71889AD:
                 case Chip.F71889ED:
                 case Chip.F71889F:
-                case Chip.F71808E:
+                {
                     GetFintekConfiguration(superIO, manufacturer, model, v, t, f, c);
+                    
                     break;
-
+                }
                 case Chip.W83627EHF:
+                {
                     GetWinbondConfigurationEhf(manufacturer, model, v, t, f);
+                    
                     break;
+                }
                 case Chip.W83627DHG:
                 case Chip.W83627DHGP:
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
+                {
                     GetWinbondConfigurationHg(manufacturer, model, v, t, f);
+                    
                     break;
+                }
                 case Chip.W83627HF:
                 case Chip.W83627THF:
                 case Chip.W83687THF:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("Voltage #3", 2, true));
                     v.Add(new Voltage("AVCC", 3, 34, 51));
                     v.Add(new Voltage("Voltage #5", 4, true));
-                    v.Add(new Voltage("5VSB", 5, 34, 51));
+                    v.Add(new Voltage("+5VSB", 5, 34, 51));
                     v.Add(new Voltage("VBat", 6));
                     t.Add(new Temperature("CPU", 0));
                     t.Add(new Temperature("Auxiliary", 1));
@@ -270,25 +302,32 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     f.Add(new Fan("System Fan", 0));
                     f.Add(new Fan("CPU Fan", 1));
                     f.Add(new Fan("Auxiliary Fan", 2));
+                    
                     break;
+                }
                 case Chip.NCT6771F:
                 case Chip.NCT6776F:
+                {
                     GetNuvotonConfigurationF(superIO, manufacturer, model, v, t, f, c);
+                    
                     break;
-                case Chip.NCT610X:
+                }
+                case Chip.NCT610XD:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #0", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #1", 4, true));
                     v.Add(new Voltage("Voltage #2", 5, true));
                     v.Add(new Voltage("Reserved", 6, true));
                     v.Add(new Voltage("3VSB", 7, 34, 34));
                     v.Add(new Voltage("VBat", 8, 34, 34));
                     v.Add(new Voltage("Voltage #10", 9, true));
-                    t.Add(new Temperature("SYS", 1));
+                    t.Add(new Temperature("System", 1));
                     t.Add(new Temperature("CPU Core", 2));
-                    t.Add(new Temperature("AUX", 3));
+                    t.Add(new Temperature("Auxiliary", 3));
+                    
                     for (int i = 0; i < superIO.Fans.Length; i++)
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -296,23 +335,32 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                     break;
+                }
                 case Chip.NCT6779D:
                 case Chip.NCT6791D:
                 case Chip.NCT6792D:
+                case Chip.NCT6792DA:
                 case Chip.NCT6793D:
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
+                case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
+                {
                     GetNuvotonConfigurationD(superIO, manufacturer, model, v, t, f, c);
+                    
                     break;
+                }
                 default:
+                {
                     GetDefaultConfiguration(superIO, v, t, f, c);
+                    
                     break;
+                }
             }
         }
 
-        private static void GetDefaultConfiguration(ISuperIO superIO, IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
+        private static void GetDefaultConfiguration(ISuperIO superIO, ICollection<Voltage> v, ICollection<Temperature> t, ICollection<Fan> f, ICollection<Ctrl> c)
         {
             for (int i = 0; i < superIO.Voltages.Length; i++)
                 v.Add(new Voltage("Voltage #" + (i + 1), i, true));
@@ -343,16 +391,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.ASUS:
+                {
                     switch (model)
                     {
-                        case Model.Crosshair_III_Formula: // IT8720F
+                        case Model.CROSSHAIR_III_FORMULA: // IT8720F
+                        {
                             v.Add(new Voltage("VBat", 8));
                             t.Add(new Temperature("CPU", 0));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             break;
-                        case Model.M2N_SLI_DELUXE:
+                        }
+                        case Model.M2N_SLI_Deluxe:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+3.3V", 1));
                             v.Add(new Voltage("+5V", 3, 6.8f, 10));
@@ -364,8 +417,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("Chassis Fan #1", 1));
                             f.Add(new Fan("Power Fan", 2));
+                            
                             break;
+                        }
                         case Model.M4A79XTD_EVO: // IT8720F
+                        {
                             v.Add(new Voltage("+5V", 3, 6.8f, 10));
                             v.Add(new Voltage("VBat", 8));
                             t.Add(new Temperature("CPU", 0));
@@ -373,9 +429,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("Chassis Fan #1", 1));
                             f.Add(new Fan("Chassis Fan #2", 2));
+                            
                             break;
+                        }
                         case Model.PRIME_X370_PRO: // IT8665E
                         case Model.TUF_X470_PLUS_GAMING:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("SB 2.5V", 1));
                             v.Add(new Voltage("+12V", 2, 5, 1));
@@ -389,16 +448,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 1));
                             t.Add(new Temperature("PCH", 2));
+                            
                             for (int i = 3; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
                             f.Add(new Fan("CPU Fan", 0));
+                            
                             for (int i = 1; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             break;
-
+                        }
                         case Model.ROG_ZENITH_EXTREME: // IT8665E
+                        {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("DIMM AB", 1, 10, 10));
                             v.Add(new Voltage("+12V", 2, 5, 1));
@@ -408,7 +470,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("1.8V PLL", 6, 10, 10));
                             v.Add(new Voltage("+3.3V", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
-
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 1));
                             t.Add(new Temperature("CPU Socket", 2));
@@ -417,8 +478,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("VRM", 5));
 
                             f.Add(new Fan("CPU Fan", 0));
-                            f.Add(new Fan("Chassis Fan 1", 1));
-                            f.Add(new Fan("Chassis Fan 2", 2));
+                            f.Add(new Fan("Chassis Fan #1", 1));
+                            f.Add(new Fan("Chassis Fan #2", 2));
                             f.Add(new Fan("High Amp Fan", 3));
                             f.Add(new Fan("Fan 5", 4));
                             f.Add(new Fan("Fan 6", 5));
@@ -427,8 +488,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
-
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
@@ -438,6 +500,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #7", 6, true));
                             v.Add(new Voltage("Voltage #8", 7, true));
                             v.Add(new Voltage("VBat", 8));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -448,14 +511,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
-
+                }
                 case Manufacturer.ASRock:
+                {
                     switch (model)
                     {
                         case Model.P55_Deluxe: // IT8720F
+                        {
                             GetASRockConfiguration(superIO,
                                                    v,
                                                    t,
@@ -465,7 +531,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                                    out mutex);
 
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
@@ -475,6 +543,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #7", 6, true));
                             v.Add(new Voltage("Voltage #8", 7, true));
                             v.Add(new Voltage("VBat", 8));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -482,14 +551,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
-
+                }
                 case Manufacturer.DFI:
+                {
                     switch (model)
                     {
                         case Model.LP_BI_P45_T2RS_Elite: // IT8718F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("FSB VTT", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -505,8 +577,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Fan #1", 0));
                             f.Add(new Fan("Fan #2", 1));
                             f.Add(new Fan("Fan #3", 2));
+                            
                             break;
-                        case Model.LP_DK_P55_T3eH9: // IT8720F
+                        }
+                        case Model.LP_DK_P55_T3EH9: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("VTT", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -522,8 +597,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Fan #1", 0));
                             f.Add(new Fan("Fan #2", 1));
                             f.Add(new Fan("Fan #3", 2));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("VTT", 1, true));
                             v.Add(new Voltage("+3.3V", 2, true));
@@ -533,6 +611,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("DIMM", 6, true));
                             v.Add(new Voltage("+5VSB", 7, 6.8f, 10, 0, true));
                             v.Add(new Voltage("VBat", 8));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -543,14 +622,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
-
+                }
                 case Manufacturer.Gigabyte:
+                {
                     switch (model)
                     {
                         case Model._965P_S3: // IT8718F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -561,10 +643,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 1));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan", 1));
+                            
                             break;
+                        }
                         case Model.EP45_DS3R: // IT8718F
                         case Model.EP45_UD3R:
                         case Model.X38_DS5:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -577,8 +662,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #2", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #1", 3));
+                            
                             break;
+                        }
                         case Model.EX58_EXTREME: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+5V", 3, 6.8f, 10));
@@ -590,9 +678,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #2", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #1", 3));
+                            
                             break;
+                        }
                         case Model.P35_DS3: // IT8718F
                         case Model.P35_DS3L: // IT8718F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -605,12 +696,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("Power Fan", 3));
+                            
                             break;
+                        }
                         case Model.P55_UD4: // IT8720F
                         case Model.P55A_UD3: // IT8720F
                         case Model.P55M_UD4: // IT8720F
                         case Model.H55_USB3: // IT8720F
                         case Model.EX58_UD3R: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -623,8 +717,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #2", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #1", 3));
+                            
                             break;
+                        }
                         case Model.H55N_USB3: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -635,10 +732,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 2));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan", 1));
+                            
                             break;
-                        case Model.G41M_Combo: // IT8718F
+                        }
+                        case Model.G41M_COMBO: // IT8718F
                         case Model.G41MT_S2: // IT8718F
                         case Model.G41MT_S2P: // IT8718F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -648,8 +748,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 2));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan", 1));
+                            
                             break;
+                        }
                         case Model._970A_UD3: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -662,13 +765,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("Power Fan", 4));
-                            c.Add(new Ctrl("PWM 1", 0));
-                            c.Add(new Ctrl("PWM 2", 1));
-                            c.Add(new Ctrl("PWM 3", 2));
+                            c.Add(new Ctrl("PWM #1", 0));
+                            c.Add(new Ctrl("PWM #2", 1));
+                            c.Add(new Ctrl("PWM #3", 2));
+                            
                             break;
+                        }
                         case Model.MA770T_UD3: // IT8720F
                         case Model.MA770T_UD3P: // IT8720F
                         case Model.MA790X_UD3P: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -681,8 +787,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("Power Fan", 3));
+                            
                             break;
+                        }
                         case Model.MA78LM_S2H: // IT8718F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -696,9 +805,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("Power Fan", 3));
+                            
                             break;
+                        }
                         case Model.MA785GM_US2H: // IT8718F
                         case Model.MA785GMT_UD2H: // IT8718F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -710,8 +822,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan", 1));
                             f.Add(new Fan("NB Fan", 2));
+                            
                             break;
+                        }
                         case Model.X58A_UD3R: // IT8720F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("+3.3V", 2));
@@ -725,10 +840,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #2", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #1", 3));
+                            
                             break;
-                        case Model.AX370_K7: // IT8686E
+                        }
+                        case Model.AX370_Gaming_K7: // IT8686E
                         case Model.AX370_Gaming_5:
-                        case Model.AB350_Gaming_3_CF: // IT8686E
+                        case Model.AB350_Gaming_3: // IT8686E
+                        {
                             // Note: v3.3, v12, v5, and AVCC3 might be slightly off.
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+3.3V", 1, 0.65f, 1));
@@ -736,22 +854,25 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("+5V", 3, 1.5f, 1));
                             v.Add(new Voltage("VSOC", 4));
                             v.Add(new Voltage("VDDP", 5));
-                            v.Add(new Voltage("VDRAM", 6));
+                            v.Add(new Voltage("DIMM", 6));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             v.Add(new Voltage("AVCC3", 9, 7.53f, 1));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("Chipset", 1));
                             t.Add(new Temperature("CPU", 2));
-                            t.Add(new Temperature("PCIEX16", 3));
+                            t.Add(new Temperature("PCIe x16", 3));
                             t.Add(new Temperature("VRM MOS", 4));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             break;
+                        }
                         case Model.Z390_M_GAMING: // IT8688E
                         case Model.Z390_AORUS_ULTRA:
                         case Model.Z390_UD:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                             v.Add(new Voltage("+12V", 2, 5f, 1));
@@ -763,33 +884,35 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("PCHCore", 8));
                             v.Add(new Voltage("CPU VCCIO", 9));
                             v.Add(new Voltage("DDRVPP", 10));
-                            t.Add(new Temperature("System1", 0));
+                            t.Add(new Temperature("System #1", 0));
                             t.Add(new Temperature("PCH", 1));
                             t.Add(new Temperature("CPU", 2));
-                            t.Add(new Temperature("PCIEX16", 3));
+                            t.Add(new Temperature("PCIe x16", 3));
                             t.Add(new Temperature("VRM MOS", 4));
                             t.Add(new Temperature("System2", 5));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("System Fan #3", 3));
+                            
                             break;
-                        case Model.X399_AOURUS_GAMING7: //ITE IT8686E
+                        }
+                        case Model.X399_AORUS_Gaming_7: //ITE IT8686E
+                        {
                             v.Add(new Voltage("Vcore", 0, 0, 1));
                             v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                             v.Add(new Voltage("+12V", 2, 5, 1));
                             v.Add(new Voltage("+5V", 3, 1.5F, 1));
                             v.Add(new Voltage("DIMM CD", 4, 0, 1));
-                            v.Add(new Voltage("SOC Vcore", 5, 0, 1));
+                            v.Add(new Voltage("Vcore SoC", 5, 0, 1));
                             v.Add(new Voltage("DIMM AB", 6, 0, 1));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             v.Add(new Voltage("AVCC3", 9, 54, 10));
-
-                            t.Add(new Temperature("System 1", 0));
+                            t.Add(new Temperature("System #1", 0));
                             t.Add(new Temperature("Chipset", 1));
                             t.Add(new Temperature("CPU", 2));
-                            t.Add(new Temperature("PCIE_X16", 3));
+                            t.Add(new Temperature("PCIe x16", 3));
                             t.Add(new Temperature("VRM", 4));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
@@ -799,7 +922,111 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
+                        case Model.X470_AORUS_GAMING_7_WIFI: //ITE IT8686E & IT8792
+                        {
+                            switch (superIO.Chip)
+                            {
+                                case Chip.IT8686E:
+                                {
+                                    v.Add(new Voltage("Vcore", 0, 0, 1));
+                                    v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                                    v.Add(new Voltage("+12V", 2, 5, 1));
+                                    v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                                    v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                                    v.Add(new Voltage("VDDP", 5, 0, 1));
+                                    v.Add(new Voltage("DIMM AB", 6, 0, 1));
+                                    v.Add(new Voltage("3VSB", 7, 10, 10));
+                                    v.Add(new Voltage("VBat", 8, 10, 10));
+                                    v.Add(new Voltage("AVCC3", 9, 54, 10));
+                                    t.Add(new Temperature("System #1", 0));
+                                    t.Add(new Temperature("Chipset", 1));
+                                    t.Add(new Temperature("CPU", 2));
+                                    t.Add(new Temperature("PCIe x16", 3));
+                                    t.Add(new Temperature("VRM", 4));
+                                    
+                                    break;
+                                }
+                                case Chip.IT879XE:
+                                {
+                                    v.Add(new Voltage("VIN0", 0, 0, 1));
+                                    v.Add(new Voltage("DDR VTT", 1, 0, 1));
+                                    v.Add(new Voltage("Chipset Core", 2, 0, 1));
+                                    v.Add(new Voltage("VIN3", 3, 0, 1));
+                                    v.Add(new Voltage("CPU VDD18", 4, 0, 1));
+                                    v.Add(new Voltage("Chipset Core +2.5V", 5, 0.5F, 1));
+                                    v.Add(new Voltage("3VSB", 6, 1, 10));
+                                    v.Add(new Voltage("VBat", 7, 0.7F, 1));
+                                    t.Add(new Temperature("PCIe x8", 0));
+                                    t.Add(new Temperature("System #2", 2));
+                                    
+                                    break;
+                                }
+                            }
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
+                            break;
+                        }
+                        case Model.X570_AORUS_MASTER: // IT8688E
+                        {
+                            switch (superIO.Chip)
+                            {
+                                case Chip.IT8688E:
+                                {
+                                    v.Add(new Voltage("Vcore", 0));
+                                    v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
+                                    v.Add(new Voltage("+12V", 2, 10f, 2f));
+                                    v.Add(new Voltage("+5V", 3, 15f, 10f));
+                                    v.Add(new Voltage("Vcore SoC", 4));
+                                    v.Add(new Voltage("VDDP", 5));
+                                    v.Add(new Voltage("DIMM AB", 6));
+                                    v.Add(new Voltage("3VSB", 7, 1f, 10f));
+                                    v.Add(new Voltage("VBat", 8, 1f, 10f));
+                                    t.Add(new Temperature("System #1", 0));
+                                    t.Add(new Temperature("EC_TEMP1", 1));
+                                    t.Add(new Temperature("CPU", 2));
+                                    t.Add(new Temperature("PCIe x16", 3));
+                                    t.Add(new Temperature("VRM MOS", 4));
+                                    t.Add(new Temperature("PCH", 5));
+                                    f.Add(new Fan("CPU Fan", 0));
+                                    f.Add(new Fan("System Fan #1", 1));
+                                    f.Add(new Fan("System Fan #2", 2));
+                                    f.Add(new Fan("PCH Fan", 3));
+                                    f.Add(new Fan("CPU OPT Fan", 4));
+
+                                    break;
+                                }
+                                case Chip.IT879XE:
+                                {
+                                    v.Add(new Voltage("CPU VDD18", 0));
+                                    v.Add(new Voltage("DDRVTT AB", 1));
+                                    v.Add(new Voltage("Chipset Core", 2));
+                                    v.Add(new Voltage("Voltage #4", 3, true));
+                                    v.Add(new Voltage("CPU VDD18", 4));
+                                    v.Add(new Voltage("PM_CLDO12", 5));
+                                    v.Add(new Voltage("Voltage #7", 6, true));
+                                    v.Add(new Voltage("3VSB", 7, 1f, 1f));
+                                    v.Add(new Voltage("VBat", 8, 1f, 1f));
+                                    t.Add(new Temperature("PCIe x8", 0));
+                                    t.Add(new Temperature("EC_TEMP2", 1));
+                                    t.Add(new Temperature("System #2", 2));
+                                    f.Add(new Fan("System Fan #5 Pump", 0));
+                                    f.Add(new Fan("System Fan #6 Pump", 1));
+                                    f.Add(new Fan("System Fan #4", 2));
+                                            
+                                    break;
+                                }
+                            }
+
+                            break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1, true));
                             v.Add(new Voltage("+3.3V", 2, true));
@@ -809,6 +1036,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #7", 6, true));
                             v.Add(new Voltage("Voltage #8", 7, true));
                             v.Add(new Voltage("VBat", 8));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -819,11 +1047,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
-
+                }
                 default:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("Voltage #3", 2, true));
@@ -833,6 +1063,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Voltage #7", 6, true));
                     v.Add(new Voltage("Voltage #8", 7, true));
                     v.Add(new Voltage("VBat", 8));
+                    
                     for (int i = 0; i < superIO.Temperatures.Length; i++)
                         t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -843,6 +1074,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                     break;
+                }
             }
         }
 
@@ -905,6 +1137,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 };
 
                 int fanIndex = 0;
+
                 postUpdate = () =>
                 {
                     // get GPIO 80-87
@@ -926,15 +1159,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.ECS:
+                {
                     switch (model)
                     {
                         case Model.A890GXM_A: // IT8721F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("NB Voltage", 2));
-                            v.Add(new Voltage("Analog +3.3V", 3, 10, 10));
+                            v.Add(new Voltage("AVCC", 3, 10, 10));
                             // v.Add(new Voltage("DIMM", 6, true));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("System", 1));
@@ -942,17 +1177,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan", 1));
                             f.Add(new Fan("Power Fan", 2));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Voltage #1", 0, true));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
-                            v.Add(new Voltage("Analog +3.3V", 3, 10, 10, 0, true));
+                            v.Add(new Voltage("AVCC", 3, 10, 10, 0, true));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10, 0, true));
+                            v.Add(new Voltage("3VSB", 7, 10, 10, 0, true));
                             v.Add(new Voltage("VBat", 8, 10, 10));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -963,33 +1202,40 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 case Manufacturer.Gigabyte:
+                {
                     switch (model)
                     {
                         case Model.H61M_DS2_REV_1_2: // IT8728F
                         case Model.H61M_USB3_B3_REV_2_0: // IT8728F
+                        {
                             v.Add(new Voltage("VTT", 0));
                             v.Add(new Voltage("+12V", 2, 30.9f, 10));
                             v.Add(new Voltage("Vcore", 5));
                             v.Add(new Voltage("DIMM", 6));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("CPU", 2));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan", 1));
+                            
                             break;
+                        }
                         case Model.H67A_UD3H_B3: // IT8728F
                         case Model.H67A_USB3_B3: // IT8728F
+                        {
                             v.Add(new Voltage("VTT", 0));
                             v.Add(new Voltage("+5V", 1, 15, 10));
                             v.Add(new Voltage("+12V", 2, 30.9f, 10));
                             v.Add(new Voltage("Vcore", 5));
                             v.Add(new Voltage("DIMM", 6));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("CPU", 2));
@@ -997,15 +1243,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #2", 3));
+                            
                             break;
+                        }
                         case Model.Z68A_D3H_B3: // IT8728F
+                        {
                             v.Add(new Voltage("VTT", 0));
                             v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                             v.Add(new Voltage("+12V", 2, 30.9f, 10));
                             v.Add(new Voltage("+5V", 3, 7.15f, 10));
                             v.Add(new Voltage("Vcore", 5));
                             v.Add(new Voltage("DIMM", 6));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("CPU", 2));
@@ -1013,19 +1262,22 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #2", 3));
+                            
                             break;
+                        }
                         case Model.P67A_UD3_B3: // IT8728F
                         case Model.P67A_UD3R_B3: // IT8728F
                         case Model.P67A_UD4_B3: // IT8728F
                         case Model.Z68AP_D3: // IT8728F
                         case Model.Z68X_UD3H_B3: // IT8728F
+                        {
                             v.Add(new Voltage("VTT", 0));
                             v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                             v.Add(new Voltage("+12V", 2, 30.9f, 10));
                             v.Add(new Voltage("+5V", 3, 7.15f, 10));
                             v.Add(new Voltage("Vcore", 5));
                             v.Add(new Voltage("DIMM", 6));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("CPU", 2));
@@ -1033,33 +1285,39 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #2", 1));
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #1", 3));
+                            
                             break;
+                        }
                         case Model.Z68X_UD7_B3: // IT8728F
+                        {
                             v.Add(new Voltage("VTT", 0));
                             v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                             v.Add(new Voltage("+12V", 2, 30.9f, 10));
                             v.Add(new Voltage("+5V", 3, 7.15f, 10));
                             v.Add(new Voltage("Vcore", 5));
                             v.Add(new Voltage("DIMM", 6));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("CPU", 1));
-                            t.Add(new Temperature("System 3", 2));
+                            t.Add(new Temperature("System #3", 2));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("Power Fan", 1));
                             f.Add(new Fan("System Fan #1", 2));
                             f.Add(new Fan("System Fan #2", 3));
                             f.Add(new Fan("System Fan #3", 4));
+                            
                             break;
+                        }
                         case Model.X79_UD3: // IT8728F
+                        {
                             v.Add(new Voltage("VTT", 0));
-                            v.Add(new Voltage("DIMM CH A/B", 1));
+                            v.Add(new Voltage("DIMM AB", 1));
                             v.Add(new Voltage("+12V", 2, 10, 2));
                             v.Add(new Voltage("+5V", 3, 15, 10));
                             v.Add(new Voltage("VIN4", 4));
                             v.Add(new Voltage("VCore", 5));
-                            v.Add(new Voltage("DIMM CH C/D", 6));
+                            v.Add(new Voltage("DIMM CD", 6));
                             v.Add(new Voltage("+3V Standby", 7, 1, 1));
                             v.Add(new Voltage("VBat", 8, 1, 1));
                             t.Add(new Temperature("System", 0));
@@ -1069,8 +1327,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("System Fan #3", 3));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Voltage #1", 0, true));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
@@ -1078,8 +1339,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10, 0, true));
+                            v.Add(new Voltage("3VSB", 7, 10, 10, 0, true));
                             v.Add(new Voltage("VBat", 8, 10, 10));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -1090,26 +1352,33 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 case Manufacturer.Shuttle:
+                {
                     switch (model)
                     {
                         case Model.FH67: // IT8772E
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("DIMM", 1));
                             v.Add(new Voltage("PCH VCCIO", 2));
                             v.Add(new Voltage("CPU VCCIO", 3));
                             v.Add(new Voltage("Graphic Voltage", 4));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("System", 0));
                             t.Add(new Temperature("CPU", 1));
                             f.Add(new Fan("Fan #1", 0));
                             f.Add(new Fan("CPU Fan", 1));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Voltage #1", 0, true));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
@@ -1117,8 +1386,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
-                            v.Add(new Voltage("Standby +3.3V", 7, 10, 10, 0, true));
+                            v.Add(new Voltage("3VSB", 7, 10, 10, 0, true));
                             v.Add(new Voltage("VBat", 8, 10, 10));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -1129,10 +1399,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 default:
+                {
                     v.Add(new Voltage("Voltage #1", 0, true));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("Voltage #3", 2, true));
@@ -1140,8 +1413,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
-                    v.Add(new Voltage("Standby +3.3V", 7, 10, 10, 0, true));
+                    v.Add(new Voltage("3VSB", 7, 10, 10, 0, true));
                     v.Add(new Voltage("VBat", 8, 10, 10));
+                    
                     for (int i = 0; i < superIO.Temperatures.Length; i++)
                         t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -1152,6 +1426,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                     break;
+                }
             }
         }
 
@@ -1160,9 +1435,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.EVGA:
+                {
                     switch (model)
                     {
                         case Model.X58_SLI_Classified: // F71882
+                        {
                             v.Add(new Voltage("VCC3V", 0, 150, 150));
                             v.Add(new Voltage("Vcore", 1, 47, 100));
                             v.Add(new Voltage("DIMM", 2, 47, 100));
@@ -1178,8 +1455,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("Power Fan", 1));
                             f.Add(new Fan("Chassis Fan", 2));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("VCC3V", 0, 150, 150));
                             v.Add(new Voltage("Vcore", 1));
                             v.Add(new Voltage("Voltage #3", 2, true));
@@ -1189,6 +1469,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #7", 6, true));
                             v.Add(new Voltage("VSB3V", 7, 150, 150));
                             v.Add(new Voltage("VBat", 8, 150, 150));
+                            
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -1196,10 +1477,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 default:
+                {
                     v.Add(new Voltage("VCC3V", 0, 150, 150));
                     v.Add(new Voltage("Vcore", 1));
                     v.Add(new Voltage("Voltage #3", 2, true));
@@ -1211,6 +1495,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                     v.Add(new Voltage("VSB3V", 7, 150, 150));
                     v.Add(new Voltage("VBat", 8, 150, 150));
+                    
                     for (int i = 0; i < superIO.Temperatures.Length; i++)
                         t.Add(new Temperature("Temperature #" + (i + 1), i));
 
@@ -1221,6 +1506,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                     break;
+                }
             }
         }
 
@@ -1229,17 +1515,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.ASUS:
+                {
                     switch (model)
                     {
                         case Model.P8P67: // NCT6776F
                         case Model.P8P67_EVO: // NCT6776F
                         case Model.P8P67_PRO: // NCT6776F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Auxiliary", 2));
@@ -1251,16 +1539,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("Chassis Fan #2", 0));
                             c.Add(new Ctrl("CPU Fan", 1));
                             c.Add(new Ctrl("Chassis Fan #1", 2));
+                            
                             break;
+                        }
                         case Model.P8P67_M_PRO: // NCT6776F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 3));
@@ -1269,18 +1560,22 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Chassis Fan #2", 2));
                             f.Add(new Fan("Power Fan", 3));
                             f.Add(new Fan("Auxiliary Fan", 4));
+                            
                             break;
+                        }
                         case Model.P8Z68_V_PRO: // NCT6776F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Auxiliary", 2));
                             t.Add(new Temperature("Motherboard", 3));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1288,16 +1583,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
+                        }
                         case Model.P9X79: // NCT6776F
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11, 1));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 12, 3));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 3));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1305,11 +1603,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1319,6 +1619,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Temperature #1", 1));
                             t.Add(new Temperature("Temperature #2", 2));
                             t.Add(new Temperature("Temperature #3", 3));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1326,23 +1627,25 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 case Manufacturer.ASRock:
                 {
                     switch (model)
                     {
                         case Model.B85M_DGS:
                         {
-                            v.Add(new Voltage("CPU VCCIN", 0, 1, 1));
+                            v.Add(new Voltage("Vcore", 0, 1, 1));
                             v.Add(new Voltage("+12V", 1, 56, 10));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("VIN1", 4, true));
                             v.Add(new Voltage("+5V", 5, 12, 3));
                             v.Add(new Voltage("VIN3", 6, true));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Auxiliary", 2));
                             t.Add(new Temperature("Motherboard", 3));
@@ -1356,20 +1659,20 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         }
 
                             break;
-                        case Model.Z77PRO4M: //NCT6776F
+                        case Model.Z77Pro4M: //NCT6776F
+                        {
                             v.Add(new Voltage("Vcore", 0, 0, 1));
                             v.Add(new Voltage("+12V", 1, 56, 10));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
-                            //v.Add(new Voltage("#Unused 4", 4, 0, 1, 0, true));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
+                            //v.Add(new Voltage("#Unused #4", 4, 0, 1, 0, true));
                             v.Add(new Voltage("+5V", 5, 20, 10));
-                            //v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
-
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("CPU", 1));
-                            t.Add(new Temperature("AUX", 2));
+                            t.Add(new Temperature("Auxiliary", 2));
                             t.Add(new Temperature("Motherboard", 3));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
@@ -1379,11 +1682,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1393,6 +1698,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Temperature #1", 1));
                             t.Add(new Temperature("Temperature #2", 2));
                             t.Add(new Temperature("Temperature #3", 3));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1400,15 +1706,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
-                }
 
                     break;
+                }
                 default:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -1418,6 +1726,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     t.Add(new Temperature("Temperature #1", 1));
                     t.Add(new Temperature("Temperature #2", 2));
                     t.Add(new Temperature("Temperature #3", 3));
+                    
                     for (int i = 0; i < superIO.Fans.Length; i++)
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1425,6 +1734,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                     break;
+                }
             }
         }
 
@@ -1433,31 +1743,33 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.ASRock:
+                {
                     switch (model)
                     {
                         case Model.A320M_HDV: //NCT6779D
+                        {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("Chipset 1.05V", 1, 0, 1));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             v.Add(new Voltage("+12V", 4, 56, 10));
                             v.Add(new Voltage("VcoreRef", 5, 0, 1));
                             v.Add(new Voltage("DIMM", 6, 0, 1));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
-                            //v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
-                            //v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
-                            //v.Add(new Voltage("#Unused 11", 11, 34, 34, 0, true));
+                            //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #11", 11, 34, 34, 0, true));
                             v.Add(new Voltage("+5V", 12, 20, 10));
-                            //v.Add(new Voltage("#Unused 13", 13, 10, 10, 0, true));
-                            //v.Add(new Voltage("#Unused 14", 14, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #13", 13, 10, 10, 0, true));
+                            //v.Add(new Voltage("#Unused #14", 14, 0, 1, 0, true));
 
-                            //t.Add(new Temperature("#Unused 0", 0));
-                            //t.Add(new Temperature("#Unused 1", 1));
+                            //t.Add(new Temperature("#Unused #0", 0));
+                            //t.Add(new Temperature("#Unused #1", 1));
                             t.Add(new Temperature("Motherboard", 2));
-                            //t.Add(new Temperature("#Unused 3", 3));
-                            //t.Add(new Temperature("#Unused 4", 4));
-                            t.Add(new Temperature("AUX", 5));
+                            //t.Add(new Temperature("#Unused #3", 3));
+                            //t.Add(new Temperature("#Unused #4", 4));
+                            t.Add(new Temperature("Auxiliary", 5));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
@@ -1466,36 +1778,37 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
 
-                        case Model.AB350_PRO4: //NCT6779D
-                        case Model.AB350M_PRO4:
+                        case Model.AB350_Pro4: //NCT6779D
+                        case Model.AB350M_Pro4:
                         case Model.AB350M:
                         case Model.Fatal1ty_AB350_Gaming_K4:
                         case Model.AB350M_HDV:
-                        case Model.B450_STEEL_LEGEND:
-                        case Model.B450M_STEEL_LEGEND:
-                        case Model.B450_PRO4:
-                        case Model.B450M_PRO4:
+                        case Model.B450_Steel_Legend:
+                        case Model.B450M_Steel_Legend:
+                        case Model.B450_Pro4:
+                        case Model.B450M_Pro4:
+                        {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             //v.Add(new Voltage("#Unused", 1, 0, 1, 0, true));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             v.Add(new Voltage("+12V", 4, 28, 5));
-                            v.Add(new Voltage("Vcore Refin", 5, 0, 1, 0));
-                            //v.Add(new Voltage("#Unused 6", 6, 0, 1, 0, true));
+                            v.Add(new Voltage("Vcore Refin", 5, 0, 1));
+                            //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
                             v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 34, 34));
-                            //v.Add(new Voltage("#Unused 9", 9, 0, 1, 0, true));
-                            //v.Add(new Voltage("#Unused 10", 10, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
                             v.Add(new Voltage("Chipset 1.05V", 11, 0, 1));
                             v.Add(new Voltage("+5V", 12, 20, 10));
-                            //v.Add(new Voltage("#Unused 13", 13, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #13", 13, 0, 1, 0, true));
                             v.Add(new Voltage("+1.8V", 14, 0, 1));
-
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("CPU", 1));
                             t.Add(new Temperature("Motherboard", 2));
-                            t.Add(new Temperature("AUX", 3));
+                            t.Add(new Temperature("Auxiliary", 3));
                             t.Add(new Temperature("VRM", 4));
                             t.Add(new Temperature("AUXTIN2", 5));
                             //t.Add(new Temperature("Temperature #6", 6));
@@ -1507,12 +1820,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
 
-                        case Model.PHANTOM_GAMING_6: //NCT6779D
+                        case Model.X399_Phantom_Gaming_6: //NCT6779D
+                        {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("Chipset 1.05V", 1, 0, 1));
                             v.Add(new Voltage("AVCC", 2, 10, 10));
-                            v.Add(new Voltage("3VCC", 3, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 10, 10));
                             v.Add(new Voltage("+12V", 4, 56, 10));
                             v.Add(new Voltage("VDDCR_SOC", 5, 0, 1));
                             v.Add(new Voltage("DIMM", 6, 0, 1));
@@ -1524,13 +1839,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("+5V", 12, 20, 10));
                             v.Add(new Voltage("+1.8V", 13, 10, 10));
                             //v.Add(new Voltage("unused", 14, 34, 34, 0, true));
-
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("Motherboard", 1));
-                            t.Add(new Temperature("AUX", 2));
+                            t.Add(new Temperature("Auxiliary", 2));
                             t.Add(new Temperature("Chipset", 3));
                             t.Add(new Temperature("Core VRM", 4));
-                            t.Add(new Temperature("Core SOC", 5));
+                            t.Add(new Temperature("Core SoC", 5));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
@@ -1539,12 +1853,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
-
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1563,6 +1878,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Temperature #4", 4));
                             t.Add(new Temperature("Temperature #5", 5));
                             t.Add(new Temperature("Temperature #6", 6));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1570,17 +1886,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 case Manufacturer.ASUS:
+                {
                     switch (model)
                     {
                         case Model.P8Z77_V: // NCT6779D
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1603,12 +1923,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("CPU  Fan", 1));
                             c.Add(new Ctrl("Chassis Fan #2", 2));
                             c.Add(new Ctrl("Chassis Fan #3", 3));
+                            
                             break;
-                        case Model.ROG_MAXIMUS_APEX: // NCT6793D
+                        }
+                        case Model.ROG_MAXIMUS_X_APEX: // NCT6793D
+                        {
                             v.Add(new Voltage("Vcore", 0, 2, 2));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVSB", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("CPU GFX", 6, 2, 2));
@@ -1637,12 +1960,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("Chassis Fan #2", 2));
                             c.Add(new Ctrl("Chassis Fan #3", 3));
                             c.Add(new Ctrl("AIO Pump", 4));
+                            
                             break;
+                        }
                         case Model.Z170_A: //NCT6793D
+                        {
                             v.Add(new Voltage("Vcore", 0, 2, 2));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVSB", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
                             v.Add(new Voltage("CPU GFX", 6, 2, 2));
@@ -1654,7 +1980,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("PCH Core", 12));
                             v.Add(new Voltage("CPU PLLs", 13));
                             v.Add(new Voltage("CPU VCCIO/IMC", 14));
-
                             t.Add(new Temperature("CPU (PECI)", 0));
                             t.Add(new Temperature("CPU", 1));
                             t.Add(new Temperature("Motherboard", 2));
@@ -1670,11 +1995,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1693,6 +2020,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Temperature #4", 4));
                             t.Add(new Temperature("Temperature #5", 5));
                             t.Add(new Temperature("Temperature #6", 6));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1700,17 +2028,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 case Manufacturer.MSI:
+                {
                     switch (model)
                     {
                         case Model.B360M_PRO_VDH: // NCT6797D
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             //v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("CPU I/O", 6));
@@ -1731,12 +2063,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("CPU Fan", 1));
                             c.Add(new Ctrl("System Fan #1", 2));
                             c.Add(new Ctrl("System Fan #2", 3));
+                            
                             break;
+                        }
                         case Model.B450A_PRO: // NCT6797D
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             //v.Add(new Voltage("Voltage #6", 5, false));
                             //v.Add(new Voltage("CPU I/O", 6));
@@ -1764,12 +2099,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("System Fan #2", 3));
                             c.Add(new Ctrl("System Fan #3", 4));
                             c.Add(new Ctrl("System Fan #4", 5));
+                            
                             break;
+                        }
                         case Model.Z270_PC_MATE: // NCT6795D
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 4, 1));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("CPU I/O", 6));
@@ -1795,12 +2133,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("System Fan #2", 3));
                             c.Add(new Ctrl("System Fan #3", 4));
                             c.Add(new Ctrl("System Fan #4", 5));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1819,6 +2160,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Temperature #4", 4));
                             t.Add(new Temperature("Temperature #5", 5));
                             t.Add(new Temperature("Temperature #6", 6));
+                            
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1826,14 +2168,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                             break;
+                        }
                     }
 
                     break;
+                }
                 default:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -1852,6 +2197,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     t.Add(new Temperature("Temperature #4", 4));
                     t.Add(new Temperature("Temperature #5", 5));
                     t.Add(new Temperature("Temperature #6", 6));
+                    
                     for (int i = 0; i < superIO.Fans.Length; i++)
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
@@ -1859,6 +2205,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         c.Add(new Ctrl("Fan Control #" + (i + 1), i));
 
                     break;
+                }
             }
         }
 
@@ -1867,26 +2214,31 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.ASRock:
+                {
                     switch (model)
                     {
                         case Model.AOD790GX_128M: // W83627EHF
+                        {
                             v.Add(new Voltage("Vcore", 0));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 4, 10, 10));
                             v.Add(new Voltage("+5V", 5, 20, 10));
                             v.Add(new Voltage("+12V", 6, 28, 5));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 2));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("Chassis Fan", 1));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1901,15 +2253,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Auxiliary Fan", 2));
                             f.Add(new Fan("CPU Fan #2", 3));
                             f.Add(new Fan("Auxiliary Fan #2", 4));
+                            
                             break;
+                        }
                     }
 
                     break;
+                }
                 default:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -1924,7 +2280,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     f.Add(new Fan("Auxiliary Fan", 2));
                     f.Add(new Fan("CPU Fan #2", 3));
                     f.Add(new Fan("Auxiliary Fan #2", 4));
+                    
                     break;
+                }
             }
         }
 
@@ -1933,26 +2291,31 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (manufacturer)
             {
                 case Manufacturer.ASRock:
+                {
                     switch (model)
                     {
                         case Model._880GMH_USB3: // W83627DHG-P
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 5, 15, 7.5f));
                             v.Add(new Voltage("+12V", 6, 56, 10));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 2));
                             f.Add(new Fan("Chassis Fan", 0));
                             f.Add(new Fan("CPU Fan", 1));
                             f.Add(new Fan("Power Fan", 2));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -1966,22 +2329,27 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Auxiliary Fan", 2));
                             f.Add(new Fan("CPU Fan #2", 3));
                             f.Add(new Fan("Auxiliary Fan #2", 4));
+                            
                             break;
+                        }
                     }
 
                     break;
+                }
                 case Manufacturer.ASUS:
+                {
                     switch (model)
                     {
                         case Model.P6T: // W83667HG
                         case Model.P6X58D_E: // W83667HG
-                        case Model.Rampage_II_GENE: // W83667HG
+                        case Model.RAMPAGE_II_GENE: // W83667HG
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11.5f, 1.91f));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 15, 7.5f));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 2));
@@ -1990,14 +2358,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("Chassis Fan #2", 3));
                             f.Add(new Fan("Chassis Fan #3", 4));
+                            
                             break;
-                        case Model.Rampage_Extreme: // W83667HG
+                        }
+                        case Model.RAMPAGE_EXTREME: // W83667HG
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 12, 2));
-                            v.Add(new Voltage("Analog +3.3V", 2, 34, 34));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("+5V", 4, 15, 7.5f));
-                            v.Add(new Voltage("Standby +3.3V", 7, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("Motherboard", 2));
@@ -2006,12 +2377,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("Chassis Fan #2", 3));
                             f.Add(new Fan("Chassis Fan #3", 4));
+                            
                             break;
+                        }
                         default:
+                        {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("AVCC", 2, 34, 34));
-                            v.Add(new Voltage("3VCC", 3, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
                             v.Add(new Voltage("Voltage #7", 6, true));
@@ -2025,15 +2399,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Auxiliary Fan", 2));
                             f.Add(new Fan("CPU Fan #2", 3));
                             f.Add(new Fan("Auxiliary Fan #2", 4));
+                            
                             break;
+                        }
                     }
 
                     break;
+                }
                 default:
+                {
                     v.Add(new Voltage("Vcore", 0));
                     v.Add(new Voltage("Voltage #2", 1, true));
                     v.Add(new Voltage("AVCC", 2, 34, 34));
-                    v.Add(new Voltage("3VCC", 3, 34, 34));
+                    v.Add(new Voltage("+3.3V", 3, 34, 34));
                     v.Add(new Voltage("Voltage #5", 4, true));
                     v.Add(new Voltage("Voltage #6", 5, true));
                     v.Add(new Voltage("Voltage #7", 6, true));
@@ -2047,7 +2425,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     f.Add(new Fan("Auxiliary Fan", 2));
                     f.Add(new Fan("CPU Fan #2", 3));
                     f.Add(new Fan("Auxiliary Fan #2", 4));
+                    
                     break;
+                }
             }
         }
 
@@ -2086,8 +2466,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 if (value.HasValue)
                 {
                     sensor.Value = value;
-                    if (value.Value > 0)
-                        ActivateSensor(sensor);
+                    ActivateSensor(sensor);
                 }
             }
 

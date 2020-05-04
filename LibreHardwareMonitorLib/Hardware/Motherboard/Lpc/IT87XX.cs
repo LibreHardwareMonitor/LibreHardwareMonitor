@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Globalization;
@@ -17,28 +18,27 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly ushort _addressReg;
         private readonly ushort _dataReg;
         private readonly bool[] _fansDisabled = new bool[0];
-
         private readonly ushort _gpioAddress;
         private readonly int _gpioCount;
         private readonly bool _has16BitFanCounter;
         private readonly bool _hasNewerAutoPwm;
-
-        private readonly byte[] _initialFanPwmControl = new byte[3];
+        private readonly byte[] _initialFanPwmControl = new byte[3]; // This will also store the 2nd control register value.
         private readonly byte[] _initialFanPwmControlMode = new byte[3];
-
+        private readonly byte[] _initialFanMainControlValue = new byte[3]; // Initial Fan Controller Main Control Register value. 
         private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[3];
+        private readonly byte[] _fanMainControlValue = { 0b00000001, 0b00000010, 0b00000100 }; // Values to  be applied to FAN_MAIN_CTRL_REG to gain control of each fan.
         private readonly byte _version;
-
         private readonly float _voltageGain;
 
         public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version)
         {
             _address = address;
-            Chip = chip;
             _version = version;
             _addressReg = (ushort)(address + ADDRESS_REGISTER_OFFSET);
             _dataReg = (ushort)(address + DATA_REGISTER_OFFSET);
             _gpioAddress = gpioAddress;
+
+            Chip = chip;
 
             // Check vendor id
             byte vendorId = ReadByte(VENDOR_ID_REGISTER, out bool valid);
@@ -47,82 +47,101 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
 
             // Bit 0x10 of the configuration register should always be 1
-            byte config = ReadByte(CONFIGURATION_REGISTER, out valid);
-            if ((config & 0x10) == 0 && chip != Chip.IT8665E)
-                return;
-
-            if (!valid)
+            byte configuration = ReadByte(CONFIGURATION_REGISTER, out valid);
+            if (!valid || ((configuration & 0x10) == 0 && chip != Chip.IT8655E && chip != Chip.IT8665E))
                 return;
 
 
-            // IT8686E has more sensors
-            if (chip == Chip.IT8686E)
+            switch (chip)
             {
-                Voltages = new float?[10];
-                Temperatures = new float?[5];
-                Fans = new float?[5];
-                _fansDisabled = new bool[5];
-                Controls = new float?[3];
-            }
-            else if (chip == Chip.IT8665E)
-            {
-                Voltages = new float?[10];
-                Temperatures = new float?[6];
-                Fans = new float?[6];
-                _fansDisabled = new bool[6];
-                Controls = new float?[3];
-            }
-            else if (chip == Chip.IT8688E)
-            {
-                Voltages = new float?[11];
-                Temperatures = new float?[6];
-                Fans = new float?[5];
-                _fansDisabled = new bool[5];
-                Controls = new float?[3];
-            }
-            else
-            {
-                Voltages = new float?[9];
-                Temperatures = new float?[3];
-                Fans = new float?[chip == Chip.IT8705F ? 3 : 5];
-                _fansDisabled = new bool[chip == Chip.IT8705F ? 3 : 5];
-                Controls = new float?[3];
-            }
-
-            // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution
-            // ADC, all others 16mV
-            if (chip == Chip.IT8620E ||
-                chip == Chip.IT8628E ||
-                chip == Chip.IT8721F ||
-                chip == Chip.IT8728F ||
-                chip == Chip.IT8771E ||
-                chip == Chip.IT8772E ||
-                chip == Chip.IT8686E ||
-                chip == Chip.IT8688E)
-            {
-                _voltageGain = 0.012f;
-            }
-            else if (chip == Chip.IT8665E)
-            {
-                _voltageGain = 0.0109f;
-            }
-            else
-            {
-                _voltageGain = 0.016f;
+                // IT8686E has more sensors
+                case Chip.IT8665E:
+                case Chip.IT8686E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[6];
+                    Fans = new float?[6];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8688E:
+                {
+                    Voltages = new float?[11];
+                    Temperatures = new float?[6];
+                    Fans = new float?[6];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8655E:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[6];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT879XE:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[3];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
+                    break;
+                }
+                case Chip.IT8705F:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[3];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
+                    break;
+                }
+                default:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[3];
+                    Fans = new float?[5];
+                    Controls = new float?[3];
+                    break;
+                }
             }
 
-            // older IT8705F and IT8721F revisions do not have 16-bit fan counters
-            if ((chip == Chip.IT8705F && version < 3) ||
-                (chip == Chip.IT8712F && version < 8))
+            _fansDisabled = new bool[Fans.Length];
+
+            switch (chip)
             {
-                _has16BitFanCounter = false;
-            }
-            else
-            {
-                _has16BitFanCounter = true;
+                // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution.
+                // All others 16mV.
+                case Chip.IT8620E:
+                case Chip.IT8628E:
+                case Chip.IT8721F:
+                case Chip.IT8728F:
+                case Chip.IT8771E:
+                case Chip.IT8772E:
+                case Chip.IT8686E:
+                case Chip.IT8688E:
+                {
+                    _voltageGain = 0.012f;
+                    break;
+                }
+                case Chip.IT8655E:
+                case Chip.IT8665E:
+                case Chip.IT879XE:
+                {
+                    _voltageGain = 0.0109f;
+                    break;
+                }
+                default:
+                {
+                    _voltageGain = 0.016f;
+                    break;
+                }
             }
 
-            if (chip == Chip.IT8620E)
+            // Older IT8705F and IT8721F revisions do not have 16-bit fan counters.
+            _has16BitFanCounter = (chip != Chip.IT8705F || version >= 3) && (chip != Chip.IT8712F || version >= 8);
+
+            if (chip == Chip.IT8620E || chip == Chip.IT879XE)
             {
                 _hasNewerAutoPwm = true;
             }
@@ -143,9 +162,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 }
 
                 if (Fans.Length >= 6)
-                {
                     _fansDisabled[5] = (modes & (1 << 2)) == 0;
-                }
             }
 
             // Set the number of GPIO sets
@@ -155,21 +172,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8716F:
                 case Chip.IT8718F:
                 case Chip.IT8726F:
+                {
                     _gpioCount = 5;
                     break;
+                }
                 case Chip.IT8720F:
                 case Chip.IT8721F:
+                {
                     _gpioCount = 8;
                     break;
-                case Chip.IT8620E:
-                case Chip.IT8628E:
-                case Chip.IT8688E:
-                case Chip.IT8705F:
-                case Chip.IT8728F:
-                case Chip.IT8771E:
-                case Chip.IT8772E:
+                }
+                default:
+                {
                     _gpioCount = 0;
                     break;
+                }
             }
         }
 
@@ -214,10 +231,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (value.HasValue)
             {
                 SaveDefaultFanPwmControl(index);
-
+                bool valid;
+                WriteByte(FAN_MAIN_CTRL_REG, (byte)(_fanMainControlValue[index] | ReadByte(FAN_MAIN_CTRL_REG, out valid))); // Bitwise opperand to get control of the fan.
                 if (_hasNewerAutoPwm)
                 {
-                    byte ctrlValue = ReadByte(FAN_PWM_CTRL_REG[index], out bool valid);
+                    byte ctrlValue = ReadByte(FAN_PWM_CTRL_REG[index], out valid);
 
                     if (valid)
                     {
@@ -280,8 +298,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 {
                     r.Append(" ");
                     byte value = ReadByte((byte)((i << 4) | j), out bool valid);
-                    r.Append(
-                             valid ? value.ToString("X2", CultureInfo.InvariantCulture) : "??");
+                    r.Append(valid ? value.ToString("X2", CultureInfo.InvariantCulture) : "??");
                 }
 
                 r.AppendLine();
@@ -457,12 +474,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 {
                     _initialFanPwmControlMode[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
                     _initialFanPwmControl[index] = ReadByte(FAN_PWM_DUTY_REG[index], out bool _);
+                    _initialFanMainControlValue[index] =  ReadByte(FAN_MAIN_CTRL_REG, out bool _); // Save default control reg value.
                 }
             }
             else
             {
                 if (!_restoreDefaultFanPwmControlRequired[index])
+                {
                     _initialFanPwmControl[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
+                    _initialFanMainControlValue[index] =  ReadByte(FAN_MAIN_CTRL_REG, out bool _); // Save default control reg value.
+                }
             }
 
             _restoreDefaultFanPwmControlRequired[index] = true;
@@ -476,6 +497,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 {
                     WriteByte(FAN_PWM_CTRL_REG[index], _initialFanPwmControlMode[index]);
                     WriteByte(FAN_PWM_DUTY_REG[index], _initialFanPwmControl[index]);
+                    if ((_initialFanMainControlValue[index] & ~_fanMainControlValue[index]) == _initialFanMainControlValue[index]){ // Bitwise opperand to check if control bit needs to be changed to restore defaults.
+                        WriteByte(FAN_MAIN_CTRL_REG, (byte)( ReadByte(FAN_MAIN_CTRL_REG, out bool _) & ~_fanMainControlValue[index]));
+                    }
                     _restoreDefaultFanPwmControlRequired[index] = false;
                 }
             }
@@ -484,12 +508,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 if (_restoreDefaultFanPwmControlRequired[index])
                 {
                     WriteByte(FAN_PWM_CTRL_REG[index], _initialFanPwmControl[index]);
+                    if ((_initialFanMainControlValue[index] & ~_fanMainControlValue[index]) == _initialFanMainControlValue[index]){ // Bitwise opperand to check if control bit needs to be changed to restore defaults.
+                        WriteByte(FAN_MAIN_CTRL_REG, (byte)( ReadByte(FAN_MAIN_CTRL_REG, out bool _) & ~_fanMainControlValue[index]));
+                    }
                     _restoreDefaultFanPwmControlRequired[index] = false;
                 }
             }
         }
 
         // ReSharper disable InconsistentNaming
+#pragma warning disable IDE1006 // Naming Styles
+
         private const byte ADDRESS_REGISTER_OFFSET = 0x05;
 
         private const byte CONFIGURATION_REGISTER = 0x00;
@@ -498,6 +527,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
 
         private const byte ITE_VENDOR_ID = 0x90;
+
         private const byte TEMPERATURE_BASE_REG = 0x29;
         private const byte VENDOR_ID_REGISTER = 0x58;
         private const byte VOLTAGE_BASE_REG = 0x20;
@@ -505,8 +535,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly byte[] FAN_PWM_CTRL_REG = { 0x15, 0x16, 0x17 };
         private readonly byte[] FAN_PWM_DUTY_REG = { 0x63, 0x6b, 0x73 };
         private readonly byte[] FAN_TACHOMETER_EXT_REG = { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4c };
-
         private readonly byte[] FAN_TACHOMETER_REG = { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
+
+        private readonly byte FAN_MAIN_CTRL_REG = 0x13; // Address of the Fan Controller Main Control Register. No need for the 2nd control register (bit 7 of 0x15 0x16 0x17), PWM value will set it to manual mode when new value is set.
+
+
+#pragma warning restore IDE1006 // Naming Styles
         // ReSharper restore InconsistentNaming
     }
 }

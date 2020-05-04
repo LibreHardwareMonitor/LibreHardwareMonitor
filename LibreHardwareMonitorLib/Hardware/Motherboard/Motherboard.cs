@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -37,10 +38,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         _name = manufacturer + " " + smBios.Board.ProductName;
                 }
                 else
+                {
                     _name = manufacturer.ToString();
+                }
             }
             else
+            {
                 _name = Manufacturer.Unknown.ToString();
+            }
 
             _customName = settings.GetValue(new Identifier(Identifier, "name").ToString(), _name);
 

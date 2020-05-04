@@ -1,7 +1,7 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -54,6 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static string[] GetLogicalDrives(int driveIndex)
         {
             var list = new List<string>();
+
             try
             {
                 using (var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex))
@@ -77,7 +78,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
             catch
-            { }
+            {
+                // Ignored.
+            }
 
             return list.ToArray();
         }

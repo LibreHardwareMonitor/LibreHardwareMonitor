@@ -1,7 +1,7 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Runtime.InteropServices;
@@ -28,6 +28,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
+            nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)Kernel32.STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE.NVMeIdentifyCnsController;
             nptwb.ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<Kernel32.STORAGE_PROTOCOL_SPECIFIC_DATA>();
             nptwb.ProtocolSpecific.ProtocolDataLength = (uint)nptwb.Buffer.Length;
             nptwb.PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
@@ -40,9 +41,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (validTransfer)
             {
                 //map NVME_IDENTIFY_CONTROLLER_DATA to nptwb.Buffer
-                var offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
+                IntPtr offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
                 var newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                var item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
+                Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
                 data = item;
                 Marshal.FreeHGlobal(buffer);
                 result = true;
@@ -78,9 +79,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (validTransfer)
             {
                 //map NVME_HEALTH_INFO_LOG to nptwb.Buffer
-                var offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
+                IntPtr offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
                 var newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                var item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
+                Kernel32.NVME_HEALTH_INFO_LOG item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
                 data = item;
                 Marshal.FreeHGlobal(buffer);
                 result = true;
@@ -95,7 +96,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
         {
-            var handle = Kernel32.OpenDevice(storageInfo.DeviceId);
+            SafeHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
             if (handle == null || handle.IsInvalid)
                 return null;
 
@@ -103,6 +104,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
             nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
             nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
+            nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)Kernel32.STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE.NVMeIdentifyCnsController;
             nptwb.ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<Kernel32.STORAGE_PROTOCOL_SPECIFIC_DATA>();
             nptwb.ProtocolSpecific.ProtocolDataLength = (uint)nptwb.Buffer.Length;
             nptwb.PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;

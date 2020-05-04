@@ -1,7 +1,7 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.IO;
@@ -22,7 +22,6 @@ namespace LibreHardwareMonitor.Interop
 
         internal const int MAX_DRIVE_ATTRIBUTES = 512;
         internal const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
-        internal const int SCSI_PASS_THROUGH_BUFFER_SIZE = 512;
         internal const byte SMART_LBA_HI = 0xC2;
         internal const byte SMART_LBA_MID = 0x4F;
         private const string DllName = "kernel32.dll";
@@ -67,9 +66,9 @@ namespace LibreHardwareMonitor.Interop
         internal static T CreateStruct<T>()
         {
             int size = Marshal.SizeOf<T>();
-            var ptr = Marshal.AllocHGlobal(size);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
             RtlZeroMemory(ptr, size);
-            var result = Marshal.PtrToStructure<T>(ptr);
+            T result = Marshal.PtrToStructure<T>(ptr);
             Marshal.FreeHGlobal(ptr);
             return result;
         }
@@ -434,6 +433,13 @@ namespace LibreHardwareMonitor.Interop
             NVMeDataTypeFeature
         }
 
+        internal enum STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE
+        {
+            NVMeIdentifyCnsSpecificNamespace = 0,
+            NVMeIdentifyCnsController = 1,
+            NVMeIdentifyCnsActiveNamespaces = 2
+        }
+
         internal enum STORAGE_PROTOCOL_TYPE
         {
             ProtocolTypeUnknown = 0x00,
@@ -728,7 +734,7 @@ namespace LibreHardwareMonitor.Interop
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] SenseBuf;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = SCSI_PASS_THROUGH_BUFFER_SIZE)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
             public byte[] DataBuf;
         }
 
