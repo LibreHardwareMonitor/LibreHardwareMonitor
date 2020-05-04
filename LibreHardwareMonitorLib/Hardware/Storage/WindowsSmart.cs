@@ -1,9 +1,11 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
@@ -21,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             _handle = Kernel32.CreateFile(@"\\.\PhysicalDrive" + driveNumber, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
         }
 
-        public bool IsValid => !_handle.IsInvalid;
+        public bool IsValid => !_handle.IsInvalid && !_handle.IsClosed;
 
         public void Dispose()
         {
@@ -37,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public bool EnableSmart()
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -52,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -73,7 +75,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -94,7 +96,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -126,10 +128,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
         }
 
-        private string GetString(byte[] bytes)
+        private static string GetString(IReadOnlyList<byte> bytes)
         {
-            char[] chars = new char[bytes.Length];
-            for (int i = 0; i < bytes.Length; i += 2)
+            char[] chars = new char[bytes.Count];
+            for (int i = 0; i < bytes.Count; i += 2)
             {
                 chars[i] = (char)bytes[i + 1];
                 chars[i + 1] = (char)bytes[i];

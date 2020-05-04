@@ -1,7 +1,8 @@
-ï»¿// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -13,15 +14,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     internal class Nct677X : ISuperIO
     {
         private readonly ushort?[] _alternateTemperatureRegister;
-        private readonly ushort _fanRpmBaseRegister;
-        private readonly byte[] _initialFanControlMode = new byte[6];
-        private readonly byte[] _initialFanPwmCommand = new byte[6];
+        private readonly ushort[] _fanRpmRegister;
+        private readonly byte[] _initialFanControlMode = new byte[7];
+        private readonly byte[] _initialFanPwmCommand = new byte[7];
         private readonly bool _isNuvotonVendor;
         private readonly LpcPort _lpcPort;
         private readonly int _minFanRpm;
         private readonly ushort _port;
-
-        private readonly bool[] _restoreDefaultFanControlRequired = new bool[6];
+        private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
         private readonly byte _revision;
         private readonly int[] _temperatureHalfBit;
         private readonly ushort[] _temperatureHalfRegister;
@@ -39,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             _port = port;
             _lpcPort = lpcPort;
 
-            if (chip == Chip.NCT610X)
+            if (chip == Chip.NCT610XD)
             {
                 VENDOR_ID_HIGH_REGISTER = 0x80FE;
                 VENDOR_ID_LOW_REGISTER = 0x00FE;
@@ -55,9 +55,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 VENDOR_ID_HIGH_REGISTER = 0x804F;
                 VENDOR_ID_LOW_REGISTER = 0x004F;
 
-                FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0x017 };
-                FAN_PWM_COMMAND_REG = new ushort[] { 0x109, 0x209, 0x309, 0x809, 0x909, 0xA09 };
-                FAN_CONTROL_MODE_REG = new ushort[] { 0x102, 0x202, 0x302, 0x802, 0x902, 0xA02 };
+                if (chip == Chip.NCT6797D || chip == Chip.NCT6798D)
+                    FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0xA09, 0xB09 };
+                else
+                    FAN_PWM_OUT_REG = new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0x017, 0x029 };
+
+                FAN_PWM_COMMAND_REG = new ushort[] { 0x109, 0x209, 0x309, 0x809, 0x909, 0xA09, 0xB09 };
+                FAN_CONTROL_MODE_REG = new ushort[] { 0x102, 0x202, 0x302, 0x802, 0x902, 0xA02, 0xB02 };
 
                 _vBatMonitorControlRegister = 0x005D;
             }
@@ -92,7 +96,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         _temperaturesSource = new[] { (byte)SourceNct6776F.PECI_0, (byte)SourceNct6776F.CPUTIN, (byte)SourceNct6776F.AUXTIN, (byte)SourceNct6776F.SYSTIN };
                     }
 
-                    _fanRpmBaseRegister = 0x656;
+                    _fanRpmRegister = new ushort[5];
+                    for (int i = 0; i < _fanRpmRegister.Length; i++)
+                        _fanRpmRegister[i] = (ushort)(0x656 + (i << 1));
 
                     Controls = new float?[3];
 
@@ -106,31 +112,46 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _temperatureHalfBit = new[] { -1, 7, 7, 7, 7, 7, 0, 1, 2 };
                     _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300, 0x622, 0x623, 0x624, 0x625, 0x626 };
                     _alternateTemperatureRegister = new ushort?[] { null, null, null, null };
+
                     break;
                 }
                 case Chip.NCT6779D:
                 case Chip.NCT6791D:
                 case Chip.NCT6792D:
+                case Chip.NCT6792DA:
                 case Chip.NCT6793D:
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
+                case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
                 {
-                    if (chip == Chip.NCT6779D)
+                    switch (chip)
                     {
-                        Fans = new float?[5];
-                        Controls = new float?[5];
-                    }
-                    else
-                    {
-                        Fans = new float?[6];
-                        Controls = new float?[6];
+                        case Chip.NCT6779D:
+                        {
+                            Fans = new float?[5];
+                            Controls = new float?[5];
+                            break;
+                        }
+                        case Chip.NCT6797D:
+                        case Chip.NCT6798D:
+                        {
+                            Fans = new float?[7];
+                            Controls = new float?[7];
+                            break;
+                        }
+                        default:
+                        {
+                            Fans = new float?[6];
+                            Controls = new float?[6];
+                            break;
+                        }
                     }
 
-                    _fanRpmBaseRegister = 0x4C0;
+                    _fanRpmRegister = new ushort[] { 0x4c0, 0x4c2, 0x4c4, 0x4c6, 0x4c8, 0x4ca, 0x4ce };
 
-                    // min value RPM value with 13-bit fan counter
+                    // min RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
 
                     Voltages = new float?[15];
@@ -155,12 +176,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _alternateTemperatureRegister = new ushort?[] { null, 0x491, 0x490, 0x492, 0x493, 0x494, 0x495 };
                     break;
                 }
-                case Chip.NCT610X:
+                case Chip.NCT610XD:
                 {
                     Fans = new float?[3];
                     Controls = new float?[3];
 
-                    _fanRpmBaseRegister = 0x030;
+                    _fanRpmRegister = new ushort[3];
+                    for (int i = 0; i < _fanRpmRegister.Length; i++)
+                        _fanRpmRegister[i] = (ushort)(0x030 + (i << 1));
 
                     // min value RPM value with 13-bit fan counter
                     _minFanRpm = (int)(1.35e6 / 0x1FFF);
@@ -176,6 +199,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _temperatureHalfBit = new[] { -1, 7, 7, 7 };
                     _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300 };
                     _alternateTemperatureRegister = new ushort?[] { null, 0x018, 0x019, 0x01A };
+
                     break;
                 }
             }
@@ -296,8 +320,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Fans.Length; i++)
             {
-                byte high = ReadByte((ushort)(_fanRpmBaseRegister + (i << 1)));
-                byte low = ReadByte((ushort)(_fanRpmBaseRegister + (i << 1) + 1));
+                byte high = ReadByte(_fanRpmRegister[i]);
+                byte low = ReadByte((ushort)(_fanRpmRegister[i] + 1));
                 int value = (high << 8) | low;
                 Fans[i] = value > _minFanRpm ? value : 0;
             }
@@ -505,8 +529,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void DisableIOSpaceLock()
         {
-            if (Chip != Chip.NCT6791D && Chip != Chip.NCT6796D && Chip != Chip.NCT6793D && Chip != Chip.NCT6795D && Chip != Chip.NCT6798D && Chip != Chip.NCT6797D)
+            if (Chip != Chip.NCT6791D &&
+                Chip != Chip.NCT6792D &&
+                Chip != Chip.NCT6792DA &&
+                Chip != Chip.NCT6793D &&
+                Chip != Chip.NCT6795D &&
+                Chip != Chip.NCT6796D &&
+                Chip != Chip.NCT6796DR &&
+                Chip != Chip.NCT6797D &&
+                Chip != Chip.NCT6798D)
+            {
                 return;
+            }
 
 
             // the lock is disabled already if the vendor ID can be read

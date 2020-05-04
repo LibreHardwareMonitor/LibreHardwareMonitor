@@ -1,20 +1,23 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
-using System;
-using System.Collections.Generic;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
+using System;
+using System.Collections.Generic;
 
 namespace LibreHardwareMonitor.UI
 {
-    public class HardwareNode : Node
+    public class HardwareNode : Node, IExpandPersistNode
     {
         private readonly PersistentSettings _settings;
         private readonly UnitManager _unitManager;
         private readonly List<TypeNode> _typeNodes = new List<TypeNode>();
+        private readonly string _expandedIdentifier;
+        private bool _expanded;
 
         public event EventHandler PlotSelectionChanged;
 
@@ -22,18 +25,22 @@ namespace LibreHardwareMonitor.UI
         {
             _settings = settings;
             _unitManager = unitManager;
+            _expandedIdentifier = new Identifier(hardware.Identifier, "expanded").ToString();
             Hardware = hardware;
             Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
 
             foreach (SensorType sensorType in Enum.GetValues(typeof(SensorType)))
-                _typeNodes.Add(new TypeNode(sensorType));
+                _typeNodes.Add(new TypeNode(sensorType, hardware.Identifier, _settings));
 
             foreach (ISensor sensor in hardware.Sensors)
                 SensorAdded(sensor);
 
             hardware.SensorAdded += SensorAdded;
             hardware.SensorRemoved += SensorRemoved;
+
+            _expanded = settings.GetValue(_expandedIdentifier, true);
         }
+
 
         public override string Text
         {
@@ -42,6 +49,16 @@ namespace LibreHardwareMonitor.UI
         }
 
         public IHardware Hardware { get; }
+
+        public bool Expanded
+        {
+            get => _expanded;
+            set
+            {
+                _expanded = value;
+                _settings.SetValue(_expandedIdentifier, _expanded);
+            }
+        }
 
         private void UpdateNode(TypeNode node)
         {

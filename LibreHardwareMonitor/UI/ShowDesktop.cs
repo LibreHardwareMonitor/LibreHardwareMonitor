@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Runtime.InteropServices;
@@ -9,28 +10,69 @@ using System.Windows.Forms;
 
 namespace LibreHardwareMonitor.UI
 {
-    public class ShowDesktop
+    public class ShowDesktop : IDisposable
     {
-        public delegate void ShowDesktopChangedEventHandler(bool showDesktop);
-        private event ShowDesktopChangedEventHandler ShowDesktopChangedEvent;
+        private readonly NativeWindow _referenceWindow;
+        private readonly string _referenceWindowCaption = "LibreHardwareMonitorShowDesktopReferenceWindow";
         private readonly System.Threading.Timer _timer;
         private bool _showDesktop;
-        private readonly string _referenceWindowCaption = "LibreHardwareMonitorShowDesktopReferenceWindow";
 
+        /// <summary>
+        /// Prevents a default instance of the <see cref="ShowDesktop" /> class from being created.
+        /// </summary>
         private ShowDesktop()
         {
-            // create a reference window to detect show desktop
-            NativeWindow referenceWindow = new NativeWindow();
+            // Create a reference window to detect show desktop
+            _referenceWindow = new NativeWindow();
+
             CreateParams cp = new CreateParams { ExStyle = GadgetWindow.WS_EX_TOOLWINDOW, Caption = _referenceWindowCaption };
-            referenceWindow.CreateHandle(cp);
-            NativeMethods.SetWindowPos(
-                referenceWindow.Handle,
-                GadgetWindow.HWND_BOTTOM, 0, 0, 0, 0, GadgetWindow.SWP_NOMOVE |
-                GadgetWindow.SWP_NOSIZE | GadgetWindow.SWP_NOACTIVATE |
-                GadgetWindow.SWP_NOSENDCHANGING);
+            _referenceWindow.CreateHandle(cp);
+            NativeMethods.SetWindowPos(_referenceWindow.Handle,
+                                       GadgetWindow.HWND_BOTTOM,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       GadgetWindow.SWP_NOMOVE |
+                                       GadgetWindow.SWP_NOSIZE |
+                                       GadgetWindow.SWP_NOACTIVATE |
+                                       GadgetWindow.SWP_NOSENDCHANGING);
 
             // start a repeated timer to detect "Show Desktop" events
             _timer = new System.Threading.Timer(OnTimer, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+        }
+
+        public delegate void ShowDesktopChangedEventHandler(bool showDesktop);
+
+        private event ShowDesktopChangedEventHandler ShowDesktopChangedEvent;
+
+        // notify when the "show desktop" mode is changed
+        public event ShowDesktopChangedEventHandler ShowDesktopChanged
+        {
+            add
+            {
+                // start the monitor timer when someone is listening
+                if (ShowDesktopChangedEvent == null)
+                    StartTimer();
+
+                ShowDesktopChangedEvent += value;
+            }
+            remove
+            {
+                ShowDesktopChangedEvent -= value;
+                // stop the monitor timer if nobody is interested
+                if (ShowDesktopChangedEvent == null)
+                    StopTimer();
+            }
+        }
+
+        public static ShowDesktop Instance { get; } = new ShowDesktop();
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            _timer?.Dispose();
+            _referenceWindow.ReleaseHandle();
         }
 
         private void StartTimer()
@@ -68,6 +110,7 @@ namespace LibreHardwareMonitor.UI
                     }
                 }
             }
+
             return IntPtr.Zero;
         }
 
@@ -92,27 +135,6 @@ namespace LibreHardwareMonitor.UI
             {
                 _showDesktop = showDesktopDetected;
                 ShowDesktopChangedEvent?.Invoke(_showDesktop);
-            }
-        }
-
-        public static ShowDesktop Instance { get; } = new ShowDesktop();
-
-        // notify when the "show desktop" mode is changed
-        public event ShowDesktopChangedEventHandler ShowDesktopChanged
-        {
-            add
-            {
-                // start the monitor timer when someone is listening
-                if (ShowDesktopChangedEvent == null)
-                    StartTimer();
-                ShowDesktopChangedEvent += value;
-            }
-            remove
-            {
-                ShowDesktopChangedEvent -= value;
-                // stop the monitor timer if nobody is interested
-                if (ShowDesktopChangedEvent == null)
-                    StopTimer();
             }
         }
 

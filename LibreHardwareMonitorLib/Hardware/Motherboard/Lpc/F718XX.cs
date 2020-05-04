@@ -1,8 +1,10 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -13,6 +15,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     internal class F718XX : ISuperIO
     {
         private readonly ushort _address;
+        private readonly byte[] _initialFanPwmControl = new byte[4];
+        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[4];
 
         public F718XX(Chip chip, ushort address)
         {
@@ -45,8 +49,26 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         public void SetControl(int index, byte? value)
         {
-            if (index < Controls.Length)
-                WriteByte(FAN_PWM_REG[index], value ?? 128);
+            if (index < 0 || index >= Controls.Length)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+
+            if (!Ring0.WaitIsaBusMutex(10))
+                return;
+
+
+            if (value.HasValue)
+            {
+                SaveDefaultFanPwmControl(index);
+
+                WriteByte(FAN_PWM_REG[index], value.Value);
+            }
+            else
+            {
+                RestoreDefaultFanPwmControl(index);
+            }
+
+            Ring0.ReleaseIsaBusMutex();
         }
 
         public string GetReport()
@@ -174,10 +196,28 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Controls.Length; i++)
             {
-                Controls[i] = 100 * ReadByte((byte)(PWM_VALUES_OFFSET + i)) / 256.0f;
+                Controls[i] = ReadByte((byte)(PWM_VALUES_OFFSET + i)) * 100.0f / 0xFF;
             }
 
             Ring0.ReleaseIsaBusMutex();
+        }
+
+        private void SaveDefaultFanPwmControl(int index)
+        {
+            if (!_restoreDefaultFanPwmControlRequired[index])
+            {
+                _initialFanPwmControl[index] = ReadByte(FAN_PWM_REG[index]);
+                _restoreDefaultFanPwmControlRequired[index] = true;
+            }
+        }
+
+        private void RestoreDefaultFanPwmControl(int index)
+        {
+            if (_restoreDefaultFanPwmControlRequired[index])
+            {
+                WriteByte(FAN_PWM_REG[index], _initialFanPwmControl[index]);
+                _restoreDefaultFanPwmControlRequired[index] = false;
+            }
         }
 
         private byte ReadByte(byte register)
@@ -193,6 +233,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         }
 
         // ReSharper disable InconsistentNaming
+#pragma warning disable IDE1006 // Naming Styles
+
         private const byte ADDRESS_REGISTER_OFFSET = 0x05;
         private const byte DATA_REGISTER_OFFSET = 0x06;
         private const byte PWM_VALUES_OFFSET = 0x2D;
@@ -201,8 +243,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private const byte VOLTAGE_BASE_REG = 0x20;
         private readonly byte[] FAN_PWM_REG = { 0xA3, 0xB3, 0xC3, 0xD3 };
-
         private readonly byte[] FAN_TACHOMETER_REG = { 0xA0, 0xB0, 0xC0, 0xD0 };
+
         // ReSharper restore InconsistentNaming
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

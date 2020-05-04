@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Text;
@@ -111,9 +112,18 @@ namespace LibreHardwareMonitor.Hardware.CPU
             nameBuilder.Replace("(TM)", string.Empty);
             nameBuilder.Replace("(tm)", string.Empty);
             nameBuilder.Replace("CPU", string.Empty);
+            nameBuilder.Replace("Dual-Core Processor", string.Empty);
+            nameBuilder.Replace("Triple-Core Processor", string.Empty);
             nameBuilder.Replace("Quad-Core Processor", string.Empty);
             nameBuilder.Replace("Six-Core Processor", string.Empty);
             nameBuilder.Replace("Eight-Core Processor", string.Empty);
+            nameBuilder.Replace("6-Core Processor", string.Empty);
+            nameBuilder.Replace("8-Core Processor", string.Empty);
+            nameBuilder.Replace("12-Core Processor", string.Empty);
+            nameBuilder.Replace("16-Core Processor", string.Empty);
+            nameBuilder.Replace("24-Core Processor", string.Empty);
+            nameBuilder.Replace("32-Core Processor", string.Empty);
+            nameBuilder.Replace("64-Core Processor", string.Empty);
 
             for (int i = 0; i < 10; i++)
                 nameBuilder.Replace("  ", " ");

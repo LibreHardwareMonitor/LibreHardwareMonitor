@@ -1,7 +1,7 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -82,7 +82,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             //try it with the sata smart implementation
             if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
             {
-                var x = NVMeGeneric.CreateInstance(info, settings);
+                AbstractStorage x = NVMeGeneric.CreateInstance(info, settings);
                 if (x != null)
                     return x;
             }
@@ -124,7 +124,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
 
             var perfData = new ManagementObjectSearcher(query);
-            var data = perfData.Get().OfType<ManagementObject>().FirstOrDefault();
+            ManagementObject data = perfData.Get().OfType<ManagementObject>().FirstOrDefault();
             if (data == null)
             {
                 perfData.Dispose();
@@ -196,7 +196,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
 
             //read out with updateInterval
-            var tDiff = DateTime.UtcNow - _lastUpdate;
+            TimeSpan tDiff = DateTime.UtcNow - _lastUpdate;
             if (tDiff > _updateInterval)
             {
                 _lastUpdate = DateTime.UtcNow;

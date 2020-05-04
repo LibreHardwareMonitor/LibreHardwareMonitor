@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System.Collections.Generic;
 using System.Drawing;
@@ -179,14 +180,23 @@ namespace LibreHardwareMonitor.Utilities
             {
                 if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
                     return parsedValue;
+            }
 
+            return value;
 
-                return value;
+        }
+
+        public double GetValue(string name, double value)
+        {
+            if (_settings.TryGetValue(name, out string str))
+            {
+                if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
+                    return parsedValue;
             }
 
             return value;
         }
-
+        
         public void SetValue(string name, bool value)
         {
             _settings[name] = value ? "true" : "false";
@@ -213,9 +223,6 @@ namespace LibreHardwareMonitor.Utilities
             {
                 if (int.TryParse(str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int parsedValue))
                     return Color.FromArgb(parsedValue);
-
-
-                return value;
             }
 
             return value;

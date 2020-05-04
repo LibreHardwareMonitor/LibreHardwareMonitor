@@ -1,17 +1,25 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Utilities;
 
 namespace LibreHardwareMonitor.UI
 {
-    public sealed class TypeNode : Node
+    public sealed class TypeNode : Node, IExpandPersistNode
     {
-        public TypeNode(SensorType sensorType)
+        private readonly PersistentSettings _settings;
+        private readonly string _expandedIdentifier;
+        private bool _expanded;
+
+        public TypeNode(SensorType sensorType, Identifier parentId, PersistentSettings settings)
         {
             SensorType = sensorType;
+            _expandedIdentifier = new Identifier(parentId, SensorType.ToString(), ".expanded").ToString();
+            _settings = settings;
 
             switch (sensorType)
             {
@@ -75,6 +83,7 @@ namespace LibreHardwareMonitor.UI
 
             NodeAdded += TypeNode_NodeAdded;
             NodeRemoved += TypeNode_NodeRemoved;
+            _expanded = settings.GetValue(_expandedIdentifier, true);
         }
 
         private void TypeNode_NodeRemoved(Node node)
@@ -103,5 +112,15 @@ namespace LibreHardwareMonitor.UI
         }
 
         public SensorType SensorType { get; }
+
+        public bool Expanded
+        {
+            get => _expanded;
+            set
+            {
+                _expanded = value;
+                _settings.SetValue(_expandedIdentifier, _expanded);
+            }
+        }
     }
 }

@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
@@ -25,6 +27,7 @@ namespace LibreHardwareMonitor.UI
         private readonly PlotModel _model;
         private readonly TimeSpanAxis _timeAxis = new TimeSpanAxis();
         private readonly SortedDictionary<SensorType, LinearAxis> _axes = new SortedDictionary<SensorType, LinearAxis>();
+        private readonly Dictionary<SensorType, LineAnnotation> _annotations = new Dictionary<SensorType, LineAnnotation>();
         private UserOption _stackedAxes;
         private UserOption _showAxesLabels;
         private UserOption _timeAxisEnableZoom;
@@ -44,7 +47,7 @@ namespace LibreHardwareMonitor.UI
             _model = CreatePlotModel();
 
             _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenu = CreateMenu() };
-
+            
             UpdateAxesPosition();
 
             SuspendLayout();
@@ -172,6 +175,7 @@ namespace LibreHardwareMonitor.UI
 
             foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
             {
+                string typeName = type.ToString();
                 var axis = new LinearAxis
                 {
                     Position = AxisPosition.Left,
@@ -182,15 +186,31 @@ namespace LibreHardwareMonitor.UI
                     MinorGridlineThickness = 1,
                     MinorGridlineColor = _timeAxis.MinorGridlineColor,
                     AxislineStyle = LineStyle.Solid,
-                    Title = type.ToString(),
-                    Key = type.ToString()
+                    Title = typeName,
+                    Key = typeName,
                 };
+
+                var annotation = new LineAnnotation
+                {
+                    Type = LineAnnotationType.Horizontal,
+                    ClipByXAxis = false,
+                    ClipByYAxis = false,
+                    LineStyle = LineStyle.Solid,
+                    Color = OxyColors.Black,
+                    YAxisKey = typeName,
+                    StrokeThickness = 2,
+                };
+
+                axis.AxisChanged += (sender, args) => annotation.Y = axis.ActualMinimum;
+                axis.TransformChanged += (sender, args) => annotation.Y = axis.ActualMinimum;
 
                 axis.Zoom(_settings.GetValue("plotPanel.Min" + axis.Key, float.NaN), _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
 
                 if (units.ContainsKey(type))
                     axis.Unit = units[type];
+
                 _axes.Add(type, axis);
+                _annotations.Add(type, annotation);
             }
 
             var model = new ScaledPlotModel(_dpiXScale, _dpiYScale);
@@ -227,10 +247,10 @@ namespace LibreHardwareMonitor.UI
         public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
         {
             _model.Series.Clear();
-            var types = new System.Collections.Generic.HashSet<SensorType>();
+            var types = new HashSet<SensorType>();
 
 
-            Func<SensorType, SensorValue, DataPoint> createDataPoint = (SensorType type, SensorValue value) =>
+            DataPoint CreateDataPoint(SensorType type, SensorValue value)
             {
                 float displayedValue;
 
@@ -242,18 +262,22 @@ namespace LibreHardwareMonitor.UI
                 {
                     displayedValue = value.Value;
                 }
+
                 return new DataPoint((_now - value.Time).TotalSeconds, displayedValue);
-            };
+            }
+
 
             foreach (ISensor sensor in sensors)
             {
-                var series = new LineSeries();
+                var series = new LineSeries
+                {
+                    ItemsSource = sensor.Values.Select(value => CreateDataPoint(sensor.SensorType, value)),
+                    Color = colors[sensor].ToOxyColor(),
+                    StrokeThickness = 1,
+                    YAxisKey = _axes[sensor.SensorType].Key,
+                    Title = sensor.Hardware.Name + " " + sensor.Name
+                };
 
-                series.ItemsSource = sensor.Values.Select(value => createDataPoint(sensor.SensorType, value));
-                series.Color = colors[sensor].ToOxyColor();
-                series.StrokeThickness = 1;
-                series.YAxisKey = _axes[sensor.SensorType].Key;
-                series.Title = sensor.Hardware.Name + " " + sensor.Name;
                 _model.Series.Add(series);
 
                 types.Add(sensor.SensorType);
@@ -286,6 +310,10 @@ namespace LibreHardwareMonitor.UI
                     axis.PositionTier = 0;
                     axis.MajorGridlineStyle = LineStyle.Solid;
                     axis.MinorGridlineStyle = LineStyle.Solid;
+                    LineAnnotation annotation = _annotations[pair.Key];
+                    annotation.Y = axis.ActualMinimum;
+                    if (!_model.Annotations.Contains(annotation)) 
+                        _model.Annotations.Add(annotation);
                 }
             }
             else
@@ -311,6 +339,9 @@ namespace LibreHardwareMonitor.UI
                     }
                     axis.MajorGridlineStyle = LineStyle.None;
                     axis.MinorGridlineStyle = LineStyle.None;
+                    LineAnnotation annotation = _annotations[pair.Key];
+                    if (_model.Annotations.Contains(annotation)) 
+                        _model.Annotations.Remove(_annotations[pair.Key]);
                 }
             }
         }
@@ -327,6 +358,12 @@ namespace LibreHardwareMonitor.UI
                     SensorType type = pair.Key;
                     if (type == SensorType.Temperature)
                         axis.Unit = _unitManager.TemperatureUnit == TemperatureUnit.Celsius ? "°C" : "°F";
+                    
+                    if (!_stackedAxes.Value) 
+                        continue;
+
+                    var annotation = _annotations[pair.Key];
+                    annotation.Y = axis.ActualMaximum;
                 }
             }
 

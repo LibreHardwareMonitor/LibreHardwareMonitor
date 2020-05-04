@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 
@@ -13,52 +14,90 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         {
             switch (name)
             {
+                case var _ when name.IndexOf("abit.com.tw", StringComparison.OrdinalIgnoreCase) > -1:
+                    return Manufacturer.Acer;
+                case var _ when name.StartsWith("Acer", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Acer;
+                case var _ when name.StartsWith("AMD", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.AMD;
                 case var _ when name.Equals("Alienware", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Alienware;
-                case var _ when name.Equals("Apple Inc.", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("AOpen", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.AOpen;
+                case var _ when name.StartsWith("Apple", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Apple;
                 case var _ when name.Equals("ASRock", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.ASRock;
-                case var _ when name.Equals("ASUSTeK Computer INC.", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("ASUSTeK", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("ASUS ", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.ASUS;
-                case var _ when name.Equals("Dell Inc.", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("Biostar", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Biostar;
+                case var _ when name.StartsWith("Clevo", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Clevo;
+                case var _ when name.StartsWith("Dell", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Dell;
                 case var _ when name.Equals("DFI", StringComparison.OrdinalIgnoreCase):
-                case var _ when name.Equals("DFI Inc.", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("DFI Inc", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.DFI;
                 case var _ when name.Equals("ECS", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("ELITEGROUP", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.ECS;
                 case var _ when name.Equals("EPoX COMPUTER CO., LTD", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.EPoX;
-                case var _ when name.Equals("EVGA", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("EVGA", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.EVGA;
-                case var _ when name.Equals("First International Computer, Inc.", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.Equals("FIC", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("First International Computer", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.FIC;
-                case var _ when name.Equals("Fujitsu", StringComparison.OrdinalIgnoreCase):
-                case var _ when name.Equals("Fujitsu Siemens", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.Equals("Foxconn", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Foxconn;
+                case var _ when name.StartsWith("Fujitsu", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Fujitsu;
-                case var _ when name.Equals("Gigabyte Technology Co., Ltd.", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("Gigabyte", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Gigabyte;
-                case var _ when name.Equals("Hewlett-Packard", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("Hewlett-Packard", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.Equals("HP", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.HP;
                 case var _ when name.Equals("IBM", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.IBM;
                 case var _ when name.Equals("Intel", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.StartsWith("Intel Corp", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Intel;
-                case var _ when name.Equals("Lenovo", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("Jetway", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Jetway;
+                case var _ when name.StartsWith("Lenovo", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Lenovo;
+                case var _ when name.Equals("LattePanda", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.LattePanda;
+                case var _ when name.StartsWith("Medion", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Medion;
+                case var _ when name.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Microsoft;
                 case var _ when name.StartsWith("Micro-Star International", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("MSI", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.MSI;
-                case var _ when name.Equals("Shuttle", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("NEC ", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.Equals("NEC", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.NEC;
+                case var _ when name.StartsWith("Pegatron", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Pegatron;
+                case var _ when name.StartsWith("Samsung", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Samsung;
+                case var _ when name.StartsWith("Sapphire", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Sapphire;
+                case var _ when name.StartsWith("Shuttle", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Shuttle;
-                case var _ when name.Equals("Supermicro", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("Sony", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Sony;
+                case var _ when name.StartsWith("Supermicro", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Supermicro;
-                case var _ when name.Equals("Toshiba", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("Toshiba", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Toshiba;
                 case var _ when name.Equals("XFX", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.XFX;
+                case var _ when name.StartsWith("Zotac", StringComparison.OrdinalIgnoreCase):
+                    return Manufacturer.Zotac;
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Manufacturer.Unknown;
                 default:
@@ -238,6 +277,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.Z170_A;
                 case var _ when name.Equals("Z77 Pro4-M", StringComparison.OrdinalIgnoreCase):
                     return Model.Z77Pro4M;
+                case var _ when name.Equals("X570 Pro4", StringComparison.OrdinalIgnoreCase):
+                    return Model.X570_Pro4;
                 case var _ when name.Equals("AX370-Gaming 5", StringComparison.OrdinalIgnoreCase):
                     return Model.AX370_Gaming_5;
                 case var _ when name.Equals("TUF X470-PLUS GAMING", StringComparison.OrdinalIgnoreCase):
@@ -250,6 +291,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.B350_Gaming_Plus;
                 case var _ when name.Equals("X470 AORUS GAMING 7 WIFI-CF", StringComparison.OrdinalIgnoreCase):
                     return Model.X470_AORUS_GAMING_7_WIFI;
+                case var _ when name.Equals("X570 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
+                    return Model.X570_AORUS_MASTER;
                 case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Model.Unknown;

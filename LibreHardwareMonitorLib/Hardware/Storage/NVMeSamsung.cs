@@ -1,7 +1,7 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Runtime.InteropServices;
@@ -81,9 +81,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
                 if (validTransfer)
                 {
-                    var offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+                    IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                    var item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
+                    Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
                     data = item;
                     Marshal.FreeHGlobal(buffer);
                     result = true;
@@ -162,9 +162,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
                 if (validTransfer)
                 {
-                    var offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+                    IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                    var item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
+                    Kernel32.NVME_HEALTH_INFO_LOG item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
                     data = item;
                     Marshal.FreeHGlobal(buffer);
                     result = true;
@@ -180,7 +180,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
         {
-            var handle = Kernel32.OpenDevice(storageInfo.DeviceId);
+            SafeHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
             if (handle == null || handle.IsInvalid)
                 return null;
 

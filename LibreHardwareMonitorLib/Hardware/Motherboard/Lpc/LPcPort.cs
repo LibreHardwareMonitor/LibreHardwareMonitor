@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
@@ -31,13 +32,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         public ushort ReadWord(byte register)
         {
-            return (ushort)((ReadByte(register) << 8) |
-                            ReadByte((byte)(register + 1)));
+            return (ushort)((ReadByte(register) << 8) | ReadByte((byte)(register + 1)));
         }
 
         public void Select(byte logicalDeviceNumber)
         {
-            Ring0.WriteIoPort(RegisterPort, DEVCIE_SELECT_REGISTER);
+            Ring0.WriteIoPort(RegisterPort, DEVICE_SELECT_REGISTER);
             Ring0.WriteIoPort(ValuePort, logicalDeviceNumber);
         }
 
@@ -68,20 +68,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             Ring0.WriteIoPort(RegisterPort, 0x87);
             Ring0.WriteIoPort(RegisterPort, 0x01);
             Ring0.WriteIoPort(RegisterPort, 0x55);
-            if (RegisterPort == 0x4E)
-            {
-                Ring0.WriteIoPort(RegisterPort, 0xAA);
-            }
-            else
-            {
-                Ring0.WriteIoPort(RegisterPort, 0x55);
-            }            
+            Ring0.WriteIoPort(RegisterPort, RegisterPort == 0x4E ? (byte)0xAA : (byte)0x55);
         }
 
         public void IT87Exit()
         {
-            Ring0.WriteIoPort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
-            Ring0.WriteIoPort(ValuePort, 0x02);
+            // Do not exit config mode for secondary super IO.
+            if (RegisterPort != 0x4E)
+            {
+                Ring0.WriteIoPort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
+                Ring0.WriteIoPort(ValuePort, 0x02);
+            }
         }
 
         public void SmscEnter()
@@ -96,8 +93,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         // ReSharper disable InconsistentNaming
         private const byte CONFIGURATION_CONTROL_REGISTER = 0x02;
-        private const byte DEVCIE_SELECT_REGISTER = 0x07;
-
+        private const byte DEVICE_SELECT_REGISTER = 0x07;
         private const byte NUVOTON_HARDWARE_MONITOR_IO_SPACE_LOCK = 0x28;
         // ReSharper restore InconsistentNaming
     }

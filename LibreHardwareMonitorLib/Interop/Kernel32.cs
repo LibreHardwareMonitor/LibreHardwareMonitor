@@ -1,7 +1,7 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.IO;
@@ -66,9 +66,9 @@ namespace LibreHardwareMonitor.Interop
         internal static T CreateStruct<T>()
         {
             int size = Marshal.SizeOf<T>();
-            var ptr = Marshal.AllocHGlobal(size);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
             RtlZeroMemory(ptr, size);
-            var result = Marshal.PtrToStructure<T>(ptr);
+            T result = Marshal.PtrToStructure<T>(ptr);
             Marshal.FreeHGlobal(ptr);
             return result;
         }
@@ -431,6 +431,13 @@ namespace LibreHardwareMonitor.Interop
             NVMeDataTypeIdentify,
             NVMeDataTypeLogPage,
             NVMeDataTypeFeature
+        }
+
+        internal enum STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE
+        {
+            NVMeIdentifyCnsSpecificNamespace = 0,
+            NVMeIdentifyCnsController = 1,
+            NVMeIdentifyCnsActiveNamespaces = 2
         }
 
         internal enum STORAGE_PROTOCOL_TYPE
