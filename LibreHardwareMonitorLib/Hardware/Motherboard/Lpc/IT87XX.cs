@@ -22,11 +22,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly int _gpioCount;
         private readonly bool _has16BitFanCounter;
         private readonly bool _hasNewerAutoPwm;
-        private readonly byte[] _initialFanPwmControl = new byte[3]; // This will also store the 2nd control register value.
-        private readonly byte[] _initialFanPwmControlMode = new byte[3];
-        private readonly byte[] _initialFanMainControlValue = new byte[3]; // Initial Fan Controller Main Control Register value. 
-        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[3];
-        private readonly byte[] _fanMainControlValue = { 0b00000001, 0b00000010, 0b00000100 }; // Values to  be applied to FAN_MAIN_CTRL_REG to gain control of each fan.
+        private readonly byte[] _initialFanPwmControl = new byte[4]; // This will also store the 2nd control register value.
+        private readonly byte[] _initialFanPwmControlMode = new byte[4];
+        private readonly byte[] _initialFanMainControlValue = new byte[4]; // Initial Fan Controller Main Control Register value. 
+        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[4];
+        private readonly byte[] _fanMainControlValue = { 0b00000001, 0b00000010, 0b00000100, 0b00001000 }; // Values to  be applied to FAN_MAIN_CTRL_REG to gain control of each fan.
         private readonly byte _version;
         private readonly float _voltageGain;
 
@@ -54,14 +54,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             switch (chip)
             {
-                // IT8686E has more sensors
                 case Chip.IT8665E:
-                case Chip.IT8686E:
                 {
                     Voltages = new float?[10];
                     Temperatures = new float?[6];
                     Fans = new float?[6];
                     Controls = new float?[3];
+                    break;
+                }
+                // IT8686E has 4 controls
+                case Chip.IT8686E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[6];
+                    Fans = new float?[6];
+                    Controls = new float?[4];
                     break;
                 }
                 case Chip.IT8688E:
@@ -141,7 +148,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             // Older IT8705F and IT8721F revisions do not have 16-bit fan counters.
             _has16BitFanCounter = (chip != Chip.IT8705F || version >= 3) && (chip != Chip.IT8712F || version >= 8);
 
-            if (chip == Chip.IT8620E || chip == Chip.IT879XE)
+            if (chip == Chip.IT8620E || chip == Chip.IT879XE || chip == Chip.IT8686E)
             {
                 _hasNewerAutoPwm = true;
             }
@@ -532,8 +539,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private const byte VENDOR_ID_REGISTER = 0x58;
         private const byte VOLTAGE_BASE_REG = 0x20;
 
-        private readonly byte[] FAN_PWM_CTRL_REG = { 0x15, 0x16, 0x17 };
-        private readonly byte[] FAN_PWM_DUTY_REG = { 0x63, 0x6b, 0x73 };
+        private readonly byte[] FAN_PWM_CTRL_REG = { 0x15, 0x16, 0x17, 0x7f };
+        private readonly byte[] FAN_PWM_DUTY_REG = { 0x63, 0x6b, 0x73, 0x7b };
         private readonly byte[] FAN_TACHOMETER_EXT_REG = { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4c };
         private readonly byte[] FAN_TACHOMETER_REG = { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
 
