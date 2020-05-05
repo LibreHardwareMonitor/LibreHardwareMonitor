@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using System.Text;
-using HidLibrary;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
@@ -19,13 +19,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             _report.AppendLine("AquaComputer Hardware");
             _report.AppendLine();
 
-            foreach (HidDevice dev in HidDevices.Enumerate(0x0c70))
+            foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x0c70))
             {
-                dev.ReadProduct(out byte[] productNameBytes);
-                string productName = Encoding.Unicode.GetString(productNameBytes).Replace("\0", string.Empty);
+                string productName = dev.GetProductName();
                 productName = productName.Substring(0, 1).ToUpper() + productName.Substring(1);
 
-                switch (dev.Attributes.ProductId)
+                switch (dev.ProductID)
                 {
                     case 0xf0b6:
                     {
@@ -50,7 +49,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                     }
                     default:
                     {
-                        _report.AppendLine($"Unknown Hardware PID: {dev.Attributes.ProductHexId} Name: {productName}");
+                        _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
                         _report.AppendLine();
                         break;
                     }

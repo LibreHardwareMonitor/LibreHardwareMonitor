@@ -5,7 +5,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using HidLibrary;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
@@ -16,58 +16,63 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
     internal sealed class AquastreamXT : Hardware
     {
-        private readonly HidDevice _device;
-        private readonly Sensor _fanControl, _pumpPower, _pumpFlow;
+        private readonly Sensor _fanControl;
         private readonly Sensor[] _frequencies = new Sensor[2];
+        private readonly Sensor _pumpFlow;
+        private readonly Sensor _pumpPower;
+        private readonly byte[] _rawData = new byte[64];
         private readonly Sensor[] _rpmSensors = new Sensor[2];
+        private readonly HidStream _stream;
         private readonly Sensor[] _temperatures = new Sensor[3];
         private readonly Sensor[] _voltages = new Sensor[2];
-        private byte[] _rawData;
 
         public AquastreamXT(HidDevice dev, ISettings settings) : base("Aquastream XT", new Identifier(dev.DevicePath), settings)
         {
-            _device = dev;
-            do
+            if (dev.TryOpen(out _stream))
             {
-                _device.ReadFeatureData(out _rawData, 0x4);
+                do
+                {
+                    _rawData[0] = 0x4;
+                    _stream.GetFeature(_rawData);
+                }
+                while (_rawData[0] != 0x4);
+
+                Name = $"Aquastream XT {Variant}";
+                FirmwareVersion = BitConverter.ToUInt16(_rawData, 50);
+
+                _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                ActivateSensor(_temperatures[0]);
+                _temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                ActivateSensor(_temperatures[1]);
+                _temperatures[2] = new Sensor("Internal Water", 2, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                ActivateSensor(_temperatures[2]);
+
+                _voltages[0] = new Sensor("External Fan", 1, SensorType.Voltage, this, new ParameterDescription[0], settings);
+                ActivateSensor(_voltages[0]);
+                _voltages[1] = new Sensor("Pump", 2, SensorType.Voltage, this, new ParameterDescription[0], settings);
+                ActivateSensor(_voltages[1]);
+
+                _pumpPower = new Sensor("Pump", 0, SensorType.Power, this, new ParameterDescription[0], settings);
+                ActivateSensor(_pumpPower);
+
+                _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
+                ActivateSensor(_pumpFlow);
+
+                _rpmSensors[0] = new Sensor("External Fan", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
+                ActivateSensor(_rpmSensors[0]);
+                _rpmSensors[1] = new Sensor("Pump", 1, SensorType.Fan, this, new ParameterDescription[0], settings);
+                ActivateSensor(_rpmSensors[1]);
+
+                _fanControl = new Sensor("External Fan", 0, SensorType.Control, this, new ParameterDescription[0], settings);
+                Control control = new Control(_fanControl, settings, 0, 100);
+                _fanControl.Control = control;
+
+                ActivateSensor(_fanControl);
+                _frequencies[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
+                ActivateSensor(_frequencies[0]);
+                _frequencies[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
+                ActivateSensor(_frequencies[1]);
             }
-            while (_rawData[0] != 0x4);
-
-            Name = $"Aquastream XT {Variant}";
-            FirmwareVersion = BitConverter.ToUInt16(_rawData, 50);
-
-            _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(_temperatures[0]);
-            _temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(_temperatures[1]);
-            _temperatures[2] = new Sensor("Internal Water", 2, SensorType.Temperature, this, new ParameterDescription[0], settings);
-            ActivateSensor(_temperatures[2]);
-
-            _voltages[0] = new Sensor("External Fan", 1, SensorType.Voltage, this, new ParameterDescription[0], settings);
-            ActivateSensor(_voltages[0]);
-            _voltages[1] = new Sensor("Pump", 2, SensorType.Voltage, this, new ParameterDescription[0], settings);
-            ActivateSensor(_voltages[1]);
-
-            _pumpPower = new Sensor("Pump", 0, SensorType.Power, this, new ParameterDescription[0], settings);
-            ActivateSensor(_pumpPower);
-
-            _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
-            ActivateSensor(_pumpFlow);
-
-            _rpmSensors[0] = new Sensor("External Fan", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
-            ActivateSensor(_rpmSensors[0]);
-            _rpmSensors[1] = new Sensor("Pump", 1, SensorType.Fan, this, new ParameterDescription[0], settings);
-            ActivateSensor(_rpmSensors[1]);
-
-            _fanControl = new Sensor("External Fan", 0, SensorType.Control, this, new ParameterDescription[0], settings);
-            Control control = new Control(_fanControl, settings, 0, 100);
-            _fanControl.Control = control;
-
-            ActivateSensor(_fanControl);
-            _frequencies[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
-            ActivateSensor(_frequencies[0]);
-            _frequencies[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
-            ActivateSensor(_frequencies[1]);
         }
 
         public ushort FirmwareVersion { get; private set; }
@@ -106,17 +111,19 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 return "Standard";
             }
         }
-        
+
         public override void Close()
         {
-            _device.CloseDevice();
+            _stream.Close();
+
             base.Close();
         }
 
         //TODO: Check tested and fix unknown variables
         public override void Update()
         {
-            _device.ReadFeatureData(out _rawData, 0x4);
+            _rawData[0] = 0x4;
+            _stream.GetFeature(_rawData);
 
             if (_rawData[0] != 0x4)
                 return;

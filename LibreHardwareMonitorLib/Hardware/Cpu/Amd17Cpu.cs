@@ -266,11 +266,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
                         Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
-                        Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdTempData);
+                        Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
 
-                        uint ccdTemp = ccdTempData & 0xFFF;
-                        if (ccdTemp == 0)
-                            continue;
+                        ccdRawTemp &= 0xFFF;
+                        if (ccdRawTemp == 0)
+                            break;
+
+
+                        float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
+                        if (ccdTemp > 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
+                            break;
 
                         if (_ccdTemperatures[i] == null)
                         {
@@ -281,7 +286,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                                                                 _hw._settings));
                         }
 
-                        _ccdTemperatures[i].Value = ((ccdTemp * 125) - 305000) * 0.001f;
+                        _ccdTemperatures[i].Value = ccdTemp;
                     }
 
                     Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();

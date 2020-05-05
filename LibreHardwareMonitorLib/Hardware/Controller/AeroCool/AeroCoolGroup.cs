@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using System.Text;
-using HidLibrary;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 {
@@ -19,9 +19,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
             _report.AppendLine("AeroCool Hardware");
             _report.AppendLine();
 
-            foreach (HidDevice dev in HidDevices.Enumerate(0x2e97))
+            foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x2E97))
             {
-                int hubno = dev.Attributes.ProductId - 0x1000;
+                int hubno = dev.ProductID - 0x1000;
                 if (dev.DevicePath.Contains("mi_02") && (hubno >= 1) && (hubno <= 8))
                 {
                     var device = new P7H1(dev, settings);

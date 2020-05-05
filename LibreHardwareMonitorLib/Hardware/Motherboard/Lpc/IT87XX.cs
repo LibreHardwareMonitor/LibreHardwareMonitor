@@ -21,12 +21,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly ushort _gpioAddress;
         private readonly int _gpioCount;
         private readonly bool _has16BitFanCounter;
-        private readonly bool _hasNewerAutoPwm;
-        private readonly byte[] _initialFanPwmControl = new byte[3]; // This will also store the 2nd control register value.
-        private readonly byte[] _initialFanPwmControlMode = new byte[3];
-        private readonly byte[] _initialFanMainControlValue = new byte[3]; // Initial Fan Controller Main Control Register value. 
-        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[3];
-        private readonly byte[] _fanMainControlValue = { 0b00000001, 0b00000010, 0b00000100 }; // Values to  be applied to FAN_MAIN_CTRL_REG to gain control of each fan.
+        private readonly bool _hasExtReg;
+        private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; // Initial Fan Controller Main Control Register value. 
+        private readonly byte[] _initialFanPwmControl = new byte[5]; // This will also store the 2nd control register value.
+        private readonly byte[] _initialFanPwmControlExt = new byte[5];
+        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[5];
         private readonly byte _version;
         private readonly float _voltageGain;
 
@@ -52,11 +51,20 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 return;
 
 
+            FAN_PWM_CTRL_REG = chip == Chip.IT8665E
+                ? new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f }
+                : new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7 };
+
+            _hasExtReg = chip == Chip.IT8721F ||
+                         chip == Chip.IT8665E ||
+                         chip == Chip.IT8686E ||
+                         chip == Chip.IT8688E ||
+                         chip == Chip.IT879XE;
+
             switch (chip)
             {
                 // IT8686E has more sensors
                 case Chip.IT8665E:
-                case Chip.IT8686E:
                 {
                     Voltages = new float?[10];
                     Temperatures = new float?[6];
@@ -64,12 +72,20 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Controls = new float?[3];
                     break;
                 }
+                case Chip.IT8686E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[6];
+                    Fans = new float?[6];
+                    Controls = new float?[4];
+                    break;
+                }
                 case Chip.IT8688E:
                 {
                     Voltages = new float?[11];
                     Temperatures = new float?[6];
                     Fans = new float?[6];
-                    Controls = new float?[3];
+                    Controls = new float?[5];
                     break;
                 }
                 case Chip.IT8655E:
@@ -140,11 +156,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             // Older IT8705F and IT8721F revisions do not have 16-bit fan counters.
             _has16BitFanCounter = (chip != Chip.IT8705F || version >= 3) && (chip != Chip.IT8712F || version >= 8);
-
-            if (chip == Chip.IT8620E || chip == Chip.IT879XE)
-            {
-                _hasNewerAutoPwm = true;
-            }
 
             // Disable any fans that aren't set with 16-bit fan counters
             if (_has16BitFanCounter)
@@ -231,29 +242,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (value.HasValue)
             {
                 SaveDefaultFanPwmControl(index);
-                bool valid;
-                WriteByte(FAN_MAIN_CTRL_REG, (byte)(_fanMainControlValue[index] | ReadByte(FAN_MAIN_CTRL_REG, out valid))); // Bitwise opperand to get control of the fan.
-                if (_hasNewerAutoPwm)
+
+                if (index < 3 && !_initialFanOutputModeEnabled[index])
+                    WriteByte(FAN_MAIN_CTRL_REG, (byte)(ReadByte(FAN_MAIN_CTRL_REG, out _) | (1 << index)));
+
+                if (_hasExtReg)
                 {
-                    byte ctrlValue = ReadByte(FAN_PWM_CTRL_REG[index], out valid);
-
-                    if (valid)
-                    {
-                        bool isOnAutoControl = (ctrlValue & (1 << 7)) > 0;
-                        if (isOnAutoControl)
-                        {
-                            // Set to manual speed control
-                            ctrlValue &= byte.MaxValue ^ (1 << 7);
-                            WriteByte(FAN_PWM_CTRL_REG[index], ctrlValue);
-                        }
-                    }
-
-                    // set speed
-                    WriteByte(FAN_PWM_DUTY_REG[index], value.Value);
+                    WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x7F));
+                    WriteByte(FAN_PWM_CTRL_EXT_REG[index], value.Value);
                 }
                 else
                 {
-                    // set output value
                     WriteByte(FAN_PWM_CTRL_REG[index], (byte)(value.Value >> 1));
                 }
             }
@@ -406,38 +405,27 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Controls.Length; i++)
             {
-                if (_hasNewerAutoPwm)
+                byte value = ReadByte(FAN_PWM_CTRL_REG[i], out bool valid);
+                if (!valid)
+                    continue;
+
+
+                if ((value & 0x80) > 0)
                 {
-                    byte value = ReadByte(FAN_PWM_DUTY_REG[i], out bool valid);
-                    if (!valid)
-                        continue;
-
-
-                    byte ctrlValue = ReadByte(FAN_PWM_CTRL_REG[i], out valid);
-                    if (!valid)
-                        continue;
-
-
-                    if ((ctrlValue & 0x80) > 0)
-                        Controls[i] = null; // automatic operation (value can't be read)
-                    else
-                        Controls[i] = (float)Math.Round(value * 100.0f / 0xFF);
+                    // Automatic operation (value can't be read).
+                    Controls[i] = null;
                 }
                 else
                 {
-                    byte value = ReadByte(FAN_PWM_CTRL_REG[i], out bool valid);
-                    if (!valid)
-                        continue;
-
-
-                    if ((value & 0x80) > 0)
+                    // Software operation.
+                    if (_hasExtReg)
                     {
-                        // automatic operation (value can't be read)
-                        Controls[i] = null;
+                        value = ReadByte(FAN_PWM_CTRL_EXT_REG[i], out valid);
+                        if (valid)
+                            Controls[i] = (float)Math.Round(value * 100.0f / 0xFF);
                     }
                     else
                     {
-                        // software operation
                         Controls[i] = (float)Math.Round((value & 0x7F) * 100.0f / 0x7F);
                     }
                 }
@@ -450,11 +438,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         {
             Ring0.WriteIoPort(_addressReg, register);
             byte value = Ring0.ReadIoPort(_dataReg);
-            valid = register == Ring0.ReadIoPort(_addressReg);
+            valid = register == Ring0.ReadIoPort(_addressReg) || Chip == Chip.IT8688E;
             // IT8688E doesn't return the value we wrote to
             // addressReg when we read it back.
-            if (Chip == Chip.IT8688E)
-                valid = true;
 
             return value;
         }
@@ -468,22 +454,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void SaveDefaultFanPwmControl(int index)
         {
-            if (_hasNewerAutoPwm)
+            if (!_restoreDefaultFanPwmControlRequired[index])
             {
-                if (!_restoreDefaultFanPwmControlRequired[index])
-                {
-                    _initialFanPwmControlMode[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
-                    _initialFanPwmControl[index] = ReadByte(FAN_PWM_DUTY_REG[index], out bool _);
-                    _initialFanMainControlValue[index] =  ReadByte(FAN_MAIN_CTRL_REG, out bool _); // Save default control reg value.
-                }
-            }
-            else
-            {
-                if (!_restoreDefaultFanPwmControlRequired[index])
-                {
-                    _initialFanPwmControl[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
-                    _initialFanMainControlValue[index] =  ReadByte(FAN_MAIN_CTRL_REG, out bool _); // Save default control reg value.
-                }
+                _initialFanPwmControl[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
+
+                if (index < 3)
+                    _initialFanOutputModeEnabled[index] = ReadByte(FAN_MAIN_CTRL_REG, out bool _) != 0; // Save default control reg value.
+
+                if (_hasExtReg)
+                    _initialFanPwmControlExt[index] = ReadByte(FAN_PWM_CTRL_EXT_REG[index], out _);
             }
 
             _restoreDefaultFanPwmControlRequired[index] = true;
@@ -491,28 +470,23 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void RestoreDefaultFanPwmControl(int index)
         {
-            if (_hasNewerAutoPwm)
+            if (_restoreDefaultFanPwmControlRequired[index])
             {
-                if (_restoreDefaultFanPwmControlRequired[index])
+                WriteByte(FAN_PWM_CTRL_REG[index], _initialFanPwmControl[index]);
+
+                if (index < 3)
                 {
-                    WriteByte(FAN_PWM_CTRL_REG[index], _initialFanPwmControlMode[index]);
-                    WriteByte(FAN_PWM_DUTY_REG[index], _initialFanPwmControl[index]);
-                    if ((_initialFanMainControlValue[index] & ~_fanMainControlValue[index]) == _initialFanMainControlValue[index]){ // Bitwise opperand to check if control bit needs to be changed to restore defaults.
-                        WriteByte(FAN_MAIN_CTRL_REG, (byte)( ReadByte(FAN_MAIN_CTRL_REG, out bool _) & ~_fanMainControlValue[index]));
-                    }
-                    _restoreDefaultFanPwmControlRequired[index] = false;
+                    byte value = ReadByte(FAN_MAIN_CTRL_REG, out _);
+
+                    bool isEnabled = (value & (1 << index)) != 0;
+                    if (isEnabled != _initialFanOutputModeEnabled[index])
+                        WriteByte(FAN_MAIN_CTRL_REG, (byte)(value ^ (1 << index)));
                 }
-            }
-            else
-            {
-                if (_restoreDefaultFanPwmControlRequired[index])
-                {
-                    WriteByte(FAN_PWM_CTRL_REG[index], _initialFanPwmControl[index]);
-                    if ((_initialFanMainControlValue[index] & ~_fanMainControlValue[index]) == _initialFanMainControlValue[index]){ // Bitwise opperand to check if control bit needs to be changed to restore defaults.
-                        WriteByte(FAN_MAIN_CTRL_REG, (byte)( ReadByte(FAN_MAIN_CTRL_REG, out bool _) & ~_fanMainControlValue[index]));
-                    }
-                    _restoreDefaultFanPwmControlRequired[index] = false;
-                }
+
+                if (_hasExtReg)
+                    WriteByte(FAN_PWM_CTRL_EXT_REG[index], _initialFanPwmControlExt[index]);
+
+                _restoreDefaultFanPwmControlRequired[index] = false;
             }
         }
 
@@ -532,13 +506,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private const byte VENDOR_ID_REGISTER = 0x58;
         private const byte VOLTAGE_BASE_REG = 0x20;
 
-        private readonly byte[] FAN_PWM_CTRL_REG = { 0x15, 0x16, 0x17 };
-        private readonly byte[] FAN_PWM_DUTY_REG = { 0x63, 0x6b, 0x73 };
+        private readonly byte[] FAN_PWM_CTRL_REG;
+        private readonly byte[] FAN_PWM_CTRL_EXT_REG = { 0x63, 0x6b, 0x73, 0x7b, 0xa3 };
         private readonly byte[] FAN_TACHOMETER_EXT_REG = { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4c };
         private readonly byte[] FAN_TACHOMETER_REG = { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
 
-        private readonly byte FAN_MAIN_CTRL_REG = 0x13; // Address of the Fan Controller Main Control Register. No need for the 2nd control register (bit 7 of 0x15 0x16 0x17), PWM value will set it to manual mode when new value is set.
-
+        // Address of the Fan Controller Main Control Register.
+        // No need for the 2nd control register (bit 7 of 0x15 0x16 0x17),
+        // as PWM value will set it to manual mode when new value is set.
+        private readonly byte FAN_MAIN_CTRL_REG = 0x13;
 
 #pragma warning restore IDE1006 // Naming Styles
         // ReSharper restore InconsistentNaming
