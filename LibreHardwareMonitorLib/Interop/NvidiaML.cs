@@ -36,7 +36,7 @@ namespace LibreHardwareMonitor.Interop
                     return true;
                 }
 
-                if (Software.OperatingSystem.IsLinux)
+                if (Software.OperatingSystem.IsUnix)
                 {
                     try
                     {
@@ -151,7 +151,7 @@ namespace LibreHardwareMonitor.Interop
             {
                 if (IsAvailable)
                 {
-                    if (Software.OperatingSystem.IsLinux)
+                    if (Software.OperatingSystem.IsUnix)
                     {
                         nvmlShutdown();
                     }
@@ -171,7 +171,7 @@ namespace LibreHardwareMonitor.Interop
             if (IsAvailable)
             {
                 NvmlDevice nvmlDevice;
-                if (Software.OperatingSystem.IsLinux)
+                if (Software.OperatingSystem.IsUnix)
                 {
                     try
                     {
@@ -199,7 +199,7 @@ namespace LibreHardwareMonitor.Interop
             if (IsAvailable)
             {
                 NvmlDevice nvmlDevice;
-                if (Software.OperatingSystem.IsLinux)
+                if (Software.OperatingSystem.IsUnix)
                 {
                     if (nvmlDeviceGetHandleByPciBusId(pciBusId, out nvmlDevice) == NvmlReturn.Success)
                         return nvmlDevice;
@@ -218,7 +218,7 @@ namespace LibreHardwareMonitor.Interop
             if (IsAvailable)
             {
                 int powerUsage;
-                if (Software.OperatingSystem.IsLinux)
+                if (Software.OperatingSystem.IsUnix)
                 {
                     if (nvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                         return powerUsage;
@@ -237,7 +237,7 @@ namespace LibreHardwareMonitor.Interop
             if (IsAvailable)
             {
                 uint pcieThroughput;
-                if (Software.OperatingSystem.IsLinux)
+                if (Software.OperatingSystem.IsUnix)
                 {
                     if (nvmlDeviceGetPcieThroughput(nvmlDevice, counter, out pcieThroughput) == NvmlReturn.Success)
                         return pcieThroughput;

@@ -413,7 +413,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             float[] result = new float[_coreCount];
             for (int i = 0; i < _coreCount; i++)
             {
-                if (Ring0.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, 1UL << _cpuId[i][0].Thread))
+                if (Ring0.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
                     result[i] = (eax >> 16) & 0xFF;
                 else
                     result[i] = 100;
@@ -461,7 +461,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             for (int i = 0; i < _coreTemperatures.Length; i++)
             {
                 // if reading is valid
-                if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out uint eax, out uint _, 1UL << _cpuId[i][0].Thread) && (eax & 0x80000000) != 0)
+                if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out uint eax, out uint _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = (eax & 0x007F0000) >> 16;
@@ -493,7 +493,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_packageTemperature != null)
             {
                 // if reading is valid
-                if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint _, 1UL << _cpuId[0][0].Thread) && (eax & 0x80000000) != 0)
+                if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = (eax & 0x007F0000) >> 16;
@@ -513,7 +513,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 for (int i = 0; i < _coreClocks.Length; i++)
                 {
                     System.Threading.Thread.Sleep(1);
-                    if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint _, 1UL << _cpuId[i][0].Thread))
+                    if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
                     {
                         newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                         switch (_microArchitecture)

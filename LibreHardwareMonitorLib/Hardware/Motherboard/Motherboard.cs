@@ -49,7 +49,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             _customName = settings.GetValue(new Identifier(Identifier, "name").ToString(), _name);
 
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 _lmSensors = new LMSensors();
                 superIO = _lmSensors.SuperIO;

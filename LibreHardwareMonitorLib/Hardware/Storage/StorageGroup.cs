@@ -16,7 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public StorageGroup(ISettings settings)
         {
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
                 return;
 
             //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive

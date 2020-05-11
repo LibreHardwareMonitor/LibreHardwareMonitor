@@ -120,7 +120,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     Thread.Sleep(1);
 
-                    if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, 1UL << _cpuId[i][0].Thread))
+                    if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
                     {
                         // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
                         // 8-13 hold StartFID, we don't use that here.

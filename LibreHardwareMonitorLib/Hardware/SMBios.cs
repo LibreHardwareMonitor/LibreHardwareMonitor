@@ -581,7 +581,7 @@ namespace LibreHardwareMonitor.Hardware
 
         public SMBios()
         {
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 _raw = null;
 

@@ -209,6 +209,12 @@ namespace LibreHardwareMonitor.Interop
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
         internal static extern IntPtr GetCurrentThread();
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        public static extern ushort GetActiveProcessorGroupCount();
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        public static extern bool SetThreadGroupAffinity(IntPtr thread, ref GROUP_AFFINITY groupAffinity, out GROUP_AFFINITY previousGroupAffinity);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
         internal static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, MEM flAllocationType, PAGE flProtect);
@@ -244,6 +250,18 @@ namespace LibreHardwareMonitor.Interop
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         internal static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        public struct GROUP_AFFINITY
+        {
+            public UIntPtr Mask;
+
+            [MarshalAs(UnmanagedType.U2)]
+            public ushort Group;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3, ArraySubType = UnmanagedType.U2)]
+            public ushort[] Reserved;
+        }
 
         internal enum DFP : uint
         {
