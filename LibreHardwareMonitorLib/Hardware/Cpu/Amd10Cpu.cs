@@ -143,7 +143,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             bool corePerformanceBoostSupport = (cpuId[0][0].ExtData[7, 3] & (1 << 9)) > 0;
 
             // set affinity to the first thread for all frequency estimations
-            ulong mask = ThreadAffinity.Set(1UL << cpuId[0][0].Thread);
+            var previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
 
             // disable core performance boost
             Ring0.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
@@ -164,12 +164,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 Ring0.WriteMsr(HWCR, hwcrEax, hwcrEdx);
 
             // restore the thread affinity.
-            ThreadAffinity.Set(mask);
+            ThreadAffinity.Set(previousAffinity);
 
             // the file reader for lm-sensors support on Linux
             _temperatureStream = null;
 
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 string[] devicePaths = Directory.GetDirectories("/sys/class/hwmon/");
                 foreach (string path in devicePaths)
@@ -177,8 +177,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     string name = null;
                     try
                     {
-                        using (StreamReader reader = new StreamReader(path + "/device/name"))
-                            name = reader.ReadLine();
+                        using StreamReader reader = new StreamReader(path + "/device/name");
+
+                        name = reader.ReadLine();
                     }
                     catch (IOException)
                     { }
@@ -450,7 +451,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     Thread.Sleep(1);
 
-                    if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, 1UL << _cpuId[i][0].Thread))
+                    if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, _cpuId[i][0].Affinity))
                     {
                         double multiplier = GetCoreMultiplier(curEax);
 

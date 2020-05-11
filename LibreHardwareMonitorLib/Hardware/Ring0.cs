@@ -23,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware
         private static string _fileName;
         private static Mutex _isaBusMutex;
 
-        private static readonly StringBuilder Report = new StringBuilder();
+        private static readonly StringBuilder _report = new StringBuilder();
 
         public static bool IsOpen
         {
@@ -138,7 +138,7 @@ namespace LibreHardwareMonitor.Hardware
         public static void Open()
         {
             // no implementation for unix systems
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
                 return;
 
             if (_driver != null)
@@ -146,7 +146,7 @@ namespace LibreHardwareMonitor.Hardware
 
 
             // clear the current report
-            Report.Length = 0;
+            _report.Length = 0;
 
             _driver = new KernelDriver("WinRing0_1_2_0");
             _driver.Open();
@@ -164,7 +164,7 @@ namespace LibreHardwareMonitor.Hardware
                         if (!_driver.IsOpen)
                         {
                             _driver.Delete();
-                            Report.AppendLine("Status: Opening driver failed after install");
+                            _report.AppendLine("Status: Opening driver failed after install");
                         }
                     }
                     else
@@ -184,20 +184,20 @@ namespace LibreHardwareMonitor.Hardware
                             if (!_driver.IsOpen)
                             {
                                 _driver.Delete();
-                                Report.AppendLine("Status: Opening driver failed after reinstall");
+                                _report.AppendLine("Status: Opening driver failed after reinstall");
                             }
                         }
                         else
                         {
-                            Report.AppendLine("Status: Installing driver \"" + _fileName + "\" failed" + (File.Exists(_fileName) ? " and file exists" : string.Empty));
-                            Report.AppendLine("First Exception: " + errorFirstInstall);
-                            Report.AppendLine("Second Exception: " + errorSecondInstall);
+                            _report.AppendLine("Status: Installing driver \"" + _fileName + "\" failed" + (File.Exists(_fileName) ? " and file exists" : string.Empty));
+                            _report.AppendLine("First Exception: " + errorFirstInstall);
+                            _report.AppendLine("Second Exception: " + errorSecondInstall);
                         }
                     }
                 }
                 else
                 {
-                    Report.AppendLine("Status: Extracting driver failed");
+                    _report.AppendLine("Status: Extracting driver failed");
                 }
 
                 try
@@ -280,20 +280,15 @@ namespace LibreHardwareMonitor.Hardware
                 { }
             }
         }
-
-        public static ulong ThreadAffinitySet(ulong mask)
-        {
-            return ThreadAffinity.Set(mask);
-        }
-
+        
         public static string GetReport()
         {
-            if (Report.Length > 0)
+            if (_report.Length > 0)
             {
                 StringBuilder r = new StringBuilder();
                 r.AppendLine("Ring0");
                 r.AppendLine();
-                r.Append(Report);
+                r.Append(_report);
                 r.AppendLine();
                 return r.ToString();
             }
@@ -342,11 +337,11 @@ namespace LibreHardwareMonitor.Hardware
             return result;
         }
 
-        public static bool ReadMsr(uint index, out uint eax, out uint edx, ulong threadAffinityMask)
+        public static bool ReadMsr(uint index, out uint eax, out uint edx, GroupAffinity affinity)
         {
-            ulong mask = ThreadAffinity.Set(threadAffinityMask);
+            GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
             bool result = ReadMsr(index, out eax, out edx);
-            ThreadAffinity.Set(mask);
+            ThreadAffinity.Set(previousAffinity);
             return result;
         }
 

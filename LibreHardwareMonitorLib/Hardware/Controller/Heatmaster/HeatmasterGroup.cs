@@ -23,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         public HeatmasterGroup(ISettings settings)
         {
             // No implementation for Heatmaster on Unix systems
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
                 return;
 
 

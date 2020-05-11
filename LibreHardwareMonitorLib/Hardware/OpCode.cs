@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware
 {
     internal static class OpCode
     {
-        public static CpuidDelegate Cpuid;
+        public static CpuidDelegate CpuId;
         public static RdtscDelegate Rdtsc;
 
         private static IntPtr _codeBuffer;
@@ -218,12 +218,12 @@ namespace LibreHardwareMonitor.Hardware
             {
                 rdTscCode = Rdtsc64;
 
-                cpuidCode = Software.OperatingSystem.IsLinux ? CpuId64Linux : CpuId64Windows;
+                cpuidCode = Software.OperatingSystem.IsUnix ? CpuId64Linux : CpuId64Windows;
             }
 
             _size = (ulong)(rdTscCode.Length + cpuidCode.Length);
 
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
                 Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
@@ -255,15 +255,15 @@ namespace LibreHardwareMonitor.Hardware
             Rdtsc = Marshal.GetDelegateForFunctionPointer(_codeBuffer, typeof(RdtscDelegate)) as RdtscDelegate;
             IntPtr cpuidAddress = (IntPtr)((long)_codeBuffer + rdTscCode.Length);
             Marshal.Copy(cpuidCode, 0, cpuidAddress, cpuidCode.Length);
-            Cpuid = Marshal.GetDelegateForFunctionPointer(cpuidAddress, typeof(CpuidDelegate)) as CpuidDelegate;
+            CpuId = Marshal.GetDelegateForFunctionPointer(cpuidAddress, typeof(CpuidDelegate)) as CpuidDelegate;
         }
 
         public static void Close()
         {
             Rdtsc = null;
-            Cpuid = null;
+            CpuId = null;
 
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
                 Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
@@ -276,17 +276,17 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        public static bool CpuidTx(uint index, uint ecxValue, out uint eax, out uint ebx, out uint ecx, out uint edx, ulong threadAffinityMask)
+        public static bool CpuIdTx(uint index, uint ecxValue, out uint eax, out uint ebx, out uint ecx, out uint edx, GroupAffinity affinity)
         {
-            ulong mask = ThreadAffinity.Set(threadAffinityMask);
-            if (mask == 0)
+            GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
+            if (previousAffinity == GroupAffinity.Undefined)
             {
                 eax = ebx = ecx = edx = 0;
                 return false;
             }
 
-            Cpuid(index, ecxValue, out eax, out ebx, out ecx, out edx);
-            ThreadAffinity.Set(mask);
+            CpuId(index, ecxValue, out eax, out ebx, out ecx, out edx);
+            ThreadAffinity.Set(previousAffinity);
             return true;
         }
     }
