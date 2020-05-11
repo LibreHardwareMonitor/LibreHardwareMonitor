@@ -33,10 +33,9 @@ namespace LibreHardwareMonitor.Interop
         public const int ADL_MAX_NUM_DISPLAYMODES = 1024;
         public const int ADL_MAX_PATH = 256;
 
-        public const int ADL_OK = 0;
-        public const int ADL_ERR = -1;
-
         public const int ATI_VENDOR_ID = 0x1002;
+
+        internal const int ADL_PMLOG_MAX_SENSORS = 256;
 
         internal const string DllName = "atiadlxx.dll";
 
@@ -50,83 +49,92 @@ namespace LibreHardwareMonitor.Interop
         public delegate IntPtr Context(int size);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
+        public static extern ADLStatus ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Main_Control_Destroy();
+        public static extern ADLStatus ADL_Main_Control_Destroy();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
+        public static extern ADLStatus ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Adapter_NumberOfAdapters_Get();
+        public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
+        public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Adapter_ID_Get(int adapterIndex, out int adapterId);
+        public static extern ADLStatus ADL_Adapter_ID_Get(int adapterIndex, out int adapterId);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Display_AdapterID_Get(int adapterIndex, out int adapterId);
+        public static extern ADLStatus ADL_Display_AdapterID_Get(int adapterIndex, out int adapterId);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Adapter_Active_Get(int adapterIndex, out int status);
+        public static extern ADLStatus ADL_Adapter_Active_Get(int adapterIndex, out int status);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive5_CurrentActivity_Get(int iAdapterIndex, ref ADLPMActivity activity);
+        public static extern ADLStatus ADL_Overdrive5_ODParameters_Get(int adapterIndex, out ADLODParameters parameters);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
+        public static extern ADLStatus ADL_Overdrive5_CurrentActivity_Get(int iAdapterIndex, ref ADLPMActivity activity);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, ADLODNTemperatureType iTemperatureType, ref int temp);
+        public static extern ADLStatus ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
+        public static extern ADLStatus ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, ADLODNTemperatureType iTemperatureType, ref int temp);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
+        public static extern ADLStatus ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive5_FanSpeedToDefault_Set(int adapterIndex, int thermalControllerIndex);
+        public static extern ADLStatus ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
+        public static extern ADLStatus ADL_Overdrive5_FanSpeedToDefault_Set(int adapterIndex, int thermalControllerIndex);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL_Overdrive_Caps(int adapterIndex, ref int supported, ref int enabled, ref int version);
+        public static extern ADLStatus ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL2_Overdrive6_CurrentPower_Get(IntPtr context, int adapterIndex, ADLODNCurrentPowerType powerType, ref int currentValue);
+        public static extern ADLStatus ADL2_OverdriveN_PerformanceStatus_Get(IntPtr context, int adapterIndex, out ADLODNPerformanceStatus performanceStatus);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL2_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int connectedAdapters, ref IntPtr context);
+        public static extern ADLStatus ADL_Overdrive_Caps(int adapterIndex, ref int supported, ref int enabled, ref int version);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL2_Main_Control_Destroy(IntPtr context);
+        public static extern ADLStatus ADL2_Overdrive6_CurrentPower_Get(IntPtr context, int adapterIndex, ADLODNCurrentPowerType powerType, ref int currentValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ADL2_New_QueryPMLogData_Get(IntPtr context, int adapterIndex, ref ADLPMLogDataOutput aDLPMLogDataOutput);
+        public static extern ADLStatus ADL2_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int connectedAdapters, ref IntPtr context);
 
-        public static int ADL_Main_Control_Create(int enumConnectedAdapters)
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ADLStatus ADL2_Main_Control_Destroy(IntPtr context);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ADLStatus ADL2_New_QueryPMLogData_Get(IntPtr context, int adapterIndex, ref ADLPMLogDataOutput aDLPMLogDataOutput);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ADLStatus ADL_Graphics_Versions_Get(out ADLVersionsInfo versionInfo);
+
+        public static ADLStatus ADL_Main_Control_Create(int enumConnectedAdapters)
         {
             try
             {
-                return Kernel32.LoadLibrary(DllName) != IntPtr.Zero ? ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters) : ADL_ERR;
+                return Kernel32.LoadLibrary(DllName) != IntPtr.Zero ? ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters) : ADLStatus.ADL_ERR;
             }
             catch
             {
-                return ADL_ERR;
+                return ADLStatus.ADL_ERR;
             }
         }
 
-        public static int ADL_Adapter_AdapterInfo_Get(ADLAdapterInfo[] info)
+        public static ADLStatus ADL_Adapter_AdapterInfo_Get(ADLAdapterInfo[] info)
         {
             int elementSize = Marshal.SizeOf(typeof(ADLAdapterInfo));
             int size = info.Length * elementSize;
             IntPtr ptr = Marshal.AllocHGlobal(size);
-            int result = ADL_Adapter_AdapterInfo_Get(ptr, size);
+            var result = ADL_Adapter_AdapterInfo_Get(ptr, size);
             for (int i = 0; i < info.Length; i++)
                 info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + i * elementSize), typeof(ADLAdapterInfo));
 
@@ -159,6 +167,106 @@ namespace LibreHardwareMonitor.Interop
         {
             if (IntPtr.Zero != buffer)
                 Marshal.FreeHGlobal(buffer);
+        }
+
+        internal enum ADLStatus
+        {
+            /// <summary>
+            /// All OK, but need to wait.
+            /// </summary>
+            ADL_OK_WAIT = 4,
+
+            /// <summary>
+            /// All OK, but need restart.
+            /// </summary>
+            ADL_OK_RESTART = 3,
+
+            /// <summary>
+            /// All OK but need mode change.
+            /// </summary>
+            ADL_OK_MODE_CHANGE = 2,
+
+            /// <summary>
+            /// All OK, but with warning.
+            /// </summary>
+            ADL_OK_WARNING = 1,
+
+            /// <summary>
+            /// ADL function completed successfully.
+            /// </summary>
+            ADL_OK = 0,
+
+            /// <summary>
+            /// Generic Error. Most likely one or more of the Escape calls to the driver
+            /// failed!
+            /// </summary>
+            ADL_ERR = -1,
+
+            /// <summary>
+            /// ADL not initialized.
+            /// </summary>
+            ADL_ERR_NOT_INIT = -2,
+
+            /// <summary>
+            /// One of the parameter passed is invalid.
+            /// </summary>
+            ADL_ERR_INVALID_PARAM = -3,
+
+            /// <summary>
+            /// One of the parameter size is invalid.
+            /// </summary>
+            ADL_ERR_INVALID_PARAM_SIZE = -4,
+
+            /// <summary>
+            /// Invalid ADL index passed.
+            /// </summary>
+            ADL_ERR_INVALID_ADL_IDX = -5,
+
+            /// <summary>
+            /// Invalid controller index passed.
+            /// </summary>
+            ADL_ERR_INVALID_CONTROLLER_IDX = -6,
+
+            /// <summary>
+            /// Invalid display index passed.
+            /// </summary>
+            ADL_ERR_INVALID_DIPLAY_IDX = -7,
+
+            /// <summary>
+            /// Function not supported by the driver.
+            /// </summary>
+            ADL_ERR_NOT_SUPPORTED = -8,
+
+            /// <summary>
+            /// Null Pointer error.
+            /// </summary>
+            ADL_ERR_NULL_POINTER = -9,
+
+            /// <summary>
+            /// Call can't be made due to disabled adapter.
+            /// </summary>
+            ADL_ERR_DISABLED_ADAPTER = -10,
+
+            /// <summary>
+            /// Invalid Callback.
+            /// </summary>
+            ADL_ERR_INVALID_CALLBACK = -11,
+
+            /// <summary>
+            /// Display Resource conflict.
+            /// </summary>
+            ADL_ERR_RESOURCE_CONFLICT = -12,
+
+            /// <summary>
+            /// Failed to update some of the values. Can be returned by set request that
+            /// include multiple values if not all values were successfully committed.
+            /// </summary>
+            ADL_ERR_SET_INCOMPLETE = -20,
+
+            /// <summary>
+            /// There's no Linux XDisplay in Linux Console environment.
+            /// </summary>
+            ADL_ERR_NO_XDISPLAY = -21
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -197,6 +305,27 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        internal struct ADLODParameterRange
+        {
+            public int Min;
+            public int Max;
+            public int Step;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ADLODParameters
+        {
+            public int Size;
+            public int NumberOfPerformanceLevels;
+            public int ActivityReportingSupported;
+            public int DiscretePerformanceLevels;
+            public int Reserved;
+            public ADLODParameterRange EngineClock;
+            public ADLODParameterRange MemoryClock;
+            public ADLODParameterRange Vddc;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         internal struct ADLPMActivity
         {
             public int Size;
@@ -226,7 +355,7 @@ namespace LibreHardwareMonitor.Interop
             public int FanSpeed;
             public int Flags;
         }
-
+        
         [StructLayout(LayoutKind.Sequential)]
         internal struct ADLFanSpeedInfo
         {
@@ -246,6 +375,42 @@ namespace LibreHardwareMonitor.Interop
             ODN_GPU_CHIP_POWER
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ADLVersionsInfo
+        {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string DriverVer;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string CatalystVersion;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string CatalystWebLink;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ADLODNPerformanceStatus
+        {
+            public int CoreClock;
+            public int MemoryClock;
+            public int DCEFClock;
+            public int GFXClock;
+            public int UVDClock;
+            public int VCEClock;
+            public int GPUActivityPercent;
+            public int CurrentCorePerformanceLevel;
+            public int CurrentMemoryPerformanceLevel;
+            public int CurrentDCEFPerformanceLevel;
+            public int CurrentGFXPerformanceLevel;
+            public int UVDPerformanceLevel;
+            public int VCEPerformanceLevel;
+            public int CurrentBusSpeed;
+            public int CurrentBusLanes;
+            public int MaximumBusLanes;
+            public int VDDC;
+            public int VDDCI;
+        }
+
         internal enum ADLODNTemperatureType
         {
             // This typed is named like this in the documentation but for some reason AMD failed to include it...
@@ -259,8 +424,6 @@ namespace LibreHardwareMonitor.Interop
             HOTSPOT = 7
         }
 
-        internal const int ADL_PMLOG_MAX_SENSORS = 256;
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct ADLSingleSensorData
         {
@@ -272,6 +435,7 @@ namespace LibreHardwareMonitor.Interop
         internal struct ADLPMLogDataOutput
         {
             public int size;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS)]
             public ADLSingleSensorData[] sensors;
         }
@@ -305,7 +469,20 @@ namespace LibreHardwareMonitor.Interop
             PMLOG_TEMPERATURE_VRSOC = 24,
             PMLOG_TEMPERATURE_VRMVDD0 = 25,
             PMLOG_TEMPERATURE_VRMVDD1 = 26,
-            PMLOG_TEMPERATURE_HOTSPOT = 27
+            PMLOG_TEMPERATURE_HOTSPOT = 27,
+            PMLOG_TEMPERATURE_GFX = 28,
+            PMLOG_TEMPERATURE_SOC = 29,
+            PMLOG_GFX_POWER = 30,
+            PMLOG_GFX_CURRENT = 31,
+            PMLOG_TEMPERATURE_CPU = 32,
+            PMLOG_CPU_POWER = 33,
+            PMLOG_CLK_CPUCLK = 34,
+            PMLOG_THROTTLER_STATUS = 35,
+            PMLOG_CLK_VCN1CLK1 = 36,
+            PMLOG_CLK_VCN1CLK2 = 37,
+            PMLOG_SMART_POWERSHIFT_CPU = 38,
+            PMLOG_SMART_POWERSHIFT_DGPU = 39,
+            PMLOG_MAX_SENSORS_REAL
         }
     }
 }

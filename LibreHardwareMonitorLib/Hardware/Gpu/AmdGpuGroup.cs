@@ -16,7 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
     {
         private readonly List<AmdGpu> _hardware = new List<AmdGpu>();
         private readonly StringBuilder _report = new StringBuilder();
-        private readonly int _status;
+        private readonly AtiAdlxx.ADLStatus _status;
 
         public AmdGpuGroup(ISettings settings)
         {
@@ -27,10 +27,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _report.AppendLine("AMD Display Library");
                 _report.AppendLine();
                 _report.Append("Status: ");
-                _report.AppendLine(_status == AtiAdlxx.ADL_OK ? "OK" : _status.ToString(CultureInfo.InvariantCulture));
+                _report.AppendLine(_status == AtiAdlxx.ADLStatus.ADL_OK ? "OK" : _status.ToString());
                 _report.AppendLine();
 
-                if (_status == AtiAdlxx.ADL_OK)
+                if (_status == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     int numberOfAdapters = 0;
                     AtiAdlxx.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
@@ -42,7 +42,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     if (numberOfAdapters > 0)
                     {
                         AtiAdlxx.ADLAdapterInfo[] adapterInfo = new AtiAdlxx.ADLAdapterInfo[numberOfAdapters];
-                        if (AtiAdlxx.ADL_Adapter_AdapterInfo_Get(adapterInfo) == AtiAdlxx.ADL_OK)
+                        if (AtiAdlxx.ADL_Adapter_AdapterInfo_Get(adapterInfo) == AtiAdlxx.ADLStatus.ADL_OK)
                             for (int i = 0; i < numberOfAdapters; i++)
                             {
                                 AtiAdlxx.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex, out int isActive);
@@ -117,7 +117,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 foreach (AmdGpu gpu in _hardware)
                     gpu.Close();
 
-                if (_status == AtiAdlxx.ADL_OK)
+                if (_status == AtiAdlxx.ADLStatus.ADL_OK)
                     AtiAdlxx.ADL_Main_Control_Destroy();
             }
             catch (Exception)
