@@ -62,6 +62,9 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.Network:
                     image = Utilities.EmbeddedResources.GetImage("nic.png");
                     break;
+                case HardwareType.LiquidCooler:
+                    image = Utilities.EmbeddedResources.GetImage("flow.png");
+                    break;
                 default:
                     image = new Bitmap(1, 1);
                     break;
