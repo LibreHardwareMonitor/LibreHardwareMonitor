@@ -21,7 +21,8 @@ namespace LibreHardwareMonitor.Hardware
         Heatmaster,
         Storage,
         Network,
-        AeroCool
+        AeroCool,
+        LiquidCooler
     }
 
     public interface IHardware : IElement
