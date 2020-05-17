@@ -597,8 +597,12 @@ namespace LibreHardwareMonitor.UI
 
                     if (showNotifyIcon && _icon != null)
                     {
-                        _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data);
-                        if (!_created)
+                        bool modifySuccessful = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data);
+                        if (modifySuccessful)
+                        {
+                            _created = true;
+                        }
+                        else
                         {
                             int i = 0;
                             do
