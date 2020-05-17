@@ -597,23 +597,29 @@ namespace LibreHardwareMonitor.UI
 
                     if (showNotifyIcon && _icon != null)
                     {
-                        bool modifySuccessful = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data);
-                        if (modifySuccessful)
+                        if (!_created)
                         {
-                            _created = true;
+                            if (NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data))
+                            {
+                                _created = true;
+                            }
+                            else
+                            {
+                                int i = 0;
+                                do
+                                {
+                                    _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Add, data);
+                                    if (!_created)
+                                    {
+                                        System.Threading.Thread.Sleep(200);
+                                        i++;
+                                    }
+                                } while (!_created && i < 40);
+                            }
                         }
                         else
                         {
-                            int i = 0;
-                            do
-                            {
-                                _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Add, data);
-                                if (!_created)
-                                {
-                                    System.Threading.Thread.Sleep(200);
-                                    i++;
-                                }
-                            } while (!_created && i < 40);
+                            NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data);
                         }
                     }
                     else
