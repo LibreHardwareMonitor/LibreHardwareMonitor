@@ -597,6 +597,7 @@ namespace LibreHardwareMonitor.UI
 
                     if (showNotifyIcon && _icon != null)
                     {
+                        _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data);
                         if (!_created)
                         {
                             int i = 0;
@@ -609,10 +610,6 @@ namespace LibreHardwareMonitor.UI
                                     i++;
                                 }
                             } while (!_created && i < 40);
-                        }
-                        else
-                        {
-                            NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data);
                         }
                     }
                     else
