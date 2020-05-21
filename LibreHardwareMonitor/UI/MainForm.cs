@@ -55,6 +55,7 @@ namespace LibreHardwareMonitor.UI
         private readonly WmiProvider _wmiProvider;
 
         private readonly UserOption _runWebServer;
+        private readonly UserOption _compressJSONData;
         private readonly UserOption _logSensors;
         private readonly UserRadioGroup _loggingInterval;
         private readonly UserRadioGroup _sensorValuesTimeWindow;
@@ -267,7 +268,7 @@ namespace LibreHardwareMonitor.UI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085));
+            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085), _settings.GetValue("authenticationEnabled", false), _settings.GetValue("httpUsername", "librehm"), _settings.GetValue("httpPassword", "root"));
             if (Server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
@@ -281,6 +282,19 @@ namespace LibreHardwareMonitor.UI
                     Server.StartHttpListener();
                 else
                     Server.StopHttpListener();
+            };
+
+            _compressJSONData = new UserOption("compressJSONData", true, dataCompressionWebServerMenuItem, _settings);
+            _compressJSONData.Changed += delegate
+            {
+                if (_compressJSONData.Value)
+                {
+                    Server.EnableDataCompression = true;
+                }
+                else
+                {
+                    Server.EnableDataCompression = false;
+                }
             };
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
@@ -648,6 +662,9 @@ namespace LibreHardwareMonitor.UI
                 _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
 
             _settings.SetValue("listenerPort", Server.ListenerPort);
+            _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
+            _settings.SetValue("httpUsername", Server.Username);
+            _settings.SetValue("httpPassword", Server.Password);
 
             string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
 
@@ -1028,5 +1045,12 @@ namespace LibreHardwareMonitor.UI
         }
 
         public HttpServer Server { get; }
+
+        private void authWebServerMenuItem_Click(object sender, EventArgs e)
+        {
+            new AuthForm(this).ShowDialog();
+        }
+
+        public bool AuthWebServerMenuItemChecked { get { return authWebServerMenuItem.Checked; } set { authWebServerMenuItem.Checked = value; } }
     }
 }

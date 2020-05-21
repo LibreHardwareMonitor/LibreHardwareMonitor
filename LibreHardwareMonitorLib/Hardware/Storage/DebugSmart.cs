@@ -4,6 +4,11 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Interop;
+
+using System;
+using System.Collections.Generic;
+
 namespace LibreHardwareMonitor.Hardware.Storage
 {
 #if DEBUG

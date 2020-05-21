@@ -19,6 +19,10 @@ using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
+using System.Security.Cryptography;
+using System.Linq;
+using System.IO.Compression;
+using System.Windows.Forms;
 
 namespace LibreHardwareMonitor.Utilities
 {
@@ -28,10 +32,13 @@ namespace LibreHardwareMonitor.Utilities
         private Thread _listenerThread;
         private readonly Node _root;
 
-        public HttpServer(Node node, int port)
+        public HttpServer(Node node, int port, bool authEnabled = false, string username = "librehm", string password = "root")
         {
             _root = node;
             ListenerPort = port;
+            AuthEnabled = authEnabled;
+            Username = username;
+            Password = password;
 
             try
             {
@@ -64,6 +71,7 @@ namespace LibreHardwareMonitor.Utilities
                 string prefix = "http://+:" + ListenerPort + "/";
                 _listener.Prefixes.Clear();
                 _listener.Prefixes.Add(prefix);
+                _listener.AuthenticationSchemes = AuthEnabled ? AuthenticationSchemes.Basic : AuthenticationSchemes.Anonymous;
                 _listener.Start();
 
                 if (_listenerThread == null)
@@ -266,49 +274,92 @@ namespace LibreHardwareMonitor.Utilities
 
             HttpListenerRequest request = context.Request;
 
-            if (request.HttpMethod == "POST")
+            bool authenticated;
+            if(AuthEnabled)
             {
-                string postResult = HandlePostRequest(request);
-
-                Stream output = context.Response.OutputStream;
-                byte[] utfBytes = Encoding.UTF8.GetBytes(postResult);
-
-                context.Response.AddHeader("Cache-Control", "no-cache");
-                context.Response.ContentLength64 = utfBytes.Length;
-                context.Response.ContentType = "application/json";
-
-                output.Write(utfBytes, 0, utfBytes.Length);
-                output.Close();
-            }
-            else if (request.HttpMethod == "GET")
-            {
-                string requestedFile = request.RawUrl.Substring(1);
-
-                if (requestedFile == "data.json")
-                {
-                    SendJson(context.Response);
-                    return;
-                }
-
-                if (requestedFile.Contains("images_icon"))
-                {
-                    ServeResourceImage(context.Response,
-                      requestedFile.Replace("images_icon/", string.Empty));
-                    return;
-                }
-
-                // default file to be served
-                if (string.IsNullOrEmpty(requestedFile))
-                    requestedFile = "index.html";
-
-                string[] splits = requestedFile.Split('.');
-                string ext = splits[splits.Length - 1];
-                ServeResourceFile(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+                HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
+                authenticated = ((identity.Name == Username) & (ComputeSHA256(identity.Password) == Password));
             }
             else
             {
-                context.Response.StatusCode = 404;
+                authenticated = true;
+            }
+
+            if (authenticated)
+            {
+                if (request.HttpMethod == "POST")
+                {
+                    string postResult = HandlePostRequest(request);
+
+                    Stream output = context.Response.OutputStream;
+                    byte[] utfBytes = Encoding.UTF8.GetBytes(postResult);
+
+                    context.Response.AddHeader("Cache-Control", "no-cache");
+                    context.Response.ContentLength64 = utfBytes.Length;
+                    context.Response.ContentType = "application/json";
+
+                    output.Write(utfBytes, 0, utfBytes.Length);
+                    output.Close();
+                }
+                else if (request.HttpMethod == "GET")
+                {
+                    string requestedFile = request.RawUrl.Substring(1);
+
+                    if (requestedFile == "data.json")
+                    {
+                        SendJson(context.Response, request);
+                        return;
+                    }
+
+                    if (requestedFile.Contains("images_icon"))
+                    {
+                        ServeResourceImage(context.Response,
+                          requestedFile.Replace("images_icon/", string.Empty));
+                        return;
+                    }
+
+                    // default file to be served
+                    if (string.IsNullOrEmpty(requestedFile))
+                        requestedFile = "index.html";
+
+                    string[] splits = requestedFile.Split('.');
+                    string ext = splits[splits.Length - 1];
+                    ServeResourceFile(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+                }
+                else
+                {
+                    context.Response.StatusCode = 404;
+                }
+            }
+            else
+            {
+                context.Response.StatusCode = 401;
+            }
+
+            if (context.Response.StatusCode == 401)
+            {
+                string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
+  <BODY BGCOLOR=""#cc9999""><H4>401 Unauthorized</H4>
+  Authorization required. Please note that the default username is ""librehm"" and password ""root"".
+  </ BODY ></ HTML > ";
+                byte[] buffer = Encoding.UTF8.GetBytes(responseString);
+                context.Response.ContentLength64 = buffer.Length;
+                context.Response.StatusCode = 401;
+                context.Response.AddHeader("WWW-Authenticate",
+                    "Basic Realm=\"Libre Hardware Monitor\""); 
+                System.IO.Stream output = context.Response.OutputStream;
+                output.Write(buffer, 0, buffer.Length);
+                output.Close();
+
+            }
+
+            try
+            {
                 context.Response.Close();
+            }
+            catch
+            {
+                // client closed connection before the content was sent
             }
         }
 
@@ -397,7 +448,9 @@ namespace LibreHardwareMonitor.Utilities
             response.Close();
         }
 
-        private void SendJson(HttpListenerResponse response)
+        public bool EnableDataCompression = true;
+
+        private void SendJson(HttpListenerResponse response, HttpListenerRequest request = null)
         {
             JObject json = new JObject();
 
@@ -419,13 +472,35 @@ namespace LibreHardwareMonitor.Utilities
 #endif
             byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
-            response.AddHeader("Cache-Control", "no-cache");
-            response.AddHeader("Access-Control-Allow-Origin", "*");
-            response.ContentLength64 = buffer.Length;
-            response.ContentType = "application/json";
-
+            bool acceptGzip;
             try
             {
+                acceptGzip = ((request != null) && (request.Headers["Accept-Encoding"].ToLower().Contains("gzip")));
+            }
+            catch
+            {
+                acceptGzip = false;
+            }
+
+
+            if (EnableDataCompression && acceptGzip)
+                response.AddHeader("Content-Encoding", "gzip");
+
+            response.AddHeader("Cache-Control", "no-cache");
+            response.AddHeader("Access-Control-Allow-Origin", "*");
+            response.ContentType = "application/json";
+            try
+            {
+                if (EnableDataCompression && acceptGzip)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
+                            zip.Write(buffer, 0, buffer.Length);
+                        buffer = ms.ToArray();
+                    }
+                }
+                response.ContentLength64 = buffer.Length;
                 Stream output = response.OutputStream;
                 output.Write(buffer, 0, buffer.Length);
                 output.Close();
@@ -570,7 +645,21 @@ namespace LibreHardwareMonitor.Utilities
 
         }
 
+        private string ComputeSHA256(string text)
+        {
+            using (SHA256 hash = SHA256Managed.Create())
+            {
+                return string.Concat(hash
+                    .ComputeHash(Encoding.UTF8.GetBytes(text))
+                    .Select(item => item.ToString("x2")));
+            }
+        }
+
         public int ListenerPort { get; set; }
+        public bool AuthEnabled { get; set; }
+        public string Username { get; set; }
+        public string Password { get { return PasswordSHA256; } set { PasswordSHA256 = ComputeSHA256(value); } }
+        private string PasswordSHA256 { get; set; }
 
         ~HttpServer()
         {
