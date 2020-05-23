@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AuthForm));
             this.enableHTTPAuthCheckBox = new System.Windows.Forms.CheckBox();
             this.httpAuthUsernameTextBox = new System.Windows.Forms.TextBox();
             this.httpAuthPasswordTextBox = new System.Windows.Forms.TextBox();
@@ -50,7 +51,7 @@
             this.enableHTTPAuthCheckBox.TabIndex = 0;
             this.enableHTTPAuthCheckBox.Text = "Enable HTTP Basic Authentication";
             this.enableHTTPAuthCheckBox.UseVisualStyleBackColor = true;
-            this.enableHTTPAuthCheckBox.CheckedChanged += new System.EventHandler(this.enableHTTPAuthCheckBox_CheckedChanged);
+            this.enableHTTPAuthCheckBox.CheckedChanged += new System.EventHandler(this.EnableHTTPAuthCheckBox_CheckedChanged);
             // 
             // httpAuthUsernameTextBox
             // 
@@ -110,7 +111,7 @@
             this.httpAuthCancelButton.TabIndex = 3;
             this.httpAuthCancelButton.Text = "Cancel";
             this.httpAuthCancelButton.UseVisualStyleBackColor = true;
-            this.httpAuthCancelButton.Click += new System.EventHandler(this.httpAuthCancelButton_Click);
+            this.httpAuthCancelButton.Click += new System.EventHandler(this.HttpAuthCancelButton_Click);
             // 
             // httpAuthOkButton
             // 
@@ -120,7 +121,7 @@
             this.httpAuthOkButton.TabIndex = 4;
             this.httpAuthOkButton.Text = "OK";
             this.httpAuthOkButton.UseVisualStyleBackColor = true;
-            this.httpAuthOkButton.Click += new System.EventHandler(this.httpAuthOkButton_Click);
+            this.httpAuthOkButton.Click += new System.EventHandler(this.HttpAuthOkButton_Click);
             // 
             // label1
             // 
@@ -153,6 +154,8 @@
             this.Controls.Add(this.httpAuthCancelButton);
             this.Controls.Add(this.credentialsGroupBox);
             this.Controls.Add(this.enableHTTPAuthCheckBox);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "AuthForm";

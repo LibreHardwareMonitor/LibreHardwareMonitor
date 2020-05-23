@@ -4,11 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Interop;
-
-using System;
-using System.Collections.Generic;
-
 namespace LibreHardwareMonitor.Hardware.Storage
 {
 #if DEBUG
@@ -328,34 +323,34 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public void Close()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
+            System.GC.SuppressFinalize(this);
         }
 
         public bool EnableSmart()
         {
             if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
+                throw new System.ObjectDisposedException(nameof(DebugSmart));
             return true;
         }
 
-        public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
+        public Interop.Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
         {
             if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
+                throw new System.ObjectDisposedException(nameof(DebugSmart));
             return _drives[_driveNumber].DriveAttributeValues;
         }
 
-        public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
+        public Interop.Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
         {
             if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
+                throw new System.ObjectDisposedException(nameof(DebugSmart));
             return _drives[_driveNumber].DriveThresholdValues;
         }
 
         public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
         {
             if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
+                throw new System.ObjectDisposedException(nameof(DebugSmart));
             name = _drives[_driveNumber].Name;
             firmwareRevision = _drives[_driveNumber].FirmwareVersion;
             return true;
@@ -379,32 +374,32 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 Name = name;
                 FirmwareVersion = firmware;
 
-                string[] lines = value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                DriveAttributeValues = new Kernel32.SMART_ATTRIBUTE[lines.Length];
-                var thresholds = new List<Kernel32.SMART_THRESHOLD>();
+                string[] lines = value.Split(new[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+                DriveAttributeValues = new Interop.Kernel32.SMART_ATTRIBUTE[lines.Length];
+                var thresholds = new System.Collections.Generic.List<Interop.Kernel32.SMART_THRESHOLD>();
 
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    string[] array = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] array = lines[i].Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
 
                     if (array.Length != 4 && array.Length != 5)
-                        throw new Exception();
+                        throw new System.Exception();
 
-                    var v = new Kernel32.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
+                    var v = new Interop.Kernel32.SMART_ATTRIBUTE { Id = System.Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
 
                     for (int j = 0; j < 6; j++)
                     {
-                        v.RawValue[j] = Convert.ToByte(array[1].Substring(2 * j, 2), 16);
+                        v.RawValue[j] = System.Convert.ToByte(array[1].Substring(2 * j, 2), 16);
                     }
 
-                    v.WorstValue = Convert.ToByte(array[2], 10);
-                    v.CurrentValue = Convert.ToByte(array[3], 10);
+                    v.WorstValue = System.Convert.ToByte(array[2], 10);
+                    v.CurrentValue = System.Convert.ToByte(array[3], 10);
 
                     DriveAttributeValues[i] = v;
 
                     if (array.Length == 5)
                     {
-                        var t = new Kernel32.SMART_THRESHOLD { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
+                        var t = new Interop.Kernel32.SMART_THRESHOLD { Id = v.Id, Threshold = System.Convert.ToByte(array[4], 10) };
                         thresholds.Add(t);
                     }
                 }
@@ -412,9 +407,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 DriveThresholdValues = thresholds.ToArray();
             }
 
-            public Kernel32.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
+            public Interop.Kernel32.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
 
-            public Kernel32.SMART_THRESHOLD[] DriveThresholdValues { get; }
+            public Interop.Kernel32.SMART_THRESHOLD[] DriveThresholdValues { get; }
 
             public string FirmwareVersion { get; }
 

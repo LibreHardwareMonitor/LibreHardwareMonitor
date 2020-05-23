@@ -22,7 +22,6 @@ using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using System.Linq;
 using System.IO.Compression;
-using System.Windows.Forms;
 
 namespace LibreHardwareMonitor.Utilities
 {
@@ -32,7 +31,7 @@ namespace LibreHardwareMonitor.Utilities
         private Thread _listenerThread;
         private readonly Node _root;
 
-        public HttpServer(Node node, int port, bool authEnabled = false, string username = "librehm", string password = "root")
+        public HttpServer(Node node, int port, bool authEnabled = false, string username = "", string password = "")
         {
             _root = node;
             ListenerPort = port;
@@ -71,6 +70,7 @@ namespace LibreHardwareMonitor.Utilities
                 string prefix = "http://+:" + ListenerPort + "/";
                 _listener.Prefixes.Clear();
                 _listener.Prefixes.Add(prefix);
+                _listener.Realm = "Libre Hardware Monitor";
                 _listener.AuthenticationSchemes = AuthEnabled ? AuthenticationSchemes.Basic : AuthenticationSchemes.Anonymous;
                 _listener.Start();
 
@@ -251,7 +251,7 @@ namespace LibreHardwareMonitor.Utilities
 #if DEBUG
             return result.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
-      return result.ToString(Newtonsoft.Json.Formatting.None);
+            return result.ToString(Newtonsoft.Json.Formatting.None);
 #endif
         }
 
@@ -274,11 +274,18 @@ namespace LibreHardwareMonitor.Utilities
 
             HttpListenerRequest request = context.Request;
 
-            bool authenticated;
-            if(AuthEnabled)
+            bool authenticated = false;
+            if (AuthEnabled)
             {
-                HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
-                authenticated = ((identity.Name == Username) & (ComputeSHA256(identity.Password) == Password));
+                try
+                {
+                    HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
+                    authenticated = (identity.Name == Username) & (ComputeSHA256(identity.Password) == Password);
+                }
+                catch
+                {
+                    authenticated = false;
+                }
             }
             else
             {
@@ -339,15 +346,12 @@ namespace LibreHardwareMonitor.Utilities
             if (context.Response.StatusCode == 401)
             {
                 string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
-  <BODY BGCOLOR=""#cc9999""><H4>401 Unauthorized</H4>
-  Authorization required. Please note that the default username is ""librehm"" and password ""root"".
-  </ BODY ></ HTML > ";
+  <BODY><H4>401 Unauthorized</H4>
+  Authorization required.</BODY></HTML> ";
                 byte[] buffer = Encoding.UTF8.GetBytes(responseString);
                 context.Response.ContentLength64 = buffer.Length;
                 context.Response.StatusCode = 401;
-                context.Response.AddHeader("WWW-Authenticate",
-                    "Basic Realm=\"Libre Hardware Monitor\""); 
-                System.IO.Stream output = context.Response.OutputStream;
+                Stream output = context.Response.OutputStream;
                 output.Write(buffer, 0, buffer.Length);
                 output.Close();
 
@@ -448,8 +452,6 @@ namespace LibreHardwareMonitor.Utilities
             response.Close();
         }
 
-        public bool EnableDataCompression = true;
-
         private void SendJson(HttpListenerResponse response, HttpListenerRequest request = null)
         {
             JObject json = new JObject();
@@ -475,7 +477,7 @@ namespace LibreHardwareMonitor.Utilities
             bool acceptGzip;
             try
             {
-                acceptGzip = ((request != null) && (request.Headers["Accept-Encoding"].ToLower().Contains("gzip")));
+                acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].ToLower().IndexOf("gzip", StringComparison.OrdinalIgnoreCase) >= 0);
             }
             catch
             {
@@ -483,7 +485,7 @@ namespace LibreHardwareMonitor.Utilities
             }
 
 
-            if (EnableDataCompression && acceptGzip)
+            if (acceptGzip)
                 response.AddHeader("Content-Encoding", "gzip");
 
             response.AddHeader("Cache-Control", "no-cache");
@@ -491,7 +493,7 @@ namespace LibreHardwareMonitor.Utilities
             response.ContentType = "application/json";
             try
             {
-                if (EnableDataCompression && acceptGzip)
+                if (acceptGzip)
                 {
                     using (var ms = new MemoryStream())
                     {

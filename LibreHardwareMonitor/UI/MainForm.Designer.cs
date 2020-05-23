@@ -118,7 +118,6 @@ namespace LibreHardwareMonitor.UI
             this.runWebServerMenuItem = new System.Windows.Forms.MenuItem();
             this.serverPortMenuItem = new System.Windows.Forms.MenuItem();
             this.authWebServerMenuItem = new System.Windows.Forms.MenuItem();
-            this.dataCompressionWebServerMenuItem = new System.Windows.Forms.MenuItem();
             this.helpMenuItem = new System.Windows.Forms.MenuItem();
             this.aboutMenuItem = new System.Windows.Forms.MenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenu();
@@ -668,8 +667,7 @@ namespace LibreHardwareMonitor.UI
             this.webMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.runWebServerMenuItem,
             this.serverPortMenuItem,
-            this.authWebServerMenuItem,
-            this.dataCompressionWebServerMenuItem});
+            this.authWebServerMenuItem});
             this.webMenuItem.Text = "Remote Web Server";
             // 
             // runWebServerMenuItem
@@ -687,12 +685,7 @@ namespace LibreHardwareMonitor.UI
             // 
             this.authWebServerMenuItem.Index = 2;
             this.authWebServerMenuItem.Text = "Authentication";
-            this.authWebServerMenuItem.Click += new System.EventHandler(this.authWebServerMenuItem_Click);
-            // 
-            // dataCompressionWebServerMenuItem
-            // 
-            this.dataCompressionWebServerMenuItem.Index = 3;
-            this.dataCompressionWebServerMenuItem.Text = "Data Compression";
+            this.authWebServerMenuItem.Click += new System.EventHandler(this.AuthWebServerMenuItem_Click);
             // 
             // helpMenuItem
             // 
@@ -887,7 +880,6 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.MenuItem timeWindow12hMenuItem;
         private System.Windows.Forms.MenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.MenuItem authWebServerMenuItem;
-        private System.Windows.Forms.MenuItem dataCompressionWebServerMenuItem;
     }
 }
 

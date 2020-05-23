@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
+
+using System;
 using System.Windows.Forms;
 
 namespace LibreHardwareMonitor.UI
@@ -13,6 +12,7 @@ namespace LibreHardwareMonitor.UI
     public partial class AuthForm : Form
     {
         private readonly MainForm _parent;
+
         public AuthForm(MainForm m)
         {
             InitializeComponent();
@@ -25,12 +25,12 @@ namespace LibreHardwareMonitor.UI
             httpAuthUsernameTextBox.Text = _parent.Server.Username;
         }
 
-        private void httpAuthCancelButton_Click(object sender, EventArgs e)
+        private void HttpAuthCancelButton_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void httpAuthOkButton_Click(object sender, EventArgs e)
+        private void HttpAuthOkButton_Click(object sender, EventArgs e)
         {
             _parent.Server.Username = httpAuthUsernameTextBox.Text;
             _parent.Server.Password = httpAuthPasswordTextBox.Text;
@@ -39,7 +39,7 @@ namespace LibreHardwareMonitor.UI
             Close();
         }
 
-        private void enableHTTPAuthCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void EnableHTTPAuthCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             httpAuthUsernameTextBox.Enabled = httpAuthPasswordTextBox.Enabled = enableHTTPAuthCheckBox.Checked;
         }
