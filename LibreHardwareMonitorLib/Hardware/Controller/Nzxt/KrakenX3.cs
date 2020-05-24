@@ -12,30 +12,29 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
      */
     internal sealed class KrakenX3 : Hardware
     {
-
         // Some fixed messages to send to the pump for basic monitoring and control
-        private static readonly byte[] GET_FIRMWARE_INFO = { 0x10, 0x01 };
-        private static readonly byte[] INITIALIZE_1 = { 0x70, 0x02, 0x01, 0xb8, 0x0b };
-        private static readonly byte[] INITIALIZE_2 = { 0x70, 0x01 };
-        private static readonly byte[][] SET_PUMP_TARGET_MAP = new byte[101][]; // Sacrifice memory to speed this up with a lookup instead of a copy operation
+        private static readonly byte[] _getFirmareInfo = { 0x10, 0x01 };
+        private static readonly byte[] _initialize1 = { 0x70, 0x02, 0x01, 0xb8, 0x0b };
+        private static readonly byte[] _initialize2 = { 0x70, 0x01 };
+        private static readonly byte[][] _setPumpTargetMap = new byte[101][]; // Sacrifice memory to speed this up with a lookup instead of a copy operation
+
         static KrakenX3()
         {
             byte[] set_pump_speed_header = { 0x72, 0x01, 0x00, 0x00 };
 
-            for (byte speed = 0; speed < SET_PUMP_TARGET_MAP.Length; speed++)
+            for (byte speed = 0; speed < _setPumpTargetMap.Length; speed++)
             {
-                SET_PUMP_TARGET_MAP[speed] = set_pump_speed_header.Concat(Enumerable.Repeat(speed, 40).Concat(new byte[20])).ToArray();
+                _setPumpTargetMap[speed] = set_pump_speed_header.Concat(Enumerable.Repeat(speed, 40).Concat(new byte[20])).ToArray();
             }
         }
 
-        private readonly Sensor _temperature;
-        private readonly Sensor _pumpRpm;
-        private readonly Sensor _pumpControl;
-
-        private readonly HidStream _stream;
-        private readonly byte[] _rawData = new byte[64];
-
         private volatile bool _controlling = false;
+        private readonly Sensor _pump;
+        private readonly Control _pumpControl;
+        private readonly Sensor _pumpRpm;
+        private readonly byte[] _rawData = new byte[64];
+        private readonly HidStream _stream;
+        private readonly Sensor _temperature;
 
         public string FirmwareVersion { get; private set; }
 
@@ -44,9 +43,10 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             if (dev.TryOpen(out _stream))
             {
                 _stream.ReadTimeout = 5000; // The NZXT device returns with data that we need periodically without writing... 
-                _stream.Write(INITIALIZE_1);
-                _stream.Write(INITIALIZE_2);
-                _stream.Write(GET_FIRMWARE_INFO);
+                _stream.Write(_initialize1);
+                _stream.Write(_initialize2);
+
+                _stream.Write(_getFirmareInfo);
                 do
                 {
                     _stream.Read(_rawData);
@@ -58,21 +58,19 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 
                 Name = $"Nzxt Kraken X3";
 
-                _temperature = new Sensor("Internal Water", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
-                ActivateSensor(_temperature);
+                _pump = new Sensor("Pump Control", 0, SensorType.Control, this, new ParameterDescription[0], settings);
+                _pumpControl = new Control(_pump, settings, 0, 100);
+                _pump.Control = _pumpControl;
+                _pumpControl.ControlModeChanged += SoftwareControlValueChanged;
+                _pumpControl.SoftwareControlValueChanged += SoftwareControlValueChanged;
+                SoftwareControlValueChanged(_pumpControl);
+                ActivateSensor(_pump);
 
                 _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
                 ActivateSensor(_pumpRpm);
 
-                _pumpControl = new Sensor("Pump Control", 0, SensorType.Control, this, new ParameterDescription[0], settings);
-                Control control = new Control(_pumpControl, settings, 0, 100);
-                _pumpControl.Control = control;
-
-                control.ControlModeChanged += SoftwareControlValueChanged;
-                control.SoftwareControlValueChanged += SoftwareControlValueChanged;
-                SoftwareControlValueChanged(control);
-
-                ActivateSensor(_pumpControl);
+                _temperature = new Sensor("Internal Water", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                ActivateSensor(_temperature);
 
                 ThreadPool.UnsafeQueueUserWorkItem(ContinuousRead, _rawData);
             }
@@ -86,12 +84,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 byte pump_speed_index = (byte)((value > 100) ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
 
                 _controlling = true;
-                _stream.Write(SET_PUMP_TARGET_MAP[pump_speed_index]);
-                _pumpControl.Value = value;
+                _stream.Write(_setPumpTargetMap[pump_speed_index]);
+                _pump.Value = value;
             }
             else if (control.ControlMode == ControlMode.Default)
             { // There isn't a "default" mode with this pump, but a safe setting is 40%
-                _stream.Write(SET_PUMP_TARGET_MAP[40]);
+                _stream.Write(_setPumpTargetMap[40]);
             }
         }
 
@@ -145,12 +143,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     // The following logic makes sure the pump is set to the controlling value. This pump sometimes sets itself to 0% when instructed to a value.
                     if (!_controlling)
                     {
-                        _pumpControl.Value = _rawData[19];
+                        _pump.Value = _rawData[19];
                     }
-                    else if (_pumpControl.Value != _rawData[19])
+                    else if (_pump.Value != _rawData[19])
                     {
-                        byte pump_speed_index = (byte)_pumpControl.Value;
-                        _stream.Write(SET_PUMP_TARGET_MAP[pump_speed_index]);
+                        byte pump_speed_index = (byte)_pump.Value;
+                        _stream.Write(_setPumpTargetMap[pump_speed_index]);
                     }
                     else
                     {
