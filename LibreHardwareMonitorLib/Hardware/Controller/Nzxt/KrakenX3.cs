@@ -39,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 
         public string FirmwareVersion { get; private set; }
 
-        public KrakenX3(HidDevice dev, ISettings settings) : base("Nzxt Kraken X3", new Identifier("nzxt", "krakenx3"), settings)
+        public KrakenX3(HidDevice dev, ISettings settings) : base("Nzxt Kraken X3", new Identifier("nzxt", "krakenx3", dev.GetSerialNumber().TrimStart('0')), settings)
         {
             if (dev.TryOpen(out _stream))
             {
