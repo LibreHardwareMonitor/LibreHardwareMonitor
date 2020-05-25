@@ -78,7 +78,7 @@
             this.httpUsernameLabel.Name = "httpUsernameLabel";
             this.httpUsernameLabel.Size = new System.Drawing.Size(90, 13);
             this.httpUsernameLabel.TabIndex = 6;
-            this.httpUsernameLabel.Text = "HTTP Username:";
+            this.httpUsernameLabel.Text = "HTTP UserName:";
             // 
             // httpPasswordLabel
             // 

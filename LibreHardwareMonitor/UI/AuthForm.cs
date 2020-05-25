@@ -22,7 +22,7 @@ namespace LibreHardwareMonitor.UI
         private void AuthForm_Load(object sender, EventArgs e)
         {
             httpAuthUsernameTextBox.Enabled = httpAuthPasswordTextBox.Enabled = enableHTTPAuthCheckBox.Checked = _parent.Server.AuthEnabled;
-            httpAuthUsernameTextBox.Text = _parent.Server.Username;
+            httpAuthUsernameTextBox.Text = _parent.Server.UserName;
         }
 
         private void HttpAuthCancelButton_Click(object sender, EventArgs e)
@@ -32,7 +32,7 @@ namespace LibreHardwareMonitor.UI
 
         private void HttpAuthOkButton_Click(object sender, EventArgs e)
         {
-            _parent.Server.Username = httpAuthUsernameTextBox.Text;
+            _parent.Server.UserName = httpAuthUsernameTextBox.Text;
             _parent.Server.Password = httpAuthPasswordTextBox.Text;
             _parent.Server.AuthEnabled = enableHTTPAuthCheckBox.Checked;
             _parent.AuthWebServerMenuItemChecked = _parent.Server.AuthEnabled;

@@ -267,7 +267,7 @@ namespace LibreHardwareMonitor.UI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085), _settings.GetValue("authenticationEnabled", false), _settings.GetValue("authenticationUsername", ""), _settings.GetValue("authenticationPassword", ""));
+            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085), _settings.GetValue("authenticationEnabled", false), _settings.GetValue("authenticationUserName", ""), _settings.GetValue("authenticationPassword", ""));
             if (Server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
@@ -651,7 +651,7 @@ namespace LibreHardwareMonitor.UI
 
             _settings.SetValue("listenerPort", Server.ListenerPort);
             _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
-            _settings.SetValue("authenticationUsername", Server.Username);
+            _settings.SetValue("authenticationUserName", Server.UserName);
             _settings.SetValue("authenticationPassword", Server.Password);
 
             string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
