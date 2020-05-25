@@ -123,7 +123,7 @@ namespace LibreHardwareMonitor.UI
             _systemTray.ExitCommand += ExitClick;
 
             if (Software.OperatingSystem.IsUnix)
-            { 
+            {
                 // Unix
                 treeView.RowHeight = Math.Max(treeView.RowHeight, 18);
                 splitContainer.BorderStyle = BorderStyle.None;
@@ -355,7 +355,9 @@ namespace LibreHardwareMonitor.UI
                 }
             }
             else
+            {
                 Show();
+            }
 
             // Create a handle, otherwise calling Close() does not fire FormClosed
 
@@ -367,6 +369,17 @@ namespace LibreHardwareMonitor.UI
                 if (_runWebServer.Value)
                     Server.Quit();
             };
+
+            Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+        }
+
+        private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
+        {
+
+            if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
+            {
+                _computer.Reset();
+            }
         }
 
         private void InitializeSplitter()
