@@ -599,16 +599,23 @@ namespace LibreHardwareMonitor.UI
                     {
                         if (!_created)
                         {
-                            int i = 0;
-                            do
+                            if (NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data))
                             {
-                                _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Add, data);
-                                if (!_created)
+                                _created = true;
+                            }
+                            else
+                            {
+                                int i = 0;
+                                do
                                 {
-                                    System.Threading.Thread.Sleep(200);
-                                    i++;
-                                }
-                            } while (!_created && i < 40);
+                                    _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Add, data);
+                                    if (!_created)
+                                    {
+                                        System.Threading.Thread.Sleep(200);
+                                        i++;
+                                    }
+                                } while (!_created && i < 40);
+                            }
                         }
                         else
                         {
