@@ -1,7 +1,7 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael M�ller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -123,7 +123,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             {
                 AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new AtiAdlxx.ADLFanSpeedValue
                 {
-                    SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT, Flags = AtiAdlxx.ADL_DL_FANCTRL_FLAG_USER_DEFINED_SPEED, FanSpeed = (int)control.SoftwareValue
+                    SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT,
+                    Flags = AtiAdlxx.ADL_DL_FANCTRL_FLAG_USER_DEFINED_SPEED,
+                    FanSpeed = (int)control.SoftwareValue
                 };
 
                 AtiAdlxx.ADL_Overdrive5_FanSpeed_Set(_adapterIndex, 0, ref fanSpeedValue);
@@ -169,13 +171,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                 if (_currentOverdriveApiLevel >= 7)
                 {
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.EDGE, _temperatureCore);
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.MEM, _temperatureMemory);
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.VRVDDC, _temperatureVddc);
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.VRMVDD, _temperatureMvdd);
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.LIQUID, _temperatureLiquid);
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.PLX, _temperaturePlx);
-                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.HOTSPOT, _temperatureHotSpot);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.EDGE, _temperatureCore, -200, 0.001);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.MEM, _temperatureMemory, 0);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.VRVDDC, _temperatureVddc, 0);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.VRMVDD, _temperatureMvdd, 0);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.LIQUID, _temperatureLiquid, 0);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.PLX, _temperaturePlx, 0);
+                    GetODNTemperature(AtiAdlxx.ADLODNTemperatureType.HOTSPOT, _temperatureHotSpot, 0);
                 }
                 else
                 {
@@ -311,15 +313,16 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="sensor">The sensor.</param>
-        private void GetODNTemperature(AtiAdlxx.ADLODNTemperatureType type, Sensor sensor)
+        private void GetODNTemperature(AtiAdlxx.ADLODNTemperatureType type, Sensor sensor, double minTemperature = -200, double scale = 1)
         {
             // If a sensor isn't available, some cards report 54000 degrees C. 110C is expected for Navi, so 100 more than that should be enough to use as a maximum.
-            const int maxTemperature = 210 * 1000;
+            int maxTemperature = (int)(210.0 / scale);
+            minTemperature = (int)(minTemperature / scale);
 
             int temperature = 0;
-            if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, type, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK && temperature < maxTemperature)
+            if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, type, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK && temperature > minTemperature && temperature < maxTemperature)
             {
-                sensor.Value = 0.001f * temperature;
+                sensor.Value = (float)(scale * temperature);
                 ActivateSensor(sensor);
             }
             else
