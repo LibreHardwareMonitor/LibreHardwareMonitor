@@ -91,18 +91,19 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private class Processor
         {
-            private readonly Sensor _coreTemperatureTctl;
-            private readonly Sensor _coreTemperatureTdie;
-            private readonly Sensor _coreTemperatureTctlTdie;
             private readonly Sensor[] _ccdTemperatures;
+            private readonly Sensor _coreTemperatureTctl;
+            private readonly Sensor _coreTemperatureTctlTdie;
+            private readonly Sensor _coreTemperatureTdie;
             private readonly Sensor _coreVoltage;
             private readonly Amd17Cpu _hardware;
             private readonly Sensor _packagePower;
             private readonly Sensor _socVoltage;
-            private Sensor _ccdsMaxTemperature;
             private Sensor _ccdsAverageTemperature;
+            private Sensor _ccdsMaxTemperature;
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue;
+            private Sensor _busClock;
 
             public Processor(Hardware hardware)
             {
@@ -116,7 +117,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
                 _coreVoltage = new Sensor("Core (SVI2 TFN)", _hardware._sensorVoltage++, SensorType.Voltage, _hardware, _hardware._settings);
                 _socVoltage = new Sensor("SoC (SVI2 TFN)", _hardware._sensorVoltage++, SensorType.Voltage, _hardware, _hardware._settings);
-
+                _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, _hardware, _hardware._settings);
+                
                 _hardware.ActivateSensor(_packagePower);
             }
 
@@ -143,177 +145,186 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 // total_energy [31:0]
                 DateTime sampleTime = DateTime.Now;
                 Ring0.ReadMsr(MSR_PKG_ENERGY_STAT, out uint eax, out _);
+                
                 uint totalEnergy = eax;
 
-                // THM_TCON_CUR_TMP
-                // CUR_TEMP [31:21]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint temperature);
+                uint smuSvi0Tfn = 0;
+                uint smuSvi0TelPlane0 = 0;
+                uint smuSvi0TelPlane1 = 0;
 
-                // SVI0_TFN_PLANE0 [0]
-                // SVI0_TFN_PLANE1 [1]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0Tfn);
-
-                uint sviPlane0Offset;
-                uint sviPlane1Offset;
-
-                bool isZen2 = false;
-
-                // TODO: find a better way because these will probably keep changing in the future.
-                switch (cpu.Model)
+                if (Ring0.WaitPciBusMutex(10))
                 {
-                    case 0x31: // Threadripper 3000.
+                    // THM_TCON_CUR_TMP
+                    // CUR_TEMP [31:21]
+                    Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
+                    Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint temperature);
+
+                    // SVI0_TFN_PLANE0 [0]
+                    // SVI0_TFN_PLANE1 [1]
+                    Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
+                    Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
+
+                    bool isZen2 = false;
+
+                    // TODO: find a better way because these will probably keep changing in the future.
+
+                    uint sviPlane0Offset;
+                    uint sviPlane1Offset;
+                    switch (cpu.Model)
                     {
-                        sviPlane0Offset = F17H_M01H_SVI + 0x14;
-                        sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                        isZen2 = true;
-                        break;
+                        case 0x31: // Threadripper 3000.
+                        {
+                            sviPlane0Offset = F17H_M01H_SVI + 0x14;
+                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                            isZen2 = true;
+                            break;
+                        }
+                        case 0x71: // Zen 2.
+                        {
+                            sviPlane0Offset = F17H_M01H_SVI + 0x10;
+                            sviPlane1Offset = F17H_M01H_SVI + 0xC;
+                            isZen2 = true;
+                            break;
+                        }
+                        default: // Zen and Zen+.
+                        {
+                            sviPlane0Offset = F17H_M01H_SVI + 0xC;
+                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                            break;
+                        }
                     }
-                    case 0x71: // Zen 2.
+
+                    // SVI0_PLANE0_VDDCOR [24:16]
+                    // SVI0_PLANE0_IDDCOR [7:0]
+                    Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
+                    Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane0);
+
+                    // SVI0_PLANE1_VDDCOR [24:16]
+                    // SVI0_PLANE1_IDDCOR [7:0]
+                    Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
+                    Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane1);
+
+                    ThreadAffinity.Set(previousAffinity);
+
+                    // power consumption
+                    // power.Value = (float) ((double)pu * 0.125);
+                    // esu = 15.3 micro Joule per increment
+                    if (_lastPwrTime.Ticks == 0)
                     {
-                        sviPlane0Offset = F17H_M01H_SVI + 0x10;
-                        sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                        isZen2 = true;
-                        break;
+                        _lastPwrTime = sampleTime;
+                        _lastPwrValue = totalEnergy;
                     }
-                    default: // Zen and Zen+.
-                    {
-                        sviPlane0Offset = F17H_M01H_SVI + 0xC;
-                        sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                        break;
-                    }
-                }
 
-                // SVI0_PLANE0_VDDCOR [24:16]
-                // SVI0_PLANE0_IDDCOR [7:0]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane0);
+                    // ticks diff
+                    TimeSpan time = sampleTime - _lastPwrTime;
+                    long pwr;
+                    if (_lastPwrValue <= totalEnergy)
+                        pwr = totalEnergy - _lastPwrValue;
+                    else
+                        pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
 
-                // SVI0_PLANE1_VDDCOR [24:16]
-                // SVI0_PLANE1_IDDCOR [7:0]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane1);
-
-                ThreadAffinity.Set(previousAffinity);
-
-                // power consumption
-                // power.Value = (float) ((double)pu * 0.125);
-                // esu = 15.3 micro Joule per increment
-                if (_lastPwrTime.Ticks == 0)
-                {
+                    // update for next sample
                     _lastPwrTime = sampleTime;
                     _lastPwrValue = totalEnergy;
-                }
 
-                // ticks diff
-                TimeSpan time = sampleTime - _lastPwrTime;
-                long pwr;
-                if (_lastPwrValue <= totalEnergy)
-                    pwr = totalEnergy - _lastPwrValue;
-                else
-                    pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
+                    double energy = 15.3e-6 * pwr;
+                    energy /= time.TotalSeconds;
 
-                // update for next sample
-                _lastPwrTime = sampleTime;
-                _lastPwrValue = totalEnergy;
+                    if (!double.IsNaN(energy))
+                        _packagePower.Value = (float)energy;
 
-                double energy = 15.3e-6 * pwr;
-                energy /= time.TotalSeconds;
+                    // current temp Bit [31:21]
+                    // If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
+                    bool tempOffsetFlag = (temperature & F17H_TEMP_OFFSET_FLAG) != 0;
+                    temperature = (temperature >> 21) * 125;
 
-                if (!double.IsNaN(energy))
-                    _packagePower.Value = (float)energy;
+                    float offset = 0.0f;
 
-                // current temp Bit [31:21]
-                //If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
-                bool tempOffsetFlag = (temperature & F17H_TEMP_OFFSET_FLAG) != 0;
-                temperature = (temperature >> 21) * 125;
+                    // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
+                    if (string.IsNullOrWhiteSpace(cpu.Name))
+                        offset = 0;
+                    else if (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X"))
+                        offset = -20.0f;
+                    else if (cpu.Name.Contains("Threadripper 19") || cpu.Name.Contains("Threadripper 29"))
+                        offset = -27.0f;
+                    else if (cpu.Name.Contains("2700X"))
+                        offset = -10.0f;
 
-                float offset = 0.0f;
+                    float t = temperature * 0.001f;
+                    if (tempOffsetFlag)
+                        t += -49.0f;
 
-                // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
-                if (string.IsNullOrWhiteSpace(cpu.Name))
-                    offset = 0;
-                else if (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X"))
-                    offset = -20.0f;
-                else if (cpu.Name.Contains("Threadripper 19") || cpu.Name.Contains("Threadripper 29"))
-                    offset = -27.0f;
-                else if (cpu.Name.Contains("2700X"))
-                    offset = -10.0f;
-
-                float t = temperature * 0.001f;
-                if (tempOffsetFlag)
-                    t += -49.0f;
-
-                if (offset < 0)
-                {
-                    _coreTemperatureTctl.Value = t;
-                    _coreTemperatureTdie.Value = t + offset;
-
-                    _hardware.ActivateSensor(_coreTemperatureTctl);
-                    _hardware.ActivateSensor(_coreTemperatureTdie);
-                }
-                else
-                {
-                    // Zen 2 doesn't have an offset so Tdie and Tctl are the same.
-                    _coreTemperatureTctlTdie.Value = t;
-                    _hardware.ActivateSensor(_coreTemperatureTctlTdie);
-                }
-
-                // Tested only on R5 3600 & Threadripper 3960X.
-                if (isZen2)
-                {
-                    for (uint i = 0; i < _ccdTemperatures.Length; i++)
+                    if (offset < 0)
                     {
-                        Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
-                        Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
+                        _coreTemperatureTctl.Value = t;
+                        _coreTemperatureTdie.Value = t + offset;
 
-                        ccdRawTemp &= 0xFFF;
-                        if (ccdRawTemp == 0)
-                            break;
-
-
-                        float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
-                        if (ccdTemp > 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
-                            break;
-
-                        if (_ccdTemperatures[i] == null)
-                        {
-                            _hardware.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
-                                                                                _hardware._sensorTemperatures++,
-                                                                                SensorType.Temperature,
-                                                                                _hardware,
-                                                                                _hardware._settings));
-                        }
-
-                        _ccdTemperatures[i].Value = ccdTemp;
+                        _hardware.ActivateSensor(_coreTemperatureTctl);
+                        _hardware.ActivateSensor(_coreTemperatureTdie);
+                    }
+                    else
+                    {
+                        // Zen 2 doesn't have an offset so Tdie and Tctl are the same.
+                        _coreTemperatureTctlTdie.Value = t;
+                        _hardware.ActivateSensor(_coreTemperatureTctlTdie);
                     }
 
-                    Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
-                    if (activeCcds.Length > 1)
+                    // Tested only on R5 3600 & Threadripper 3960X.
+                    if (isZen2)
                     {
-                        // No need to get the max / average ccds temp if there is only one CCD.
-
-                        if (_ccdsMaxTemperature == null)
+                        for (uint i = 0; i < _ccdTemperatures.Length; i++)
                         {
-                            _hardware.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
-                                                                                _hardware._sensorTemperatures++,
-                                                                                SensorType.Temperature,
-                                                                                _hardware,
-                                                                                _hardware._settings));
+                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
+                            Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
+
+                            ccdRawTemp &= 0xFFF;
+                            if (ccdRawTemp == 0)
+                                break;
+
+
+                            float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
+                            if (ccdTemp > 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
+                                break;
+
+
+                            if (_ccdTemperatures[i] == null)
+                            {
+                                _hardware.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
+                                                                                          _hardware._sensorTemperatures++,
+                                                                                          SensorType.Temperature,
+                                                                                          _hardware,
+                                                                                          _hardware._settings));
+                            }
+
+                            _ccdTemperatures[i].Value = ccdTemp;
                         }
 
-                        if (_ccdsAverageTemperature == null)
+                        Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
+                        if (activeCcds.Length > 1)
                         {
-                            _hardware.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
-                                                                                    _hardware._sensorTemperatures++,
-                                                                                    SensorType.Temperature,
-                                                                                    _hardware,
-                                                                                    _hardware._settings));
-                        }
+                            // No need to get the max / average ccds temp if there is only one CCD.
 
-                        _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
-                        _ccdsAverageTemperature.Value = activeCcds.Average(x => x.Value);
+                            if (_ccdsMaxTemperature == null)
+                            {
+                                _hardware.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
+                                                                                          _hardware._sensorTemperatures++,
+                                                                                          SensorType.Temperature,
+                                                                                          _hardware,
+                                                                                          _hardware._settings));
+                            }
+
+                            if (_ccdsAverageTemperature == null)
+                            {
+                                _hardware.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
+                                                                                              _hardware._sensorTemperatures++,
+                                                                                              SensorType.Temperature,
+                                                                                              _hardware,
+                                                                                              _hardware._settings));
+                            }
+
+                            _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
+                            _ccdsAverageTemperature.Value = activeCcds.Average(x => x.Value);
+                        }
                     }
                 }
 
@@ -341,6 +352,21 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                     _hardware.ActivateSensor(_socVoltage);
                 }
+
+                double timeStampCounterMultiplier = GetTimeStampCounterMultiplier();
+                if (timeStampCounterMultiplier > 0)
+                {
+                    _busClock.Value = (float)(_hardware.TimeStampCounterFrequency / timeStampCounterMultiplier);
+                    _hardware.ActivateSensor(_busClock);
+                }
+            }
+
+            private double GetTimeStampCounterMultiplier()
+            {
+                Ring0.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
+                uint cpuDfsId = (eax >> 8) & 0x3f;
+                uint cpuFid = eax & 0xff;
+                return 2.0 * cpuFid / cpuDfsId;
             }
 
             public void AppendThread(CpuId thread, int numaId, int coreId)
@@ -533,6 +559,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const uint MSR_PSTATE_0 = 0xC0010064;
         private const uint MSR_PWR_UNIT = 0xC0010299;
         private const uint PERF_CTL_0 = 0xC0010000;
+
         private const uint PERF_CTR_0 = 0xC0010004;
         // ReSharper restore InconsistentNaming
     }
