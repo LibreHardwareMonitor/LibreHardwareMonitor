@@ -32,7 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor[] _temperatures;
 
         public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
-            : base(GetName(handle), new Identifier("gpu", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+            : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
             _adapterIndex = adapterIndex;
             _handle = handle;
