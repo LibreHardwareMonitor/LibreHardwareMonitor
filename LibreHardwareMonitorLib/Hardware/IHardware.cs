@@ -12,17 +12,13 @@ namespace LibreHardwareMonitor.Hardware
     {
         Motherboard,
         SuperIO,
-        AquaComputer,
         Cpu,
         Memory,
         GpuNvidia,
         GpuAmd,
-        TBalancer,
-        Heatmaster,
         Storage,
         Network,
-        AeroCool,
-        LiquidCooler
+        Cooler
     }
 
     public interface IHardware : IElement

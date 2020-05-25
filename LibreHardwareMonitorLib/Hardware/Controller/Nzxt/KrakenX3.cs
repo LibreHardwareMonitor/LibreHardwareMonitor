@@ -91,7 +91,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             }
         }
 
-        public override HardwareType HardwareType => HardwareType.LiquidCooler;
+        public override HardwareType HardwareType => HardwareType.Cooler;
 
         public string Status => (FirmwareVersion != "2.1.0" ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 2.1.0" : "Status: OK");
 
