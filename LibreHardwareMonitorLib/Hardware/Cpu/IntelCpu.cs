@@ -170,6 +170,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             _microArchitecture = MicroArchitecture.IceLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
+                        case 0xA5:
                         case 0xA6: // Intel Core i3, i5, i7 10xxxU (14nm)
                             _microArchitecture = MicroArchitecture.CometLake;
                             tjMax = GetTjMaxFromMsr();
