@@ -22,9 +22,10 @@ namespace LibreHardwareMonitor.Hardware
         private static KernelDriver _driver;
         private static string _fileName;
         private static Mutex _isaBusMutex;
+        private static Mutex _pciBusMutex;
 
         private static readonly StringBuilder _report = new StringBuilder();
-
+        
         public static bool IsOpen
         {
             get { return _driver != null; }
@@ -217,18 +218,19 @@ namespace LibreHardwareMonitor.Hardware
             if (!_driver.IsOpen)
                 _driver = null;
 
-            string mutexName = "Global\\Access_ISABUS.HTP.Method";
+            const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
+
             try
             {
 #if NETSTANDARD2_0
-        _isaBusMutex = new Mutex(false, mutexName);
+                _isaBusMutex = new Mutex(false, isaMutexName);
 #else
                 //mutex permissions set to everyone to allow other software to access the hardware
                 //otherwise other monitoring software cant access
                 var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
                 var securitySettings = new MutexSecurity();
                 securitySettings.AddAccessRule(allowEveryoneRule);
-                _isaBusMutex = new Mutex(false, mutexName, out _, securitySettings);
+                _isaBusMutex = new Mutex(false, isaMutexName, out _, securitySettings);
 #endif
             }
             catch (UnauthorizedAccessException)
@@ -236,9 +238,29 @@ namespace LibreHardwareMonitor.Hardware
                 try
                 {
 #if NETSTANDARD2_0
-                    _isaBusMutex = Mutex.OpenExisting(mutexName);
+                    _isaBusMutex = Mutex.OpenExisting(isaMutexName);
 #else
-                    _isaBusMutex = Mutex.OpenExisting(mutexName, MutexRights.Synchronize);
+                    _isaBusMutex = Mutex.OpenExisting(isaMutexName, MutexRights.Synchronize);
+#endif
+                }
+                catch
+                { }
+            }
+
+            const string pciMutexName = "Global\\Access_PCI";
+
+            try
+            {
+                _pciBusMutex = new Mutex(false, pciMutexName);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+#if NETSTANDARD2_0
+                    _pciBusMutex = Mutex.OpenExisting(pciMutexName);
+#else
+                    _pciBusMutex = Mutex.OpenExisting(pciMutexName, MutexRights.Synchronize);
 #endif
                 }
                 catch
@@ -266,6 +288,12 @@ namespace LibreHardwareMonitor.Hardware
                 _isaBusMutex = null;
             }
 
+            if (_pciBusMutex != null)
+            {
+                _pciBusMutex.Close();
+                _pciBusMutex = null;
+            }
+
             // try to delete temporary driver file again if failed during open
             if (_fileName != null && File.Exists(_fileName))
             {
@@ -280,7 +308,7 @@ namespace LibreHardwareMonitor.Hardware
                 { }
             }
         }
-        
+
         public static string GetReport()
         {
             if (_report.Length > 0)
@@ -319,6 +347,31 @@ namespace LibreHardwareMonitor.Hardware
         public static void ReleaseIsaBusMutex()
         {
             _isaBusMutex?.ReleaseMutex();
+        }
+
+        public static bool WaitPciBusMutex(int millisecondsTimeout)
+        {
+            if (_pciBusMutex == null)
+                return true;
+
+
+            try
+            {
+                return _pciBusMutex.WaitOne(millisecondsTimeout, false);
+            }
+            catch (AbandonedMutexException)
+            {
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        public static void ReleasePciBusMutex()
+        {
+            _pciBusMutex?.ReleaseMutex();
         }
 
         public static bool ReadMsr(uint index, out uint eax, out uint edx)

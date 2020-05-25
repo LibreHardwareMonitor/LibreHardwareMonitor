@@ -92,25 +92,33 @@ namespace LibreHardwareMonitor.Hardware.CPU
         public override void Update()
         {
             base.Update();
-
-            if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
+            
+            if (Ring0.WaitPciBusMutex(10))
             {
-                for (uint i = 0; i < _coreTemperatures.Length; i++)
+                if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
                 {
-                    if (Ring0.WritePciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, i > 0 ? _thermSenseCoreSelCPU1 : _thermSenseCoreSelCPU0))
+                    for (uint i = 0; i < _coreTemperatures.Length; i++)
                     {
-                        if (Ring0.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
+                        if (Ring0.WritePciConfig(_miscellaneousControlAddress,
+                                                 THERMTRIP_STATUS_REGISTER,
+                                                 i > 0 ? _thermSenseCoreSelCPU1 : _thermSenseCoreSelCPU0))
                         {
-                            _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
-                            ActivateSensor(_coreTemperatures[i]);
-                        }
-                        else
-                        {
-                            DeactivateSensor(_coreTemperatures[i]);
+                            if (Ring0.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
+                            {
+                                _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
+                                ActivateSensor(_coreTemperatures[i]);
+                            }
+                            else
+                            {
+                                DeactivateSensor(_coreTemperatures[i]);
+                            }
                         }
                     }
                 }
+
+                Ring0.ReleasePciBusMutex();
             }
+
 
             if (HasTimeStampCounter)
             {
