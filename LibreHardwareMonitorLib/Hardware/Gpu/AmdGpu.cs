@@ -43,7 +43,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _temperatureVddc;
 
         public AmdGpu(string name, int adapterIndex, int busNumber, int deviceNumber, ISettings settings)
-            : base(name, new Identifier("gpu", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+            : base(name, new Identifier("gpu-amd", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
             _adapterIndex = adapterIndex;
             BusNumber = busNumber;
