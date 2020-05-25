@@ -14,11 +14,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     internal class Nct677X : ISuperIO
     {
         private readonly ushort?[] _alternateTemperatureRegister;
+        private readonly ushort[] _fanCountRegister;
         private readonly ushort[] _fanRpmRegister;
         private readonly byte[] _initialFanControlMode = new byte[7];
         private readonly byte[] _initialFanPwmCommand = new byte[7];
         private readonly bool _isNuvotonVendor;
         private readonly LpcPort _lpcPort;
+        private readonly int _maxFanCount;
+        private readonly int _minFanCount;
         private readonly int _minFanRpm;
         private readonly ushort _port;
         private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
@@ -149,10 +152,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
                     }
 
-                    _fanRpmRegister = new ushort[] { 0x4c0, 0x4c2, 0x4c4, 0x4c6, 0x4c8, 0x4ca, 0x4ce };
+                    _fanCountRegister = new ushort[] { 0x4B0, 0x4B2, 0x4B4, 0x4B6, 0x4B8, 0x4BA, 0x4CC };
 
-                    // min RPM value with 13-bit fan counter
-                    _minFanRpm = (int)(1.35e6 / 0x1FFF);
+                    // max value for 13-bit fan counter
+                    _maxFanCount = 0x1FFF;
+
+                    // min value that could be transferred to 16-bit RPM registers
+                    _minFanCount = 0x15;
 
                     Voltages = new float?[15];
                     _voltageRegisters = new ushort[] { 0x480, 0x481, 0x482, 0x483, 0x484, 0x485, 0x486, 0x487, 0x488, 0x489, 0x48A, 0x48B, 0x48C, 0x48D, 0x48E };
@@ -320,10 +326,36 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Fans.Length; i++)
             {
-                byte high = ReadByte(_fanRpmRegister[i]);
-                byte low = ReadByte((ushort)(_fanRpmRegister[i] + 1));
-                int value = (high << 8) | low;
-                Fans[i] = value > _minFanRpm ? value : 0;
+                if (_fanCountRegister != null)
+                {
+                    byte high = ReadByte(_fanCountRegister[i]);
+                    byte low = ReadByte((ushort)(_fanCountRegister[i] + 1));
+
+                    int count = (high << 5) | (low & 0x1F);
+                    if (count < _maxFanCount)
+                    {
+                        if (count >= _minFanCount)
+                        {
+                            Fans[i] = 1.35e6f / count;
+                        }
+                        else
+                        {
+                            Fans[i] = null;
+                        }
+                    }
+                    else
+                    {
+                        Fans[i] = 0;
+                    }
+                }
+                else
+                {
+                    byte high = ReadByte(_fanRpmRegister[i]);
+                    byte low = ReadByte((ushort)(_fanRpmRegister[i] + 1));
+                    int value = (high << 8) | low;
+
+                    Fans[i] = value > _minFanRpm ? value : 0;
+                }
             }
 
             for (int i = 0; i < Controls.Length; i++)
@@ -542,7 +574,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 return;
             }
 
-
             // the lock is disabled already if the vendor ID can be read
             if (IsNuvotonVendor())
                 return;
@@ -604,6 +635,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly ushort VENDOR_ID_HIGH_REGISTER;
 
         private readonly ushort VENDOR_ID_LOW_REGISTER;
+
         // ReSharper restore InconsistentNaming
     }
 }
