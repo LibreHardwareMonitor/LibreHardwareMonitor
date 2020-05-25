@@ -1017,8 +1017,7 @@ namespace LibreHardwareMonitor.UI
             // disable the fallback MainIcon during reset, otherwise icon visibility
             // might be lost
             _systemTray.IsMainIconEnabled = false;
-            _computer.Close();
-            _computer.Open();
+            _computer.Reset();
             // restore the MainIcon setting
             _systemTray.IsMainIconEnabled = _minimizeToTray.Value;
         }
