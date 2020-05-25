@@ -8,6 +8,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
 {
 #if DEBUG
 
+    using System;
+    using LibreHardwareMonitor.Interop;
+    using System.Collections.Generic;
+
     internal class DebugSmart : ISmart
     {
         private readonly Drive[] _drives = {
