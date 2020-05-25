@@ -75,5 +75,9 @@ namespace LibreHardwareMonitor.UI
             catch { }
         }
 
+        private void PortNumericUpDn_KeyUp(object sender, KeyEventArgs e)
+        {
+            PortNumericUpDn_ValueChanged(null, null);
+        }
     }
 }

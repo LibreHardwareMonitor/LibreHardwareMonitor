@@ -117,6 +117,7 @@ namespace LibreHardwareMonitor.UI
             this.webMenuItem = new System.Windows.Forms.MenuItem();
             this.runWebServerMenuItem = new System.Windows.Forms.MenuItem();
             this.serverPortMenuItem = new System.Windows.Forms.MenuItem();
+            this.authWebServerMenuItem = new System.Windows.Forms.MenuItem();
             this.helpMenuItem = new System.Windows.Forms.MenuItem();
             this.aboutMenuItem = new System.Windows.Forms.MenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenu();
@@ -128,51 +129,51 @@ namespace LibreHardwareMonitor.UI
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.SuspendLayout();
             this.SuspendLayout();
-            //
+            // 
             // sensor
-            //
+            // 
             this.sensor.Header = "Sensor";
             this.sensor.SortOrder = System.Windows.Forms.SortOrder.None;
             this.sensor.TooltipText = null;
             this.sensor.Width = 250;
-            //
+            // 
             // value
-            //
+            // 
             this.value.Header = "Value";
             this.value.SortOrder = System.Windows.Forms.SortOrder.None;
             this.value.TooltipText = null;
             this.value.Width = 100;
-            //
+            // 
             // min
-            //
+            // 
             this.min.Header = "Min";
             this.min.SortOrder = System.Windows.Forms.SortOrder.None;
             this.min.TooltipText = null;
             this.min.Width = 100;
-            //
+            // 
             // max
-            //
+            // 
             this.max.Header = "Max";
             this.max.SortOrder = System.Windows.Forms.SortOrder.None;
             this.max.TooltipText = null;
             this.max.Width = 100;
-            //
+            // 
             // nodeImage
-            //
+            // 
             this.nodeImage.DataPropertyName = "Image";
             this.nodeImage.LeftMargin = 1;
             this.nodeImage.ParentColumn = this.sensor;
             this.nodeImage.ScaleMode = Aga.Controls.Tree.ImageScaleMode.Fit;
-            //
+            // 
             // nodeCheckBox
-            //
+            // 
             this.nodeCheckBox.DataPropertyName = "Plot";
             this.nodeCheckBox.EditEnabled = true;
             this.nodeCheckBox.LeftMargin = 3;
             this.nodeCheckBox.ParentColumn = this.sensor;
-            //
+            // 
             // nodeTextBoxText
-            //
+            // 
             this.nodeTextBoxText.DataPropertyName = "Text";
             this.nodeTextBoxText.EditEnabled = true;
             this.nodeTextBoxText.IncrementalSearchEnabled = true;
@@ -180,44 +181,44 @@ namespace LibreHardwareMonitor.UI
             this.nodeTextBoxText.ParentColumn = this.sensor;
             this.nodeTextBoxText.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxText.UseCompatibleTextRendering = true;
-            //
+            // 
             // nodeTextBoxValue
-            //
+            // 
             this.nodeTextBoxValue.DataPropertyName = "Value";
             this.nodeTextBoxValue.IncrementalSearchEnabled = true;
             this.nodeTextBoxValue.LeftMargin = 3;
             this.nodeTextBoxValue.ParentColumn = this.value;
             this.nodeTextBoxValue.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxValue.UseCompatibleTextRendering = true;
-            //
+            // 
             // nodeTextBoxMin
-            //
+            // 
             this.nodeTextBoxMin.DataPropertyName = "Min";
             this.nodeTextBoxMin.IncrementalSearchEnabled = true;
             this.nodeTextBoxMin.LeftMargin = 3;
             this.nodeTextBoxMin.ParentColumn = this.min;
             this.nodeTextBoxMin.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxMin.UseCompatibleTextRendering = true;
-            //
+            // 
             // nodeTextBoxMax
-            //
+            // 
             this.nodeTextBoxMax.DataPropertyName = "Max";
             this.nodeTextBoxMax.IncrementalSearchEnabled = true;
             this.nodeTextBoxMax.LeftMargin = 3;
             this.nodeTextBoxMax.ParentColumn = this.max;
             this.nodeTextBoxMax.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxMax.UseCompatibleTextRendering = true;
-            //
+            // 
             // mainMenu
-            //
+            // 
             this.mainMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.fileMenuItem,
             this.viewMenuItem,
             this.optionsMenuItem,
             this.helpMenuItem});
-            //
+            // 
             // fileMenuItem
-            //
+            // 
             this.fileMenuItem.Index = 0;
             this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.saveReportMenuItem,
@@ -227,26 +228,26 @@ namespace LibreHardwareMonitor.UI
             this.menuItem6,
             this.exitMenuItem});
             this.fileMenuItem.Text = "File";
-            //
+            // 
             // saveReportMenuItem
-            //
+            // 
             this.saveReportMenuItem.Index = 0;
             this.saveReportMenuItem.Text = "Save Report...";
             this.saveReportMenuItem.Click += new System.EventHandler(this.SaveReportMenuItem_Click);
-            //
+            // 
             // MenuItem2
-            //
+            // 
             this.MenuItem2.Index = 1;
             this.MenuItem2.Text = "-";
-            //
+            // 
             // resetMenuItem
-            //
+            // 
             this.resetMenuItem.Index = 2;
             this.resetMenuItem.Text = "Reset";
             this.resetMenuItem.Click += new System.EventHandler(this.ResetClick);
-            //
+            // 
             // menuItem5
-            //
+            // 
             this.menuItem5.Index = 3;
             this.menuItem5.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.mainboardMenuItem,
@@ -257,55 +258,55 @@ namespace LibreHardwareMonitor.UI
             this.hddMenuItem,
             this.nicMenuItem});
             this.menuItem5.Text = "Hardware";
-            //
+            // 
             // mainboardMenuItem
-            //
+            // 
             this.mainboardMenuItem.Index = 0;
             this.mainboardMenuItem.Text = "Motherboard";
-            //
+            // 
             // cpuMenuItem
-            //
+            // 
             this.cpuMenuItem.Index = 1;
             this.cpuMenuItem.Text = "CPU";
-            //
+            // 
             // ramMenuItem
-            //
+            // 
             this.ramMenuItem.Index = 2;
             this.ramMenuItem.Text = "RAM";
-            //
+            // 
             // gpuMenuItem
-            //
+            // 
             this.gpuMenuItem.Index = 3;
             this.gpuMenuItem.Text = "GPU";
-            //
+            // 
             // fanControllerMenuItem
-            //
+            // 
             this.fanControllerMenuItem.Index = 4;
             this.fanControllerMenuItem.Text = "Fan Controllers";
-            //
+            // 
             // hddMenuItem
-            //
+            // 
             this.hddMenuItem.Index = 5;
             this.hddMenuItem.Text = "Hard Disk Drives";
-            //
+            // 
             // nicMenuItem
-            //
+            // 
             this.nicMenuItem.Index = 6;
             this.nicMenuItem.Text = "Network";
-            //
+            // 
             // menuItem6
-            //
+            // 
             this.menuItem6.Index = 4;
             this.menuItem6.Text = "-";
-            //
+            // 
             // exitMenuItem
-            //
+            // 
             this.exitMenuItem.Index = 5;
             this.exitMenuItem.Text = "Exit";
             this.exitMenuItem.Click += new System.EventHandler(this.ExitClick);
-            //
+            // 
             // viewMenuItem
-            //
+            // 
             this.viewMenuItem.Index = 1;
             this.viewMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.resetMinMaxMenuItem,
@@ -316,64 +317,64 @@ namespace LibreHardwareMonitor.UI
             this.MenuItem1,
             this.columnsMenuItem});
             this.viewMenuItem.Text = "View";
-            //
+            // 
             // resetMinMaxMenuItem
-            //
+            // 
             this.resetMinMaxMenuItem.Index = 0;
             this.resetMinMaxMenuItem.Text = "Reset Min/Max";
             this.resetMinMaxMenuItem.Click += new System.EventHandler(this.ResetMinMaxMenuItem_Click);
-            //
+            // 
             // MenuItem3
-            //
+            // 
             this.MenuItem3.Index = 1;
             this.MenuItem3.Text = "-";
-            //
+            // 
             // hiddenMenuItem
-            //
+            // 
             this.hiddenMenuItem.Index = 2;
             this.hiddenMenuItem.Text = "Show Hidden Sensors";
-            //
+            // 
             // plotMenuItem
-            //
+            // 
             this.plotMenuItem.Index = 3;
             this.plotMenuItem.Text = "Show Plot";
-            //
+            // 
             // gadgetMenuItem
-            //
+            // 
             this.gadgetMenuItem.Index = 4;
             this.gadgetMenuItem.Text = "Show Gadget";
-            //
+            // 
             // MenuItem1
-            //
+            // 
             this.MenuItem1.Index = 5;
             this.MenuItem1.Text = "-";
-            //
+            // 
             // columnsMenuItem
-            //
+            // 
             this.columnsMenuItem.Index = 6;
             this.columnsMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.valueMenuItem,
             this.minMenuItem,
             this.maxMenuItem});
             this.columnsMenuItem.Text = "Columns";
-            //
+            // 
             // valueMenuItem
-            //
+            // 
             this.valueMenuItem.Index = 0;
             this.valueMenuItem.Text = "Value";
-            //
+            // 
             // minMenuItem
-            //
+            // 
             this.minMenuItem.Index = 1;
             this.minMenuItem.Text = "Min";
-            //
+            // 
             // maxMenuItem
-            //
+            // 
             this.maxMenuItem.Index = 2;
             this.maxMenuItem.Text = "Max";
-            //
+            // 
             // optionsMenuItem
-            //
+            // 
             this.optionsMenuItem.Index = 2;
             this.optionsMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.startMinMenuItem,
@@ -390,93 +391,93 @@ namespace LibreHardwareMonitor.UI
             this.webMenuItemSeparator,
             this.webMenuItem});
             this.optionsMenuItem.Text = "Options";
-            //
+            // 
             // startMinMenuItem
-            //
+            // 
             this.startMinMenuItem.Index = 0;
             this.startMinMenuItem.Text = "Start Minimized";
-            //
+            // 
             // minTrayMenuItem
-            //
+            // 
             this.minTrayMenuItem.Index = 1;
             this.minTrayMenuItem.Text = "Minimize To Tray";
-            //
+            // 
             // minCloseMenuItem
-            //
+            // 
             this.minCloseMenuItem.Index = 2;
             this.minCloseMenuItem.Text = "Minimize On Close";
-            //
+            // 
             // startupMenuItem
-            //
+            // 
             this.startupMenuItem.Index = 3;
             this.startupMenuItem.Text = "Run On Windows Startup";
-            //
+            // 
             // separatorMenuItem
-            //
+            // 
             this.separatorMenuItem.Index = 4;
             this.separatorMenuItem.Text = "-";
-            //
+            // 
             // temperatureUnitsMenuItem
-            //
+            // 
             this.temperatureUnitsMenuItem.Index = 5;
             this.temperatureUnitsMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.celsiusMenuItem,
             this.fahrenheitMenuItem});
             this.temperatureUnitsMenuItem.Text = "Temperature Unit";
-            //
+            // 
             // celsiusMenuItem
-            //
+            // 
             this.celsiusMenuItem.Index = 0;
             this.celsiusMenuItem.RadioCheck = true;
             this.celsiusMenuItem.Text = "Celsius";
             this.celsiusMenuItem.Click += new System.EventHandler(this.CelsiusMenuItem_Click);
-            //
+            // 
             // fahrenheitMenuItem
-            //
+            // 
             this.fahrenheitMenuItem.Index = 1;
             this.fahrenheitMenuItem.RadioCheck = true;
             this.fahrenheitMenuItem.Text = "Fahrenheit";
             this.fahrenheitMenuItem.Click += new System.EventHandler(this.FahrenheitMenuItem_Click);
-            //
+            // 
             // plotLocationMenuItem
-            //
+            // 
             this.plotLocationMenuItem.Index = 6;
             this.plotLocationMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.plotWindowMenuItem,
             this.plotBottomMenuItem,
             this.plotRightMenuItem});
             this.plotLocationMenuItem.Text = "Plot Location";
-            //
+            // 
             // plotWindowMenuItem
-            //
+            // 
             this.plotWindowMenuItem.Index = 0;
             this.plotWindowMenuItem.RadioCheck = true;
             this.plotWindowMenuItem.Text = "Window";
-            //
+            // 
             // plotBottomMenuItem
-            //
+            // 
             this.plotBottomMenuItem.Index = 1;
             this.plotBottomMenuItem.RadioCheck = true;
             this.plotBottomMenuItem.Text = "Bottom";
-            //
+            // 
             // plotRightMenuItem
-            //
+            // 
             this.plotRightMenuItem.Index = 2;
             this.plotRightMenuItem.RadioCheck = true;
             this.plotRightMenuItem.Text = "Right";
-            //
+            // 
             // logSeparatorMenuItem
-            //
+            // 
             this.logSeparatorMenuItem.Index = 7;
             this.logSeparatorMenuItem.Text = "-";
-            //
+            // 
             // logSensorsMenuItem
-            //
+            // 
             this.logSensorsMenuItem.Index = 8;
             this.logSensorsMenuItem.Text = "Log Sensors";
-            //
+            // 
             // loggingIntervalMenuItem
-            //
+            // 
             this.loggingIntervalMenuItem.Index = 9;
             this.loggingIntervalMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.log1sMenuItem,
@@ -493,87 +494,87 @@ namespace LibreHardwareMonitor.UI
             this.log2hMenuItem,
             this.log6hMenuItem});
             this.loggingIntervalMenuItem.Text = "Logging Interval";
-            //
+            // 
             // log1sMenuItem
-            //
+            // 
             this.log1sMenuItem.Index = 0;
             this.log1sMenuItem.RadioCheck = true;
             this.log1sMenuItem.Text = "1s";
-            //
+            // 
             // log2sMenuItem
-            //
+            // 
             this.log2sMenuItem.Index = 1;
             this.log2sMenuItem.RadioCheck = true;
             this.log2sMenuItem.Text = "2s";
-            //
+            // 
             // log5sMenuItem
-            //
+            // 
             this.log5sMenuItem.Index = 2;
             this.log5sMenuItem.RadioCheck = true;
             this.log5sMenuItem.Text = "5s";
-            //
+            // 
             // log10sMenuItem
-            //
+            // 
             this.log10sMenuItem.Index = 3;
             this.log10sMenuItem.RadioCheck = true;
             this.log10sMenuItem.Text = "10s";
-            //
+            // 
             // log30sMenuItem
-            //
+            // 
             this.log30sMenuItem.Index = 4;
             this.log30sMenuItem.RadioCheck = true;
             this.log30sMenuItem.Text = "30s";
-            //
+            // 
             // log1minMenuItem
-            //
+            // 
             this.log1minMenuItem.Index = 5;
             this.log1minMenuItem.RadioCheck = true;
             this.log1minMenuItem.Text = "1min";
-            //
+            // 
             // log2minMenuItem
-            //
+            // 
             this.log2minMenuItem.Index = 6;
             this.log2minMenuItem.RadioCheck = true;
             this.log2minMenuItem.Text = "2min";
-            //
+            // 
             // log5minMenuItem
-            //
+            // 
             this.log5minMenuItem.Index = 7;
             this.log5minMenuItem.RadioCheck = true;
             this.log5minMenuItem.Text = "5min";
-            //
+            // 
             // log10minMenuItem
-            //
+            // 
             this.log10minMenuItem.Index = 8;
             this.log10minMenuItem.RadioCheck = true;
             this.log10minMenuItem.Text = "10min";
-            //
+            // 
             // log30minMenuItem
-            //
+            // 
             this.log30minMenuItem.Index = 9;
             this.log30minMenuItem.RadioCheck = true;
             this.log30minMenuItem.Text = "30min";
-            //
+            // 
             // log1hMenuItem
-            //
+            // 
             this.log1hMenuItem.Index = 10;
             this.log1hMenuItem.RadioCheck = true;
             this.log1hMenuItem.Text = "1h";
-            //
+            // 
             // log2hMenuItem
-            //
+            // 
             this.log2hMenuItem.Index = 11;
             this.log2hMenuItem.RadioCheck = true;
             this.log2hMenuItem.Text = "2h";
-            //
+            // 
             // log6hMenuItem
-            //
+            // 
             this.log6hMenuItem.Index = 12;
             this.log6hMenuItem.RadioCheck = true;
             this.log6hMenuItem.Text = "6h";
-            //
+            // 
             // sensorValuesTimeWindowMenuItem
-            //
+            // 
             this.sensorValuesTimeWindowMenuItem.Index = 10;
             this.sensorValuesTimeWindowMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.timeWindow30sMenuItem,
@@ -588,146 +589,153 @@ namespace LibreHardwareMonitor.UI
             this.timeWindow12hMenuItem,
             this.timeWindow24hMenuItem});
             this.sensorValuesTimeWindowMenuItem.Text = "Sensor Values Time Window";
-            //
+            // 
             // timeWindow30sMenuItem
-            //
+            // 
             this.timeWindow30sMenuItem.Index = 0;
             this.timeWindow30sMenuItem.RadioCheck = true;
             this.timeWindow30sMenuItem.Text = "30s";
-            //
+            // 
             // timeWindow1minMenuItem
-            //
+            // 
             this.timeWindow1minMenuItem.Index = 1;
             this.timeWindow1minMenuItem.RadioCheck = true;
             this.timeWindow1minMenuItem.Text = "1min";
-            //
+            // 
             // timeWindow2minMenuItem
-            //
+            // 
             this.timeWindow2minMenuItem.Index = 2;
             this.timeWindow2minMenuItem.RadioCheck = true;
             this.timeWindow2minMenuItem.Text = "2min";
-            //
+            // 
             // timeWindow5minMenuItem
-            //
+            // 
             this.timeWindow5minMenuItem.Index = 3;
             this.timeWindow5minMenuItem.RadioCheck = true;
             this.timeWindow5minMenuItem.Text = "5min";
-            //
+            // 
             // timeWindow10minMenuItem
-            //
+            // 
             this.timeWindow10minMenuItem.Index = 4;
             this.timeWindow10minMenuItem.RadioCheck = true;
             this.timeWindow10minMenuItem.Text = "10min";
-            //
+            // 
             // timeWindow30minMenuItem
-            //
+            // 
             this.timeWindow30minMenuItem.Index = 5;
             this.timeWindow30minMenuItem.RadioCheck = true;
             this.timeWindow30minMenuItem.Text = "30min";
-            //
+            // 
             // timeWindow1hMenuItem
-            //
+            // 
             this.timeWindow1hMenuItem.Index = 6;
             this.timeWindow1hMenuItem.RadioCheck = true;
             this.timeWindow1hMenuItem.Text = "1h";
-            //
+            // 
             // timeWindow2hMenuItem
-            //
+            // 
             this.timeWindow2hMenuItem.Index = 7;
             this.timeWindow2hMenuItem.RadioCheck = true;
             this.timeWindow2hMenuItem.Text = "2n";
-            //
+            // 
             // timeWindow6hMenuItem
-            //
+            // 
             this.timeWindow6hMenuItem.Index = 8;
             this.timeWindow6hMenuItem.RadioCheck = true;
             this.timeWindow6hMenuItem.Text = "6h";
-            //
+            // 
             // timeWindow12hMenuItem
-            //
+            // 
             this.timeWindow12hMenuItem.Index = 9;
             this.timeWindow12hMenuItem.RadioCheck = true;
             this.timeWindow12hMenuItem.Text = "12h";
-            //
+            // 
             // timeWindow24hMenuItem
-            //
+            // 
             this.timeWindow24hMenuItem.Index = 10;
             this.timeWindow24hMenuItem.RadioCheck = true;
             this.timeWindow24hMenuItem.Text = "24h";
-            //
+            // 
             // webMenuItemSeparator
-            //
+            // 
             this.webMenuItemSeparator.Index = 11;
             this.webMenuItemSeparator.Text = "-";
-            //
+            // 
             // webMenuItem
-            //
+            // 
             this.webMenuItem.Index = 12;
             this.webMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.runWebServerMenuItem,
-            this.serverPortMenuItem});
+            this.serverPortMenuItem,
+            this.authWebServerMenuItem});
             this.webMenuItem.Text = "Remote Web Server";
-            //
+            // 
             // runWebServerMenuItem
-            //
+            // 
             this.runWebServerMenuItem.Index = 0;
             this.runWebServerMenuItem.Text = "Run";
-            //
+            // 
             // serverPortMenuItem
-            //
+            // 
             this.serverPortMenuItem.Index = 1;
             this.serverPortMenuItem.Text = "Port";
             this.serverPortMenuItem.Click += new System.EventHandler(this.ServerPortMenuItem_Click);
-            //
+            // 
+            // authWebServerMenuItem
+            // 
+            this.authWebServerMenuItem.Index = 2;
+            this.authWebServerMenuItem.Text = "Authentication";
+            this.authWebServerMenuItem.Click += new System.EventHandler(this.AuthWebServerMenuItem_Click);
+            // 
             // helpMenuItem
-            //
+            // 
             this.helpMenuItem.Index = 3;
             this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.aboutMenuItem});
             this.helpMenuItem.Text = "Help";
-            //
+            // 
             // aboutMenuItem
-            //
+            // 
             this.aboutMenuItem.Index = 0;
             this.aboutMenuItem.Text = "About";
             this.aboutMenuItem.Click += new System.EventHandler(this.AboutMenuItem_Click);
-            //
+            // 
             // saveFileDialog
-            //
+            // 
             this.saveFileDialog.DefaultExt = "txt";
             this.saveFileDialog.FileName = "LibreHardwareMonitor.Report.txt";
             this.saveFileDialog.Filter = "Text Documents|*.txt|All Files|*.*";
             this.saveFileDialog.RestoreDirectory = true;
             this.saveFileDialog.Title = "Save Report As";
-            //
+            // 
             // timer
-            //
+            // 
             this.timer.Interval = 1000;
             this.timer.Tick += new System.EventHandler(this.Timer_Tick);
-            //
+            // 
             // splitContainer
-            //
+            // 
             this.splitContainer.Border3DStyle = System.Windows.Forms.Border3DStyle.Raised;
             this.splitContainer.Color = System.Drawing.SystemColors.Control;
             this.splitContainer.Cursor = System.Windows.Forms.Cursors.Default;
             this.splitContainer.Location = new System.Drawing.Point(12, 12);
             this.splitContainer.Name = "splitContainer";
             this.splitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            //
+            // 
             // splitContainer.Panel1
-            //
+            // 
             this.splitContainer.Panel1.Controls.Add(this.treeView);
-            //
+            // 
             // splitContainer.Panel2
-            //
+            // 
             this.splitContainer.Panel2.Cursor = System.Windows.Forms.Cursors.Default;
             this.splitContainer.Size = new System.Drawing.Size(386, 483);
             this.splitContainer.SplitterDistance = 354;
             this.splitContainer.SplitterWidth = 5;
             this.splitContainer.TabIndex = 3;
-            //
+            // 
             // treeView
-            //
+            // 
             this.treeView.BackColor = System.Drawing.SystemColors.Window;
             this.treeView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.treeView.Columns.Add(this.sensor);
@@ -759,9 +767,9 @@ namespace LibreHardwareMonitor.UI
             this.treeView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseDown);
             this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseMove);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseUp);
-            //
+            // 
             // MainForm
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(418, 533);
@@ -871,6 +879,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.MenuItem timeWindow6hMenuItem;
         private System.Windows.Forms.MenuItem timeWindow12hMenuItem;
         private System.Windows.Forms.MenuItem timeWindow24hMenuItem;
+        private System.Windows.Forms.MenuItem authWebServerMenuItem;
     }
 }
 

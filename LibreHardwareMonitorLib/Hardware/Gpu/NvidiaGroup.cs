@@ -57,7 +57,6 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     NvApi.NvDisplayHandle displayHandle = new NvApi.NvDisplayHandle();
                     status = NvApi.NvAPI_EnumNvidiaDisplayHandle(i, ref displayHandle);
                     i++;
-                    NvApi.NvDisplayHandle a;
                     
                     if (status == NvApi.NvStatus.OK)
                     {

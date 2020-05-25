@@ -34,6 +34,7 @@ namespace LibreHardwareMonitor.UI
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PortForm));
             this.portOKButton = new System.Windows.Forms.Button();
             this.portCancelButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -45,9 +46,9 @@ namespace LibreHardwareMonitor.UI
             this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.portNumericUpDn)).BeginInit();
             this.SuspendLayout();
-            //
+            // 
             // portOKButton
-            //
+            // 
             this.portOKButton.Location = new System.Drawing.Point(244, 137);
             this.portOKButton.Name = "portOKButton";
             this.portOKButton.Size = new System.Drawing.Size(75, 23);
@@ -55,9 +56,9 @@ namespace LibreHardwareMonitor.UI
             this.portOKButton.Text = "OK";
             this.portOKButton.UseVisualStyleBackColor = true;
             this.portOKButton.Click += new System.EventHandler(this.PortOKButton_Click);
-            //
+            // 
             // portCancelButton
-            //
+            // 
             this.portCancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.portCancelButton.Location = new System.Drawing.Point(162, 137);
             this.portCancelButton.Name = "portCancelButton";
@@ -66,47 +67,47 @@ namespace LibreHardwareMonitor.UI
             this.portCancelButton.Text = "Cancel";
             this.portCancelButton.UseVisualStyleBackColor = true;
             this.portCancelButton.Click += new System.EventHandler(this.PortCancelButton_Click);
-            //
+            // 
             // label1
-            //
+            // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(13, 106);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(377, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Note: You will need to open the port in firewall settings of the operating system" +
-          ".";
-            //
+    ".";
+            // 
             // label2
-            //
+            // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(13, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(193, 13);
             this.label2.TabIndex = 4;
             this.label2.Text = "Port number for  the remote web server:";
-            //
+            // 
             // label3
-            //
+            // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(13, 39);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(443, 13);
             this.label3.TabIndex = 5;
             this.label3.Text = "If the web server is running then it will need to be restarted for the port chang" +
-          "e to take effect.";
-            //
+    "e to take effect.";
+            // 
             // label4
-            //
+            // 
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(13, 62);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(262, 13);
             this.label4.TabIndex = 6;
             this.label4.Text = "The web server will be accessible from the browser at ";
-            //
+            // 
             // webServerLinkLabel
-            //
+            // 
             this.webServerLinkLabel.AutoSize = true;
             this.webServerLinkLabel.Location = new System.Drawing.Point(269, 62);
             this.webServerLinkLabel.Name = "webServerLinkLabel";
@@ -115,9 +116,9 @@ namespace LibreHardwareMonitor.UI
             this.webServerLinkLabel.TabStop = true;
             this.webServerLinkLabel.Text = "linkLabel1";
             this.webServerLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.WebServerLinkLabel_LinkClicked);
-            //
+            // 
             // portNumericUpDn
-            //
+            // 
             this.portNumericUpDn.Location = new System.Drawing.Point(208, 7);
             this.portNumericUpDn.Maximum = new decimal(new int[] {
             20000,
@@ -138,18 +139,19 @@ namespace LibreHardwareMonitor.UI
             0,
             0});
             this.portNumericUpDn.ValueChanged += new System.EventHandler(this.PortNumericUpDn_ValueChanged);
-            //
+            this.portNumericUpDn.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PortNumericUpDn_KeyUp);
+            // 
             // label5
-            //
+            // 
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(13, 84);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(304, 13);
             this.label5.TabIndex = 9;
             this.label5.Text = "You will have to start the server by clicking Run from the menu.";
-            //
+            // 
             // PortForm
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.portCancelButton;
@@ -163,6 +165,8 @@ namespace LibreHardwareMonitor.UI
             this.Controls.Add(this.label1);
             this.Controls.Add(this.portCancelButton);
             this.Controls.Add(this.portOKButton);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PortForm";

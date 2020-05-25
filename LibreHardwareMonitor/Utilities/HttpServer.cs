@@ -5,19 +5,22 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using LibreHardwareMonitor.UI;
-using LibreHardwareMonitor.Hardware;
 using System.Web;
-using System.Collections.Specialized;
-using System.Collections.Generic;
-using System.Globalization;
+using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.UI;
 using Newtonsoft.Json.Linq;
 
 namespace LibreHardwareMonitor.Utilities
@@ -25,13 +28,16 @@ namespace LibreHardwareMonitor.Utilities
     public class HttpServer
     {
         private readonly HttpListener _listener;
-        private Thread _listenerThread;
         private readonly Node _root;
+        private Thread _listenerThread;
 
-        public HttpServer(Node node, int port)
+        public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string password = "")
         {
             _root = node;
             ListenerPort = port;
+            AuthEnabled = authEnabled;
+            UserName = userName;
+            Password = password;
 
             try
             {
@@ -43,27 +49,52 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
+        ~HttpServer()
+        {
+            if (PlatformNotSupported)
+                return;
+
+
+            StopHttpListener();
+            _listener.Abort();
+        }
+
+        public bool AuthEnabled { get; set; }
+
+        public int ListenerPort { get; set; }
+
+        public string Password
+        {
+            get { return PasswordSHA256; }
+            set { PasswordSHA256 = ComputeSHA256(value); }
+        }
+
         public bool PlatformNotSupported
         {
-            get
-            {
-                return _listener == null;
-            }
+            get { return _listener == null; }
         }
+
+        public string UserName { get; set; }
+
+        private string PasswordSHA256 { get; set; }
 
         public bool StartHttpListener()
         {
             if (PlatformNotSupported)
                 return false;
 
+
             try
             {
                 if (_listener.IsListening)
                     return true;
 
+
                 string prefix = "http://+:" + ListenerPort + "/";
                 _listener.Prefixes.Clear();
                 _listener.Prefixes.Add(prefix);
+                _listener.Realm = "Libre Hardware Monitor";
+                _listener.AuthenticationSchemes = AuthEnabled ? AuthenticationSchemes.Basic : AuthenticationSchemes.Anonymous;
                 _listener.Start();
 
                 if (_listenerThread == null)
@@ -85,13 +116,14 @@ namespace LibreHardwareMonitor.Utilities
             if (PlatformNotSupported)
                 return false;
 
+
             try
             {
                 _listenerThread?.Abort();
                 _listener.Stop();
                 _listenerThread = null;
             }
-            catch (HttpListenerException) 
+            catch (HttpListenerException)
             { }
             catch (ThreadAbortException)
             { }
@@ -99,6 +131,7 @@ namespace LibreHardwareMonitor.Utilities
             { }
             catch (Exception)
             { }
+
             return true;
         }
 
@@ -118,6 +151,7 @@ namespace LibreHardwareMonitor.Utilities
             {
                 dict.Add(k, col[k]);
             }
+
             return dict;
         }
 
@@ -137,6 +171,7 @@ namespace LibreHardwareMonitor.Utilities
                     return s;
                 }
             }
+
             return null;
         }
 
@@ -146,6 +181,7 @@ namespace LibreHardwareMonitor.Utilities
             {
                 throw new ArgumentException("Specified sensor '" + sNode.Sensor.Identifier + "' can not be set");
             }
+
             if (value == "null")
             {
                 sNode.Sensor.Control.SetDefault();
@@ -218,7 +254,7 @@ namespace LibreHardwareMonitor.Utilities
         private string HandlePostRequest(HttpListenerRequest request)
         {
             JObject result = new JObject { ["result"] = "ok" };
-            
+
             try
             {
                 if (request.Url.Segments.Length == 2)
@@ -243,7 +279,7 @@ namespace LibreHardwareMonitor.Utilities
 #if DEBUG
             return result.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
-      return result.ToString(Newtonsoft.Json.Formatting.None);
+            return result.ToString(Newtonsoft.Json.Formatting.None);
 #endif
         }
 
@@ -252,6 +288,7 @@ namespace LibreHardwareMonitor.Utilities
             HttpListener listener = (HttpListener)result.AsyncState;
             if (listener == null || !listener.IsListening)
                 return;
+
 
             // Call EndGetContext to complete the asynchronous operation.
             HttpListenerContext context;
@@ -266,49 +303,106 @@ namespace LibreHardwareMonitor.Utilities
 
             HttpListenerRequest request = context.Request;
 
-            if (request.HttpMethod == "POST")
+            bool authenticated;
+
+            if (AuthEnabled)
             {
-                string postResult = HandlePostRequest(request);
-
-                Stream output = context.Response.OutputStream;
-                byte[] utfBytes = Encoding.UTF8.GetBytes(postResult);
-
-                context.Response.AddHeader("Cache-Control", "no-cache");
-                context.Response.ContentLength64 = utfBytes.Length;
-                context.Response.ContentType = "application/json";
-
-                output.Write(utfBytes, 0, utfBytes.Length);
-                output.Close();
-            }
-            else if (request.HttpMethod == "GET")
-            {
-                string requestedFile = request.RawUrl.Substring(1);
-
-                if (requestedFile == "data.json")
+                try
                 {
-                    SendJson(context.Response);
-                    return;
+                    HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
+                    authenticated = (identity.Name == UserName) & (ComputeSHA256(identity.Password) == Password);
                 }
-
-                if (requestedFile.Contains("images_icon"))
+                catch
                 {
-                    ServeResourceImage(context.Response,
-                      requestedFile.Replace("images_icon/", string.Empty));
-                    return;
+                    authenticated = false;
                 }
-
-                // default file to be served
-                if (string.IsNullOrEmpty(requestedFile))
-                    requestedFile = "index.html";
-
-                string[] splits = requestedFile.Split('.');
-                string ext = splits[splits.Length - 1];
-                ServeResourceFile(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
             }
             else
             {
-                context.Response.StatusCode = 404;
+                authenticated = true;
+            }
+
+            if (authenticated)
+            {
+                switch (request.HttpMethod)
+                {
+                    case "POST":
+                    {
+                        string postResult = HandlePostRequest(request);
+
+                        Stream output = context.Response.OutputStream;
+                        byte[] utfBytes = Encoding.UTF8.GetBytes(postResult);
+
+                        context.Response.AddHeader("Cache-Control", "no-cache");
+                        context.Response.ContentLength64 = utfBytes.Length;
+                        context.Response.ContentType = "application/json";
+
+                        output.Write(utfBytes, 0, utfBytes.Length);
+                        output.Close();
+
+                        break;
+                    }
+                    case "GET":
+                    {
+                        string requestedFile = request.RawUrl.Substring(1);
+
+                        if (requestedFile == "data.json")
+                        {
+                            SendJson(context.Response, request);
+                            return;
+                        }
+
+                        if (requestedFile.Contains("images_icon"))
+                        {
+                            ServeResourceImage(context.Response,
+                                               requestedFile.Replace("images_icon/", string.Empty));
+
+                            return;
+                        }
+
+                        // default file to be served
+                        if (string.IsNullOrEmpty(requestedFile))
+                            requestedFile = "index.html";
+
+                        string[] splits = requestedFile.Split('.');
+                        string ext = splits[splits.Length - 1];
+                        ServeResourceFile(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+
+                        break;
+                    }
+                    default:
+                    {
+                        context.Response.StatusCode = 404;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                context.Response.StatusCode = 401;
+            }
+
+            if (context.Response.StatusCode == 401)
+            {
+                const string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
+  <BODY><H4>401 Unauthorized</H4>
+  Authorization required.</BODY></HTML> ";
+
+                byte[] buffer = Encoding.UTF8.GetBytes(responseString);
+                context.Response.ContentLength64 = buffer.Length;
+                context.Response.StatusCode = 401;
+                Stream output = context.Response.OutputStream;
+                output.Write(buffer, 0, buffer.Length);
+                output.Close();
+            }
+
+            try
+            {
                 context.Response.Close();
+            }
+            catch
+            {
+                // client closed connection before the content was sent
             }
         }
 
@@ -316,16 +410,16 @@ namespace LibreHardwareMonitor.Utilities
         {
             // resource names do not support the hyphen
             name = "LibreHardwareMonitor.Resources." +
-              name.Replace("custom-theme", "custom_theme");
+                   name.Replace("custom-theme", "custom_theme");
 
             string[] names =
-              Assembly.GetExecutingAssembly().GetManifestResourceNames();
+                Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
             for (int i = 0; i < names.Length; i++)
             {
                 if (names[i].Replace('\\', '.') == name)
                 {
-                    using (Stream stream = Assembly.GetExecutingAssembly().
-                      GetManifestResourceStream(names[i]))
+                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
                     {
                         response.ContentType = GetContentType("." + ext);
                         response.ContentLength64 = stream.Length;
@@ -338,16 +432,16 @@ namespace LibreHardwareMonitor.Utilities
                             {
                                 output.Write(buffer, 0, len);
                             }
+
                             output.Flush();
                             output.Close();
                             response.Close();
                         }
                         catch (HttpListenerException)
-                        {
-                        }
+                        { }
                         catch (InvalidOperationException)
-                        {
-                        }
+                        { }
+
                         return;
                     }
                 }
@@ -367,10 +461,8 @@ namespace LibreHardwareMonitor.Utilities
             {
                 if (names[i].Replace('\\', '.') == name)
                 {
-                    using (Stream stream = Assembly.GetExecutingAssembly().
-                      GetManifestResourceStream(names[i]))
+                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
                     {
-
                         Image image = Image.FromStream(stream);
                         response.ContentType = "image/png";
                         try
@@ -381,11 +473,12 @@ namespace LibreHardwareMonitor.Utilities
                                 image.Save(ms, ImageFormat.Png);
                                 ms.WriteTo(output);
                             }
+
                             output.Close();
                         }
                         catch (HttpListenerException)
-                        {
-                        }
+                        { }
+
                         image.Dispose();
                         response.Close();
                         return;
@@ -397,7 +490,7 @@ namespace LibreHardwareMonitor.Utilities
             response.Close();
         }
 
-        private void SendJson(HttpListenerResponse response)
+        private void SendJson(HttpListenerResponse response, HttpListenerRequest request = null)
         {
             JObject json = new JObject();
 
@@ -419,20 +512,42 @@ namespace LibreHardwareMonitor.Utilities
 #endif
             byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
-            response.AddHeader("Cache-Control", "no-cache");
-            response.AddHeader("Access-Control-Allow-Origin", "*");
-            response.ContentLength64 = buffer.Length;
-            response.ContentType = "application/json";
-
+            bool acceptGzip;
             try
             {
+                acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].ToLower().IndexOf("gzip", StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+            catch
+            {
+                acceptGzip = false;
+            }
+
+            if (acceptGzip)
+                response.AddHeader("Content-Encoding", "gzip");
+
+            response.AddHeader("Cache-Control", "no-cache");
+            response.AddHeader("Access-Control-Allow-Origin", "*");
+            response.ContentType = "application/json";
+            try
+            {
+                if (acceptGzip)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
+                            zip.Write(buffer, 0, buffer.Length);
+
+                        buffer = ms.ToArray();
+                    }
+                }
+
+                response.ContentLength64 = buffer.Length;
                 Stream output = response.OutputStream;
                 output.Write(buffer, 0, buffer.Length);
                 output.Close();
             }
             catch (HttpListenerException)
-            {
-            }
+            { }
 
             response.Close();
         }
@@ -448,13 +563,13 @@ namespace LibreHardwareMonitor.Utilities
                 ["Max"] = string.Empty
             };
 
-            if (n is SensorNode)
+            if (n is SensorNode sensorNode)
             {
-                jsonNode["SensorId"] = ((SensorNode)n).Sensor.Identifier.ToString();
-                jsonNode["Type"] = ((SensorNode)n).Sensor.SensorType.ToString();
-                jsonNode["Min"] = ((SensorNode)n).Min;
-                jsonNode["Value"] = ((SensorNode)n).Value;
-                jsonNode["Max"] = ((SensorNode)n).Max;
+                jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
+                jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
+                jsonNode["Min"] = sensorNode.Min;
+                jsonNode["Value"] = sensorNode.Value;
+                jsonNode["Max"] = sensorNode.Max;
                 jsonNode["ImageURL"] = "images/transparent.png";
             }
             else if (n is HardwareNode hardwareNode)
@@ -506,7 +621,6 @@ namespace LibreHardwareMonitor.Utilities
 
         private static string GetHardwareImageFile(HardwareNode hn)
         {
-
             switch (hn.Hardware.HardwareType)
             {
                 case HardwareType.Cpu:
@@ -536,12 +650,10 @@ namespace LibreHardwareMonitor.Utilities
                 default:
                     return "cpu.png";
             }
-
         }
 
         private static string GetTypeImageFile(TypeNode tn)
         {
-
             switch (tn.SensorType)
             {
                 case SensorType.Voltage:
@@ -567,24 +679,23 @@ namespace LibreHardwareMonitor.Utilities
                 default:
                     return "power.png";
             }
-
         }
 
-        public int ListenerPort { get; set; }
-
-        ~HttpServer()
+        private string ComputeSHA256(string text)
         {
-            if (PlatformNotSupported)
-                return;
-
-            StopHttpListener();
-            _listener.Abort();
+            using (SHA256 hash = SHA256.Create())
+            {
+                return string.Concat(hash
+                                    .ComputeHash(Encoding.UTF8.GetBytes(text))
+                                    .Select(item => item.ToString("x2")));
+            }
         }
 
         public void Quit()
         {
             if (PlatformNotSupported)
                 return;
+
 
             StopHttpListener();
             _listener.Abort();
