@@ -326,6 +326,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             _ccdsAverageTemperature.Value = activeCcds.Average(x => x.Value);
                         }
                     }
+                    Ring0.ReleasePciBusMutex();
                 }
 
                 // voltage
