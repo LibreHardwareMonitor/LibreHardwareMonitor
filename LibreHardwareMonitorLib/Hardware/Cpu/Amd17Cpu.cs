@@ -117,8 +117,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
                 _coreVoltage = new Sensor("Core (SVI2 TFN)", _hardware._sensorVoltage++, SensorType.Voltage, _hardware, _hardware._settings);
                 _socVoltage = new Sensor("SoC (SVI2 TFN)", _hardware._sensorVoltage++, SensorType.Voltage, _hardware, _hardware._settings);
-                _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, _hardware, _hardware._settings);
-                
+                _busClock = new Sensor("Bus Speed", _hardware._sensorClock++, SensorType.Clock, _hardware, _hardware._settings);
+
                 _hardware.ActivateSensor(_packagePower);
             }
 
@@ -145,7 +145,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 // total_energy [31:0]
                 DateTime sampleTime = DateTime.Now;
                 Ring0.ReadMsr(MSR_PKG_ENERGY_STAT, out uint eax, out _);
-                
+
                 uint totalEnergy = eax;
 
                 uint smuSvi0Tfn = 0;
