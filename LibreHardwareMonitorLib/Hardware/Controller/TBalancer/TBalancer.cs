@@ -90,7 +90,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
         public override HardwareType HardwareType
         {
-            get { return HardwareType.TBalancer; }
+            get { return HardwareType.Cooler; }
         }
 
         protected override void ActivateSensor(ISensor sensor)

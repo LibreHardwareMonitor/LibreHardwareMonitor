@@ -47,7 +47,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
         public override HardwareType HardwareType
         {
-            get { return HardwareType.AquaComputer; }
+            get { return HardwareType.Cooler; }
         }
 
         public string Status
