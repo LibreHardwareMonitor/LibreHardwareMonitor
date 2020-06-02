@@ -1,7 +1,12 @@
-﻿using HidSharp;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
+
 using System;
 using System.Linq;
 using System.Threading;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 {
@@ -11,22 +16,11 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
     internal sealed class KrakenX3 : Hardware
     {
         // Some fixed messages to send to the pump for basic monitoring and control
-        private static readonly byte[] _getFirmareInfo = { 0x10, 0x01 };
+        private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
         private static readonly byte[] _initialize1 = { 0x70, 0x02, 0x01, 0xb8, 0x0b };
         private static readonly byte[] _initialize2 = { 0x70, 0x01 };
         private static readonly byte[][] _setPumpTargetMap = new byte[101][]; // Sacrifice memory to speed this up with a lookup instead of a copy operation
 
-        static KrakenX3()
-        {
-            byte[] set_pump_speed_header = { 0x72, 0x01, 0x00, 0x00 };
-
-            for (byte speed = 0; speed < _setPumpTargetMap.Length; speed++)
-            {
-                _setPumpTargetMap[speed] = set_pump_speed_header.Concat(Enumerable.Repeat(speed, 40).Concat(new byte[20])).ToArray();
-            }
-        }
-
-        private volatile bool _controlling = false;
         private readonly Sensor _pump;
         private readonly Control _pumpControl;
         private readonly Sensor _pumpRpm;
@@ -34,7 +28,15 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private readonly HidStream _stream;
         private readonly Sensor _temperature;
 
-        public string FirmwareVersion { get; private set; }
+        private volatile bool _controlling;
+
+        static KrakenX3()
+        {
+            byte[] setPumpSpeedHeader = { 0x72, 0x01, 0x00, 0x00 };
+
+            for (byte speed = 0; speed < _setPumpTargetMap.Length; speed++)
+                _setPumpTargetMap[speed] = setPumpSpeedHeader.Concat(Enumerable.Repeat(speed, 40).Concat(new byte[20])).ToArray();
+        }
 
         public KrakenX3(HidDevice dev, ISettings settings) : base("Nzxt Kraken X3", new Identifier("nzxt", "krakenx3", dev.GetSerialNumber().TrimStart('0')), settings)
         {
@@ -44,7 +46,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 _stream.Write(_initialize1);
                 _stream.Write(_initialize2);
 
-                _stream.Write(_getFirmareInfo);
+                _stream.Write(_getFirmwareInfo);
                 do
                 {
                     _stream.Read(_rawData);
@@ -52,9 +54,10 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     {
                         FirmwareVersion = $"{_rawData[0x11]}.{_rawData[0x11]}.{_rawData[0x13]}";
                     }
-                } while (FirmwareVersion == null);
+                }
+                while (FirmwareVersion == null);
 
-                Name = $"Nzxt Kraken X3";
+                Name = "Nzxt Kraken X3";
 
                 _pump = new Sensor("Pump Control", 0, SensorType.Control, this, new ParameterDescription[0], settings);
                 _pumpControl = new Control(_pump, settings, 0, 100);
@@ -74,26 +77,29 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             }
         }
 
+        public string FirmwareVersion { get; private set; }
+
+        public override HardwareType HardwareType => HardwareType.Cooler;
+
+        public string Status => FirmwareVersion != "2.1.0" ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 2.1.0" : "Status: OK";
+
         private void SoftwareControlValueChanged(Control control)
         {
             if (control.ControlMode == ControlMode.Software)
             {
                 float value = control.SoftwareValue;
-                byte pump_speed_index = (byte)((value > 100) ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
+                byte pumpSpeedIndex = (byte)(value > 100 ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
 
                 _controlling = true;
-                _stream.Write(_setPumpTargetMap[pump_speed_index]);
+                _stream.Write(_setPumpTargetMap[pumpSpeedIndex]);
                 _pump.Value = value;
             }
             else if (control.ControlMode == ControlMode.Default)
-            { // There isn't a "default" mode with this pump, but a safe setting is 40%
+            {
+                // There isn't a "default" mode with this pump, but a safe setting is 40%
                 _stream.Write(_setPumpTargetMap[40]);
             }
         }
-
-        public override HardwareType HardwareType => HardwareType.Cooler;
-
-        public string Status => (FirmwareVersion != "2.1.0" ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 2.1.0" : "Status: OK");
 
         public override void Close()
         {
@@ -115,12 +121,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                         Array.Copy(buffer, _rawData, buffer.Length);
                     }
                 }
-                catch (TimeoutException ex)
+                catch (TimeoutException)
                 {
                     // Don't care, just make sure the stream is still open
                     Thread.Sleep(500);
                 }
-                catch (ObjectDisposedException ex)
+                catch (ObjectDisposedException)
                 {
                     // Could be unplugged, or the app is stopping...
                 }
@@ -132,7 +138,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             // The NZXT Kraken X3 series sends updates periodically. We have to read it in a seperate thread, this call just reads that data.
             lock (_rawData)
             {
-
                 if (_rawData[0] == 0x75 && _rawData[1] == 0x02)
                 {
                     _temperature.Value = _rawData[15] + _rawData[16] / 10.0f;
@@ -145,8 +150,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     }
                     else if (_pump.Value != _rawData[19])
                     {
-                        byte pump_speed_index = (byte)_pump.Value;
-                        _stream.Write(_setPumpTargetMap[pump_speed_index]);
+                        byte pumpSpeedIndex = (byte)_pump.Value;
+                        _stream.Write(_setPumpTargetMap[pumpSpeedIndex]);
                     }
                     else
                     {
