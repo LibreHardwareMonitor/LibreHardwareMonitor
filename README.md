@@ -5,33 +5,33 @@ Libre Hardware Monitor, a fork of Open Hardware Monitor, is free software that c
 | Name | Build Status | Latest Version |
 | --- | --- | --- |
 | **LibreHardwareMonitor** <br /> WinForms based application that presents all data in a graphical interface | [![Build status](https://ci.appveyor.com/api/projects/status/yk60la8da96kfjos?svg=true)](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor) | 1.0.0.0 |
-| **LibreHardwareMonitorLib** <br /> Library with the help of which you will use all features in your own application | [![Build status](https://ci.appveyor.com/api/projects/status/yk60la8da96kfjos?svg=true)](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor) | 1.0.0.0 |
+| **LibreHardwareMonitorLib** <br /> Library that allows you to use all features in your own application | [![Build status](https://ci.appveyor.com/api/projects/status/yk60la8da96kfjos?svg=true)](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor) | 1.0.0.0 |
 
 ## What can you do?
 With the help of LibreHardwareMonitor you can read information from devices such as:
 - Motherboards
 - Intel and AMD processors
-- Nvidia and AMD graphics cards
+- NVIDIA and AMD graphics cards
 - HDD, SSD and NVMe hard drives
 - Network cards
 
 ## How can I help improve this tool?
-The LibreHadrwareMonitor team welcomes feedback and contributions!<br/>
-You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies send us Pull Request. If you have any suggestions or improvements, don't hesitate to send them to us
+The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
+You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
 
 ## Do I have to compile the program myself?
 You can download the latest builds [here](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor/build/artifacts).
 
 ## What's the easiest way to start?
-**LibreHadrwareMonitor application:**
+**LibreHardwareMonitor application:**
 1. Download the repository and compile 'LibreHardwareMonitor'.
-2. You can start the LibreHardwareMonitor application immediately
+2. You can start the application immediately.
 
 **Sample code:**
 1. Download the repository and compile 'LibreHardwareMonitorLib'.
-2. Add references to 'LibreHardwareMonitorLib.dll' and 'HidSharp.dll' in your project
+2. Add references to 'LibreHardwareMonitorLib.dll' and 'HidSharp.dll' in your project.
 3. In your main file, add namespace 'using LibreHardwareMonitor.Hardware;'
-4. Now you can read most of the data from your equipment
+4. Now you can read most of the data from your devices.
 
 ```c#
 /*
@@ -51,31 +51,32 @@ public class UpdateVisitor : IVisitor
     public void VisitSensor(ISensor sensor) { }
     public void VisitParameter(IParameter parameter) { }
 }
+
 public void Monitor()
 {
-	Computer computer = new Computer()
-	{
-	    IsCpuEnabled = true,
-	    IsGpuEnabled = true,
-	    IsMemoryEnabled = true,
-	    IsMotherboardEnabled = true,
-	    IsControllerEnabled = true,
-	    IsNetworkEnabled = true,
-	    IsStorageEnabled = true
+    Computer computer = new Computer
+    {
+        IsCpuEnabled = true,
+        IsGpuEnabled = true,
+        IsMemoryEnabled = true,
+        IsMotherboardEnabled = true,
+        IsControllerEnabled = true,
+        IsNetworkEnabled = true,
+        IsStorageEnabled = true
 	};
 
-	computer.Open();
-	computer.Accept(new UpdateVisitor());
+    computer.Open();
+    computer.Accept(new UpdateVisitor());
 
-	foreach (IHardware hardware in computer.Hardware)
-	{
-		Console.WriteLine("Hardware: {0}", hardware.Name);
+    foreach (IHardware hardware in computer.Hardware)
+    {
+        Console.WriteLine("Hardware: {0}", hardware.Name);
 
-		foreach(ISensor sensor in hardware.Sensors)
-		{
-			Console.WriteLine("\tSensor: {0}, value: {1}", sensor.Name, sensor.Value);
-		}
-	}
+        foreach(ISensor sensor in hardware.Sensors)
+        {
+            Console.WriteLine("\tSensor: {0}, value: {1}", sensor.Name, sensor.Value);
+        }
+    }
 }
 ```
 
@@ -88,4 +89,4 @@ LibreHardwareMonitor.Software
 ```
 
 ## License
-LibreHadrwareMonitor is free and open source software. You can use it in private and commercial projects. In any case, you should include information about the use of this library and attach a copy of the license.
+LibreHardwareMonitor is free and open source software. You can use it in private and commercial projects. Keep in mind that you must  include a copy of the license in your project.
