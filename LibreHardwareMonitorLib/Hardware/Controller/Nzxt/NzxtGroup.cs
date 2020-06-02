@@ -1,10 +1,15 @@
-﻿using HidSharp;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
+
 using System.Collections.Generic;
 using System.Text;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 {
-    class NzxtGroup : IGroup
+    internal class NzxtGroup : IGroup
     {
         private readonly List<IHardware> _hardware = new List<IHardware>();
         private readonly StringBuilder _report = new StringBuilder();
@@ -62,5 +67,4 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             return _report.ToString();
         }
     }
-
 }
