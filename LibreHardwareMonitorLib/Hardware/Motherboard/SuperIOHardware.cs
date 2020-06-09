@@ -228,6 +228,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     break;
                 }
                 case Chip.IT8620E:
+                {
+                    GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
+                        
+                    break;
+                }
                 case Chip.IT8628E:
                 case Chip.IT8655E:
                 case Chip.IT8665E:
@@ -1067,6 +1072,26 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("System Fan #2", 3));
 
+                            break;
+                        }
+                        case Model.H81M_HD3: //IT8620E
+                        {
+                            v.Add(new Voltage("VCore", 0));
+                            v.Add(new Voltage("Voltage #2", 1, true));
+                            v.Add(new Voltage("Voltage #3", 2, true));
+                            v.Add(new Voltage("Voltage #4", 3, true));
+                            v.Add(new Voltage("iGPU", 4));
+                            v.Add(new Voltage("CPU VRIN", 5));
+                            v.Add(new Voltage("DIMM", 6));
+                            v.Add(new Voltage("3VSB", 7, 10, 10, 0));
+                            v.Add(new Voltage("VBat", 8, 10, 10));
+                            t.Add(new Temperature("CPU", 2));
+                            t.Add(new Temperature("SYS", 0));
+                            f.Add(new Fan("CPU Fan", 0));
+                            f.Add(new Fan("SYS Fan", 1));
+                            c.Add(new Ctrl("CPU Fan Control", 0));
+                            c.Add(new Ctrl("SYS Fan Control", 1));
+                            
                             break;
                         }
                         case Model.AX370_Gaming_K7: // IT8686E
