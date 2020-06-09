@@ -73,6 +73,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                          chip == Chip.IT8665E ||
                          chip == Chip.IT8686E ||
                          chip == Chip.IT8688E ||
+                         chip == Chip.IT8620E ||
                          chip == Chip.IT879XE;
 
             switch (chip)
