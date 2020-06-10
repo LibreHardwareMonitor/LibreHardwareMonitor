@@ -102,7 +102,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
 
         public override HardwareType HardwareType
         {
-            get { return HardwareType.Heatmaster; }
+            get { return HardwareType.Cooler; }
         }
 
         public void Dispose()

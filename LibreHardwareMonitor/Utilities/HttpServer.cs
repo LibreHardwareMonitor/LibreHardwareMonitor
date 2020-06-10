@@ -631,20 +631,14 @@ namespace LibreHardwareMonitor.Utilities
                     return "ati.png";
                 case HardwareType.Storage:
                     return "hdd.png";
-                case HardwareType.Heatmaster:
-                    return "bigng.png";
                 case HardwareType.Motherboard:
                     return "mainboard.png";
                 case HardwareType.SuperIO:
                     return "chip.png";
-                case HardwareType.TBalancer:
-                    return "bigng.png";
                 case HardwareType.Memory:
                     return "ram.png";
-                case HardwareType.AquaComputer:
-                    return "acicon.png";
-                case HardwareType.AeroCool:
-                    return "chip.png";
+                case HardwareType.Cooler:
+                    return "fan.png";
                 case HardwareType.Network:
                     return "nic.png";
                 default:

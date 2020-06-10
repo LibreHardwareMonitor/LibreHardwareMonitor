@@ -169,7 +169,6 @@
     <EmbeddedResource Include="UI\PortForm.resx">
       <DependentUpon>PortForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\bigng.png" />
     <EmbeddedResource Include="Resources\clock.png" />
     <EmbeddedResource Include="Resources\computer.png" />
     <EmbeddedResource Include="Resources\cpu.png" />
@@ -302,9 +301,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ram.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\acicon.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\amd.png" />

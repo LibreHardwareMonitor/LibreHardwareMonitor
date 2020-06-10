@@ -41,7 +41,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 
         public override HardwareType HardwareType
         {
-            get { return HardwareType.AeroCool; }
+            get { return HardwareType.Cooler; }
         }
 
         public int HubNumber { get; }

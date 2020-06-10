@@ -38,29 +38,20 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.Storage:
                     image = Utilities.EmbeddedResources.GetImage("hdd.png");
                     break;
-                case HardwareType.Heatmaster:
-                    image = Utilities.EmbeddedResources.GetImage("bigng.png");
-                    break;
                 case HardwareType.Motherboard:
                     image = Utilities.EmbeddedResources.GetImage("mainboard.png");
                     break;
                 case HardwareType.SuperIO:
                     image = Utilities.EmbeddedResources.GetImage("chip.png");
                     break;
-                case HardwareType.TBalancer:
-                    image = Utilities.EmbeddedResources.GetImage("bigng.png");
-                    break;
                 case HardwareType.Memory:
                     image = Utilities.EmbeddedResources.GetImage("ram.png");
                     break;
-                case HardwareType.AquaComputer:
-                    image = Utilities.EmbeddedResources.GetImage("acicon.png");
-                    break;
-                case HardwareType.AeroCool:
-                    image = Utilities.EmbeddedResources.GetImage("chip.png");
-                    break;
                 case HardwareType.Network:
                     image = Utilities.EmbeddedResources.GetImage("nic.png");
+                    break;
+                case HardwareType.Cooler:
+                    image = Utilities.EmbeddedResources.GetImage("fan.png");
                     break;
                 default:
                     image = new Bitmap(1, 1);

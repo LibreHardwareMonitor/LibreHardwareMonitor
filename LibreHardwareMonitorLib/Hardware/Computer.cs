@@ -12,6 +12,7 @@ using System.Security.Permissions;
 using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
+using LibreHardwareMonitor.Hardware.Controller.Nzxt;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
@@ -94,6 +95,7 @@ namespace LibreHardwareMonitor.Hardware
                         Add(new HeatmasterGroup(_settings));
                         Add(new AquaComputerGroup(_settings));
                         Add(new AeroCoolGroup(_settings));
+                        Add(new NzxtGroup(_settings));
                     }
                     else
                     {
@@ -101,6 +103,7 @@ namespace LibreHardwareMonitor.Hardware
                         RemoveType<HeatmasterGroup>();
                         RemoveType<AquaComputerGroup>();
                         RemoveType<AeroCoolGroup>();
+                        RemoveType<NzxtGroup>();
                     }
                 }
 
@@ -387,6 +390,7 @@ namespace LibreHardwareMonitor.Hardware
                 Add(new HeatmasterGroup(_settings));
                 Add(new AquaComputerGroup(_settings));
                 Add(new AeroCoolGroup(_settings));
+                Add(new NzxtGroup(_settings));
             }
 
             if (_storageEnabled)

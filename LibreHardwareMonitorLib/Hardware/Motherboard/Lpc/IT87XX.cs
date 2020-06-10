@@ -41,7 +41,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             // Check vendor id
             byte vendorId = ReadByte(VENDOR_ID_REGISTER, out bool valid);
-            if (!valid || vendorId != ITE_VENDOR_ID)
+            if (!valid)
+                return;
+
+
+            bool hasMatchingVendorId = false;
+            foreach (byte iteVendorId in ITE_VENDOR_IDS)
+            {
+                if (iteVendorId == vendorId)
+                {
+                    hasMatchingVendorId = true;
+                    break;
+                }
+            }
+
+            if (!hasMatchingVendorId)
                 return;
 
 
@@ -63,21 +77,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             switch (chip)
             {
-                // IT8686E has more sensors
                 case Chip.IT8665E:
-                {
-                    Voltages = new float?[10];
-                    Temperatures = new float?[6];
-                    Fans = new float?[6];
-                    Controls = new float?[3];
-                    break;
-                }
                 case Chip.IT8686E:
                 {
                     Voltages = new float?[10];
                     Temperatures = new float?[6];
                     Fans = new float?[6];
-                    Controls = new float?[4];
+                    Controls = new float?[5];
                     break;
                 }
                 case Chip.IT8688E:
@@ -500,7 +506,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private const byte FAN_TACHOMETER_16BIT_REGISTER = 0x0C;
         private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
 
-        private const byte ITE_VENDOR_ID = 0x90;
+        private readonly byte[] ITE_VENDOR_IDS = { 0x90, 0x7F };
 
         private const byte TEMPERATURE_BASE_REG = 0x29;
         private const byte VENDOR_ID_REGISTER = 0x58;
