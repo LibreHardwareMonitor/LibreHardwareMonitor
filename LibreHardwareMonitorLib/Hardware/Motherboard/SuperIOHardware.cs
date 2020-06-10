@@ -1076,7 +1076,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         }
                         case Model.H81M_HD3: //IT8620E
                         {
-                            v.Add(new Voltage("VCore", 0));
+                            v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
                             v.Add(new Voltage("Voltage #3", 2, true));
                             v.Add(new Voltage("Voltage #4", 3, true));
@@ -1086,11 +1086,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("3VSB", 7, 10, 10, 0));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("CPU", 2));
-                            t.Add(new Temperature("SYS", 0));
+                            t.Add(new Temperature("System", 0));
                             f.Add(new Fan("CPU Fan", 0));
-                            f.Add(new Fan("SYS Fan", 1));
-                            c.Add(new Ctrl("CPU Fan Control", 0));
-                            c.Add(new Ctrl("SYS Fan Control", 1));
+                            f.Add(new Fan("System Fan", 1));
+                            c.Add(new Ctrl("CPU Fan", 0));
+                            c.Add(new Ctrl("System Fan", 1));
                             
                             break;
                         }
