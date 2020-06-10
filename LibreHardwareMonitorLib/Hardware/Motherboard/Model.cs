@@ -89,6 +89,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         H61M_USB3_B3_REV_2_0,
         H67A_UD3H_B3,
         H67A_USB3_B3,
+        H81M_HD3,
         MA770T_UD3,
         MA770T_UD3P,
         MA785GM_US2H,
