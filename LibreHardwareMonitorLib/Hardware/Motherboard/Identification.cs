@@ -218,6 +218,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.H67A_UD3H_B3;
                 case var _ when name.Equals("H67A-USB3-B3", StringComparison.OrdinalIgnoreCase):
                     return Model.H67A_USB3_B3;
+                case var _ when name.Equals("H81M-HD3", StringComparison.OrdinalIgnoreCase):
+                    return Model.H81M_HD3;
                 case var _ when name.Equals("P35-DS3", StringComparison.OrdinalIgnoreCase):
                     return Model.P35_DS3;
                 case var _ when name.Equals("P35-DS3L", StringComparison.OrdinalIgnoreCase):
