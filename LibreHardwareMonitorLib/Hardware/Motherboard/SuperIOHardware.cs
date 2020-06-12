@@ -230,7 +230,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.IT8620E:
                 {
                     GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
-                        
+
                     break;
                 }
                 case Chip.IT8628E:
@@ -1091,7 +1091,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan", 1));
                             c.Add(new Ctrl("CPU Fan", 0));
                             c.Add(new Ctrl("System Fan", 1));
-                            
+
                             break;
                         }
                         case Model.AX370_Gaming_K7: // IT8686E
@@ -1254,6 +1254,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         case Model.P67A_UD4_B3: // IT8728F
                         case Model.Z68AP_D3: // IT8728F
                         case Model.Z68X_UD3H_B3: // IT8728F
+                        case Model.Z68XP_UD3R: // IT8728F
                         {
                             v.Add(new Voltage("VTT", 0));
                             v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
