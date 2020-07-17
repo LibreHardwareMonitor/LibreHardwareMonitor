@@ -26,10 +26,7 @@ namespace LibreHardwareMonitor.Hardware.Network
             NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAddressChanged;
         }
 
-        public IEnumerable<IHardware> Hardware
-        {
-            get { return _hardware; }
-        }
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public string GetReport()
         {

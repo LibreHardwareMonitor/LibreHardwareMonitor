@@ -51,7 +51,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             }
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public void Close()
         {

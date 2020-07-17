@@ -39,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
             }
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public void Close()
         {
