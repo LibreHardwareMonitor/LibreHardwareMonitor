@@ -18,10 +18,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             _motherboards[0] = new Motherboard(smbios, settings);
         }
 
-        public IEnumerable<IHardware> Hardware
-        {
-            get { return _motherboards; }
-        }
+        public IReadOnlyList<IHardware> Hardware => _motherboards;
 
         public void Close()
         {

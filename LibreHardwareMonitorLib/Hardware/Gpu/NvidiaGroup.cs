@@ -85,7 +85,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _report.AppendLine();
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public string GetReport()
         {

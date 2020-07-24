@@ -29,6 +29,7 @@ namespace LibreHardwareMonitor.Hardware
         private bool _controllerEnabled;
         private bool _cpuEnabled;
         private bool _gpuEnabled;
+        private readonly object _lock = new object();
         private bool _memoryEnabled;
         private bool _motherboardEnabled;
         private bool _networkEnabled;
@@ -46,18 +47,19 @@ namespace LibreHardwareMonitor.Hardware
             _settings = settings ?? new Settings();
         }
 
-        public IHardware[] Hardware
+        public IList<IHardware> Hardware
         {
             get
             {
-                List<IHardware> list = new List<IHardware>();
-                foreach (IGroup group in _groups)
+                lock (_lock)
                 {
-                    foreach (IHardware hardware in group.Hardware)
-                        list.Add(hardware);
-                }
+                    List<IHardware> list = new List<IHardware>();
 
-                return list.ToArray();
+                    foreach (IGroup group in _groups)
+                        list.AddRange(group.Hardware);
+
+                    return list;
+                }
             }
         }
 
@@ -218,8 +220,10 @@ namespace LibreHardwareMonitor.Hardware
 
         public string GetReport()
         {
-            using (StringWriter w = new StringWriter(CultureInfo.InvariantCulture))
+            lock (_lock)
             {
+                using StringWriter w = new StringWriter(CultureInfo.InvariantCulture);
+
                 w.WriteLine();
                 w.WriteLine(nameof(LibreHardwareMonitor) + " Report");
                 w.WriteLine();
@@ -251,6 +255,7 @@ namespace LibreHardwareMonitor.Hardware
                 NewSection(w);
                 w.WriteLine("Sensors");
                 w.WriteLine();
+
                 foreach (IGroup group in _groups)
                 {
                     foreach (IHardware hardware in group.Hardware)
@@ -262,6 +267,7 @@ namespace LibreHardwareMonitor.Hardware
                 NewSection(w);
                 w.WriteLine("Parameters");
                 w.WriteLine();
+
                 foreach (IGroup group in _groups)
                 {
                     foreach (IHardware hardware in group.Hardware)
@@ -299,20 +305,29 @@ namespace LibreHardwareMonitor.Hardware
 
         public void Traverse(IVisitor visitor)
         {
-            foreach (IGroup group in _groups)
+            lock (_lock)
             {
-                foreach (IHardware hardware in group.Hardware)
-                    hardware.Accept(visitor);
+                // Use a for-loop instead of foreach to avoid a collection modified exception after sleep, even though everything is under a lock.
+                for (int i = 0; i < _groups.Count; i++)
+                {
+                    IGroup group = _groups[i];
+
+                    for (int j = 0; j < group.Hardware.Count; j++)
+                        group.Hardware[j].Accept(visitor);
+                }
             }
         }
 
         private void Add(IGroup group)
         {
-            if (_groups.Contains(group))
-                return;
+            lock (_lock)
+            {
+                if (_groups.Contains(group))
+                    return;
 
 
-            _groups.Add(group);
+                _groups.Add(group);
+            }
 
             if (HardwareAdded != null)
             {
@@ -323,11 +338,16 @@ namespace LibreHardwareMonitor.Hardware
 
         private void Remove(IGroup group)
         {
-            if (!_groups.Contains(group))
-                return;
+            lock (_lock)
+            {
+                if (!_groups.Contains(group))
+                    return;
 
 
-            _groups.Remove(group);
+                _groups.Remove(group);
+            }
+
+
             if (HardwareRemoved != null)
             {
                 foreach (IHardware hardware in group.Hardware)
@@ -339,14 +359,18 @@ namespace LibreHardwareMonitor.Hardware
 
         private void RemoveType<T>() where T : IGroup
         {
-            List<IGroup> list = new List<IGroup>();
-            foreach (IGroup group in _groups)
+            List<T> list = new List<T>();
+
+            lock (_lock)
             {
-                if (group is T)
-                    list.Add(group);
+                foreach (IGroup group in _groups)
+                {
+                    if (group is T t)
+                        list.Add(t);
+                }
             }
 
-            foreach (IGroup group in list)
+            foreach (T group in list)
                 Remove(group);
         }
 
@@ -423,6 +447,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             w.WriteLine("{0}|", space);
             w.WriteLine("{0}+- {1} ({2})", space, hardware.Name, hardware.Identifier);
+
             ISensor[] sensors = hardware.Sensors;
             Array.Sort(sensors, CompareSensor);
 
@@ -437,8 +462,10 @@ namespace LibreHardwareMonitor.Hardware
         {
             w.WriteLine("{0}|", space);
             w.WriteLine("{0}+- {1} ({2})", space, hardware.Name, hardware.Identifier);
+
             ISensor[] sensors = hardware.Sensors;
             Array.Sort(sensors, CompareSensor);
+
             foreach (ISensor sensor in sensors)
             {
                 string innerSpace = space + "|  ";
@@ -446,6 +473,7 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     w.WriteLine("{0}|", innerSpace);
                     w.WriteLine("{0}+- {1} ({2})", innerSpace, sensor.Name, sensor.Identifier);
+
                     foreach (IParameter parameter in sensor.Parameters)
                     {
                         string innerInnerSpace = innerSpace + "|  ";
@@ -477,10 +505,13 @@ namespace LibreHardwareMonitor.Hardware
                 return;
 
 
-            while (_groups.Count > 0)
+            lock (_lock)
             {
-                IGroup group = _groups[_groups.Count - 1];
-                Remove(group);
+                while (_groups.Count > 0)
+                {
+                    IGroup group = _groups[_groups.Count - 1];
+                    Remove(group);
+                }
             }
 
             OpCode.Close();
@@ -502,10 +533,13 @@ namespace LibreHardwareMonitor.Hardware
 
         private void RemoveGroups()
         {
-            while (_groups.Count > 0)
+            lock (_lock)
             {
-                IGroup group = _groups[_groups.Count - 1];
-                Remove(group);
+                while (_groups.Count > 0)
+                {
+                    IGroup group = _groups[_groups.Count - 1];
+                    Remove(group);
+                }
             }
         }
 

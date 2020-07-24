@@ -4,6 +4,8 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System.Collections.Generic;
+
 namespace LibreHardwareMonitor.Hardware
 {
     public delegate void HardwareEventHandler(IHardware hardware);
@@ -16,7 +18,7 @@ namespace LibreHardwareMonitor.Hardware
 
         bool IsGpuEnabled { get; }
 
-        IHardware[] Hardware { get; }
+        IList<IHardware> Hardware { get; }
 
         bool IsStorageEnabled { get; }
 

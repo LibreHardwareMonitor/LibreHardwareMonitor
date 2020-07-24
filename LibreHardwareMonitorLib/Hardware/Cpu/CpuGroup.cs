@@ -68,7 +68,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public string GetReport()
         {

@@ -375,7 +375,6 @@ namespace LibreHardwareMonitor.UI
 
         private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
         {
-
             if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
             {
                 _computer.Reset();
@@ -618,14 +617,12 @@ namespace LibreHardwareMonitor.UI
 
         private void NodeTextBoxText_EditorShowing(object sender, CancelEventArgs e)
         {
-            e.Cancel = !(treeView.CurrentNode != null &&
-              (treeView.CurrentNode.Tag is SensorNode ||
-               treeView.CurrentNode.Tag is HardwareNode));
+            e.Cancel = !(treeView.CurrentNode != null && (treeView.CurrentNode.Tag is SensorNode || treeView.CurrentNode.Tag is HardwareNode));
         }
 
         private void NodeCheckBox_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
         {
-            e.Value = (e.Node.Tag is SensorNode node) && plotMenuItem.Checked;
+            e.Value = e.Node.Tag is SensorNode && plotMenuItem.Checked;
         }
 
         private void ExitClick(object sender, EventArgs e)
@@ -636,6 +633,7 @@ namespace LibreHardwareMonitor.UI
         private void Timer_Tick(object sender, EventArgs e)
         {
             _computer.Accept(_updateVisitor);
+
             treeView.Invalidate();
             _plotPanel.InvalidatePlot();
             _systemTray.Redraw();

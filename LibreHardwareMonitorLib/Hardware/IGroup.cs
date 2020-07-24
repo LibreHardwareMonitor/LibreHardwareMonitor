@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware
 {
     internal interface IGroup
     {
-        IEnumerable<IHardware> Hardware { get; }
+        IReadOnlyList<IHardware> Hardware { get; }
 
         string GetReport();
 
