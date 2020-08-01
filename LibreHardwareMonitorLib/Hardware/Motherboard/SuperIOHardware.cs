@@ -361,6 +361,51 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                     break;
                 }
+                case Chip.NCT6687D:
+                {
+                    v.Add(new Voltage("VIN0 +12V", 0));
+                    v.Add(new Voltage("VIN1 +5V", 1));
+                    v.Add(new Voltage("VIN2 VCore", 2));
+                    v.Add(new Voltage("VIN3 SIO", 3));
+                    v.Add(new Voltage("VIN4 DRAM", 4));
+                    v.Add(new Voltage("VIN5 CPU IO", 5));
+                    v.Add(new Voltage("VIN6 CPU SA", 6));
+                    v.Add(new Voltage("VIN7 SIO", 7));
+                    v.Add(new Voltage("3VCC I/O +3.3", 8));
+                    v.Add(new Voltage("SIO VTT", 9));
+                    v.Add(new Voltage("SIO VREF", 10));
+                    v.Add(new Voltage("SIO VSB", 11));
+                    v.Add(new Voltage("SIO AVSB", 12));
+                    v.Add(new Voltage("SIO VBAT", 13));
+
+                    t.Add(new Temperature("CPU", 0));
+                    t.Add(new Temperature("System", 1));
+                    t.Add(new Temperature("MOS", 2));
+                    t.Add(new Temperature("PCH", 3));
+                    t.Add(new Temperature("CPU Socket", 4));
+                    t.Add(new Temperature("PCIE_1", 5));
+                    t.Add(new Temperature("M2_1", 6));
+
+                    f.Add(new Fan("CPU Fan", 0));
+                    f.Add(new Fan("PUMP Fan", 1));
+                    f.Add(new Fan("SYS Fan #1", 2));
+                    f.Add(new Fan("SYS Fan #2", 3));
+                    f.Add(new Fan("SYS Fan #3", 4));
+                    f.Add(new Fan("SYS Fan #4", 5));
+                    f.Add(new Fan("SYS Fan #5", 6));
+                    f.Add(new Fan("SYS Fan #6", 7));
+
+                    c.Add(new Ctrl("CPU Fan", 0));
+                    c.Add(new Ctrl("PUMP Fan", 1));
+                    c.Add(new Ctrl("SYS Fan #1", 2));
+                    c.Add(new Ctrl("SYS Fan #2", 3));
+                    c.Add(new Ctrl("SYS Fan #3", 4));
+                    c.Add(new Ctrl("SYS Fan #4", 5));
+                    c.Add(new Ctrl("SYS Fan #5", 6));
+                    c.Add(new Ctrl("SYS Fan #6", 7));
+
+                    break;
+                }
                 default:
                 {
                     GetDefaultConfiguration(superIO, v, t, f, c);
