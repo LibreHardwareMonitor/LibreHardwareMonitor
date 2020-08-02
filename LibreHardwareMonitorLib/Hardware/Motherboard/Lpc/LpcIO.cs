@@ -603,13 +603,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.NCT6796DR:
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
-                    {
-                        _superIOs.Add(new Nct677X(chip, revision, address, port));
-                        break;
-                    }
                     case Chip.NCT6687D:
                     {
-                        _superIOs.Add(new Nct6687D(chip, revision, address, port));
+                        _superIOs.Add(new Nct677X(chip, revision, address, port));
                         break;
                     }
                     case Chip.F71858:

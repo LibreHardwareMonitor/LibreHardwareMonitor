@@ -46,7 +46,6 @@
     <Compile Include="Hardware\Controller\Nzxt\KrakenX3.cs" />
     <Compile Include="Hardware\Controller\Nzxt\NzxtGroup.cs" />
     <Compile Include="Hardware\GroupAffinity.cs" />
-    <Compile Include="Hardware\Motherboard\Lpc\Nct6687D.cs" />
     <Compile Include="Interop\Ftd2xx.cs" />
     <Compile Include="Hardware\Controller\TBalancer\TBalancer.cs" />
     <Compile Include="Hardware\Controller\TBalancer\TBalancerGroup.cs" />
