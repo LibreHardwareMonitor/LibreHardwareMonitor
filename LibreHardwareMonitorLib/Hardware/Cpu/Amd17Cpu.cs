@@ -278,11 +278,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
 
                             ccdRawTemp &= 0xFFF;
-                            if (ccdRawTemp == 0)
-                                break;
-
                             float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
-                            if (ccdTemp < 125)  // Zen 2 reports 95 degrees C max, but it might exceed that.
+                            if (ccdRawTemp > 0 && ccdTemp < 125)  // Zen 2 reports 95 degrees C max, but it might exceed that.
                             {
                                 if (_ccdTemperatures[i] == null)
                                 {
