@@ -278,25 +278,19 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
 
                             ccdRawTemp &= 0xFFF;
-                            if (ccdRawTemp == 0)
-                                break;
-
-
                             float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
-                            if (ccdTemp > 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
-                                break;
-
-
-                            if (_ccdTemperatures[i] == null)
+                            if (ccdRawTemp > 0 && ccdTemp < 125)  // Zen 2 reports 95 degrees C max, but it might exceed that.
                             {
-                                _hardware.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
-                                                                                          _hardware._sensorTemperatures++,
-                                                                                          SensorType.Temperature,
-                                                                                          _hardware,
-                                                                                          _hardware._settings));
+                                if (_ccdTemperatures[i] == null)
+                                {
+                                    _hardware.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
+                                                                                              _hardware._sensorTemperatures++,
+                                                                                              SensorType.Temperature,
+                                                                                              _hardware,
+                                                                                              _hardware._settings));
+                                }
+                                _ccdTemperatures[i].Value = ccdTemp;
                             }
-
-                            _ccdTemperatures[i].Value = ccdTemp;
                         }
 
                         Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
