@@ -58,6 +58,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         NCT6796DR = 0xD42A,
         NCT6797D = 0xD451,
         NCT6798D = 0xD42B,
+        NCT6687D = 0xD592,
 
         W83627DHG = 0xA020,
         W83627DHGP = 0xB070,
@@ -119,6 +120,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.NCT6796DR: return "Nuvoton NCT6796D-R";
                 case Chip.NCT6797D: return "Nuvoton NCT6797D";
                 case Chip.NCT6798D: return "Nuvoton NCT6798D";
+                case Chip.NCT6687D: return "Nuvoton NCT6687D";
 
                 case Chip.W83627DHG: return "Winbond W83627DHG";
                 case Chip.W83627DHGP: return "Winbond W83627DHG-P";
