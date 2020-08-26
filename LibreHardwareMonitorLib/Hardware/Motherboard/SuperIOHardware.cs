@@ -363,46 +363,46 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 }
                 case Chip.NCT6687D:
                 {
-                    v.Add(new Voltage("VIN0 +12V", 0));
-                    v.Add(new Voltage("VIN1 +5V", 1));
-                    v.Add(new Voltage("VIN2 VCore", 2));
-                    v.Add(new Voltage("VIN3 SIO", 3));
-                    v.Add(new Voltage("VIN4 DRAM", 4));
-                    v.Add(new Voltage("VIN5 CPU IO", 5));
-                    v.Add(new Voltage("VIN6 CPU SA", 6));
-                    v.Add(new Voltage("VIN7 SIO", 7));
-                    v.Add(new Voltage("3VCC I/O +3.3", 8));
-                    v.Add(new Voltage("SIO VTT", 9));
-                    v.Add(new Voltage("SIO VREF", 10));
-                    v.Add(new Voltage("SIO VSB", 11));
-                    v.Add(new Voltage("SIO AVSB", 12));
-                    v.Add(new Voltage("SIO VBAT", 13));
+                    v.Add(new Voltage("+12V", 0));
+                    v.Add(new Voltage("+5V", 1));
+                    v.Add(new Voltage("Vcore", 2));
+                    v.Add(new Voltage("Voltage #1", 3));
+                    v.Add(new Voltage("DIMM", 4));
+                    v.Add(new Voltage("CPU I/O", 5));
+                    v.Add(new Voltage("CPU SA", 6));
+                    v.Add(new Voltage("Voltage #2", 7));
+                    v.Add(new Voltage("AVCC3", 8));
+                    v.Add(new Voltage("VTT", 9));
+                    v.Add(new Voltage("VRef", 10));
+                    v.Add(new Voltage("VSB", 11));
+                    v.Add(new Voltage("AVSB", 12));
+                    v.Add(new Voltage("VBat", 13));
 
                     t.Add(new Temperature("CPU", 0));
                     t.Add(new Temperature("System", 1));
-                    t.Add(new Temperature("MOS", 2));
+                    t.Add(new Temperature("VRM MOS", 2));
                     t.Add(new Temperature("PCH", 3));
                     t.Add(new Temperature("CPU Socket", 4));
-                    t.Add(new Temperature("PCIE_1", 5));
+                    t.Add(new Temperature("PCIe x1", 5));
                     t.Add(new Temperature("M2_1", 6));
-
+                        
                     f.Add(new Fan("CPU Fan", 0));
-                    f.Add(new Fan("PUMP Fan", 1));
-                    f.Add(new Fan("SYS Fan #1", 2));
-                    f.Add(new Fan("SYS Fan #2", 3));
-                    f.Add(new Fan("SYS Fan #3", 4));
-                    f.Add(new Fan("SYS Fan #4", 5));
-                    f.Add(new Fan("SYS Fan #5", 6));
-                    f.Add(new Fan("SYS Fan #6", 7));
+                    f.Add(new Fan("Pump Fan", 1));
+                    f.Add(new Fan("System Fan #1", 2));
+                    f.Add(new Fan("System Fan #2", 3));
+                    f.Add(new Fan("System Fan #3", 4));
+                    f.Add(new Fan("System Fan #4", 5));
+                    f.Add(new Fan("System Fan #5", 6));
+                    f.Add(new Fan("System Fan #6", 7));
 
                     c.Add(new Ctrl("CPU Fan", 0));
-                    c.Add(new Ctrl("PUMP Fan", 1));
-                    c.Add(new Ctrl("SYS Fan #1", 2));
-                    c.Add(new Ctrl("SYS Fan #2", 3));
-                    c.Add(new Ctrl("SYS Fan #3", 4));
-                    c.Add(new Ctrl("SYS Fan #4", 5));
-                    c.Add(new Ctrl("SYS Fan #5", 6));
-                    c.Add(new Ctrl("SYS Fan #6", 7));
+                    c.Add(new Ctrl("Pump Fan", 1));
+                    c.Add(new Ctrl("System Fan #1", 2));
+                    c.Add(new Ctrl("System Fan #2", 3));
+                    c.Add(new Ctrl("System Fan #3", 4));
+                    c.Add(new Ctrl("System Fan #4", 5));
+                    c.Add(new Ctrl("System Fan #5", 6));
+                    c.Add(new Ctrl("System Fan #6", 7));
 
                     break;
                 }
@@ -618,7 +618,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         case Model.LP_BI_P45_T2RS_Elite: // IT8718F
                         {
                             v.Add(new Voltage("Vcore", 0));
-                            v.Add(new Voltage("FSB VTT", 1));
+                            v.Add(new Voltage("VTT", 1));
                             v.Add(new Voltage("+3.3V", 2));
                             v.Add(new Voltage("+5V", 3, 6.8f, 10));
                             v.Add(new Voltage("+12V", 4, 30, 10));
@@ -1128,7 +1128,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("iGPU", 4));
                             v.Add(new Voltage("CPU VRIN", 5));
                             v.Add(new Voltage("DIMM", 6));
-                            v.Add(new Voltage("3VSB", 7, 10, 10, 0));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
                             v.Add(new Voltage("VBat", 8, 10, 10));
                             t.Add(new Temperature("CPU", 2));
                             t.Add(new Temperature("System", 0));
@@ -1267,7 +1267,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 2));
                             t.Add(new Temperature("PCIe x16", 3));
                             t.Add(new Temperature("VRM MOS", 4));
-                            t.Add(new Temperature("System2", 5));
+                            t.Add(new Temperature("System #2", 5));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
@@ -2217,7 +2217,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("CPU", 0));
                             t.Add(new Temperature("CPU (PECI)", 1));
                             t.Add(new Temperature("System", 2));
-                            t.Add(new Temperature("VR MOSS", 3));
+                            t.Add(new Temperature("VRM MOS", 3));
                             t.Add(new Temperature("PCH", 5));
                             f.Add(new Fan("Pump Fan", 0));
                             f.Add(new Fan("CPU Fan", 1));

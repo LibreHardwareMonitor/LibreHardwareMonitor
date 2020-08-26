@@ -54,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 _vBatMonitorControlRegister = 0x0318;
             }
-            else if(chip == Chip.NCT6687D)
+            else if (chip == Chip.NCT6687D)
             {
                 FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 };
                 FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xA2A, 0xA2B, 0xA2C, 0xA2D, 0xA2E, 0xA2F };
@@ -320,7 +320,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 SaveDefaultFanControl(index);
 
-                if (Chip == Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D)
+                {
+                    // set manual mode
+                    WriteByte(FAN_CONTROL_MODE_REG[index], 0);
+
+                    // set output value
+                    WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
+                }
+                else
                 {
                     // Manual mode, bit(1 : set, 0 : unset)
                     // bit 0 : CPU Fan
@@ -331,6 +339,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     // bit 5 : SYS Fan 4
                     // bit 6 : SYS Fan 5
                     // bit 7 : SYS Fan 6
+
                     byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
                     byte bitMask = (byte)(0x01 << index);
                     mode = (byte)(mode | bitMask);
@@ -342,14 +351,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
                     WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
                     Thread.Sleep(50);
-                }
-                else
-                {
-                    // set manual mode
-                    WriteByte(FAN_CONTROL_MODE_REG[index], 0);
-
-                    // set output value
-                    WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
                 }
             }
             else
@@ -373,31 +374,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Voltages.Length; i++)
             {
-                if (Chip == Chip.NCT6687D)
-                {
-                    float value = 0.001f * (16 * ReadByte(_voltageRegisters[i]) + (ReadByte((ushort)(_voltageRegisters[i] + 1)) >> 4));
-
-                    // 12V
-                    if (i == 0)
-                    {
-                        Voltages[i] = value * 12.0f;
-                    }
-                    // 5V
-                    else if (i == 1)
-                    {
-                        Voltages[i] = value * 5.0f;
-                    }
-                    // DRAM
-                    else if (i == 4)
-                    {
-                        Voltages[i] = value * 2.0f;
-                    }
-                    else
-                    {
-                        Voltages[i] = value;
-                    }
-                }
-                else
+                if (Chip != Chip.NCT6687D)
                 {
                     float value = 0.008f * ReadByte(_voltageRegisters[i]);
                     bool valid = value > 0;
@@ -408,19 +385,27 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                     Voltages[i] = valid ? value : (float?)null;
                 }
+                else
+                {
+                    float value = 0.001f * (16 * ReadByte(_voltageRegisters[i]) + (ReadByte((ushort)(_voltageRegisters[i] + 1)) >> 4));
+
+                    Voltages[i] = i switch
+                    {
+                        // 12V
+                        0 => value * 12.0f,
+                        // 5V
+                        1 => value * 5.0f,
+                        // DRAM
+                        4 => value * 2.0f,
+                        _ => value
+                    };
+                }
             }
 
             int temperatureSourceMask = 0;
             for (int i = _temperatureRegister.Length - 1; i >= 0; i--)
             {
-                if (Chip == Chip.NCT6687D)
-                {
-                    int value = (sbyte)ReadByte(_temperatureRegister[i]);
-                    int half = (ReadByte((ushort)(_temperatureRegister[i] + 1)) >> 7) & 0x1;
-                    float temperature = value + (0.5f * half);
-                    Temperatures[i] = temperature;
-                }
-                else
+                if (Chip != Chip.NCT6687D)
                 {
                     int value = (sbyte)ReadByte(_temperatureRegister[i]) << 1;
                     if (_temperatureHalfBit[i] > 0)
@@ -440,7 +425,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         if (_temperaturesSource[j] == source)
                             Temperatures[j] = temperature;
                     }
-                }                
+                }
+                else
+                {
+                    int value = (sbyte)ReadByte(_temperatureRegister[i]);
+                    int half = (ReadByte((ushort)(_temperatureRegister[i] + 1)) >> 7) & 0x1;
+                    float temperature = value + (0.5f * half);
+                    Temperatures[i] = temperature;
+                }
             }
 
             for (int i = 0; i < _alternateTemperatureRegister.Length; i++)
@@ -462,12 +454,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Fans.Length; i++)
             {
-                if (Chip == Chip.NCT6687D)
-                {
-                    int value = (ReadByte(_fanRpmRegister[i]) << 8) | ReadByte((ushort)(_fanRpmRegister[i] + 1));
-                    Fans[i] = value;
-                }
-                else
+                if (Chip != Chip.NCT6687D)
                 {
                     if (_fanCountRegister != null)
                     {
@@ -488,7 +475,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
                         else
                         {
-                            Fans[i] = 0;
+                            Fans[i] = null;
                         }
                     }
                     else
@@ -500,20 +487,25 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         Fans[i] = value > _minFanRpm ? value : 0;
                     }
                 }
+                else
+                {
+                    int value = (ReadByte(_fanRpmRegister[i]) << 8) | ReadByte((ushort)(_fanRpmRegister[i] + 1));
+                    Fans[i] = value;
+                }
             }
 
             for (int i = 0; i < Controls.Length; i++)
             {
-                if (Chip == Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D)
                 {
                     int value = ReadByte(FAN_PWM_OUT_REG[i]);
-                    Controls[i] = (float)Math.Round(value / 2.55f);
+                    Controls[i] = value / 2.55f;
                 }
                 else
                 {
                     int value = ReadByte(FAN_PWM_OUT_REG[i]);
-                    Controls[i] = value / 2.55f;
-                }                
+                    Controls[i] = (float)Math.Round(value / 2.55f);
+                }
             }
 
             Ring0.ReleaseIsaBusMutex();
@@ -646,23 +638,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             r.AppendLine("        00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
             r.AppendLine();
 
-            if (Chip == Chip.NCT6687D)
-            {
-                for (int i = 0; i <= 0xFF; i++)
-                {
-                    r.Append(" ");
-                    r.Append((i << 4).ToString("X4", CultureInfo.InvariantCulture));
-                    r.Append("  ");
-                    for (int j = 0; j <= 0xF; j++)
-                    {
-                        ushort address = (ushort)(i << 4 | j);
-                        r.Append(" ");
-                        r.Append(ReadByte(address).ToString("X2", CultureInfo.InvariantCulture));
-                    }
-                    r.AppendLine();
-                }
-            }
-            else
+            if (Chip != Chip.NCT6687D)
             {
                 foreach (ushort address in addresses)
                 {
@@ -678,6 +654,23 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     r.AppendLine();
                 }
             }
+            else
+            {
+                for (int i = 0; i <= 0xFF; i++)
+                {
+                    r.Append(" ");
+                    r.Append((i << 4).ToString("X4", CultureInfo.InvariantCulture));
+                    r.Append("  ");
+                    for (int j = 0; j <= 0xF; j++)
+                    {
+                        ushort address = (ushort)(i << 4 | j);
+                        r.Append(" ");
+                        r.Append(ReadByte(address).ToString("X2", CultureInfo.InvariantCulture));
+                    }
+
+                    r.AppendLine();
+                }
+            }
 
             r.AppendLine();
 
@@ -688,16 +681,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private byte ReadByte(ushort address)
         {
-            if (Chip == Chip.NCT6687D)
-            {
-                byte page = (byte)(address >> 8);
-                byte index = (byte)(address & 0xFF);
-                Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
-                Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-                Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-                return Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
-            }
-            else
+            if (Chip != Chip.NCT6687D)
             {
                 byte bank = (byte)(address >> 8);
                 byte register = (byte)(address & 0xFF);
@@ -705,12 +689,28 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
                 Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
                 return Ring0.ReadIoPort(_port + DATA_REGISTER_OFFSET);
-            }            
+            }
+
+            byte page = (byte)(address >> 8);
+            byte index = (byte)(address & 0xFF);
+            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
+            Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
+            return Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
         }
 
         private void WriteByte(ushort address, byte value)
         {
-            if (Chip == Chip.NCT6687D)
+            if (Chip != Chip.NCT6687D)
+            {
+                byte bank = (byte)(address >> 8);
+                byte register = (byte)(address & 0xFF);
+                Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
+                Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
+                Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
+                Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, value);
+            }
+            else
             {
                 byte page = (byte)(address >> 8);
                 byte index = (byte)(address & 0xFF);
@@ -719,39 +719,28 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
                 Ring0.WriteIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET, value);
             }
-            else
-            {
-                byte bank = (byte)(address >> 8);
-                byte register = (byte)(address & 0xFF);
-                Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-                Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-                Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-                Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, value);
-            }            
         }
 
         private bool IsNuvotonVendor()
         {
-            if (Chip == Chip.NCT6687D)
-                return true;
-            return ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
+            return Chip == Chip.NCT6687D || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
         }
 
         private void SaveDefaultFanControl(int index)
         {
             if (!_restoreDefaultFanControlRequired[index])
             {
-                if (Chip == Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D)
+                {
+                    _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                }
+                else
                 {
                     byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
                     byte bitMask = (byte)(0x01 << index);
                     _initialFanControlMode[index] = (byte)(mode & bitMask);
                 }
-                else
-                {
-                    _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                }
-                                
+
                 _initialFanPwmCommand[index] = ReadByte(FAN_PWM_COMMAND_REG[index]);
                 _restoreDefaultFanControlRequired[index] = true;
             }
@@ -761,7 +750,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         {
             if (_restoreDefaultFanControlRequired[index])
             {
-                if (Chip == Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D)
+                {
+                    WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
+                    WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
+                }
+                else
                 {
                     byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
                     mode = (byte)(mode & ~_initialFanControlMode[index]);
@@ -774,12 +768,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
                     Thread.Sleep(50);
                 }
-                else
-                {
-                    WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
-                    WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
-                }
-                
+
                 _restoreDefaultFanControlRequired[index] = false;
             }
         }
