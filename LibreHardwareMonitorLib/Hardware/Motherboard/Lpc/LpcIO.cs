@@ -498,6 +498,20 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                     break;
                 }
+                case 0xD5:
+                {
+                    switch (revision)
+                    {
+                        case 0x92:
+                        {
+                            chip = Chip.NCT6687D;
+                            logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                            break;
+                        }
+                    }
+
+                    break;
+                }
             }
 
             if (chip == Chip.Unknown)
@@ -589,6 +603,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.NCT6796DR:
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
+                    case Chip.NCT6687D:
                     {
                         _superIOs.Add(new Nct677X(chip, revision, address, port));
                         break;
@@ -709,7 +724,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             }
             else
             {
-                port.Select(IT87_ENVIRONMENT_CONTROLLER_LDN);
+                port.Select(IT87_ENVIRONMENT_CONTROLLER_LDN);               
+
                 ushort address = port.ReadWord(BASE_ADDRESS_REGISTER);
                 Thread.Sleep(1);
                 ushort verify = port.ReadWord(BASE_ADDRESS_REGISTER);
