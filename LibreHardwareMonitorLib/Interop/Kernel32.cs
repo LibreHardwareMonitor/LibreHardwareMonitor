@@ -24,6 +24,8 @@ namespace LibreHardwareMonitor.Interop
         internal const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
         internal const byte SMART_LBA_HI = 0xC2;
         internal const byte SMART_LBA_MID = 0x4F;
+        internal const byte SMART_LBA_HI_EXCEEDED = 0x2C;
+        internal const byte SMART_LBA_MID_EXCEEDED = 0xF4;
         private const string DllName = "kernel32.dll";
 
         [Flags]
@@ -145,6 +147,19 @@ namespace LibreHardwareMonitor.Interop
             ref SENDCMDINPARAMS lpInBuffer,
             int nInBufferSize,
             out IDENTIFYCMDOUTPARAMS lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeHandle hDevice,
+            DFP dwIoControlCode,
+            ref SENDCMDINPARAMS lpInBuffer,
+            int nInBufferSize,
+            out STATUSCMDOUTPARAMS lpOutBuffer,
             int nOutBufferSize,
             out uint lpBytesReturned,
             IntPtr lpOverlapped);
@@ -587,6 +602,14 @@ namespace LibreHardwareMonitor.Interop
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_DRIVE_ATTRIBUTES)]
             public SMART_THRESHOLD[] Thresholds;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        internal struct STATUSCMDOUTPARAMS
+        {
+            public uint cBufferSize;
+            public DRIVERSTATUS DriverStatus;
+            public IDEREGS irDriveRegs;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
