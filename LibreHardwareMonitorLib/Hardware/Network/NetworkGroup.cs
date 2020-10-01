@@ -70,9 +70,21 @@ namespace LibreHardwareMonitor.Hardware.Network
             // with others as they manipulate non-thread safe state.
             lock (_scanLock)
             {
-                IOrderedEnumerable<NetworkInterface> networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
-                                                        .Where(DesiredNetworkType)
-                                                        .OrderBy(x => x.Name);
+                IOrderedEnumerable<NetworkInterface> networkInterfaces = null;
+
+                while (networkInterfaces == null)
+                {
+                    try
+                    {
+                        networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                                                                .Where(DesiredNetworkType)
+                                                                .OrderBy(x => x.Name);
+                    }
+                    catch (NetworkInformationException) 
+                    {
+                        // Let the while loop try again until successful
+                    }
+                }
 
                 var scanned = networkInterfaces.ToDictionary(x => x.Id, x => x);
                 IEnumerable<KeyValuePair<string, NetworkInterface>> newNetworkInterfaces = scanned.Where(x => !_networks.ContainsKey(x.Key));
