@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
       - uses: actions/checkout@v2
@@ -17,9 +18,12 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.200'
-
+          
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.1
+  
       - name: Clean
-        run: dotnet clean LibreHardwareMonitor.sln
+        run: msbuild LibreHardwareMonitor.sln -t:Clean
     
       - name: Build
-        run: dotnet build LibreHardwareMonitor.sln --configuration Release
+        run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release
