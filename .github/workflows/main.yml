@@ -13,6 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: nuget/setup-nuget@v1
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
@@ -24,6 +25,9 @@ jobs:
   
       - name: Clean
         run: msbuild LibreHardwareMonitor.sln -t:Clean
+        
+      - name: NuGet restore
+        run: nuget restore LibreHardwareMonitor.sln
     
       - name: Build
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release
