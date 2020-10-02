@@ -66,13 +66,6 @@ namespace LibreHardwareMonitor.UI
         {
             InitializeComponent();
 
-            // check if the LibreHardwareMonitorLib assembly has the correct version
-            if (Assembly.GetAssembly(typeof(Computer)).GetName().Version != Assembly.GetExecutingAssembly().GetName().Version)
-            {
-                MessageBox.Show("The version of the file LibreHardwareMonitorLib.dll is incompatible.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Environment.Exit(0);
-            }
-
             _settings = new PersistentSettings();
             _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
 
