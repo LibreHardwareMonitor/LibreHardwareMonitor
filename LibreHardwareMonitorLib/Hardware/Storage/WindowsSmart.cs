@@ -119,6 +119,52 @@ namespace LibreHardwareMonitor.Hardware.Storage
             return true;
         }
 
+        /// <summary>
+        /// Reads Smart health status of the drive
+        /// </summary>
+        /// <returns>True, if drive is healthy; False, if unhealthy; Null, if it cannot be read</returns>
+        public bool? ReadSmartHealth()
+        {
+            if (_handle.IsClosed)
+                throw new ObjectDisposedException(nameof(WindowsSmart));
+
+            var parameter = new Kernel32.SENDCMDINPARAMS
+            {
+                bDriveNumber = (byte)_driveNumber,
+                irDriveRegs = {
+                    bFeaturesReg = Kernel32.SMART_FEATURES.RETURN_SMART_STATUS,
+                    bCylLowReg = Kernel32.SMART_LBA_MID,
+                    bCylHighReg = Kernel32.SMART_LBA_HI,
+                    bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                }
+            };
+
+            bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_SEND_DRIVE_COMMAND, ref parameter, Marshal.SizeOf(parameter),
+                out Kernel32.STATUSCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.STATUSCMDOUTPARAMS>(), out _, IntPtr.Zero);
+
+            if (!isValid)
+            {
+                return null;
+            }
+
+            // reference: https://github.com/smartmontools/smartmontools/blob/master/smartmontools/atacmds.cpp
+            if (Kernel32.SMART_LBA_HI == result.irDriveRegs.bCylHighReg && Kernel32.SMART_LBA_MID == result.irDriveRegs.bCylLowReg)
+            {
+                // high and mid registers are unchanged, which means that the drive is healthy
+                return true;
+            }
+            else if (Kernel32.SMART_LBA_HI_EXCEEDED == result.irDriveRegs.bCylHighReg && Kernel32.SMART_LBA_MID_EXCEEDED == result.irDriveRegs.bCylLowReg)
+            {
+                // high and mid registers are exceeded, which means that the drive is unhealthy
+                return false;
+            }
+            else
+            {
+                // response is not clear
+                return null;
+            }
+        }
+
         protected void Dispose(bool disposing)
         {
             if (disposing)
