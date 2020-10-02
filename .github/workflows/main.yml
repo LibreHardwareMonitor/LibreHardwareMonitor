@@ -14,14 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
+      - uses: microsoft/setup-msbuild@v1.0.1
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.200'
-          
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.1
+          dotnet-version: '3.1.200'          
   
       - name: Clean
         run: msbuild LibreHardwareMonitor.sln -t:Clean
@@ -31,3 +29,9 @@ jobs:
     
       - name: Build
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: executables
+          path: |
+            bin/Release/
