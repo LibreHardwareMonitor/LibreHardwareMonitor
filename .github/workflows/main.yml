@@ -15,9 +15,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
       - uses: microsoft/setup-msbuild@v1.0.1 
-  
-      - name: Clean
-        run: msbuild LibreHardwareMonitor.sln -t:Clean -m
         
       - name: NuGet restore
         run: nuget restore LibreHardwareMonitor.sln
@@ -29,4 +26,10 @@ jobs:
         with:
           name: Binaries
           path: |
-            bin/Release/
+            bin/Release/net452
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: NuGet
+          path: |
+            bin/Release/LibreHardwareMonitorLib.*.nupkg
