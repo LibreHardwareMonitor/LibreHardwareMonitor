@@ -4,8 +4,8 @@ Libre Hardware Monitor, a fork of Open Hardware Monitor, is free software that c
 ## What's included?
 | Name | Build Status | Latest Version |
 | --- | --- | --- |
-| **LibreHardwareMonitor** <br /> WinForms based application that presents all data in a graphical interface | [![Build status](https://ci.appveyor.com/api/projects/status/yk60la8da96kfjos?svg=true)](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor) | 1.0.0.0 |
-| **LibreHardwareMonitorLib** <br /> Library that allows you to use all features in your own application | [![Build status](https://ci.appveyor.com/api/projects/status/yk60la8da96kfjos?svg=true)](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor) | 1.0.0.0 |
+| **LibreHardwareMonitor** <br /> Windows Forms based application that presents all data in a graphical interface | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/workflows/CI/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) | 
+| **LibreHardwareMonitorLib** <br /> Library that allows you to use all features in your own application | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/workflows/CI/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) | 
 
 ## What can you do?
 With the help of LibreHardwareMonitor you can read information from devices such as:
@@ -20,7 +20,7 @@ The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
 You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
 
 ## Do I have to compile the program myself?
-You can download the latest builds [here](https://ci.appveyor.com/project/LibreHardwareMonitor/librehardwaremonitor/build/artifacts).
+You can download the latest builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Click on a result and download **Binaries** under **Artifacts**.
 
 ## What's the easiest way to start?
 **LibreHardwareMonitor application:**
@@ -89,4 +89,4 @@ LibreHardwareMonitor.Software
 ```
 
 ## License
-LibreHardwareMonitor is free and open source software. You can use it in private and commercial projects. Keep in mind that you must  include a copy of the license in your project.
+LibreHardwareMonitor is free and open source software. You can use it in private and commercial projects. Keep in mind that you must include a copy of the license in your project.
