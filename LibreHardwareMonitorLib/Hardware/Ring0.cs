@@ -84,13 +84,12 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (names[i].Replace('\\', '.') == resourceName)
                 {
-                    using (Stream stream = GetAssembly().GetManifestResourceStream(names[i]))
+                    using Stream stream = GetAssembly().GetManifestResourceStream(names[i]);
+
+                    if (stream != null)
                     {
-                        if (stream != null)
-                        {
-                            buffer = new byte[stream.Length];
-                            stream.Read(buffer, 0, buffer.Length);
-                        }
+                        buffer = new byte[stream.Length];
+                        stream.Read(buffer, 0, buffer.Length);
                     }
                 }
             }
@@ -101,11 +100,10 @@ namespace LibreHardwareMonitor.Hardware
 
             try
             {
-                using (FileStream target = new FileStream(fileName, FileMode.Create))
-                {
-                    target.Write(buffer, 0, buffer.Length);
-                    target.Flush();
-                }
+                using FileStream target = new FileStream(fileName, FileMode.Create);
+
+                target.Write(buffer, 0, buffer.Length);
+                target.Flush();
             }
             catch (IOException)
             {
