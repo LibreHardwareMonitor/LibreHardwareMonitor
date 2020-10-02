@@ -3,6 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -20,7 +21,7 @@ namespace LibreHardwareMonitor.Hardware.Network
         public NetworkGroup(ISettings settings)
         {
             _settings = settings;
-            AddNetworkInterfaces(settings);
+            UpdateNetworkInterfaces(settings);
 
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAddressChanged;
@@ -32,13 +33,13 @@ namespace LibreHardwareMonitor.Hardware.Network
         {
             var report = new StringBuilder();
 
-            foreach (Network hw in _hardware)
+            foreach (Network network in _hardware)
             {
-                report.AppendLine(hw.NetworkInterface.Description);
-                report.AppendLine(hw.NetworkInterface.OperationalStatus.ToString());
+                report.AppendLine(network.NetworkInterface.Description);
+                report.AppendLine(network.NetworkInterface.OperationalStatus.ToString());
                 report.AppendLine();
 
-                foreach (ISensor sensor in hw.Sensors)
+                foreach (ISensor sensor in network.Sensors)
                 {
                     report.AppendLine(sensor.Name);
                     report.AppendLine(sensor.Value.ToString());
@@ -54,48 +55,70 @@ namespace LibreHardwareMonitor.Hardware.Network
             NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAddressChanged;
 
-            foreach (Network nic in _hardware)
-                nic.Close();
+            foreach (Network network in _hardware)
+                network.Close();
         }
 
-        private void AddNetworkInterfaces(ISettings settings)
+        private void UpdateNetworkInterfaces(ISettings settings)
         {
-            // If no network is marked up (excluding loopback and tunnel) then don't scan
-            // for interfaces.
-            if (!NetworkInterface.GetIsNetworkAvailable())
-                return;
-
-
             // When multiple events fire concurrently, we don't want threads interfering
             // with others as they manipulate non-thread safe state.
             lock (_scanLock)
             {
-                IOrderedEnumerable<NetworkInterface> networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
-                                                        .Where(DesiredNetworkType)
-                                                        .OrderBy(x => x.Name);
+                IOrderedEnumerable<NetworkInterface> networkInterfaces = GetNetworkInterfaces();
+                if (networkInterfaces == null)
+                    return;
 
-                var scanned = networkInterfaces.ToDictionary(x => x.Id, x => x);
-                IEnumerable<KeyValuePair<string, NetworkInterface>> newNetworkInterfaces = scanned.Where(x => !_networks.ContainsKey(x.Key));
-                var removedNetworkInterfaces = _networks.Where(x => !scanned.ContainsKey(x.Key)).ToList();
 
-                foreach (KeyValuePair<string, Network> nic in removedNetworkInterfaces)
+                var foundNetworkInterfaces = networkInterfaces.ToDictionary(x => x.Id, x => x);
+
+                // Remove network interfaces that no longer exist.
+                foreach (KeyValuePair<string, Network> networkInterfacePair in _networks)
                 {
-                    nic.Value.Close();
-                    _networks.Remove(nic.Key);
+                    if (foundNetworkInterfaces.ContainsKey(networkInterfacePair.Key))
+                        continue;
+
+
+                    networkInterfacePair.Value.Close();
+                    _networks.Remove(networkInterfacePair.Key);
                 }
 
-                foreach (KeyValuePair<string, NetworkInterface> nic in newNetworkInterfaces)
+                // Add new network interfaces.
+                foreach (KeyValuePair<string, NetworkInterface> networkInterfacePair in foundNetworkInterfaces)
                 {
-                    _networks.Add(nic.Key, new Network(nic.Value, settings));
+                    if (!_networks.ContainsKey(networkInterfacePair.Key))
+                        _networks.Add(networkInterfacePair.Key, new Network(networkInterfacePair.Value, settings));
                 }
 
                 _hardware = _networks.Values.OrderBy(x => x.Name).ToList();
             }
         }
 
-        private void NetworkChange_NetworkAddressChanged(object sender, System.EventArgs e)
+        private static IOrderedEnumerable<NetworkInterface> GetNetworkInterfaces()
         {
-            AddNetworkInterfaces(_settings);
+            int retry = 0;
+
+            while (retry++ < 5)
+            {
+                try
+                {
+                    return NetworkInterface.GetAllNetworkInterfaces()
+                                           .Where(DesiredNetworkType)
+                                           .OrderBy(x => x.Name);
+                }
+                catch (NetworkInformationException)
+                {
+                    // Disabling IPv4 while running can cause a NetworkInformationException: The pipe is being closed.
+                    // This can be retried.
+                }
+            }
+
+            return null;
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            UpdateNetworkInterfaces(_settings);
         }
 
         private static bool DesiredNetworkType(NetworkInterface nic)
