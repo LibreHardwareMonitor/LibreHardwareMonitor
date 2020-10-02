@@ -17,7 +17,7 @@ jobs:
       - uses: microsoft/setup-msbuild@v1.0.1 
   
       - name: Clean
-        run: msbuild LibreHardwareMonitor.sln -t:Clean
+        run: msbuild LibreHardwareMonitor.sln -t:Clean -m
         
       - name: NuGet restore
         run: nuget restore LibreHardwareMonitor.sln
