@@ -222,6 +222,8 @@ namespace LibreHardwareMonitor.Hardware
             {
 #if NETSTANDARD2_0
                 _isaBusMutex = new Mutex(false, isaMutexName);
+#elif NET5_0
+                _isaBusMutex = new Mutex(false, isaMutexName);
 #else
                 //mutex permissions set to everyone to allow other software to access the hardware
                 //otherwise other monitoring software cant access
@@ -236,6 +238,8 @@ namespace LibreHardwareMonitor.Hardware
                 try
                 {
 #if NETSTANDARD2_0
+                    _isaBusMutex = Mutex.OpenExisting(isaMutexName);
+#elif NET5_0
                     _isaBusMutex = Mutex.OpenExisting(isaMutexName);
 #else
                     _isaBusMutex = Mutex.OpenExisting(isaMutexName, MutexRights.Synchronize);
@@ -256,6 +260,8 @@ namespace LibreHardwareMonitor.Hardware
                 try
                 {
 #if NETSTANDARD2_0
+                    _pciBusMutex = Mutex.OpenExisting(pciMutexName);
+#elif NET5_0
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName);
 #else
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName, MutexRights.Synchronize);
