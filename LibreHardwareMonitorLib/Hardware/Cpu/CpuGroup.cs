@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public string GetReport()
         {
@@ -95,6 +96,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     for (int k = 0; k < _threads[i][j].Length; k++)
                     {
+                        r.AppendLine(" CPU Group: " + _threads[i][j][k].Group);
                         r.AppendLine(" CPU Thread: " + _threads[i][j][k].Thread);
                         r.AppendLine(" APIC ID: " + _threads[i][j][k].ApicId);
                         r.AppendLine(" Processor ID: " + _threads[i][j][k].ProcessorId);
@@ -123,18 +125,29 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private static CpuId[][] GetProcessorThreads()
         {
             List<CpuId> threads = new List<CpuId>();
-            for (int i = 0; i < 64; i++)
+            
+            for (int i = 0; i < ThreadAffinity.ProcessorGroupCount; i++)
             {
-                try
+                for (int j = 0; j < 64; j++)
                 {
-                    threads.Add(new CpuId(i));
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // All cores found.
-                    break;
+                    try
+                    {
+                        if (!ThreadAffinity.IsValid(GroupAffinity.Single((ushort)i, j)))
+                            continue;
+
+
+                        var cpuid = CpuId.Get(i, j);
+                        if (cpuid != null)
+                            threads.Add(cpuid);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        // All cores found.
+                        break;
+                    }
                 }
             }
+
 
             SortedDictionary<uint, List<CpuId>> processors = new SortedDictionary<uint, List<CpuId>>();
             foreach (CpuId thread in threads)

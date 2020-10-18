@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System.Collections.Generic;
 using LibreHardwareMonitor.Interop;
@@ -17,27 +18,27 @@ namespace LibreHardwareMonitor.Hardware.Storage
         /// <summary>
         /// Initializes a new instance of the <see cref="SmartAttribute" /> class.
         /// </summary>
-        /// <param name="identifier">The SMART identifier of the attribute.</param>
+        /// <param name="id">The SMART id of the attribute.</param>
         /// <param name="name">The name of the attribute.</param>
-        public SmartAttribute(byte identifier, string name) : this(identifier, name, null, null, 0, null)
+        public SmartAttribute(byte id, string name) : this(id, name, null, null, 0, null)
         { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SmartAttribute" /> class.
         /// </summary>
-        /// <param name="identifier">The SMART identifier of the attribute.</param>
+        /// <param name="id">The SMART id of the attribute.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="rawValueConversion">
         /// A delegate for converting the raw byte
         /// array into a value (or null to use the attribute value).
         /// </param>
-        public SmartAttribute(byte identifier, string name, RawValueConversion rawValueConversion) : this(identifier, name, rawValueConversion, null, 0, null)
+        public SmartAttribute(byte id, string name, RawValueConversion rawValueConversion) : this(id, name, rawValueConversion, null, 0, null)
         { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SmartAttribute" /> class.
         /// </summary>
-        /// <param name="identifier">The SMART identifier of the attribute.</param>
+        /// <param name="id">The SMART id of the attribute.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="rawValueConversion">
         /// A delegate for converting the raw byte
@@ -61,9 +62,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
         /// Description for the parameters of the sensor
         /// (or null).
         /// </param>
-        public SmartAttribute(byte identifier, string name, RawValueConversion rawValueConversion, SensorType? sensorType, int sensorChannel, string sensorName, bool defaultHiddenSensor = false, ParameterDescription[] parameterDescriptions = null)
+        public SmartAttribute(byte id, string name, RawValueConversion rawValueConversion, SensorType? sensorType, int sensorChannel, string sensorName, bool defaultHiddenSensor = false, ParameterDescription[] parameterDescriptions = null)
         {
-            Identifier = identifier;
+            Id = id;
             Name = name;
             _rawValueConversion = rawValueConversion;
             SensorType = sensorType;
@@ -80,7 +81,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         /// <summary>
         /// Gets the SMART identifier.
         /// </summary>
-        public byte Identifier { get; }
+        public byte Id { get; }
 
         public string Name { get; }
 

@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -15,14 +16,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public StorageGroup(ISettings settings)
         {
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
                 return;
 
             //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
             var mosDisks = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
             ManagementObjectCollection queryCollection = mosDisks.Get(); // get the results
 
-            foreach (var disk in queryCollection)
+            foreach (ManagementBaseObject disk in queryCollection)
             {
                 string deviceId = (string)disk.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
                 uint idx = Convert.ToUInt32(disk.Properties["Index"].Value);
@@ -43,7 +44,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             mosDisks.Dispose();
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public string GetReport()
         {

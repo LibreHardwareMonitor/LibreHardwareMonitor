@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
     {
         private readonly List<AmdGpu> _hardware = new List<AmdGpu>();
         private readonly StringBuilder _report = new StringBuilder();
-        private readonly int _status;
+        private readonly AtiAdlxx.ADLStatus _status;
 
         public AmdGpuGroup(ISettings settings)
         {
@@ -26,10 +27,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _report.AppendLine("AMD Display Library");
                 _report.AppendLine();
                 _report.Append("Status: ");
-                _report.AppendLine(_status == AtiAdlxx.ADL_OK ? "OK" : _status.ToString(CultureInfo.InvariantCulture));
+                _report.AppendLine(_status == AtiAdlxx.ADLStatus.ADL_OK ? "OK" : _status.ToString());
                 _report.AppendLine();
 
-                if (_status == AtiAdlxx.ADL_OK)
+                if (_status == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     int numberOfAdapters = 0;
                     AtiAdlxx.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
@@ -41,11 +42,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     if (numberOfAdapters > 0)
                     {
                         AtiAdlxx.ADLAdapterInfo[] adapterInfo = new AtiAdlxx.ADLAdapterInfo[numberOfAdapters];
-                        if (AtiAdlxx.ADL_Adapter_AdapterInfo_Get(adapterInfo) == AtiAdlxx.ADL_OK)
+                        if (AtiAdlxx.ADL_Adapter_AdapterInfo_Get(adapterInfo) == AtiAdlxx.ADLStatus.ADL_OK)
                             for (int i = 0; i < numberOfAdapters; i++)
                             {
-                                AtiAdlxx.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex, out var isActive);
-                                AtiAdlxx.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out var adapterId);
+                                AtiAdlxx.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex, out int isActive);
+                                AtiAdlxx.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out int adapterId);
 
                                 _report.Append("AdapterIndex: ");
                                 _report.AppendLine(i.ToString(CultureInfo.InvariantCulture));
@@ -102,7 +103,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             }
         }
 
-        public IEnumerable<IHardware> Hardware => _hardware;
+        public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public string GetReport()
         {
@@ -116,7 +117,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 foreach (AmdGpu gpu in _hardware)
                     gpu.Close();
 
-                if (_status == AtiAdlxx.ADL_OK)
+                if (_status == AtiAdlxx.ADLStatus.ADL_OK)
                     AtiAdlxx.ADL_Main_Control_Destroy();
             }
             catch (Exception)

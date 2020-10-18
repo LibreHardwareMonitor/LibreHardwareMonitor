@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,10 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /*
+     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
+     * Chapter 7.4.3
+     */
     public enum ChassisSecurityStatus
     {
         Other = 1,
@@ -21,6 +26,10 @@ namespace LibreHardwareMonitor.Hardware
         ExternalInterfaceEnabled
     }
 
+    /*
+     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
+     * Chapter 7.4.2
+     */
     public enum ChassisStates
     {
         Other = 1,
@@ -31,6 +40,10 @@ namespace LibreHardwareMonitor.Hardware
         NonRecoverable
     }
 
+    /*
+     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
+     * Chapter 7.4.1
+     */
     public enum ChassisType
     {
         Other = 1,
@@ -71,6 +84,10 @@ namespace LibreHardwareMonitor.Hardware
         StickPC
     }
 
+    /*
+     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
+     * Chapter 7.5.2
+     */
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "IdentifierTypo")]
     public enum ProcessorFamily
@@ -286,6 +303,83 @@ namespace LibreHardwareMonitor.Hardware
         WinChip,
         Dsp,
         VideoProcessor
+    }
+
+    /*
+     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
+     * Chapter 7.5.1
+     */
+    public enum ProcessorType
+    {
+        Other = 1,
+        Unknown,
+        CentralProcessor,
+        MathProcessor,
+        DSPProcessor,
+        VideoProcessor
+    }
+
+    /*
+     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
+     * Chapter 7.5.5
+     */
+    public enum ProcessorSocket
+    {
+        Other = 1,
+        Unknown,
+        DaughterBoard,
+        ZifSocket,
+        PiggyBack,
+        None,
+        LifSocket,
+        Zif423 = 13,
+        A,
+        Zif478,
+        Zif754,
+        Zif940,
+        Zif939,
+        MPga604,
+        Lga771,
+        Lga775,
+        S1,
+        AM2,
+        F,
+        Lga1366,
+        G34,
+        AM3,
+        C32,
+        Lga1156,
+        Lga1567,
+        Pga988A,
+        Bga1288,
+        RPga088B,
+        Bga1023,
+        Bga1224,
+        Lga1155,
+        Lga1356,
+        Lga2011,
+        FS1,
+        FS2,
+        FM1,
+        FM2,
+        Lga20113,
+        Lga13563,
+        Lga1150,
+        Bga1168,
+        Bga1234,
+        Bga1364,
+        AM4,
+        Lga1151,
+        Bga1356,
+        Bga1440,
+        Bga1515,
+        Lga36471,
+        SP3,
+        SP3R2,
+        Lga2066,
+        Bga1510,
+        Bga1528,
+        Lga4189
     }
 
     public enum SystemWakeUp
@@ -522,12 +616,19 @@ namespace LibreHardwareMonitor.Hardware
     {
         internal ProcessorInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
         {
+            SocketDesignation = GetString(0x04).Trim();
             ManufacturerName = GetString(0x07).Trim();
             Version = GetString(0x10).Trim();
             CoreCount = GetByte(0x23) != 255 ? GetByte(0x23) : GetWord(0x2A);
             CoreEnabled = GetByte(0x24) != 255 ? GetByte(0x24) : GetWord(0x2C);
             ThreadCount = GetByte(0x25) != 255 ? GetByte(0x25) : GetWord(0x2E);
             ExternalClock = GetWord(0x12);
+            MaxSpeed = GetWord(0x14);
+            CurrentSpeed = GetWord(0x16);
+            Serial = GetString(0x20).Trim();
+
+            ProcessorType = (ProcessorType)GetByte(0x05);
+            Socket = (ProcessorSocket)GetByte(0x19);
 
             int family = GetByte(0x06);
             Family = (ProcessorFamily)(family == 254 ? GetWord(0x28) : family);
@@ -539,7 +640,19 @@ namespace LibreHardwareMonitor.Hardware
 
         public int ExternalClock { get; }
 
+        public int MaxSpeed { get; }
+
+        public int CurrentSpeed { get; }
+
+        public string Serial { get; }
+
+        public ProcessorType ProcessorType { get; }
+
+        public ProcessorSocket Socket { get; }
+
         public ProcessorFamily Family { get; }
+
+        public string SocketDesignation { get; }
 
         public string ManufacturerName { get; }
 
@@ -580,7 +693,7 @@ namespace LibreHardwareMonitor.Hardware
 
         public SMBios()
         {
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 _raw = null;
 
@@ -832,6 +945,16 @@ namespace LibreHardwareMonitor.Hardware
             {
                 r.Append("Processor Manufacturer: ");
                 r.AppendLine(Processor.ManufacturerName);
+                r.Append("Processor Type: ");
+                r.AppendLine(Processor.ProcessorType.ToString());
+                r.Append("Processor Version: ");
+                r.AppendLine(Processor.Version);
+                r.Append("Processor Serial: ");
+                r.AppendLine(Processor.Serial);
+                r.Append("Processor Socket Destignation: ");
+                r.AppendLine(Processor.SocketDesignation);
+                r.Append("Processor Socket: ");
+                r.AppendLine(Processor.Socket.ToString());
                 r.Append("Processor Version: ");
                 r.AppendLine(Processor.Version);
                 r.Append("Processor Family: ");
@@ -844,6 +967,12 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine(Processor.ThreadCount.ToString());
                 r.Append("Processor External Clock: ");
                 r.Append(Processor.ExternalClock);
+                r.AppendLine(" Mhz");
+                r.Append("Processor Max Speed: ");
+                r.Append(Processor.MaxSpeed);
+                r.AppendLine(" Mhz");
+                r.Append("Processor Current Speed: ");
+                r.Append(Processor.CurrentSpeed);
                 r.AppendLine(" Mhz");
                 r.AppendLine();
             }

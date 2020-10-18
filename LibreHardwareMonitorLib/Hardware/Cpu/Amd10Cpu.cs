@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -21,12 +22,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly Sensor _coreVoltage;
         private readonly byte _cStatesIoOffset;
         private readonly Sensor[] _cStatesResidency;
-        private readonly bool _isSVI2;
-
+        private readonly bool _isSvi2;
+        private readonly bool _hasSmuTemperatureRegister;
         private readonly uint _miscellaneousControlAddress;
         private readonly Sensor _northbridgeVoltage;
         private readonly FileStream _temperatureStream;
         private readonly double _timeStampCounterMultiplier;
+
 
         public Amd10Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
@@ -37,65 +39,102 @@ namespace LibreHardwareMonitor.Hardware.CPU
             ActivateSensor(_coreVoltage);
             _northbridgeVoltage = new Sensor("Northbridge", 0, SensorType.Voltage, this, settings);
             ActivateSensor(_northbridgeVoltage);
-            _isSVI2 = (_family == 0x15 && _model >= 0x10) || _family == 0x16;
+
+            _isSvi2 = (_family == 0x15 && _model >= 0x10) || _family == 0x16;
 
             switch (_family)
             {
                 case 0x10:
+                {
                     miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
+                }
                 case 0x11:
+                {
                     miscellaneousControlDeviceId = FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
+                }
                 case 0x12:
+                {
                     miscellaneousControlDeviceId = FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
+                }
                 case 0x14:
+                {
                     miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
+                }
                 case 0x15:
+                {
                     switch (_model & 0xF0)
                     {
                         case 0x00:
+                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
+                        }
                         case 0x10:
+                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID;
                             break;
+                        }
                         case 0x30:
+                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
+                        }
                         case 0x70:
-                        case 0x60:
-                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
+                        {
+                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID;
+                            _hasSmuTemperatureRegister = true;
                             break;
+                        }
+                            case 0x60:
+                        {
+                            miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
+                            _hasSmuTemperatureRegister = true;
+                            break;
+                        }
                         default:
+                        {
                             miscellaneousControlDeviceId = 0;
                             break;
+                        }
                     }
-
                     break;
+                }
                 case 0x16:
+                {
                     switch (_model & 0xF0)
                     {
                         case 0x00:
+                        {
                             miscellaneousControlDeviceId = FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
+                        }
                         case 0x30:
+                        {
                             miscellaneousControlDeviceId = FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
+                        }
                         default:
+                        {
                             miscellaneousControlDeviceId = 0;
                             break;
+                        }
                     }
-
                     break;
+                }
                 case 0x17:
+                {
                     miscellaneousControlDeviceId = FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                     break;
+                }
                 default:
+                {
                     miscellaneousControlDeviceId = 0;
                     break;
+                }
             }
 
             // get the pci address for the Miscellaneous Control registers
@@ -112,7 +151,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             bool corePerformanceBoostSupport = (cpuId[0][0].ExtData[7, 3] & (1 << 9)) > 0;
 
             // set affinity to the first thread for all frequency estimations
-            ulong mask = ThreadAffinity.Set(1UL << cpuId[0][0].Thread);
+            var previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
 
             // disable core performance boost
             Ring0.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
@@ -133,12 +172,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 Ring0.WriteMsr(HWCR, hwcrEax, hwcrEdx);
 
             // restore the thread affinity.
-            ThreadAffinity.Set(mask);
+            ThreadAffinity.Set(previousAffinity);
 
             // the file reader for lm-sensors support on Linux
             _temperatureStream = null;
 
-            if (Software.OperatingSystem.IsLinux)
+            if (Software.OperatingSystem.IsUnix)
             {
                 string[] devicePaths = Directory.GetDirectories("/sys/class/hwmon/");
                 foreach (string path in devicePaths)
@@ -146,8 +185,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     string name = null;
                     try
                     {
-                        using (StreamReader reader = new StreamReader(path + "/device/name"))
-                            name = reader.ReadLine();
+                        using StreamReader reader = new StreamReader(path + "/device/name");
+
+                        name = reader.ReadLine();
                     }
                     catch (IOException)
                     { }
@@ -334,23 +374,24 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
         }
 
-        private string ReadFirstLine(Stream stream)
+        private static string ReadFirstLine(Stream stream)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
+
             try
             {
                 stream.Seek(0, SeekOrigin.Begin);
                 int b = stream.ReadByte();
                 while (b != -1 && b != 10)
                 {
-                    sb.Append((char)b);
+                    stringBuilder.Append((char)b);
                     b = stream.ReadByte();
                 }
             }
             catch
             { }
 
-            return sb.ToString();
+            return stringBuilder.ToString();
         }
 
         public override void Update()
@@ -361,34 +402,34 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
                 {
-                    uint value;
-                    if (_miscellaneousControlAddress == FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID)
-                    {
-                        Ring0.WritePciConfig(Ring0.GetPciAddress(0, 0, 0), 0xB8, F15H_M60H_REPORTED_TEMP_CTRL_OFFSET);
-                        Ring0.ReadPciConfig(Ring0.GetPciAddress(0, 0, 0), 0xBC, out value);
-                    }
-                    else
-                    {
-                        Ring0.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
-                    }
+                    bool isValueValid = _hasSmuTemperatureRegister
+                        ? ReadSmuRegister(SMU_REPORTED_TEMP_CTRL_OFFSET, out uint value)
+                        : Ring0.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
 
-                    if ((_family == 0x15 || _family == 0x16) && (value & 0x30000) == 0x3000)
+                    if (isValueValid)
                     {
-                        if (_family == 0x15 && (_model & 0xF0) == 0x00)
+                        if ((_family == 0x15 || _family == 0x16) && (value & 0x30000) == 0x3000)
                         {
-                            _coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
+                            if (_family == 0x15 && (_model & 0xF0) == 0x00)
+                            {
+                                _coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
+                            }
+                            else
+                            {
+                                _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
+                            }
                         }
                         else
                         {
-                            _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
+                            _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value;
                         }
+
+                        ActivateSensor(_coreTemperature);
                     }
                     else
                     {
-                        _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value;
+                        DeactivateSensor(_coreTemperature);
                     }
-
-                    ActivateSensor(_coreTemperature);
                 }
                 else
                 {
@@ -418,7 +459,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     Thread.Sleep(1);
 
-                    if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, 1UL << _cpuId[i][0].Thread))
+                    if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, _cpuId[i][0].Affinity))
                     {
                         double multiplier = GetCoreMultiplier(curEax);
 
@@ -435,7 +476,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                     float newCoreVoltage, newNbVoltage;
                     uint coreVid60 = (curEax >> 9) & 0x7F;
-                    if (_isSVI2)
+                    if (_isSvi2)
                     {
                         newCoreVoltage = SVI2Volt(curEax >> 13 & 0x80 | coreVid60);
                         newNbVoltage = SVI2Volt(curEax >> 24);
@@ -473,6 +514,28 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
         }
 
+        private bool ReadSmuRegister(uint address, out uint value)
+        {
+            if (Ring0.WaitPciBusMutex(10))
+            {
+                if (!Ring0.WritePciConfig(0, 0xB8, address))
+                {
+                    value = 0;
+
+                    Ring0.ReleasePciBusMutex();
+                    return false;
+                }
+
+                bool result = Ring0.ReadPciConfig(0, 0xBC, out value);
+
+                Ring0.ReleasePciBusMutex();
+                return result;
+            }
+
+            value = 0;
+            return false;
+        }
+
         public override void Close()
         {
             _temperatureStream?.Close();
@@ -483,7 +546,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const uint CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
         private const uint COFVID_STATUS = 0xC0010071;
         private const uint CSTATES_IO_PORT = 0xCD6;
-        private const uint F15H_M60H_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
+        private const uint SMU_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
         private const uint HWCR = 0xC0010015;
         private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
         private const uint P_STATE_0 = 0xC0010064;
@@ -499,6 +562,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const ushort FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID = 0x1403;
         private const ushort FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x141D;
         private const ushort FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID = 0x1573;
+        private const ushort FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID = 0x15B3;
         private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
         private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
         private const ushort FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1577;

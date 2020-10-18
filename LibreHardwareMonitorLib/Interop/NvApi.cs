@@ -1,7 +1,7 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Runtime.InteropServices;
@@ -15,6 +15,7 @@ namespace LibreHardwareMonitor.Interop
     {
         public const int MAX_CLOCKS_PER_GPU = 0x120;
         public const int MAX_COOLER_PER_GPU = 20;
+        public const int MAX_FAN_COOLERS_STATUS_ITEMS = 32;
         public const int MAX_MEMORY_VALUES_PER_GPU = 5;
         public const int MAX_PHYSICAL_GPUS = 64;
         public const int MAX_PSTATES_PER_GPU = 8;
@@ -30,66 +31,26 @@ namespace LibreHardwareMonitor.Interop
         public static readonly uint GPU_PSTATES_VER = (uint)Marshal.SizeOf(typeof(NvPStates)) | 0x10000;
         public static readonly uint GPU_THERMAL_SETTINGS_VER = (uint)Marshal.SizeOf(typeof(NvGPUThermalSettings)) | 0x10000;
         public static readonly uint GPU_USAGES_VER = (uint)Marshal.SizeOf(typeof(NvUsages)) | 0x10000;
+        public static readonly uint GPU_FAN_COOLERS_STATUS_VER = (uint)Marshal.SizeOf(typeof(NvFanCoolersStatus)) | 0x10000;
 
         public static readonly NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle;
         public static readonly NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs;
         public static readonly NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion;
         public static readonly NvAPI_GetPhysicalGPUsFromDisplayDelegate NvAPI_GetPhysicalGPUsFromDisplay;
         public static readonly NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks;
+        public static readonly NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId;
         public static readonly NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings;
         public static readonly NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo;
         public static readonly NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers;
         public static readonly NvAPI_GPU_GetPStatesDelegate NvAPI_GPU_GetPStates;
         public static readonly NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading;
-
         public static readonly NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
         public static readonly NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
         public static readonly NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels;
+        public static readonly NvAPI_GPU_ClientFanCoolersGetStatusDelegate NvAPI_GPU_ClientFanCoolersGetStatus;
 
         private static readonly NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
         private static readonly NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_EnumNvidiaDisplayHandleDelegate(int thisEnum, ref NvDisplayHandle displayHandle);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_EnumPhysicalGPUsDelegate([Out] NvPhysicalGpuHandle[] gpuHandles, out int gpuCount);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GetDisplayDriverVersionDelegate(NvDisplayHandle displayHandle, [In, Out] ref NvDisplayDriverVersion nvDisplayDriverVersion);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GetInterfaceVersionStringDelegate(StringBuilder version);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GetPhysicalGPUsFromDisplayDelegate(NvDisplayHandle displayHandle, [Out] NvPhysicalGpuHandle[] gpuHandles, out uint gpuCount);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetAllClocksDelegate(NvPhysicalGpuHandle gpuHandle, ref NvClocks nvClocks);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetCoolerSettingsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvGPUCoolerSettings nvGPUCoolerSettings);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetMemoryInfoDelegate(NvDisplayHandle displayHandle, ref NvMemoryInfo nvMemoryInfo);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetPCIIdentifiersDelegate(NvPhysicalGpuHandle gpuHandle, out uint deviceId, out uint subSystemId, out uint revisionId, out uint extDeviceId);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetPStatesDelegate(NvPhysicalGpuHandle gpuHandle, ref NvPStates nvPStates);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetTachReadingDelegate(NvPhysicalGpuHandle gpuHandle, out int value);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetThermalSettingsDelegate(NvPhysicalGpuHandle gpuHandle, int sensorIndex, ref NvGPUThermalSettings nvGPUThermalSettings);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetUsagesDelegate(NvPhysicalGpuHandle gpuHandle, ref NvUsages nvUsages);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvGPUCoolerLevels NvGPUCoolerLevels);
 
         static NvApi()
         {
@@ -129,10 +90,60 @@ namespace LibreHardwareMonitor.Interop
                 GetDelegate(0xF951A4D1, out NvAPI_GetDisplayDriverVersion);
                 GetDelegate(0x01053FA5, out _nvAPI_GetInterfaceVersionString);
                 GetDelegate(0x2DDFB66E, out NvAPI_GPU_GetPCIIdentifiers);
+                GetDelegate(0x1BE0B8E5, out NvAPI_GPU_GetBusId);
+                GetDelegate(0x35AED5E8, out NvAPI_GPU_ClientFanCoolersGetStatus);
 
                 IsAvailable = true;
             }
         }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_EnumNvidiaDisplayHandleDelegate(int thisEnum, ref NvDisplayHandle displayHandle);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_EnumPhysicalGPUsDelegate([Out] NvPhysicalGpuHandle[] gpuHandles, out int gpuCount);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GetDisplayDriverVersionDelegate(NvDisplayHandle displayHandle, [In, Out] ref NvDisplayDriverVersion nvDisplayDriverVersion);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GetInterfaceVersionStringDelegate(StringBuilder version);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GetPhysicalGPUsFromDisplayDelegate(NvDisplayHandle displayHandle, [Out] NvPhysicalGpuHandle[] gpuHandles, out uint gpuCount);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetAllClocksDelegate(NvPhysicalGpuHandle gpuHandle, ref NvClocks nvClocks);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetBusIdDelegate(NvPhysicalGpuHandle gpuHandle, out uint busId);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetCoolerSettingsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvGPUCoolerSettings nvGPUCoolerSettings);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetMemoryInfoDelegate(NvDisplayHandle displayHandle, ref NvMemoryInfo nvMemoryInfo);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetPCIIdentifiersDelegate(NvPhysicalGpuHandle gpuHandle, out uint deviceId, out uint subSystemId, out uint revisionId, out uint extDeviceId);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetPStatesDelegate(NvPhysicalGpuHandle gpuHandle, ref NvPStates nvPStates);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetTachReadingDelegate(NvPhysicalGpuHandle gpuHandle, out int value);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetThermalSettingsDelegate(NvPhysicalGpuHandle gpuHandle, int sensorIndex, ref NvGPUThermalSettings nvGPUThermalSettings);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetUsagesDelegate(NvPhysicalGpuHandle gpuHandle, ref NvUsages nvUsages);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvGPUCoolerLevels NvGPUCoolerLevels);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_ClientFanCoolersGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref NvFanCoolersStatus fanCoolersStatus);
 
         public static bool IsAvailable { get; }
 
@@ -335,6 +346,40 @@ namespace LibreHardwareMonitor.Interop
             public int Target;
             public int ControlType;
             public int Active;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 8)]
+        internal struct NvFanCoolersStatus
+        {
+            public uint Version;
+            public uint Count;
+
+            public ulong Reserved1;
+            public ulong Reserved2;
+            public ulong Reserved3;
+            public ulong Reserved4;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_FAN_COOLERS_STATUS_ITEMS)]
+            internal NvFanCoolersStatusItem[] Items;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 8)]
+        internal struct NvFanCoolersStatusItem
+        {
+            public uint Type;
+            public uint CurrentRpm;
+            public uint CurrentMinLevel;
+            public uint CurrentMaxLevel;
+            public uint CurrentLevel;
+
+            public uint Reserved1;
+            public uint Reserved2;
+            public uint Reserved3;
+            public uint Reserved4;
+            public uint Reserved5;
+            public uint Reserved6;
+            public uint Reserved7;
+            public uint Reserved8;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 8)]

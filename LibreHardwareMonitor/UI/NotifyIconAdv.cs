@@ -1,7 +1,8 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.ComponentModel;
@@ -598,16 +599,23 @@ namespace LibreHardwareMonitor.UI
                     {
                         if (!_created)
                         {
-                            int i = 0;
-                            do
+                            if (NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Modify, data))
                             {
-                                _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Add, data);
-                                if (!_created)
+                                _created = true;
+                            }
+                            else
+                            {
+                                int i = 0;
+                                do
                                 {
-                                    System.Threading.Thread.Sleep(200);
-                                    i++;
-                                }
-                            } while (!_created && i < 40);
+                                    _created = NativeMethods.Shell_NotifyIcon(NativeMethods.NotifyIconMessage.Add, data);
+                                    if (!_created)
+                                    {
+                                        System.Threading.Thread.Sleep(200);
+                                        i++;
+                                    }
+                                } while (!_created && i < 40);
+                            }
                         }
                         else
                         {

@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Diagnostics;
@@ -78,9 +79,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             if (HasTimeStampCounter)
             {
-                ulong mask = ThreadAffinity.Set(1UL << cpuId[0][0].Thread);
+                GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
                 EstimateTimeStampCounterFrequency(out _estimatedTimeStampCounterFrequency, out _estimatedTimeStampCounterFrequencyError);
-                ThreadAffinity.Set(mask);
+                ThreadAffinity.Set(previousAffinity);
             }
             else
             {
@@ -181,9 +182,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
             error = beginError + endError;
         }
 
-        private static void AppendMsrData(StringBuilder r, uint msr, int thread)
+        private static void AppendMsrData(StringBuilder r, uint msr, GroupAffinity affinity)
         {
-            if (Ring0.ReadMsr(msr, out uint eax, out uint edx, 1UL << thread))
+            if (Ring0.ReadMsr(msr, out uint eax, out uint edx, affinity))
             {
                 r.Append(" ");
                 r.Append(msr.ToString("X8", CultureInfo.InvariantCulture));
@@ -240,7 +241,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     r.AppendLine();
                     r.AppendLine(" MSR       EDX       EAX");
                     foreach (uint msr in msrArray)
-                        AppendMsrData(r, msr, _cpuId[i][0].Thread);
+                        AppendMsrData(r, msr, _cpuId[i][0].Affinity);
 
                     r.AppendLine();
                 }
@@ -254,7 +255,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (HasTimeStampCounter && _isInvariantTimeStampCounter)
             {
                 // make sure always the same thread is used
-                ulong mask = ThreadAffinity.Set(1UL << _cpuId[0][0].Thread);
+                GroupAffinity previousAffinity = ThreadAffinity.Set(_cpuId[0][0].Affinity);
 
                 // read time before and after getting the TSC to estimate the error
                 long firstTime = Stopwatch.GetTimestamp();
@@ -262,7 +263,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 long time = Stopwatch.GetTimestamp();
 
                 // restore the thread affinity mask
-                ThreadAffinity.Set(mask);
+                ThreadAffinity.Set(previousAffinity);
 
                 double delta = (double)(time - _lastTime) / Stopwatch.Frequency;
                 double error = (double)(time - firstTime) / Stopwatch.Frequency;

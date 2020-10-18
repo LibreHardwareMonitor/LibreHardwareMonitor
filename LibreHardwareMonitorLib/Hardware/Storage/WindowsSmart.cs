@@ -1,9 +1,11 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
@@ -21,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             _handle = Kernel32.CreateFile(@"\\.\PhysicalDrive" + driveNumber, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
         }
 
-        public bool IsValid => !_handle.IsInvalid;
+        public bool IsValid => !_handle.IsInvalid && !_handle.IsClosed;
 
         public void Dispose()
         {
@@ -37,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public bool EnableSmart()
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -52,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -73,7 +75,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -94,7 +96,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
         {
             if (_handle.IsClosed)
-                throw new ObjectDisposedException("WindowsATASmart");
+                throw new ObjectDisposedException(nameof(WindowsSmart));
 
             var parameter = new Kernel32.SENDCMDINPARAMS
             {
@@ -117,6 +119,52 @@ namespace LibreHardwareMonitor.Hardware.Storage
             return true;
         }
 
+        /// <summary>
+        /// Reads Smart health status of the drive
+        /// </summary>
+        /// <returns>True, if drive is healthy; False, if unhealthy; Null, if it cannot be read</returns>
+        public bool? ReadSmartHealth()
+        {
+            if (_handle.IsClosed)
+                throw new ObjectDisposedException(nameof(WindowsSmart));
+
+            var parameter = new Kernel32.SENDCMDINPARAMS
+            {
+                bDriveNumber = (byte)_driveNumber,
+                irDriveRegs = {
+                    bFeaturesReg = Kernel32.SMART_FEATURES.RETURN_SMART_STATUS,
+                    bCylLowReg = Kernel32.SMART_LBA_MID,
+                    bCylHighReg = Kernel32.SMART_LBA_HI,
+                    bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                }
+            };
+
+            bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_SEND_DRIVE_COMMAND, ref parameter, Marshal.SizeOf(parameter),
+                out Kernel32.STATUSCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.STATUSCMDOUTPARAMS>(), out _, IntPtr.Zero);
+
+            if (!isValid)
+            {
+                return null;
+            }
+
+            // reference: https://github.com/smartmontools/smartmontools/blob/master/smartmontools/atacmds.cpp
+            if (Kernel32.SMART_LBA_HI == result.irDriveRegs.bCylHighReg && Kernel32.SMART_LBA_MID == result.irDriveRegs.bCylLowReg)
+            {
+                // high and mid registers are unchanged, which means that the drive is healthy
+                return true;
+            }
+            else if (Kernel32.SMART_LBA_HI_EXCEEDED == result.irDriveRegs.bCylHighReg && Kernel32.SMART_LBA_MID_EXCEEDED == result.irDriveRegs.bCylLowReg)
+            {
+                // high and mid registers are exceeded, which means that the drive is unhealthy
+                return false;
+            }
+            else
+            {
+                // response is not clear
+                return null;
+            }
+        }
+
         protected void Dispose(bool disposing)
         {
             if (disposing)
@@ -126,10 +174,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
         }
 
-        private string GetString(byte[] bytes)
+        private static string GetString(IReadOnlyList<byte> bytes)
         {
-            char[] chars = new char[bytes.Length];
-            for (int i = 0; i < bytes.Length; i += 2)
+            char[] chars = new char[bytes.Count];
+            for (int i = 0; i < bytes.Count; i += 2)
             {
                 chars[i] = (char)bytes[i + 1];
                 chars[i + 1] = (char)bytes[i];

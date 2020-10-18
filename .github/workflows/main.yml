@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nuget/setup-nuget@v1
+      - uses: microsoft/setup-msbuild@v1.0.1 
+        
+      - name: NuGet restore
+        run: nuget restore LibreHardwareMonitor.sln
+    
+      - name: Build
+        run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Binaries
+          path: |
+            bin/Release/net452
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: NuGet
+          path: |
+            bin/Release/LibreHardwareMonitorLib.*.nupkg
+
+      - name: Publish to NuGet
+        uses: rohith/publish-nuget@v2
+        with:
+          PROJECT_FILE_PATH: LibreHardwareMonitorLib/LibreHardwareMonitorLib.csproj
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          INCLUDE_SYMBOLS: true

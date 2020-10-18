@@ -1,7 +1,8 @@
-﻿// Mozilla Public License 2.0
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 // ReSharper disable InconsistentNaming
 
@@ -30,6 +31,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         P55_Deluxe,
         X399_Phantom_Gaming_6,
         Z77Pro4M,
+        X570_Pro4,
 
         // ASUS
         CROSSHAIR_III_FORMULA,
@@ -87,6 +89,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         H61M_USB3_B3_REV_2_0,
         H67A_UD3H_B3,
         H67A_USB3_B3,
+        H81M_HD3,
         MA770T_UD3,
         MA770T_UD3P,
         MA785GM_US2H,
@@ -113,6 +116,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         Z68AP_D3,
         Z68X_UD3H_B3,
         Z68X_UD7_B3,
+        Z68XP_UD3R,
+        X470_AORUS_GAMING_7_WIFI,
+        X570_AORUS_MASTER,
 
         // Shuttle
         FH67,

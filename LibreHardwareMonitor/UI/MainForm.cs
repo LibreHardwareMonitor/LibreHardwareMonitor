@@ -1,21 +1,23 @@
-// Mozilla Public License 2.0
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors
-// All Rights Reserved
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
-using LibreHardwareMonitor.Wmi;
 using LibreHardwareMonitor.Utilities;
+using LibreHardwareMonitor.Wmi;
+
 
 namespace LibreHardwareMonitor.UI
 {
@@ -63,14 +65,6 @@ namespace LibreHardwareMonitor.UI
         public MainForm()
         {
             InitializeComponent();
-
-            // check if the OpenHardwareMonitorLib assembly has the correct version
-            if (Assembly.GetAssembly(typeof(Computer)).GetName().Version != Assembly.GetExecutingAssembly().GetName().Version)
-            {
-                MessageBox.Show("The version of the file LibreHardwareMonitorLib.dll is incompatible.",
-                  "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Environment.Exit(0);
-            }
 
             _settings = new PersistentSettings();
             _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
@@ -121,9 +115,9 @@ namespace LibreHardwareMonitor.UI
             _systemTray.HideShowCommand += HideShowClick;
             _systemTray.ExitCommand += ExitClick;
 
-            int p = (int)Environment.OSVersion.Platform;
-            if ((p == 4) || (p == 128))
-            { // Unix
+            if (Software.OperatingSystem.IsUnix)
+            {
+                // Unix
                 treeView.RowHeight = Math.Max(treeView.RowHeight, 18);
                 splitContainer.BorderStyle = BorderStyle.None;
                 splitContainer.Border3DStyle = Border3DStyle.Adjust;
@@ -266,7 +260,7 @@ namespace LibreHardwareMonitor.UI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085));
+            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085), _settings.GetValue("authenticationEnabled", false), _settings.GetValue("authenticationUserName", ""), _settings.GetValue("authenticationPassword", ""));
             if (Server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
@@ -281,6 +275,8 @@ namespace LibreHardwareMonitor.UI
                 else
                     Server.StopHttpListener();
             };
+
+            authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
 
@@ -352,7 +348,9 @@ namespace LibreHardwareMonitor.UI
                 }
             }
             else
+            {
                 Show();
+            }
 
             // Create a handle, otherwise calling Close() does not fire FormClosed
 
@@ -364,6 +362,16 @@ namespace LibreHardwareMonitor.UI
                 if (_runWebServer.Value)
                     Server.Quit();
             };
+
+            Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+        }
+
+        private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
+        {
+            if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
+            {
+                _computer.Reset();
+            }
         }
 
         private void InitializeSplitter()
@@ -487,7 +495,7 @@ namespace LibreHardwareMonitor.UI
         private void InsertSorted(IList<Node> nodes, HardwareNode node)
         {
             int i = 0;
-            while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType < node.Hardware.HardwareType)
+            while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType <= node.Hardware.HardwareType)
                 i++;
 
             nodes.Insert(i, node);
@@ -602,14 +610,12 @@ namespace LibreHardwareMonitor.UI
 
         private void NodeTextBoxText_EditorShowing(object sender, CancelEventArgs e)
         {
-            e.Cancel = !(treeView.CurrentNode != null &&
-              (treeView.CurrentNode.Tag is SensorNode ||
-               treeView.CurrentNode.Tag is HardwareNode));
+            e.Cancel = !(treeView.CurrentNode != null && (treeView.CurrentNode.Tag is SensorNode || treeView.CurrentNode.Tag is HardwareNode));
         }
 
         private void NodeCheckBox_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
         {
-            e.Value = (e.Node.Tag is SensorNode node) && plotMenuItem.Checked;
+            e.Value = e.Node.Tag is SensorNode && plotMenuItem.Checked;
         }
 
         private void ExitClick(object sender, EventArgs e)
@@ -620,6 +626,7 @@ namespace LibreHardwareMonitor.UI
         private void Timer_Tick(object sender, EventArgs e)
         {
             _computer.Accept(_updateVisitor);
+
             treeView.Invalidate();
             _plotPanel.InvalidatePlot();
             _systemTray.Redraw();
@@ -631,16 +638,25 @@ namespace LibreHardwareMonitor.UI
 
             if (_delayCount < 4)
                 _delayCount++;
+
+            RestoreCollapsedNodeState(treeView);
         }
 
         private void SaveConfiguration()
         {
+            if (_plotPanel == null || _settings == null)
+                return;
+
+
             _plotPanel.SetCurrentSettings();
 
             foreach (TreeColumn column in treeView.Columns)
                 _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
 
             _settings.SetValue("listenerPort", Server.ListenerPort);
+            _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
+            _settings.SetValue("authenticationUserName", Server.UserName);
+            _settings.SetValue("authenticationPassword", Server.Password);
 
             string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
 
@@ -684,7 +700,23 @@ namespace LibreHardwareMonitor.UI
                 newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) - (newBounds.Height / 2);
             }
             Bounds = newBounds;
+
+            RestoreCollapsedNodeState(treeView);
+
             FormClosed += MainForm_FormClosed;
+        }
+
+        private void RestoreCollapsedNodeState(TreeViewAdv treeViewAdv)
+        {
+            var collapsedHwNodes = treeViewAdv.AllNodes
+                .Where(n => n.IsExpanded && n.Tag is IExpandPersistNode expandPersistNode && !expandPersistNode.Expanded)
+                .OrderByDescending(n => n.Level)
+                .ToList();
+
+            foreach (TreeNodeAdv node in collapsedHwNodes)
+            {
+                node.IsExpanded = false;
+            }
         }
 
         private void CloseApplication()
@@ -715,10 +747,20 @@ namespace LibreHardwareMonitor.UI
 
         private void TreeView_Click(object sender, EventArgs e)
         {
-            if (!(e is MouseEventArgs m) || m.Button != MouseButtons.Right)
+            if (!(e is MouseEventArgs m) || (m.Button != MouseButtons.Left && m.Button != MouseButtons.Right))
                 return;
 
             NodeControlInfo info = treeView.GetNodeControlInfoAt(new Point(m.X, m.Y));
+            if (m.Button == MouseButtons.Left && info.Node != null)
+            {
+                if (info.Node.Tag is IExpandPersistNode expandPersistNode)
+                {
+                    expandPersistNode.Expanded = info.Node.IsExpanded;
+                }
+
+                return;
+            }
+
             treeView.SelectedNode = info.Node;
             if (info.Node != null)
             {
@@ -966,8 +1008,7 @@ namespace LibreHardwareMonitor.UI
             // disable the fallback MainIcon during reset, otherwise icon visibility
             // might be lost
             _systemTray.IsMainIconEnabled = false;
-            _computer.Close();
-            _computer.Open();
+            _computer.Reset();
             // restore the MainIcon setting
             _systemTray.IsMainIconEnabled = _minimizeToTray.Value;
         }
@@ -995,5 +1036,12 @@ namespace LibreHardwareMonitor.UI
         }
 
         public HttpServer Server { get; }
+
+        private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
+        {
+            new AuthForm(this).ShowDialog();
+        }
+
+        public bool AuthWebServerMenuItemChecked { get { return authWebServerMenuItem.Checked; } set { authWebServerMenuItem.Checked = value; } }
     }
 }
