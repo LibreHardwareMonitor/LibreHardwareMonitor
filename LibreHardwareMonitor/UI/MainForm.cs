@@ -279,6 +279,7 @@ namespace LibreHardwareMonitor.UI
             authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
+            _logger.LoggingPath = _settings.GetValue("logginPath", "Logs");
 
             _loggingInterval = new UserRadioGroup("loggingInterval", 0,
                 new[] { log1sMenuItem, log2sMenuItem, log5sMenuItem, log10sMenuItem,

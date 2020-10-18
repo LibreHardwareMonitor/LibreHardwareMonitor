@@ -24,6 +24,7 @@ namespace LibreHardwareMonitor.Utilities
         private string[] _identifiers;
         private ISensor[] _sensors;
         private DateTime _lastLoggedTime = DateTime.MinValue;
+        public string LoggingPath { get; set; } = "Logs";
 
         public Logger(IComputer computer)
         {
@@ -80,9 +81,18 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
-        private static string GetFileName(DateTime date)
+        private string GetFileName(DateTime date)
         {
-            return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + string.Format(FileNameFormat, date);
+            string pathName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LoggingPath);
+            try
+            {
+                if (Directory.Exists(pathName)) Directory.CreateDirectory(pathName);
+            }
+            catch
+            {
+                pathName = AppDomain.CurrentDomain.BaseDirectory;
+            }
+            return Path.Combine(pathName, string.Format(FileNameFormat, date));
         }
 
         private bool OpenExistingLogFile()
