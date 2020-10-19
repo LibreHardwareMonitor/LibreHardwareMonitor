@@ -149,6 +149,8 @@ namespace LibreHardwareMonitor.UI
             taskDefinition.Settings.StartWhenAvailable = true;
             taskDefinition.Settings.DisallowStartIfOnBatteries = false;
             taskDefinition.Settings.StopIfGoingOnBatteries = false;
+            taskDefinition.Settings.ExecutionTimeLimit = TimeSpan.Zero;
+            taskDefinition.Settings.AllowHardTerminate = false;
 
             taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
             taskDefinition.Principal.LogonType = TaskLogonType.InteractiveToken;
