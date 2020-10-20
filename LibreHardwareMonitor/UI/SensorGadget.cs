@@ -131,10 +131,10 @@ namespace LibreHardwareMonitor.UI
             SetFontSize(settings.GetValue("sensorGadget.FontSize", 7.5f));
             Resize(settings.GetValue("sensorGadget.Width", Size.Width));
 
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem hardwareNamesItem = new MenuItem("Hardware Names");
-            contextMenu.MenuItems.Add(hardwareNamesItem);
-            MenuItem fontSizeMenu = new MenuItem("Font Size");
+            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+            ToolStripMenuItem hardwareNamesItem = new ToolStripMenuItem("Hardware Names");
+            contextMenuStrip.Items.Add(hardwareNamesItem);
+            ToolStripMenuItem fontSizeMenu = new ToolStripMenuItem("Font Size");
             for (int i = 0; i < 4; i++)
             {
                 float size;
@@ -148,42 +148,42 @@ namespace LibreHardwareMonitor.UI
                     default: throw new NotImplementedException();
                 }
 
-                MenuItem item = new MenuItem(name) { Checked = _fontSize == size };
+                ToolStripItem item = new ToolStripMenuItem(name) { Checked = _fontSize == size };
                 item.Click += delegate
                 {
                     SetFontSize(size);
                     settings.SetValue("sensorGadget.FontSize", size);
-                    foreach (MenuItem mi in fontSizeMenu.MenuItems)
+                    foreach (ToolStripMenuItem mi in fontSizeMenu.DropDownItems)
                         mi.Checked = mi == item;
                 };
-                fontSizeMenu.MenuItems.Add(item);
+                fontSizeMenu.DropDownItems.Add(item);
             }
-            contextMenu.MenuItems.Add(fontSizeMenu);
-            contextMenu.MenuItems.Add(new MenuItem("-"));
-            MenuItem lockItem = new MenuItem("Lock Position and Size");
-            contextMenu.MenuItems.Add(lockItem);
-            contextMenu.MenuItems.Add(new MenuItem("-"));
-            MenuItem alwaysOnTopItem = new MenuItem("Always on Top");
-            contextMenu.MenuItems.Add(alwaysOnTopItem);
-            MenuItem opacityMenu = new MenuItem("Opacity");
-            contextMenu.MenuItems.Add(opacityMenu);
+            contextMenuStrip.Items.Add(fontSizeMenu);
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            ToolStripMenuItem lockItem = new ToolStripMenuItem("Lock Position and Size");
+            contextMenuStrip.Items.Add(lockItem);
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            ToolStripMenuItem alwaysOnTopItem = new ToolStripMenuItem("Always on Top");
+            contextMenuStrip.Items.Add(alwaysOnTopItem);
+            ToolStripMenuItem opacityMenu = new ToolStripMenuItem("Opacity");
+            contextMenuStrip.Items.Add(opacityMenu);
             Opacity = (byte)settings.GetValue("sensorGadget.Opacity", 255);
 
             for (int i = 0; i < 5; i++)
             {
-                MenuItem item = new MenuItem((20 * (i + 1)).ToString() + " %");
+                ToolStripMenuItem item = new ToolStripMenuItem((20 * (i + 1)).ToString() + " %");
                 byte o = (byte)(51 * (i + 1));
                 item.Checked = Opacity == o;
                 item.Click += delegate
                 {
                     Opacity = o;
                     settings.SetValue("sensorGadget.Opacity", Opacity);
-                    foreach (MenuItem mi in opacityMenu.MenuItems)
+                    foreach (ToolStripMenuItem mi in opacityMenu.DropDownItems)
                         mi.Checked = mi == item;
                 };
-                opacityMenu.MenuItems.Add(item);
+                opacityMenu.DropDownItems.Add(item);
             }
-            ContextMenu = contextMenu;
+            ContextMenuStrip = contextMenuStrip;
 
             _hardwareNames = new UserOption("sensorGadget.Hardwarenames", true, hardwareNamesItem, settings);
             _hardwareNames.Changed += delegate
