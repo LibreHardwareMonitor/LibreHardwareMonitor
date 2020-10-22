@@ -31,21 +31,21 @@ namespace LibreHardwareMonitor.UI
 
             _mainIcon = new NotifyIconAdv();
 
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem hideShowItem = new MenuItem("Hide/Show");
+            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+            ToolStripItem hideShowItem = new ToolStripMenuItem("Hide/Show");
             hideShowItem.Click += delegate
             {
                 SendHideShowCommand();
             };
-            contextMenu.MenuItems.Add(hideShowItem);
-            contextMenu.MenuItems.Add(new MenuItem("-"));
-            MenuItem exitItem = new MenuItem("Exit");
+            contextMenuStrip.Items.Add(hideShowItem);
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            ToolStripItem exitItem = new ToolStripMenuItem("Exit");
             exitItem.Click += delegate
             {
                 SendExitCommand();
             };
-            contextMenu.MenuItems.Add(exitItem);
-            _mainIcon.ContextMenu = contextMenu;
+            contextMenuStrip.Items.Add(exitItem);
+            _mainIcon.ContextMenuStrip = contextMenuStrip;
             _mainIcon.DoubleClick += delegate
             {
                 SendHideShowCommand();

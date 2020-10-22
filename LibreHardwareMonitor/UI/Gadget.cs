@@ -114,15 +114,15 @@ namespace LibreHardwareMonitor.UI
             }
         }
 
-        public ContextMenu ContextMenu
+        public ContextMenuStrip ContextMenuStrip
         {
             get
             {
-                return _window.ContextMenu;
+                return _window.ContextMenuStrip;
             }
             set
             {
-                _window.ContextMenu = value;
+                _window.ContextMenuStrip = value;
             }
         }
 

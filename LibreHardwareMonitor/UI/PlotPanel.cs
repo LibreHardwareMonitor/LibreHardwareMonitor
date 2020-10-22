@@ -46,7 +46,7 @@ namespace LibreHardwareMonitor.UI
             SetDpi();
             _model = CreatePlotModel();
 
-            _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenu = CreateMenu() };
+            _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenuStrip = CreateMenu() };
             
             UpdateAxesPosition();
 
@@ -66,20 +66,20 @@ namespace LibreHardwareMonitor.UI
             }
         }
 
-        private ContextMenu CreateMenu()
+        private ContextMenuStrip CreateMenu()
         {
-            ContextMenu menu = new ContextMenu();
+            ContextMenuStrip menu = new ContextMenuStrip();
 
-            MenuItem stackedAxesMenuItem = new MenuItem("Stacked Axes");
+            ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem("Stacked Axes");
             _stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, _settings);
             _stackedAxes.Changed += (sender, e) =>
             {
                 UpdateAxesPosition();
                 InvalidatePlot();
             };
-            menu.MenuItems.Add(stackedAxesMenuItem);
+            menu.Items.Add(stackedAxesMenuItem);
 
-            MenuItem showAxesLabelsMenuItem = new MenuItem("Show Axes Labels");
+            ToolStripMenuItem showAxesLabelsMenuItem = new ToolStripMenuItem("Show Axes Labels");
             _showAxesLabels = new UserOption("showAxesLabels", true, showAxesLabelsMenuItem, _settings);
             _showAxesLabels.Changed += (sender, e) =>
             {
@@ -88,28 +88,28 @@ namespace LibreHardwareMonitor.UI
                 else
                     _model.PlotMargins = new OxyThickness(0);
             };
-            menu.MenuItems.Add(showAxesLabelsMenuItem);
+            menu.Items.Add(showAxesLabelsMenuItem);
 
-            MenuItem timeAxisMenuItem = new MenuItem("Time Axis");
-            MenuItem[] timeAxisMenuItems =
-                { new MenuItem("Enable Zoom"),
-                new MenuItem("Auto", (s, e) => { TimeAxisZoom(0, double.NaN); }),
-                new MenuItem("5 min", (s, e) => { TimeAxisZoom(0, 5 * 60); }),
-                new MenuItem("10 min", (s, e) => { TimeAxisZoom(0, 10 * 60); }),
-                new MenuItem("20 min", (s, e) => { TimeAxisZoom(0, 20 * 60); }),
-                new MenuItem("30 min", (s, e) => { TimeAxisZoom(0, 30 * 60); }),
-                new MenuItem("45 min", (s, e) => { TimeAxisZoom(0, 45 * 60); }),
-                new MenuItem("1 h", (s, e) => { TimeAxisZoom(0, 60 * 60); }),
-                new MenuItem("1.5 h", (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
-                new MenuItem("2 h", (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
-                new MenuItem("3 h", (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
-                new MenuItem("6 h", (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
-                new MenuItem("12 h", (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
-                new MenuItem("24 h", (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
+            ToolStripMenuItem timeAxisMenuItem = new ToolStripMenuItem("Time Axis");
+            ToolStripMenuItem[] timeAxisMenuItems =
+                { new ToolStripMenuItem("Enable Zoom"),
+                new ToolStripMenuItem("Auto", null, (s, e) => { TimeAxisZoom(0, double.NaN); }),
+                new ToolStripMenuItem("5 min", null, (s, e) => { TimeAxisZoom(0, 5 * 60); }),
+                new ToolStripMenuItem("10 min", null, (s, e) => { TimeAxisZoom(0, 10 * 60); }),
+                new ToolStripMenuItem("20 min", null, (s, e) => { TimeAxisZoom(0, 20 * 60); }),
+                new ToolStripMenuItem("30 min", null, (s, e) => { TimeAxisZoom(0, 30 * 60); }),
+                new ToolStripMenuItem("45 min", null, (s, e) => { TimeAxisZoom(0, 45 * 60); }),
+                new ToolStripMenuItem("1 h", null, (s, e) => { TimeAxisZoom(0, 60 * 60); }),
+                new ToolStripMenuItem("1.5 h", null, (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
+                new ToolStripMenuItem("2 h", null, (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
+                new ToolStripMenuItem("3 h", null, (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
+                new ToolStripMenuItem("6 h", null, (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
+                new ToolStripMenuItem("12 h", null, (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
+                new ToolStripMenuItem("24 h", null, (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
 
-            foreach (MenuItem mi in timeAxisMenuItems)
-                timeAxisMenuItem.MenuItems.Add(mi);
-            menu.MenuItems.Add(timeAxisMenuItem);
+            foreach (ToolStripItem mi in timeAxisMenuItems)
+                timeAxisMenuItem.DropDownItems.Add(mi);
+            menu.Items.Add(timeAxisMenuItem);
 
             _timeAxisEnableZoom = new UserOption("timeAxisEnableZoom", true, timeAxisMenuItems[0], _settings);
             _timeAxisEnableZoom.Changed += (sender, e) =>
@@ -117,14 +117,14 @@ namespace LibreHardwareMonitor.UI
                 _timeAxis.IsZoomEnabled = _timeAxisEnableZoom.Value;
             };
 
-            MenuItem yAxesMenuItem = new MenuItem("Value Axes");
-            MenuItem[] yAxesMenuItems =
-                { new MenuItem("Enable Zoom"),
-                new MenuItem("Autoscale All", (s, e) => { AutoscaleAllYAxes(); }) };
+            ToolStripMenuItem yAxesMenuItem = new ToolStripMenuItem("Value Axes");
+            ToolStripMenuItem[] yAxesMenuItems =
+                { new ToolStripMenuItem("Enable Zoom"),
+                new ToolStripMenuItem("Autoscale All", null, (s, e) => { AutoscaleAllYAxes(); }) };
 
-            foreach (MenuItem mi in yAxesMenuItems)
-                yAxesMenuItem.MenuItems.Add(mi);
-            menu.MenuItems.Add(yAxesMenuItem);
+            foreach (ToolStripItem mi in yAxesMenuItems)
+                yAxesMenuItem.DropDownItems.Add(mi);
+            menu.Items.Add(yAxesMenuItem);
 
             _yAxesEnableZoom = new UserOption("yAxesEnableZoom", true, yAxesMenuItems[0], _settings);
             _yAxesEnableZoom.Changed += (sender, e) =>
