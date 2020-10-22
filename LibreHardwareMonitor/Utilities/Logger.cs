@@ -86,7 +86,9 @@ namespace LibreHardwareMonitor.Utilities
             string pathName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LoggingPath);
             try
             {
-                if (Directory.Exists(pathName)) Directory.CreateDirectory(pathName);
+                if (Directory.Exists(pathName)) {
+                    Directory.CreateDirectory(pathName);
+                }
             }
             catch
             {
