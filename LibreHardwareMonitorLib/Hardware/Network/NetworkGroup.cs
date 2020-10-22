@@ -73,14 +73,18 @@ namespace LibreHardwareMonitor.Hardware.Network
                 var foundNetworkInterfaces = networkInterfaces.ToDictionary(x => x.Id, x => x);
 
                 // Remove network interfaces that no longer exist.
+                List<string> removeKeys = new List<string>();
                 foreach (KeyValuePair<string, Network> networkInterfacePair in _networks)
                 {
                     if (foundNetworkInterfaces.ContainsKey(networkInterfacePair.Key))
                         continue;
-
-
-                    networkInterfacePair.Value.Close();
-                    _networks.Remove(networkInterfacePair.Key);
+                    removeKeys.Add(networkInterfacePair.Key);
+                }
+                foreach (string key in removeKeys)
+                {
+                    var network = _networks[key];
+                    network.Close();
+                    _networks.Remove(key);
                 }
 
                 // Add new network interfaces.
