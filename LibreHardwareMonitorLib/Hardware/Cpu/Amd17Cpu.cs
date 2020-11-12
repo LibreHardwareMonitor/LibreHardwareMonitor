@@ -164,7 +164,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
                     Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
 
-                    bool isZen2 = false;
+                    bool supportsPerCCDTemperatures = false;
 
                     // TODO: find a better way because these will probably keep changing in the future.
 
@@ -176,14 +176,15 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         {
                             sviPlane0Offset = F17H_M01H_SVI + 0x14;
                             sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                            isZen2 = true;
+                            supportsPerCCDTemperatures = true;
                             break;
                         }
                         case 0x71: // Zen 2.
+                        case 0x21: // Zen 3.
                         {
                             sviPlane0Offset = F17H_M01H_SVI + 0x10;
                             sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                            isZen2 = true;
+                            supportsPerCCDTemperatures = true;
                             break;
                         }
                         default: // Zen and Zen+.
@@ -268,9 +269,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         _coreTemperatureTctlTdie.Value = t;
                         _hardware.ActivateSensor(_coreTemperatureTctlTdie);
                     }
-
+                     
                     // Tested only on R5 3600 & Threadripper 3960X.
-                    if (isZen2)
+                    if (supportsPerCCDTemperatures)
                     {
                         for (uint i = 0; i < _ccdTemperatures.Length; i++)
                         {
@@ -339,7 +340,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
 
                 // SoC (0x02), not every Zen cpu has this voltage.
-                if (cpu.Model == 0x71 || cpu.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
+                if (cpu.Model == 0x21 || cpu.Model == 0x71 || cpu.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
                 {
                     svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
