@@ -168,7 +168,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     threadMaskWith = 0;
                     coreMaskWith = NextLog2(corePerPackage);
 
-                    if (Family == 0x17)
+                    if (Family == 0x17 || Family == 0x19)
                     {
                         // ApicIdCoreIdSize: APIC ID size.
                         // cores per DIE
