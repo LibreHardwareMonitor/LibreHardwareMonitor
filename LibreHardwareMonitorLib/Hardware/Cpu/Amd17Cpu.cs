@@ -269,7 +269,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         _coreTemperatureTctlTdie.Value = t;
                         _hardware.ActivateSensor(_coreTemperatureTctlTdie);
                     }
-                     
+
                     // Tested only on R5 3600 & Threadripper 3960X.
                     if (supportsPerCCDTemperatures)
                     {
