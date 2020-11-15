@@ -397,10 +397,10 @@ namespace LibreHardwareMonitor.Hardware
 
     public enum CacheDesignation
     {
-    	Other,
-    	L1,
-    	L2,
-    	L3
+        Other,
+        L1,
+        L2,
+        L3
     }
 
     /*
@@ -409,20 +409,20 @@ namespace LibreHardwareMonitor.Hardware
      */
     public enum CacheAssociativity
     {
-    	Other,
-    	Unknown,
-    	DirectMapped,
-    	_2Way,
-    	_4Way,
-    	FullyAssociative,
-    	_8Way,
-    	_16Way,
-    	_12Way,
-    	_24Way,
-    	_32Way,
-    	_48Way,
-    	_64Way,
-    	_20Way,
+        Other,
+        Unknown,
+        DirectMapped,
+        _2Way,
+        _4Way,
+        FullyAssociative,
+        _8Way,
+        _16Way,
+        _12Way,
+        _24Way,
+        _32Way,
+        _48Way,
+        _64Way,
+        _20Way,
     }
 
     public class InformationBase
@@ -704,11 +704,11 @@ namespace LibreHardwareMonitor.Hardware
         {
             string rawCacheType = GetString(0x04);
 
-            if(rawCacheType.Contains("L1"))
+            if (rawCacheType.Contains("L1"))
                 return CacheDesignation.L1;
-            else if(rawCacheType.Contains("L2"))
+            else if (rawCacheType.Contains("L2"))
                 return CacheDesignation.L2;
-            else if(rawCacheType.Contains("L3"))
+            else if (rawCacheType.Contains("L3"))
                 return CacheDesignation.L3;
             else
                 return CacheDesignation.Other;
@@ -1044,7 +1044,7 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine(" Mhz");
                 r.AppendLine();
             }
-            
+
             for (int i = 0; i < ProcessorCaches.Length; i++)
             {
                 r.Append("Cache [" + ProcessorCaches[i].Designation.ToString() + "] Size: ");
