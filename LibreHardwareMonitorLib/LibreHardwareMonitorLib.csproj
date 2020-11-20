@@ -2,14 +2,11 @@
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
-    <Copyright>LibreHardwareMonitor</Copyright>
-    <Version>0.8.5</Version>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputTypeEx>Library</OutputTypeEx>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageId>LibreHardwareMonitorLib</PackageId>
+    <PackageId>$(AssemblyName)</PackageId>
     <PackageLicense>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/Licenses/LICENSE</PackageLicense>
     <PackageProjectUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageProjectUrl>
     <PackageTags>libre open hardware monitor monitoring system logging cpu gpu</PackageTags>
