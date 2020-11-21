@@ -14,11 +14,11 @@ namespace LibreHardwareMonitor.UI
     {
         private readonly string _name;
         private int _value;
-        private readonly MenuItem[] _menuItems;
+        private readonly ToolStripMenuItem[] _menuItems;
         private event EventHandler _changed;
         private readonly PersistentSettings _settings;
 
-        public UserRadioGroup(string name, int value, MenuItem[] menuItems, PersistentSettings settings)
+        public UserRadioGroup(string name, int value, ToolStripMenuItem[] menuItems, PersistentSettings settings)
         {
             _settings = settings;
             _name = name;

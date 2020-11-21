@@ -98,7 +98,7 @@ namespace LibreHardwareMonitor.Hardware.Network
                 _bytesDownloaded = interfaceStats.BytesReceived;
                 _lastTick = newTick;
             }
-            catch (NetworkInformationException networkInformationException) when (unchecked(networkInformationException.NativeErrorCode == (int)0x80004005))
+            catch (NetworkInformationException networkInformationException) when (unchecked(networkInformationException.HResult == (int)0x80004005))
             {
                 foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
                 {

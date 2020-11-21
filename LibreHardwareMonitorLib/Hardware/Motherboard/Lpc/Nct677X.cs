@@ -475,7 +475,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
                         else
                         {
-                            Fans[i] = null;
+                            Fans[i] = 0;
                         }
                     }
                     else

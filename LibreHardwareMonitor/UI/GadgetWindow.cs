@@ -73,11 +73,6 @@ namespace LibreHardwareMonitor.UI
             NativeMethods.SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
         }
 
-        private void ShowContextMenu(Point position)
-        {
-            NativeMethods.TrackPopupMenuEx(ContextMenu.Handle, TPM_RIGHTBUTTON | TPM_VERTICAL, position.X, position.Y, Handle, IntPtr.Zero);
-        }
-
         private CreateParams CreateParams
         {
             get
@@ -134,8 +129,7 @@ namespace LibreHardwareMonitor.UI
                     break;
                 case WM_NCRBUTTONUP:
                     {
-                        if (ContextMenu != null)
-                            ShowContextMenu(new Point(Macros.GET_X_LPARAM(message.LParam),Macros.GET_Y_LPARAM(message.LParam)));
+                        ContextMenuStrip?.Show(new Point(Macros.GET_X_LPARAM(message.LParam), Macros.GET_Y_LPARAM(message.LParam)));
                         message.Result = IntPtr.Zero;
                     }
                     break;
@@ -377,7 +371,7 @@ namespace LibreHardwareMonitor.UI
             }
         }
 
-        public ContextMenu ContextMenu { get; set; }
+        public ContextMenuStrip ContextMenuStrip { get; set; }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct BlendFunction

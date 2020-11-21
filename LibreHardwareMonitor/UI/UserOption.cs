@@ -14,11 +14,11 @@ namespace LibreHardwareMonitor.UI
     {
         private readonly string _name;
         private bool _value;
-        private readonly MenuItem _menuItem;
+        private readonly ToolStripMenuItem _menuItem;
         private event EventHandler _changed;
         private readonly PersistentSettings _settings;
 
-        public UserOption(string name, bool value, MenuItem menuItem, PersistentSettings settings)
+        public UserOption(string name, bool value, ToolStripMenuItem menuItem, PersistentSettings settings)
         {
             _settings = settings;
             _name = name;

@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 {
     internal sealed class Amd17Cpu : AmdCpu
     {
-        private readonly Processor _cpu;
+        private readonly Processor _processor;
         private int _sensorClock;
         private int _sensorMulti;
         private int _sensorPower;
@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         {
             // add all numa nodes
             // Register ..1E_2, [10:8] + 1
-            _cpu = new Processor(this);
+            _processor = new Processor(this);
 
             // add all numa nodes
             const int initialCoreId = 1_000_000_000;
@@ -47,7 +47,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 // Register ..1E_2, [7:0]
                 int nodeId = (int)(thread.ExtData[0x1e, 2] & 0xff);
 
-                _cpu.AppendThread(thread, nodeId, coreId);
+                _processor.AppendThread(thread, nodeId, coreId);
 
                 if (lastCoreId != initialCoreId && coreIdRead != lastCoreId)
                 {
@@ -77,8 +77,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            _cpu.UpdateSensors();
-            foreach (NumaNode node in _cpu.Nodes)
+            _processor.UpdateSensors();
+            foreach (NumaNode node in _processor.Nodes)
             {
                 NumaNode.UpdateSensors();
 
@@ -91,49 +91,49 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private class Processor
         {
+            private readonly Amd17Cpu _cpu;
+            private readonly Sensor _busClock;
             private readonly Sensor[] _ccdTemperatures;
             private readonly Sensor _coreTemperatureTctl;
             private readonly Sensor _coreTemperatureTctlTdie;
             private readonly Sensor _coreTemperatureTdie;
             private readonly Sensor _coreVoltage;
-            private readonly Amd17Cpu _hardware;
             private readonly Sensor _packagePower;
             private readonly Sensor _socVoltage;
             private Sensor _ccdsAverageTemperature;
             private Sensor _ccdsMaxTemperature;
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue;
-            private Sensor _busClock;
 
             public Processor(Hardware hardware)
             {
-                _hardware = (Amd17Cpu)hardware;
-                Nodes = new List<NumaNode>();
+                _cpu = (Amd17Cpu)hardware;
 
-                _packagePower = new Sensor("Package Power", _hardware._sensorPower++, SensorType.Power, _hardware, _hardware._settings);
-                _coreTemperatureTctl = new Sensor("Core (Tctl)", _hardware._sensorTemperatures++, SensorType.Temperature, _hardware, _hardware._settings);
-                _coreTemperatureTdie = new Sensor("Core (Tdie)", _hardware._sensorTemperatures++, SensorType.Temperature, _hardware, _hardware._settings);
-                _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _hardware._sensorTemperatures++, SensorType.Temperature, _hardware, _hardware._settings);
+                _packagePower = new Sensor("Package Power", _cpu._sensorPower++, SensorType.Power, _cpu, _cpu._settings);
+                _coreTemperatureTctl = new Sensor("Core (Tctl)", _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings);
+                _coreTemperatureTdie = new Sensor("Core (Tdie)", _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings);
+                _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings);
                 _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
-                _coreVoltage = new Sensor("Core (SVI2 TFN)", _hardware._sensorVoltage++, SensorType.Voltage, _hardware, _hardware._settings);
-                _socVoltage = new Sensor("SoC (SVI2 TFN)", _hardware._sensorVoltage++, SensorType.Voltage, _hardware, _hardware._settings);
-                _busClock = new Sensor("Bus Speed", _hardware._sensorClock++, SensorType.Clock, _hardware, _hardware._settings);
+                _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorVoltage++, SensorType.Voltage, _cpu, _cpu._settings);
+                _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorVoltage++, SensorType.Voltage, _cpu, _cpu._settings);
+                _busClock = new Sensor("Bus Speed", _cpu._sensorClock++, SensorType.Clock, _cpu, _cpu._settings);
 
-                _hardware.ActivateSensor(_packagePower);
+                _cpu.ActivateSensor(_packagePower);
             }
 
-            public List<NumaNode> Nodes { get; }
+            public List<NumaNode> Nodes { get; } = new List<NumaNode>();
 
             public void UpdateSensors()
             {
                 NumaNode node = Nodes[0];
                 Core core = node?.Cores[0];
-                CpuId cpu = core?.Threads[0];
-                if (cpu == null)
+                CpuId cpuId = core?.Threads[0];
+
+                if (cpuId == null)
                     return;
 
 
-                GroupAffinity previousAffinity = ThreadAffinity.Set(cpu.Affinity);
+                GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId.Affinity);
 
                 // MSRC001_0299
                 // TU [19:16]
@@ -164,26 +164,27 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
                     Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
 
-                    bool isZen2 = false;
+                    bool supportsPerCcdTemperatures = false;
 
                     // TODO: find a better way because these will probably keep changing in the future.
 
                     uint sviPlane0Offset;
                     uint sviPlane1Offset;
-                    switch (cpu.Model)
+                    switch (cpuId.Model)
                     {
                         case 0x31: // Threadripper 3000.
                         {
                             sviPlane0Offset = F17H_M01H_SVI + 0x14;
                             sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                            isZen2 = true;
+                            supportsPerCcdTemperatures = true;
                             break;
                         }
                         case 0x71: // Zen 2.
+                        case 0x21: // Zen 3.
                         {
                             sviPlane0Offset = F17H_M01H_SVI + 0x10;
                             sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                            isZen2 = true;
+                            supportsPerCcdTemperatures = true;
                             break;
                         }
                         default: // Zen and Zen+.
@@ -241,13 +242,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     float offset = 0.0f;
 
                     // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
-                    if (string.IsNullOrWhiteSpace(cpu.Name))
+                    if (string.IsNullOrWhiteSpace(cpuId.Name))
                         offset = 0;
-                    else if (cpu.Name.Contains("1600X") || cpu.Name.Contains("1700X") || cpu.Name.Contains("1800X"))
+                    else if (cpuId.Name.Contains("1600X") || cpuId.Name.Contains("1700X") || cpuId.Name.Contains("1800X"))
                         offset = -20.0f;
-                    else if (cpu.Name.Contains("Threadripper 19") || cpu.Name.Contains("Threadripper 29"))
+                    else if (cpuId.Name.Contains("Threadripper 19") || cpuId.Name.Contains("Threadripper 29"))
                         offset = -27.0f;
-                    else if (cpu.Name.Contains("2700X"))
+                    else if (cpuId.Name.Contains("2700X"))
                         offset = -10.0f;
 
                     float t = temperature * 0.001f;
@@ -259,18 +260,18 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         _coreTemperatureTctl.Value = t;
                         _coreTemperatureTdie.Value = t + offset;
 
-                        _hardware.ActivateSensor(_coreTemperatureTctl);
-                        _hardware.ActivateSensor(_coreTemperatureTdie);
+                        _cpu.ActivateSensor(_coreTemperatureTctl);
+                        _cpu.ActivateSensor(_coreTemperatureTdie);
                     }
                     else
                     {
                         // Zen 2 doesn't have an offset so Tdie and Tctl are the same.
                         _coreTemperatureTctlTdie.Value = t;
-                        _hardware.ActivateSensor(_coreTemperatureTctlTdie);
+                        _cpu.ActivateSensor(_coreTemperatureTctlTdie);
                     }
 
                     // Tested only on R5 3600 & Threadripper 3960X.
-                    if (isZen2)
+                    if (supportsPerCcdTemperatures)
                     {
                         for (uint i = 0; i < _ccdTemperatures.Length; i++)
                         {
@@ -283,11 +284,11 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             {
                                 if (_ccdTemperatures[i] == null)
                                 {
-                                    _hardware.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
-                                                                                              _hardware._sensorTemperatures++,
+                                    _cpu.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
+                                                                                              _cpu._sensorTemperatures++,
                                                                                               SensorType.Temperature,
-                                                                                              _hardware,
-                                                                                              _hardware._settings));
+                                                                                              _cpu,
+                                                                                              _cpu._settings));
                                 }
                                 _ccdTemperatures[i].Value = ccdTemp;
                             }
@@ -300,20 +301,20 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                             if (_ccdsMaxTemperature == null)
                             {
-                                _hardware.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
-                                                                                          _hardware._sensorTemperatures++,
+                                _cpu.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
+                                                                                          _cpu._sensorTemperatures++,
                                                                                           SensorType.Temperature,
-                                                                                          _hardware,
-                                                                                          _hardware._settings));
+                                                                                          _cpu,
+                                                                                          _cpu._settings));
                             }
 
                             if (_ccdsAverageTemperature == null)
                             {
-                                _hardware.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
-                                                                                              _hardware._sensorTemperatures++,
+                                _cpu.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
+                                                                                              _cpu._sensorTemperatures++,
                                                                                               SensorType.Temperature,
-                                                                                              _hardware,
-                                                                                              _hardware._settings));
+                                                                                              _cpu,
+                                                                                              _cpu._settings));
                             }
 
                             _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
@@ -335,24 +336,24 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
                     _coreVoltage.Value = (float)vcc;
 
-                    _hardware.ActivateSensor(_coreVoltage);
+                    _cpu.ActivateSensor(_coreVoltage);
                 }
 
                 // SoC (0x02), not every Zen cpu has this voltage.
-                if (cpu.Model == 0x71 || cpu.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
+                if (cpuId.Model == 0x21 || cpuId.Model == 0x71 || cpuId.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
                 {
                     svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
                     _socVoltage.Value = (float)vcc;
 
-                    _hardware.ActivateSensor(_socVoltage);
+                    _cpu.ActivateSensor(_socVoltage);
                 }
 
                 double timeStampCounterMultiplier = GetTimeStampCounterMultiplier();
                 if (timeStampCounterMultiplier > 0)
                 {
-                    _busClock.Value = (float)(_hardware.TimeStampCounterFrequency / timeStampCounterMultiplier);
-                    _hardware.ActivateSensor(_busClock);
+                    _busClock.Value = (float)(_cpu.TimeStampCounterFrequency / timeStampCounterMultiplier);
+                    _cpu.ActivateSensor(_busClock);
                 }
             }
 
@@ -378,7 +379,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 if (node == null)
                 {
-                    node = new NumaNode(_hardware, numaId);
+                    node = new NumaNode(_cpu, numaId);
                     Nodes.Add(node);
                 }
 
@@ -389,13 +390,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private class NumaNode
         {
-            private readonly Amd17Cpu _hw;
+            private readonly Amd17Cpu _cpu;
 
-            public NumaNode(Hardware hw, int id)
+            public NumaNode(Amd17Cpu cpu, int id)
             {
                 Cores = new List<Core>();
                 NodeId = id;
-                _hw = (Amd17Cpu)hw;
+                _cpu = cpu;
             }
 
             public List<Core> Cores { get; }
@@ -413,7 +414,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 if (core == null)
                 {
-                    core = new Core(_hw, coreId);
+                    core = new Core(_cpu, coreId);
                     Cores.Add(core);
                 }
 
@@ -427,18 +428,20 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private class Core
         {
+            private readonly Amd17Cpu _cpu;
             private readonly Sensor _clock;
             private readonly Sensor _multiplier;
             private readonly Sensor _power;
             private readonly Sensor _vcore;
+            private ISensor _busSpeed;
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue;
 
-            public Core(Hardware hw, int id)
+            public Core(Amd17Cpu cpu, int id)
             {
+                _cpu = cpu;
                 Threads = new List<CpuId>();
                 CoreId = id;
-                Amd17Cpu cpu = (Amd17Cpu)hw;
                 _clock = new Sensor("Core #" + CoreId, cpu._sensorClock++, SensorType.Clock, cpu, cpu._settings);
                 _multiplier = new Sensor("Core #" + CoreId, cpu._sensorMulti++, SensorType.Factor, cpu, cpu._settings);
                 _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorPower++, SensorType.Power, cpu, cpu._settings);
@@ -501,7 +504,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 // clock
                 // CoreCOF is (Core::X86::Msr::PStateDef[CpuFid[7:0]] / Core::X86::Msr::PStateDef[CpuDfsId]) * 200
-                _clock.Value = (float)(curCpuFid / (double)curCpuDfsId * 200.0);
+                double clock = 200.0;
+                _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
+                if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
+                    clock = (double) (_busSpeed.Value * 2);
+
+                _clock.Value = (float)(curCpuFid / (double)curCpuDfsId * clock);
 
                 // multiplier
                 _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
