@@ -5,32 +5,46 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   build:
     runs-on: windows-latest
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    if: contains(github.event.head_commit.message, 'ci skip') == false
 
     steps:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
       - uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Update version
+        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        run: "(Get-Content Directory.Build.props) | % { $_ -replace '<Version>(.+?)</Version>', '<Version>$1-ci${{github.run_number}}</Version>' } | Set-Content Directory.Build.props"
         
       - name: NuGet restore
         run: nuget restore LibreHardwareMonitor.sln
     
       - name: Build
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
-        
-      - uses: actions/upload-artifact@v2
+     
+      - name: Publish net452
+        uses: actions/upload-artifact@v2
         with:
-          name: Binaries
+          name: LibreHardwareMonitor-net452
           path: |
             bin/Release/net452
-        
-      - uses: actions/upload-artifact@v2
+            
+      - name: Publish netstandard20
+        uses: actions/upload-artifact@v2
         with:
-          name: NuGet
+          name: LibreHardwareMonitor-netstandard20
+          path: |
+            bin/Release/netstandard2.0
+
+      - name: Publish nupkg
+        uses: actions/upload-artifact@v2
+        with:
+          name: LibreHardwareMonitorLib-nupkg
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
@@ -38,6 +52,7 @@ jobs:
         uses: rohith/publish-nuget@v2
         with:
           PROJECT_FILE_PATH: LibreHardwareMonitorLib/LibreHardwareMonitorLib.csproj
+          VERSION_FILE_PATH: Directory.Build.props
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           INCLUDE_SYMBOLS: false
           TAG_COMMIT: false
