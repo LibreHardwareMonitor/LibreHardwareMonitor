@@ -37,7 +37,7 @@ jobs:
       - name: Publish netstandard20
         uses: actions/upload-artifact@v2
         with:
-          name: LibreHardwareMonitor-netstandard20
+          name: LibreHardwareMonitorLib-netstandard20
           path: |
             bin/Release/netstandard2.0
 
