@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
       - uses: microsoft/setup-msbuild@v1.0.2
+        
       - name: NuGet restore
         run: nuget restore LibreHardwareMonitor.sln
     
@@ -32,7 +33,6 @@ jobs:
           name: NuGet
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
-
       - name: Publish to NuGet
         uses: rohith/publish-nuget@v2
         with:
