@@ -33,6 +33,7 @@ jobs:
           name: NuGet
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
+
       - name: Publish to NuGet
         uses: rohith/publish-nuget@v2
         with:
