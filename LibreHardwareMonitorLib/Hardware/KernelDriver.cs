@@ -78,7 +78,7 @@ namespace LibreHardwareMonitor.Hardware
             AdvApi32.CloseServiceHandle(service);
             AdvApi32.CloseServiceHandle(manager);
 
-#if NET452
+#if NETFRAMEWORK
             try
             {
                 // restrict the driver access to system (SY) and builtin admins (BA)

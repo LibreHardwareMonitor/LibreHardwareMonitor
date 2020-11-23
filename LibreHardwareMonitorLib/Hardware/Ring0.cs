@@ -220,7 +220,7 @@ namespace LibreHardwareMonitor.Hardware
 
             try
             {
-#if NET452
+#if NETFRAMEWORK
                 //mutex permissions set to everyone to allow other software to access the hardware
                 //otherwise other monitoring software cant access
                 var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
@@ -235,7 +235,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 try
                 {
-#if NET452
+#if NETFRAMEWORK
                     _isaBusMutex = Mutex.OpenExisting(isaMutexName, MutexRights.Synchronize);
 #else
                     _isaBusMutex = Mutex.OpenExisting(isaMutexName);
@@ -255,7 +255,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 try
                 {
-#if NET452
+#if NETFRAMEWORK
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName, MutexRights.Synchronize);
 #else
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName);
