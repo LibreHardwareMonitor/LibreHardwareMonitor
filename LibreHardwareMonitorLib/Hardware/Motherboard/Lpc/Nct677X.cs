@@ -181,8 +181,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             Temperatures = new float?[24];
                             _temperaturesSource = new[]
                             {
-                                (byte)SourceNct67Xxd.SYSTIN,
+                                (byte)SourceNct67Xxd.PECI_0,
                                 (byte)SourceNct67Xxd.CPUTIN,
+                                (byte)SourceNct67Xxd.SYSTIN,
                                 (byte)SourceNct67Xxd.AUXTIN0,
                                 (byte)SourceNct67Xxd.AUXTIN1,
                                 (byte)SourceNct67Xxd.AUXTIN2,
@@ -190,7 +191,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                                 (byte)SourceNct67Xxd.AUXTIN4,
                                 (byte)SourceNct67Xxd.SMBUSMASTER0,
                                 (byte)SourceNct67Xxd.SMBUSMASTER1,
-                                (byte)SourceNct67Xxd.PECI_0,
                                 (byte)SourceNct67Xxd.PECI_1,
                                 (byte)SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP,
                                 (byte)SourceNct67Xxd.PCH_CHIP_TEMP,
@@ -225,7 +225,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             };
                             _alternateTemperatureRegister = new ushort?[]
                             {
-                                0x490, 0x491, 0x492, 0x493, 0x494, 0x495, null, null, null, null, null, 0x400, 0x401, 0x402, 0x404, null, null, null, null, null, null, null, null, null
+                                null, 0x491, 0x490, 0x492, 0x493, 0x494, 0x495, null, null, null, null, 0x400, 0x401, 0x402, 0x404, null, null, null, null, null, null, null, null, null
                             };
                             break;
                         }
