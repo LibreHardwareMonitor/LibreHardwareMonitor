@@ -213,11 +213,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             };
                             _temperatureHalfRegister = new ushort[]
                             {
-                                0x074, 0x076, 0x078, 0x07A, 0x07C, 0x07E, 0x49E, 0, 0, 0, 0, 0, 0, 0, 0
+                                0x074, 0x076, 0x078, 0x07A, 0x07C, 0x07E, 0x49E, 0, 0x151, 0, 0, 0, 0, 0, 0
                             };
                             _temperatureHalfBit = new[]
                             {
-                                7, 7, 7, 7, 7, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1
+                                7, 7, 7, 7, 7, 7, 6, -1, 7, -1, -1, -1, -1, -1, -1
                             };
                             _temperatureSourceRegister = new ushort[]
                             {
