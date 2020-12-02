@@ -170,6 +170,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.RAMPAGE_II_GENE;
                 case var _ when name.Equals("LP BI P45-T2RS Elite", StringComparison.OrdinalIgnoreCase):
                     return Model.LP_BI_P45_T2RS_Elite;
+                case var _ when name.Equals("ROG STRIX X470-I GAMING", StringComparison.OrdinalIgnoreCase):
+                    return Model.ROG_STRIX_X470_I;
                 case var _ when name.Equals("LP DK P55-T3eH9", StringComparison.OrdinalIgnoreCase):
                     return Model.LP_DK_P55_T3EH9;
                 case var _ when name.Equals("A890GXM-A", StringComparison.OrdinalIgnoreCase):

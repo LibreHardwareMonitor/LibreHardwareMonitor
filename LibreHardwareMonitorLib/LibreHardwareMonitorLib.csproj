@@ -1,15 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard2.0;net5.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
-    <Copyright>LibreHardwareMonitor</Copyright>
-    <Version>0.8.5</Version>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputTypeEx>Library</OutputTypeEx>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageId>LibreHardwareMonitorLib</PackageId>
+    <PackageId>$(AssemblyName)</PackageId>
     <PackageLicense>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/Licenses/LICENSE</PackageLicense>
     <PackageProjectUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</PackageProjectUrl>
     <PackageTags>libre open hardware monitor monitoring system logging cpu gpu</PackageTags>
@@ -29,12 +26,13 @@
     <EmbeddedResource Include="Hardware\WinRing0x64.sys" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Win32.Registry">
-      <Version>4.7.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.IO.Ports">
-      <Version>4.7.0</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
+    <PackageReference Include="System.IO.Ports" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="5.0.0" />
+    <PackageReference Include="System.Management" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />

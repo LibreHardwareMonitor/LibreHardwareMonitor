@@ -1031,6 +1031,64 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         {
             switch (manufacturer)
             {
+                case Manufacturer.ASUS:
+                {
+                    switch (model)
+                    {
+                        case Model.ROG_STRIX_X470_I: // IT8665E
+                        {
+                            v.Add(new Voltage("Vcore", 0));
+                            v.Add(new Voltage("SB 2.5V", 1));
+                            v.Add(new Voltage("+12V", 2, 5, 1));
+                            v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                            v.Add(new Voltage("+3.3V", 7, 10, 10));
+                            v.Add(new Voltage("VBat", 8, 10, 10));
+                            t.Add(new Temperature("CPU", 0));
+                            t.Add(new Temperature("Motherboard", 1));
+                            t.Add(new Temperature("T_Sensor", 2));
+                            t.Add(new Temperature("PCIe x16", 3));
+                            t.Add(new Temperature("VRM", 4));
+                            t.Add(new Temperature("Temperature #6", 5));
+
+                            f.Add(new Fan("CPU Fan", 0));
+
+                            //Does not work when in AIO pump mode (shows 0). I don't know how to fix it.
+                            f.Add(new Fan("Chassis Fan #1", 1));
+                            f.Add(new Fan("Chassis Fan #2", 2));
+
+                            //offset: 2, because the first two always show zero
+                            for (int i = 2; i < superIO.Controls.Length; i++)
+                                c.Add(new Ctrl("Fan Control #" + (i - 1), i));
+
+                            break;
+                        }
+                        default:
+                        {
+                            v.Add(new Voltage("Vcore", 0));
+                            v.Add(new Voltage("Voltage #2", 1, true));
+                            v.Add(new Voltage("Voltage #3", 2, true));
+                            v.Add(new Voltage("Voltage #4", 3, true));
+                            v.Add(new Voltage("Voltage #5", 4, true));
+                            v.Add(new Voltage("Voltage #6", 5, true));
+                            v.Add(new Voltage("Voltage #7", 6, true));
+                            v.Add(new Voltage("Voltage #8", 7, true));
+                            v.Add(new Voltage("VBat", 8));
+
+                            for (int i = 0; i < superIO.Temperatures.Length; i++)
+                                t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
+                            break;
+                        }
+                    }
+
+                    break;
+                }
                 case Manufacturer.ECS:
                 {
                     switch (model)

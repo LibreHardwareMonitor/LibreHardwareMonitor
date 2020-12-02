@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
-      - uses: microsoft/setup-msbuild@v1.0.1 
+      - uses: microsoft/setup-msbuild@v1.0.2
         
       - name: NuGet restore
         run: nuget restore LibreHardwareMonitor.sln
@@ -38,5 +38,7 @@ jobs:
         uses: rohith/publish-nuget@v2
         with:
           PROJECT_FILE_PATH: LibreHardwareMonitorLib/LibreHardwareMonitorLib.csproj
+          VERSION_FILE_PATH: Directory.Build.props
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          INCLUDE_SYMBOLS: true
+          INCLUDE_SYMBOLS: false
+          TAG_COMMIT: false

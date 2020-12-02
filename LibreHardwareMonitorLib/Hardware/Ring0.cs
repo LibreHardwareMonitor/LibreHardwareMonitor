@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael MÃ¶ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -220,25 +220,25 @@ namespace LibreHardwareMonitor.Hardware
 
             try
             {
-#if NETSTANDARD2_0
-                _isaBusMutex = new Mutex(false, isaMutexName);
-#else
+#if NETFRAMEWORK
                 //mutex permissions set to everyone to allow other software to access the hardware
                 //otherwise other monitoring software cant access
                 var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
                 var securitySettings = new MutexSecurity();
                 securitySettings.AddAccessRule(allowEveryoneRule);
                 _isaBusMutex = new Mutex(false, isaMutexName, out _, securitySettings);
+#else
+                _isaBusMutex = new Mutex(false, isaMutexName);
 #endif
             }
             catch (UnauthorizedAccessException)
             {
                 try
                 {
-#if NETSTANDARD2_0
-                    _isaBusMutex = Mutex.OpenExisting(isaMutexName);
-#else
+#if NETFRAMEWORK
                     _isaBusMutex = Mutex.OpenExisting(isaMutexName, MutexRights.Synchronize);
+#else
+                    _isaBusMutex = Mutex.OpenExisting(isaMutexName);
 #endif
                 }
                 catch
@@ -255,10 +255,10 @@ namespace LibreHardwareMonitor.Hardware
             {
                 try
                 {
-#if NETSTANDARD2_0
-                    _pciBusMutex = Mutex.OpenExisting(pciMutexName);
-#else
+#if NETFRAMEWORK
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName, MutexRights.Synchronize);
+#else
+                    _pciBusMutex = Mutex.OpenExisting(pciMutexName);
 #endif
                 }
                 catch

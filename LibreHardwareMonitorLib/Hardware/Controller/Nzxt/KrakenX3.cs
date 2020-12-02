@@ -150,7 +150,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     }
                     else if (_pump.Value != _rawData[19])
                     {
-                        byte pumpSpeedIndex = (byte)_pump.Value;
+                        float value = _pump.Value.GetValueOrDefault();
+                        byte pumpSpeedIndex = (byte)(value > 100 ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
                         _stream.Write(_setPumpTargetMap[pumpSpeedIndex]);
                     }
                     else
