@@ -568,24 +568,24 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 if (!_alternateTemperatureRegister[i].HasValue)
                 {
-                    System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} skipped, because address is null.", i);
+                    System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), skipped, because address is null.", i, _temperaturesSource[i]);
                     continue;
                 }
 
                 if ((temperatureSourceMask & (1L << (byte)(SourceNct67Xxd)_temperaturesSource[i])) > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} at 0x{1:X3} skipped, because value already set.", i, _alternateTemperatureRegister[i].Value);
+                    System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} skipped, because value already set.", i, _temperaturesSource[i], _alternateTemperatureRegister[i].Value);
                     continue;
                 }
 
 
                 float? temperature = (sbyte)ReadByte(_alternateTemperatureRegister[i].Value);
-                System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} at 0x{1:X3} final temperature: {2}.", i, _alternateTemperatureRegister[i].Value, temperature);
+                System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} final temperature: {3}.", i, _temperaturesSource[i], _alternateTemperatureRegister[i].Value, temperature);
 
                 if (temperature > 125 || temperature <= 0)
                 {
                     temperature = null;
-                    System.Diagnostics.Debug.WriteLine("Alternate Temperature register {0} discarded: Out of range.", i);
+                    System.Diagnostics.Debug.WriteLine("Alternate Temperature register for temperature {0}, {1:G} ({1:D}), discarded: Out of range.", i, _temperaturesSource[i]);
                 }
 
                 Temperatures[i] = temperature;
