@@ -466,7 +466,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             }
 
             System.Diagnostics.Debug.WriteLine("Updating temperatures.");
-            int temperatureSourceMask = 0;
+            long temperatureSourceMask = 0;
             for (int i = 0; i < _temperatureRegister.Length ; i++)
             {
                 switch (Chip)
@@ -512,7 +512,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
                         
                         // Skip reading when already filled, because later values are without fractional
-                        if ((temperatureSourceMask & (1 << source)) > 0)
+                        if ((temperatureSourceMask & (1L << source)) > 0)
                         {
                             System.Diagnostics.Debug.WriteLine("Temperature {0} discarded, because source seen before.", i);
                             continue;
@@ -526,7 +526,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             System.Diagnostics.Debug.WriteLine("Temperature register {0} discarded: Out of range.", i);
                         }
                         else{
-                            temperatureSourceMask |= 1 << source;
+                            temperatureSourceMask |= 1L << source;
                             System.Diagnostics.Debug.WriteLine("Temperature register {0} accepted.", i);
                         }
 
@@ -546,7 +546,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
 
                         byte source = ReadByte(_temperatureSourceRegister[i]);
-                        temperatureSourceMask |= 1 << source;
+                        temperatureSourceMask |= 1L << source;
 
                         float? temperature = 0.5f * value;
                         if (temperature > 125 || temperature < -55)
@@ -570,7 +570,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     continue;
                 }
 
-                if ((temperatureSourceMask & (1 << _temperaturesSource[i])) > 0)
+                if ((temperatureSourceMask & (1L << _temperaturesSource[i])) > 0)
                 {
                     System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} at 0x{1:X3} skipped, because value already set.", i, _alternateTemperatureRegister[i].Value);
                     continue;
