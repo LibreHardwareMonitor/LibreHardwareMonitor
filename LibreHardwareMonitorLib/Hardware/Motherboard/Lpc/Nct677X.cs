@@ -491,11 +491,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
 
                         int value = (sbyte)ReadByte(_temperatureRegister[i]) << 1;
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} value (integer): {1}/0.5", i, value);
+                        System.Diagnostics.Debug.WriteLine("Temperature register {0} at 0x{1:X3} value (integer): {2}/2", i, _temperatureRegister[i], value);
                         if (_temperatureHalfBit[i] > 0)
                         {
                             value |= (ReadByte(_temperatureHalfRegister[i]) >> _temperatureHalfBit[i]) & 0x1;
-                            System.Diagnostics.Debug.WriteLine("Temperature register {0} value updated (fractional): {1}/0.5", i, value);
+                            System.Diagnostics.Debug.WriteLine("Temperature register {0} value updated from 0x{1:X3} (fractional): {2}/2", i, _temperatureHalfRegister[i], value);
                         }
 
                         byte source = 0;
@@ -503,7 +503,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         {
                             source = ReadByte(_temperatureSourceRegister[i]);
                             source &= 0x1F;
-                            System.Diagnostics.Debug.WriteLine("Temperature register {0} source: {1}", i, source);
+                            System.Diagnostics.Debug.WriteLine("Temperature register {0} source at 0x{1:X3}: {2}", i, _temperatureSourceRegister[i], source);
                         }
                         else
                         {
@@ -566,19 +566,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 if (!_alternateTemperatureRegister[i].HasValue)
                 {
-                    System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} skipped, because value already filled.", i);
+                    System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} skipped, because address is null.", i);
                     continue;
                 }
 
                 if ((temperatureSourceMask & (1 << _temperaturesSource[i])) > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} skipped, because bit already set.", i);
+                    System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} at 0x{1:X3} skipped, because value already set.", i, _alternateTemperatureRegister[i].Value);
                     continue;
                 }
 
 
                 float? temperature = (sbyte)ReadByte(_alternateTemperatureRegister[i].Value);
-                System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} final temperature: {1}.", i, temperature);
+                System.Diagnostics.Debug.WriteLine("Alternate temperature register {0} at 0x{1:X3} final temperature: {2}.", i, _alternateTemperatureRegister[i].Value, temperature);
 
                 if (temperature > 125 || temperature <= 0)
                 {
