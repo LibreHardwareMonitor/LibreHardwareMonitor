@@ -2264,11 +2264,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("NB/SoC", 12));
                             v.Add(new Voltage("DIMM", 13, 1, 1));
                             //v.Add(new Voltage("Voltage #15", 14, false));
-                            t.Add(new Temperature("CPU", 0));
-                            t.Add(new Temperature("CPU (PECI)", 1));
+                            //t.Add(new Temperature("CPU", 0));
+                            t.Add(new Temperature("CPU", 1));
                             t.Add(new Temperature("System", 2));
                             t.Add(new Temperature("VRM MOS", 3));
                             t.Add(new Temperature("PCH", 5));
+                            t.Add(new Temperature("SMBUS0", 8));
                             f.Add(new Fan("Pump Fan", 0));
                             f.Add(new Fan("CPU Fan", 1));
                             f.Add(new Fan("System Fan #1", 2));
