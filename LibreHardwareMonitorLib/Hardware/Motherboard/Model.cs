@@ -54,6 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         ROG_ZENITH_EXTREME,
         TUF_X470_PLUS_GAMING,
         Z170_A,
+        TUF_GAMING_B550M_PLUS_WIFI,
 
         // DFI
         LP_BI_P45_T2RS_Elite,
