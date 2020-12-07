@@ -14,6 +14,17 @@ namespace LibreHardwareMonitor.Interop
     {
         private const string DllName = "Ftd2xx.dll";
 
+        public static bool DllExists()
+        {
+            IntPtr module = Kernel32.LoadLibrary(DllName);
+            if (module == IntPtr.Zero)
+                return false;
+
+
+            Kernel32.FreeLibrary(module);
+            return true;
+        }
+
         [DllImport(DllName)]
         public static extern FT_STATUS FT_CreateDeviceInfoList(out uint numDevices);
 
