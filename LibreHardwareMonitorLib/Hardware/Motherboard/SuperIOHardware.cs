@@ -2269,7 +2269,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("System", 2));
                             t.Add(new Temperature("VRM MOS", 3));
                             t.Add(new Temperature("PCH", 5));
-                            t.Add(new Temperature("SMBUS0", 8));
+                            t.Add(new Temperature("SMBus 0", 8));
                             f.Add(new Fan("Pump Fan", 0));
                             f.Add(new Fan("CPU Fan", 1));
                             f.Add(new Fan("System Fan #1", 2));
