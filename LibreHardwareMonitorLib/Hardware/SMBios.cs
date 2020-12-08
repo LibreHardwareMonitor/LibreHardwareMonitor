@@ -1071,9 +1071,9 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine(MemoryDevices[i].BankLocator);
                 r.Append("Memory Device [" + i + "] Speed: ");
                 r.Append(MemoryDevices[i].Speed);
-                r.Append("Memory Device [" + i + "] Size: ");
+                r.AppendLine("Memory Device [" + i + "] Size: ");
                 r.Append(MemoryDevices[i].Size);
-                r.AppendLine(" MHz");
+                r.AppendLine(" MB");
                 r.AppendLine();
             }
 
