@@ -409,7 +409,7 @@ namespace LibreHardwareMonitor.Hardware
      */
     public enum CacheAssociativity
     {
-        Other,
+        Other = 1,
         Unknown,
         DirectMapped,
         _2Way,
