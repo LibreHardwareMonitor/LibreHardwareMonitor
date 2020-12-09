@@ -299,6 +299,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.X470_AORUS_GAMING_7_WIFI;
                 case var _ when name.Equals("X570 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
                     return Model.X570_AORUS_MASTER;
+                case var _ when name.Equals("TUF GAMING B550M-PLUS (WI-FI)", StringComparison.OrdinalIgnoreCase):
+                    return Model.TUF_GAMING_B550M_PLUS_WIFI;    
                 case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Model.Unknown;

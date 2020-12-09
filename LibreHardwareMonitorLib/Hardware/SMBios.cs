@@ -409,7 +409,7 @@ namespace LibreHardwareMonitor.Hardware
      */
     public enum CacheAssociativity
     {
-        Other,
+        Other = 1,
         Unknown,
         DirectMapped,
         _2Way,
@@ -731,6 +731,10 @@ namespace LibreHardwareMonitor.Hardware
             SerialNumber = GetString(0x18).Trim();
             PartNumber = GetString(0x1A).Trim();
             Speed = GetWord(0x15);
+            Size = GetWord(0x0C);
+
+            if (GetWord(0x1C) > 0)
+                Size += GetWord(0x1C);
         }
 
         public string BankLocator { get; }
@@ -744,6 +748,7 @@ namespace LibreHardwareMonitor.Hardware
         public string SerialNumber { get; }
 
         public int Speed { get; }
+        public int Size { get; }
     }
 
     public class SMBios
@@ -1066,7 +1071,9 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine(MemoryDevices[i].BankLocator);
                 r.Append("Memory Device [" + i + "] Speed: ");
                 r.Append(MemoryDevices[i].Speed);
-                r.AppendLine(" MHz");
+                r.AppendLine("Memory Device [" + i + "] Size: ");
+                r.Append(MemoryDevices[i].Size);
+                r.AppendLine(" MB");
                 r.AppendLine();
             }
 
