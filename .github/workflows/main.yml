@@ -3,9 +3,6 @@ name: CI
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
-    types: [opened, synchronize, reopened, closed]
 
 jobs:
   build:
@@ -16,9 +13,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
       - uses: microsoft/setup-msbuild@v1.0.2
+    
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            buildprops:
+              - 'Directory.Build.props'
 
       - name: Update version
-        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        if: steps.changes.outputs.buildprops == 'false'
         run: |
             (Get-Content Directory.Build.props) | % { 
                 $m = [regex]::match($_, '<Version>(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?</Version>');
