@@ -49,7 +49,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             get { return HardwareType.Cooler; }
         }
 
-
         public override void Close()
         {
             _stream.Close();
