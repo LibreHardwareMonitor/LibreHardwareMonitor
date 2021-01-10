@@ -4,18 +4,12 @@
 // All Rights Reserved.
 
 using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
-
     internal sealed class D5Next : Hardware
     {
-        private readonly Sensor _fanControl;
-        private const byte D5_REPORT_ID = 0x3;
-
         //Available Reports, found them by looking at the below methods
         //var test = dev.GetRawReportDescriptor();
         //var test2 = dev.GetReportDescriptor();
@@ -45,7 +39,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 
                 _rpmSensors[0] = new Sensor("Pump", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
                 ActivateSensor(_rpmSensors[0]);
-
             }
         }
 
@@ -60,7 +53,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
         public override void Close()
         {
             _stream.Close();
-
             base.Close();
         }
 
@@ -68,12 +60,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
         {
             //Reading output report instead of feature report, as the measurements are in the output report
             _stream.Read(_rawData);
-
-
             _temperatures[0].Value = (_rawData[88] | (_rawData[87] << 8)) / 100f; //Water Temp
-
             _rpmSensors[0].Value = (_rawData[117] | (_rawData[116] << 8)); //Pump RPM
-
         }
     }
 }
