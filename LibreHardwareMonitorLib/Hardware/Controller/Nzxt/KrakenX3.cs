@@ -52,7 +52,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     _stream.Read(_rawData);
                     if (_rawData[0] == 0x11 && _rawData[1] == 0x01)
                     {
-                        FirmwareVersion = $"{_rawData[0x11]}.{_rawData[0x11]}.{_rawData[0x13]}";
+                        FirmwareVersion = $"{_rawData[0x11]}.{_rawData[0x12]}.{_rawData[0x13]}";
                     }
                 }
                 while (FirmwareVersion == null);
