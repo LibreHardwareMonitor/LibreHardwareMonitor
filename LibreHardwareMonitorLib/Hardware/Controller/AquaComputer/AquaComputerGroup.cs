@@ -26,6 +26,15 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
                 switch (dev.ProductID)
                 {
+                    case 0xF00E:
+                    {
+                        var device = new D5Next(dev, settings);
+                        _report.AppendLine($"Device name: {productName}");
+                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
+                        _report.AppendLine();
+                        _hardware.Add(device);
+                        break;
+                    }
                     case 0xf0b6:
                     {
                         var device = new AquastreamXT(dev, settings);
