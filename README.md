@@ -15,11 +15,11 @@ With the help of LibreHardwareMonitor you can read information from devices such
 - HDD, SSD and NVMe hard drives
 - Network cards
 
-## Where can I download LibreHardwareMonitor?
+## Where can I download it?
 You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).<br/>
 If you're **signed in to GitHub**, you can also download the latest builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Click on a result and download **Binaries** under **Artifacts**.
 
-## How can I help improve LibreHardwareMonitor?
+## How can I help improve it?
 The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
 You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
 
