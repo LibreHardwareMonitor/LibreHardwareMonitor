@@ -145,6 +145,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             Controls = new float?[5];
                             break;
                         }
+                        case Chip.NCT6796DR:
                         case Chip.NCT6797D:
                         case Chip.NCT6798D:
                         {
