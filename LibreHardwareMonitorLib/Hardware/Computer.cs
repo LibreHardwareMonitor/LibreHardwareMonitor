@@ -284,6 +284,7 @@ namespace LibreHardwareMonitor.Hardware
             if (visitor == null)
                 throw new ArgumentNullException(nameof(visitor));
 
+
             visitor.VisitComputer(this);
         }
 
@@ -322,6 +323,7 @@ namespace LibreHardwareMonitor.Hardware
                 if (_groups.Contains(group))
                     return;
 
+
                 _groups.Add(group);
 
                 if (group is IHardwareChanged hardwareChanged)
@@ -344,6 +346,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (!_groups.Contains(group))
                     return;
+
 
                 _groups.Remove(group);
 
@@ -384,6 +387,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_open)
                 return;
+
 
             _smbios = new SMBios();
 
@@ -442,6 +446,7 @@ namespace LibreHardwareMonitor.Hardware
             int c = a.SensorType.CompareTo(b.SensorType);
             if (c == 0)
                 return a.Index.CompareTo(b.Index);
+
 
             return c;
         }
@@ -507,6 +512,7 @@ namespace LibreHardwareMonitor.Hardware
             if (!_open)
                 return;
 
+
             lock (_lock)
             {
                 while (_groups.Count > 0)
@@ -527,6 +533,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (!_open)
                 return;
+
 
             RemoveGroups();
             AddGroups();
