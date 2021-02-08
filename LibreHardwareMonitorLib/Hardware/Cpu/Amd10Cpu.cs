@@ -125,11 +125,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     }
                     break;
                 }
-                case 0x17:
-                {
-                    miscellaneousControlDeviceId = FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID;
-                    break;
-                }
                 default:
                 {
                     miscellaneousControlDeviceId = 0;
@@ -565,7 +560,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const ushort FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID = 0x15B3;
         private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
         private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
-        private const ushort FAMILY_17H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1577;
 
         // ReSharper restore InconsistentNaming
     }
