@@ -318,6 +318,7 @@ namespace LibreHardwareMonitor.Hardware
             if (group == null)
                 return;
 
+
             lock (_lock)
             {
                 if (_groups.Contains(group))
