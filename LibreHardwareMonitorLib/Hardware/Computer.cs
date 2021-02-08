@@ -24,6 +24,9 @@ namespace LibreHardwareMonitor.Hardware
 {
     public class Computer : IComputer
     {
+        public event HardwareEventHandler HardwareAdded;
+        public event HardwareEventHandler HardwareRemoved;
+
         private readonly List<IGroup> _groups = new List<IGroup>();
         private readonly ISettings _settings;
         private bool _controllerEnabled;
@@ -66,8 +69,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsCpuEnabled
         {
             get { return _cpuEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _cpuEnabled)
@@ -85,8 +86,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsControllerEnabled
         {
             get { return _controllerEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _controllerEnabled)
@@ -116,8 +115,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsGpuEnabled
         {
             get { return _gpuEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _gpuEnabled)
@@ -141,8 +138,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsMemoryEnabled
         {
             get { return _memoryEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _memoryEnabled)
@@ -160,8 +155,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsMotherboardEnabled
         {
             get { return _motherboardEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _motherboardEnabled)
@@ -179,8 +172,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsNetworkEnabled
         {
             get { return _networkEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _networkEnabled)
@@ -198,8 +189,6 @@ namespace LibreHardwareMonitor.Hardware
         public bool IsStorageEnabled
         {
             get { return _storageEnabled; }
-
-            [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
             set
             {
                 if (_open && value != _storageEnabled)
@@ -213,10 +202,6 @@ namespace LibreHardwareMonitor.Hardware
                 _storageEnabled = value;
             }
         }
-
-        public event HardwareEventHandler HardwareAdded;
-
-        public event HardwareEventHandler HardwareRemoved;
 
         public string GetReport()
         {
@@ -318,8 +303,22 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        private void HardwareAddedEvent(IHardware hardware)
+        {
+            HardwareAdded?.Invoke(hardware);
+        }
+
+        private void HardwareRemovedEvent(IHardware hardware)
+        {
+            HardwareRemoved?.Invoke(hardware);
+        }
+
         private void Add(IGroup group)
         {
+            if (group == null)
+                return;
+
+
             lock (_lock)
             {
                 if (_groups.Contains(group))
@@ -327,6 +326,12 @@ namespace LibreHardwareMonitor.Hardware
 
 
                 _groups.Add(group);
+
+                if (group is IHardwareChanged hardwareChanged)
+                {
+                    hardwareChanged.HardwareAdded += HardwareAddedEvent;
+                    hardwareChanged.HardwareRemoved += HardwareRemovedEvent;
+                }
             }
 
             if (HardwareAdded != null)
@@ -345,8 +350,13 @@ namespace LibreHardwareMonitor.Hardware
 
 
                 _groups.Remove(group);
-            }
 
+                if (group is IHardwareChanged hardwareChanged)
+                {
+                    hardwareChanged.HardwareAdded -= HardwareAddedEvent;
+                    hardwareChanged.HardwareRemoved -= HardwareRemovedEvent;
+                }
+            }
 
             if (HardwareRemoved != null)
             {
@@ -374,7 +384,6 @@ namespace LibreHardwareMonitor.Hardware
                 Remove(group);
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public void Open()
         {
             if (_open)
