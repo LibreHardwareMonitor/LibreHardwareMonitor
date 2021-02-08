@@ -72,6 +72,7 @@ namespace LibreHardwareMonitor.Hardware.Network
                 if (networkInterfaces == null)
                     return;
 
+
                 var foundNetworkInterfaces = networkInterfaces.ToDictionary(x => x.Id, x => x);
 
                 // Remove network interfaces that no longer exist.
