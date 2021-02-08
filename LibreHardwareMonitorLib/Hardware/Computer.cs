@@ -324,11 +324,10 @@ namespace LibreHardwareMonitor.Hardware
 
                 _groups.Add(group);
 
-                if ((group as IHardwareChanged) != null)
+                if (group is IHardwareChanged hardwareChanged)
                 {
-                    var g = group as IHardwareChanged;
-                    g.HardwareAdded += HardwareAddedEvent;
-                    g.HardwareRemoved += HardwareRemovedEvent;
+                    hardwareChanged.HardwareAdded += HardwareAddedEvent;
+                    hardwareChanged.HardwareRemoved += HardwareRemovedEvent;
                 }
             }
 
@@ -348,11 +347,10 @@ namespace LibreHardwareMonitor.Hardware
 
                 _groups.Remove(group);
 
-                if ((group as IHardwareChanged) != null)
+                if (group is IHardwareChanged hardwareChanged)
                 {
-                    var g = group as IHardwareChanged;
-                    g.HardwareAdded -= HardwareAddedEvent;
-                    g.HardwareRemoved -= HardwareRemovedEvent;
+                    hardwareChanged.HardwareAdded -= HardwareAddedEvent;
+                    hardwareChanged.HardwareRemoved -= HardwareRemovedEvent;
                 }
             }
 
