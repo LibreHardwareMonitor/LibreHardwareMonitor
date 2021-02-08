@@ -23,13 +23,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
-            // add all numa nodes
+            // Add all numa nodes.
             // Register ..1E_2, [10:8] + 1
             _processor = new Processor(this);
 
-            // add all numa nodes
+            // Add all numa nodes.
             int coreId = 0;
-            int lastCoreId = -1; //invalid id
+            int lastCoreId = -1; // Invalid id.
 
             // Ryzen 3000's skip some core ids.
             // So start at 1 and count upwards when the read core changes.
