@@ -81,8 +81,11 @@ namespace LibreHardwareMonitor.Hardware.Network
                 {
                     if (foundNetworkInterfaces.ContainsKey(networkInterfacePair.Key))
                         continue;
+
+
                     removeKeys.Add(networkInterfacePair.Key);
                 }
+
                 foreach (string key in removeKeys)
                 {
                     var network = _networks[key];
