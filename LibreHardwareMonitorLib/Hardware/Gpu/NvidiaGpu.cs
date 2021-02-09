@@ -193,7 +193,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         public override void Update()
         {
             NvApi.NvGPUThermalSettings settings = GetThermalSettings();
-            //settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval
+            // settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval.
             if (settings.Count > 0)
             {
                 foreach (Sensor sensor in _temperatures)
