@@ -1,4 +1,6 @@
 # LibreHardwareMonitor
+[![GitHub license](https://img.shields.io/github/license/LibreHardwareMonitor/LibreHardwareMonitor)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LICENSE) ![Nuget](https://img.shields.io/nuget/v/LibreHardwareMonitorLib) ![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/LibreHardwareMonitorLib?label=nuget-pre) ![Nuget](https://img.shields.io/nuget/dt/LibreHardwareMonitorLib?label=nuget-downloads)
+
 Libre Hardware Monitor, a fork of Open Hardware Monitor, is free software that can monitor the temperature sensors, fan speeds, voltages, load and clock speeds of your computer. 
 
 ## What's included?
@@ -91,14 +93,6 @@ public void Monitor()
     
     computer.Close();
 }
-```
-
-## What does the library contain?
-1. Namespaces:
-```c#
-LibreHardwareMonitor.Hardware
-LibreHardwareMonitor.Interop
-LibreHardwareMonitor.Software
 ```
 
 ## License
