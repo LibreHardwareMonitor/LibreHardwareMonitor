@@ -193,8 +193,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         public override void Update()
         {
             NvApi.NvGPUThermalSettings settings = GetThermalSettings();
-            foreach (Sensor sensor in _temperatures)
-                sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
+            // settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval.
+            if (settings.Count > 0)
+            {
+                foreach (Sensor sensor in _temperatures)
+                    sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
+            }
 
             bool readTach = false;
             if (_fan != null)
@@ -521,7 +525,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             {
                 var coolers = new NvApi.NvFanCoolersStatus
                 {
-                    Version = NvApi.GPU_FAN_COOLERS_STATUS_VER, 
+                    Version = NvApi.GPU_FAN_COOLERS_STATUS_VER,
                     Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
                 };
 
