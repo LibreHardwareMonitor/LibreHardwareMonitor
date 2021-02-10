@@ -369,19 +369,13 @@ namespace LibreHardwareMonitor.Interop
         internal struct ADLOD6FanSpeedValue
         {
             /// Indicates the units of the fan speed.  Possible values: \ref ADL_OD6_FANSPEED_TYPE_PERCENT, \ref ADL_OD6_FANSPEED_TYPE_RPM
-            public ADL_OD6_FANSPEED_TYPE SpeedType;
+            public int SpeedType;
             /// Fan speed value (units as indicated above)
             public int FanSpeed;
             /// Value for future extension
             public int ExtValue;
             /// Mask for future extension
             public int ExtMask;
-        }
-
-        internal enum ADL_OD6_FANSPEED_TYPE
-        {
-            ADL_OD6_FANSPEED_TYPE_PERCENT = 0x00000001,
-            ADL_OD6_FANSPEED_TYPE_RPM = 0x00000002
         }
 
         [StructLayout(LayoutKind.Sequential)]

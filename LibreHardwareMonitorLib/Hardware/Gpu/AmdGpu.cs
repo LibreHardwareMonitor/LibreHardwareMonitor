@@ -125,7 +125,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 {
                     AtiAdlxx.ADLOD6FanSpeedValue fanSpeedValue = new AtiAdlxx.ADLOD6FanSpeedValue
                     {
-                        SpeedType = AtiAdlxx.ADL_OD6_FANSPEED_TYPE.ADL_OD6_FANSPEED_TYPE_PERCENT,
+                        SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT,
                         FanSpeed = (int)control.SoftwareValue
                     };
 
@@ -214,7 +214,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 }
 
                 AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new AtiAdlxx.ADLFanSpeedValue { SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM };
-                AtiAdlxx.ADLOD6FanSpeedValue fanSpeed6Value = new AtiAdlxx.ADLOD6FanSpeedValue { SpeedType = AtiAdlxx.ADL_OD6_FANSPEED_TYPE.ADL_OD6_FANSPEED_TYPE_RPM };
+                AtiAdlxx.ADLOD6FanSpeedValue fanSpeed6Value = new AtiAdlxx.ADLOD6FanSpeedValue { SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM };
                 if (_currentOverdriveApiLevel <= 5 && AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterIndex, 0, ref fanSpeedValue) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     _fan.Value = fanSpeedValue.FanSpeed;
@@ -231,7 +231,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 }
 
                 fanSpeedValue = new AtiAdlxx.ADLFanSpeedValue { SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT };
-                fanSpeed6Value = new AtiAdlxx.ADLOD6FanSpeedValue { SpeedType = AtiAdlxx.ADL_OD6_FANSPEED_TYPE.ADL_OD6_FANSPEED_TYPE_PERCENT };
+                fanSpeed6Value = new AtiAdlxx.ADLOD6FanSpeedValue { SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT };
                 if (_currentOverdriveApiLevel <= 5 && AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterIndex, 0, ref fanSpeedValue) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     _controlSensor.Value = fanSpeedValue.FanSpeed;
