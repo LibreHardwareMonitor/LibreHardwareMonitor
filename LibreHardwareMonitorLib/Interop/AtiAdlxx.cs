@@ -97,15 +97,6 @@ namespace LibreHardwareMonitor.Interop
         public static extern ADLStatus ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ADLStatus ADL_Overdrive6_FanSpeed_Get(int adapterIndex, ref ADLOD6FanSpeedValue FanSpeedValue);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ADLStatus ADL_Overdrive6_FanSpeed_Set(int adapterIndex, ref ADLOD6FanSpeedValue FanSpeedValue);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ADLStatus ADL_Overdrive6_FanSpeed_Reset(int adapterIndex);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ADLStatus ADL2_OverdriveN_PerformanceStatus_Get(IntPtr context, int adapterIndex, out ADLODNPerformanceStatus performanceStatus);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -364,20 +355,7 @@ namespace LibreHardwareMonitor.Interop
             public int FanSpeed;
             public int Flags;
         }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct ADLOD6FanSpeedValue
-        {
-            /// Indicates the units of the fan speed.  Possible values: \ref ADL_OD6_FANSPEED_TYPE_PERCENT, \ref ADL_OD6_FANSPEED_TYPE_RPM
-            public int SpeedType;
-            /// Fan speed value (units as indicated above)
-            public int FanSpeed;
-            /// Value for future extension
-            public int ExtValue;
-            /// Mask for future extension
-            public int ExtMask;
-        }
-
+        
         [StructLayout(LayoutKind.Sequential)]
         internal struct ADLFanSpeedInfo
         {
