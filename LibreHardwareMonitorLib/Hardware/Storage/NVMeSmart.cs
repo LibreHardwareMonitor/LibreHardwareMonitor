@@ -24,7 +24,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             // Exclude Samsung 980 Pro, this SSD uses the NVMeWindows generic protocol.
             // Samsung 980 Pro can accessed via IdentifyDevice and IdentifyController but not by HealthInfoLog.
-            if (NVMeDrive == null && storageInfo.Name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1 && storageInfo.Name.ToLower().IndexOf("980 Pro", StringComparison.OrdinalIgnoreCase) == -1)
+            if (NVMeDrive == null && storageInfo.Name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1 && storageInfo.Name.IndexOf("980 Pro", StringComparison.OrdinalIgnoreCase) == -1)
             {
                 _handle = NVMeSamsung.IdentifyDevice(storageInfo);
                 if (_handle != null)
