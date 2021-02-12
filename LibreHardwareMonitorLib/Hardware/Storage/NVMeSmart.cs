@@ -20,10 +20,11 @@ namespace LibreHardwareMonitor.Hardware.Storage
             _driveNumber = storageInfo.Index;
             NVMeDrive = null;
 
-            //test samsung protocol
-            //exlude samsung 980 pro, this sdd use the NVMeWindows generic protocol
-            //samsung 980 pro can accessed via IdentifyDevice and IdentifyController but not by HealthInfoLog
-            if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("samsung") && storageInfo.Name.ToLower().Contains("980 pro") == false)
+            // Test samsung protocol.
+
+            // Exclude Samsung 980 Pro, this SSD uses the NVMeWindows generic protocol.
+            // Samsung 980 Pro can accessed via IdentifyDevice and IdentifyController but not by HealthInfoLog.
+            if (NVMeDrive == null && storageInfo.Name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1 && storageInfo.Name.ToLower().IndexOf("980 Pro", StringComparison.OrdinalIgnoreCase) == -1)
             {
                 _handle = NVMeSamsung.IdentifyDevice(storageInfo);
                 if (_handle != null)
@@ -32,7 +33,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
 
-            //test intel protocol
+            // Test intel protocol.
             if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("intel"))
             {
                 _handle = NVMeIntel.IdentifyDevice(storageInfo);
@@ -42,7 +43,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
 
-            //test intel raid protocol
+            // Test intel raid protocol.
             if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("intel"))
             {
                 _handle = NVMeIntelRst.IdentifyDevice(storageInfo);
@@ -52,7 +53,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
 
-            //test windows generic driver protocol
+            // Test windows generic driver protocol.
             if (NVMeDrive == null)
             {
                 _handle = NVMeWindows.IdentifyDevice(storageInfo);
