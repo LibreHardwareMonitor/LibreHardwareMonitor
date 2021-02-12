@@ -21,7 +21,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
             NVMeDrive = null;
 
             //test samsung protocol
-            if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("samsung"))
+            //exlude samsung 980 pro, this sdd use the NVMeWindows generic protocol
+            //samsung 980 pro can accessed via IdentifyDevice and IdentifyController but not by HealthInfoLog
+            if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("samsung") && storageInfo.Name.ToLower().Contains("980 pro") == false)
             {
                 _handle = NVMeSamsung.IdentifyDevice(storageInfo);
                 if (_handle != null)
