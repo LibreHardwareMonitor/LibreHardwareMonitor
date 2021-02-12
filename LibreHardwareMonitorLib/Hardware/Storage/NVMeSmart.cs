@@ -33,8 +33,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
 
-            // Test intel protocol.
-            if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("intel"))
+            // Test Intel protocol.
+            if (NVMeDrive == null && storageInfo.Name.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeIntel.IdentifyDevice(storageInfo);
                 if (_handle != null)
@@ -43,8 +43,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
 
-            // Test intel raid protocol.
-            if (NVMeDrive == null && storageInfo.Name.ToLower().Contains("intel"))
+            // Test Intel raid protocol.
+            if (NVMeDrive == null && storageInfo.Name.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeIntelRst.IdentifyDevice(storageInfo);
                 if (_handle != null)
@@ -53,7 +53,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 }
             }
 
-            // Test windows generic driver protocol.
+            // Test Windows generic driver protocol.
             if (NVMeDrive == null)
             {
                 _handle = NVMeWindows.IdentifyDevice(storageInfo);
