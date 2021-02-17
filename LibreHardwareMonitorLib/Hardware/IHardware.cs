@@ -8,6 +8,9 @@ namespace LibreHardwareMonitor.Hardware
 {
     public delegate void SensorEventHandler(ISensor sensor);
 
+    /// <summary>
+    /// Reflects what category the device is
+    /// </summary>
     public enum HardwareType
     {
         Motherboard,
@@ -21,26 +24,61 @@ namespace LibreHardwareMonitor.Hardware
         Cooler
     }
 
+    /// <summary>
+    /// An abstract object that stores information about a device. All sensors are available as an array of <see cref="Sensors"/>
+    /// </summary>
     public interface IHardware : IElement
     {
+        /// <summary>
+        /// Reflects what category the device is
+        /// </summary>
         HardwareType HardwareType { get; }
 
+        /// <summary>
+        /// Unique hardware identifier obtained from the computer
+        /// </summary>
         Identifier Identifier { get; }
 
+        /// <summary>
+        /// Device name as a text string with full formatting
+        /// </summary>
         string Name { get; set; }
 
+        /// <summary>
+        /// The device that is the parent of the current hardware. For example, the motherboard is the parent of SuperIO
+        /// </summary>
         IHardware Parent { get; }
 
+        /// <summary>
+        /// Array of all sensors such as temperature, clocks, load etc.
+        /// </summary>
         ISensor[] Sensors { get; }
 
+        /// <summary>
+        /// Child devices, e.g. SuperIO of the motherboard
+        /// </summary>
         IHardware[] SubHardware { get; }
 
+        /// <summary>
+        /// Report containing most of the known information about the current device
+        /// </summary>
+        /// <returns>A formatted text string with hardware information</returns>
         string GetReport();
 
+        /// <summary>
+        /// Refreshes the information stored in <see cref="Sensors"/> array
+        /// </summary>
         void Update();
 
+        /// <summary>
+        /// An event that will be triggered when a new sensor appears
+        /// </summary>
         event SensorEventHandler SensorAdded;
 
+        /// <summary>
+        /// An event that will be triggered when one of the sensors is removed
+        /// 
+        /// </summary>
         event SensorEventHandler SensorRemoved;
     }
 }
