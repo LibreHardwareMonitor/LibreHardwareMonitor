@@ -30,7 +30,7 @@ namespace LibreHardwareMonitor.Hardware
     public interface IHardware : IElement
     {
         /// <summary>
-        /// Reflects what category the device is
+        /// <inheritdoc cref="LibreHardwareMonitor.Hardware.HardwareType"/>
         /// </summary>
         HardwareType HardwareType { get; }
 
