@@ -9,6 +9,9 @@ using System.Collections.Generic;
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Category of what type the selected sensor is.
+    /// </summary>
     public enum SensorType
     {
         Voltage, // V
@@ -28,12 +31,12 @@ namespace LibreHardwareMonitor.Hardware
     }
 
     /// <summary>
-    /// Stores the readed value and the time in which it was recorded
+    /// Stores the readed value and the time in which it was recorded.
     /// </summary>
     public struct SensorValue
     {
-        /// <param name="value">Value of the sensor</param>
-        /// <param name="time">The time code during which the <see cref="Value"/> was recorded</param>
+        /// <param name="value"><see cref="Value"/> of the sensor.</param>
+        /// <param name="time">The time code during which the <see cref="Value"/> was recorded.</param>
         public SensorValue(float value, DateTime time)
         {
             Value = value;
@@ -41,12 +44,12 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// Value of the sensor
+        /// Gets the value of the sensor
         /// </summary>
         public float Value { get; }
 
         /// <summary>
-        /// The time code during which the <see cref="Value"/> was recorded
+        /// Gets the time code during which the <see cref="Value"/> was recorded.
         /// </summary>
         public DateTime Time { get; }
     }
@@ -58,52 +61,62 @@ namespace LibreHardwareMonitor.Hardware
     {
         IControl Control { get; }
 
+        /// <summary>
+        /// <inheritdoc cref="IHardware"/>
+        /// </summary>
         IHardware Hardware { get; }
 
         Identifier Identifier { get; }
 
+        /// <summary>
+        /// Gets the unique identifier of this sensor for a given <see cref="IHardware"/>.
+        /// </summary>
         int Index { get; }
 
         bool IsDefaultHidden { get; }
 
         /// <summary>
-        /// Maximum value recorded for the given sensor
+        /// Gets a maximum value recorded for the given sensor.
         /// </summary>
         float? Max { get; }
 
         /// <summary>
-        /// Minimum value recorded for the given sensor
+        /// Gets a minimum value recorded for the given sensor.
         /// </summary>
         float? Min { get; }
 
         /// <summary>
-        /// Sensor name determined by the library
+        /// Gets or sets a sensor name.
+        /// <para>By default determined by the library.</para>
         /// </summary>
         string Name { get; set; }
 
         IReadOnlyList<IParameter> Parameters { get; }
 
+        /// <summary>
+        /// <inheritdoc cref="LibreHardwareMonitor.Hardware.SensorType"/>
+        /// </summary>
         SensorType SensorType { get; }
 
         /// <summary>
-        /// The last recorded value for the given sensor
+        /// Gets the last recorded value for the given sensor.
         /// </summary>
         float? Value { get; }
 
         /// <summary>
-        /// List of recorded values for the given sensor
+        /// Gets a list of recorded values for the given sensor.
         /// </summary>
         IEnumerable<SensorValue> Values { get; }
 
         TimeSpan ValuesTimeWindow { get; set; }
 
         /// <summary>
-        /// Resets a value stored in <see cref="Min"/>
+        /// Resets a value stored in <see cref="Min"/>.
         /// </summary>
         void ResetMin();
 
         /// <summary>
-        /// Resets a value stored in <see cref="Max"/>
+        /// Resets a value stored in <see cref="Max"/>.
         /// </summary>
         void ResetMax();
     }

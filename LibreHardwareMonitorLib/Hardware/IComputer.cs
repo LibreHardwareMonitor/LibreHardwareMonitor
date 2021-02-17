@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware
     public delegate void HardwareEventHandler(IHardware hardware);
 
     /// <summary>
-    /// Basic abstract with methods for the class which can store all hardware and decides which devices are to be checked and updated
+    /// Basic abstract with methods for the class which can store all hardware and decides which devices are to be checked and updated.
     /// </summary>
     public interface IComputer : IElement
     {

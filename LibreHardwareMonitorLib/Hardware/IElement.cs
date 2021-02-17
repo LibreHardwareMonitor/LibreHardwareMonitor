@@ -12,15 +12,15 @@ namespace LibreHardwareMonitor.Hardware
     public interface IElement
     {
         /// <summary>
-        /// Accepts the observer for this instance
+        /// Accepts the observer for this instance.
         /// </summary>
-        /// <param name="visitor">Computer observer making the calls</param>
+        /// <param name="visitor">Computer observer making the calls.</param>
         void Accept(IVisitor visitor);
 
         /// <summary>
-        /// Call the <see cref="Accept"/> method for all child instances <c>(called only from visitors)</c>
+        /// Call the <see cref="Accept"/> method for all child instances <c>(called only from visitors).</c>
         /// </summary>
-        /// <param name="visitor">Computer observer making the calls</param>
+        /// <param name="visitor">Computer observer making the calls.</param>
         void Traverse(IVisitor visitor);
     }
 }

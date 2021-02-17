@@ -13,10 +13,9 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware
 {
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
-     * Chapter 7.4.3
-     */
+    /// <summary>
+    /// Chassis security status based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.3</see>.
+    /// </summary>
     public enum ChassisSecurityStatus
     {
         Other = 1,
@@ -26,10 +25,9 @@ namespace LibreHardwareMonitor.Hardware
         ExternalInterfaceEnabled
     }
 
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
-     * Chapter 7.4.2
-     */
+    /// <summary>
+    /// Chassis state based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.2</see>.
+    /// </summary>
     public enum ChassisStates
     {
         Other = 1,
@@ -40,10 +38,9 @@ namespace LibreHardwareMonitor.Hardware
         NonRecoverable
     }
 
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
-     * Chapter 7.4.1
-     */
+    /// <summary>
+    /// Chassis type based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.1</see>.
+    /// </summary>
     public enum ChassisType
     {
         Other = 1,
@@ -84,10 +81,9 @@ namespace LibreHardwareMonitor.Hardware
         StickPC
     }
 
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
-     * Chapter 7.5.2
-     */
+    /// <summary>
+    /// Processor family based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.2</see>.
+    /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "IdentifierTypo")]
     public enum ProcessorFamily
@@ -305,10 +301,9 @@ namespace LibreHardwareMonitor.Hardware
         VideoProcessor
     }
 
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
-     * Chapter 7.5.1
-     */
+    /// <summary>
+    /// Processor type based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.1</see>.
+    /// </summary>
     public enum ProcessorType
     {
         Other = 1,
@@ -319,10 +314,9 @@ namespace LibreHardwareMonitor.Hardware
         VideoProcessor
     }
 
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.3.0
-     * Chapter 7.5.5
-     */
+    /// <summary>
+    /// Processor socket based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.5</see>.
+    /// </summary>
     public enum ProcessorSocket
     {
         Other = 1,
@@ -382,6 +376,9 @@ namespace LibreHardwareMonitor.Hardware
         Lga4189
     }
 
+    /// <summary>
+    /// System wake-up type based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.2.2</see>.
+    /// </summary>
     public enum SystemWakeUp
     {
         Reserved,
@@ -395,18 +392,9 @@ namespace LibreHardwareMonitor.Hardware
         ACPowerRestored
     }
 
-    public enum CacheDesignation
-    {
-        Other,
-        L1,
-        L2,
-        L3
-    }
-
-    /*
-     * DSP0134 System Management BIOS (SMBIOS) Reference Specification v.3.4.0
-     * Chapter 7.8.5
-     */
+    /// <summary>
+    /// Cache associativity based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.8.5</see>.
+    /// </summary>
     public enum CacheAssociativity
     {
         Other = 1,
@@ -423,6 +411,17 @@ namespace LibreHardwareMonitor.Hardware
         _48Way,
         _64Way,
         _20Way,
+    }
+
+    /// <summary>
+    /// Processor cache level.
+    /// </summary>
+    public enum CacheDesignation
+    {
+        Other,
+        L1,
+        L2,
+        L3
     }
 
     public class InformationBase
@@ -470,6 +469,9 @@ namespace LibreHardwareMonitor.Hardware
         }
     }
 
+    /// <summary>
+    /// Motherboard BIOS information obtained from the SMBIOS table.
+    /// </summary>
     public class BiosInformation : InformationBase
     {
         internal BiosInformation(string vendor, string version, string date = null, ulong? size = null) : base(0x00, 0, null, null)
@@ -488,12 +490,24 @@ namespace LibreHardwareMonitor.Hardware
             Size = CalculateBiosRomSize();
         }
 
+        /// <summary>
+        /// Gets the BIOS release date.
+        /// </summary>
         public DateTime? Date { get; }
 
+        /// <summary>
+        /// Gets the size of the physical device containing the BIOS.
+        /// </summary>
         public ulong? Size { get; }
 
+        /// <summary>
+        /// Gets the string number of the BIOS Vendor’s Name.
+        /// </summary>
         public string Vendor { get; }
 
+        /// <summary>
+        /// Gets the string number of the BIOS Version. This value is a free-form string that may contain Core and OEM version information.
+        /// </summary>
         public string Version { get; }
 
         private ulong? CalculateBiosRomSize()
@@ -533,6 +547,9 @@ namespace LibreHardwareMonitor.Hardware
         }
     }
 
+    /// <summary>
+    /// System information obtained from the SMBIOS table.
+    /// </summary>
     public class SystemInformation : InformationBase
     {
         internal SystemInformation
@@ -556,19 +573,41 @@ namespace LibreHardwareMonitor.Hardware
             WakeUp = (SystemWakeUp)GetByte(0x18);
         }
 
+        /// <summary>
+        /// Gets the family associated with system.
+        /// <para>This text string identifies the family to which a particular computer belongs. A family refers to a set of computers that are similar but not identical from a hardware or software point of view. Typically, a family is composed of different computer models, which have different configurations and pricing points. Computers in the same family often have similar branding and cosmetic features.</para>
+        /// </summary>
         public string Family { get; }
 
+        /// <summary>
+        /// Gets the manufacturer name associated with system.
+        /// </summary>
         public string ManufacturerName { get; }
 
+        /// <summary>
+        /// Gets the product name associated with system.
+        /// </summary>
         public string ProductName { get; }
 
+        /// <summary>
+        /// Gets the serial number string associated with system.
+        /// </summary>
         public string SerialNumber { get; }
 
+        /// <summary>
+        /// Gets the version string associated with system.
+        /// </summary>
         public string Version { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="SystemWakeUp"/>
+        /// </summary>
         public SystemWakeUp WakeUp { get; }
     }
 
+    /// <summary>
+    /// Chassis information obtained from the SMBIOS table.
+    /// </summary>
     public class ChassisInformation : InformationBase
     {
         internal ChassisInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
@@ -588,33 +627,76 @@ namespace LibreHardwareMonitor.Hardware
             SecurityStatus = (ChassisSecurityStatus)GetByte(0x0C);
         }
 
+        /// <summary>
+        /// Gets the asset tag associated with the enclosure or chassis.
+        /// </summary>
         public string AssetTag { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="ChassisStates"/>
+        /// </summary>
         public ChassisStates BootUpState { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ChassisType"/>
+        /// </summary>
         public ChassisType ChassisType { get; }
 
+        /// <summary>
+        /// Gets or sets the chassis lock.
+        /// </summary>
+        /// <returns>Chassis lock is present if <see langword="true"/>. Otherwise, either a lock is not present or it is unknown if the enclosure has a lock.</returns>
         public bool LockDetected { get; set; }
 
+        /// <summary>
+        /// Gets the string describing the chassis or enclosure manufacturer name.
+        /// </summary>
         public string ManufacturerName { get; }
 
+        /// <summary>
+        /// Gets the number of power cords associated with the enclosure or chassis.
+        /// </summary>
         public int PowerCords { get; }
 
+        /// <summary>
+        /// Gets the state of the enclosure’s power supply (or supplies) when last booted.
+        /// </summary>
         public ChassisStates PowerSupplyState { get; }
 
+        /// <summary>
+        /// Gets the height of the enclosure, in 'U's. A U is a standard unit of measure for the height of a rack or rack-mountable component and is equal to 1.75 inches or 4.445 cm. A value of <c>0</c> indicates that the enclosure height is unspecified.
+        /// </summary>
         public int RackHeight { get; }
 
+        /// <summary>
+        /// Gets the physical security status of the enclosure when last booted.
+        /// </summary>
         public ChassisSecurityStatus SecurityStatus { get; set; }
 
+        /// <summary>
+        /// Gets the string describing the chassis or enclosure serial number.
+        /// </summary>
         public string SerialNumber { get; }
 
+        /// <summary>
+        /// Gets the string describing the chassis or enclosure SKU number.
+        /// </summary>
         public string SKU { get; }
 
+        /// <summary>
+        /// Gets the thermal state of the enclosure when last booted.
+        /// </summary>
         public ChassisStates ThermalState { get; }
 
+        /// <summary>
+        /// Gets the number of null-terminated string representing the chassis or enclosure version.
+        /// </summary>
         public string Version { get; }
     }
 
+    /// <summary>
+    /// Motherboard information obtained from the SMBIOS table.
+    /// </summary>
     public class BaseBoardInformation : InformationBase
     {
         internal BaseBoardInformation(string manufacturerName, string productName, string version, string serialNumber) : base(0x02, 0, null, null)
@@ -633,15 +715,30 @@ namespace LibreHardwareMonitor.Hardware
             SerialNumber = GetString(0x07).Trim();
         }
 
+        /// <summary>
+        /// Gets the value that represents the manufacturer's name.
+        /// </summary>
         public string ManufacturerName { get; }
 
+        /// <summary>
+        /// Gets the value that represents the motherboard's name.
+        /// </summary>
         public string ProductName { get; }
 
+        /// <summary>
+        /// Gets the value that represents the motherboard's serial number.
+        /// </summary>
         public string SerialNumber { get; }
 
+        /// <summary>
+        /// Gets the value that represents the motherboard's revision number.
+        /// </summary>
         public string Version { get; }
     }
 
+    /// <summary>
+    /// Processor information obtained from the SMBIOS table.
+    /// </summary>
     public class ProcessorInformation : InformationBase
     {
         internal ProcessorInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
@@ -664,33 +761,76 @@ namespace LibreHardwareMonitor.Hardware
             Family = (ProcessorFamily)(family == 254 ? GetWord(0x28) : family);
         }
 
+        /// <summary>
+        /// Gets the value that represents the number of cores per processor socket.
+        /// </summary>
         public int CoreCount { get; }
 
+        /// <summary>
+        /// Gets the value that represents the number of enabled cores per processor socket.
+        /// </summary>
         public int CoreEnabled { get; }
 
+        /// <summary>
+        /// Gets the external Clock Frequency, in MHz. If the value is unknown, the field is set to 0.
+        /// </summary>
         public int ExternalClock { get; }
 
+        /// <summary>
+        /// Gets the value that represents the maximum processor speed (in MHz) supported by the system for this processor socket.
+        /// </summary>
         public int MaxSpeed { get; }
 
+        /// <summary>
+        /// Gets the value that represents the current processor speed (in MHz).
+        /// </summary>
         public int CurrentSpeed { get; }
 
+        /// <summary>
+        /// Gets the value that represents the string number for the serial number of this processor.
+        /// <para>This value is set by the manufacturer and normally not changeable.</para>
+        /// </summary>
         public string Serial { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorType"/>
+        /// </summary>
         public ProcessorType ProcessorType { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorSocket"/>
+        /// </summary>
         public ProcessorSocket Socket { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorFamily"/>
+        /// </summary>
         public ProcessorFamily Family { get; }
 
+        /// <summary>
+        /// Gets the string number for Reference Designation.
+        /// </summary>
         public string SocketDesignation { get; }
 
+        /// <summary>
+        /// Gets the string number of Processor Manufacturer.
+        /// </summary>
         public string ManufacturerName { get; }
 
+        /// <summary>
+        /// Gets the value that represents the number of threads per processor socket.
+        /// </summary>
         public int ThreadCount { get; }
 
+        /// <summary>
+        /// Gets the value that represents the string number describing the Processor.
+        /// </summary>
         public string Version { get; }
     }
 
+    /// <summary>
+    /// Processor cache information obtained from the SMBIOS table.
+    /// </summary>
     public class ProcessorCache : InformationBase
     {
         internal ProcessorCache(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
@@ -714,13 +854,25 @@ namespace LibreHardwareMonitor.Hardware
                 return CacheDesignation.Other;
         }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="CacheDesignation"/>
+        /// </summary>
         public CacheDesignation Designation { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="CacheAssociativity"/>
+        /// </summary>
         public CacheAssociativity Associativity { get; }
 
+        /// <summary>
+        /// Gets the value that represents the installed cache size.
+        /// </summary>
         public int Size { get; }
     }
 
+    /// <summary>
+    /// Memory information obtained from the SMBIOS table.
+    /// </summary>
     public class MemoryDevice : InformationBase
     {
         internal MemoryDevice(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
@@ -737,20 +889,45 @@ namespace LibreHardwareMonitor.Hardware
                 Size += GetWord(0x1C);
         }
 
+        /// <summary>
+        /// Gets the string number of the string that identifies the physically labeled bank where the memory device is located.
+        /// </summary>
         public string BankLocator { get; }
 
+        /// <summary>
+        /// Gets the string number of the string that identifies the physically-labeled socket or board position where the memory device is located.
+        /// </summary>
         public string DeviceLocator { get; }
 
+        /// <summary>
+        /// Gets the string number for the manufacturer of this memory device.
+        /// </summary>
         public string ManufacturerName { get; }
 
+        /// <summary>
+        /// Gets the string number for the part number of this memory device.
+        /// </summary>
         public string PartNumber { get; }
 
+        /// <summary>
+        /// Gets the string number for the serial number of this memory device.
+        /// </summary>
         public string SerialNumber { get; }
 
+        /// <summary>
+        /// Gets the the value that identifies the maximum capable speed of the device, in megatransfers per second (MT/s).
+        /// </summary>
         public int Speed { get; }
+
+        /// <summary>
+        /// Gets the size of the memory device. If the value is 0, no memory device is installed in the socket.
+        /// </summary>
         public int Size { get; }
     }
 
+    /// <summary>
+    /// Reads and processes information encoded in an SMBIOS table.
+    /// </summary>
     public class SMBios
     {
         private readonly byte[] _raw;
@@ -881,18 +1058,39 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="BiosInformation"/>
+        /// </summary>
         public BiosInformation Bios { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="BaseBoardInformation"/>
+        /// </summary>
         public BaseBoardInformation Board { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="ChassisInformation"/>
+        /// </summary>
         public ChassisInformation Chassis { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="MemoryDevice"/>
+        /// </summary>
         public MemoryDevice[] MemoryDevices { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="ProcessorCache"/>
+        /// </summary>
         public ProcessorCache[] ProcessorCaches { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="ProcessorInformation"/>
+        /// </summary>
         public ProcessorInformation Processor { get; }
 
+        /// <summary>
+        /// Gets <inheritdoc cref="SystemInformation"/>
+        /// </summary>
         public SystemInformation System { get; }
 
         private static string ReadSysFs(string path)
@@ -913,6 +1111,10 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        /// <summary>
+        /// Report containing most of the information that could be read from the SMBIOS table.
+        /// </summary>
+        /// <returns>A formatted text string with computer information and the entire SMBIOS table.</returns>
         public string GetReport()
         {
             StringBuilder r = new StringBuilder();
