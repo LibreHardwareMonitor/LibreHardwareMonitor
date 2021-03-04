@@ -2044,6 +2044,54 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.X570_Taichi:
+                        {
+                            v.Add(new Voltage("Vcore", 0, 10, 10));
+                            v.Add(new Voltage("Voltage #2", 1, true));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
+                            v.Add(new Voltage("Voltage #5", 4, true));
+                            v.Add(new Voltage("Voltage #6", 5, true));
+                            v.Add(new Voltage("Voltage #7", 6, true));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
+                            v.Add(new Voltage("VBat", 8, 34, 34));
+                            v.Add(new Voltage("VTT", 9));
+                            v.Add(new Voltage("Voltage #11", 10, true));
+                            v.Add(new Voltage("Voltage #12", 11, true));
+                            v.Add(new Voltage("Voltage #13", 12, true));
+                            v.Add(new Voltage("Voltage #14", 13, true));
+                            v.Add(new Voltage("Voltage #15", 14, true));
+                            
+                            //t.Add(new Temperature("CPU Core", 0));
+                            t.Add(new Temperature("Temperature #1", 1));
+                            t.Add(new Temperature("Motherboard", 2));
+                            t.Add(new Temperature("Temperature #3", 3));
+                            //t.Add(new Temperature("Temperature #4", 4));
+                            t.Add(new Temperature("AUXIN2", 5));
+                            t.Add(new Temperature("AUXIN3", 6));
+                            t.Add(new Temperature("AUXIN4", 7));
+                            t.Add(new Temperature("CPU", 8));
+                            t.Add(new Temperature("SB (Chipset)", 9));
+
+                            f.Add(new Fan("Chassis #3" , 0));
+                            f.Add(new Fan("CPU #1" , 1));
+                            f.Add(new Fan("Fan #3" , 2));
+                            f.Add(new Fan("Chassis #1" , 3));
+                            f.Add(new Fan("Fan #5" , 4));
+                            f.Add(new Fan("SB Fan" , 5));
+                            f.Add(new Fan("Fan #6" , 6));
+
+                            c.Add(new Ctrl("Chassis #3" , 0));
+                            c.Add(new Ctrl("CPU #1" , 1));
+                            c.Add(new Ctrl("Fan #3" , 2));
+                            c.Add(new Ctrl("Chassis #1" , 3));
+                            c.Add(new Ctrl("Fan #5" , 4));
+                            c.Add(new Ctrl("SB Fan" , 5));
+                            c.Add(new Ctrl("Fan #6" , 6));
+
+                            break;
+                        }
+                        
                         default:
                         {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
