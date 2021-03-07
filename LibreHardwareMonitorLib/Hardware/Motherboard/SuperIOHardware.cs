@@ -2075,19 +2075,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             f.Add(new Fan("Chassis #3" , 0));
                             f.Add(new Fan("CPU #1" , 1));
-                            f.Add(new Fan("Fan #3" , 2));
+                            f.Add(new Fan("CPU #2" , 2));
                             f.Add(new Fan("Chassis #1" , 3));
-                            f.Add(new Fan("Fan #5" , 4));
+                            f.Add(new Fan("Chassis #2" , 4));
                             f.Add(new Fan("SB Fan" , 5));
-                            f.Add(new Fan("Fan #6" , 6));
+                            f.Add(new Fan("Chassis #4" , 6));
 
                             c.Add(new Ctrl("Chassis #3" , 0));
                             c.Add(new Ctrl("CPU #1" , 1));
-                            c.Add(new Ctrl("Fan #3" , 2));
+                            c.Add(new Ctrl("CPU #2" , 2));
                             c.Add(new Ctrl("Chassis #1" , 3));
-                            c.Add(new Ctrl("Fan #5" , 4));
+                            c.Add(new Ctrl("Chassis #2" , 4));
                             c.Add(new Ctrl("SB Fan" , 5));
-                            c.Add(new Ctrl("Fan #6" , 6));
+                            c.Add(new Ctrl("Chassis #4" , 6));
 
                             break;
                         }
