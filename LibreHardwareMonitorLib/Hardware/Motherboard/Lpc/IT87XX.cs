@@ -70,6 +70,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 : new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7 };
 
             _hasExtReg = chip == Chip.IT8721F ||
+                         chip == Chip.IT8728F ||
                          chip == Chip.IT8665E ||
                          chip == Chip.IT8686E ||
                          chip == Chip.IT8688E ||
