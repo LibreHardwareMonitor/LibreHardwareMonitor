@@ -2062,14 +2062,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #14", 13, true));
                             v.Add(new Voltage("Voltage #15", 14, true));
                             
-                            //t.Add(new Temperature("CPU Core", 0));
-                            t.Add(new Temperature("Temperature #1", 1));
                             t.Add(new Temperature("Motherboard", 2));
-                            t.Add(new Temperature("Temperature #3", 3));
-                            //t.Add(new Temperature("Temperature #4", 4));
-                            t.Add(new Temperature("AUXIN2", 5));
-                            t.Add(new Temperature("AUXIN3", 6));
-                            t.Add(new Temperature("AUXIN4", 7));
                             t.Add(new Temperature("CPU", 8));
                             t.Add(new Temperature("SB (Chipset)", 9));
 
