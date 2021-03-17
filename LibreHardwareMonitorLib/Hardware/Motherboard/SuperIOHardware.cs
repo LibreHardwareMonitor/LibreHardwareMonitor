@@ -2011,7 +2011,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
-
                         case Model.X399_Phantom_Gaming_6: //NCT6779D
                         {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
@@ -2083,8 +2082,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("Chassis #4" , 6));
 
                             break;
-                        }
-                        
+                        }                        
                         default:
                         {
                             v.Add(new Voltage("Vcore", 0, 10, 10));
