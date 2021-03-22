@@ -287,6 +287,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.X570_Pro4;
                 case var _ when name.Equals("X570 Taichi", StringComparison.OrdinalIgnoreCase):
                     return Model.X570_Taichi;
+                case var _ when name.Equals("X570 Phantom Gaming-ITX/TB3", StringComparison.OrdinalIgnoreCase):
+                    return Model.X570_Phantom_Gaming_ITX;
                 case var _ when name.Equals("AX370-Gaming 5", StringComparison.OrdinalIgnoreCase):
                     return Model.AX370_Gaming_5;
                 case var _ when name.Equals("TUF X470-PLUS GAMING", StringComparison.OrdinalIgnoreCase):

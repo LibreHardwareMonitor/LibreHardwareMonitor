@@ -54,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 _vBatMonitorControlRegister = 0x0318;
             }
-            else if (chip == Chip.NCT6687D)
+            else if (chip == Chip.NCT6687D || chip == Chip.NCT6683D)
             {
                 FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 };
                 FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xA2A, 0xA2B, 0xA2C, 0xA2D, 0xA2E, 0xA2F };
@@ -280,6 +280,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                     break;
                 }
+                case Chip.NCT6683D:
                 case Chip.NCT6687D:
                 {
                     Fans = new float?[8];
@@ -341,7 +342,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     WriteByte(0x1BE, 0x64);
                     WriteByte(0x1BF, 0x65);
 
-                    _alternateTemperatureRegister = new ushort?[] { null };
+                    _alternateTemperatureRegister = new ushort?[] { };
 
                     break;
                 }
@@ -384,7 +385,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 SaveDefaultFanControl(index);
 
-                if (Chip != Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
                 {
                     // set manual mode
                     WriteByte(FAN_CONTROL_MODE_REG[index], 0);
@@ -473,6 +474,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 switch (Chip)
                 {
                     case Chip.NCT6687D:
+                    case Chip.NCT6683D:
                     {
                         int value = (sbyte)ReadByte(_temperatureRegister[i]);
                         int half = (ReadByte((ushort)(_temperatureRegister[i] + 1)) >> 7) & 0x1;
@@ -594,7 +596,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Fans.Length; i++)
             {
-                if (Chip != Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
                 {
                     if (_fanCountRegister != null)
                     {
@@ -636,7 +638,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             for (int i = 0; i < Controls.Length; i++)
             {
-                if (Chip != Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
                 {
                     int value = ReadByte(FAN_PWM_OUT_REG[i]);
                     Controls[i] = value / 2.55f;
@@ -778,7 +780,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             r.AppendLine("        00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
             r.AppendLine();
 
-            if (Chip != Chip.NCT6687D)
+            if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
             {
                 foreach (ushort address in addresses)
                 {
@@ -821,7 +823,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private byte ReadByte(ushort address)
         {
-            if (Chip != Chip.NCT6687D)
+            if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
             {
                 byte bank = (byte)(address >> 8);
                 byte register = (byte)(address & 0xFF);
@@ -841,7 +843,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void WriteByte(ushort address, byte value)
         {
-            if (Chip != Chip.NCT6687D)
+            if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
             {
                 byte bank = (byte)(address >> 8);
                 byte register = (byte)(address & 0xFF);
@@ -863,14 +865,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private bool IsNuvotonVendor()
         {
-            return Chip == Chip.NCT6687D || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
+            return Chip == Chip.NCT6687D || Chip == Chip.NCT6683D || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
         }
 
         private void SaveDefaultFanControl(int index)
         {
             if (!_restoreDefaultFanControlRequired[index])
             {
-                if (Chip != Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
                 {
                     _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
                 }
@@ -890,7 +892,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         {
             if (_restoreDefaultFanControlRequired[index])
             {
-                if (Chip != Chip.NCT6687D)
+                if (Chip != Chip.NCT6687D && Chip != Chip.NCT6683D)
                 {
                     WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
                     WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
