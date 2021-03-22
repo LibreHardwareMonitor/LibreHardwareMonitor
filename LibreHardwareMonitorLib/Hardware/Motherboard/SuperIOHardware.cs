@@ -356,6 +356,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
+                case Chip.NCT6683D:
                 {
                     GetNuvotonConfigurationD(superIO, manufacturer, model, v, t, f, c);
 
@@ -2087,6 +2088,39 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }                        
+                        case Model.X570_Phantom_Gaming_ITX:
+                        {
+                            v.Add(new Voltage("+12V", 0));
+                            v.Add(new Voltage("+5V", 1));
+                            v.Add(new Voltage("Vcore", 2));
+                            v.Add(new Voltage("Voltage #1", 3));
+                            v.Add(new Voltage("DIMM", 4));
+                            v.Add(new Voltage("CPU I/O", 5));
+                            v.Add(new Voltage("CPU SA", 6));
+                            v.Add(new Voltage("Voltage #2", 7));
+                            v.Add(new Voltage("AVCC3", 8));
+                            v.Add(new Voltage("VTT", 9));
+                            v.Add(new Voltage("VRef", 10));
+                            v.Add(new Voltage("VSB", 11));
+                            v.Add(new Voltage("AVSB", 12));
+                            v.Add(new Voltage("VBat", 13));
+
+                            t.Add(new Temperature("Motherboard", 0));
+                            //t.Add(new Temperature("System", 1)); //Unused
+                            t.Add(new Temperature("CPU", 2));
+                            t.Add(new Temperature("SB (Chipset)", 3));
+                            f.Add(new Fan("CPU Fan #1", 0)); //CPU_FAN1
+                            f.Add(new Fan("Chassis Fan #1", 1)); //CHA_FAN1/WP
+                            f.Add(new Fan("CPU Fan #2", 2)); //CPU_FAN2 (WP)
+                            f.Add(new Fan("Chipset Fan", 3));
+
+                            c.Add(new Ctrl("CPU Fan #1", 0));
+                            c.Add(new Ctrl("Chassis Fan", 1));
+                            c.Add(new Ctrl("CPU Fan #2", 2));
+                            c.Add(new Ctrl("Chipset Fan", 3));
+                            break;
+                        }
+						
                         default:
                         {
                             v.Add(new Voltage("Vcore", 0, 10, 10));

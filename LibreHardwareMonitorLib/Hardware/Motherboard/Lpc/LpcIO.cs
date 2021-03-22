@@ -512,6 +512,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                     break;
                 }
+                case 199:
+                {
+                    switch (revision)
+                    {
+                        case 50:
+                            chip = Chip.NCT6683D;
+                            logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                            break;
+                    }
+                    break;
+                }
             }
 
             if (chip == Chip.Unknown)
@@ -604,6 +615,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
                     case Chip.NCT6687D:
+                    case Chip.NCT6683D:
                     {
                         _superIOs.Add(new Nct677X(chip, revision, address, port));
                         break;
