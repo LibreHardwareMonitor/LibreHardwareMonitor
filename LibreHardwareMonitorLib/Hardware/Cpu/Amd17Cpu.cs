@@ -324,27 +324,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
 
                 // voltage
-                const double vidStep = 0.00625;
-                double vcc;
-                uint svi0PlaneXVddCor;
-
                 // Core (0x01).
                 if ((smuSvi0Tfn & 0x01) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
-                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
-                    _coreVoltage.Value = (float)vcc;
-
+                    _coreVoltage.Value = (float)getVoltageFromPlane(smuSvi0TelPlane0);
                     _cpu.ActivateSensor(_coreVoltage);
                 }
 
                 // SoC (0x02), not every Zen cpu has this voltage.
                 if (cpuId.Model == 0x11 || cpuId.Model == 0x21 || cpuId.Model == 0x71 || cpuId.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
                 {
-                    svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
-                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
-                    _socVoltage.Value = (float)vcc;
-
+                    _socVoltage.Value = (float)getVoltageFromPlane(smuSvi0TelPlane1);
                     _cpu.ActivateSensor(_socVoltage);
                 }
 
@@ -354,6 +344,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     _busClock.Value = (float)(_cpu.TimeStampCounterFrequency / timeStampCounterMultiplier);
                     _cpu.ActivateSensor(_busClock);
                 }
+            }
+
+            private double getVoltageFromPlane(uint plane)
+            {
+                uint plane_cor = (plane >> 16) & 0xff;
+
+                return 1.550 - 0.00625 * plane_cor;
             }
 
             private double GetTimeStampCounterMultiplier()
