@@ -21,6 +21,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _coreClock;
         private readonly Sensor _coreLoad;
         private readonly Sensor _coreVoltage;
+        private readonly bool _overdriveApiSupported;
         private readonly int _currentOverdriveApiLevel;
         private readonly Sensor _fan;
         private readonly Control _fanControl;
@@ -83,7 +84,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int version = 0;
 
             if (AtiAdlxx.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
+            {
+                _overdriveApiSupported = supported == AtiAdlxx.ADL_TRUE;
                 _currentOverdriveApiLevel = version;
+            }
             else
                 _currentOverdriveApiLevel = -1;
 
@@ -159,7 +163,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public override void Update()
         {
-            if (_currentOverdriveApiLevel < 8)
+            if (_overdriveApiSupported)
             {
                 if (_currentOverdriveApiLevel >= 6)
                 {
