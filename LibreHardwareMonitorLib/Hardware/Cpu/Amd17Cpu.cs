@@ -14,15 +14,22 @@ namespace LibreHardwareMonitor.Hardware.CPU
     {
         private readonly Processor _processor;
         private int _sensorClock;
-        private int _sensorMulti;
         private int _sensorPower;
 
         // counter, to create sensor index values
         private int _sensorTemperatures;
         private int _sensorVoltage;
+        private int _sensorLoad;
+        private int _sensorCurrent;
+        private int _sensorFactor;
+        private int _sensorFrequency;
+
+        private RyzenSMU _smu;
 
         public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
+            _smu = new RyzenSMU(_family, _model, _packageType);
+
             // Add all numa nodes.
             // Register ..1E_2, [10:8] + 1
             _processor = new Processor(this);
@@ -104,6 +111,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue;
 
+            private readonly Dictionary<uint, Sensor>_smuSensors = new Dictionary<uint, Sensor>();
+
             public Processor(Hardware hardware)
             {
                 _cpu = (Amd17Cpu)hardware;
@@ -118,6 +127,37 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _busClock = new Sensor("Bus Speed", _cpu._sensorClock++, SensorType.Clock, _cpu, _cpu._settings);
 
                 _cpu.ActivateSensor(_packagePower);
+
+                foreach (var sensor in _cpu._smu.GetPmTableStructure())
+                {
+                    switch (sensor.Value.Type) 
+                    {
+                        case SensorType.Power:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorPower++, SensorType.Power, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Temperature:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Load:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorLoad++, SensorType.Load, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Current:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorCurrent++, SensorType.Current, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Factor:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorFactor++, SensorType.Factor, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Frequency:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorFrequency++, SensorType.Frequency, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Clock:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorClock++, SensorType.Clock, _cpu, _cpu._settings));
+                            break;
+                        case SensorType.Voltage:
+                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorVoltage++, SensorType.Voltage, _cpu, _cpu._settings));
+                            break;
+                    }
+                }
             }
 
             public List<NumaNode> Nodes { get; } = new List<NumaNode>();
@@ -344,6 +384,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     _busClock.Value = (float)(_cpu.TimeStampCounterFrequency / timeStampCounterMultiplier);
                     _cpu.ActivateSensor(_busClock);
                 }
+
+                var smuData = _cpu._smu.GetPmTable();
+                foreach(var sensor in _smuSensors)
+                {
+                    if(smuData.Length >= sensor.Key)
+                    {
+                        sensor.Value.Value = smuData[sensor.Key];
+                        _cpu.ActivateSensor(sensor.Value);
+                    }
+                }
             }
 
             private double getVoltageFromPlane(uint plane)
@@ -439,7 +489,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 Threads = new List<CpuId>();
                 CoreId = id;
                 _clock = new Sensor("Core #" + CoreId, cpu._sensorClock++, SensorType.Clock, cpu, cpu._settings);
-                _multiplier = new Sensor("Core #" + CoreId, cpu._sensorMulti++, SensorType.Factor, cpu, cpu._settings);
+                _multiplier = new Sensor("Core #" + CoreId, cpu._sensorFactor++, SensorType.Factor, cpu, cpu._settings);
                 _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorPower++, SensorType.Power, cpu, cpu._settings);
                 _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorVoltage++, SensorType.Voltage, cpu, cpu._settings);
 

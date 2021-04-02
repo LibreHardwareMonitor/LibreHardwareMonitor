@@ -141,6 +141,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             Model = ((Data[1, 0] & 0x0F0000) >> 12) + ((Data[1, 0] & 0xF0) >> 4);
             Stepping = Data[1, 0] & 0x0F;
             ApicId = (Data[1, 1] >> 24) & 0xFF;
+            PkgType = (ExtData[1, 1] >> 28) & 0xFF;
 
             switch (Vendor)
             {
@@ -239,6 +240,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
         public uint ThreadId { get; }
 
         public Vendor Vendor { get; } = Vendor.Unknown;
+
+        public uint PkgType { get; }
 
         /// <summary>
         /// Gets the specified <see cref="CpuId" />.
