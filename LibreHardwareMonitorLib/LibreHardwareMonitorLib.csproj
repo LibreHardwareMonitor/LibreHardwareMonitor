@@ -40,4 +40,9 @@
     <PackageReference Include="HidSharp" Version="2.1.0" />
     <PackageReference Include="System.Management" Version="4.7.0" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="inpoutx64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
