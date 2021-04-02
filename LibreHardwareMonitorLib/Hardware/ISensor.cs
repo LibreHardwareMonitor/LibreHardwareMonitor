@@ -12,8 +12,10 @@ namespace LibreHardwareMonitor.Hardware
     public enum SensorType
     {
         Voltage, // V
-        Clock, // MHz
+        Current, // A
+        Power, // W
         Temperature, // °C
+        Clock, // MHz
         Load, // %
         Frequency, // Hz
         Fan, // RPM
@@ -21,10 +23,9 @@ namespace LibreHardwareMonitor.Hardware
         Control, // %
         Level, // %
         Factor, // 1
-        Power, // W
         Data, // GB = 2^30 Bytes
         SmallData, // MB = 2^20 Bytes
-        Throughput // B/s
+        Throughput, // B/s
     }
 
     public struct SensorValue
