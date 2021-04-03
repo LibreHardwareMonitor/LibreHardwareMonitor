@@ -45,12 +45,22 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _temperatureVddc;
         private readonly Sensor _fullscreen_fps;
 
-        public AmdGpu(string name, int adapterIndex, int busNumber, int deviceNumber, ISettings settings)
-            : base(name, new Identifier("gpu-amd", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+        private int _memorySensorIndex;
+        private int _nodeSensorIndex;
+        private readonly Sensor _gpuSharedMemoryUsage;
+        private readonly Sensor _gpuDedicatedMemoryUsage;
+        private Int64[] _gpuNodeUsagePrevValue;
+        private DateTime[] _gpuNodeUsagePrevTick;
+        private readonly Sensor[] _gpuNodeUsage;
+
+        private string _windowsDeviceName;
+
+        public AmdGpu(AtiAdlxx.ADLAdapterInfo adapterInfo, ISettings settings)
+            : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
-            _adapterIndex = adapterIndex;
-            BusNumber = busNumber;
-            DeviceNumber = deviceNumber;
+            _adapterIndex = adapterInfo.AdapterIndex;
+            BusNumber = adapterInfo.BusNumber;
+            DeviceNumber = adapterInfo.DeviceNumber;
 
             _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
             _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
@@ -83,6 +93,30 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             _fullscreen_fps = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
 
+            string convertedPNPString = adapterInfo.PNPString.Replace("\\", "#").ToLower();
+            foreach (var displayDeviceName in D3DDisplayDevice.GetDisplayDeviceNames())
+            {
+                if (displayDeviceName.ToLower().Contains(convertedPNPString) && D3DDisplayDevice.GetDeviceInfoByName(displayDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                {
+                    _windowsDeviceName = displayDeviceName;
+
+                    _gpuDedicatedMemoryUsage = new Sensor("Dedicated Memory Used", _memorySensorIndex++, SensorType.SmallData, this, settings);
+                    _gpuSharedMemoryUsage = new Sensor("Shared Memory Used", _memorySensorIndex++, SensorType.SmallData, this, settings);
+
+                    _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
+                    _gpuNodeUsagePrevValue = new Int64[deviceInfo.Nodes.Length];
+                    _gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
+                    foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+                    {
+                        _gpuNodeUsage[node.Id] = new Sensor(node.Name, _nodeSensorIndex++, SensorType.Load, this, settings);
+                        _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+                        _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+                    }
+
+                    break;
+                }
+            }
+
             int supported = 0;
             int enabled = 0;
             int version = 0;
@@ -107,12 +141,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (_currentOverdriveApiLevel >= 6)
             {
-                if (AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, adapterIndex, ref _context) == AtiAdlxx.ADLStatus.ADL_OK)
+                if (AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterIndex, ref _context) == AtiAdlxx.ADLStatus.ADL_OK)
                     _context = IntPtr.Zero;
             }
 
             AtiAdlxx.ADLFanSpeedInfo fanSpeedInfo = new AtiAdlxx.ADLFanSpeedInfo();
-            if (AtiAdlxx.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref fanSpeedInfo) != AtiAdlxx.ADLStatus.ADL_OK)
+            if (AtiAdlxx.ADL_Overdrive5_FanSpeedInfo_Get(_adapterIndex, 0, ref fanSpeedInfo) != AtiAdlxx.ADLStatus.ADL_OK)
             {
                 fanSpeedInfo.MaxPercent = 100;
                 fanSpeedInfo.MinPercent = 0;
@@ -177,6 +211,25 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public override void Update()
         {
+            if(_windowsDeviceName != null && D3DDisplayDevice.GetDeviceInfoByName(_windowsDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+            {
+                _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
+                _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
+                ActivateSensor(_gpuDedicatedMemoryUsage);
+                ActivateSensor(_gpuSharedMemoryUsage);
+
+                foreach(D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+                {
+                    var runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
+                    var timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
+
+                    _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+                    _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+                    _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+                    ActivateSensor(_gpuNodeUsage[node.Id]);
+                }
+            }
+
             if(_framemetricsStarted)
             {
                 float framesPerSecond = 0;

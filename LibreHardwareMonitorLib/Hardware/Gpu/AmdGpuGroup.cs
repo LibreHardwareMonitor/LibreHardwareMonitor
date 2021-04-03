@@ -80,12 +80,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                                         }
 
                                     if (!found)
-                                        _hardware.Add(new AmdGpu(
-                                                                 adapterInfo[i].AdapterName.Trim(),
-                                                                 adapterInfo[i].AdapterIndex,
-                                                                 adapterInfo[i].BusNumber,
-                                                                 adapterInfo[i].DeviceNumber,
-                                                                 settings));
+                                        _hardware.Add(new AmdGpu(adapterInfo[i], settings));
                                 }
 
                                 _report.AppendLine();
