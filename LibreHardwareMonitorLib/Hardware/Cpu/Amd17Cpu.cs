@@ -13,21 +13,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
     internal sealed class Amd17Cpu : AmdCpu
     {
         private readonly Processor _processor;
-        private int _sensorClock;
-        private int _sensorPower;
-
-        // counter, to create sensor index values
-        private int _sensorTemperatures;
-        private int _sensorVoltage;
-        private int _sensorLoad;
-        private int _sensorCurrent;
-        private int _sensorFactor;
-        private int _sensorFrequency;
-
+        private Dictionary<SensorType, int> _sensorTypeIndex;
         private RyzenSMU _smu;
 
         public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
+            _sensorTypeIndex = new Dictionary<SensorType, int>();
+            foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
+            {
+                _sensorTypeIndex.Add(type, 0);
+            }
             _smu = new RyzenSMU(_family, _model, _packageType);
 
             // Add all numa nodes.
@@ -110,53 +105,27 @@ namespace LibreHardwareMonitor.Hardware.CPU
             private Sensor _ccdsMaxTemperature;
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue;
-
+            
             private readonly Dictionary<uint, Sensor>_smuSensors = new Dictionary<uint, Sensor>();
 
             public Processor(Hardware hardware)
             {
                 _cpu = (Amd17Cpu)hardware;
 
-                _packagePower = new Sensor("Package Power", _cpu._sensorPower++, SensorType.Power, _cpu, _cpu._settings);
-                _coreTemperatureTctl = new Sensor("Core (Tctl)", _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings);
-                _coreTemperatureTdie = new Sensor("Core (Tdie)", _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings);
-                _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings);
+                _packagePower = new Sensor("Package Power", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings);
+                _coreTemperatureTctl = new Sensor("Core (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
+                _coreTemperatureTdie = new Sensor("Core (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
+                _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
                 _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
-                _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorVoltage++, SensorType.Voltage, _cpu, _cpu._settings);
-                _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorVoltage++, SensorType.Voltage, _cpu, _cpu._settings);
-                _busClock = new Sensor("Bus Speed", _cpu._sensorClock++, SensorType.Clock, _cpu, _cpu._settings);
+                _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
+                _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
+                _busClock = new Sensor("Bus Speed", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
 
                 _cpu.ActivateSensor(_packagePower);
 
                 foreach (var sensor in _cpu._smu.GetPmTableStructure())
                 {
-                    switch (sensor.Value.Type) 
-                    {
-                        case SensorType.Power:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorPower++, SensorType.Power, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Temperature:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorTemperatures++, SensorType.Temperature, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Load:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorLoad++, SensorType.Load, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Current:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorCurrent++, SensorType.Current, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Factor:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorFactor++, SensorType.Factor, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Frequency:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorFrequency++, SensorType.Frequency, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Clock:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorClock++, SensorType.Clock, _cpu, _cpu._settings));
-                            break;
-                        case SensorType.Voltage:
-                            _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorVoltage++, SensorType.Voltage, _cpu, _cpu._settings));
-                            break;
-                    }
+                    _smuSensors.Add(sensor.Key, new Sensor(sensor.Value.Name, _cpu._sensorTypeIndex[sensor.Value.Type]++, sensor.Value.Type, _cpu, _cpu._settings));
                 }
             }
 
@@ -324,7 +293,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                 if (_ccdTemperatures[i] == null)
                                 {
                                     _cpu.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
-                                                                                              _cpu._sensorTemperatures++,
+                                                                                              _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                                                                               SensorType.Temperature,
                                                                                               _cpu,
                                                                                               _cpu._settings));
@@ -341,7 +310,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             if (_ccdsMaxTemperature == null)
                             {
                                 _cpu.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
-                                                                                          _cpu._sensorTemperatures++,
+                                                                                          _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                                                                           SensorType.Temperature,
                                                                                           _cpu,
                                                                                           _cpu._settings));
@@ -350,7 +319,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             if (_ccdsAverageTemperature == null)
                             {
                                 _cpu.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
-                                                                                              _cpu._sensorTemperatures++,
+                                                                                              _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                                                                               SensorType.Temperature,
                                                                                               _cpu,
                                                                                               _cpu._settings));
@@ -491,10 +460,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _cpu = cpu;
                 Threads = new List<CpuId>();
                 CoreId = id;
-                _clock = new Sensor("Core #" + CoreId, cpu._sensorClock++, SensorType.Clock, cpu, cpu._settings);
-                _multiplier = new Sensor("Core #" + CoreId, cpu._sensorFactor++, SensorType.Factor, cpu, cpu._settings);
-                _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorPower++, SensorType.Power, cpu, cpu._settings);
-                _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorVoltage++, SensorType.Voltage, cpu, cpu._settings);
+                _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings);
+                _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
+                _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings);
+                _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
 
                 cpu.ActivateSensor(_clock);
                 cpu.ActivateSensor(_multiplier);
