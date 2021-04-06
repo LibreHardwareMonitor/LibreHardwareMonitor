@@ -23,6 +23,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 _sensorTypeIndex.Add(type, 0);
             }
+            _sensorTypeIndex[SensorType.Load] = _loadSensorCounter;
+
             _smu = new RyzenSMU(_family, _model, _packageType);
 
             // Add all numa nodes.
