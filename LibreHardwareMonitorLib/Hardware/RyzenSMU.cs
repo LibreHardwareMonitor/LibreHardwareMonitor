@@ -5,6 +5,7 @@ using LibreHardwareMonitor.Hardware.CPU;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -153,19 +154,21 @@ namespace LibreHardwareMonitor.Hardware
 
         public float[] GetPmTable()
         {
-            if(! _supported_cpu) return new float[] { 0 };
-            if (!ReadPmTable()) return new float[]{ 0 };
-            
-            if(! _supported_pm_table_versions.ContainsKey(_pm_table_version)) return new float[] { 0 };
+            if(!_supported_cpu) return new float[] { 0 };
+            if (!ReadPmTable()) return new float[] { 0 };
 
+            if(!_supported_pm_table_versions.ContainsKey(_pm_table_version)) return new float[] { 0 };
+
+            return ReadDramToArray();
+        }
+
+        private float[] ReadDramToArray()
+        {
             float[] table = new float[_pm_table_size / 4];
-            for (int i = 0; i < table.Length; ++i)
-            {
-                uint data;
-                Interop.InpOut.GetPhysLong(_dram_base_addr + (i * 0x4), out data);
-                table[i] = BitConverter.ToSingle(BitConverter.GetBytes(data), 0);
-            }
 
+            IntPtr pdwLinAddr = Interop.InpOut.MapPhysToLin(_dram_base_addr, _pm_table_size, out IntPtr pPhysicalMemoryHandle);
+            Marshal.Copy(pdwLinAddr, table, 0, table.Length);
+            Interop.InpOut.UnmapPhysicalMemory(pPhysicalMemoryHandle, pdwLinAddr);
             return table;
         }
 
@@ -479,7 +482,11 @@ namespace LibreHardwareMonitor.Hardware
                 args = new uint[SMU_REQ_MAX_ARGS];
                 for (byte i = 0; i < SMU_REQ_MAX_ARGS; i++)
                 {
-                    ReadReg(_args_addr + (uint)(i * 4), ref args[i]);
+                    if (! ReadReg(_args_addr + (uint)(i * 4), ref args[i]))
+                    {
+                        _mutex.ReleaseMutex();
+                        return false;
+                    }
                 }
 
                 _mutex.ReleaseMutex();
