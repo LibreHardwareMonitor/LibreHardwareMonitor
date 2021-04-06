@@ -9,20 +9,12 @@ namespace LibreHardwareMonitor.Interop
 {
     class InpOut
     {
-        [DllImport("inpout32.dll", EntryPoint = "GetPhysLong", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("inpoutx64.dll", EntryPoint = "MapPhysToLin", CallingConvention = CallingConvention.StdCall)]
+        public static extern IntPtr MapPhysToLin(UIntPtr pbPhysAddr, uint dwPhysSize, out IntPtr pPhysicalMemoryHandle);
+
+        [DllImport("inpoutx64.dll", EntryPoint = "UnmapPhysicalMemory", CallingConvention = CallingConvention.StdCall)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetPhysLong32(UIntPtr memAddress, out uint data);
+        public static extern bool UnmapPhysicalMemory(IntPtr PhysicalMemoryHandle, IntPtr pbLinAddr);
 
-        [DllImport("inpoutx64.dll", EntryPoint = "GetPhysLong", CallingConvention = CallingConvention.StdCall)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetPhysLong64(UIntPtr memAddress, out uint data);
-
-        public static bool GetPhysLong(UIntPtr memAddress, out uint data)
-        {
-            if (Environment.Is64BitProcess)
-                return GetPhysLong64(memAddress, out data);
-
-            return GetPhysLong32(memAddress, out data);
-        }
     }
 }
