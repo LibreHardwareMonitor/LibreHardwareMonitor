@@ -38,7 +38,7 @@ namespace LibreHardwareMonitor.Hardware
 
             _supported_cpu = SetAddrs(_cpu_code_name);
 
-            ReadPmTable();
+            SetupPmTableAddrAndSize();
         }
 
         private CpuCodeName GetCpuCodeName(uint family, uint model, uint packageType)
@@ -154,10 +154,10 @@ namespace LibreHardwareMonitor.Hardware
 
         public float[] GetPmTable()
         {
-            if(!_supported_cpu) return new float[] { 0 };
-            if (!ReadPmTable()) return new float[] { 0 };
-
-            if(!_supported_pm_table_versions.ContainsKey(_pm_table_version)) return new float[] { 0 };
+            if(! _supported_cpu) return new float[] { 0 };
+            if(! SetupPmTableAddrAndSize()) return new float[] { 0 };
+            if(! _supported_pm_table_versions.ContainsKey(_pm_table_version)) return new float[] { 0 };
+            if(! TransferTableToDram()) return new float[] { 0 };
 
             return ReadDramToArray();
         }
@@ -167,21 +167,24 @@ namespace LibreHardwareMonitor.Hardware
             float[] table = new float[_pm_table_size / 4];
 
             IntPtr pdwLinAddr = Interop.InpOut.MapPhysToLin(_dram_base_addr, _pm_table_size, out IntPtr pPhysicalMemoryHandle);
-            Marshal.Copy(pdwLinAddr, table, 0, table.Length);
-            Interop.InpOut.UnmapPhysicalMemory(pPhysicalMemoryHandle, pdwLinAddr);
+            if (pdwLinAddr != IntPtr.Zero)
+            {
+                Marshal.Copy(pdwLinAddr, table, 0, table.Length);
+                Interop.InpOut.UnmapPhysicalMemory(pPhysicalMemoryHandle, pdwLinAddr);
+            }
             return table;
         }
 
-        private bool ReadPmTable()
+        private bool SetupPmTableAddrAndSize()
         {
-            if(_dram_base_addr == UIntPtr.Zero)
-            {
-                SetupDramBaseAddr();
-            }
-
             if(_pm_table_size == 0)
             {
                 SetupPmTableSize();
+            }
+
+            if(_dram_base_addr == UIntPtr.Zero)
+            {
+                SetupDramBaseAddr();
             }
 
             if(_dram_base_addr == UIntPtr.Zero || _pm_table_size == 0)
@@ -189,7 +192,7 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
             }
 
-            return TransferTableToDram();
+            return true;
         }
 
         private bool SetupPmTableSize() 
@@ -264,9 +267,6 @@ namespace LibreHardwareMonitor.Hardware
                 case CpuCodeName.RAVENRIDGE2:
                     _pm_table_size_alt = 0xA4;
                     _pm_table_size = 0x608 + _pm_table_size_alt;
-
-                    _dram_base_addr_alt = new UIntPtr(_dram_base_addr.ToUInt64() >> 32);
-                    _dram_base_addr = new UIntPtr(_dram_base_addr.ToUInt64() & 0xFFFFFFFF);
                     break;
                 default:
                     return false;
@@ -384,8 +384,8 @@ namespace LibreHardwareMonitor.Hardware
                 parts[1] = args[0];
                 // == Part 2 End ==
 
-                _dram_base_addr = new UIntPtr((UInt64) parts[1] << 32 | parts[0]);
-
+                _dram_base_addr_alt = new UIntPtr(parts[1]);
+                _dram_base_addr = new UIntPtr(parts[0]);
             return true;
         }
 
@@ -425,9 +425,10 @@ namespace LibreHardwareMonitor.Hardware
             for (int i = 0; i < argsLength; ++i)
                 cmdArgs[i] = args[i];
 
+            uint tmp = 0;
             if (_mutex.WaitOne(5000))
             {
-                uint tmp, retries;
+                uint retries;
 
                 // Step 1: Wait until the RSP register is non-zero.
 
@@ -489,11 +490,11 @@ namespace LibreHardwareMonitor.Hardware
                     }
                 }
 
+                ReadReg(_rsp_addr, ref tmp);
                 _mutex.ReleaseMutex();
             }
 
-
-            return true;
+            return tmp == (uint)Status.OK;
         }
 
         private bool WriteReg(uint addr, uint data)
