@@ -72,7 +72,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         {
             StringBuilder r = new StringBuilder();
             r.Append(base.GetReport());
-            r.Append("Ryzen");
+            r.Append(_smu.GetReport());
             return r.ToString();
         }
 
@@ -366,13 +366,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     _cpu.ActivateSensor(_busClock);
                 }
 
-                var smuData = _cpu._smu.GetPmTable();
-                foreach(var sensor in _smuSensors)
+                if (_cpu._smu.IsPmTableLayoutDefined())
                 {
-                    if(smuData.Length >= sensor.Key)
+                    var smuData = _cpu._smu.GetPmTable();
+                    foreach(var sensor in _smuSensors)
                     {
-                        sensor.Value.Value = smuData[sensor.Key];
-                        _cpu.ActivateSensor(sensor.Value);
+                        if(smuData.Length >= sensor.Key)
+                        {
+                            sensor.Value.Value = smuData[sensor.Key];
+                            _cpu.ActivateSensor(sensor.Value);
+                        }
                     }
                 }
             }

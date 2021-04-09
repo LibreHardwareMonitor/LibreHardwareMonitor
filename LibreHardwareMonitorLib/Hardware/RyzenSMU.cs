@@ -99,6 +99,34 @@ namespace LibreHardwareMonitor.Hardware
             return CpuCodeName.UNDEFINED;
         }
 
+        public string GetReport()
+        {
+            StringBuilder r = new StringBuilder();
+
+            r.AppendLine("Ryzen SMU");
+            r.AppendLine();
+            r.AppendLine($" PM table version: 0x{_pm_table_version:X8}");
+            r.AppendLine($" PM table supported: {_supported_cpu}");
+            r.AppendLine($" PM table layout defined: {IsPmTableLayoutDefined()}");
+            if (_supported_cpu)
+            {
+                r.AppendLine($" PM table size: 0x{_pm_table_size:X3}");
+                r.AppendLine($" PM table start address: 0x{_dram_base_addr:X8}");
+                r.AppendLine();
+                r.AppendLine($" PM table dump:");
+                r.AppendLine($"  Idx    Offset   Value");
+                r.AppendLine($" ------------------------");
+                var pm_values = GetPmTable();
+                for(var i = 0; i<pm_values.Length; i++)
+                {
+                    r.AppendLine($" {i,4}    0x{i*4:X3}    {pm_values[i]}");
+                }
+            }
+
+
+            return r.ToString();
+        }
+
         private bool SetAddrs(CpuCodeName codeName)
         {
             switch (codeName)
@@ -147,16 +175,20 @@ namespace LibreHardwareMonitor.Hardware
 
         public Dictionary<uint, SmuSensorType> GetPmTableStructure()
         {
-            if (! _supported_pm_table_versions.ContainsKey(_pm_table_version)) return new Dictionary<uint, SmuSensorType>();
+            if (! IsPmTableLayoutDefined()) return new Dictionary<uint, SmuSensorType>();
 
             return _supported_pm_table_versions[_pm_table_version];
+        }
+
+        public bool IsPmTableLayoutDefined()
+        {
+            return _supported_pm_table_versions.ContainsKey(_pm_table_version);
         }
 
         public float[] GetPmTable()
         {
             if(! _supported_cpu) return new float[] { 0 };
             if(! SetupPmTableAddrAndSize()) return new float[] { 0 };
-            if(! _supported_pm_table_versions.ContainsKey(_pm_table_version)) return new float[] { 0 };
             if(! TransferTableToDram()) return new float[] { 0 };
 
             return ReadDramToArray();
