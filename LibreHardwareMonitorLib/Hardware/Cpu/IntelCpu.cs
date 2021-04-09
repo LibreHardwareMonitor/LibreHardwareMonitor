@@ -185,10 +185,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             tjMax = GetTjMaxFromMsr();
                             break;
                         case 0xA7: // Intel Core i5, i6, i7 11xxx (14nm) (Rocket Lake)
-                                _microArchitecture = MicroArchitecture.RocketLake;
+                            _microArchitecture = MicroArchitecture.RocketLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                            default:
+                        default:
                             _microArchitecture = MicroArchitecture.Unknown;
                             tjMax = Floats(100);
                             break;
