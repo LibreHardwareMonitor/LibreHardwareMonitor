@@ -198,12 +198,11 @@ namespace LibreHardwareMonitor.Hardware
         {
             float[] table = new float[_pm_table_size / 4];
 
-            IntPtr pdwLinAddr = Interop.InpOut.MapPhysToLin(_dram_base_addr, _pm_table_size, out IntPtr pPhysicalMemoryHandle);
-            if (pdwLinAddr != IntPtr.Zero)
+            for(uint i = 0; i<table.Length;i++)
             {
-                Marshal.Copy(pdwLinAddr, table, 0, table.Length);
-                Interop.InpOut.UnmapPhysicalMemory(pPhysicalMemoryHandle, pdwLinAddr);
+                Ring0.ReadMemory((_dram_base_addr.ToUInt64()) + i * 4, ref table[i]);
             }
+
             return table;
         }
 
@@ -417,7 +416,7 @@ namespace LibreHardwareMonitor.Hardware
                 // == Part 2 End ==
 
                 _dram_base_addr_alt = new UIntPtr(parts[1]);
-                _dram_base_addr = new UIntPtr(parts[0]);
+                _dram_base_addr = new UIntPtr(parts[0] & 0xFFFFFFFF);
             return true;
         }
 
