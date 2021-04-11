@@ -15,8 +15,7 @@ namespace LibreHardwareMonitor.Hardware
     internal class RyzenSMU
     {
         private Mutex _mutex = new Mutex();
-        private UIntPtr _dram_base_addr = UIntPtr.Zero;
-        private UIntPtr _dram_base_addr_alt = UIntPtr.Zero;
+        private uint _dram_base_addr = 0;
         private uint _pm_table_version = 0;
         private uint _pm_table_size = 0;
         private uint _pm_table_size_alt = 0;
@@ -49,33 +48,33 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     case 0x01:
                         if (packageType == 7)
-                            return CpuCodeName.THREADRIPPER;
+                            return CpuCodeName.Threadripper;
                         else
-                            return CpuCodeName.SUMMITRIDGE;
+                            return CpuCodeName.SummitRidge;
                     case 0x08:
                         if (packageType == 7)
-                            return CpuCodeName.COLFAX;
+                            return CpuCodeName.Colfax;
                         else
-                            return CpuCodeName.PINNACLERIDGE;
+                            return CpuCodeName.PinnacleRidge;
                     case 0x11:
-                        return CpuCodeName.RAVENRIDGE;
+                        return CpuCodeName.RavenRidge;
                     case 0x18:
                         if (packageType == 2)
-                            return CpuCodeName.RAVENRIDGE2;
+                            return CpuCodeName.RavenRidge2;
                         else
-                            return CpuCodeName.PICASSO;
+                            return CpuCodeName.Picasso;
                     case 0x20:
-                        return CpuCodeName.DALI;
+                        return CpuCodeName.Dali;
                     case 0x31:
-                        return CpuCodeName.CASTLEPEAK;
+                        return CpuCodeName.CastlePeak;
                     case 0x60:
-                        return CpuCodeName.RENOIR;
+                        return CpuCodeName.Renoir;
                     case 0x71:
-                        return CpuCodeName.MATISSE;
+                        return CpuCodeName.Matisse;
                     case 0x90:
-                        return CpuCodeName.VANGOGH;
+                        return CpuCodeName.Vangogh;
                     default:
-                        return CpuCodeName.UNDEFINED;
+                        return CpuCodeName.Undefined;
                 }
             }
             else if (family == 0x19)
@@ -83,20 +82,20 @@ namespace LibreHardwareMonitor.Hardware
                 switch (model)
                 {
                     case 0x00:
-                        return CpuCodeName.MILAN;
+                        return CpuCodeName.Milan;
                     case 0x20:
                     case 0x21:
-                        return CpuCodeName.VERMEER;
+                        return CpuCodeName.Vermeer;
                     case 0x40:
-                        return CpuCodeName.REMBRANT;
+                        return CpuCodeName.Rembrandt;
                     case 0x50:
-                        return CpuCodeName.CEZANNE;
+                        return CpuCodeName.Cezanne;
                     default:
-                        return CpuCodeName.UNDEFINED;
+                        return CpuCodeName.Undefined;
                 }
             }
 
-            return CpuCodeName.UNDEFINED;
+            return CpuCodeName.Undefined;
         }
 
         public string GetReport()
@@ -131,26 +130,26 @@ namespace LibreHardwareMonitor.Hardware
         {
             switch (codeName)
             {
-                case CpuCodeName.CASTLEPEAK:
-                case CpuCodeName.MATISSE:
-                case CpuCodeName.VERMEER:
+                case CpuCodeName.CastlePeak:
+                case CpuCodeName.Matisse:
+                case CpuCodeName.Vermeer:
                     _cmd_addr = 0x3B10524;
                     _rsp_addr = 0x3B10570;
                     _args_addr = 0x3B10A40;
                     return true;
-                case CpuCodeName.COLFAX:
-                case CpuCodeName.SUMMITRIDGE:
-                case CpuCodeName.THREADRIPPER:
-                case CpuCodeName.PINNACLERIDGE:
+                case CpuCodeName.Colfax:
+                case CpuCodeName.SummitRidge:
+                case CpuCodeName.Threadripper:
+                case CpuCodeName.PinnacleRidge:
                     _cmd_addr = 0x3B1051C;
                     _rsp_addr = 0x3B10568;
                     _args_addr = 0x3B10590;
                     return true;
-                case CpuCodeName.RENOIR:
-                case CpuCodeName.PICASSO:
-                case CpuCodeName.RAVENRIDGE:
-                case CpuCodeName.RAVENRIDGE2:
-                case CpuCodeName.DALI:
+                case CpuCodeName.Renoir:
+                case CpuCodeName.Picasso:
+                case CpuCodeName.RavenRidge:
+                case CpuCodeName.RavenRidge2:
+                case CpuCodeName.Dali:
                     _cmd_addr = 0x3B10A20;
                     _rsp_addr = 0x3B10A80;
                     _args_addr = 0x3B10A88;
@@ -200,7 +199,7 @@ namespace LibreHardwareMonitor.Hardware
 
             for(uint i = 0; i<table.Length;i++)
             {
-                Ring0.ReadMemory((_dram_base_addr.ToUInt64()) + i * 4, ref table[i]);
+                Ring0.ReadMemory(_dram_base_addr + i * 4, ref table[i]);
             }
 
             return table;
@@ -213,12 +212,12 @@ namespace LibreHardwareMonitor.Hardware
                 SetupPmTableSize();
             }
 
-            if(_dram_base_addr == UIntPtr.Zero)
+            if(_dram_base_addr == 0)
             {
                 SetupDramBaseAddr();
             }
 
-            if(_dram_base_addr == UIntPtr.Zero || _pm_table_size == 0)
+            if(_dram_base_addr == 0 || _pm_table_size == 0)
             {
                 return false;
             }
@@ -232,7 +231,7 @@ namespace LibreHardwareMonitor.Hardware
             
             switch (_cpu_code_name)
             {
-                case CpuCodeName.MATISSE:
+                case CpuCodeName.Matisse:
                     switch (_pm_table_version)
                     {
                         case 0x240902:
@@ -251,7 +250,7 @@ namespace LibreHardwareMonitor.Hardware
                             return false;
                     }
                     break;
-                case CpuCodeName.VERMEER:
+                case CpuCodeName.Vermeer:
                     switch (_pm_table_version)
                     {
                         case 0x2D0903:
@@ -270,7 +269,7 @@ namespace LibreHardwareMonitor.Hardware
                             return false;
                     }
                     break;
-                case CpuCodeName.RENOIR:
+                case CpuCodeName.Renoir:
                     switch (_pm_table_version)
                     {
                         case 0x370000:
@@ -293,9 +292,9 @@ namespace LibreHardwareMonitor.Hardware
                             return false;
                     }
                     break;
-                case CpuCodeName.PICASSO:
-                case CpuCodeName.RAVENRIDGE:
-                case CpuCodeName.RAVENRIDGE2:
+                case CpuCodeName.Picasso:
+                case CpuCodeName.RavenRidge:
+                case CpuCodeName.RavenRidge2:
                     _pm_table_size_alt = 0xA4;
                     _pm_table_size = 0x608 + _pm_table_size_alt;
                     break;
@@ -311,16 +310,17 @@ namespace LibreHardwareMonitor.Hardware
             uint[] args = { 0 };
             uint fn;
 
-            switch (_cpu_code_name) {
-                case CpuCodeName.RAVENRIDGE:
-                case CpuCodeName.PICASSO:
+            switch (_cpu_code_name)
+            {
+                case CpuCodeName.RavenRidge:
+                case CpuCodeName.Picasso:
                     fn = 0x0c;
                     break;
-                case CpuCodeName.MATISSE:
-                case CpuCodeName.VERMEER:
+                case CpuCodeName.Matisse:
+                case CpuCodeName.Vermeer:
                     fn = 0x08;
                     break;
-                case CpuCodeName.RENOIR:
+                case CpuCodeName.Renoir:
                     fn = 0x06;
                     break;
                 default:
@@ -333,91 +333,105 @@ namespace LibreHardwareMonitor.Hardware
             return ret;
         }
 
+        private bool SetupAddrClass1(uint[] fn)
+        {
+            bool ret;
+            uint[] args = { 1, 1 };
+
+            ret = SendCommand(fn[0], ref args);
+            if (!ret) return false;
+
+            _dram_base_addr = args[0] | (args[1] << 32);
+            return true;
+        }
+
+        private bool SetupAddrClass2(uint[] fn)
+        {
+            bool ret;
+            uint[] args = { 0, 0, 0, 0, 0, 0 };
+
+            ret = SendCommand(fn[0], ref args);
+            if (!ret) return false;
+
+            args = new uint[] { 0 };
+            ret = SendCommand(fn[1], ref args);
+            if (!ret) return false;
+
+            _dram_base_addr = args[0];
+            return true;
+        }
+
+        private bool SetupAddrClass3(uint[] fn)
+        {
+            bool ret;
+            uint[] args;
+            uint[] parts = { 0, 0 };
+
+            // == Part 1 ==
+            args = new uint[] { 3 };
+            ret = SendCommand(fn[0], ref args);
+            if (!ret) return false;
+
+            args = new uint[] { 3 };
+            ret = SendCommand(fn[2], ref args);
+            if (!ret) return false;
+
+            // 1st Base.
+            parts[0] = args[0];
+            // == Part 1 End ==
+
+            // == Part 2 ==
+            args = new uint[] { 3 };
+            ret = SendCommand(fn[1], ref args);
+            if (!ret) return false;
+
+
+            args = new uint[] { 5 };
+            ret = SendCommand(fn[0], ref args);
+            if (!ret) return false;
+
+            args = new uint[] { 5 };
+            ret = SendCommand(fn[2], ref args);
+            if (!ret) return false;
+
+            // 2nd base.
+            parts[1] = args[0];
+            // == Part 2 End ==
+
+            _dram_base_addr = parts[0] & 0xFFFFFFFF;
+            return true;
+        }
+
         private bool SetupDramBaseAddr()
         {
-            uint[] fn = {0, 0, 0};
-            uint[] parts = { 0, 0 };
-            uint[] args = { 0, 0, 0, 0, 0, 0 };
-            bool ret;
+            uint[] fn = { 0, 0, 0 };
 
-            switch (_cpu_code_name) {
-                case CpuCodeName.VERMEER:
-                case CpuCodeName.MATISSE:
-                case CpuCodeName.CASTLEPEAK:
+            switch (_cpu_code_name)
+            {
+                case CpuCodeName.Vermeer:
+                case CpuCodeName.Matisse:
+                case CpuCodeName.CastlePeak:
                     fn[0] = 0x06;
-                    goto BASE_ADDR_CLASS_1;
-                case CpuCodeName.RENOIR:
+                    return SetupAddrClass1(fn);
+                case CpuCodeName.Renoir:
                     fn[0] = 0x66;
-                    goto BASE_ADDR_CLASS_1;
-                case CpuCodeName.COLFAX:
-                case CpuCodeName.PINNACLERIDGE:
+                    return SetupAddrClass1(fn);
+                case CpuCodeName.Colfax:
+                case CpuCodeName.PinnacleRidge:
                     fn[0] = 0x0b;
                     fn[1] = 0x0c;
-                    goto BASE_ADDR_CLASS_2;
-                case CpuCodeName.DALI:
-                case CpuCodeName.PICASSO:
-                case CpuCodeName.RAVENRIDGE:
-                case CpuCodeName.RAVENRIDGE2:
+                    return SetupAddrClass2(fn);
+                case CpuCodeName.Dali:
+                case CpuCodeName.Picasso:
+                case CpuCodeName.RavenRidge:
+                case CpuCodeName.RavenRidge2:
                     fn[0] = 0x0a;
                     fn[1] = 0x3d;
                     fn[2] = 0x0b;
-                    goto BASE_ADDR_CLASS_3;
+                    return SetupAddrClass3(fn);
                 default:
                     return false;
             }
-
-            BASE_ADDR_CLASS_1:
-                args = new uint[] { 1, 1 };
-                ret = SendCommand(fn[0], ref args);
-                if (!ret) return false;
-
-                _dram_base_addr = new UIntPtr(args[0] | ((UInt64)args[1] << 32));
-
-            BASE_ADDR_CLASS_2:
-                ret = SendCommand(fn[0], ref args);
-                if (!ret) return false;
-
-                args = new uint[] { 0 };
-                ret = SendCommand(fn[1], ref args);
-                if (!ret) return false;
-
-                _dram_base_addr = new UIntPtr(args[0]);
-
-            BASE_ADDR_CLASS_3:
-                // == Part 1 ==
-                args = new uint[] { 3 };
-                ret = SendCommand(fn[0], ref args);
-                if (!ret) return false;
-
-                args = new uint[] { 3 };
-                ret = SendCommand(fn[2], ref args);
-                if (!ret) return false;
-
-                // 1st Base.
-                parts[0] = args[0];
-                // == Part 1 End ==
-
-                // == Part 2 ==
-                args = new uint[] { 3 };
-                ret = SendCommand(fn[1], ref args);
-                if (!ret) return false;
-                
-
-                args = new uint[] { 5 };
-                ret = SendCommand(fn[0], ref args);
-                if (!ret) return false;
-
-                args = new uint[] { 5 };
-                ret = SendCommand(fn[2], ref args);
-                if (!ret) return false;
-
-                // 2nd base.
-                parts[1] = args[0];
-                // == Part 2 End ==
-
-                _dram_base_addr_alt = new UIntPtr(parts[1]);
-                _dram_base_addr = new UIntPtr(parts[0] & 0xFFFFFFFF);
-            return true;
         }
 
         public bool TransferTableToDram()
@@ -427,17 +441,17 @@ namespace LibreHardwareMonitor.Hardware
 
             switch (_cpu_code_name)
             {
-                case CpuCodeName.MATISSE:
-                case CpuCodeName.VERMEER:
+                case CpuCodeName.Matisse:
+                case CpuCodeName.Vermeer:
                     fn = 0x05;
                     break;
-                case CpuCodeName.RENOIR:
+                case CpuCodeName.Renoir:
                     args[0] = 3;
                     fn = 0x65;
                     break;
-                case CpuCodeName.PICASSO:
-                case CpuCodeName.RAVENRIDGE:
-                case CpuCodeName.RAVENRIDGE2:
+                case CpuCodeName.Picasso:
+                case CpuCodeName.RavenRidge:
+                case CpuCodeName.RavenRidge2:
                     args[0] = 3;
                     fn = 0x3d;
                     break;
@@ -603,23 +617,23 @@ namespace LibreHardwareMonitor.Hardware
 
         private enum CpuCodeName
         {
-            UNDEFINED,
-            COLFAX,
-            RENOIR,
-            PICASSO,
-            MATISSE,
-            THREADRIPPER,
-            CASTLEPEAK,
-            RAVENRIDGE,
-            RAVENRIDGE2,
-            SUMMITRIDGE,
-            PINNACLERIDGE,
-            REMBRANT,
-            VERMEER,
-            VANGOGH,
-            CEZANNE,
-            MILAN,
-            DALI
+            Undefined,
+            Colfax,
+            Renoir,
+            Picasso,
+            Matisse,
+            Threadripper,
+            CastlePeak,
+            RavenRidge,
+            RavenRidge2,
+            SummitRidge,
+            PinnacleRidge,
+            Rembrandt,
+            Vermeer,
+            Vangogh,
+            Cezanne,
+            Milan,
+            Dali
         }
     }
 }

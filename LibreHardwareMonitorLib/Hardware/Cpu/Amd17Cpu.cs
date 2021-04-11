@@ -18,11 +18,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
-            _sensorTypeIndex = new Dictionary<SensorType, int>();
-            foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
-            {
-                _sensorTypeIndex.Add(type, 0);
-            }
+            InitializeSensorIndexDictionary();
             _sensorTypeIndex[SensorType.Load] = _loadSensorCounter;
 
             _smu = new RyzenSMU(_family, _model, _packageType);
@@ -61,6 +57,15 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
 
             Update();
+        }
+
+        private void InitializeSensorIndexDictionary()
+        {
+            _sensorTypeIndex = new Dictionary<SensorType, int>();
+            foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
+            {
+                _sensorTypeIndex.Add(type, 0);
+            }
         }
 
         protected override uint[] GetMsrs()
