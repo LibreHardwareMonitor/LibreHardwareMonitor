@@ -339,7 +339,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
 
                 // SoC (0x02), not every Zen cpu has this voltage.
-                if (cpuId.Model == 0x21 || cpuId.Model == 0x71 || cpuId.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
+                if (cpuId.Model == 0x11 || cpuId.Model == 0x21 || cpuId.Model == 0x71 || cpuId.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
                 {
                     svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
                     vcc = 1.550 - vidStep * svi0PlaneXVddCor;
