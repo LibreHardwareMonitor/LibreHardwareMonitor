@@ -1047,17 +1047,17 @@ namespace LibreHardwareMonitor.Hardware
 
             NtStatus status;
             D3DKMT_OPENADAPTERFROMDEVICENAME adapter;
-            openAdapterFromDeviceName(out status, displayDeviceName, out adapter);
+            OpenAdapterFromDeviceName(out status, displayDeviceName, out adapter);
             if (status != NtStatus.Success) return false;
 
             D3DKMT_ADAPTERTYPE adapterType;
-            getAdapterType(out status, adapter, out adapterType);
+            GetAdapterType(out status, adapter, out adapterType);
             if (status != NtStatus.Success) return false;
 
             if (!adapterType.Value.HasFlag(D3DKMT_ADAPTERTYPE_Flags.SoftwareDevice)) return false;
 
             D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation;
-            getQueryStatisticsAdapterInformation(out status, adapter, out adapterInformation);
+            GetQueryStatisticsAdapterInformation(out status, adapter, out adapterInformation);
             if (status != NtStatus.Success) return false;
 
             uint segmentCount = adapterInformation.NbSegments;
@@ -1068,17 +1068,17 @@ namespace LibreHardwareMonitor.Hardware
             for (uint nodeId = 0; nodeId < nodeCount; nodeId++)
             {
                 D3DKMT_NODEMETADATA nodeMetaData;
-                getNodeMetaData(out status, adapter, nodeId, out nodeMetaData);
+                GetNodeMetaData(out status, adapter, nodeId, out nodeMetaData);
                 if (status != NtStatus.Success) return false;
 
                 D3DKMT_QUERYSTATISTICS_NODE_INFORMATION nodeInformation;
-                getQueryStatisticsNode(out status, adapter, nodeId, out nodeInformation);
+                GetQueryStatisticsNode(out status, adapter, nodeId, out nodeInformation);
                 if (status != NtStatus.Success) return false;
 
                 deviceInfo.Nodes[nodeId] = new D3DDeviceNodeInfo()
                 {
                     Id = nodeId,
-                    Name = getNodeEngineTypeString(nodeMetaData),
+                    Name = GetNodeEngineTypeString(nodeMetaData),
                     RunningTime = nodeInformation.GlobalInformation.RunningTime.QuadPart,
                     QueryTime = DateTime.Now
                 };
@@ -1087,7 +1087,7 @@ namespace LibreHardwareMonitor.Hardware
             for (uint segmentId = 0; segmentId < segmentCount; segmentId++)
             {
                 D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION segmentInformation;
-                getQueryStatisticsSegment(out status, adapter, segmentId, out segmentInformation);
+                GetQueryStatisticsSegment(out status, adapter, segmentId, out segmentInformation);
                 if (status != NtStatus.Success) return false;
 
                 UInt64 commitLimit = segmentInformation.CommitLimit;
@@ -1110,13 +1110,13 @@ namespace LibreHardwareMonitor.Hardware
                 }
             }
 
-            closeAdapter(out status, adapter);
+            CloseAdapter(out status, adapter);
             if (status != NtStatus.Success) return false;
 
             return true;
         }
 
-        static string getNodeEngineTypeString(D3DKMT_NODEMETADATA nodeMetaData)
+        static string GetNodeEngineTypeString(D3DKMT_NODEMETADATA nodeMetaData)
         {
             switch (nodeMetaData.NodeData.EngineType)
             {
@@ -1143,7 +1143,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        static void getNodeMetaData(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, out D3DKMT_NODEMETADATA nodeMetaDataResult)
+        static void GetNodeMetaData(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, out D3DKMT_NODEMETADATA nodeMetaDataResult)
         {
             IntPtr nodeMetaDataPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3DKMT_NODEMETADATA)));
             nodeMetaDataResult = new D3DKMT_NODEMETADATA()
@@ -1165,7 +1165,7 @@ namespace LibreHardwareMonitor.Hardware
             nodeMetaDataPtr = IntPtr.Zero;
         }
 
-        static void getQueryStatisticsNode(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, out D3DKMT_QUERYSTATISTICS_NODE_INFORMATION nodeInformation)
+        static void GetQueryStatisticsNode(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, out D3DKMT_QUERYSTATISTICS_NODE_INFORMATION nodeInformation)
         {
             var queryElement = new D3DKMT_QUERYSTATISTICS_QUERY_ELEMENT();
             queryElement.QueryNode.NodeId = nodeId;
@@ -1182,7 +1182,7 @@ namespace LibreHardwareMonitor.Hardware
             nodeInformation = queryStatistics.QueryResult.NodeInformation;
         }
 
-        static void getQueryStatisticsSegment(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint segmentId, out D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION segmentInformation)
+        static void GetQueryStatisticsSegment(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint segmentId, out D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION segmentInformation)
         {
             var queryElement = new D3DKMT_QUERYSTATISTICS_QUERY_ELEMENT();
             queryElement.QuerySegment.SegmentId = segmentId;
@@ -1199,7 +1199,7 @@ namespace LibreHardwareMonitor.Hardware
             segmentInformation = queryStatistics.QueryResult.SegmentInformation;
         }
 
-        static void getQueryStatisticsAdapterInformation(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation)
+        static void GetQueryStatisticsAdapterInformation(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation)
         {
             var queryStatistics = new D3DKMT_QUERYSTATISTICS()
             {
@@ -1212,7 +1212,7 @@ namespace LibreHardwareMonitor.Hardware
             adapterInformation = queryStatistics.QueryResult.AdapterInformation;
         }
 
-        static void getAdapterType(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_ADAPTERTYPE adapterTypeResult)
+        static void GetAdapterType(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_ADAPTERTYPE adapterTypeResult)
         {
             IntPtr adapterTypePtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3DKMT_ADAPTERTYPE)));
             var queryAdapterInfo = new D3DKMT_QUERYADAPTERINFO()
@@ -1229,19 +1229,19 @@ namespace LibreHardwareMonitor.Hardware
             adapterTypePtr = IntPtr.Zero;
         }
 
-        static void openAdapterFromDeviceName(out NtStatus status, string DisplayDeviceName, out D3DKMT_OPENADAPTERFROMDEVICENAME adapter)
+        static void OpenAdapterFromDeviceName(out NtStatus status, string DisplayDeviceName, out D3DKMT_OPENADAPTERFROMDEVICENAME adapter)
         {
             adapter = new D3DKMT_OPENADAPTERFROMDEVICENAME() { pDeviceName = DisplayDeviceName };
             status = D3DKMTOpenAdapterFromDeviceName(ref adapter);
         }
 
-        static void closeAdapter(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter)
+        static void CloseAdapter(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter)
         {
             var closeAdapter = new D3DKMT_CLOSEADAPTER { hAdapter = adapter.hAdapter };
             status = D3DKMTCloseAdapter(ref closeAdapter);
         }
 
-        static void getSegmentSizeInfo(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_SEGMENTSIZEINFO segmentSizeInfo)
+        static void GetSegmentSizeInfo(out NtStatus status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_SEGMENTSIZEINFO segmentSizeInfo)
         {
             IntPtr segmentSizeInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3DKMT_SEGMENTSIZEINFO)));
             var queryAdapterInfo = new D3DKMT_QUERYADAPTERINFO()
