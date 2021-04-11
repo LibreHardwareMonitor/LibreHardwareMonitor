@@ -33,6 +33,9 @@ namespace LibreHardwareMonitor.Interop
         public const int ADL_MAX_NUM_DISPLAYMODES = 1024;
         public const int ADL_MAX_PATH = 256;
 
+        public const int ADL_FALSE = 0;
+        public const int ADL_TRUE = 1;
+
         public const int ATI_VENDOR_ID = 0x1002;
 
         internal const int ADL_PMLOG_MAX_SENSORS = 256;
