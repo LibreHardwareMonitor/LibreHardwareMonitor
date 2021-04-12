@@ -14,7 +14,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
 {
     public class GenericCpu : Hardware
     {
-        protected readonly int _loadSensorCounter;
         protected readonly int _coreCount;
         protected readonly CpuId[][] _cpuId;
         protected readonly uint _family;
@@ -76,13 +75,11 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 foreach (Sensor sensor in _coreLoads)
                 {
                     ActivateSensor(sensor);
-                    _loadSensorCounter++;
                 }
 
                 if (_totalLoad != null)
                 {
                     ActivateSensor(_totalLoad);
-                    _loadSensorCounter++;
                 }
             }
 

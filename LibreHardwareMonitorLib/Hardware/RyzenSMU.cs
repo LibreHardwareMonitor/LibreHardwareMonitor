@@ -47,22 +47,28 @@ namespace LibreHardwareMonitor.Hardware
                 switch (model)
                 {
                     case 0x01:
-                        if (packageType == 7)
-                            return CpuCodeName.Threadripper;
-                        else
-                            return CpuCodeName.SummitRidge;
+                        {
+                            if (packageType == 7)
+                                return CpuCodeName.Threadripper;
+                            else
+                                return CpuCodeName.SummitRidge;
+                        }
                     case 0x08:
-                        if (packageType == 7)
-                            return CpuCodeName.Colfax;
-                        else
-                            return CpuCodeName.PinnacleRidge;
+                        {
+                            if (packageType == 7)
+                                return CpuCodeName.Colfax;
+                            else
+                                return CpuCodeName.PinnacleRidge;
+                        }
                     case 0x11:
                         return CpuCodeName.RavenRidge;
                     case 0x18:
-                        if (packageType == 2)
-                            return CpuCodeName.RavenRidge2;
-                        else
-                            return CpuCodeName.Picasso;
+                        {
+                            if (packageType == 2)
+                                return CpuCodeName.RavenRidge2;
+                            else
+                                return CpuCodeName.Picasso;
+                        }
                     case 0x20:
                         return CpuCodeName.Dali;
                     case 0x31:
@@ -116,9 +122,9 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine($"  Idx    Offset   Value");
                 r.AppendLine($" ------------------------");
                 var pm_values = GetPmTable();
-                for(var i = 0; i<pm_values.Length; i++)
+                for (var i = 0; i < pm_values.Length; i++)
                 {
-                    r.AppendLine($" {i,4}    0x{i*4:X3}    {pm_values[i]}");
+                    r.AppendLine($" {i,4}    0x{i * 4:X3}    {pm_values[i]}");
                 }
             }
 
@@ -164,7 +170,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             uint[] args = new uint[] { 1 };
 
-            if(SendCommand(0x02, ref args))
+            if (SendCommand(0x02, ref args))
             {
                 return args[0];
             }
@@ -174,7 +180,7 @@ namespace LibreHardwareMonitor.Hardware
 
         public Dictionary<uint, SmuSensorType> GetPmTableStructure()
         {
-            if (! IsPmTableLayoutDefined()) return new Dictionary<uint, SmuSensorType>();
+            if (!IsPmTableLayoutDefined()) return new Dictionary<uint, SmuSensorType>();
 
             return _supported_pm_table_versions[_pm_table_version];
         }
@@ -186,9 +192,9 @@ namespace LibreHardwareMonitor.Hardware
 
         public float[] GetPmTable()
         {
-            if(! _supported_cpu) return new float[] { 0 };
-            if(! SetupPmTableAddrAndSize()) return new float[] { 0 };
-            if(! TransferTableToDram()) return new float[] { 0 };
+            if (!_supported_cpu) return new float[] { 0 };
+            if (!SetupPmTableAddrAndSize()) return new float[] { 0 };
+            if (!TransferTableToDram()) return new float[] { 0 };
 
             return ReadDramToArray();
         }
@@ -197,7 +203,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             float[] table = new float[_pm_table_size / 4];
 
-            for(uint i = 0; i<table.Length;i++)
+            for (uint i = 0; i < table.Length; i++)
             {
                 Ring0.ReadMemory(_dram_base_addr + i * 4, ref table[i]);
             }
@@ -207,17 +213,17 @@ namespace LibreHardwareMonitor.Hardware
 
         private bool SetupPmTableAddrAndSize()
         {
-            if(_pm_table_size == 0)
+            if (_pm_table_size == 0)
             {
                 SetupPmTableSize();
             }
 
-            if(_dram_base_addr == 0)
+            if (_dram_base_addr == 0)
             {
                 SetupDramBaseAddr();
             }
 
-            if(_dram_base_addr == 0 || _pm_table_size == 0)
+            if (_dram_base_addr == 0 || _pm_table_size == 0)
             {
                 return false;
             }
@@ -225,10 +231,10 @@ namespace LibreHardwareMonitor.Hardware
             return true;
         }
 
-        private bool SetupPmTableSize() 
+        private bool SetupPmTableSize()
         {
             if (!GetPmTableVersion(ref _pm_table_version)) return false;
-            
+
             switch (_cpu_code_name)
             {
                 case CpuCodeName.Matisse:
@@ -305,7 +311,7 @@ namespace LibreHardwareMonitor.Hardware
             return true;
         }
 
-        private bool GetPmTableVersion(ref uint version) 
+        private bool GetPmTableVersion(ref uint version)
         {
             uint[] args = { 0 };
             uint fn;
@@ -480,7 +486,7 @@ namespace LibreHardwareMonitor.Hardware
                 tmp = 0;
                 retries = SMU_RETRIES_MAX;
                 do
-                    if (! ReadReg(_rsp_addr, ref tmp))
+                    if (!ReadReg(_rsp_addr, ref tmp))
                     {
                         _mutex.ReleaseMutex();
                         return false;
@@ -510,7 +516,7 @@ namespace LibreHardwareMonitor.Hardware
                 tmp = 0;
                 retries = SMU_RETRIES_MAX;
                 do
-                    if (! ReadReg(_rsp_addr, ref tmp))
+                    if (!ReadReg(_rsp_addr, ref tmp))
                     {
                         _mutex.ReleaseMutex();
                         return false;
@@ -528,7 +534,7 @@ namespace LibreHardwareMonitor.Hardware
                 args = new uint[SMU_REQ_MAX_ARGS];
                 for (byte i = 0; i < SMU_REQ_MAX_ARGS; i++)
                 {
-                    if (! ReadReg(_args_addr + (uint)(i * 4), ref args[i]))
+                    if (!ReadReg(_args_addr + (uint)(i * 4), ref args[i]))
                     {
                         _mutex.ReleaseMutex();
                         return false;

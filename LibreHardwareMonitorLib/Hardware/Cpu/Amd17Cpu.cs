@@ -19,7 +19,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
             InitializeSensorIndexDictionary();
-            _sensorTypeIndex[SensorType.Load] = _loadSensorCounter;
 
             _smu = new RyzenSMU(_family, _model, _packageType);
 
@@ -66,6 +65,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 _sensorTypeIndex.Add(type, 0);
             }
+            _sensorTypeIndex[SensorType.Load] = _active.Count(x => x.SensorType == SensorType.Load);
         }
 
         protected override uint[] GetMsrs()
@@ -112,8 +112,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
             private Sensor _ccdsMaxTemperature;
             private DateTime _lastPwrTime = new DateTime(0);
             private uint _lastPwrValue;
-            
-            private readonly Dictionary<uint, Sensor>_smuSensors = new Dictionary<uint, Sensor>();
+
+            private readonly Dictionary<uint, Sensor> _smuSensors = new Dictionary<uint, Sensor>();
 
             public Processor(Hardware hardware)
             {
@@ -188,26 +188,26 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     switch (cpuId.Model)
                     {
                         case 0x31: // Threadripper 3000.
-                        {
-                            sviPlane0Offset = F17H_M01H_SVI + 0x14;
-                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                            supportsPerCcdTemperatures = true;
-                            break;
-                        }
+                            {
+                                sviPlane0Offset = F17H_M01H_SVI + 0x14;
+                                sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                                supportsPerCcdTemperatures = true;
+                                break;
+                            }
                         case 0x71: // Zen 2.
                         case 0x21: // Zen 3.
-                        {
-                            sviPlane0Offset = F17H_M01H_SVI + 0x10;
-                            sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                            supportsPerCcdTemperatures = true;
-                            break;
-                        }
+                            {
+                                sviPlane0Offset = F17H_M01H_SVI + 0x10;
+                                sviPlane1Offset = F17H_M01H_SVI + 0xC;
+                                supportsPerCcdTemperatures = true;
+                                break;
+                            }
                         default: // Zen and Zen+.
-                        {
-                            sviPlane0Offset = F17H_M01H_SVI + 0xC;
-                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                            break;
-                        }
+                            {
+                                sviPlane0Offset = F17H_M01H_SVI + 0xC;
+                                sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                                break;
+                            }
                     }
 
                     // SVI0_PLANE0_VDDCOR [24:16]
@@ -374,9 +374,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 if (_cpu._smu.IsPmTableLayoutDefined())
                 {
                     var smuData = _cpu._smu.GetPmTable();
-                    foreach(var sensor in _smuSensors)
+                    foreach (var sensor in _smuSensors)
                     {
-                        if(smuData.Length >= sensor.Key)
+                        if (smuData.Length >= sensor.Key)
                         {
                             sensor.Value.Value = smuData[sensor.Key];
                             _cpu.ActivateSensor(sensor.Value);
