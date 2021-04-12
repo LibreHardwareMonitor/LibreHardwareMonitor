@@ -90,9 +90,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings);
             _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings);
             _powerTotal = new Sensor("GPU Package", 3, SensorType.Power, this, settings);
-            
+
             _fullscreenFPS = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
-            
+
             string convertedPNPString = adapterInfo.PNPString.Replace("\\", "#").ToLower();
             foreach (var displayDeviceName in D3DDisplayDevice.GetDisplayDeviceNames())
             {
@@ -116,7 +116,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     break;
                 }
             }
-            
+
             int supported = 0;
             int enabled = 0;
             int version = 0;
@@ -211,14 +211,14 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public override void Update()
         {
-            if(_windowsDeviceName != null && D3DDisplayDevice.GetDeviceInfoByName(_windowsDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+            if (_windowsDeviceName != null && D3DDisplayDevice.GetDeviceInfoByName(_windowsDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
             {
                 _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
                 _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
                 ActivateSensor(_gpuDedicatedMemoryUsage);
                 ActivateSensor(_gpuSharedMemoryUsage);
 
-                foreach(D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+                foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
                 {
                     var runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
                     var timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
@@ -230,7 +230,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 }
             }
 
-            if(_framemetricsStarted)
+            if (_framemetricsStarted)
             {
                 float framesPerSecond = 0;
                 if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Get(_context, _adapterIndex, 0, ref framesPerSecond) == AtiAdlxx.ADLStatus.ADL_OK)
