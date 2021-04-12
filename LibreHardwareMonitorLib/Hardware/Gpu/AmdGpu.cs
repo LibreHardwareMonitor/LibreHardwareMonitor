@@ -16,6 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly int _adapterIndex;
 
         private readonly IntPtr _context = IntPtr.Zero;
+        private readonly bool _framemetricsStarted = false;
 
         private readonly Sensor _controlSensor;
         private readonly Sensor _coreClock;
@@ -42,6 +43,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _temperaturePlx;
         private readonly Sensor _temperatureSoC;
         private readonly Sensor _temperatureVddc;
+        private readonly Sensor _fullscreenFPS;
 
         private int _memorySensorIndex;
         private int _nodeSensorIndex;
@@ -88,7 +90,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings);
             _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings);
             _powerTotal = new Sensor("GPU Package", 3, SensorType.Power, this, settings);
-
+            
+            _fullscreenFPS = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
+            
             string convertedPNPString = adapterInfo.PNPString.Replace("\\", "#").ToLower();
             foreach (var displayDeviceName in D3DDisplayDevice.GetDisplayDeviceNames())
             {
@@ -112,10 +116,20 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     break;
                 }
             }
-
+            
             int supported = 0;
             int enabled = 0;
             int version = 0;
+
+            if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
+            {
+                if (supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
+                {
+                    _framemetricsStarted = true;
+                    _fullscreenFPS.Value = -1;
+                    ActivateSensor(_fullscreenFPS);
+                }
+            }
 
             if (AtiAdlxx.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
             {
@@ -213,6 +227,15 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                     _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                     ActivateSensor(_gpuNodeUsage[node.Id]);
+                }
+            }
+
+            if(_framemetricsStarted)
+            {
+                float framesPerSecond = 0;
+                if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Get(_context, _adapterIndex, 0, ref framesPerSecond) == AtiAdlxx.ADLStatus.ADL_OK)
+                {
+                    _fullscreenFPS.Value = framesPerSecond;
                 }
             }
 
@@ -439,6 +462,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (_fanControl.ControlMode != ControlMode.Undefined)
                 SetDefaultFanSpeed();
+
+            if (_framemetricsStarted)
+                AtiAdlxx.ADL2_Adapter_FrameMetrics_Stop(_context, _adapterIndex, 0);
 
             if (_context != IntPtr.Zero)
                 AtiAdlxx.ADL2_Main_Control_Destroy(_context);
