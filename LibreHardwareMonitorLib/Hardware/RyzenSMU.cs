@@ -265,11 +265,17 @@ namespace LibreHardwareMonitor.Hardware
                         case 0x380904:
                             _pm_table_size = 0x5A4;
                             break;
+                        case 0x380905:
+                            _pm_table_size = 0x5D0;
+                            break;
                         case 0x2D0803:
                             _pm_table_size = 0x894;
                             break;
                         case 0x380804:
                             _pm_table_size = 0x8A4;
+                            break;
+                        case 0x380805:
+                            _pm_table_size = 0x8F0;
                             break;
                         default:
                             return false;
@@ -293,6 +299,16 @@ namespace LibreHardwareMonitor.Hardware
                             break;
                         case 0x370005:
                             _pm_table_size = 0x8C8;
+                            break;
+                        default:
+                            return false;
+                    }
+                    break;
+                case CpuCodeName.Cezanne:
+                    switch (_pm_table_version)
+                    {
+                        case 0x400005:
+                            _pm_table_size = 0x944;
                             break;
                         default:
                             return false;
