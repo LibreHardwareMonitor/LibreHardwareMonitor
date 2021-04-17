@@ -137,6 +137,26 @@ namespace LibreHardwareMonitor.Hardware
             return b;
         }
 
+        public bool DeviceIOControl<T>(Kernel32.IOControlCode ioControlCode, object inBuffer, ref T[] outBuffer)
+        {
+            if (_device == null)
+                return false;
+
+
+            object boxedOutBuffer = outBuffer;
+            bool b = Kernel32.DeviceIoControl(_device,
+                                              ioControlCode,
+                                              inBuffer,
+                                              inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
+                                              boxedOutBuffer,
+                                              (uint)(Marshal.SizeOf(typeof(T)) * outBuffer.Length),
+                                              out uint _,
+                                              IntPtr.Zero);
+
+            outBuffer = (T[])boxedOutBuffer;
+            return b;
+        }
+
         public void Close()
         {
             if (_device != null)

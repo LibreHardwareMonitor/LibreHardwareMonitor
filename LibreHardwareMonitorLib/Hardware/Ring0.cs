@@ -466,6 +466,15 @@ namespace LibreHardwareMonitor.Hardware
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
         }
 
+        public static bool ReadMemory<T>(ulong address, ref T[] buffer)
+        {
+            if (_driver == null)
+                return false;
+
+            ReadMemoryInput input = new ReadMemoryInput { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
+            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
+        }
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct WriteMsrInput
         {

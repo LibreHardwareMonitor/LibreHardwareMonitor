@@ -202,11 +202,8 @@ namespace LibreHardwareMonitor.Hardware
         private float[] ReadDramToArray()
         {
             float[] table = new float[_pm_table_size / 4];
-
-            for (uint i = 0; i < table.Length; i++)
-            {
-                Ring0.ReadMemory(_dram_base_addr + i * 4, ref table[i]);
-            }
+            
+            Ring0.ReadMemory(_dram_base_addr, ref table);
 
             return table;
         }
