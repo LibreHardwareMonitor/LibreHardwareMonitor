@@ -196,7 +196,15 @@ namespace LibreHardwareMonitor.Hardware
             if (!SetupPmTableAddrAndSize()) return new float[] { 0 };
             if (!TransferTableToDram()) return new float[] { 0 };
 
-            return ReadDramToArray();
+            var table = ReadDramToArray();
+            if(table[0] == 0) /* Fix for Zen+ empty values at first call bug */
+            {
+                Thread.Sleep(10);
+                TransferTableToDram();
+                table = ReadDramToArray();
+            }
+
+            return table;
         }
 
         private float[] ReadDramToArray()
