@@ -526,6 +526,12 @@ namespace LibreHardwareMonitor.Hardware
                 int.TryParse(parts[1], out int day) &&
                 int.TryParse(parts[2], out int year))
             {
+                if (month > 12) 
+                {
+                    int tmp = month;
+                    month = day;
+                    day = month;
+                }
                 return new DateTime(year < 100 ? 1900 + year : year, month, day);
             }
 
