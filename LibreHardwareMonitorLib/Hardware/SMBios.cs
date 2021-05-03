@@ -528,7 +528,6 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (month > 12) 
                 {
-                    int tmp = month;
                     month = day;
                     day = month;
                 }
