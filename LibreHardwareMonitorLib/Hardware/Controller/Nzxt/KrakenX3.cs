@@ -104,7 +104,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         public override void Close()
         {
             base.Close();
-            _stream.Close();
+            _stream?.Close();
         }
 
         private void ContinuousRead(object state)

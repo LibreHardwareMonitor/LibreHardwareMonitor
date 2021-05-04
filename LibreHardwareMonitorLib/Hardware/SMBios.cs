@@ -530,7 +530,7 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     int tmp = month;
                     month = day;
-                    day = month;
+                    day = tmp;
                 }
                 return new DateTime(year < 100 ? 1900 + year : year, month, day);
             }
