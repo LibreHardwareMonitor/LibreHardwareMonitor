@@ -197,7 +197,8 @@ namespace LibreHardwareMonitor.UI
             bool small = count > 2;
 
             _graphics.Clear(Color.Black);
-            TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font, new Point(-2, small ? 1 : 0), Color.White, Color.Black);
+            Rectangle bounds = new Rectangle(Point.Empty, _bitmap.Size);
+            TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font, bounds, Color.White, Color.Black, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             BitmapData data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             IntPtr scan0 = data.Scan0;
 
