@@ -142,7 +142,7 @@ namespace LibreHardwareMonitor.UI
         {
             Icon icon = _notifyIcon.Icon;
             _notifyIcon.Icon = null;
-            icon?.Dispose();
+            icon?.Destroy();
             _notifyIcon.Dispose();
 
             _brush?.Dispose();
@@ -196,29 +196,11 @@ namespace LibreHardwareMonitor.UI
                     count++;
             bool small = count > 2;
 
-            _graphics.Clear(Color.Black);
-            TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font, new Point(-2, small ? 1 : 0), Color.White, Color.Black);
-            BitmapData data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            IntPtr scan0 = data.Scan0;
+            _graphics.Clear(Color.Transparent);
+            Rectangle bounds = new Rectangle(Point.Empty, _bitmap.Size);
+            TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font, bounds, _color, Color.Transparent, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
 
-            int numBytes = _bitmap.Width * _bitmap.Height * 4;
-            byte[] bytes = new byte[numBytes];
-            Marshal.Copy(scan0, bytes, 0, numBytes);
-            _bitmap.UnlockBits(data);
-
-            for (int i = 0; i < bytes.Length; i += 4)
-            {
-                byte blue = bytes[i];
-                byte green = bytes[i + 1];
-                byte red = bytes[i + 2];
-
-                bytes[i] = _color.B;
-                bytes[i + 1] = _color.G;
-                bytes[i + 2] = _color.R;
-                bytes[i + 3] = (byte)(0.3 * red + 0.59 * green + 0.11 * blue);
-            }
-
-            return IconFactory.Create(bytes, _bitmap.Width, _bitmap.Height, PixelFormat.Format32bppArgb);
+            return IconFactory.Create(_bitmap);
         }
 
         private Icon CreatePercentageIcon()
@@ -237,12 +219,7 @@ namespace LibreHardwareMonitor.UI
             _graphics.FillRectangle(_brush, 0.5f, -0.5f + y, _bitmap.Width - 2, _bitmap.Height - y);
             _graphics.DrawRectangle(_pen, 1, 0, _bitmap.Width - 3, _bitmap.Height - 1);
 
-            BitmapData data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            byte[] bytes = new byte[_bitmap.Width * _bitmap.Height * 4];
-            Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
-            _bitmap.UnlockBits(data);
-
-            return IconFactory.Create(bytes, _bitmap.Width, _bitmap.Height, PixelFormat.Format32bppArgb);
+            return IconFactory.Create(_bitmap);
         }
 
         public void Update()
@@ -261,7 +238,7 @@ namespace LibreHardwareMonitor.UI
                     break;
             }
 
-            icon?.Dispose();
+            icon?.Destroy();
 
             string format = "";
             switch (Sensor.SensorType)

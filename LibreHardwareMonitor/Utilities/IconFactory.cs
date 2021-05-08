@@ -8,10 +8,11 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Utilities
 {
-    public class IconFactory
+    public static class IconFactory
     {
         private struct BITMAPINFOHEADER
         {
@@ -177,5 +178,21 @@ namespace LibreHardwareMonitor.Utilities
             return icon;
         }
 
+        [DllImport("user32", SetLastError = true)]
+        static extern bool DestroyIcon(IntPtr handle);
+
+        public static Icon Create(Bitmap bitmap)
+        {
+            IntPtr hIcon = bitmap.GetHicon();
+            Icon icon = Icon.FromHandle(hIcon);
+
+            return icon;
+        }
+
+        public static void Destroy(this Icon icon)
+        {
+            DestroyIcon(icon.Handle);
+            icon.Dispose();
+        }
     }
 }
