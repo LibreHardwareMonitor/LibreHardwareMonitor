@@ -93,10 +93,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             _fullscreenFPS = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
 
-            string convertedPNPString = adapterInfo.PNPString.Replace("\\", "#").ToLower();
-            foreach (var displayDeviceName in D3DDisplayDevice.GetDisplayDeviceNames())
+            string convertedPnpString = adapterInfo.PNPString.Replace("\\", "#");
+            foreach (string displayDeviceName in D3DDisplayDevice.GetDisplayDeviceNames())
             {
-                if (displayDeviceName.ToLower().Contains(convertedPNPString) && D3DDisplayDevice.GetDeviceInfoByName(displayDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                if (displayDeviceName.IndexOf(convertedPnpString, StringComparison.OrdinalIgnoreCase) != -1 && D3DDisplayDevice.GetDeviceInfoByName(displayDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                 {
                     _windowsDeviceName = displayDeviceName;
 
@@ -104,8 +104,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _gpuSharedMemoryUsage = new Sensor("Shared Memory Used", _memorySensorIndex++, SensorType.SmallData, this, settings);
 
                     _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
-                    _gpuNodeUsagePrevValue = new Int64[deviceInfo.Nodes.Length];
+                    _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
                     _gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
+
                     foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
                     {
                         _gpuNodeUsage[node.Id] = new Sensor(node.Name, _nodeSensorIndex++, SensorType.Load, this, settings);
