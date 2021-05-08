@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Interop
 {
     internal static class Gdi32
     {
-        internal const string DllName = "CfgMgr32.dll";
+        internal const string DllName = "Gdi32.dll";
         
         [DllImport(DllName, ExactSpelling = true)]
         internal static extern uint D3DKMTCloseAdapter(ref D3dkmth.D3DKMT_CLOSEADAPTER closeAdapter);
