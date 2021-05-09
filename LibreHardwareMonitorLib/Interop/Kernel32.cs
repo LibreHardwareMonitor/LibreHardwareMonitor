@@ -206,8 +206,8 @@ namespace LibreHardwareMonitor.Interop
         [DllImport(DllName, SetLastError = true)]
         internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
 
-        [DllImport(DllName, EntryPoint = "CopyMemory", SetLastError = false)]
-        internal static extern void CopyMemory(IntPtr Destination, IntPtr Source, uint Length);
+        [DllImport(DllName, SetLastError = false)]
+        internal static extern void RtlCopyMemory(IntPtr Destination, IntPtr Source, uint Length);
 
         [DllImport(DllName, SetLastError = true)]
         internal static extern IntPtr LoadLibrary(string lpFileName);
