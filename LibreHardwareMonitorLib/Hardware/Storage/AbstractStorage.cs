@@ -123,52 +123,52 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
 
-            var perfData = new ManagementObjectSearcher(query);
-            ManagementObject data = perfData.Get().OfType<ManagementObject>().FirstOrDefault();
-            if (data == null)
+            using (var perfData = new ManagementObjectSearcher(query) {Options = {Timeout = TimeSpan.FromSeconds(2.5)}})
+            using (ManagementObjectCollection collection = perfData.Get())
+            using (ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault())
             {
-                perfData.Dispose();
-                return;
+                if (data == null)
+                {
+                    return;
+                }
+
+                ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
+                ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
+                _perfWrite.Update(value, valueBase);
+                _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
+
+                value = (ulong)data.Properties["PercentIdleTime"].Value;
+                valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
+                _perfTotal.Update(value, valueBase);
+                _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
+
+                ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
+                ulong readRate = readRateCounter - _lastReadRateCounter;
+                _lastReadRateCounter = readRateCounter;
+
+                ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
+                ulong writeRate = writeRateCounter - _lastWriteRateCounter;
+                _lastWriteRateCounter = writeRateCounter;
+
+                ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
+                ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
+                double currentTime = (double)timestampPerfTime / frequencyPerfTime;
+
+                double timeDeltaSeconds = currentTime - _lastTime;
+                if (_lastTime == 0 || timeDeltaSeconds > 0.2)
+                {
+                    double writeSpeed = writeRate * (1 / timeDeltaSeconds);
+                    _sensorDiskWriteRate.Value = (float)writeSpeed;
+
+                    double readSpeed = readRate * (1 / timeDeltaSeconds);
+                    _sensorDiskReadRate.Value = (float)readSpeed;
+                }
+
+                if (_lastTime == 0 || timeDeltaSeconds > 0.2)
+                {
+                    _lastTime = currentTime;
+                }
             }
-
-            ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
-            ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
-            _perfWrite.Update(value, valueBase);
-            _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
-
-            value = (ulong)data.Properties["PercentIdleTime"].Value;
-            valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
-            _perfTotal.Update(value, valueBase);
-            _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
-
-            ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
-            ulong readRate = readRateCounter - _lastReadRateCounter;
-            _lastReadRateCounter = readRateCounter;
-
-            ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
-            ulong writeRate = writeRateCounter - _lastWriteRateCounter;
-            _lastWriteRateCounter = writeRateCounter;
-
-            ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
-            ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
-            double currentTime = (double)timestampPerfTime / frequencyPerfTime;
-
-            double timeDeltaSeconds = currentTime - _lastTime;
-            if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-            {
-                double writeSpeed = writeRate * (1 / timeDeltaSeconds);
-                _sensorDiskWriteRate.Value = (float)writeSpeed;
-
-                double readSpeed = readRate * (1 / timeDeltaSeconds);
-                _sensorDiskReadRate.Value = (float)readSpeed;
-            }
-
-            if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-            {
-                _lastTime = currentTime;
-            }
-
-            perfData.Dispose();
         }
 
         public override void Update()
