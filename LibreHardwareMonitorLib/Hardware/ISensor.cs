@@ -71,5 +71,7 @@ namespace LibreHardwareMonitor.Hardware
         void ResetMin();
 
         void ResetMax();
+
+        void ResetValues();
     }
 }

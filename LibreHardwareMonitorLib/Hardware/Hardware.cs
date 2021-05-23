@@ -71,6 +71,12 @@ namespace LibreHardwareMonitor.Hardware
             visitor.VisitHardware(this);
         }
 
+        public void ResetValues()
+        {
+            foreach (ISensor sensor in _active)
+                sensor.ResetValues();
+        }
+
         public virtual void Traverse(IVisitor visitor)
         {
             foreach (ISensor sensor in _active)

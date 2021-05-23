@@ -151,6 +151,15 @@ namespace LibreHardwareMonitor.Hardware
             Max = null;
         }
 
+        public void ResetValues()
+        {
+            float? lastValue = Value;
+            _values.Clear();
+
+
+            AppendValue(lastValue ?? float.NaN, DateTime.UtcNow);
+        }
+
         public void Accept(IVisitor visitor)
         {
             if (visitor == null)

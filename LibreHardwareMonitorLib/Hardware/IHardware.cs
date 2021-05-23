@@ -39,6 +39,8 @@ namespace LibreHardwareMonitor.Hardware
 
         void Update();
 
+        void ResetValues();
+
         event SensorEventHandler SensorAdded;
 
         event SensorEventHandler SensorRemoved;

@@ -303,6 +303,21 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        public void ResetValues()
+        {
+            lock (_lock)
+            {
+                // Use a for-loop instead of foreach to avoid a collection modified exception after sleep, even though everything is under a lock.
+                for (int i = 0; i < _groups.Count; i++)
+                {
+                    IGroup group = _groups[i];
+
+                    for (int j = 0; j < group.Hardware.Count; j++)
+                        group.Hardware[j].ResetValues();
+                }
+            }
+        }
+
         private void HardwareAddedEvent(IHardware hardware)
         {
             HardwareAdded?.Invoke(hardware);

@@ -129,6 +129,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             visitor.VisitHardware(this);
         }
 
+        public void ResetValues()
+        {
+            foreach (IHardware hardware in SubHardware)
+                hardware.ResetValues();
+        }
+
         public void Traverse(IVisitor visitor)
         {
             foreach (IHardware hardware in SubHardware)
