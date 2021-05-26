@@ -651,6 +651,7 @@ namespace LibreHardwareMonitor.Utilities
             switch (tn.SensorType)
             {
                 case SensorType.Voltage:
+                case SensorType.Current:
                     return "voltage.png";
                 case SensorType.Clock:
                     return "clock.png";

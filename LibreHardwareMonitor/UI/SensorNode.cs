@@ -94,6 +94,7 @@ namespace LibreHardwareMonitor.UI
             switch (sensor.SensorType)
             {
                 case SensorType.Voltage: Format = "{0:F3} V"; break;
+                case SensorType.Current: Format = "{0:F3} A"; break;
                 case SensorType.Clock: Format = "{0:F1} MHz"; break;
                 case SensorType.Load: Format = "{0:F1} %"; break;
                 case SensorType.Temperature: Format = "{0:F1} °C"; break;

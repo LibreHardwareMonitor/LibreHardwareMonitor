@@ -163,6 +163,8 @@ namespace LibreHardwareMonitor.UI
             {
                 case SensorType.Voltage:
                     return $"{Sensor.Value:F1}";
+                case SensorType.Current:
+                    return $"{Sensor.Value:F1}";
                 case SensorType.Clock:
                     return $"{1e-3f * Sensor.Value:F1}";
                 case SensorType.Load:
@@ -244,6 +246,7 @@ namespace LibreHardwareMonitor.UI
             switch (Sensor.SensorType)
             {
                 case SensorType.Voltage: format = "\n{0}: {1:F2} V"; break;
+                case SensorType.Current: format = "\n{0}: {1:F2} A"; break;
                 case SensorType.Clock: format = "\n{0}: {1:F0} MHz"; break;
                 case SensorType.Load: format = "\n{0}: {1:F1} %"; break;
                 case SensorType.Temperature: format = "\n{0}: {1:F1} °C"; break;
