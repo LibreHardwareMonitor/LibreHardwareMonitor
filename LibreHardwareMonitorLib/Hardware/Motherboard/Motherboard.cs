@@ -164,6 +164,24 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             var sources = new List<ECSource>();
             switch (model)
             {
+                case Model.ROG_CROSSHAIR_VIII_HERO:
+                {
+                    sources.AddRange(new ECSource[]{
+                        new ECSource("Chipset", 0x3A, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new ECSource("CPU", 0x3B, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new ECSource("Motherboard", 0x3C, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new ECSource("T Sensor", 0x3D, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new ECSource("VRM", 0x3E, SensorType.Temperature, EmbeddedController.ReadByte),
+
+                        new ECSource("CPU Opt", 0xB0, SensorType.Fan, EmbeddedController.ReadWordBE),
+                        new ECSource("Chipset", 0xB4, SensorType.Fan, EmbeddedController.ReadWordBE),
+                         // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
+                        new ECSource("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f),
+
+                        new ECSource("CPU", 0xF4, SensorType.Current, EmbeddedController.ReadByte)
+                    });
+                    break;
+                }
             }
 
             return sources.Count > 0 ? EmbeddedController.Create(sources, settings) : null;
