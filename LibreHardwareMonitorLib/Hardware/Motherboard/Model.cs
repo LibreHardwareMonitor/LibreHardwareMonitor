@@ -37,6 +37,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
         // ASUS
         CROSSHAIR_III_FORMULA,
+        ROG_CROSSHAIR_VIII_HERO,
         ROG_STRIX_X470_I,
         M2N_SLI_Deluxe,
         M4A79XTD_EVO,

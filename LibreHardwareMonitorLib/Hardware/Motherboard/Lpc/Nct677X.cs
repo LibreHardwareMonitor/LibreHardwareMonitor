@@ -224,6 +224,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                                 new TemperatureSourceData(SourceNct67Xxd.PECI_1_CAL, 0),
                                 new TemperatureSourceData(SourceNct67Xxd.VIRTUAL_TEMP, 0)
                             });
+
+                            if (chip == Chip.NCT6798D)
+                            {
+                                temperaturesSources.AddRange(new TemperatureSourceData[]
+                                {
+                                    new TemperatureSourceData(SourceNct67Xxd.WATER_IN, 0xC33),
+                                    new TemperatureSourceData(SourceNct67Xxd.WATER_OUT, 0xC39)
+                                });
+                            }
                             break;
                         }
                         default:
@@ -981,7 +990,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             BYTE_TEMP1 = 27,
             PECI_0_CAL = 28,
             PECI_1_CAL = 29,
-            VIRTUAL_TEMP = 31
+            VIRTUAL_TEMP = 31,
+            WATER_IN = 32,
+            WATER_OUT = 33
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
