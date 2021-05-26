@@ -18,7 +18,8 @@ namespace LibreHardwareMonitor.Hardware
         GpuAmd,
         Storage,
         Network,
-        Cooler
+        Cooler,
+        EmbeddedController
     }
 
     public interface IHardware : IElement

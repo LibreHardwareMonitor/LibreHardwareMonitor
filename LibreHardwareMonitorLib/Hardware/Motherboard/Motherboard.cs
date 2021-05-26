@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using LibreHardwareMonitor.Hardware.Motherboard.Lpc;
+using LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
+
+using ECSource = LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC.EmbeddedController.Source;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard
 {
@@ -60,9 +63,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 superIO = _lpcIO.SuperIO;
             }
 
-            SubHardware = new IHardware[superIO.Count];
+            var ec = embeddedController(model, settings);
+
+            SubHardware = new IHardware[superIO.Count + (ec != null ? 1 : 0)];
             for (int i = 0; i < superIO.Count; i++)
                 SubHardware[i] = new SuperIOHardware(this, superIO[i], manufacturer, model, settings);
+            
+            if (ec != null)
+            {
+                SubHardware[superIO.Count] = ec;
+            }
         }
 
         public HardwareType HardwareType
@@ -147,6 +157,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 if (iHardware is Hardware hardware)
                     hardware.Close();
             }
+        }
+
+        EmbeddedController embeddedController(Model model, ISettings settings)
+        {
+            var sources = new List<ECSource>();
+            switch (model)
+            {
+            }
+
+            return sources.Count > 0 ? EmbeddedController.Create(sources, settings) : null;
         }
     }
 }
