@@ -1,4 +1,9 @@
-﻿using System;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -7,41 +12,30 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public abstract class EmbeddedController : Hardware
     {
-        public delegate float ECReader(IEmbeddedControllerIO ecIO, byte port);
-        public class Source
+        private readonly List<EmbeddedControllerSensor> _sensors;
+
+        protected EmbeddedController(List<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
         {
-            public Source(string name, byte port, SensorType type, ECReader reader)
+            var indices = new Dictionary<SensorType, int>();
+            foreach (SensorType t in Enum.GetValues(typeof(SensorType)))
             {
-                Name = name;
-                Port = port;
-                Type = type;
-                Reader = reader;
+                indices.Add(t, 0);
             }
-            public string Name { get; private set; }
-            public byte Port { get; private set; }
-            public SensorType Type { get; private set; }
-            public ECReader Reader { get; private set; }
+
+            _sensors = new List<EmbeddedControllerSensor>();
+            foreach (EmbeddedControllerSource s in sources)
+            {
+                int index = indices[s.Type];
+                indices[s.Type] = index + 1;
+                _sensors.Add(new EmbeddedControllerSensor(s, index, this, settings));
+
+                ActivateSensor(_sensors[_sensors.Count - 1]);
+            }
         }
 
-        class ECSensor : Sensor
-        {
-            public ECSensor(Source source, int index, EmbeddedController hardware, ISettings settings)
-                : base(source.Name, index, source.Type, hardware, settings)
-            {
-                _port = source.Port;
-                _reader = source.Reader;
-            }
+        public override HardwareType HardwareType => HardwareType.EmbeddedController;
 
-            public void Update(IEmbeddedControllerIO ecIO)
-            {
-                Value = _reader(ecIO, _port);
-            }
-
-            readonly byte _port;
-            readonly ECReader _reader;
-        }
-
-        public static EmbeddedController Create(List<Source> sources, ISettings settings)
+        public static EmbeddedController Create(List<EmbeddedControllerSource> sources, ISettings settings)
         {
             return Environment.OSVersion.Platform switch
             {
@@ -50,35 +44,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             };
         }
 
-        protected EmbeddedController(List<Source> sources, ISettings settings)
-            : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
-        {
-            var indices = new Dictionary<SensorType, int>();
-            foreach (SensorType t in Enum.GetValues(typeof(SensorType)))
-            {
-                indices.Add(t, 0);
-            }
-
-            _sensors = new List<ECSensor>();
-            foreach (Source s in sources)
-            {
-                int index = indices[s.Type];
-                indices[s.Type] = index + 1;
-                _sensors.Add(new ECSensor(s, index, this, settings));
-                ActivateSensor(_sensors[_sensors.Count - 1]);
-            }
-        }
-
         public override void Update()
         {
             try
             {
-                using (var ecIO = accquireIOInterface())
+                using IEmbeddedControllerIO embeddedControllerIO = AcquireIOInterface();
+
+                foreach (EmbeddedControllerSensor sensor in _sensors)
                 {
-                    foreach (ECSensor sensor in _sensors)
-                    {
-                        sensor.Update(ecIO);
-                    }
+                    sensor.Update(embeddedControllerIO);
                 }
             }
             catch (WindowsEmbeddedControllerIO.BusMutexLockingFailedException)
@@ -87,11 +61,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             }
         }
 
-        public override HardwareType HardwareType => HardwareType.EmbeddedController;
-
         public override string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             r.AppendLine("EC " + GetType().Name);
             r.AppendLine("Embedded Controller Registers");
@@ -101,28 +73,28 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
             try
             {
-                using (var ecIO = accquireIOInterface())
-                {
-                    for (int i = 0; i <= 0xF; ++i)
-                    {
-                        r.Append(" ");
-                        r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
-                        r.Append("  ");
-                        for (int j = 0; j <= 0xF; ++j)
-                        {
-                            byte address = (byte)(i << 4 | j);
-                            r.Append(" ");
-                            r.Append(ecIO.ReadByte(address).ToString("X2", CultureInfo.InvariantCulture));
-                        }
+                using IEmbeddedControllerIO embeddedControllerIO = AcquireIOInterface();
 
-                        r.AppendLine();
+                for (int i = 0; i <= 0xF; ++i)
+                {
+                    r.Append(" ");
+                    r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
+                    r.Append("  ");
+                    for (int j = 0; j <= 0xF; ++j)
+                    {
+                        byte address = (byte)(i << 4 | j);
+                        r.Append(" ");
+                        r.Append(embeddedControllerIO.ReadByte(address).ToString("X2", CultureInfo.InvariantCulture));
                     }
+
+                    r.AppendLine();
                 }
             }
             catch (WindowsEmbeddedControllerIO.BusMutexLockingFailedException e)
             {
                 r.AppendLine(e.Message);
             }
+
             return r.ToString();
         }
 
@@ -135,26 +107,30 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
         {
             return ecIO.ReadWordLE(port);
         }
+
         public static float ReadWordBE(IEmbeddedControllerIO ecIO, byte port)
         {
             return ecIO.ReadWordBE(port);
         }
 
-        protected abstract IEmbeddedControllerIO accquireIOInterface();
+        protected abstract IEmbeddedControllerIO AcquireIOInterface();
 
-        private readonly List<ECSensor> _sensors;
-    }
-
-    internal class WindowsEmbeddedController : EmbeddedController
-    {
-        public WindowsEmbeddedController(List<Source> sources, ISettings settings)
-            : base(sources, settings)
+        private class EmbeddedControllerSensor : Sensor
         {
-        }
+            readonly byte _port;
+            readonly EmbeddedControllerReader _reader;
 
-        protected override IEmbeddedControllerIO accquireIOInterface()
-        {
-            return new WindowsEmbeddedControllerIO();
+            public EmbeddedControllerSensor(EmbeddedControllerSource embeddedControllerSource, int index, EmbeddedController hardware, ISettings settings)
+                : base(embeddedControllerSource.Name, index, embeddedControllerSource.Type, hardware, settings)
+            {
+                _port = embeddedControllerSource.Port;
+                _reader = embeddedControllerSource.Reader;
+            }
+
+            public void Update(IEmbeddedControllerIO ecIO)
+            {
+                Value = _reader(ecIO, _port);
+            }
         }
     }
 }
