@@ -239,6 +239,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         {
             if (NvApi.NvAPI_GPU_GetFullName(handle, out string gpuName) == NvApi.NvStatus.OK)
             {
+                gpuName = gpuName.Trim();
+                if (gpuName.StartsWith("NVIDIA", StringComparison.OrdinalIgnoreCase))
+                    return gpuName;
+
                 return "NVIDIA " + gpuName.Trim();
             }
 
