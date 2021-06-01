@@ -13,8 +13,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 {
     internal class NvidiaGroup : IGroup
     {
-        private readonly List<Hardware> _hardware = new List<Hardware>();
-        private readonly StringBuilder _report = new StringBuilder();
+        private readonly List<Hardware> _hardware = new();
+        private readonly StringBuilder _report = new();
 
         public NvidiaGroup(ISettings settings)
         {
@@ -54,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 int i = 0;
                 while (status == NvApi.NvStatus.OK)
                 {
-                    NvApi.NvDisplayHandle displayHandle = new NvApi.NvDisplayHandle();
+                    NvApi.NvDisplayHandle displayHandle = new();
                     status = NvApi.NvAPI_EnumNvidiaDisplayHandle(i, ref displayHandle);
                     i++;
                     
