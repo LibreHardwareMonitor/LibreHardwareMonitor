@@ -49,6 +49,7 @@ namespace LibreHardwareMonitor.UI
         private readonly UserOption _readFanControllersSensors;
         private readonly UserOption _readHddSensors;
         private readonly UserOption _readNicSensors;
+        private readonly UserOption _readPsuSensors;
 
         private readonly UserOption _showGadget;
         private UserRadioGroup _plotLocation;
@@ -137,6 +138,10 @@ namespace LibreHardwareMonitor.UI
                 _wmiProvider = new WmiProvider(_computer);
             }
 
+            treeView.ShowNodeToolTips = true;
+            NodeToolTipProvider tooltipProvider = new();
+            nodeTextBoxText.ToolTipProvider = tooltipProvider;
+            nodeTextBoxValue.ToolTipProvider = tooltipProvider;
             _logger = new Logger(_computer);
 
             _plotColorPalette = new Color[13];
@@ -248,6 +253,12 @@ namespace LibreHardwareMonitor.UI
             _readNicSensors.Changed += delegate
             {
                 _computer.IsNetworkEnabled = _readNicSensors.Value;
+            };
+
+            _readPsuSensors = new UserOption("psuMenuItem", true, psuMenuItem, _settings);
+            _readPsuSensors.Changed += delegate
+            {
+                _computer.IsPsuEnabled = _readPsuSensors.Value;
             };
 
             _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);

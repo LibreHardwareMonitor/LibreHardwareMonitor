@@ -62,6 +62,8 @@ namespace LibreHardwareMonitor.Hardware
 
         public abstract void Update();
 
+        public virtual IDictionary<string, string> ConfigurationProperties => new SortedDictionary<string, string>();
+
         public void Accept(IVisitor visitor)
         {
             if (visitor == null)

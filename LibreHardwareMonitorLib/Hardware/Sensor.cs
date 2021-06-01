@@ -23,6 +23,7 @@ namespace LibreHardwareMonitor.Hardware
         private string _name;
         private float _sum;
         private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
+        private readonly bool _trackMinMax;
 
         public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
             this(name, index, sensorType, hardware, null, settings)
@@ -32,7 +33,7 @@ namespace LibreHardwareMonitor.Hardware
             this(name, index, false, sensorType, hardware, parameterDescriptions, settings)
         { }
 
-        public Sensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ParameterDescription[] parameterDescriptions, ISettings settings)
+        public Sensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ParameterDescription[] parameterDescriptions, ISettings settings, bool disableHistory = false)
         {
             Index = index;
             IsDefaultHidden = defaultHidden;
@@ -51,6 +52,11 @@ namespace LibreHardwareMonitor.Hardware
             _settings = settings;
             _defaultName = name;
             _name = settings.GetValue(new Identifier(Identifier, "name").ToString(), name);
+            _trackMinMax = !disableHistory;
+            if (disableHistory)
+            {
+                _valuesTimeWindow = TimeSpan.Zero;
+            }
 
             GetSensorValuesFromSettings();
 
@@ -92,7 +98,7 @@ namespace LibreHardwareMonitor.Hardware
 
         public SensorType SensorType { get; }
 
-        public float? Value
+        public virtual float? Value
         {
             get { return _currentValue; }
             set
@@ -117,11 +123,14 @@ namespace LibreHardwareMonitor.Hardware
                 }
 
                 _currentValue = value;
-                if (Min > value || !Min.HasValue)
-                    Min = value;
+                if (_trackMinMax)
+                {
+                    if (Min > value || !Min.HasValue)
+                        Min = value;
 
-                if (Max < value || !Max.HasValue)
-                    Max = value;
+                    if (Max < value || !Max.HasValue)
+                        Max = value;
+                }
             }
         }
 

@@ -158,6 +158,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             }
         }
 
+        public virtual IDictionary<string, string> ConfigurationProperties => new SortedDictionary<string, string>();
+
         private static EmbeddedController CreateEmbeddedController(Model model, ISettings settings)
         {
             var sources = new List<EmbeddedControllerSource>();

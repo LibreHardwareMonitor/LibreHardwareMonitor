@@ -6,6 +6,8 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
+using System.Text;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 
@@ -75,6 +77,10 @@ namespace LibreHardwareMonitor.UI
                         }
                         return result;
                     }
+                    case SensorType.Timespan:
+                    {
+                        return value.HasValue ? string.Format(Format, TimeSpan.FromSeconds(value.Value)) : "-";
+                    }
                     default:
                     {
                         return string.Format(Format, value);
@@ -108,6 +114,7 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.Factor: Format = "{0:F3}"; break;
                 case SensorType.Frequency: Format = "{0:F1} Hz"; break;
                 case SensorType.Throughput: Format = "{0:F1} B/s"; break;
+                case SensorType.Timespan: Format = "{0:g}"; break;
             }
 
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
@@ -180,6 +187,40 @@ namespace LibreHardwareMonitor.UI
         public string Max
         {
             get { return ValueToString(Sensor.Max); }
+        }
+
+        private void OptionallyAppendCriticalRange(StringBuilder str, float? min, float? max, string kind)
+        {
+            if (min.HasValue)
+            {
+                if (max.HasValue)
+                {
+                    str.AppendLine($"{CultureInfo.CurrentUICulture.TextInfo.ToTitleCase(kind)} range: {ValueToString(min)} to {ValueToString(max)}.");
+                }
+                else
+                {
+                    str.AppendLine($"Minimal {kind} value: {ValueToString(min)}.");
+                }
+            }
+            else if (max.HasValue)
+            {
+                str.AppendLine($"Maximal {kind} value: {ValueToString(max)}.");
+            }
+        }
+
+        public override string ToolTip
+        {
+            get
+            {
+                StringBuilder res = new();
+
+                if (Sensor is ISensorCriticalLimiits sc)
+                    OptionallyAppendCriticalRange(res, sc.LowCriticalLimit, sc.HighCriticalLimit, "critical");
+                if (Sensor is ISensorNormalLimits sn)
+                    OptionallyAppendCriticalRange(res, sn.LowLimit, sn.HighLimit, "normal");
+               
+                return res.ToString();
+            }
         }
 
         public override bool Equals(object obj)

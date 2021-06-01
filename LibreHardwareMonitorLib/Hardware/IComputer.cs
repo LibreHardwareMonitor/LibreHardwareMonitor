@@ -31,6 +31,8 @@ namespace LibreHardwareMonitor.Hardware
 
         bool IsMemoryEnabled { get; }
 
+        bool IsPsuEnabled { get; }
+
         string GetReport();
 
         event HardwareEventHandler HardwareAdded;

@@ -125,6 +125,7 @@ namespace LibreHardwareMonitor.UI
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.splitContainer = new LibreHardwareMonitor.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
+            this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -263,7 +264,8 @@ namespace LibreHardwareMonitor.UI
             this.gpuMenuItem,
             this.fanControllerMenuItem,
             this.hddMenuItem,
-            this.nicMenuItem});
+            this.nicMenuItem,
+            this.psuMenuItem});
             this.menuItem5.Name = "menuItem5";
             this.menuItem5.Size = new System.Drawing.Size(145, 22);
             this.menuItem5.Text = "Hardware";
@@ -844,12 +846,19 @@ namespace LibreHardwareMonitor.UI
             this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseMove);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseUp);
             // 
+            // psuMenuItem
+            // 
+            this.psuMenuItem.Name = "psuMenuItem";
+            this.psuMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.psuMenuItem.Text = "Power supplies";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(418, 533);
             this.Controls.Add(this.splitContainer);
+            this.Controls.Add(this.mainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.mainMenu;
             this.Name = "MainForm";
@@ -860,11 +869,11 @@ namespace LibreHardwareMonitor.UI
             this.Move += new System.EventHandler(this.MainForm_MoveOrResize);
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();
-            this.Controls.Add(mainMenu);
             this.splitContainer.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
             this.splitContainer.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -959,6 +968,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem timeWindow12hMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
     }
 }
 
