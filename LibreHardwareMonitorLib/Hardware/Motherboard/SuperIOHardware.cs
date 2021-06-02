@@ -2321,7 +2321,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
                             v.Add(new Voltage("Voltage #5", 4, true));
                             v.Add(new Voltage("Voltage #6", 5, true));
-                            v.Add(new Voltage("Voltage #7", 6, true));
+                            v.Add(new Voltage("CPU SoC", 6));
                             v.Add(new Voltage("3VSB", 7, 34, 34));
                             v.Add(new Voltage("VBat", 8, 34, 34));
                             v.Add(new Voltage("VTT", 9));
