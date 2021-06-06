@@ -27,7 +27,7 @@ namespace LibreHardwareMonitor.Utilities
                         Image image = Image.FromStream(stream);
 
                         // so we just create a copy of the image
-                        Bitmap bitmap = new Bitmap(image);
+                        Bitmap bitmap = new Bitmap(image, new Size { Height = 16, Width = 16 });
 
                         // and dispose it right here
                         image.Dispose();
