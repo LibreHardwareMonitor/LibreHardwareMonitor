@@ -31,7 +31,7 @@ You can check if it works properly on your motherboard. For many manufacturers, 
 2. You can start the **net452\LibreHardwareMonitor.exe** application immediately.
 
 **NuGet Package** - [How to use NuGet](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio)
-1. Add the [LibreHardwareMonitor package](https://www.nuget.org/packages/LibreHardwareMonitorLib/) to your application.
+1. Add the [LibreHardwareMonitorLib package](https://www.nuget.org/packages/LibreHardwareMonitorLib/) to your application.
 2. References will be added automatically, you can use the sample code below.
 
 
