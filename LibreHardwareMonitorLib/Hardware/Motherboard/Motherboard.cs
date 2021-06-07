@@ -164,6 +164,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             switch (model)
             {
+                case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
                 {
                     sources.AddRange(new EmbeddedControllerSource[]
@@ -175,11 +176,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         new("VRM", 0x3E, SensorType.Temperature, EmbeddedController.ReadByte),
                         new("CPU Opt", 0xB0, SensorType.Fan, EmbeddedController.ReadWordBE),
                         new("Chipset", 0xB4, SensorType.Fan, EmbeddedController.ReadWordBE),
-                        // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
-                        new("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f),
                         new("CPU", 0xF4, SensorType.Current, EmbeddedController.ReadByte)
                     });
+                    break;
+                }
+            }
 
+            switch (model)
+            {
+                case Model.ROG_CROSSHAIR_VIII_HERO:
+                {
+                    // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
+                    sources.Add(new("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f));
                     break;
                 }
             }
