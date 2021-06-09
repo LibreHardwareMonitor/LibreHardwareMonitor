@@ -137,7 +137,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 }
             }
 
-            if (AtiAdlxx.ADL_Overdrive_Caps(1, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
+            if (AtiAdlxx.ADL_Overdrive_Caps(_adapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
             {
                 _overdriveApiSupported = supported == AtiAdlxx.ADL_TRUE || version > 0;
                 _currentOverdriveApiLevel = version;
