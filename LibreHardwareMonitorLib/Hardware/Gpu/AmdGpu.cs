@@ -288,9 +288,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_HOTSPOT, _temperatureHotSpot, reset: false);
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_SOC, _temperatureSoC);
 
-                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_CLK_GFXCLK, _coreClock);
+                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_CLK_GFXCLK, _coreClock, reset: false);
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_CLK_SOCCLK, _socClock);
-                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_CLK_MEMCLK, _memoryClock);
+                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_CLK_MEMCLK, _memoryClock, reset: false);
 
                     const int fanRpmIndex = (int)AtiAdlxx.ADLSensorType.PMLOG_FAN_RPM;
                     const int fanPercentageIndex = (int)AtiAdlxx.ADLSensorType.PMLOG_FAN_PERCENTAGE;
@@ -304,11 +304,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         ActivateSensor(_controlSensor);
                     }
 
-                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_GFX_VOLTAGE, _coreVoltage, 0.001f);
+                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_GFX_VOLTAGE, _coreVoltage, 0.001f, false);
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_SOC_VOLTAGE, _socVoltage, 0.001f);
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_MEM_VOLTAGE, _memoryVoltage, 0.001f);
 
-                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX, _coreLoad);
+                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX, _coreLoad, reset: false);
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_MEM, _memoryLoad);
 
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_ASIC_POWER, _powerTotal, reset: false);
