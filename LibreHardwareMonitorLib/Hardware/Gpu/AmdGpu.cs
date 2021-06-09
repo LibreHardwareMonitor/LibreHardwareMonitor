@@ -147,7 +147,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (_currentOverdriveApiLevel >= 6)
             {
-                if (AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterIndex, ref _context) == AtiAdlxx.ADLStatus.ADL_OK)
+                if (AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterIndex, ref _context) != AtiAdlxx.ADLStatus.ADL_OK)
                     _context = IntPtr.Zero;
             }
 
