@@ -108,7 +108,6 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.Factor: Format = "{0:F3}"; break;
                 case SensorType.Frequency: Format = "{0:F1} Hz"; break;
                 case SensorType.Throughput: Format = "{0:F1} B/s"; break;
-                case SensorType.Current: Format = "{0:F3} A"; break;
             }
 
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
