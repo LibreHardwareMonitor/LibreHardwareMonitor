@@ -146,7 +146,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             tjMax = GetTjMaxFromMsr();
                             break;
                         case 0x8E: // Intel Core i5, i7 7xxxx (14nm) (Kaby Lake) and 8xxxx (14nm++) (Coffee Lake)
-                        case 0x9E: 
+                        case 0x9E:
                             _microArchitecture = MicroArchitecture.KabyLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
@@ -182,6 +182,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         case 0x8C: // Tiger Lake (10nm)
                         case 0x8D:
                             _microArchitecture = MicroArchitecture.TigerLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0xA7: // Intel Core i5, i6, i7 11xxx (14nm) (Rocket Lake)
+                            _microArchitecture = MicroArchitecture.RocketLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
                         default:
@@ -241,6 +245,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.IvyBridge:
                 case MicroArchitecture.KabyLake:
                 case MicroArchitecture.Nehalem:
+                case MicroArchitecture.RocketLake:
                 case MicroArchitecture.SandyBridge:
                 case MicroArchitecture.Silvermont:
                 case MicroArchitecture.Skylake:
@@ -352,6 +357,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _microArchitecture == MicroArchitecture.IceLake ||
                 _microArchitecture == MicroArchitecture.IvyBridge ||
                 _microArchitecture == MicroArchitecture.KabyLake ||
+                _microArchitecture == MicroArchitecture.RocketLake ||
                 _microArchitecture == MicroArchitecture.SandyBridge ||
                 _microArchitecture == MicroArchitecture.Silvermont ||
                 _microArchitecture == MicroArchitecture.Skylake ||
@@ -376,8 +382,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 if (_energyUnitMultiplier != 0)
                 {
-                    string[] powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory" }; 
-                    
+                    string[] powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory" };
+
                     for (int i = 0; i < _energyStatusMsrs.Length; i++)
                     {
                         if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
@@ -535,6 +541,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             case MicroArchitecture.IceLake:
                             case MicroArchitecture.IvyBridge:
                             case MicroArchitecture.KabyLake:
+                            case MicroArchitecture.RocketLake:
                             case MicroArchitecture.SandyBridge:
                             case MicroArchitecture.Silvermont:
                             case MicroArchitecture.Skylake:
@@ -609,6 +616,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             KabyLake,
             Nehalem,
             NetBurst,
+            RocketLake,
             SandyBridge,
             Silvermont,
             Skylake,

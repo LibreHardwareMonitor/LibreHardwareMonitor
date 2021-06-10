@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
@@ -14,7 +15,25 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class Nct677X : ISuperIO
     {
-        private readonly ushort?[] _alternateTemperatureRegister;
+        private readonly struct TemperatureSourceData
+        {
+            public TemperatureSourceData(Enum? source, ushort register, ushort halfRegister = 0, int halfBit = -1, ushort sourceRegister = 0, ushort? alternateRegister = null)
+            {
+                Source = source;
+                Register = register;
+                HalfRegister = halfRegister;
+                HalfBit = halfBit;
+                SourceRegister = sourceRegister;
+                AlternateRegister = alternateRegister;
+            }
+            public readonly Enum? Source;
+            public readonly ushort Register;
+            public readonly ushort HalfRegister;
+            public readonly int HalfBit;
+            public readonly ushort SourceRegister;
+            public readonly ushort? AlternateRegister;
+        };
+
         private readonly ushort[] _fanCountRegister;
         private readonly ushort[] _fanRpmRegister;
         private readonly byte[] _initialFanControlMode = new byte[7];
@@ -27,11 +46,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly ushort _port;
         private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
         private readonly byte _revision;
-        private readonly int[] _temperatureHalfBit;
-        private readonly ushort[] _temperatureHalfRegister;
-        private readonly ushort[] _temperatureRegister;
-        private readonly ushort[] _temperatureSourceRegister;
-        private readonly Enum[] _temperaturesSource;
+        private readonly TemperatureSourceData[] _temperaturesSource;
         private readonly ushort _vBatMonitorControlRegister;
         private readonly ushort[] _voltageRegisters;
         private readonly ushort _voltageVBatRegister;
@@ -94,8 +109,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                         // min value RPM value with 16-bit fan counter
                         _minFanRpm = (int)(1.35e6 / 0xFFFF);
-
-                        _temperaturesSource = new Enum[] { SourceNct6771F.PECI_0, SourceNct6771F.CPUTIN, SourceNct6771F.AUXTIN, SourceNct6771F.SYSTIN };
                     }
                     else
                     {
@@ -103,8 +116,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                         // min value RPM value with 13-bit fan counter
                         _minFanRpm = (int)(1.35e6 / 0x1FFF);
-
-                        _temperaturesSource = new Enum[] { SourceNct6776F.PECI_0, SourceNct6776F.CPUTIN, SourceNct6776F.AUXTIN, SourceNct6776F.SYSTIN };
                     }
 
                     _fanRpmRegister = new ushort[5];
@@ -116,14 +127,20 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Voltages = new float?[9];
                     _voltageRegisters = new ushort[] { 0x020, 0x021, 0x022, 0x023, 0x024, 0x025, 0x026, 0x550, 0x551 };
                     _voltageVBatRegister = 0x551;
+                    _temperaturesSource = new TemperatureSourceData[]
+                    {
+                        new TemperatureSourceData(chip == Chip.NCT6771F ?  SourceNct6771F.PECI_0 : SourceNct6776F.PECI_0, 0x027, 0, -1, 0x621),
+                        new TemperatureSourceData(chip == Chip.NCT6771F ?  SourceNct6771F.CPUTIN : SourceNct6776F.CPUTIN, 0x073, 0x074, 7, 0x100),
+                        new TemperatureSourceData(chip == Chip.NCT6771F ?  SourceNct6771F.AUXTIN : SourceNct6776F.AUXTIN, 0x075, 0x076, 7, 0x200),
+                        new TemperatureSourceData(chip == Chip.NCT6771F ?  SourceNct6771F.SYSTIN : SourceNct6776F.SYSTIN, 0x077, 0x078, 7, 0x300),
+                        new TemperatureSourceData(null, 0x150, 0x151, 7, 0x622),
+                        new TemperatureSourceData(null, 0x250, 0x251, 7, 0x623),
+                        new TemperatureSourceData(null, 0x62B, 0x62E, 0, 0x624),
+                        new TemperatureSourceData(null, 0x62C, 0x62E, 1, 0x625),
+                        new TemperatureSourceData(null, 0x62D, 0x62E, 2, 0x626)
+                    };
 
                     Temperatures = new float?[4];
-                    _temperatureRegister = new ushort[] { 0x027, 0x073, 0x075, 0x077, 0x150, 0x250, 0x62B, 0x62C, 0x62D };
-                    _temperatureHalfRegister = new ushort[] { 0, 0x074, 0x076, 0x078, 0x151, 0x251, 0x62E, 0x62E, 0x62E };
-                    _temperatureHalfBit = new[] { -1, 7, 7, 7, 7, 7, 0, 1, 2 };
-                    _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300, 0x622, 0x623, 0x624, 0x625, 0x626 };
-                    _alternateTemperatureRegister = new ushort?[] { null, null, null, null };
-
                     break;
                 }
                 case Chip.NCT6779D:
@@ -172,6 +189,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Voltages = new float?[15];
                     _voltageRegisters = new ushort[] { 0x480, 0x481, 0x482, 0x483, 0x484, 0x485, 0x486, 0x487, 0x488, 0x489, 0x48A, 0x48B, 0x48C, 0x48D, 0x48E };
                     _voltageVBatRegister = 0x488;
+                    var temperaturesSources = new List<TemperatureSourceData>();
                     switch (chip)
                     {
                         case Chip.NCT6796D:
@@ -179,79 +197,61 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         case Chip.NCT6797D:
                         case Chip.NCT6798D:
                         {
-                            Temperatures = new float?[24];
-                            _temperaturesSource = new Enum[]
+                            temperaturesSources.AddRange(new TemperatureSourceData[]
                             {
-                                SourceNct67Xxd.PECI_0,
-                                SourceNct67Xxd.CPUTIN,
-                                SourceNct67Xxd.SYSTIN,
-                                SourceNct67Xxd.AUXTIN0,
-                                SourceNct67Xxd.AUXTIN1,
-                                SourceNct67Xxd.AUXTIN2,
-                                SourceNct67Xxd.AUXTIN3,
-                                SourceNct67Xxd.AUXTIN4,
-                                SourceNct67Xxd.SMBUSMASTER0,
-                                SourceNct67Xxd.SMBUSMASTER1,
-                                SourceNct67Xxd.PECI_1,
-                                SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP,
-                                SourceNct67Xxd.PCH_CHIP_TEMP,
-                                SourceNct67Xxd.PCH_CPU_TEMP,
-                                SourceNct67Xxd.PCH_MCH_TEMP,
-                                SourceNct67Xxd.AGENT0_DIMM0,
-                                SourceNct67Xxd.AGENT0_DIMM1,
-                                SourceNct67Xxd.AGENT1_DIMM0,
-                                SourceNct67Xxd.AGENT1_DIMM1,
-                                SourceNct67Xxd.BYTE_TEMP0,
-                                SourceNct67Xxd.BYTE_TEMP1,
-                                SourceNct67Xxd.PECI_0_CAL,
-                                SourceNct67Xxd.PECI_1_CAL,
-                                SourceNct67Xxd.VIRTUAL_TEMP
-                            };
+                                new TemperatureSourceData(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),
+                                new TemperatureSourceData(SourceNct67Xxd.CPUTIN, 0x075, 0x076, 7, 0x200, 0x491),
+                                new TemperatureSourceData(SourceNct67Xxd.SYSTIN, 0x077, 0x078, 7, 0x300, 0x490),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN0, 0x079, 0x07A, 7, 0x800, 0x492),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN4, 0x027,0, 7, 0x621),
+                                new TemperatureSourceData(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, -1, 0x622),
+                                new TemperatureSourceData(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
+                                new TemperatureSourceData(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
+                                new TemperatureSourceData(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, 0, -1, 0xC28, 0x400),
+                                new TemperatureSourceData(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),
+                                new TemperatureSourceData(SourceNct67Xxd.PCH_CPU_TEMP,  0x678, 0, -1, 0xC2A, 0x402),
+                                new TemperatureSourceData(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),
+                                new TemperatureSourceData(SourceNct67Xxd.AGENT0_DIMM0, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.AGENT0_DIMM1, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.AGENT1_DIMM0, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.AGENT1_DIMM1, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.BYTE_TEMP0, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.BYTE_TEMP1, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.PECI_0_CAL, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.PECI_1_CAL, 0),
+                                new TemperatureSourceData(SourceNct67Xxd.VIRTUAL_TEMP, 0)
+                            });
 
-                            _temperatureRegister = new ushort[]
+                            if (chip == Chip.NCT6798D)
                             {
-                                0x073, 0x075, 0x077, 0x079, 0x07B, 0x07D, 0x4A0, 0x027, 0x150, 0x670, 0x672, 0x674, 0x676, 0x678, 0x67A
-                            };
-                            _temperatureHalfRegister = new ushort[]
-                            {
-                                0x074, 0x076, 0x078, 0x07A, 0x07C, 0x07E, 0x49E, 0, 0x151, 0, 0, 0, 0, 0, 0
-                            };
-                            _temperatureHalfBit = new[]
-                            {
-                                7, 7, 7, 7, 7, 7, 6, -1, 7, -1, -1, -1, -1, -1, -1
-                            };
-                            _temperatureSourceRegister = new ushort[]
-                            {
-                                0x100, 0x200, 0x300, 0x800, 0x900, 0xA00, 0xB00, 0x621, 0x622, 0xC26, 0xC27, 0xC28, 0xC29, 0xC2A, 0xC2B
-                            };
-                            _alternateTemperatureRegister = new ushort?[]
-                            {
-                                null, 0x491, 0x490, 0x492, 0x493, 0x494, 0x495, null, null, null, null, 0x400, 0x401, 0x402, 0x404, null, null, null, null, null, null, null, null, null
-                            };
+                                temperaturesSources.AddRange(new TemperatureSourceData[]
+                                {
+                                    new TemperatureSourceData(SourceNct67Xxd.WATER_IN, 0xC33),
+                                    new TemperatureSourceData(SourceNct67Xxd.WATER_OUT, 0xC39)
+                                });
+                            }
                             break;
                         }
                         default:
                         {
-                            Temperatures = new float?[7];
-                            _temperaturesSource = new Enum[]
+                            temperaturesSources.AddRange(new TemperatureSourceData[]
                             {
-                                SourceNct67Xxd.PECI_0,
-                                SourceNct67Xxd.CPUTIN,
-                                SourceNct67Xxd.SYSTIN,
-                                SourceNct67Xxd.AUXTIN0,
-                                SourceNct67Xxd.AUXTIN1,
-                                SourceNct67Xxd.AUXTIN2,
-                                SourceNct67Xxd.AUXTIN3
-                            };
-
-                            _temperatureRegister = new ushort[] { 0x027, 0x073, 0x075, 0x077, 0x079, 0x07B, 0x150 };
-                            _temperatureHalfRegister = new ushort[] { 0, 0x074, 0x076, 0x078, 0x07A, 0x07C, 0x151 };
-                            _temperatureHalfBit = new[] { -1, 7, 7, 7, 7, 7, 7 };
-                            _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300, 0x800, 0x900, 0x622 };
-                            _alternateTemperatureRegister = new ushort?[] { null, 0x491, 0x490, 0x492, 0x493, 0x494, 0x495 };
+                                new TemperatureSourceData(SourceNct67Xxd.PECI_0, 0x027, 0, -1, 0x621),
+                                new TemperatureSourceData(SourceNct67Xxd.CPUTIN, 0x073, 0x074, 7, 0x100, 0x491),
+                                new TemperatureSourceData(SourceNct67Xxd.SYSTIN, 0x075, 0x076, 7, 0x200, 0x490),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN0, 0x077, 0x078, 7, 0x300, 0x492),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN1, 0x079, 0x07A, 7, 0x800, 0x493),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN2, 0x07B, 0x07C, 7, 0x900, 0x494),
+                                new TemperatureSourceData(SourceNct67Xxd.AUXTIN3, 0x150, 0x151, 7, 0x622, 0x495)
+                            });
                             break;
                         }
                     }
+                    _temperaturesSource = temperaturesSources.ToArray();
+                    Temperatures = new float?[_temperaturesSource.Length];
                     break;
                 }
                 case Chip.NCT610XD:
@@ -270,14 +270,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _voltageRegisters = new ushort[] { 0x300, 0x301, 0x302, 0x303, 0x304, 0x305, 0x307, 0x308, 0x309 };
                     _voltageVBatRegister = 0x308;
                     Temperatures = new float?[4];
-                    _temperaturesSource = new Enum[] { SourceNct610X.PECI_0, SourceNct610X.SYSTIN, SourceNct610X.CPUTIN, SourceNct610X.AUXTIN };
-
-                    _temperatureRegister = new ushort[] { 0x027, 0x018, 0x019, 0x01A };
-                    _temperatureHalfRegister = new ushort[] { 0, 0x01B, 0x11B, 0x21B };
-                    _temperatureHalfBit = new[] { -1, 7, 7, 7 };
-                    _temperatureSourceRegister = new ushort[] { 0x621, 0x100, 0x200, 0x300 };
-                    _alternateTemperatureRegister = new ushort?[] { null, 0x018, 0x019, 0x01A };
-
+                    _temperaturesSource = new TemperatureSourceData[] {
+                        new TemperatureSourceData(SourceNct610X.PECI_0, 0x027, 0, -1, 0x621),
+                        new TemperatureSourceData(SourceNct610X.SYSTIN, 0x018, 0x01B, 7, 0x100, 0x018),
+                        new TemperatureSourceData(SourceNct610X.CPUTIN, 0x019, 0x11B, 7, 0x200, 0x019),
+                        new TemperatureSourceData(SourceNct610X.AUXTIN, 0x01A, 0x21B, 7, 0x300, 0x01A)
+                    };
                     break;
                 }
                 case Chip.NCT6683D:
@@ -295,7 +293,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     // CPU Socket
                     // PCIE_1
                     // M2_1
-                    _temperatureRegister = new ushort[] { 0x100, 0x102, 0x104, 0x106, 0x108, 0x10A, 0x10C };
+                    _temperaturesSource = new TemperatureSourceData[] {
+                        new TemperatureSourceData(null, 0x100),
+                        new TemperatureSourceData(null, 0x102),
+                        new TemperatureSourceData(null, 0x104),
+                        new TemperatureSourceData(null, 0x106),
+                        new TemperatureSourceData(null, 0x108),
+                        new TemperatureSourceData(null, 0x10A),
+                        new TemperatureSourceData(null, 0x10C),
+                    };
 
                     // VIN0 +12V
                     // VIN1 +5V
@@ -341,8 +347,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     WriteByte(0x1BD, 0x63);
                     WriteByte(0x1BE, 0x64);
                     WriteByte(0x1BF, 0x65);
-
-                    _alternateTemperatureRegister = new ushort?[] { };
 
                     break;
                 }
@@ -469,15 +473,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             System.Diagnostics.Debug.WriteLine("Updating temperatures.");
             long temperatureSourceMask = 0;
-            for (int i = 0; i < _temperatureRegister.Length ; i++)
+            for (int i = 0; i < _temperaturesSource.Length ; i++)
             {
+                TemperatureSourceData ts = _temperaturesSource[i];
                 switch (Chip)
                 {
                     case Chip.NCT6687D:
                     case Chip.NCT6683D:
                     {
-                        int value = (sbyte)ReadByte(_temperatureRegister[i]);
-                        int half = (ReadByte((ushort)(_temperatureRegister[i] + 1)) >> 7) & 0x1;
+                        int value = (sbyte)ReadByte(ts.Register);
+                        int half = (ReadByte((ushort)(ts.Register + 1)) >> 7) & 0x1;
                         float temperature = value + (0.5f * half);
                         Temperatures[i] = temperature;
                         break;
@@ -487,29 +492,29 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.NCT6797D:
                     case Chip.NCT6798D: 
                     {
-                        if (_temperatureRegister[i] == 0)
+                        if (_temperaturesSource[i].Register == 0)
                         {
                             System.Diagnostics.Debug.WriteLine("Temperature register {0} skipped, address 0.", i);
                             continue;
                         }
 
-                        int value = (sbyte)ReadByte(_temperatureRegister[i]) << 1;
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} at 0x{1:X3} value (integer): {2}/2", i, _temperatureRegister[i], value);
-                        if (_temperatureHalfBit[i] > 0)
+                        int value = (sbyte)ReadByte(_temperaturesSource[i].Register) << 1;
+                        System.Diagnostics.Debug.WriteLine("Temperature register {0} at 0x{1:X3} value (integer): {2}/2", i, ts.Register, value);
+                        if (_temperaturesSource[i].HalfBit > 0)
                         {
-                            value |= (ReadByte(_temperatureHalfRegister[i]) >> _temperatureHalfBit[i]) & 0x1;
-                            System.Diagnostics.Debug.WriteLine("Temperature register {0} value updated from 0x{1:X3} (fractional): {2}/2", i, _temperatureHalfRegister[i], value);
+                            value |= (ReadByte(_temperaturesSource[i].HalfRegister) >> ts.HalfBit) & 0x1;
+                            System.Diagnostics.Debug.WriteLine("Temperature register {0} value updated from 0x{1:X3} (fractional): {2}/2", i, ts.HalfRegister, value);
                         }
 
                         SourceNct67Xxd source;
-                        if (_temperatureSourceRegister[i] > 0)
+                        if (ts.SourceRegister > 0)
                         {
-                            source = (SourceNct67Xxd)(ReadByte(_temperatureSourceRegister[i]) & 0x1F);
-                            System.Diagnostics.Debug.WriteLine("Temperature register {0} source at 0x{1:X3}: {2:G} ({2:D})", i, _temperatureSourceRegister[i], source);
+                            source = (SourceNct67Xxd)(ReadByte(ts.SourceRegister) & 0x1F);
+                            System.Diagnostics.Debug.WriteLine("Temperature register {0} source at 0x{1:X3}: {2:G} ({2:D})", i, ts.SourceRegister, source);
                         }
                         else
                         {
-                            source = (SourceNct67Xxd)_temperaturesSource[i];
+                            source = (SourceNct67Xxd)ts.Source;
                             System.Diagnostics.Debug.WriteLine("Temperature register {0} source register is 0, source set to: {1:G} ({1:D})", i, source);
                         }
                         
@@ -534,23 +539,23 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                         for (int j = 0; j < Temperatures.Length; j++)
                         {
-                            if ((SourceNct67Xxd)_temperaturesSource[j] == source)
+                            if ((SourceNct67Xxd)_temperaturesSource[j].Source == source)
                             {
                                 Temperatures[j] = temperature;
-                                System.Diagnostics.Debug.WriteLine("Temperature register {0}, value from source {1:G} ({1:D}), written at position {2}.", i, _temperaturesSource[j], j);
+                                System.Diagnostics.Debug.WriteLine("Temperature register {0}, value from source {1:G} ({1:D}), written at position {2}.", i, _temperaturesSource[j].Source, j);
                             }
                         }
                         break;
                     }
                     default:
                     {
-                        int value = (sbyte)ReadByte(_temperatureRegister[i]) << 1;
-                        if (_temperatureHalfBit[i] > 0)
+                        int value = (sbyte)ReadByte(ts.Register) << 1;
+                        if (ts.HalfBit > 0)
                         {
-                            value |= (ReadByte(_temperatureHalfRegister[i]) >> _temperatureHalfBit[i]) & 0x1;
+                            value |= (ReadByte(ts.HalfRegister) >> ts.HalfBit) & 0x1;
                         }
 
-                        SourceNct67Xxd source = (SourceNct67Xxd)ReadByte(_temperatureSourceRegister[i]);
+                        SourceNct67Xxd source = (SourceNct67Xxd)ReadByte(ts.SourceRegister);
                         temperatureSourceMask |= 1L << (byte)source;
 
                         float? temperature = 0.5f * value;
@@ -559,7 +564,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                         for (int j = 0; j < Temperatures.Length; j++)
                         {
-                            if ((SourceNct67Xxd)_temperaturesSource[j] == source)
+                            if ((SourceNct67Xxd)_temperaturesSource[j].Source == source)
                                 Temperatures[j] = temperature;
                         }
                         break;
@@ -567,28 +572,29 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 }
             }
 
-            for (int i = 0; i < _alternateTemperatureRegister.Length; i++)
+            for (int i = 0; i < _temperaturesSource.Length; i++)
             {
-                if (!_alternateTemperatureRegister[i].HasValue)
+                TemperatureSourceData ts = _temperaturesSource[i];
+                if (!ts.AlternateRegister.HasValue)
                 {
-                    System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), skipped, because address is null.", i, _temperaturesSource[i]);
+                    System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), skipped, because address is null.", i, ts.Source);
                     continue;
                 }
 
-                if ((temperatureSourceMask & (1L << (byte)(SourceNct67Xxd)_temperaturesSource[i])) > 0)
+                if ((temperatureSourceMask & (1L << (byte)(SourceNct67Xxd)ts.Source)) > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} skipped, because value already set.", i, _temperaturesSource[i], _alternateTemperatureRegister[i].Value);
+                    System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} skipped, because value already set.", i, ts.Source, ts.AlternateRegister.Value);
                     continue;
                 }
 
 
-                float? temperature = (sbyte)ReadByte(_alternateTemperatureRegister[i].Value);
-                System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} final temperature: {3}.", i, _temperaturesSource[i], _alternateTemperatureRegister[i].Value, temperature);
+                float? temperature = (sbyte)ReadByte(ts.AlternateRegister.Value);
+                System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} final temperature: {3}.", i, ts.Source, ts.AlternateRegister.Value, temperature);
 
                 if (temperature > 125 || temperature <= 0)
                 {
                     temperature = null;
-                    System.Diagnostics.Debug.WriteLine("Alternate Temperature register for temperature {0}, {1:G} ({1:D}), discarded: Out of range.", i, _temperaturesSource[i]);
+                    System.Diagnostics.Debug.WriteLine("Alternate Temperature register for temperature {0}, {1:G} ({1:D}), discarded: Out of range.", i, ts.Source);
                 }
 
                 Temperatures[i] = temperature;
@@ -984,7 +990,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             BYTE_TEMP1 = 27,
             PECI_0_CAL = 28,
             PECI_1_CAL = 29,
-            VIRTUAL_TEMP = 31
+            VIRTUAL_TEMP = 31,
+            WATER_IN = 32,
+            WATER_OUT = 33
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]

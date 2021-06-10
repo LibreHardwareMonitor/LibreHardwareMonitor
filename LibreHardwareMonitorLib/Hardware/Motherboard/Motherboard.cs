@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using LibreHardwareMonitor.Hardware.Motherboard.Lpc;
+using LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
+using OperatingSystem = LibreHardwareMonitor.Software.OperatingSystem;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard
 {
@@ -49,7 +51,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             _customName = settings.GetValue(new Identifier(Identifier, "name").ToString(), _name);
 
-            if (Software.OperatingSystem.IsUnix)
+            if (OperatingSystem.IsUnix)
             {
                 _lmSensors = new LMSensors();
                 superIO = _lmSensors.SuperIO;
@@ -60,10 +62,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 superIO = _lpcIO.SuperIO;
             }
 
-            SubHardware = new IHardware[superIO.Count];
+            EmbeddedController embeddedController = CreateEmbeddedController(model, settings);
+
+            SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
             for (int i = 0; i < superIO.Count; i++)
                 SubHardware[i] = new SuperIOHardware(this, superIO[i], manufacturer, model, settings);
+
+            if (embeddedController != null)
+            {
+                SubHardware[superIO.Count] = embeddedController;
+            }
         }
+
+        public event SensorEventHandler SensorAdded;
+
+        public event SensorEventHandler SensorRemoved;
 
         public HardwareType HardwareType
         {
@@ -72,7 +85,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
         public Identifier Identifier
         {
-            get { return new Identifier("motherboard"); }
+            get { return new("motherboard"); }
         }
 
         public string Name
@@ -105,7 +118,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
         public string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             r.AppendLine("Motherboard");
             r.AppendLine();
@@ -135,10 +148,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 hardware.Accept(visitor);
         }
 
-        public event SensorEventHandler SensorAdded;
-
-        public event SensorEventHandler SensorRemoved;
-
         public void Close()
         {
             _lmSensors?.Close();
@@ -147,6 +156,43 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 if (iHardware is Hardware hardware)
                     hardware.Close();
             }
+        }
+
+        private static EmbeddedController CreateEmbeddedController(Model model, ISettings settings)
+        {
+            var sources = new List<EmbeddedControllerSource>();
+
+            switch (model)
+            {
+                case Model.ROG_STRIX_X570_E_GAMING:
+                case Model.ROG_CROSSHAIR_VIII_HERO:
+                {
+                    sources.AddRange(new EmbeddedControllerSource[]
+                    {
+                        new("Chipset", 0x3A, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new("CPU", 0x3B, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new("Motherboard", 0x3C, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new("T Sensor", 0x3D, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new("VRM", 0x3E, SensorType.Temperature, EmbeddedController.ReadByte),
+                        new("CPU Opt", 0xB0, SensorType.Fan, EmbeddedController.ReadWordBE),
+                        new("Chipset", 0xB4, SensorType.Fan, EmbeddedController.ReadWordBE),
+                        new("CPU", 0xF4, SensorType.Current, EmbeddedController.ReadByte)
+                    });
+                    break;
+                }
+            }
+
+            switch (model)
+            {
+                case Model.ROG_CROSSHAIR_VIII_HERO:
+                {
+                    // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
+                    sources.Add(new("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f));
+                    break;
+                }
+            }
+
+            return sources.Count > 0 ? EmbeddedController.Create(sources, settings) : null;
         }
     }
 }

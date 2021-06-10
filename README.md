@@ -26,14 +26,19 @@ The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
 You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
 
 ## What's the easiest way to start?
-**LibreHardwareMonitor application:**
+**LibreHardwareMonitor application:** - [How to compile the application](https://docs.microsoft.com/en-us/visualstudio/ide/compiling-and-building-in-visual-studio)
 1. Download the repository and compile 'LibreHardwareMonitor'.
-2. You can start the application immediately.
+2. You can start the **net452\LibreHardwareMonitor.exe** application immediately.
 
-**Sample code:**
+**NuGet Package** - [How to use NuGet](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio)
+1. Add the [LibreHardwareMonitorLib package](https://www.nuget.org/packages/LibreHardwareMonitorLib/) to your application.
+2. References will be added automatically, you can use the sample code below.
+
+
+**Sample code:** - [How to add C# reference](https://docs.microsoft.com/en-us/visualstudio/ide/how-to-add-or-remove-references-by-using-the-reference-manager?view=vs-2019)
 1. Download the repository and compile 'LibreHardwareMonitorLib'.
 2. Add references to 'LibreHardwareMonitorLib.dll' and 'HidSharp.dll' in your project.
-3. In your main file, add namespace 'using LibreHardwareMonitor.Hardware;'
+3. In your main file, add namespace ```using LibreHardwareMonitor.Hardware;```
 4. Now you can read most of the data from your devices.
 
 ```c#

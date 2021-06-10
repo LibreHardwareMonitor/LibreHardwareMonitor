@@ -56,7 +56,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>());
                 Kernel32.RtlZeroMemory(ptr, finalSize);
                 int len = Math.Min(finalSize, passThrough.DataBuffer.Length);
-                Kernel32.CopyMemory(ptr, newPtr, (uint)len);
+                Kernel32.RtlCopyMemory(ptr, newPtr, (uint)len);
                 Marshal.FreeHGlobal(buffer);
 
                 Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(ptr);

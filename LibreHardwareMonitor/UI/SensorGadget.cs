@@ -610,6 +610,9 @@ namespace LibreHardwareMonitor.UI
                                 case SensorType.Voltage:
                                     format = "{0:F3} V";
                                     break;
+                                case SensorType.Current:
+                                    format = "{0:F3} A";
+                                    break;
                                 case SensorType.Clock:
                                     format = "{0:F0} MHz";
                                     break;

@@ -160,6 +160,7 @@ namespace LibreHardwareMonitor.UI
             var units = new Dictionary<SensorType, string>
             {
                 { SensorType.Voltage, "V" },
+                { SensorType.Current, "A" },
                 { SensorType.Clock, "MHz" },
                 { SensorType.Temperature, "°C" },
                 { SensorType.Load, "%" },

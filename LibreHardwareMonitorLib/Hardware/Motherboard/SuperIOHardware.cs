@@ -2313,6 +2313,58 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.ROG_CROSSHAIR_VIII_HERO: // NCT6798D
+                        {
+                            v.Add(new Voltage("Vcore", 0));
+                            v.Add(new Voltage("Voltage #2", 1, true));
+                            v.Add(new Voltage("AVCC", 2, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
+                            v.Add(new Voltage("Voltage #5", 4, true));
+                            v.Add(new Voltage("Voltage #6", 5, true));
+                            v.Add(new Voltage("CPU SoC", 6));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
+                            v.Add(new Voltage("VBat", 8, 34, 34));
+                            v.Add(new Voltage("VTT", 9));
+                            v.Add(new Voltage("Voltage #11", 10, true));
+                            v.Add(new Voltage("Voltage #12", 11, true));
+                            v.Add(new Voltage("Voltage #13", 12, true));
+                            v.Add(new Voltage("Voltage #14", 13, true));
+                            v.Add(new Voltage("Voltage #15", 14, true));
+                            t.Add(new Temperature("PECI 0", 0));
+                            t.Add(new Temperature("CPU", 1));
+                            t.Add(new Temperature("Motherboard", 2));
+                            t.Add(new Temperature("AUX 0", 3));
+                            t.Add(new Temperature("AUX 1", 4));
+                            t.Add(new Temperature("AUX 2", 5));
+                            t.Add(new Temperature("AUX 3", 6));
+                            t.Add(new Temperature("AUX 4", 7));
+                            t.Add(new Temperature("SMBus 0", 8));
+                            t.Add(new Temperature("SMBus 1", 9));
+                            t.Add(new Temperature("PECI 1", 10));
+                            t.Add(new Temperature("PCH Chip CPU Max", 11));
+                            t.Add(new Temperature("PCH Chip", 12));
+                            t.Add(new Temperature("PCH CPU", 13));
+                            t.Add(new Temperature("PCH MCH", 14));
+                            t.Add(new Temperature("Agent 0 DIMM 0", 15));
+                            t.Add(new Temperature("Agent 0 DIMM 1", 16));
+                            t.Add(new Temperature("Agent 1 DIMM 0", 17));
+                            t.Add(new Temperature("Agent 1 DIMM 1", 18));
+                            t.Add(new Temperature("Device 0", 19));
+                            t.Add(new Temperature("Device 1", 20));
+                            t.Add(new Temperature("PECI 0 Calibrated", 21));
+                            t.Add(new Temperature("PECI 1 Calibrated", 22));
+                            t.Add(new Temperature("Virtual", 23));
+                            t.Add(new Temperature("Water In", 24));
+                            t.Add(new Temperature("Water Out", 25));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
+                            break;
+                        }
                         default:
                         {
                             v.Add(new Voltage("Vcore", 0));

@@ -6,12 +6,21 @@
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Abstract parent with logic for the abstract class that stores data.
+    /// </summary>
     public interface IElement
     {
-        // accept visitor on this element
+        /// <summary>
+        /// Accepts the observer for this instance.
+        /// </summary>
+        /// <param name="visitor">Computer observer making the calls.</param>
         void Accept(IVisitor visitor);
 
-        // call accept(visitor) on all child elements (called only from visitors)
+        /// <summary>
+        /// Call the <see cref="Accept"/> method for all child instances <c>(called only from visitors).</c>
+        /// </summary>
+        /// <param name="visitor">Computer observer making the calls.</param>
         void Traverse(IVisitor visitor);
     }
 }

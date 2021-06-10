@@ -6,6 +6,9 @@
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Base interface for creating observers who call to devices.
+    /// </summary>
     public interface IVisitor
     {
         void VisitComputer(IComputer computer);
