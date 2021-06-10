@@ -295,7 +295,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     const int fanRpmIndex = (int)AtiAdlxx.ADLSensorType.PMLOG_FAN_RPM;
                     const int fanPercentageIndex = (int)AtiAdlxx.ADLSensorType.PMLOG_FAN_PERCENTAGE;
 
-                    if (logDataOutput.sensors.Length is > fanRpmIndex and > fanPercentageIndex && logDataOutput.sensors[fanRpmIndex].value != ushort.MaxValue)
+                    if (logDataOutput.sensors.Length is > fanRpmIndex and > fanPercentageIndex && logDataOutput.sensors[fanRpmIndex].value != ushort.MaxValue && logDataOutput.sensors[fanRpmIndex].supported != 0)
                     {
                         _fan.Value = logDataOutput.sensors[fanRpmIndex].value;
                         _controlSensor.Value = logDataOutput.sensors[fanPercentageIndex].value;
