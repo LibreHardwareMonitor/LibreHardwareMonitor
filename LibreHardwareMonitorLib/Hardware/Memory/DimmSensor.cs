@@ -11,15 +11,6 @@ using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware.Memory
 {
-    internal enum ManufacturereID : ushort
-    {
-        Unknown = 0,
-
-        OnSemi = 0x1B09,
-        MicroChip = 0x0054,
-        ST = 0x104A,
-    }
-
     internal class DimmSensor : Sensor
     {
         protected static ushort[] _manufacturerID = {
