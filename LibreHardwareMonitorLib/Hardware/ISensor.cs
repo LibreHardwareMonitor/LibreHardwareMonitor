@@ -16,6 +16,7 @@ namespace LibreHardwareMonitor.Hardware
     {
         Voltage, // V
         Current, // A
+        Power, // W
         Clock, // MHz
         Temperature, // °C
         Load, // %
@@ -25,7 +26,6 @@ namespace LibreHardwareMonitor.Hardware
         Control, // %
         Level, // %
         Factor, // 1
-        Power, // W
         Data, // GB = 2^30 Bytes
         SmallData, // MB = 2^20 Bytes
         Throughput // B/s

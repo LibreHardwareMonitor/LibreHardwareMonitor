@@ -20,6 +20,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         protected readonly uint _model;
         protected readonly int _processorIndex;
         protected readonly uint _stepping;
+        protected readonly uint _packageType;
 
         private readonly Sensor[] _coreLoads;
         private readonly CpuLoad _cpuLoad;
@@ -39,6 +40,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             _family = cpuId[0][0].Family;
             _model = cpuId[0][0].Model;
             _stepping = cpuId[0][0].Stepping;
+            _packageType = cpuId[0][0].PkgType;
 
             _processorIndex = processorIndex;
             _coreCount = cpuId.Length;
@@ -71,10 +73,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_cpuLoad.IsAvailable)
             {
                 foreach (Sensor sensor in _coreLoads)
+                {
                     ActivateSensor(sensor);
+                }
 
                 if (_totalLoad != null)
+                {
                     ActivateSensor(_totalLoad);
+                }
             }
 
             if (HasTimeStampCounter)
