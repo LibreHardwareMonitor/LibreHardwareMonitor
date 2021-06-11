@@ -23,6 +23,7 @@ namespace LibreHardwareMonitor.Hardware
         private static string _fileName;
         private static Mutex _isaBusMutex;
         private static Mutex _pciBusMutex;
+        private static Mutex _smBusMutex;
 
         private static readonly StringBuilder _report = new StringBuilder();
         
@@ -264,6 +265,26 @@ namespace LibreHardwareMonitor.Hardware
                 catch
                 { }
             }
+
+            const string smbusMutexName = "Global\\Access_SMBUS.HTP.Method";
+
+            try
+            {
+                _smBusMutex = new Mutex(false, smbusMutexName);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+#if NETFRAMEWORK
+                    _smBusMutex = Mutex.OpenExisting(smbusMutexName, MutexRights.Synchronize);
+#else
+                    _smBusMutex = Mutex.OpenExisting(smbusMutexName);
+#endif
+                }
+                catch
+                { }
+            }
         }
 
         public static void Close()
@@ -290,6 +311,12 @@ namespace LibreHardwareMonitor.Hardware
             {
                 _pciBusMutex.Close();
                 _pciBusMutex = null;
+            }
+
+            if (_smBusMutex != null)
+            {
+                _smBusMutex.Close();
+                _smBusMutex = null;
             }
 
             // try to delete temporary driver file again if failed during open
@@ -372,6 +399,33 @@ namespace LibreHardwareMonitor.Hardware
             _pciBusMutex?.ReleaseMutex();
         }
 
+        public static bool WaitSmBusMutex(int millisecondsTimeout)
+        {
+            if (_smBusMutex == null)
+                return true;
+
+
+            try
+            {
+                if (millisecondsTimeout == 0)
+                    return _smBusMutex.WaitOne();
+                return _smBusMutex.WaitOne(millisecondsTimeout, false);
+            }
+            catch (AbandonedMutexException)
+            {
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        public static void ReleaseSmBusMutex()
+        {
+            _smBusMutex?.ReleaseMutex();
+        }
+
         public static bool ReadMsr(uint index, out uint eax, out uint edx)
         {
             if (_driver == null)
@@ -427,6 +481,26 @@ namespace LibreHardwareMonitor.Hardware
             _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
         }
 
+        public static ushort ReadSmbus(ushort port)
+        {
+            if (_driver == null)
+                return 0;
+
+            uint value = 0;
+            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
+            ushort retVal = (ushort)(value & 0xff);
+            return retVal;
+        }
+
+        public static void WriteSmbus(ushort port, int value)
+        {
+            if (_driver == null)
+                return;
+
+            WriteIoPortInput input = new WriteIoPortInput { PortNumber = port, Value = (byte)(value & 0xff) };
+            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
+        }
+
         public static uint GetPciAddress(byte bus, byte device, byte function)
         {
             return (uint)(((bus & 0xFF) << 8) | ((device & 0x1F) << 3) | (function & 7));
@@ -463,15 +537,6 @@ namespace LibreHardwareMonitor.Hardware
 
 
             ReadMemoryInput input = new ReadMemoryInput { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
-            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
-        }
-
-        public static bool ReadMemory<T>(ulong address, ref T[] buffer)
-        {
-            if (_driver == null)
-                return false;
-
-            ReadMemoryInput input = new ReadMemoryInput { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
         }
 
