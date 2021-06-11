@@ -1334,7 +1334,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("CPU Fan", 0));
                             c.Add(new Ctrl("System Fan #1", 1));
                             c.Add(new Ctrl("System Fan #2", 2));
-                            c.Add(new Ctrl("System Fan #3", 3));                            
+                            c.Add(new Ctrl("System Fan #3", 3));
 
                             break;
                         }
@@ -2087,7 +2087,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("Chassis #4" , 6));
 
                             break;
-                        }                        
+                        }
                         case Model.X570_Phantom_Gaming_ITX:
                         {
                             v.Add(new Voltage("+12V", 0));
@@ -2187,7 +2187,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Chassis Fan #2", 2));
                             f.Add(new Fan("Chassis Fan #3", 3));
                             c.Add(new Ctrl("Chassis Fan #1", 0));
-                            c.Add(new Ctrl("CPU  Fan", 1));
+                            c.Add(new Ctrl("CPU Fan", 1));
                             c.Add(new Ctrl("Chassis Fan #2", 2));
                             c.Add(new Ctrl("Chassis Fan #3", 3));
 
