@@ -27,6 +27,8 @@ namespace LibreHardwareMonitor.Hardware
                 // Zen Raven Ridge APU.
                 0x001E0004, new Dictionary<uint, SmuSensorType>
                 {
+                    { 28, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1}},
+                    { 44, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1}},
                     //{ 61, new SmuSensorType { Name = "Core", Type = SensorType.Voltage } },
                     //{ 62, new SmuSensorType { Name = "Core", Type = SensorType.Current, Scale = 1} },
                     //{ 63, new SmuSensorType { Name = "Core", Type = SensorType.Power, Scale = 1 } },
@@ -45,9 +47,9 @@ namespace LibreHardwareMonitor.Hardware
                     { 151, new SmuSensorType { Name = "GFX", Type = SensorType.Temperature, Scale = 1 } },
                     { 154, new SmuSensorType { Name = "GFX", Type = SensorType.Clock, Scale = 1 } },
                     { 156, new SmuSensorType { Name = "GFX", Type = SensorType.Load, Scale = 1 } },
-                    { 166, new SmuSensorType { Name = "FCLK", Type = SensorType.Clock, Scale = 1 } },
-                    { 177, new SmuSensorType { Name = "UCLK", Type = SensorType.Clock, Scale = 1 } },
-                    { 178, new SmuSensorType { Name = "MEMCLK", Type = SensorType.Clock, Scale = 1 } },
+                    { 166, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 177, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 178, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
                     { 342, new SmuSensorType { Name = "Displays", Type = SensorType.Factor, Scale = 1 } },
                 }
             },
@@ -57,9 +59,9 @@ namespace LibreHardwareMonitor.Hardware
                 {
                     { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1}},
                     { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1}},
-                    { 48, new SmuSensorType { Name = "FCLK", Type = SensorType.Clock, Scale = 1} },
-                    { 50, new SmuSensorType { Name = "UCLK", Type = SensorType.Clock, Scale = 1} },
-                    { 51, new SmuSensorType { Name = "MEMCLK", Type = SensorType.Clock, Scale = 1} },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1} },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1} },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1} },
                     { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1} },
                     //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
                     //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
