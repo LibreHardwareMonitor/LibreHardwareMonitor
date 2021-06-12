@@ -56,17 +56,11 @@ namespace LibreHardwareMonitor.Hardware.Memory
 
             if (res >= 0)
             {
-                ushort data = GetWord(addr, 0x06);
-                var temp = BitConverter.GetBytes(data);
-                Array.Reverse(temp);
+                ushort manufacturerID = GetWord(addr, 0x06);
+                ushort deviceID = GetWord(addr, 0x07);
 
-                ushort manufacturerID = BitConverter.ToUInt16(temp, 0);
-
-                for (int i = 0; i < _manufacturerID.Length; i++)
-                {
-                    if (manufacturerID == _manufacturerID[i])
-                        return addr;
-                }
+                if (manufacturerID > 0 && deviceID > 0)
+                    return addr;
             }
             return 0x00;
         }

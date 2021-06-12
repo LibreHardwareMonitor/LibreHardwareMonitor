@@ -13,17 +13,6 @@ namespace LibreHardwareMonitor.Hardware.Memory
 {
     internal class DimmSensor : Sensor
     {
-        protected static ushort[] _manufacturerID = {
-            0x1B09,     // On Semiconductor
-            0x0054,     // MicroChip
-            0x104A,     // ST
-            0x00B3,     // RENESAS
-            0x1131,     // NXP
-            0x1C85,     // ABLIC
-
-            // please, add more
-        };
-
         protected byte _address;
 
         public DimmSensor(string name, int index, Hardware hardware, ISettings settings, byte address) : base(name, index, SensorType.Temperature, hardware, settings)
