@@ -27,8 +27,8 @@ namespace LibreHardwareMonitor.Hardware
                 // Zen Raven Ridge APU.
                 0x001E0004, new Dictionary<uint, SmuSensorType>
                 {
-                    { 28, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1}},
-                    { 44, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1}},
+                    { 7, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1}},
+                    { 11, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1}},
                     //{ 61, new SmuSensorType { Name = "Core", Type = SensorType.Voltage } },
                     //{ 62, new SmuSensorType { Name = "Core", Type = SensorType.Current, Scale = 1} },
                     //{ 63, new SmuSensorType { Name = "Core", Type = SensorType.Power, Scale = 1 } },
