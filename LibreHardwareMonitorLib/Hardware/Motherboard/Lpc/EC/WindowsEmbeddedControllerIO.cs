@@ -23,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         // implementation 
         private const int WaitSpins = 50;
-        private bool _disposedValue;
+        private bool _disposed;
 
         private int _waitReadFailures;
 
@@ -33,8 +33,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 throw new BusMutexLockingFailedException();
             }
-
-            _disposedValue = false;
         }
 
         ~WindowsEmbeddedControllerIO()
@@ -69,10 +67,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (!_disposed && disposing)
             {
+                _disposed = true;
                 Ring0.ReleaseIsaBusMutex();
-                _disposedValue = true;
             }
         }
 
