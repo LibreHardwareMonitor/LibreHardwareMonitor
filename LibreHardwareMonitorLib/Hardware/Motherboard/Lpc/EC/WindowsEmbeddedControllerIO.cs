@@ -35,11 +35,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             }
         }
 
-        ~WindowsEmbeddedControllerIO()
-        {
-            Dispose(false);
-        }
-
         public byte ReadByte(byte register)
         {
             return ReadLoop<byte>(register, ReadByteOp);
@@ -65,19 +60,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             WriteLoop(register, value, WriteWordOp);
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (!_disposed && disposing)
+            if (!_disposed)
             {
                 _disposed = true;
                 Ring0.ReleaseIsaBusMutex();
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         private TResult ReadLoop<TResult>(byte register, ReadOp<TResult> op) where TResult : new()
