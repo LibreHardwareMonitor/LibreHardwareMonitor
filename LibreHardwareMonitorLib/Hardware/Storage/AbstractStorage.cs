@@ -123,7 +123,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
 
-            using (var perfData = new ManagementObjectSearcher(query) {Options = {Timeout = TimeSpan.FromSeconds(2.5)}})
+            using (var perfData = new ManagementObjectSearcher(query) {Options = {Timeout = TimeSpan.FromSeconds(5)}})
             using (ManagementObjectCollection collection = perfData.Get())
             using (ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault())
             {
