@@ -491,12 +491,14 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             r.AppendLine("Overdrive Caps");
             r.AppendLine();
+
             try
             {
                 int supported = 0;
                 int enabled = 0;
                 int version = 0;
                 AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive_Caps(_adapterIndex, ref supported, ref enabled, ref version);
+
                 r.Append(" Status: ");
                 r.AppendLine(status.ToString());
                 r.Append(" Supported: ");
@@ -518,6 +520,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             try
             {
                 AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_ODParameters_Get(_adapterIndex, out AtiAdlxx.ADLODParameters p);
+
                 r.Append(" Status: ");
                 r.AppendLine(status.ToString());
                 r.AppendFormat(" NumberOfPerformanceLevels: {0}{1}", p.NumberOfPerformanceLevels, Environment.NewLine);
@@ -617,8 +620,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         string pt = ((AtiAdlxx.ADLODNCurrentPowerType)i).ToString();
                         AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterIndex, (AtiAdlxx.ADLODNCurrentPowerType)i, ref power);
 
-                        r.AppendFormat(" Power[{0}].Value: {1}{2}", pt, power * (1.0f / 0xFF), Environment.NewLine);
                         r.AppendFormat(" Power[{0}].Status: {1}{2}", pt, status.ToString(), Environment.NewLine);
+                        r.AppendFormat(" Power[{0}].Value: {1}{2}", pt, power * (1.0f / 0xFF), Environment.NewLine);
                     }
                 }
                 catch (EntryPointNotFoundException)
@@ -644,8 +647,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         int temperature = 0;
                         string tt = ((AtiAdlxx.ADLODNTemperatureType)i).ToString();
                         AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterIndex, (AtiAdlxx.ADLODNTemperatureType)i, ref temperature);
-                        r.AppendFormat(" Temperature[{0}].Value: {1}{2}", tt, 0.001f * temperature, Environment.NewLine);
+
                         r.AppendFormat(" Temperature[{0}].Status: {1}{2}", tt, status.ToString(), Environment.NewLine);
+                        r.AppendFormat(" Temperature[{0}].Value: {1}{2}", tt, 0.001f * temperature, Environment.NewLine);
                     }
                 }
                 catch (EntryPointNotFoundException)
@@ -667,6 +671,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 try
                 {
                     var status = AtiAdlxx.ADL2_OverdriveN_PerformanceStatus_Get(_context, _adapterIndex, out var ps);
+
                     r.Append(" Status: ");
                     r.AppendLine(status.ToString());
                     r.AppendFormat(" CoreClock: {0}{1}", ps.CoreClock, Environment.NewLine);
@@ -708,14 +713,16 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 {
                     var data = new AtiAdlxx.ADLPMLogDataOutput();
                     AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterIndex, ref data);
+
                     r.Append(" Status: ");
                     r.AppendLine(status.ToString());
 
                     for (int i = 0; i < data.sensors.Length; i++)
                     {
                         string st = ((AtiAdlxx.ADLSensorType)i).ToString();
-                        r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st, data.sensors[i].value, Environment.NewLine);
+
                         r.AppendFormat(" Sensor[{0}].Supported: {1}{2}", st, data.sensors[i].supported, Environment.NewLine);
+                        r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st, data.sensors[i].value, Environment.NewLine);
                     }
                 }
                 catch (EntryPointNotFoundException)
