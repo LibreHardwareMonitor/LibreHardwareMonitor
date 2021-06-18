@@ -15,12 +15,14 @@ namespace LibreHardwareMonitor.Hardware
 {
     internal class KernelDriver
     {
-        private readonly string _id;
+        private readonly string _driverId;
+        private readonly string _serviceName;
         private SafeFileHandle _device;
 
-        public KernelDriver(string id)
+        public KernelDriver(string serviceName, string driverId)
         {
-            _id = id;
+            _serviceName = serviceName;
+            _driverId = driverId;
         }
 
         public bool IsOpen
@@ -38,8 +40,8 @@ namespace LibreHardwareMonitor.Hardware
             }
 
             IntPtr service = AdvApi32.CreateService(manager,
-                                                    _id,
-                                                    _id,
+                                                    _serviceName,
+                                                    _serviceName,
                                                     AdvApi32.SERVICE_ACCESS_MASK.SERVICE_ALL_ACCESS,
                                                     AdvApi32.SERVICE_TYPE.SERVICE_KERNEL_DRIVER,
                                                     AdvApi32.SERVICE_START.SERVICE_DEMAND_START,
@@ -53,22 +55,24 @@ namespace LibreHardwareMonitor.Hardware
 
             if (service == IntPtr.Zero)
             {
-                if (Marshal.GetHRForLastWin32Error() == Kernel32.ERROR_SERVICE_EXISTS)
+                int error = Marshal.GetHRForLastWin32Error();
+                if (error == Kernel32.ERROR_SERVICE_EXISTS)
                 {
                     errorMessage = "Service already exists";
                     return false;
                 }
 
-                errorMessage = "CreateService returned the error: " + Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()).Message;
+                errorMessage = "CreateService returned the error: " + Marshal.GetExceptionForHR(error).Message;
                 AdvApi32.CloseServiceHandle(manager);
                 return false;
             }
 
             if (!AdvApi32.StartService(service, 0, null))
             {
-                if (Marshal.GetHRForLastWin32Error() != Kernel32.ERROR_SERVICE_ALREADY_RUNNING)
+                int error = Marshal.GetHRForLastWin32Error();
+                if (error != Kernel32.ERROR_SERVICE_ALREADY_RUNNING)
                 {
-                    errorMessage = "StartService returned the error: " + Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()).Message;
+                    errorMessage = "StartService returned the error: " + Marshal.GetExceptionForHR(error).Message;
                     AdvApi32.CloseServiceHandle(service);
                     AdvApi32.CloseServiceHandle(manager);
                     return false;
@@ -78,25 +82,26 @@ namespace LibreHardwareMonitor.Hardware
             AdvApi32.CloseServiceHandle(service);
             AdvApi32.CloseServiceHandle(manager);
 
-#if NETFRAMEWORK
             try
             {
                 // restrict the driver access to system (SY) and builtin admins (BA)
                 // TODO: replace with a call to IoCreateDeviceSecure in the driver
-                FileSecurity fileSecurity = File.GetAccessControl(@"\\.\" + _id);
+                FileInfo fileInfo = new(@"\\.\" + _driverId);
+                FileSecurity fileSecurity = fileInfo.GetAccessControl();
                 fileSecurity.SetSecurityDescriptorSddlForm("O:BAG:SYD:(A;;FA;;;SY)(A;;FA;;;BA)");
-                File.SetAccessControl(@"\\.\" + _id, fileSecurity);
+                fileInfo.SetAccessControl(fileSecurity);
             }
             catch
             { }
-#endif
+
             errorMessage = null;
             return true;
         }
 
         public bool Open()
         {
-            _device = new SafeFileHandle(Kernel32.CreateFile(@"\\.\" + _id, 0xC0000000, FileShare.None, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero), true);
+            IntPtr fileHandle = Kernel32.CreateFile(@"\\.\" + _driverId, 0xC0000000, FileShare.None, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+            _device = new SafeFileHandle(fileHandle, true);
             if (_device.IsInvalid)
             {
                 _device.Close();
@@ -113,8 +118,7 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
 
 
-            bool b = Kernel32.DeviceIoControl(_device, ioControlCode, inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer), null, 0, out uint _, IntPtr.Zero);
-            return b;
+            return Kernel32.DeviceIoControl(_device, ioControlCode, inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer), null, 0, out uint _, IntPtr.Zero);
         }
 
         public bool DeviceIOControl<T>(Kernel32.IOControlCode ioControlCode, object inBuffer, ref T outBuffer)
@@ -174,12 +178,14 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
 
 
-            IntPtr service = AdvApi32.OpenService(manager, _id, AdvApi32.SERVICE_ACCESS_MASK.SERVICE_ALL_ACCESS);
+            IntPtr service = AdvApi32.OpenService(manager, _serviceName, AdvApi32.SERVICE_ACCESS_MASK.SERVICE_ALL_ACCESS);
             if (service == IntPtr.Zero)
+            {
+                AdvApi32.CloseServiceHandle(manager);
                 return true;
+            }
 
-
-            AdvApi32.SERVICE_STATUS status = new AdvApi32.SERVICE_STATUS();
+            AdvApi32.SERVICE_STATUS status = new();
             AdvApi32.ControlService(service, AdvApi32.SERVICE_CONTROL.SERVICE_CONTROL_STOP, ref status);
             AdvApi32.DeleteService(service);
             AdvApi32.CloseServiceHandle(service);

@@ -583,6 +583,7 @@ namespace LibreHardwareMonitor.Hardware
             }
 
             OpCode.Close();
+            InpOut.Close();
             Ring0.Close();
 
             _smbios = null;

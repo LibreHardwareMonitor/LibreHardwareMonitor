@@ -27,8 +27,8 @@ namespace LibreHardwareMonitor.Hardware
                 // Zen Raven Ridge APU.
                 0x001E0004, new Dictionary<uint, SmuSensorType>
                 {
-                    { 7, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1}},
-                    { 11, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1}},
+                    { 7, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 11, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
                     //{ 61, new SmuSensorType { Name = "Core", Type = SensorType.Voltage } },
                     //{ 62, new SmuSensorType { Name = "Core", Type = SensorType.Current, Scale = 1} },
                     //{ 63, new SmuSensorType { Name = "Core", Type = SensorType.Power, Scale = 1 } },
@@ -57,12 +57,12 @@ namespace LibreHardwareMonitor.Hardware
                 // Zen 2.
                 0x00240903, new Dictionary<uint, SmuSensorType>
                 {
-                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1}},
-                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1}},
-                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1} },
-                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1} },
-                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1} },
-                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1} },
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
                     //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
                     //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
                     //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
@@ -87,6 +87,9 @@ namespace LibreHardwareMonitor.Hardware
             _cpuCodeName = GetCpuCodeName(family, model, packageType);
 
             _supportedCPU = SetAddresses(_cpuCodeName);
+
+            if (_supportedCPU)
+                InpOut.Open();
 
             SetupPmTableAddrAndSize();
         }
@@ -249,9 +252,8 @@ namespace LibreHardwareMonitor.Hardware
             uint[] args = { 1 };
 
             if (SendCommand(0x02, ref args))
-            {
                 return args[0];
-            }
+
 
             return 0;
         }
@@ -283,7 +285,9 @@ namespace LibreHardwareMonitor.Hardware
 
 
             float[] table = ReadDramToArray();
-            if (table[0] == 0) /* Fix for Zen+ empty values at first call bug */
+
+            // Fix for Zen+ empty values on first call.
+            if (table[0] == 0)
             {
                 Thread.Sleep(10);
                 TransferTableToDram();
@@ -297,7 +301,9 @@ namespace LibreHardwareMonitor.Hardware
         {
             float[] table = new float[_pmTableSize / 4];
 
-            Ring0.ReadMemory(_dramBaseAddr, ref table);
+            byte[] bytes = InpOut.ReadMemory(new IntPtr(_dramBaseAddr), _pmTableSize);
+            if (bytes != null)
+                Buffer.BlockCopy(bytes, 0, table, 0, bytes.Length);
 
             return table;
         }
@@ -305,14 +311,10 @@ namespace LibreHardwareMonitor.Hardware
         private bool SetupPmTableAddrAndSize()
         {
             if (_pmTableSize == 0)
-            {
                 SetupPmTableSize();
-            }
 
             if (_dramBaseAddr == 0)
-            {
                 SetupDramBaseAddr();
-            }
 
             return _dramBaseAddr != 0 && _pmTableSize != 0;
         }
