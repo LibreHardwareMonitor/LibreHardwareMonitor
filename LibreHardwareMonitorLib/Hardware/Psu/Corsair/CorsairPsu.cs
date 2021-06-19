@@ -15,6 +15,8 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 {
     internal class SensorIndices
     {
+        private readonly Dictionary<SensorType, int> _lastIndices = new();
+
         public int NextIndex(SensorType type)
         {
             if (!_lastIndices.ContainsKey(type))
@@ -26,45 +28,13 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             _lastIndices[type] = res;
             return res;
         }
-
-        private readonly Dictionary<SensorType, int> _lastIndices = new();
     }
     // might need refactoring into two classes if AXi series API differs significantly
     internal sealed class CorsairPsu : Hardware
     {
-        private class PsuSensor : Sensor
-        {
-            public PsuSensor(string name, SensorIndices indices, SensorType type, CorsairPsu hardware, ISettings settings, UsbApi.Command cmd, Rail rail = Rail._12V, bool noHistory = false)
-                : base(name, indices.NextIndex(type), false, type, hardware, null, settings, noHistory)
-            {
-                _cmd = cmd;
-                _rail = (byte)rail;
-
-                hardware.ActivateSensor(this);
-            }
-
-            public void Update(HidStream stream)
-            {
-                Value = UsbApi.GetValue(stream, _cmd, _rail);
-            }
-
-            private readonly UsbApi.Command _cmd;
-            private readonly byte _rail;
-        }
-
-        private class PsuSensorWithCriticals : PsuSensor, ISensorCriticalLimiits
-        {
-            public PsuSensorWithCriticals(string name, SensorIndices indices, SensorType type, CorsairPsu hardware, ISettings settings,
-                UsbApi.Command cmd, float? lowCritical, float? highCritical, Rail rail = Rail._12V)
-                : base(name, indices, type, hardware, settings, cmd, rail)
-            {
-                LowCriticalLimit = lowCritical;
-                HighCriticalLimit = highCritical;
-            }
-
-            public float? LowCriticalLimit { get; private set; }
-            public float? HighCriticalLimit { get; private set; }
-        }
+        private readonly HidDevice _device;
+        private readonly List<PsuSensor> _sensors = new();
+        private readonly List<CompositeSensor> _compositeSensors = new();
 
         public CorsairPsu(HidDevice device, ISettings settings, int index)
             : base("Corsair PSU", new Identifier("psu", "corsair", index.ToString()), settings)
@@ -150,9 +120,39 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             _sensors.Add(new PsuSensor("Total uptime", indices, SensorType.Timespan, this, settings, UsbApi.Command.TOTAL_UPTIME, Rail._12V, true));
         }
 
-        private readonly HidDevice _device;
-        private readonly List<PsuSensor> _sensors = new();
-        private readonly List<CompositeSensor> _compositeSensors = new();
+        private class PsuSensor : Sensor
+        {
+            private readonly UsbApi.Command _cmd;
+            private readonly byte _rail;
+
+            public PsuSensor(string name, SensorIndices indices, SensorType type, CorsairPsu hardware, ISettings settings, UsbApi.Command cmd, Rail rail = Rail._12V, bool noHistory = false)
+                : base(name, indices.NextIndex(type), false, type, hardware, null, settings, noHistory)
+            {
+                _cmd = cmd;
+                _rail = (byte)rail;
+
+                hardware.ActivateSensor(this);
+            }
+
+            public void Update(HidStream stream)
+            {
+                Value = UsbApi.GetValue(stream, _cmd, _rail);
+            }
+        }
+
+        private class PsuSensorWithCriticals : PsuSensor, ISensorCriticalLimiits
+        {
+            public PsuSensorWithCriticals(string name, SensorIndices indices, SensorType type, CorsairPsu hardware, ISettings settings,
+                UsbApi.Command cmd, float? lowCritical, float? highCritical, Rail rail = Rail._12V)
+                : base(name, indices, type, hardware, settings, cmd, rail)
+            {
+                LowCriticalLimit = lowCritical;
+                HighCriticalLimit = highCritical;
+            }
+
+            public float? LowCriticalLimit { get; private set; }
+            public float? HighCriticalLimit { get; private set; }
+        }
 
         private enum Rail : byte
         {

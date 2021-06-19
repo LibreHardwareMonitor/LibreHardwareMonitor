@@ -13,6 +13,26 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 {
     public class CorsairPsuGroup : IGroup
     {
+        private readonly List<IHardware> _hardware;
+        private readonly StringBuilder _report;
+
+        private static readonly ushort _vendorId = 0x1b1c;
+        private static readonly int[] _productIds = new int[]
+        {
+            0x1c03, // HX550i
+            0x1c04, // HX650i
+            0x1c05, // HX750i
+            0x1c06, // HX850i
+            0x1c07, // HX1000i
+            0x1c08, // HX1200i
+            0x1c09, // RM550i
+            0x1c0a, // RM650i
+            0x1c0b, // RM750i
+            0x1c0c, // RM850i
+            0x1c0d, // RM1000i
+            // 0x1c11, // AX1600i
+        };
+
         public CorsairPsuGroup(ISettings settings)
         {
             _report = new StringBuilder();
@@ -45,25 +65,5 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
         {
             return _report.ToString();
         }
-
-        private readonly List<IHardware> _hardware;
-        private readonly StringBuilder _report;
-
-        private static readonly ushort _vendorId = 0x1b1c;
-        private static readonly int[] _productIds = new int[]
-        {
-            0x1c03, // HX550i
-            0x1c04, // HX650i
-            0x1c05, // HX750i
-            0x1c06, // HX850i
-            0x1c07, // HX1000i
-            0x1c08, // HX1200i
-            0x1c09, // RM550i
-            0x1c0a, // RM650i
-            0x1c0b, // RM750i
-            0x1c0c, // RM850i
-            0x1c0d, // RM1000i
-            // 0x1c11, // AX1600i
-        };
     }
 }
