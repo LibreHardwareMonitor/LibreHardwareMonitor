@@ -24,17 +24,21 @@
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Hardware\WinRing0.sys" />
-    <EmbeddedResource Include="Hardware\WinRing0x64.sys" />
+    <EmbeddedResource Include="Resources\inpout32.dll" />
+    <EmbeddedResource Include="Resources\inpoutx64.dll" />
+    <EmbeddedResource Include="Resources\WinRing0.sys" />
+    <EmbeddedResource Include="Resources\WinRing0x64.sys" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Include="System.IO.Ports" Version="4.7.0" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="System.IO.Ports" Version="5.0.0" />
     <PackageReference Include="System.Management" Version="5.0.0" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />

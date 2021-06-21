@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -13,126 +14,18 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 
-//SecurityIdentifier
-
 namespace LibreHardwareMonitor.Hardware
 {
     internal static class Ring0
     {
         private static KernelDriver _driver;
-        private static string _fileName;
+        private static string _filePath;
         private static Mutex _isaBusMutex;
         private static Mutex _pciBusMutex;
 
-        private static readonly StringBuilder _report = new StringBuilder();
-        
-        public static bool IsOpen
-        {
-            get { return _driver != null; }
-        }
+        private static readonly StringBuilder _report = new();
 
-        private static Assembly GetAssembly()
-        {
-            return typeof(Ring0).Assembly;
-        }
-
-        private static string GetTempFileName()
-        {
-            // try to create one in the application folder
-            string location = GetAssembly().Location;
-            if (!string.IsNullOrEmpty(location))
-            {
-                try
-                {
-                    string fileName = Path.ChangeExtension(location, ".sys");
-
-                    using (File.Create(fileName))
-                        return fileName;
-                }
-                catch (Exception)
-                { }
-            }
-
-            // if this failed, try to get a file in the temporary folder
-            try
-            {
-                return Path.GetTempFileName();
-            }
-            catch (IOException)
-            {
-                // some I/O exception
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // we do not have the right to create a file in the temp folder
-            }
-            catch (NotSupportedException)
-            {
-                // invalid path format of the TMP system environment variable
-            }
-
-            return null;
-        }
-
-        private static bool ExtractDriver(string fileName)
-        {
-            string resourceName = nameof(LibreHardwareMonitor) + "." + nameof(Hardware) + "." + (Software.OperatingSystem.Is64Bit ? "WinRing0x64.sys" : "WinRing0.sys");
-
-            string[] names = GetAssembly().GetManifestResourceNames();
-            byte[] buffer = null;
-            for (int i = 0; i < names.Length; i++)
-            {
-                if (names[i].Replace('\\', '.') == resourceName)
-                {
-                    using Stream stream = GetAssembly().GetManifestResourceStream(names[i]);
-
-                    if (stream != null)
-                    {
-                        buffer = new byte[stream.Length];
-                        stream.Read(buffer, 0, buffer.Length);
-                    }
-                }
-            }
-
-            if (buffer == null)
-                return false;
-
-
-            try
-            {
-                using FileStream target = new FileStream(fileName, FileMode.Create);
-
-                target.Write(buffer, 0, buffer.Length);
-                target.Flush();
-            }
-            catch (IOException)
-            {
-                // for example there is not enough space on the disk
-                return false;
-            }
-
-            // make sure the file is actually written to the file system
-            for (int i = 0; i < 20; i++)
-            {
-                try
-                {
-                    if (File.Exists(fileName) &&
-                        new FileInfo(fileName).Length == buffer.Length)
-                    {
-                        return true;
-                    }
-
-                    Thread.Sleep(100);
-                }
-                catch (IOException)
-                {
-                    Thread.Sleep(10);
-                }
-            }
-
-            // file still has not the right size, something is wrong
-            return false;
-        }
+        public static bool IsOpen => _driver != null;
 
         public static void Open()
         {
@@ -147,24 +40,21 @@ namespace LibreHardwareMonitor.Hardware
             // clear the current report
             _report.Length = 0;
 
-            _driver = new KernelDriver("WinRing0_1_2_0");
+            _driver = new KernelDriver(GetServiceName(), "WinRing0_1_2_0");
             _driver.Open();
 
             if (!_driver.IsOpen)
             {
                 // driver is not loaded, try to install and open
-                _fileName = GetTempFileName();
-                if (_fileName != null && ExtractDriver(_fileName))
+                _filePath = GetFilePath();
+                if (_filePath != null && ExtractDriver(_filePath))
                 {
-                    if (_driver.Install(_fileName, out string installError))
+                    if (_driver.Install(_filePath, out string installError))
                     {
                         _driver.Open();
 
                         if (!_driver.IsOpen)
-                        {
-                            _driver.Delete();
                             _report.AppendLine("Status: Opening driver failed after install");
-                        }
                     }
                     else
                     {
@@ -176,41 +66,29 @@ namespace LibreHardwareMonitor.Hardware
                         // wait a short moment to give the OS a chance to remove the driver
                         Thread.Sleep(2000);
 
-                        if (_driver.Install(_fileName, out string errorSecondInstall))
+                        if (_driver.Install(_filePath, out string errorSecondInstall))
                         {
                             _driver.Open();
 
                             if (!_driver.IsOpen)
-                            {
-                                _driver.Delete();
                                 _report.AppendLine("Status: Opening driver failed after reinstall");
-                            }
                         }
                         else
                         {
-                            _report.AppendLine("Status: Installing driver \"" + _fileName + "\" failed" + (File.Exists(_fileName) ? " and file exists" : string.Empty));
+                            _report.AppendLine("Status: Installing driver \"" + _filePath + "\" failed" + (File.Exists(_filePath) ? " and file exists" : string.Empty));
                             _report.AppendLine("First Exception: " + errorFirstInstall);
                             _report.AppendLine("Second Exception: " + errorSecondInstall);
                         }
                     }
+
+                    if (!_driver.IsOpen)
+                    {
+                        _driver.Delete();
+                        DeleteDriver();
+                    }
                 }
                 else
-                {
                     _report.AppendLine("Status: Extracting driver failed");
-                }
-
-                try
-                {
-                    // try to delete the driver file
-                    if (File.Exists(_fileName) && _fileName != null)
-                        File.Delete(_fileName);
-
-                    _fileName = null;
-                }
-                catch (IOException)
-                { }
-                catch (UnauthorizedAccessException)
-                { }
             }
 
             if (!_driver.IsOpen)
@@ -266,6 +144,191 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        private static bool ExtractDriver(string filePath)
+        {
+            string resourceName = $"{nameof(LibreHardwareMonitor)}.Resources.{(Software.OperatingSystem.Is64Bit ? "WinRing0x64.sys" : "WinRing0.sys")}";
+            Assembly assembly = typeof(Ring0).Assembly;
+
+            string[] names = assembly.GetManifestResourceNames();
+            byte[] buffer = null;
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (names[i].Replace('\\', '.') == resourceName)
+                {
+                    using Stream stream = assembly.GetManifestResourceStream(names[i]);
+
+                    if (stream != null)
+                    {
+                        buffer = new byte[stream.Length];
+                        stream.Read(buffer, 0, buffer.Length);
+                    }
+                }
+            }
+
+            if (buffer == null)
+                return false;
+
+
+            try
+            {
+                using FileStream target = new(filePath, FileMode.Create);
+
+                target.Write(buffer, 0, buffer.Length);
+                target.Flush();
+            }
+            catch (IOException)
+            {
+                // for example there is not enough space on the disk
+                return false;
+            }
+
+            // make sure the file is actually written to the file system
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            while (stopwatch.ElapsedMilliseconds < 2000)
+            {
+                try
+                {
+                    if (File.Exists(filePath) && new FileInfo(filePath).Length == buffer.Length)
+                        return true;
+                }
+                catch
+                { }
+
+                Thread.Sleep(1);
+            }
+
+            // file still has not the right size, something is wrong
+            return false;
+        }
+
+        private static void DeleteDriver()
+        {
+            try
+            {
+                // try to delete the driver file
+                if (_filePath != null && File.Exists(_filePath))
+                    File.Delete(_filePath);
+
+                _filePath = null;
+            }
+            catch
+            { }
+        }
+
+        private static string GetServiceName()
+        {
+            string name;
+
+            try
+            {
+                ProcessModule processModule = Process.GetCurrentProcess().MainModule;
+                if (!string.IsNullOrEmpty(processModule?.FileName))
+                {
+                    name = Path.GetFileNameWithoutExtension(processModule.FileName);
+                    if (!string.IsNullOrEmpty(name))
+                        return GetWinRing0Name(name);
+                }
+            }
+            catch
+            {
+                // Continue with the other options.
+            }
+
+            AssemblyName assemblyName = typeof(Ring0).Assembly.GetName();
+
+            name = assemblyName.Name;
+            if (!string.IsNullOrEmpty(name))
+                return GetWinRing0Name(name);
+
+
+            name = nameof(LibreHardwareMonitor);
+            return GetWinRing0Name(name);
+
+
+            static string GetWinRing0Name(string name)
+            {
+                return $"R0{name}".Replace(" ", string.Empty).Replace(".", "_");
+            }
+        }
+
+        private static string GetFilePath()
+        {
+            string filePath;
+
+            try
+            {
+                ProcessModule processModule = Process.GetCurrentProcess().MainModule;
+                if (!string.IsNullOrEmpty(processModule?.FileName))
+                {
+                    filePath = Path.ChangeExtension(processModule.FileName, ".sys");
+                    if (TryCreate(filePath))
+                        return filePath;
+                }
+            }
+            catch
+            {
+                // Continue with the other options.
+            }
+
+            filePath = GetPathFromAssembly(Assembly.GetExecutingAssembly());
+            if (!string.IsNullOrEmpty(filePath) && TryCreate(filePath))
+                return filePath;
+
+
+            filePath = GetPathFromAssembly(typeof(Ring0).Assembly);
+            if (!string.IsNullOrEmpty(filePath) && TryCreate(filePath))
+                return filePath;
+
+
+            try
+            {
+                filePath = Path.GetTempFileName();
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    filePath = Path.ChangeExtension(filePath, ".sys");
+                    if (TryCreate(filePath))
+                        return filePath;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
+
+
+            static string GetPathFromAssembly(Assembly assembly)
+            {
+                try
+                {
+                    string location = assembly?.Location;
+                    return !string.IsNullOrEmpty(location) ? Path.ChangeExtension(location, ".sys") : null;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+
+            static bool TryCreate(string path)
+            {
+                try
+                {
+                    using (File.Create(path))
+                        return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
         public static void Close()
         {
             if (_driver != null)
@@ -293,25 +356,14 @@ namespace LibreHardwareMonitor.Hardware
             }
 
             // try to delete temporary driver file again if failed during open
-            if (_fileName != null && File.Exists(_fileName))
-            {
-                try
-                {
-                    File.Delete(_fileName);
-                    _fileName = null;
-                }
-                catch (IOException)
-                { }
-                catch (UnauthorizedAccessException)
-                { }
-            }
+            DeleteDriver();
         }
 
         public static string GetReport()
         {
             if (_report.Length > 0)
             {
-                StringBuilder r = new StringBuilder();
+                StringBuilder r = new();
                 r.AppendLine("Ring0");
                 r.AppendLine();
                 r.Append(_report);
@@ -402,7 +454,7 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
 
 
-            WriteMsrInput input = new WriteMsrInput { Register = index, Value = ((ulong)edx << 32) | eax };
+            WriteMsrInput input = new() { Register = index, Value = ((ulong)edx << 32) | eax };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
         }
 
@@ -423,7 +475,7 @@ namespace LibreHardwareMonitor.Hardware
                 return;
 
 
-            WriteIoPortInput input = new WriteIoPortInput { PortNumber = port, Value = value };
+            WriteIoPortInput input = new() { PortNumber = port, Value = value };
             _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
         }
 
@@ -440,7 +492,7 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
             }
 
-            ReadPciConfigInput input = new ReadPciConfigInput { PciAddress = pciAddress, RegAddress = regAddress };
+            ReadPciConfigInput input = new() { PciAddress = pciAddress, RegAddress = regAddress };
 
             value = 0;
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_PCI_CONFIG, input, ref value);
@@ -452,7 +504,7 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
 
 
-            WritePciConfigInput input = new WritePciConfigInput { PciAddress = pciAddress, RegAddress = regAddress, Value = value };
+            WritePciConfigInput input = new() { PciAddress = pciAddress, RegAddress = regAddress, Value = value };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_PCI_CONFIG, input);
         }
 
@@ -462,7 +514,7 @@ namespace LibreHardwareMonitor.Hardware
                 return false;
 
 
-            ReadMemoryInput input = new ReadMemoryInput { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
+            ReadMemoryInput input = new() { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
         }
 
@@ -471,7 +523,8 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver == null)
                 return false;
 
-            ReadMemoryInput input = new ReadMemoryInput { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
+
+            ReadMemoryInput input = new() { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
         }
 
