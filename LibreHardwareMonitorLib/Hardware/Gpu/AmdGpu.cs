@@ -32,9 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _gpuSharedMemoryUsage;
         private readonly Sensor _memoryClock;
         private readonly Sensor _memoryLoad;
-        private readonly int _memorySensorIndex;
         private readonly Sensor _memoryVoltage;
-        private readonly int _nodeSensorIndex;
         private readonly bool _overdriveApiSupported;
         private readonly Sensor _powerCore;
         private readonly Sensor _powerPpt;
@@ -103,8 +101,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                         {
                             _windowsDeviceName = deviceIdentifier;
 
-                            _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", _memorySensorIndex++, SensorType.SmallData, this, settings);
-                            _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", _memorySensorIndex++, SensorType.SmallData, this, settings);
+                            int nodeSensorIndex = 2;
+                            int memorySensorIndex = 0;
+
+                            _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+                            _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex, SensorType.SmallData, this, settings);
 
                             _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                             _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -112,7 +113,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                             foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
                             {
-                                _gpuNodeUsage[node.Id] = new Sensor(node.Name, _nodeSensorIndex++, SensorType.Load, this, settings);
+                                _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings);
                                 _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                                 _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                             }
