@@ -1,0 +1,18 @@
+EXPORTS
+
+Inp32				  @1
+Out32				  @2
+IsInpOutDriverOpen	  @3
+
+DlPortReadPortUchar   @4
+DlPortWritePortUchar  @5
+DlPortReadPortUshort  @6
+DlPortWritePortUshort @7
+DlPortReadPortUlong   @8
+DlPortWritePortUlong  @9
+IsXP64Bit			  @10
+
+MapPhysToLin		  @11
+UnmapPhysicalMemory	  @12
+GetPhysLong			  @13
+SetPhysLong			  @14
