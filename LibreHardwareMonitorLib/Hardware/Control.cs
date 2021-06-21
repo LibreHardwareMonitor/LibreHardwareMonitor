@@ -23,8 +23,10 @@ namespace LibreHardwareMonitor.Hardware
             float minSoftwareValue,
             float maxSoftwareValue)
         {
-            Identifier = new Identifier(sensor.Identifier, "control");
             _settings = settings;
+
+            Identifier = new Identifier(sensor.Identifier, "control");
+            Sensor = sensor;
             MinSoftwareValue = minSoftwareValue;
             MaxSoftwareValue = maxSoftwareValue;
 
@@ -41,6 +43,10 @@ namespace LibreHardwareMonitor.Hardware
             else
                 _mode = (ControlMode)mode;
         }
+
+        internal event ControlEventHandler ControlModeChanged;
+
+        internal event ControlEventHandler SoftwareControlValueChanged;
 
         public ControlMode ControlMode
         {
@@ -61,6 +67,8 @@ namespace LibreHardwareMonitor.Hardware
         public float MaxSoftwareValue { get; }
 
         public float MinSoftwareValue { get; }
+
+        public ISensor Sensor { get; }
 
         public float SoftwareValue
         {
@@ -86,9 +94,5 @@ namespace LibreHardwareMonitor.Hardware
             ControlMode = ControlMode.Software;
             SoftwareValue = value;
         }
-
-        internal event ControlEventHandler ControlModeChanged;
-
-        internal event ControlEventHandler SoftwareControlValueChanged;
     }
 }

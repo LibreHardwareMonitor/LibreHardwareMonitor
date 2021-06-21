@@ -23,6 +23,8 @@ namespace LibreHardwareMonitor.Hardware
 
         float MinSoftwareValue { get; }
 
+        ISensor Sensor { get; }
+
         float SoftwareValue { get; }
 
         void SetDefault();
