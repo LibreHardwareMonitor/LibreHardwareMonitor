@@ -17,13 +17,13 @@ namespace LibreHardwareMonitor.Hardware
         private readonly string _defaultName;
         private readonly Hardware _hardware;
         private readonly ISettings _settings;
-        private readonly List<SensorValue> _values = new List<SensorValue>();
+        private readonly bool _trackMinMax;
+        private readonly List<SensorValue> _values = new();
         private int _count;
         private float? _currentValue;
         private string _name;
         private float _sum;
         private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
-        private readonly bool _trackMinMax;
 
         public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
             this(name, index, sensorType, hardware, null, settings)
@@ -33,7 +33,16 @@ namespace LibreHardwareMonitor.Hardware
             this(name, index, false, sensorType, hardware, parameterDescriptions, settings)
         { }
 
-        public Sensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ParameterDescription[] parameterDescriptions, ISettings settings, bool disableHistory = false)
+        public Sensor
+        (
+            string name,
+            int index,
+            bool defaultHidden,
+            SensorType sensorType,
+            Hardware hardware,
+            ParameterDescription[] parameterDescriptions,
+            ISettings settings,
+            bool disableHistory = false)
         {
             Index = index;
             IsDefaultHidden = defaultHidden;
@@ -125,10 +134,10 @@ namespace LibreHardwareMonitor.Hardware
                 _currentValue = value;
                 if (_trackMinMax)
                 {
-                    if (Min > value || !Min.HasValue)
+                    if (!Min.HasValue || Min > value)
                         Min = value;
 
-                    if (Max < value || !Max.HasValue)
+                    if (!Max.HasValue || Max < value)
                         Max = value;
                 }
             }
@@ -177,31 +186,24 @@ namespace LibreHardwareMonitor.Hardware
 
         private void SetSensorValuesToSettings()
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            using MemoryStream memoryStream = new();
+            using GZipStream gZipStream = new(memoryStream, CompressionMode.Compress);
+            using BufferedStream outputStream = new(gZipStream, 65536);
+            using BinaryWriter binaryWriter = new(outputStream);
+
+            long t = 0;
+
+            foreach (SensorValue sensorValue in _values)
             {
-                using (GZipStream gZipStream = new GZipStream(memoryStream, CompressionMode.Compress))
-                {
-                    using (BufferedStream outputStream = new BufferedStream(gZipStream, 65536))
-                    {
-                        using (BinaryWriter binaryWriter = new BinaryWriter(outputStream))
-                        {
-                            long t = 0;
-
-                            foreach (SensorValue sensorValue in _values)
-                            {
-                                long v = sensorValue.Time.ToBinary();
-                                binaryWriter.Write(v - t);
-                                t = v;
-                                binaryWriter.Write(sensorValue.Value);
-                            }
-
-                            binaryWriter.Flush();
-                        }
-                    }
-                }
-
-                _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(memoryStream.ToArray()));
+                long v = sensorValue.Time.ToBinary();
+                binaryWriter.Write(v - t);
+                t = v;
+                binaryWriter.Write(sensorValue.Value);
             }
+
+            binaryWriter.Flush();
+
+            _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(memoryStream.ToArray()));
         }
 
         private void GetSensorValuesFromSettings()
@@ -216,40 +218,33 @@ namespace LibreHardwareMonitor.Hardware
                     byte[] array = Convert.FromBase64String(s);
                     DateTime now = DateTime.UtcNow;
 
-                    using (MemoryStream memoryStream = new MemoryStream(array))
+                    using MemoryStream memoryStream = new(array);
+                    using GZipStream gZipStream = new(memoryStream, CompressionMode.Decompress);
+                    using MemoryStream destination = new();
+
+                    gZipStream.CopyTo(destination);
+                    destination.Seek(0, SeekOrigin.Begin);
+
+                    using BinaryReader reader = new(destination);
+                    try
                     {
-                        using (GZipStream gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                        long t = 0;
+                        long readLen = reader.BaseStream.Length - reader.BaseStream.Position;
+                        while (readLen > 0)
                         {
-                            using (MemoryStream destination = new MemoryStream())
-                            {
-                                gZipStream.CopyTo(destination);
-                                destination.Seek(0, SeekOrigin.Begin);
-
-                                using (BinaryReader reader = new BinaryReader(destination))
-                                {
-                                    try
-                                    {
-                                        long t = 0;
-                                        long readLen = reader.BaseStream.Length - reader.BaseStream.Position;
-                                        while (readLen > 0)
-                                        {
-                                            t += reader.ReadInt64();
-                                            DateTime time = DateTime.FromBinary(t);
-                                            if (time > now)
-                                                break;
+                            t += reader.ReadInt64();
+                            DateTime time = DateTime.FromBinary(t);
+                            if (time > now)
+                                break;
 
 
-                                            float value = reader.ReadSingle();
-                                            AppendValue(value, time);
-                                            readLen = reader.BaseStream.Length - reader.BaseStream.Position;
-                                        }
-                                    }
-                                    catch (EndOfStreamException)
-                                    { }
-                                }
-                            }
+                            float value = reader.ReadSingle();
+                            AppendValue(value, time);
+                            readLen = reader.BaseStream.Length - reader.BaseStream.Position;
                         }
                     }
+                    catch (EndOfStreamException)
+                    { }
                 }
                 catch
                 {

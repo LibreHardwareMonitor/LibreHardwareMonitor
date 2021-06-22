@@ -86,8 +86,8 @@ namespace LibreHardwareMonitor.Hardware
         event SensorEventHandler SensorRemoved;
 
         /// <summary>
-        /// Rarely changed hardware properties that can't be represented as sensors
+        /// Rarely changed hardware properties that can't be represented as sensors.
         /// </summary>
-        IDictionary<string, string> ConfigurationProperties { get; }
+        IDictionary<string, string> Properties { get; }
     }
 }

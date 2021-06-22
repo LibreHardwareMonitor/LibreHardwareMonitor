@@ -85,7 +85,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
         public Identifier Identifier
         {
-            get { return new("motherboard"); }
+            get { return new Identifier("motherboard"); }
         }
 
         public string Name
@@ -103,6 +103,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         {
             get { return null; }
         }
+
+        public virtual IDictionary<string, string> Properties => new SortedDictionary<string, string>();
 
         public ISensor[] Sensors
         {
@@ -158,8 +160,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             }
         }
 
-        public virtual IDictionary<string, string> ConfigurationProperties => new SortedDictionary<string, string>();
-
         private static EmbeddedController CreateEmbeddedController(Model model, ISettings settings)
         {
             var sources = new List<EmbeddedControllerSource>();
@@ -167,23 +167,23 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             switch (model)
             {
                 case Model.ROG_CROSSHAIR_VIII_HERO:
-                {
-                    sources.AddRange(new EmbeddedControllerSource[]
                     {
-                        new("Chipset", 0x3A, SensorType.Temperature, EmbeddedController.ReadByte),
-                        new("CPU", 0x3B, SensorType.Temperature, EmbeddedController.ReadByte),
-                        new("Motherboard", 0x3C, SensorType.Temperature, EmbeddedController.ReadByte),
-                        new("T Sensor", 0x3D, SensorType.Temperature, EmbeddedController.ReadByte),
-                        new("VRM", 0x3E, SensorType.Temperature, EmbeddedController.ReadByte),
-                        new("CPU Opt", 0xB0, SensorType.Fan, EmbeddedController.ReadWordBE),
-                        new("Chipset", 0xB4, SensorType.Fan, EmbeddedController.ReadWordBE),
-                        // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
-                        new("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f),
-                        new("CPU", 0xF4, SensorType.Current, EmbeddedController.ReadByte)
-                    });
+                        sources.AddRange(new EmbeddedControllerSource[]
+                        {
+                            new("Chipset", 0x3A, SensorType.Temperature, EmbeddedController.ReadByte),
+                            new("CPU", 0x3B, SensorType.Temperature, EmbeddedController.ReadByte),
+                            new("Motherboard", 0x3C, SensorType.Temperature, EmbeddedController.ReadByte),
+                            new("T Sensor", 0x3D, SensorType.Temperature, EmbeddedController.ReadByte),
+                            new("VRM", 0x3E, SensorType.Temperature, EmbeddedController.ReadByte),
+                            new("CPU Opt", 0xB0, SensorType.Fan, EmbeddedController.ReadWordBE),
+                            new("Chipset", 0xB4, SensorType.Fan, EmbeddedController.ReadWordBE),
+                            // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
+                            new("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f),
+                            new("CPU", 0xF4, SensorType.Current, EmbeddedController.ReadByte)
+                        });
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             return sources.Count > 0 ? EmbeddedController.Create(sources, settings) : null;

@@ -3,19 +3,19 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using System;
-
 namespace LibreHardwareMonitor.Hardware
 {
-    public interface ISensorNormalLimits
+    public interface ISensorLimits
     {
-        float? LowLimit { get; }
         float? HighLimit { get; }
+
+        float? LowLimit { get; }
     }
 
-    public interface ISensorCriticalLimiits
+    public interface ICriticalSensorLimits
     {
-        float? LowCriticalLimit { get; }
-        float? HighCriticalLimit { get; }
+        float? CriticalHighLimit { get; }
+
+        float? CriticalLowLimit { get; }
     }
 }

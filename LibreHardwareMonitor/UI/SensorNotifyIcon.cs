@@ -163,7 +163,7 @@ namespace LibreHardwareMonitor.UI
             {
                 case SensorType.Temperature:
                     return _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit ? $"{UnitManager.CelsiusToFahrenheit(Sensor.Value):F0}" : $"{Sensor.Value:F0}";
-                case SensorType.Timespan:
+                case SensorType.TimeSpan:
                     return $"{TimeSpan.FromSeconds(Sensor.Value.Value):g}";
                 case SensorType.Clock:
                 case SensorType.Fan:

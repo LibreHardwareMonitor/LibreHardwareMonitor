@@ -5,11 +5,11 @@
 // All Rights Reserved.
 // Implemented after the Linuix kernel driver corsair_psu by Wilken Gottwalt and contributers
 
-using HidSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 {
@@ -24,33 +24,50 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                 _lastIndices.Add(type, 0);
                 return 0;
             }
+
             int res = _lastIndices[type] + 1;
             _lastIndices[type] = res;
             return res;
         }
     }
+
     // might need refactoring into two classes if AXi series API differs significantly
     internal sealed class CorsairPsu : Hardware
     {
+        private readonly List<CompositeSensor> _compositeSensors = new();
         private readonly HidDevice _device;
         private readonly List<PsuSensor> _sensors = new();
-        private readonly List<CompositeSensor> _compositeSensors = new();
 
         public CorsairPsu(HidDevice device, ISettings settings, int index)
             : base("Corsair PSU", new Identifier("psu", "corsair", index.ToString()), settings)
         {
             _device = device;
-            using (HidStream stream = device.Open())
-            {
-                UsbApi.Init(stream);
-                UsbApi.FirmwareInfo fwInfo = UsbApi.FwInfo(stream);
-                Name = $"{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fwInfo.Vendor.ToLowerInvariant())} {fwInfo.Product}";
+            using HidStream stream = device.Open();
 
-                AddSensors(UsbApi.GetOptionalCommands(stream), UsbApi.GetCriticals(stream), settings);
-            }
+            UsbApi.Init(stream);
+            UsbApi.FirmwareInfo fwInfo = UsbApi.FwInfo(stream);
+            Name = $"{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fwInfo.Vendor.ToLowerInvariant())} {fwInfo.Product}";
+
+            AddSensors(UsbApi.GetOptionalCommands(stream), UsbApi.GetCriticals(stream), settings);
         }
 
         public override HardwareType HardwareType => HardwareType.Psu;
+
+        public override IDictionary<string, string> Properties
+        {
+            get
+            {
+                SortedDictionary<string, string> properties = new();
+
+                using HidStream stream = _device.Open();
+
+                float? mode = UsbApi.GetValue(stream, UsbApi.Command.OCPMODE, 0);
+                if (mode.HasValue)
+                    properties.Add("Over-current protection", mode > 1.0 ? "multi-rail" : "single-rail");
+
+                return properties;
+            }
+        }
 
         public override void Update()
         {
@@ -58,66 +75,114 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             _sensors.ForEach(s => s.Update(stream));
         }
 
-        public override IDictionary<string, string> ConfigurationProperties
-        {
-            get
-            {
-                SortedDictionary<string, string> res = new();
-
-                using HidStream stream = _device.Open();
-
-                float? mode = UsbApi.GetValue(stream, UsbApi.Command.OCPMODE, 0);
-                if (mode.HasValue)
-                {
-                    res.Add("Over-current protection", mode > 1.0 ? "multi-rail" : "single-rail");
-                }
-
-                return res;
-            }
-        }
-
         private void AddSensors(UsbApi.OptionalCommands optionalCommands, UsbApi.Criticals criticals, ISettings settings)
         {
             SensorIndices indices = new();
-            _sensors.Add(new PsuSensorWithCriticals("VRM", indices, SensorType.Temperature, this, settings, UsbApi.Command.TEMP0,
-                null, criticals.TempMax[0]));
-            _sensors.Add(new PsuSensorWithCriticals("Case", indices, SensorType.Temperature, this, settings, UsbApi.Command.TEMP1,
-                null, criticals.TempMax[1]));
+            _sensors.Add(new PsuSensorWithLimits("VRM",
+                                                 indices,
+                                                 SensorType.Temperature,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.TEMP0,
+                                                 null,
+                                                 criticals.TempMax[0]));
+
+            _sensors.Add(new PsuSensorWithLimits("Case",
+                                                 indices,
+                                                 SensorType.Temperature,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.TEMP1,
+                                                 null,
+                                                 criticals.TempMax[1]));
 
             _sensors.Add(new PsuSensor("Case", indices, SensorType.Fan, this, settings, UsbApi.Command.FAN_RPM));
 
             _sensors.Add(new PsuSensor("Input", indices, SensorType.Voltage, this, settings, UsbApi.Command.IN_VOLTS));
-            _sensors.Add(new PsuSensorWithCriticals("+12V", indices, SensorType.Voltage, this, settings, UsbApi.Command.RAIL_VOLTS,
-                criticals.VoltageMin[(byte)Rail._12V], criticals.VoltageMax[(byte)Rail._12V], Rail._12V));
-            _sensors.Add(new PsuSensorWithCriticals("+5V", indices, SensorType.Voltage, this, settings, UsbApi.Command.RAIL_VOLTS,
-                criticals.VoltageMin[(byte)Rail._5V], criticals.VoltageMax[(byte)Rail._5V], Rail._5V));
-            _sensors.Add(new PsuSensorWithCriticals("+3.3V", indices, SensorType.Voltage, this, settings, UsbApi.Command.RAIL_VOLTS,
-                criticals.VoltageMin[(byte)Rail._3V], criticals.VoltageMax[(byte)Rail._3V], Rail._3V));
+            _sensors.Add(new PsuSensorWithLimits("+12V",
+                                                 indices,
+                                                 SensorType.Voltage,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.RAIL_VOLTS,
+                                                 criticals.VoltageMin[(byte)Rail._12V],
+                                                 criticals.VoltageMax[(byte)Rail._12V]));
+
+            _sensors.Add(new PsuSensorWithLimits("+5V",
+                                                 indices,
+                                                 SensorType.Voltage,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.RAIL_VOLTS,
+                                                 criticals.VoltageMin[(byte)Rail._5V],
+                                                 criticals.VoltageMax[(byte)Rail._5V],
+                                                 Rail._5V));
+
+            _sensors.Add(new PsuSensorWithLimits("+3.3V",
+                                                 indices,
+                                                 SensorType.Voltage,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.RAIL_VOLTS,
+                                                 criticals.VoltageMin[(byte)Rail._3V],
+                                                 criticals.VoltageMax[(byte)Rail._3V],
+                                                 Rail._3V));
 
             if (optionalCommands.HasFlag(UsbApi.OptionalCommands.InputCurrent))
             {
                 _sensors.Add(new PsuSensor("Input", indices, SensorType.Current, this, settings, UsbApi.Command.IN_AMPS));
             }
-            _sensors.Add(new PsuSensorWithCriticals("+12V", indices, SensorType.Current, this, settings, UsbApi.Command.RAIL_AMPS,
-                null, criticals.CurrentMax[(byte)Rail._12V], Rail._12V));
-            _sensors.Add(new PsuSensorWithCriticals("+5V", indices, SensorType.Current, this, settings, UsbApi.Command.RAIL_AMPS,
-                null, criticals.CurrentMax[(byte)Rail._5V], Rail._5V));
-            _sensors.Add(new PsuSensorWithCriticals("+3.3V", indices, SensorType.Current, this, settings, UsbApi.Command.RAIL_AMPS,
-                null, criticals.CurrentMax[(byte)Rail._3V], Rail._3V));
 
-            PsuSensor[] powerRails = new PsuSensor[] {
-                new PsuSensor("+12V", indices, SensorType.Power, this, settings, UsbApi.Command.RAIL_WATTS, Rail._12V),
-                new PsuSensor("+5V", indices, SensorType.Power, this, settings, UsbApi.Command.RAIL_WATTS, Rail._5V),
-                new PsuSensor("+3.3V", indices, SensorType.Power, this, settings, UsbApi.Command.RAIL_WATTS, Rail._3V)
-             };
+            _sensors.Add(new PsuSensorWithLimits("+12V",
+                                                 indices,
+                                                 SensorType.Current,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.RAIL_AMPS,
+                                                 null,
+                                                 criticals.CurrentMax[(byte)Rail._12V]));
+
+            _sensors.Add(new PsuSensorWithLimits("+5V",
+                                                 indices,
+                                                 SensorType.Current,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.RAIL_AMPS,
+                                                 null,
+                                                 criticals.CurrentMax[(byte)Rail._5V],
+                                                 Rail._5V));
+
+            _sensors.Add(new PsuSensorWithLimits("+3.3V",
+                                                 indices,
+                                                 SensorType.Current,
+                                                 this,
+                                                 settings,
+                                                 UsbApi.Command.RAIL_AMPS,
+                                                 null,
+                                                 criticals.CurrentMax[(byte)Rail._3V],
+                                                 Rail._3V));
+
+            PsuSensor[] powerRails =
+            {
+                new("+12V", indices, SensorType.Power, this, settings, UsbApi.Command.RAIL_WATTS),
+                new("+5V", indices, SensorType.Power, this, settings, UsbApi.Command.RAIL_WATTS, Rail._5V),
+                new("+3.3V", indices, SensorType.Power, this, settings, UsbApi.Command.RAIL_WATTS, Rail._3V)
+            };
+
             _sensors.AddRange(powerRails);
             _sensors.Add(new PsuSensor("Total watts", indices, SensorType.Power, this, settings, UsbApi.Command.TOTAL_WATTS));
-            _compositeSensors.Add(new CompositeSensor("Total Output", indices.NextIndex(SensorType.Power), SensorType.Power, this, settings, powerRails,
-                (acc, sensor) => acc + sensor.Value ?? 0f, 0f));
+            _compositeSensors.Add(new CompositeSensor("Total Output",
+                                                      indices.NextIndex(SensorType.Power),
+                                                      SensorType.Power,
+                                                      this,
+                                                      settings,
+                                                      powerRails,
+                                                      (acc, sensor) => acc + sensor.Value ?? 0f));
+
             ActivateSensor(_compositeSensors[_compositeSensors.Count - 1]);
 
-            _sensors.Add(new PsuSensor("Uptime", indices, SensorType.Timespan, this, settings, UsbApi.Command.UPTIME, Rail._12V, true));
-            _sensors.Add(new PsuSensor("Total uptime", indices, SensorType.Timespan, this, settings, UsbApi.Command.TOTAL_UPTIME, Rail._12V, true));
+            _sensors.Add(new PsuSensor("Uptime", indices, SensorType.TimeSpan, this, settings, UsbApi.Command.UPTIME, Rail._12V, true));
+            _sensors.Add(new PsuSensor("Total uptime", indices, SensorType.TimeSpan, this, settings, UsbApi.Command.TOTAL_UPTIME, Rail._12V, true));
         }
 
         private class PsuSensor : Sensor
@@ -140,18 +205,28 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             }
         }
 
-        private class PsuSensorWithCriticals : PsuSensor, ISensorCriticalLimiits
+        private class PsuSensorWithLimits : PsuSensor, ICriticalSensorLimits
         {
-            public PsuSensorWithCriticals(string name, SensorIndices indices, SensorType type, CorsairPsu hardware, ISettings settings,
-                UsbApi.Command cmd, float? lowCritical, float? highCritical, Rail rail = Rail._12V)
+            public PsuSensorWithLimits
+            (
+                string name,
+                SensorIndices indices,
+                SensorType type,
+                CorsairPsu hardware,
+                ISettings settings,
+                UsbApi.Command cmd,
+                float? lowCritical,
+                float? highCritical,
+                Rail rail = Rail._12V)
                 : base(name, indices, type, hardware, settings, cmd, rail)
             {
-                LowCriticalLimit = lowCritical;
-                HighCriticalLimit = highCritical;
+                CriticalLowLimit = lowCritical;
+                CriticalHighLimit = highCritical;
             }
 
-            public float? LowCriticalLimit { get; private set; }
-            public float? HighCriticalLimit { get; private set; }
+            public float? CriticalHighLimit { get; }
+
+            public float? CriticalLowLimit { get; }
         }
 
         private enum Rail : byte
@@ -162,16 +237,21 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
         }
     }
 
+
     #region Exception classes
-    public class CommunicationProtocolError: ApplicationException
+
+    public class CommunicationProtocolError : ApplicationException
     {
         public CommunicationProtocolError(HidDevice device, string message)
             : base($"Error communicating with the PSU controller at {device.DevicePath}: {message}")
         { }
     }
+
     #endregion
 
+
     #region PSU USB communication protocol implementation
+
     internal static class UsbApi
     {
         /* some values are SMBus LINEAR11 data which need a conversion */
@@ -223,10 +303,10 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
              *	- it is a pure sensors reading driver (will not support configuring)
             */
 
-            const int CmdBufferSize = 64;
-            const int ReplySize = 16;
+            const int cmdBufferSize = 64;
+            const int replySize = 16;
 
-            byte[] cmdBuffer = new byte[CmdBufferSize + 1];
+            byte[] cmdBuffer = new byte[cmdBufferSize + 1];
             cmdBuffer[0] = 0; // report id
             cmdBuffer[1] = length;
             cmdBuffer[2] = (byte)cmd;
@@ -234,8 +314,8 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 
             stream.Write(cmdBuffer);
             byte[] reply = stream.Read();
-            replyData = new byte[ReplySize];
-            Array.Copy(reply, 3, replyData, 0, ReplySize);
+            replyData = new byte[replySize];
+            Array.Copy(reply, 3, replyData, 0, replySize);
 
             return reply[1] == cmdBuffer[1] && reply[2] == cmdBuffer[2];
         }
@@ -263,16 +343,22 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             if (!SendCommand(stream, 3, Command.PROD_STR, 0, out byte[] productArr))
                 throw new CommunicationProtocolError(stream.Device, "Can't read product");
 
-            Func<byte[], string> arrayToString = (ar) =>
+
+            string ArrayToString(byte[] ar)
             {
                 int i = 0;
-                while (ar[i] != 0) i++;
-                byte[] trimmed = new byte[i];
-                for (int j = 0; j < i; j++) trimmed[j] = ar[j];
-                return Encoding.ASCII.GetString(trimmed);
-            };
+                while (ar[i] != 0)
+                    i++;
 
-            return new FirmwareInfo { Vendor = arrayToString(vendorArr), Product = arrayToString(productArr) };
+                byte[] trimmed = new byte[i];
+                for (int j = 0; j < i; j++)
+                    trimmed[j] = ar[j];
+
+                return Encoding.ASCII.GetString(trimmed);
+            }
+
+
+            return new FirmwareInfo { Vendor = ArrayToString(vendorArr), Product = ArrayToString(productArr) };
         }
 
         static bool Request(HidStream stream, Command cmd, byte rail, out byte[] data)
@@ -292,11 +378,13 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                             data = null;
                             return false;
                         }
+
                         break;
                     }
             }
 
             return SendCommand(stream, 3, cmd, 0, out data);
+
 
             //  mutex_unlock(&priv->lock) ;
             //  return ret;
@@ -315,7 +403,7 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
              * the LINEAR11 conversion are the watts values which are about 1200 for the strongest psu
              * supported (HX1200i)
              */
-            int tmp = BitConverter.ToInt32(data, 0);// ((int)data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
+            int tmp = BitConverter.ToInt32(data, 0); // ((int)data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
             switch (cmd)
             {
                 case Command.RAIL_VOLTS_HCRIT:
@@ -331,12 +419,13 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                 case Command.FAN_RPM:
                 case Command.RAIL_WATTS:
                 case Command.TOTAL_WATTS:
-                    return Linear11ToFloat32((ushort)tmp);// Linear11ToInt((ushort)tmp, 1000000);
+                    return Linear11ToFloat32((ushort)tmp); // Linear11ToInt((ushort)tmp, 1000000);
                 case Command.TOTAL_UPTIME:
                 case Command.UPTIME:
                 case Command.OCPMODE:
                     return tmp;
             }
+
             return null;
         }
 
@@ -353,20 +442,20 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
         public static Criticals GetCriticals(HidStream stream)
         {
             Criticals res = new();
-            const byte TempCount = 2;
-            res.TempMax = new float?[TempCount];
+            const byte tempCount = 2;
+            res.TempMax = new float?[tempCount];
 
-            for (byte rail = 0; rail < TempCount; rail++)
+            for (byte rail = 0; rail < tempCount; rail++)
             {
                 res.TempMax[rail] = GetValue(stream, Command.TEMP_HCRIT, rail);
             }
 
-            const byte RailCount = 3; /* 3v + 5v + 12v */
-            res.VoltageMin = new float?[RailCount];
-            res.VoltageMax = new float?[RailCount];
-            res.CurrentMax = new float?[RailCount];
+            const byte railCount = 3; /* 3v + 5v + 12v */
+            res.VoltageMin = new float?[railCount];
+            res.VoltageMax = new float?[railCount];
+            res.CurrentMax = new float?[railCount];
 
-            for (byte rail = 0; rail < RailCount; rail++)
+            for (byte rail = 0; rail < railCount; rail++)
             {
                 res.VoltageMax[rail] = GetValue(stream, Command.RAIL_VOLTS_HCRIT, rail);
                 res.VoltageMin[rail] = GetValue(stream, Command.RAIL_VOLTS_LCRIT, rail);
@@ -390,6 +479,7 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             {
                 res |= OptionalCommands.InputCurrent;
             }
+
             return res;
         }
 
@@ -417,5 +507,6 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             INIT = 0xFE
         }
     }
+
     #endregion
 }

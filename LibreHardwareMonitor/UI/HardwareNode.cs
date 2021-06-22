@@ -53,17 +53,19 @@ namespace LibreHardwareMonitor.UI
         {
             get
             {
-                IDictionary<string, string> props = Hardware.ConfigurationProperties;
-                if (props.Count > 0)
+                IDictionary<string, string> properties = Hardware.Properties;
+
+                if (properties.Count > 0)
                 {
-                    StringBuilder res = new();
-                    res.AppendLine("Hardware properties:");
-                    foreach (var kv in props)
-                    {
-                        res.AppendFormat(" • {0}: {1}\n", kv.Key, kv.Value);
-                    }
-                    return res.ToString();
+                    StringBuilder stringBuilder = new();
+                    stringBuilder.AppendLine("Hardware properties:");
+                    
+                    foreach (KeyValuePair<string, string> property in properties)
+                        stringBuilder.AppendFormat(" • {0}: {1}\n", property.Key, property.Value);
+
+                    return stringBuilder.ToString();
                 }
+
                 return null;
             }
         }

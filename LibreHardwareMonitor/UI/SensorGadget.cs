@@ -640,7 +640,7 @@ namespace LibreHardwareMonitor.UI
                                 case SensorType.Factor:
                                     format = "{0:F3}";
                                     break;
-                                case SensorType.Timespan:
+                                case SensorType.TimeSpan:
                                     format = "{0:g}";
                                     break;
                             }
@@ -690,7 +690,7 @@ namespace LibreHardwareMonitor.UI
                                 }
                                 formatted = result;
                             }
-                            else if (sensor.SensorType == SensorType.Timespan)
+                            else if (sensor.SensorType == SensorType.TimeSpan)
                             {
                                 formatted = string.Format(format, TimeSpan.FromSeconds(sensor.Value.Value));
                             }

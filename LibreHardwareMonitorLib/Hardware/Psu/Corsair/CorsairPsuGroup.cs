@@ -4,20 +4,16 @@
 // All Rights Reserved.
 // Implemented after the Linuix kernel driver corsair_psu by Wilken Gottwalt and contributers
 
-using HidSharp;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 {
     public class CorsairPsuGroup : IGroup
     {
-        private readonly List<IHardware> _hardware;
-        private readonly StringBuilder _report;
-
-        private static readonly ushort _vendorId = 0x1b1c;
-        private static readonly int[] _productIds = new int[]
+        private static readonly int[] _productIds =
         {
             0x1c03, // HX550i
             0x1c04, // HX650i
@@ -32,6 +28,10 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             0x1c0d, // RM1000i
             // 0x1c11, // AX1600i
         };
+
+        private static readonly ushort _vendorId = 0x1b1c;
+        private readonly List<IHardware> _hardware;
+        private readonly StringBuilder _report;
 
         public CorsairPsuGroup(ISettings settings)
         {
@@ -51,6 +51,7 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                 }
             }
         }
+
         public IReadOnlyList<IHardware> Hardware => _hardware;
 
         public void Close()
@@ -61,6 +62,7 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                     hardware.Close();
             }
         }
+
         public string GetReport()
         {
             return _report.ToString();
