@@ -35,13 +35,51 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         public override HardwareType HardwareType => HardwareType.EmbeddedController;
 
-        public static EmbeddedController Create(List<EmbeddedControllerSource> sources, ISettings settings)
+        internal static EmbeddedController Create(Model model, ISettings settings)
         {
-            return Environment.OSVersion.Platform switch
+            var sources = new List<EmbeddedControllerSource>();
+
+            switch (model)
             {
-                PlatformID.Win32NT => new WindowsEmbeddedController(sources, settings),
-                _ => null
-            };
+                case Model.ROG_STRIX_X570_E_GAMING:
+                case Model.ROG_CROSSHAIR_VIII_HERO:
+                {
+                    sources.AddRange(new EmbeddedControllerSource[]
+                    {
+                        new("Chipset", 0x3A, SensorType.Temperature, ReadByte),
+                        new("CPU", 0x3B, SensorType.Temperature, ReadByte),
+                        new("Motherboard", 0x3C, SensorType.Temperature, ReadByte),
+                        new("T Sensor", 0x3D, SensorType.Temperature, ReadByte),
+                        new("VRM", 0x3E, SensorType.Temperature, ReadByte),
+                        new("CPU Opt", 0xB0, SensorType.Fan, ReadWordBE),
+                        new("Chipset", 0xB4, SensorType.Fan, ReadWordBE),
+                        new("CPU", 0xF4, SensorType.Current, ReadByte)
+                    });
+
+                    break;
+                }
+            }
+
+            switch (model)
+            {
+                case Model.ROG_CROSSHAIR_VIII_HERO:
+                {
+                    // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
+                    sources.Add(new EmbeddedControllerSource("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f));
+                    break;
+                }
+            }
+
+            if (sources.Count > 0)
+            {
+                return Environment.OSVersion.Platform switch
+                {
+                    PlatformID.Win32NT => new WindowsEmbeddedController(sources, settings),
+                    _ => null
+                };
+            }
+
+            return null;
         }
 
         public override void Update()
