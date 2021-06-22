@@ -184,44 +184,44 @@ namespace LibreHardwareMonitor.UI
                         switch (Sensor.Name)
                         {
                             case "Connection Speed":
+                            {
+                                switch (value)
                                 {
-                                    switch (value)
+                                    case 100000000:
                                     {
-                                        case 100000000:
-                                            {
-                                                result = "100Mbps";
-                                                break;
-                                            }
-                                        case 1000000000:
-                                            {
-                                                result = "1Gbps";
-                                                break;
-                                            }
-                                        default:
-                                            {
-                                                if (value < 1024)
-                                                    result = $"{value:F0} bps";
-                                                else if (value < 1048576)
-                                                    result = $"{value / 1024:F1} Kbps";
-                                                else if (value < 1073741824)
-                                                    result = $"{value / 1048576:F1} Mbps";
-                                                else
-                                                    result = $"{value / 1073741824:F1} Gbps";
-                                            }
-
-                                            break;
+                                        result = "100Mbps";
+                                        break;
+                                    }
+                                    case 1000000000:
+                                    {
+                                        result = "1Gbps";
+                                        break;
+                                    }
+                                    default:
+                                    {
+                                        if (value < 1024)
+                                            result = $"{value:F0} bps";
+                                        else if (value < 1048576)
+                                            result = $"{value / 1024:F1} Kbps";
+                                        else if (value < 1073741824)
+                                            result = $"{value / 1048576:F1} Mbps";
+                                        else
+                                            result = $"{value / 1073741824:F1} Gbps";
                                     }
 
                                     break;
                                 }
+
+                                break;
+                            }
                             default:
-                                {
-                                    const int _1MB = 1048576;
+                            {
+                                const int _1MB = 1048576;
 
-                                    result = value < _1MB ? $"{value / 1024:F1} KB/s" : $"{value / _1MB:F1} MB/s";
+                                result = value < _1MB ? $"{value / 1024:F1} KB/s" : $"{value / _1MB:F1} MB/s";
 
-                                    break;
-                                }
+                                break;
+                            }
                         }
 
                         return result;
