@@ -6,10 +6,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Management;
 using System.Text;
+using LibreHardwareMonitor.Interop;
+
+// ReSharper disable CommentTypo
+// ReSharper disable IdentifierTypo
+// ReSharper disable InconsistentNaming
 
 namespace LibreHardwareMonitor.Hardware
 {
@@ -66,7 +69,7 @@ namespace LibreHardwareMonitor.Hardware
         PeripheralChassis,
         RaidChassis,
         RackMountChassis,
-        SealedCasePC,
+        SealedCasePc,
         MultiSystemChassis,
         CompactPci,
         AdvancedTca,
@@ -76,16 +79,14 @@ namespace LibreHardwareMonitor.Hardware
         Convertible,
         Detachable,
         IoTGateway,
-        EmbeddedPC,
-        MiniPC,
-        StickPC
+        EmbeddedPc,
+        MiniPc,
+        StickPc
     }
 
     /// <summary>
     /// Processor family based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.2</see>.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     public enum ProcessorFamily
     {
         Other = 1,
@@ -310,7 +311,7 @@ namespace LibreHardwareMonitor.Hardware
         Unknown,
         CentralProcessor,
         MathProcessor,
-        DSPProcessor,
+        DspProcessor,
         VideoProcessor
     }
 
@@ -389,7 +390,7 @@ namespace LibreHardwareMonitor.Hardware
         LanRemote,
         PowerSwitch,
         PciPme,
-        ACPowerRestored
+        AcPowerRestored
     }
 
     /// <summary>
@@ -427,20 +428,24 @@ namespace LibreHardwareMonitor.Hardware
     public class InformationBase
     {
         private readonly byte[] _data;
-        private readonly string[] _strings;
+        private readonly IList<string> _strings;
 
-        protected InformationBase(byte type, ushort handle, byte[] data, string[] strings)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InformationBase" /> class.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <param name="strings">The strings.</param>
+        protected InformationBase(byte[] data, IList<string> strings)
         {
-            Type = type;
-            Handle = handle;
             _data = data;
             _strings = strings;
         }
 
-        protected ushort Handle { get; }
-
-        protected byte Type { get; }
-
+        /// <summary>
+        /// Gets the byte.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns><see cref="int" />.</returns>
         protected int GetByte(int offset)
         {
             if (offset < _data.Length && offset >= 0)
@@ -450,6 +455,11 @@ namespace LibreHardwareMonitor.Hardware
             return 0;
         }
 
+        /// <summary>
+        /// Gets the word.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns><see cref="int" />.</returns>
         protected int GetWord(int offset)
         {
             if (offset + 1 < _data.Length && offset >= 0)
@@ -459,9 +469,14 @@ namespace LibreHardwareMonitor.Hardware
             return 0;
         }
 
+        /// <summary>
+        /// Gets the string.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns><see cref="string" />.</returns>
         protected string GetString(int offset)
         {
-            if (offset < _data.Length && _data[offset] > 0 && _data[offset] <= _strings.Length)
+            if (offset < _data.Length && _data[offset] > 0 && _data[offset] <= _strings.Count)
                 return _strings[_data[offset] - 1];
 
 
@@ -474,20 +489,20 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class BiosInformation : InformationBase
     {
-        internal BiosInformation(string vendor, string version, string date = null, ulong? size = null) : base(0x00, 0, null, null)
+        internal BiosInformation(string vendor, string version, string date = null, ulong? size = null) : base(null, null)
         {
             Vendor = vendor;
             Version = version;
-            Date = ParseBiosDate(date);
+            Date = GetDate(date);
             Size = size;
         }
 
-        internal BiosInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal BiosInformation(byte[] data, IList<string> strings) : base(data, strings)
         {
             Vendor = GetString(0x04);
             Version = GetString(0x05);
-            Date = ParseBiosDate(GetString(0x08));
-            Size = CalculateBiosRomSize();
+            Date = GetDate(GetString(0x08));
+            Size = GetSize();
         }
 
         /// <summary>
@@ -510,10 +525,15 @@ namespace LibreHardwareMonitor.Hardware
         /// </summary>
         public string Version { get; }
 
-        private ulong? CalculateBiosRomSize()
+        /// <summary>
+        /// Gets the size.
+        /// </summary>
+        /// <returns><see cref="Nullable{Int64}" />.</returns>
+        private ulong? GetSize()
         {
             int biosRomSize = GetByte(0x09);
             int extendedBiosRomSize = GetWord(0x18);
+
             bool isExtendedBiosRomSize = biosRomSize == 0xFF && extendedBiosRomSize != 0;
             if (!isExtendedBiosRomSize)
                 return 65536 * (ulong)(biosRomSize + 1);
@@ -531,21 +551,27 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        private static DateTime? ParseBiosDate(string biosDate)
+        /// <summary>
+        /// Gets the date.
+        /// </summary>
+        /// <param name="date">The bios date.</param>
+        /// <returns><see cref="Nullable{DateTime}" />.</returns>
+        private static DateTime? GetDate(string date)
         {
-            string[] parts = (biosDate ?? string.Empty).Split('/');
+            string[] parts = (date ?? string.Empty).Split('/');
 
             if (parts.Length == 3 &&
                 int.TryParse(parts[0], out int month) &&
                 int.TryParse(parts[1], out int day) &&
                 int.TryParse(parts[2], out int year))
             {
-                if (month > 12) 
+                if (month > 12)
                 {
                     int tmp = month;
                     month = day;
                     day = tmp;
                 }
+
                 return new DateTime(year < 100 ? 1900 + year : year, month, day);
             }
 
@@ -559,7 +585,13 @@ namespace LibreHardwareMonitor.Hardware
     public class SystemInformation : InformationBase
     {
         internal SystemInformation
-            (string manufacturerName, string productName, string version, string serialNumber, string family, SystemWakeUp wakeUp = SystemWakeUp.Unknown) : base(0x01, 0, null, null)
+        (
+            string manufacturerName,
+            string productName,
+            string version,
+            string serialNumber,
+            string family,
+            SystemWakeUp wakeUp = SystemWakeUp.Unknown) : base(null, null)
         {
             ManufacturerName = manufacturerName;
             ProductName = productName;
@@ -569,7 +601,7 @@ namespace LibreHardwareMonitor.Hardware
             WakeUp = wakeUp;
         }
 
-        internal SystemInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal SystemInformation(byte[] data, IList<string> strings) : base(data, strings)
         {
             ManufacturerName = GetString(0x04);
             ProductName = GetString(0x05);
@@ -581,7 +613,11 @@ namespace LibreHardwareMonitor.Hardware
 
         /// <summary>
         /// Gets the family associated with system.
-        /// <para>This text string identifies the family to which a particular computer belongs. A family refers to a set of computers that are similar but not identical from a hardware or software point of view. Typically, a family is composed of different computer models, which have different configurations and pricing points. Computers in the same family often have similar branding and cosmetic features.</para>
+        /// <para>
+        /// This text string identifies the family to which a particular computer belongs. A family refers to a set of computers that are similar but not identical from a hardware or software point of
+        /// view. Typically, a family is composed of different computer models, which have different configurations and pricing points. Computers in the same family often have similar branding and cosmetic
+        /// features.
+        /// </para>
         /// </summary>
         public string Family { get; }
 
@@ -606,7 +642,7 @@ namespace LibreHardwareMonitor.Hardware
         public string Version { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="SystemWakeUp"/>
+        /// Gets <inheritdoc cref="SystemWakeUp" />
         /// </summary>
         public SystemWakeUp WakeUp { get; }
     }
@@ -616,7 +652,7 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class ChassisInformation : InformationBase
     {
-        internal ChassisInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal ChassisInformation(byte[] data, IList<string> strings) : base(data, strings)
         {
             ManufacturerName = GetString(0x04).Trim();
             Version = GetString(0x06).Trim();
@@ -639,19 +675,19 @@ namespace LibreHardwareMonitor.Hardware
         public string AssetTag { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ChassisStates"/>
+        /// Gets <inheritdoc cref="ChassisStates" />
         /// </summary>
         public ChassisStates BootUpState { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ChassisType"/>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ChassisType" />
         /// </summary>
         public ChassisType ChassisType { get; }
 
         /// <summary>
         /// Gets or sets the chassis lock.
         /// </summary>
-        /// <returns>Chassis lock is present if <see langword="true"/>. Otherwise, either a lock is not present or it is unknown if the enclosure has a lock.</returns>
+        /// <returns>Chassis lock is present if <see langword="true" />. Otherwise, either a lock is not present or it is unknown if the enclosure has a lock.</returns>
         public bool LockDetected { get; set; }
 
         /// <summary>
@@ -670,7 +706,8 @@ namespace LibreHardwareMonitor.Hardware
         public ChassisStates PowerSupplyState { get; }
 
         /// <summary>
-        /// Gets the height of the enclosure, in 'U's. A U is a standard unit of measure for the height of a rack or rack-mountable component and is equal to 1.75 inches or 4.445 cm. A value of <c>0</c> indicates that the enclosure height is unspecified.
+        /// Gets the height of the enclosure, in 'U's. A U is a standard unit of measure for the height of a rack or rack-mountable component and is equal to 1.75 inches or 4.445 cm. A value of <c>0</c>
+        /// indicates that the enclosure height is unspecified.
         /// </summary>
         public int RackHeight { get; }
 
@@ -705,7 +742,7 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class BaseBoardInformation : InformationBase
     {
-        internal BaseBoardInformation(string manufacturerName, string productName, string version, string serialNumber) : base(0x02, 0, null, null)
+        internal BaseBoardInformation(string manufacturerName, string productName, string version, string serialNumber) : base(null, null)
         {
             ManufacturerName = manufacturerName;
             ProductName = productName;
@@ -713,7 +750,7 @@ namespace LibreHardwareMonitor.Hardware
             SerialNumber = serialNumber;
         }
 
-        internal BaseBoardInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal BaseBoardInformation(byte[] data, IList<string> strings) : base(data, strings)
         {
             ManufacturerName = GetString(0x04).Trim();
             ProductName = GetString(0x05).Trim();
@@ -747,7 +784,7 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class ProcessorInformation : InformationBase
     {
-        internal ProcessorInformation(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal ProcessorInformation(byte[] data, IList<string> strings) : base(data, strings)
         {
             SocketDesignation = GetString(0x04).Trim();
             ManufacturerName = GetString(0x07).Trim();
@@ -778,9 +815,24 @@ namespace LibreHardwareMonitor.Hardware
         public int CoreEnabled { get; }
 
         /// <summary>
+        /// Gets the value that represents the current processor speed (in MHz).
+        /// </summary>
+        public int CurrentSpeed { get; }
+
+        /// <summary>
         /// Gets the external Clock Frequency, in MHz. If the value is unknown, the field is set to 0.
         /// </summary>
         public int ExternalClock { get; }
+
+        /// <summary>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorFamily" />
+        /// </summary>
+        public ProcessorFamily Family { get; }
+
+        /// <summary>
+        /// Gets the string number of Processor Manufacturer.
+        /// </summary>
+        public string ManufacturerName { get; }
 
         /// <summary>
         /// Gets the value that represents the maximum processor speed (in MHz) supported by the system for this processor socket.
@@ -788,9 +840,9 @@ namespace LibreHardwareMonitor.Hardware
         public int MaxSpeed { get; }
 
         /// <summary>
-        /// Gets the value that represents the current processor speed (in MHz).
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorType" />
         /// </summary>
-        public int CurrentSpeed { get; }
+        public ProcessorType ProcessorType { get; }
 
         /// <summary>
         /// Gets the value that represents the string number for the serial number of this processor.
@@ -799,29 +851,14 @@ namespace LibreHardwareMonitor.Hardware
         public string Serial { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorType"/>
-        /// </summary>
-        public ProcessorType ProcessorType { get; }
-
-        /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorSocket"/>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorSocket" />
         /// </summary>
         public ProcessorSocket Socket { get; }
-
-        /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorFamily"/>
-        /// </summary>
-        public ProcessorFamily Family { get; }
 
         /// <summary>
         /// Gets the string number for Reference Designation.
         /// </summary>
         public string SocketDesignation { get; }
-
-        /// <summary>
-        /// Gets the string number of Processor Manufacturer.
-        /// </summary>
-        public string ManufacturerName { get; }
 
         /// <summary>
         /// Gets the value that represents the number of threads per processor socket.
@@ -839,41 +876,48 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class ProcessorCache : InformationBase
     {
-        internal ProcessorCache(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal ProcessorCache(byte[] data, IList<string> strings) : base(data, strings)
         {
-            Designation = ParseCacheDesignation();
+            Designation = GetCacheDesignation();
             Associativity = (CacheAssociativity)GetByte(0x12);
             Size = GetWord(0x09);
         }
 
-        private CacheDesignation ParseCacheDesignation()
-        {
-            string rawCacheType = GetString(0x04);
-
-            if (rawCacheType.Contains("L1"))
-                return CacheDesignation.L1;
-            else if (rawCacheType.Contains("L2"))
-                return CacheDesignation.L2;
-            else if (rawCacheType.Contains("L3"))
-                return CacheDesignation.L3;
-            else
-                return CacheDesignation.Other;
-        }
-
         /// <summary>
-        /// Gets <inheritdoc cref="CacheDesignation"/>
-        /// </summary>
-        public CacheDesignation Designation { get; }
-
-        /// <summary>
-        /// Gets <inheritdoc cref="CacheAssociativity"/>
+        /// Gets <inheritdoc cref="CacheAssociativity" />
         /// </summary>
         public CacheAssociativity Associativity { get; }
+
+        /// <summary>
+        /// Gets <inheritdoc cref="CacheDesignation" />
+        /// </summary>
+        public CacheDesignation Designation { get; }
 
         /// <summary>
         /// Gets the value that represents the installed cache size.
         /// </summary>
         public int Size { get; }
+
+        /// <summary>
+        /// Gets the cache designation.
+        /// </summary>
+        /// <returns><see cref="CacheDesignation" />.</returns>
+        private CacheDesignation GetCacheDesignation()
+        {
+            string rawCacheType = GetString(0x04);
+
+            if (rawCacheType.Contains("L1"))
+                return CacheDesignation.L1;
+
+            if (rawCacheType.Contains("L2"))
+                return CacheDesignation.L2;
+
+            if (rawCacheType.Contains("L3"))
+                return CacheDesignation.L3;
+
+
+            return CacheDesignation.Other;
+        }
     }
 
     /// <summary>
@@ -881,7 +925,7 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class MemoryDevice : InformationBase
     {
-        internal MemoryDevice(byte type, ushort handle, byte[] data, string[] strings) : base(type, handle, data, strings)
+        internal MemoryDevice(byte[] data, IList<string> strings) : base(data, strings)
         {
             DeviceLocator = GetString(0x10).Trim();
             BankLocator = GetString(0x11).Trim();
@@ -921,14 +965,14 @@ namespace LibreHardwareMonitor.Hardware
         public string SerialNumber { get; }
 
         /// <summary>
-        /// Gets the the value that identifies the maximum capable speed of the device, in megatransfers per second (MT/s).
-        /// </summary>
-        public int Speed { get; }
-
-        /// <summary>
         /// Gets the size of the memory device. If the value is 0, no memory device is installed in the socket.
         /// </summary>
         public int Size { get; }
+
+        /// <summary>
+        /// Gets the the value that identifies the maximum capable speed of the device, in mega transfers per second (MT/s).
+        /// </summary>
+        public int Speed { get; }
     }
 
     /// <summary>
@@ -964,97 +1008,101 @@ namespace LibreHardwareMonitor.Hardware
             }
             else
             {
-                List<MemoryDevice> memoryDeviceList = new List<MemoryDevice>();
-                List<ProcessorCache> processorCacheList = new List<ProcessorCache>();
+                List<MemoryDevice> memoryDeviceList = new();
+                List<ProcessorCache> processorCacheList = new();
 
-                _raw = null;
-                byte majorVersion = 0;
-                byte minorVersion = 0;
-
-                try
+                string[] tables = FirmwareTable.EnumerateTables(Kernel32.Provider.RSMB);
+                if (tables is { Length: >0 })
                 {
-                    ManagementObjectCollection collection;
-                    using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\WMI", "SELECT * FROM MSSMBios_RawSMBiosTables"))
+                    _raw = FirmwareTable.GetTable(Kernel32.Provider.RSMB, tables[0]);
+                    if (_raw == null || _raw.Length == 0)
+                        return;
+
+
+                    byte majorVersion = _raw[1];
+                    byte minorVersion = _raw[2];
+
+                    if (majorVersion > 0 || minorVersion > 0)
+                        _version = new Version(majorVersion, minorVersion);
+
+                    if (_raw is { Length: > 0 })
                     {
-                        collection = searcher.Get();
-                    }
+                        int offset = 8;
+                        byte type = _raw[offset];
 
-                    foreach (ManagementBaseObject mo in collection)
-                    {
-                        _raw = (byte[])mo["SMBiosData"];
-                        majorVersion = (byte)mo["SmbiosMajorVersion"];
-                        minorVersion = (byte)mo["SmbiosMinorVersion"];
-
-                        break;
-                    }
-                }
-                catch
-                { }
-
-                if (majorVersion > 0 || minorVersion > 0)
-                    _version = new Version(majorVersion, minorVersion);
-
-                if (_raw != null && _raw.Length > 0)
-                {
-                    int offset = 0;
-                    byte type = _raw[offset];
-                    while (offset + 4 < _raw.Length && type != 127)
-                    {
-                        type = _raw[offset];
-                        int length = _raw[offset + 1];
-                        ushort handle = (ushort)((_raw[offset + 2] << 8) | _raw[offset + 3]);
-
-                        if (offset + length > _raw.Length)
-                            break;
-
-
-                        byte[] data = new byte[length];
-                        Array.Copy(_raw, offset, data, 0, length);
-                        offset += length;
-
-                        List<string> stringsList = new List<string>();
-                        if (offset < _raw.Length && _raw[offset] == 0)
-                            offset++;
-
-                        while (offset < _raw.Length && _raw[offset] != 0)
+                        while (offset + 4 < _raw.Length && type != 127)
                         {
-                            StringBuilder sb = new StringBuilder();
+                            type = _raw[offset];
+                            int length = _raw[offset + 1];
+
+                            if (offset + length > _raw.Length)
+                                break;
+
+
+                            byte[] data = new byte[length];
+                            Array.Copy(_raw, offset, data, 0, length);
+                            offset += length;
+
+                            List<string> strings = new();
+                            if (offset < _raw.Length && _raw[offset] == 0)
+                                offset++;
+
                             while (offset < _raw.Length && _raw[offset] != 0)
                             {
-                                sb.Append((char)_raw[offset]);
+                                StringBuilder stringBuilder = new();
+
+                                while (offset < _raw.Length && _raw[offset] != 0)
+                                {
+                                    stringBuilder.Append((char)_raw[offset]);
+                                    offset++;
+                                }
+
                                 offset++;
+
+                                strings.Add(stringBuilder.ToString());
                             }
 
                             offset++;
-                            stringsList.Add(sb.ToString());
-                        }
-
-                        offset++;
-                        switch (type)
-                        {
-                            case 0x00:
-                                Bios = new BiosInformation(type, handle, data, stringsList.ToArray());
-                                break;
-                            case 0x01:
-                                System = new SystemInformation(type, handle, data, stringsList.ToArray());
-                                break;
-                            case 0x02:
-                                Board = new BaseBoardInformation(type, handle, data, stringsList.ToArray());
-                                break;
-                            case 0x03:
-                                Chassis = new ChassisInformation(type, handle, data, stringsList.ToArray());
-                                break;
-                            case 0x04:
-                                Processor = new ProcessorInformation(type, handle, data, stringsList.ToArray());
-                                break;
-                            case 0x07:
-                                ProcessorCache c = new ProcessorCache(type, handle, data, stringsList.ToArray());
-                                processorCacheList.Add(c);
-                                break;
-                            case 0x11:
-                                MemoryDevice m = new MemoryDevice(type, handle, data, stringsList.ToArray());
-                                memoryDeviceList.Add(m);
-                                break;
+                            switch (type)
+                            {
+                                case 0x00:
+                                {
+                                    Bios = new BiosInformation(data, strings);
+                                    break;
+                                }
+                                case 0x01:
+                                {
+                                    System = new SystemInformation(data, strings);
+                                    break;
+                                }
+                                case 0x02:
+                                {
+                                    Board = new BaseBoardInformation(data, strings);
+                                    break;
+                                }
+                                case 0x03:
+                                {
+                                    Chassis = new ChassisInformation(data, strings);
+                                    break;
+                                }
+                                case 0x04:
+                                {
+                                    Processor = new ProcessorInformation(data, strings);
+                                    break;
+                                }
+                                case 0x07:
+                                {
+                                    ProcessorCache processorCache = new(data, strings);
+                                    processorCacheList.Add(processorCache);
+                                    break;
+                                }
+                                case 0x11:
+                                {
+                                    MemoryDevice memoryDevice = new(data, strings);
+                                    memoryDeviceList.Add(memoryDevice);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -1065,37 +1113,37 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// Gets <inheritdoc cref="BiosInformation"/>
+        /// Gets <inheritdoc cref="BiosInformation" />
         /// </summary>
         public BiosInformation Bios { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="BaseBoardInformation"/>
+        /// Gets <inheritdoc cref="BaseBoardInformation" />
         /// </summary>
         public BaseBoardInformation Board { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ChassisInformation"/>
+        /// Gets <inheritdoc cref="ChassisInformation" />
         /// </summary>
         public ChassisInformation Chassis { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="MemoryDevice"/>
+        /// Gets <inheritdoc cref="MemoryDevice" />
         /// </summary>
         public MemoryDevice[] MemoryDevices { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ProcessorCache"/>
-        /// </summary>
-        public ProcessorCache[] ProcessorCaches { get; }
-
-        /// <summary>
-        /// Gets <inheritdoc cref="ProcessorInformation"/>
+        /// Gets <inheritdoc cref="ProcessorInformation" />
         /// </summary>
         public ProcessorInformation Processor { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="SystemInformation"/>
+        /// Gets <inheritdoc cref="ProcessorCache" />
+        /// </summary>
+        public ProcessorCache[] ProcessorCaches { get; }
+
+        /// <summary>
+        /// Gets <inheritdoc cref="SystemInformation" />
         /// </summary>
         public SystemInformation System { get; }
 
@@ -1105,8 +1153,9 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (File.Exists(path))
                 {
-                    using (StreamReader reader = new StreamReader(path))
-                        return reader.ReadLine();
+                    using StreamReader reader = new(path);
+
+                    return reader.ReadLine();
                 }
 
                 return null;
@@ -1123,7 +1172,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <returns>A formatted text string with computer information and the entire SMBIOS table.</returns>
         public string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             if (_version != null)
             {
@@ -1260,10 +1309,10 @@ namespace LibreHardwareMonitor.Hardware
 
             for (int i = 0; i < ProcessorCaches.Length; i++)
             {
-                r.Append("Cache [" + ProcessorCaches[i].Designation.ToString() + "] Size: ");
+                r.Append("Cache [" + ProcessorCaches[i].Designation + "] Size: ");
                 r.AppendLine(ProcessorCaches[i].Size.ToString());
-                r.Append("Cache [" + ProcessorCaches[i].Designation.ToString() + "] Associativity: ");
-                r.AppendLine(ProcessorCaches[i].Associativity.ToString().Replace("_", String.Empty));
+                r.Append("Cache [" + ProcessorCaches[i].Designation + "] Associativity: ");
+                r.AppendLine(ProcessorCaches[i].Associativity.ToString().Replace("_", string.Empty));
                 r.AppendLine();
             }
 

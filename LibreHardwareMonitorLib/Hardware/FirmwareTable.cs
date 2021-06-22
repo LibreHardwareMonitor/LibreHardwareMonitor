@@ -21,15 +21,12 @@ namespace LibreHardwareMonitor.Hardware
         public static byte[] GetTable(Interop.Kernel32.Provider provider, int table)
         {
             int size;
+
             try
             {
                 size = Interop.Kernel32.GetSystemFirmwareTable(provider, table, IntPtr.Zero, 0);
             }
-            catch (DllNotFoundException)
-            {
-                return null;
-            }
-            catch (EntryPointNotFoundException)
+            catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
             {
                 return null;
             }
@@ -54,15 +51,12 @@ namespace LibreHardwareMonitor.Hardware
         public static string[] EnumerateTables(Interop.Kernel32.Provider provider)
         {
             int size;
+
             try
             {
                 size = Interop.Kernel32.EnumSystemFirmwareTables(provider, IntPtr.Zero, 0);
             }
-            catch (DllNotFoundException)
-            {
-                return null;
-            }
-            catch (EntryPointNotFoundException)
+            catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
             {
                 return null;
             }
