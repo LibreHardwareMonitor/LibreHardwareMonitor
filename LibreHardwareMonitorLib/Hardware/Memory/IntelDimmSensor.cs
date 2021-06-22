@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -56,6 +57,12 @@ namespace LibreHardwareMonitor.Hardware.Memory
 
             if (res >= 0)
             {
+                ushort capabilities = GetWord(addr, 0x00);
+                BitArray bitArray = new BitArray(BitConverter.GetBytes(capabilities));
+                if (bitArray[8])
+                    return 0x00;
+
+
                 ushort manufacturerID = GetWord(addr, 0x06);
                 ushort deviceID = GetWord(addr, 0x07);
 

@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -50,6 +51,12 @@ namespace LibreHardwareMonitor.Hardware.Memory
             Ring0.WriteSmbus(SMB_HSTCNT, 0);
             if (Transaction() == true)
             {
+                ushort capabilities = GetWord(addr, 0x00);
+                BitArray bitArray = new BitArray(BitConverter.GetBytes(capabilities));
+                if (bitArray[8])
+                    return 0x00;
+
+
                 ushort manufacturerID = GetWord(addr, 0x06);
                 ushort deviceID = GetWord(addr, 0x07);
 
