@@ -72,6 +72,8 @@ namespace LibreHardwareMonitor.UI
             }
         }
 
+        public virtual string ToolTip { get; }
+
         public Image Image { get; set; }
 
         public virtual bool IsVisible

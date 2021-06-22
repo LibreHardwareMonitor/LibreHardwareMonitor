@@ -161,32 +161,30 @@ namespace LibreHardwareMonitor.UI
 
             switch (Sensor.SensorType)
             {
-                case SensorType.Voltage:
-                    return $"{Sensor.Value:F1}";
-                case SensorType.Current:
-                    return $"{Sensor.Value:F1}";
-                case SensorType.Clock:
-                    return $"{1e-3f * Sensor.Value:F1}";
-                case SensorType.Load:
-                    return $"{Sensor.Value:F0}";
                 case SensorType.Temperature:
                     return _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit ? $"{UnitManager.CelsiusToFahrenheit(Sensor.Value):F0}" : $"{Sensor.Value:F0}";
+                case SensorType.TimeSpan:
+                    return $"{TimeSpan.FromSeconds(Sensor.Value.Value):g}";
+                case SensorType.Clock:
                 case SensorType.Fan:
-                    return $"{1e-3f * Sensor.Value:F1}";
                 case SensorType.Flow:
                     return $"{1e-3f * Sensor.Value:F1}";
-                case SensorType.Control:
-                    return $"{Sensor.Value:F0}";
-                case SensorType.Level:
-                    return $"{Sensor.Value:F0}";
-                case SensorType.Power:
-                    return $"{Sensor.Value:F0}";
-                case SensorType.Data:
-                    return $"{Sensor.Value:F0}";
+                case SensorType.Voltage:
+                case SensorType.Current:
+                case SensorType.SmallData:
                 case SensorType.Factor:
+                case SensorType.Throughput:
                     return $"{Sensor.Value:F1}";
+                case SensorType.Control:
+                case SensorType.Frequency:
+                case SensorType.Level:
+                case SensorType.Power:
+                case SensorType.Data:
+                case SensorType.Load:
+                    return $"{Sensor.Value:F0}";
+                default:
+                    return "-";
             }
-            return "-";
         }
 
         private Icon CreateTransparentIcon()

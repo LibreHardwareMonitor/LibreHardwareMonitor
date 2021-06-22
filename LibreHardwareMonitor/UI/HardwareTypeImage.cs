@@ -54,6 +54,9 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.Cooler:
                     image = Utilities.EmbeddedResources.GetImage("fan.png");
                     break;
+                case HardwareType.Psu:
+                    image = Utilities.EmbeddedResources.GetImage("power-supply.png");
+                    break;
                 default:
                     image = new Bitmap(1, 1);
                     break;

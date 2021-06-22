@@ -83,6 +83,10 @@ namespace LibreHardwareMonitor.UI
                     Image = Utilities.EmbeddedResources.GetImage("throughput.png");
                     Text = "Throughput";
                     break;
+                case SensorType.TimeSpan:
+                    Image = Utilities.EmbeddedResources.GetImage("time.png");
+                    Text = "Times";
+                    break;
             }
 
             NodeAdded += TypeNode_NodeAdded;

@@ -28,7 +28,8 @@ namespace LibreHardwareMonitor.Hardware
         Factor, // 1
         Data, // GB = 2^30 Bytes
         SmallData, // MB = 2^20 Bytes
-        Throughput // B/s
+        Throughput, // B/s
+        TimeSpan, // Seconds 
     }
 
     /// <summary>

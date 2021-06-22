@@ -4,6 +4,8 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System.Collections.Generic;
+
 namespace LibreHardwareMonitor.Hardware
 {
     public delegate void SensorEventHandler(ISensor sensor);
@@ -22,7 +24,8 @@ namespace LibreHardwareMonitor.Hardware
         Storage,
         Network,
         Cooler,
-        EmbeddedController
+        EmbeddedController,
+        Psu
     }
 
     /// <summary>
@@ -81,5 +84,10 @@ namespace LibreHardwareMonitor.Hardware
         /// 
         /// </summary>
         event SensorEventHandler SensorRemoved;
+
+        /// <summary>
+        /// Rarely changed hardware properties that can't be represented as sensors.
+        /// </summary>
+        IDictionary<string, string> Properties { get; }
     }
 }

@@ -641,6 +641,8 @@ namespace LibreHardwareMonitor.Utilities
                     return "fan.png";
                 case HardwareType.Network:
                     return "nic.png";
+                case HardwareType.Psu:
+                    return "power-supply.png";
                 default:
                     return "cpu.png";
             }

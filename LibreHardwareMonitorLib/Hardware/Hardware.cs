@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware
 {
     public abstract class Hardware : IHardware
     {
-        protected readonly HashSet<ISensor> _active = new HashSet<ISensor>();
+        protected readonly HashSet<ISensor> _active = new();
         protected readonly string _name;
         protected readonly ISettings _settings;
         private string _customName;
@@ -24,6 +24,8 @@ namespace LibreHardwareMonitor.Hardware
             Identifier = identifier;
             _customName = settings.GetValue(new Identifier(Identifier, "name").ToString(), name);
         }
+
+        public event HardwareEventHandler Closing;
 
         public abstract HardwareType HardwareType { get; }
 
@@ -44,6 +46,8 @@ namespace LibreHardwareMonitor.Hardware
         {
             get { return null; }
         }
+
+        public virtual IDictionary<string, string> Properties => new SortedDictionary<string, string>();
 
         public virtual ISensor[] Sensors
         {
@@ -88,8 +92,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_active.Remove(sensor))
                 SensorRemoved?.Invoke(sensor);
         }
-
-        public event HardwareEventHandler Closing;
 
         public virtual void Close()
         {

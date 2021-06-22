@@ -8,6 +8,7 @@ using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace LibreHardwareMonitor.UI
 {
@@ -46,6 +47,27 @@ namespace LibreHardwareMonitor.UI
         {
             get { return Hardware.Name; }
             set { Hardware.Name = value; }
+        }
+
+        public override string ToolTip
+        {
+            get
+            {
+                IDictionary<string, string> properties = Hardware.Properties;
+
+                if (properties.Count > 0)
+                {
+                    StringBuilder stringBuilder = new();
+                    stringBuilder.AppendLine("Hardware properties:");
+                    
+                    foreach (KeyValuePair<string, string> property in properties)
+                        stringBuilder.AppendFormat(" • {0}: {1}\n", property.Key, property.Value);
+
+                    return stringBuilder.ToString();
+                }
+
+                return null;
+            }
         }
 
         public IHardware Hardware { get; }

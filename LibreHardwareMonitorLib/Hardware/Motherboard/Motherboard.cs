@@ -85,7 +85,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
         public Identifier Identifier
         {
-            get { return new("motherboard"); }
+            get { return new Identifier("motherboard"); }
         }
 
         public string Name
@@ -103,6 +103,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         {
             get { return null; }
         }
+
+        public virtual IDictionary<string, string> Properties => new SortedDictionary<string, string>();
 
         public ISensor[] Sensors
         {

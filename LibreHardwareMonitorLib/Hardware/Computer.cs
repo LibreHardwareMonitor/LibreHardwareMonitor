@@ -18,6 +18,7 @@ using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
+using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Storage;
 
 namespace LibreHardwareMonitor.Hardware
@@ -42,6 +43,7 @@ namespace LibreHardwareMonitor.Hardware
         private bool _open;
         private SMBios _smbios;
         private bool _storageEnabled;
+        private bool _psuEnabled;
 
         public Computer()
         {
@@ -244,6 +246,30 @@ namespace LibreHardwareMonitor.Hardware
                 }
 
                 _storageEnabled = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Psu"/> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        public bool IsPsuEnabled
+        {
+            get { return _psuEnabled; }
+            set
+            {
+                if (_open && value != _psuEnabled)
+                {
+                    if (value)
+                    {
+                        Add(new CorsairPsuGroup(_settings));
+                    }
+                    else
+                    {
+                        RemoveType<CorsairPsuGroup>();
+                    }
+                }
+                _psuEnabled = value;
             }
         }
 
@@ -490,6 +516,9 @@ namespace LibreHardwareMonitor.Hardware
 
             if (_networkEnabled)
                 Add(new NetworkGroup(_settings));
+
+            if (_psuEnabled)
+                Add(new CorsairPsuGroup(_settings));
         }
 
         private static void NewSection(TextWriter writer)
