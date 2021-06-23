@@ -51,8 +51,8 @@ namespace LibreHardwareMonitor.Hardware.Memory
             Ring0.WriteSmbus(SMB_HSTCNT, 0);
             if (Transaction() == true)
             {
-                ushort capabilities = GetWord(addr, 0x00);
-                BitArray bitArray = new BitArray(BitConverter.GetBytes(capabilities));
+                ushort configuration = GetWord(addr, 0x01);
+                BitArray bitArray = new BitArray(BitConverter.GetBytes(configuration));
                 if (bitArray[8])
                     return 0x00;
 
