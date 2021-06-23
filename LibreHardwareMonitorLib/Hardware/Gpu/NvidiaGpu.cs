@@ -614,29 +614,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             return r.ToString();
         }
 
-        private void SoftwareControlValueChanged(IControl control)
-        {
-            int coolerId = -1;
-            int index = control.Sensor.Index;
-
-            GPUCooler[] coolers = _physicalGpu.CoolerInformation.Coolers.ToArray();
-            if (coolers.Length > index)
-            {
-                GPUCooler cooler = coolers[index];
-                coolerId = cooler.CoolerId;
-            }
-
-            _physicalGpu.CoolerInformation.SetCoolerSettings(coolerId, CoolerPolicy.Manual, (int)control.SoftwareValue);
-        }
-
         private void ControlModeChanged(IControl control)
         {
             switch (control.ControlMode)
             {
-                case ControlMode.Undefined:
-                {
-                    return;
-                }
                 case ControlMode.Default:
                 {
                     RestoreDefaultFanBehavior(control.Sensor.Index);
@@ -654,19 +635,45 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             }
         }
 
+        private void SoftwareControlValueChanged(IControl control)
+        {
+            int coolerId = -1;
+            int index = control.Sensor?.Index ?? 0;
+
+            try
+            {
+                GPUCooler[] coolers = _physicalGpu.CoolerInformation.Coolers.ToArray();
+                if (coolers.Length > index)
+                {
+                    GPUCooler cooler = coolers[index];
+                    coolerId = cooler.CoolerId;
+                }
+
+                if (coolerId != -1)
+                    _physicalGpu.CoolerInformation.SetCoolerSettings(coolerId, CoolerPolicy.Manual, (int)control.SoftwareValue);
+            }
+            catch (Exception e) when (e is NVIDIAApiException or NVIDIANotSupportedException)
+            { }
+        }
+
         private void RestoreDefaultFanBehavior(int index)
         {
             int coolerId = -1;
 
-            GPUCooler[] coolers = _physicalGpu.CoolerInformation.Coolers.ToArray();
-            if (coolers.Length > index)
+            try
             {
-                GPUCooler cooler = coolers[index];
-                coolerId = cooler.CoolerId;
-            }
+                GPUCooler[] coolers = _physicalGpu.CoolerInformation.Coolers.ToArray();
+                if (coolers.Length > index)
+                {
+                    GPUCooler cooler = coolers[index];
+                    coolerId = cooler.CoolerId;
+                }
 
-            if (coolerId != -1)
-                _physicalGpu.CoolerInformation.RestoreCoolerSettingsToDefault(coolerId);
+                if (coolerId != -1)
+                    _physicalGpu.CoolerInformation.RestoreCoolerSettingsToDefault(coolerId);
+            }
+            catch (Exception e) when (e is NVIDIAApiException or NVIDIANotSupportedException)
+            { }
         }
 
         public override void Close()
