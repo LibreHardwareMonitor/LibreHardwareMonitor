@@ -2328,7 +2328,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("Voltage #11", 10, true));
                             v.Add(new Voltage("Voltage #12", 11, true));
                             v.Add(new Voltage("Voltage #13", 12, true));
-                            v.Add(new Voltage("Voltage #14", 13, true));
+                            v.Add(new Voltage("DRAM", 13));
                             v.Add(new Voltage("Voltage #15", 14, true));
                             t.Add(new Temperature("PECI 0", 0));
                             t.Add(new Temperature("CPU", 1));
