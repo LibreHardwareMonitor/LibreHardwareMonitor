@@ -54,6 +54,8 @@ namespace LibreHardwareMonitor.Hardware
 
             deviceInfo.Nodes = new D3DDeviceNodeInfo[nodeCount];
 
+            var queryTime = DateTime.Now;
+
             for (uint nodeId = 0; nodeId < nodeCount; nodeId++)
             {
                 GetNodeMetaData(out status, adapter, nodeId, out D3dkmth.D3DKMT_NODEMETADATA nodeMetaData);
@@ -68,7 +70,10 @@ namespace LibreHardwareMonitor.Hardware
 
                 deviceInfo.Nodes[nodeId] = new D3DDeviceNodeInfo
                 {
-                    Id = nodeId, Name = GetNodeEngineTypeString(nodeMetaData), RunningTime = nodeInformation.GlobalInformation.RunningTime.QuadPart, QueryTime = DateTime.Now
+                    Id = nodeId, 
+                    Name = GetNodeEngineTypeString(nodeMetaData), 
+                    RunningTime = nodeInformation.GlobalInformation.RunningTime.QuadPart, 
+                    QueryTime = queryTime
                 };
             }
 

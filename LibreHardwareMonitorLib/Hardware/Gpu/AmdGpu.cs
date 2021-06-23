@@ -6,6 +6,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 
@@ -111,7 +112,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                             _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
                             _gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-                            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+                            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
                             {
                                 _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings);
                                 _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
