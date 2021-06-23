@@ -16,24 +16,24 @@ namespace LibreHardwareMonitor.Hardware.Storage
 {
     public abstract class AbstractStorage : Hardware
     {
-        private readonly PerformanceValue _perfTotal = new PerformanceValue();
-        private readonly PerformanceValue _perfWrite = new PerformanceValue();
+        private readonly PerformanceValue _perfTotal = new();
+        private readonly PerformanceValue _perfWrite = new();
         private readonly StorageInfo _storageInfo;
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
-        private bool _canUpdateWmi = true;
-
+        
+        private ulong _lastReadRateCounter;
         private double _lastTime;
         private DateTime _lastUpdate = DateTime.MinValue;
-        private ulong _lastReadRateCounter;
+        private ulong _lastWriteRateCounter;
         private Sensor _sensorDiskReadRate;
         private Sensor _sensorDiskTotalActivity;
         private Sensor _sensorDiskWriteActivity;
         private Sensor _sensorDiskWriteRate;
         private Sensor _usageSensor;
-        private ulong _lastWriteRateCounter;
+        private int _wmiFailureCount;
 
         internal AbstractStorage(StorageInfo storageInfo, string name, string firmwareRevision, string id, int index, ISettings settings)
-          : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings)
+            : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings)
         {
             _storageInfo = storageInfo;
             FirmwareRevision = firmwareRevision;
@@ -41,6 +41,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             string[] logicalDrives = WindowsStorage.GetLogicalDrives(index);
             var driveInfoList = new List<DriveInfo>(logicalDrives.Length);
+
             foreach (string logicalDrive in logicalDrives)
             {
                 try
@@ -49,9 +50,12 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     if (di.TotalSize > 0)
                         driveInfoList.Add(new DriveInfo(logicalDrive));
                 }
-                catch (ArgumentException) { }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
+                catch (ArgumentException)
+                { }
+                catch (IOException)
+                { }
+                catch (UnauthorizedAccessException)
+                { }
             }
 
             DriveInfos = driveInfoList.ToArray();
@@ -71,12 +75,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (info == null)
                 return null;
 
+
             info.DiskSize = diskSize;
             info.DeviceId = deviceId;
             info.Scsi = $@"\\.\SCSI{scsiPort}:";
 
             if (info.Removable || info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual || info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
                 return null;
+
 
             //fallback, when it is not possible to read out with the nvme implementation,
             //try it with the sata smart implementation
@@ -93,6 +99,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             {
                 return AtaStorage.CreateInstance(info, settings);
             }
+
             return StorageGeneric.CreateInstance(info, settings);
         }
 
@@ -123,76 +130,72 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
 
-            using (var perfData = new ManagementObjectSearcher(query) {Options = {Timeout = TimeSpan.FromSeconds(5)}})
-            using (ManagementObjectCollection collection = perfData.Get())
-            using (ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault())
+            using var perfData = new ManagementObjectSearcher(query) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
+            using ManagementObjectCollection collection = perfData.Get();
+            using ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault();
+
+            if (data == null)
+                return;
+
+
+            ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
+            ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
+            _perfWrite.Update(value, valueBase);
+            _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
+
+            value = (ulong)data.Properties["PercentIdleTime"].Value;
+            valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
+            _perfTotal.Update(value, valueBase);
+            _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
+
+            ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
+            ulong readRate = readRateCounter - _lastReadRateCounter;
+            _lastReadRateCounter = readRateCounter;
+
+            ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
+            ulong writeRate = writeRateCounter - _lastWriteRateCounter;
+            _lastWriteRateCounter = writeRateCounter;
+
+            ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
+            ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
+            double currentTime = (double)timestampPerfTime / frequencyPerfTime;
+
+            double timeDeltaSeconds = currentTime - _lastTime;
+            if (_lastTime == 0 || timeDeltaSeconds > 0.2)
             {
-                if (data == null)
-                {
-                    return;
-                }
+                double writeSpeed = writeRate * (1 / timeDeltaSeconds);
+                _sensorDiskWriteRate.Value = (float)writeSpeed;
 
-                ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
-                ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
-                _perfWrite.Update(value, valueBase);
-                _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
-
-                value = (ulong)data.Properties["PercentIdleTime"].Value;
-                valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
-                _perfTotal.Update(value, valueBase);
-                _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
-
-                ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
-                ulong readRate = readRateCounter - _lastReadRateCounter;
-                _lastReadRateCounter = readRateCounter;
-
-                ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
-                ulong writeRate = writeRateCounter - _lastWriteRateCounter;
-                _lastWriteRateCounter = writeRateCounter;
-
-                ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
-                ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
-                double currentTime = (double)timestampPerfTime / frequencyPerfTime;
-
-                double timeDeltaSeconds = currentTime - _lastTime;
-                if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-                {
-                    double writeSpeed = writeRate * (1 / timeDeltaSeconds);
-                    _sensorDiskWriteRate.Value = (float)writeSpeed;
-
-                    double readSpeed = readRate * (1 / timeDeltaSeconds);
-                    _sensorDiskReadRate.Value = (float)readSpeed;
-                }
-
-                if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-                {
-                    _lastTime = currentTime;
-                }
+                double readSpeed = readRate * (1 / timeDeltaSeconds);
+                _sensorDiskReadRate.Value = (float)readSpeed;
             }
+
+            if (_lastTime == 0 || timeDeltaSeconds > 0.2)
+                _lastTime = currentTime;
         }
 
         public override void Update()
         {
+            const int wmiRetries = 10;
+
             //update statistics from WMI on every update
-            if (_storageInfo != null && _canUpdateWmi)
+            if (_storageInfo != null && _wmiFailureCount <= wmiRetries)
             {
                 try
                 {
                     UpdateStatisticsFromWmi(_storageInfo.Index);
+                    _wmiFailureCount = 0;
                 }
-                catch (ManagementException managementException)
+                catch
                 {
-                    // Invalid query.
-                    if (managementException.HResult == -2146233087)
+                    if (++_wmiFailureCount == wmiRetries)
                     {
                         DeactivateSensor(_sensorDiskTotalActivity);
                         DeactivateSensor(_sensorDiskWriteActivity);
                         DeactivateSensor(_sensorDiskReadRate);
                         DeactivateSensor(_sensorDiskWriteRate);
-                        _canUpdateWmi = false;
                     }
                 }
-                catch { }
             }
 
             //read out with updateInterval
@@ -219,8 +222,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
                             totalSize += DriveInfos[i].TotalSize;
                             totalFreeSpace += DriveInfos[i].TotalFreeSpace;
                         }
-                        catch (IOException) { }
-                        catch (UnauthorizedAccessException) { }
+                        catch (IOException)
+                        { }
+                        catch (UnauthorizedAccessException)
+                        { }
                     }
 
                     if (totalSize > 0)
@@ -257,8 +262,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     r.AppendLine("Total Free Space: " + di.TotalFreeSpace);
                     r.AppendLine();
                 }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
+                catch (IOException)
+                { }
+                catch (UnauthorizedAccessException)
+                { }
             }
 
             return r.ToString();
