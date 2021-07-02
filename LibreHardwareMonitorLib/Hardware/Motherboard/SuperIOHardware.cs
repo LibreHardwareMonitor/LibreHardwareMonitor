@@ -2365,7 +2365,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
-                        case Model.ROG_STRIX_B550_F_GAMINNG_WIFI: // NCT6798D-R
+                        case Model.ROG_STRIX_B550_F_GAMING_WIFI: // NCT6798D-R
                         {
                             v.Add(new Voltage("Vcore", 0, 2, 2));
                             v.Add(new Voltage("+5V", 1, 4, 1));
