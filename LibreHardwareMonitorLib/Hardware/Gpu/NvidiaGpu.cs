@@ -444,17 +444,17 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             try
             {
-                uint current = memoryInformation.CurrentAvailableDedicatedVideoMemoryInkB;
+                uint free = memoryInformation.CurrentAvailableDedicatedVideoMemoryInkB;
                 uint total = memoryInformation.DedicatedVideoMemoryInkB;
 
                 _memoryTotal.Value = total / 1024;
                 ActivateSensor(_memoryTotal);
 
-                _memoryUsed.Value = current / 1024;
-                ActivateSensor(_memoryUsed);
-
-                _memoryFree.Value = (total - current) / 1024;
+                _memoryFree.Value = free / 1024;
                 ActivateSensor(_memoryFree);
+
+                _memoryUsed.Value = (total - free) / 1024;
+                ActivateSensor(_memoryUsed);
             }
             catch (Exception e) when (e is NVIDIAApiException or NVIDIANotSupportedException)
             { }
