@@ -2412,18 +2412,40 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             //Find a way to read the value of VRM HS FAN
                             //It is definitely not controllable as it only supports ON / OFF options but the RPM can be read somewhere
 
-                            if (superIO.Fans.Length > 4)
+                            for (int i = 0; i < superIO.Fans.Length; i++)
                             {
-                                f.Add(new Fan("CPU fan", 1));
-                                f.Add(new Fan("Chassis fan", 0));
-                                f.Add(new Fan("AIO Pump", 4));
+                                switch (i)
+                                {
+                                    case 0:
+                                        f.Add(new Fan("Chassis fan", 0));
+                                        break;
+
+                                    case 1:
+                                        f.Add(new Fan("CPU fan", 1));
+                                        break;
+
+                                    case 4:
+                                        f.Add(new Fan("AIO Pump", 4));
+                                        break;
+                                }
                             }
 
-                            if (superIO.Controls.Length > 4)
+                            for (int i = 0; i < superIO.Controls.Length; i++)
                             {
-                                c.Add(new Ctrl("CPU fan Control", 1));
-                                c.Add(new Ctrl("Chassis fan Control", 0));
-                                c.Add(new Ctrl("AIO Pump Control", 4));
+                                switch (i)
+                                {
+                                    case 0:
+                                        c.Add(new Ctrl("Chassis fan Control", 0));
+                                        break;
+
+                                    case 1:
+                                        c.Add(new Ctrl("CPU fan Control", 1));
+                                        break;
+
+                                    case 4:
+                                        c.Add(new Ctrl("AIO Pump Control", 4));
+                                        break;
+                                }
                             }
 
                             break;
