@@ -16,6 +16,8 @@
     <Pack>true</Pack>
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
     <LangVersion>latest</LangVersion>
+    <PackageIcon>package.png</PackageIcon>
+    <PackageIconUrl />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>
@@ -23,6 +25,9 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="package.png" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\inpout32.dll" />
     <EmbeddedResource Include="Resources\inpoutx64.dll" />
