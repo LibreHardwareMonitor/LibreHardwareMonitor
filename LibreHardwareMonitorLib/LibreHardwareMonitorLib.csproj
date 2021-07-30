@@ -26,7 +26,6 @@
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="package.png" />
     <None Include="package.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
