@@ -27,6 +27,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="package.png" />
+    <None Include="package.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\inpout32.dll" />
