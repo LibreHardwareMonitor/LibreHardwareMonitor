@@ -141,7 +141,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.P55_Deluxe;
                 case var _ when name.Equals("Crosshair III Formula", StringComparison.OrdinalIgnoreCase):
                     return Model.CROSSHAIR_III_FORMULA;
-                case var _ when name.Equals("ROG CROSSHAIR VIII HERO", StringComparison.OrdinalIgnoreCase):
+                case var _ when name.StartsWith("ROG CROSSHAIR VIII", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_CROSSHAIR_VIII_HERO;
                 case var _ when name.Equals("M2N-SLI DELUXE", StringComparison.OrdinalIgnoreCase):
                     return Model.M2N_SLI_Deluxe;
