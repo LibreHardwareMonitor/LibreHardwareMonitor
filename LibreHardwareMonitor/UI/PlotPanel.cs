@@ -57,13 +57,13 @@ namespace LibreHardwareMonitor.UI
 
         public void SetCurrentSettings()
         {
-            _settings.SetValue("plotPanel.MinTimeSpan", (float)_timeAxis.ActualMinimum);
-            _settings.SetValue("plotPanel.MaxTimeSpan", (float)_timeAxis.ActualMaximum);
             foreach (LinearAxis axis in _axes.Values)
             {
                 _settings.SetValue("plotPanel.Min" + axis.Key, (float)axis.ActualMinimum);
                 _settings.SetValue("plotPanel.Max" + axis.Key, (float)axis.ActualMaximum);
             }
+            _settings.SetValue("plotPanel.MinTimeSpan", (float)_timeAxis.ActualMinimum);
+            _settings.SetValue("plotPanel.MaxTimeSpan", (float)_timeAxis.ActualMaximum);
         }
 
         private ContextMenuStrip CreateMenu()
