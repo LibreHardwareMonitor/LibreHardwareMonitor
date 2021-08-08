@@ -2385,7 +2385,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             //v.Add(new Voltage("#Unused #14", 14, 0, 1, 0, true));
 
                             t.Add(new Temperature("CPU", 1));
-                            t.Add(new Temperature("MotherBoard", 2));
+                            t.Add(new Temperature("Motherboard", 2));
                             //t.Add(new Temperature("AUX 0", 3)); //No software from Asus reports this temperature ~82C
                             //t.Add(new Temperature("#Unused 4", 4));
                             //t.Add(new Temperature("#Unused 5", 5));
@@ -2417,11 +2417,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 switch (i)
                                 {
                                     case 0:
-                                        f.Add(new Fan("Chassis fan", 0));
+                                        f.Add(new Fan("Chassis Fan", 0));
                                         break;
 
                                     case 1:
-                                        f.Add(new Fan("CPU fan", 1));
+                                        f.Add(new Fan("CPU Fan", 1));
                                         break;
 
                                     case 4:
@@ -2435,11 +2435,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 switch (i)
                                 {
                                     case 0:
-                                        c.Add(new Ctrl("Chassis fan Control", 0));
+                                        c.Add(new Ctrl("Chassis Fan Control", 0));
                                         break;
 
                                     case 1:
-                                        c.Add(new Ctrl("CPU fan Control", 1));
+                                        c.Add(new Ctrl("CPU Fan Control", 1));
                                         break;
 
                                     case 4:
