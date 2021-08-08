@@ -70,7 +70,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 }
             }
 
-
             switch (model)
             {
                 case Model.ROG_CROSSHAIR_VIII_HERO:
