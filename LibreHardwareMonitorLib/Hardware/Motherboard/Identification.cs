@@ -175,7 +175,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case var _ when name.Equals("ROG STRIX X470-I GAMING", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_STRIX_X470_I;
                 case var _ when name.Equals("ROG STRIX B550-I GAMING", StringComparison.OrdinalIgnoreCase):
-                return Model.ROG_STRIX_B550_I_GAMING;
+                    return Model.ROG_STRIX_B550_I_GAMING;
                 case var _ when name.Equals("ROG STRIX X570-E GAMING", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_STRIX_X570_E_GAMING;
                 case var _ when name.Equals("LP DK P55-T3eH9", StringComparison.OrdinalIgnoreCase):
