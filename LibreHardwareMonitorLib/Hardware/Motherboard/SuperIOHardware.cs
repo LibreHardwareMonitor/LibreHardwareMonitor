@@ -2366,6 +2366,87 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.ROG_STRIX_B550_I_GAMING: //NCT6798D
+                        {
+                            v.Add(new Voltage("Vcore", 0, 10, 10));
+                            v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly
+                            v.Add(new Voltage("AVCC", 2, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
+                            v.Add(new Voltage("+12V", 4, 11, 1)); //Probably not updating properly
+                            //v.Add(new Voltage("#Unused #5", 5, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
+                            v.Add(new Voltage("VBat", 8, 34, 34));
+                            v.Add(new Voltage("VTT", 9));
+                            //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #11", 11, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #12", 12, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #13", 13, 0, 1, 0, true));
+                            //v.Add(new Voltage("#Unused #14", 14, 0, 1, 0, true));
+
+                            t.Add(new Temperature("CPU", 1));
+                            t.Add(new Temperature("Motherboard", 2));
+                            //t.Add(new Temperature("AUX 0", 3)); //No software from Asus reports this temperature ~82C
+                            //t.Add(new Temperature("#Unused 4", 4));
+                            //t.Add(new Temperature("#Unused 5", 5));
+                            //t.Add(new Temperature("#Unused 6", 6));
+                            //t.Add(new Temperature("#Unused 7", 7));
+                            //t.Add(new Temperature("#Unused 8", 8));
+                            //t.Add(new Temperature("#Unused 9", 9));
+                            //t.Add(new Temperature("#Unused 10", 10));
+                            t.Add(new Temperature("PCH Chip CPU Max", 11));
+                            t.Add(new Temperature("PCH Chip", 12));
+                            t.Add(new Temperature("PCH CPU", 13));
+                            t.Add(new Temperature("PCH MCH", 14));
+                            t.Add(new Temperature("Agent 0 DIMM 0", 15));
+                            //t.Add(new Temperature("Agent 0 DIMM 1", 16));
+                            t.Add(new Temperature("Agent 1 DIMM 0", 17));
+                            //t.Add(new Temperature("Agent 1 DIMM 1", 18));
+                            t.Add(new Temperature("Device 0", 19));
+                            t.Add(new Temperature("Device 1", 20));
+                            t.Add(new Temperature("PECI 0 Calibrated", 21));
+                            t.Add(new Temperature("PECI 1 Calibrated", 22));
+                            t.Add(new Temperature("Virtual", 23));
+
+                            //todo
+                            //Find a way to read the value of VRM HS FAN
+                            //It is definitely not controllable as it only supports ON / OFF options but the RPM can be read somewhere
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                            {
+                                switch (i)
+                                {
+                                    case 0:
+                                        f.Add(new Fan("Chassis Fan", 0));
+                                        break;
+                                    case 1:
+                                        f.Add(new Fan("CPU Fan", 1));
+                                        break;
+                                    case 4:
+                                        f.Add(new Fan("AIO Pump", 4));
+                                        break;
+                                }
+                            }
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                            {
+                                switch (i)
+                                {
+                                    case 0:
+                                        c.Add(new Ctrl("Chassis Fan Control", 0));
+                                        break;
+                                    case 1:
+                                        c.Add(new Ctrl("CPU Fan Control", 1));
+                                        break;
+                                    case 4:
+                                        c.Add(new Ctrl("AIO Pump Control", 4));
+                                        break;
+                                }
+                            }
+
+                            break;
+                        }
                         default:
                         {
                             v.Add(new Voltage("Vcore", 0));
