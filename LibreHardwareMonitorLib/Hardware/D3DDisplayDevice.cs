@@ -27,6 +27,29 @@ namespace LibreHardwareMonitor.Hardware
             return null;
         }
 
+        public static string GetActualDeviceIdentifier(string deviceIdentifier)
+        {
+            string identifier = deviceIdentifier;
+
+            // For example:
+            // \\?\ROOT#BasicRender#0000#{1ca05180-a699-450a-9a0c-de4fbe3ddd89}  -->  ROOT\BasicRender\0000
+            // \\?\PCI#VEN_1002&DEV_731F&SUBSYS_57051682&REV_C4#6&e539058&0&00000019#{1ca05180-a699-450a-9a0c-de4fbe3ddd89}  -->  PCI\VEN_1002&DEV_731F&SUBSYS_57051682&REV_C4\6&e539058&0&00000019
+
+            if (identifier.StartsWith(@"\\?\"))
+                identifier = identifier.Substring(4);
+
+            if (identifier.Length > 0 && identifier[identifier.Length - 1] == '}')
+            {
+                int lastIndex = identifier.LastIndexOf('{');
+                if (lastIndex > 0)
+                    identifier = identifier.Substring(0, lastIndex - 1);
+            }
+
+            identifier = identifier.Replace('#', '\\');
+
+            return identifier;
+        }
+
         public static bool GetDeviceInfoByIdentifier(string deviceIdentifier, out D3DDeviceInfo deviceInfo)
         {
             deviceInfo = new D3DDeviceInfo();

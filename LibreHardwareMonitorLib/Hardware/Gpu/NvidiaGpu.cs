@@ -41,7 +41,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor[] _powers;
         private readonly Sensor _powerUsage;
         private readonly Sensor[] _temperatures;
-        private readonly string _windowsDeviceName;
+        private readonly string _d3dDeviceId;
 
         public NvidiaGpu(int adapterIndex, PhysicalGPU physicalGpu, ISettings settings)
             : base(GetName(physicalGpu),
@@ -217,23 +217,28 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                         if (pciInfo is { } pci)
                         {
-                            string[] deviceIdentifiers = D3DDisplayDevice.GetDeviceIdentifiers();
-                            if (deviceIdentifiers != null)
+                            string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
+                            if (deviceIds != null)
                             {
-                                foreach (string deviceIdentifier in deviceIdentifiers)
+                                foreach (string deviceId in deviceIds)
                                 {
-                                    if (deviceIdentifier.IndexOf("VEN_" + pci.pciVendorId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
-                                        deviceIdentifier.IndexOf("DEV_" + pci.pciDeviceId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
-                                        deviceIdentifier.IndexOf("SUBSYS_" + pci.pciSubSystemId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1)
+                                    if (deviceId.IndexOf("VEN_" + pci.pciVendorId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
+                                        deviceId.IndexOf("DEV_" + pci.pciDeviceId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
+                                        deviceId.IndexOf("SUBSYS_" + pci.pciSubSystemId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1)
                                     {
                                         bool isMatch = false;
+
+                                        string actualDeviceId = D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);
 
                                         try
                                         {
                                             if (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Enum", adapterIndex.ToString(), null) is string adapterPnpId)
                                             {
-                                                if (deviceIdentifier.IndexOf(adapterPnpId.Replace('\\', '#'), StringComparison.OrdinalIgnoreCase) != -1)
+                                                if (actualDeviceId.IndexOf(adapterPnpId, StringComparison.OrdinalIgnoreCase) != -1 ||
+                                                    adapterPnpId.IndexOf(actualDeviceId, StringComparison.OrdinalIgnoreCase) != -1)
+                                                {
                                                     isMatch = true;
+                                                }
                                             }
                                         }
                                         catch
@@ -245,15 +250,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                                         {
                                             try
                                             {
-                                                string path = deviceIdentifier;
-                                                if (path.StartsWith(@"\\?\"))
-                                                    path = path.Substring(4);
-
-                                                path = path.Replace('#', '\\');
-                                                int index = path.IndexOf('{');
-                                                if (index != -1)
-                                                    path = path.Substring(0, index);
-
+                                                string path = actualDeviceId;
                                                 path = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\" + path;
 
                                                 if (Registry.GetValue(path, "LocationInformation", null) is string locationInformation)
@@ -261,7 +258,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                                                     // For example:
                                                     // @System32\drivers\pci.sys,#65536;PCI bus %1, device %2, function %3;(38,0,0)
 
-                                                    index = locationInformation.IndexOf('(');
+                                                    int index = locationInformation.IndexOf('(');
                                                     if (index != -1)
                                                     {
                                                         index++;
@@ -282,12 +279,12 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                                             }
                                         }
 
-                                        if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                                        if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                         {
                                             int nodeSensorIndex = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
                                             int memorySensorIndex = 3; // There are three normal GPU memory sensors.
 
-                                            _windowsDeviceName = deviceIdentifier;
+                                            _d3dDeviceId = deviceId;
 
                                             _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
                                             _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex, SensorType.SmallData, this, settings);
@@ -345,7 +342,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public override void Update()
         {
-            if (_windowsDeviceName != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_windowsDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+            if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
             {
                 _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
                 _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
@@ -610,6 +607,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             }
             catch (Exception e) when (e is NVIDIAApiException or NVIDIANotSupportedException)
             { }
+
+            if (_d3dDeviceId != null)
+            {
+                r.AppendLine("D3D");
+                r.AppendLine();
+                r.AppendLine(" Id: " + _d3dDeviceId);
+            }
 
             return r.ToString();
         }
