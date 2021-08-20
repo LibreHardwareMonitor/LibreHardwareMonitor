@@ -127,6 +127,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         Z68XP_UD3R,
         X470_AORUS_GAMING_7_WIFI,
         X570_AORUS_MASTER,
+        X570_GAMING_X,
 
         // Shuttle
         FH67,
