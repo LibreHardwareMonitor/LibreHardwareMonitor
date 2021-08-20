@@ -1277,6 +1277,37 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.B560M_AORUS_ELITE: // IT8689E
+                        {
+                            v.Add(new Voltage("Vcore", 0));
+                            v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
+                            v.Add(new Voltage("+12V", 2, 10f, 2f));
+                            v.Add(new Voltage("+5V", 3, 15f, 10f));
+                            v.Add(new Voltage("iGPU VAGX", 4));
+                            v.Add(new Voltage("VCCSA", 5));
+                            v.Add(new Voltage("DRAM", 6));
+                            v.Add(new Voltage("3VSB", 7, 10f, 10f));
+                            v.Add(new Voltage("VBat", 8, 10f, 10f));
+                            v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
+                            t.Add(new Temperature("System #1", 0));
+                            t.Add(new Temperature("PCH", 1));
+                            t.Add(new Temperature("CPU", 2));
+                            t.Add(new Temperature("PCIe x16", 3));
+                            t.Add(new Temperature("VRM MOS", 4));
+                            t.Add(new Temperature("System #2", 5));
+                            f.Add(new Fan("CPU Fan", 0));
+                            f.Add(new Fan("System Fan #1", 1));
+                            f.Add(new Fan("System Fan #2", 2));
+                            f.Add(new Fan("System Fan #3", 3));
+                            f.Add(new Fan("CPU OPT Fan", 4));
+                            c.Add(new Ctrl("CPU Fan", 0));
+                            c.Add(new Ctrl("System Fan #1", 1));
+                            c.Add(new Ctrl("System Fan #2", 2));
+                            c.Add(new Ctrl("System Fan #3", 3));
+                            c.Add(new Ctrl("CPU OPT Fan", 4));
+
+                            break;
+                        }
                         case Model.X570_AORUS_MASTER: // IT8688E
                         {
                             v.Add(new Voltage("Vcore", 0));
