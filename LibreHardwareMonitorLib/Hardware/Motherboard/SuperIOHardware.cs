@@ -2386,11 +2386,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Water In", 24));
                             t.Add(new Temperature("Water Out", 25));
 
-                            for (int i = 0; i < superIO.Fans.Length; i++)
-                                f.Add(new Fan("Fan #" + (i + 1), i));
+                            string[] fanControlNames = {"Chassis Fan 1", "CPU Fan", "Chassis Fan 2",
+                                "Chassis Fan 3", "High Amp Fan", "W_PUMP+", "AIO Pump"};
+                            System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
+                                string.Format("Expected {0} fan register in the SuperIO chip", fanControlNames.Length));
+                            System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
+                                "Expected counts of fan controls and fan speed registers to be equal");
 
-                            for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                            for (int i = 0; i < fanControlNames.Length; i++)
+                                f.Add(new Fan(fanControlNames[i], i));
+                           
+                            for (int i = 0; i < fanControlNames.Length; i++)
+                                c.Add(new Ctrl(fanControlNames[i], i));
+
 
                             break;
                         }
