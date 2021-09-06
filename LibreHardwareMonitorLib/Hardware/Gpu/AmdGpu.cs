@@ -131,7 +131,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int enabled = 0;
             int version = 0;
 
-            if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
+            /*if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
             {
                 if (supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
@@ -139,7 +139,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _fullscreenFps.Value = -1;
                     ActivateSensor(_fullscreenFps);
                 }
-            }
+            }*/
 
             if (AtiAdlxx.ADL_Overdrive_Caps(_adapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
             {
