@@ -282,7 +282,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 }
                 case Chip.W83627EHF:
                 {
-                    GetWinbondConfigurationEhf(manufacturer, model, v, t, f);
+                    GetWinbondConfigurationEhf(manufacturer, model, v, t, f, c);
 
                     break;
                 }
@@ -291,11 +291,30 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
                 {
-                    GetWinbondConfigurationHg(manufacturer, model, v, t, f);
+                    GetWinbondConfigurationHg(manufacturer, model, v, t, f, c);
 
                     break;
                 }
                 case Chip.W83627HF:
+                {
+                    v.Add(new Voltage("Vcore", 0));
+                    v.Add(new Voltage("Voltage #2", 1, true));
+                    v.Add(new Voltage("Voltage #3", 2, true));
+                    v.Add(new Voltage("AVCC", 3, 34, 51));
+                    v.Add(new Voltage("Voltage #5", 4, true));
+                    v.Add(new Voltage("+5VSB", 5, 34, 51));
+                    v.Add(new Voltage("VBat", 6));
+                    t.Add(new Temperature("CPU", 0));
+                    t.Add(new Temperature("Auxiliary", 1));
+                    t.Add(new Temperature("System", 2));
+                    f.Add(new Fan("System Fan", 0));
+                    f.Add(new Fan("CPU Fan", 1));
+                    f.Add(new Fan("Auxiliary Fan", 2));
+                    c.Add(new Ctrl("Fan 1", 0));
+                    c.Add(new Ctrl("Fan 2", 1));
+
+                    break;
+                }
                 case Chip.W83627THF:
                 case Chip.W83687THF:
                 {
@@ -312,6 +331,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     f.Add(new Fan("System Fan", 0));
                     f.Add(new Fan("CPU Fan", 1));
                     f.Add(new Fan("Auxiliary Fan", 2));
+                    c.Add(new Ctrl("System Fan", 0));
+                    c.Add(new Ctrl("CPU Fan", 1));
+                    c.Add(new Ctrl("Auxiliary Fan", 2));
 
                     break;
                 }
@@ -2689,7 +2711,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             }
         }
 
-        private static void GetWinbondConfigurationEhf(Manufacturer manufacturer, Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f)
+        private static void GetWinbondConfigurationEhf(Manufacturer manufacturer, Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
         {
             switch (manufacturer)
             {
@@ -2710,6 +2732,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Motherboard", 2));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("Chassis Fan", 1));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
@@ -2733,6 +2758,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Auxiliary Fan", 2));
                             f.Add(new Fan("CPU Fan #2", 3));
                             f.Add(new Fan("Auxiliary Fan #2", 4));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
@@ -2760,13 +2788,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     f.Add(new Fan("Auxiliary Fan", 2));
                     f.Add(new Fan("CPU Fan #2", 3));
                     f.Add(new Fan("Auxiliary Fan #2", 4));
+                    c.Add(new Ctrl("System Fan", 0));
+                    c.Add(new Ctrl("CPU Fan", 1));
+                    c.Add(new Ctrl("Auxiliary Fan", 2));
 
                     break;
                 }
             }
         }
 
-        private static void GetWinbondConfigurationHg(Manufacturer manufacturer, Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f)
+        private static void GetWinbondConfigurationHg(Manufacturer manufacturer, Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Ctrl> c)
         {
             switch (manufacturer)
             {
@@ -2787,6 +2818,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Chassis Fan", 0));
                             f.Add(new Fan("CPU Fan", 1));
                             f.Add(new Fan("Power Fan", 2));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
@@ -2809,6 +2843,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Auxiliary Fan", 2));
                             f.Add(new Fan("CPU Fan #2", 3));
                             f.Add(new Fan("Auxiliary Fan #2", 4));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
@@ -2821,8 +2858,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     switch (model)
                     {
                         case Model.P6T: // W83667HG
-                        case Model.P6X58D_E: // W83667HG
-                        case Model.RAMPAGE_II_GENE: // W83667HG
+                        case Model.P6X58D_E: // W83667HG                 
+                        case Model.RAMPAGE_II_GENE: // W83667HG 
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11.5f, 1.91f));
@@ -2838,10 +2875,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("Chassis Fan #2", 3));
                             f.Add(new Fan("Chassis Fan #3", 4));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
-                        case Model.RAMPAGE_EXTREME: // W83667HG
+                        case Model.RAMPAGE_EXTREME: // W83667HG 
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 12, 2));
@@ -2857,6 +2897,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Power Fan", 2));
                             f.Add(new Fan("Chassis Fan #2", 3));
                             f.Add(new Fan("Chassis Fan #3", 4));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
@@ -2879,6 +2922,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Auxiliary Fan", 2));
                             f.Add(new Fan("CPU Fan #2", 3));
                             f.Add(new Fan("Auxiliary Fan #2", 4));
+                            c.Add(new Ctrl("System Fan", 0));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("Auxiliary Fan", 2));
 
                             break;
                         }
@@ -2905,6 +2951,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     f.Add(new Fan("Auxiliary Fan", 2));
                     f.Add(new Fan("CPU Fan #2", 3));
                     f.Add(new Fan("Auxiliary Fan #2", 4));
+                    c.Add(new Ctrl("System Fan", 0));
+                    c.Add(new Ctrl("CPU Fan", 1));
+                    c.Add(new Ctrl("Auxiliary Fan", 2));
 
                     break;
                 }
