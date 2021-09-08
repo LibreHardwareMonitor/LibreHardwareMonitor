@@ -121,7 +121,7 @@ namespace LibreHardwareMonitor.Interop
         public static extern ADLStatus ADL_Graphics_Versions_Get(out ADLVersionsInfo versionInfo);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        private static extern ADLStatus ADL2_Adapter_FrameMetrics_Caps(IntPtr context, int adapterIndex, ref int supported);
+        public static extern ADLStatus ADL2_Adapter_FrameMetrics_Caps(IntPtr context, int adapterIndex, ref int supported);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ADLStatus ADL2_Adapter_FrameMetrics_Get(IntPtr context, int adapterIndex, int displayIndex, ref float fps);
