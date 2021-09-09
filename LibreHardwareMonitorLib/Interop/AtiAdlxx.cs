@@ -130,7 +130,19 @@ namespace LibreHardwareMonitor.Interop
         public static extern ADLStatus ADL2_Adapter_FrameMetrics_Start(IntPtr context, int adapterIndex, int displayIndex);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ADLStatus ADL2_Adapter_FrameMetrics_Stop(IntPtr context, int adapterIndex, int displayIndex);       
+        public static extern ADLStatus ADL2_Adapter_FrameMetrics_Stop(IntPtr context, int adapterIndex, int displayIndex);
+
+        public static bool ADL_Method_Exists(string ADL_Method)
+        {
+            try
+            {
+                return Kernel32.GetProcAddress(Kernel32.LoadLibrary(DllName), ADL_Method) != IntPtr.Zero;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         public static ADLStatus ADL_Main_Control_Create(int enumConnectedAdapters)
         {
