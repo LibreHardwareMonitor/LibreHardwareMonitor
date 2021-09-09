@@ -14,6 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class W836XX : ISuperIO
     {
+
         private readonly ushort _address;
         private readonly bool[] _peciTemperature = new bool[0];
         private readonly byte _revision;
@@ -144,12 +145,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Controls = new float?[3];
                     break;
                 case Chip.W83687THF:
-                    Voltages = new float?[7];
-                    _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
-                    _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
-                    _voltageGain = 0.016f;
-                    Fans = new float?[3];
-                    break;
+                Voltages = new float?[7];
+                _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
+                _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
+                _voltageGain = 0.016f;
+                Fans = new float?[3];
+                break;
             }
         }
 
