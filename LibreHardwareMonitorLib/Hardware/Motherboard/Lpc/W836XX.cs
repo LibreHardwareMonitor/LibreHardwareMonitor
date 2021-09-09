@@ -14,6 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class W836XX : ISuperIO
     {
+
         private readonly ushort _address;
         private readonly bool[] _peciTemperature = new bool[0];
         private readonly byte _revision;
