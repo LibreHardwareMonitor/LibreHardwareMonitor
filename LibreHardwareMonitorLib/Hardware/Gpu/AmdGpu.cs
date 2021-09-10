@@ -132,7 +132,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int version = 0;
 
             if (AtiAdlxx.ADL_Method_Exists("ADL2_Adapter_FrameMetrics_Caps") && AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
-            { 
+            {
                 if (supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     _frameMetricsStarted = true;
