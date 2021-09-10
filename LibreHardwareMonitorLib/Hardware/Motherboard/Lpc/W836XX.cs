@@ -14,7 +14,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class W836XX : ISuperIO
     {
-
         private readonly ushort _address;
         private readonly bool[] _peciTemperature = new bool[0];
         private readonly byte _revision;
@@ -53,31 +52,38 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
+                {
                     // note temperature sensor registers that read PECI
                     byte flag = ReadByte(0, TEMPERATURE_SOURCE_SELECT_REG);
                     _peciTemperature[0] = (flag & 0x04) != 0;
                     _peciTemperature[1] = (flag & 0x40) != 0;
                     _peciTemperature[2] = false;
                     break;
+                }
                 case Chip.W83627DHG:
                 case Chip.W83627DHGP:
+                {
                     // note temperature sensor registers that read PECI
                     byte sel = ReadByte(0, TEMPERATURE_SOURCE_SELECT_REG);
                     _peciTemperature[0] = (sel & 0x07) != 0;
                     _peciTemperature[1] = (sel & 0x70) != 0;
                     _peciTemperature[2] = false;
                     break;
+                }
                 default:
+                {
                     // no PECI support
                     _peciTemperature[0] = false;
                     _peciTemperature[1] = false;
                     _peciTemperature[2] = false;
                     break;
+                }
             }
 
             switch (chip)
             {
                 case Chip.W83627EHF:
+                {
                     Voltages = new float?[10];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x50, 0x51, 0x52 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 0, 0, 5, 5, 5 };
@@ -86,12 +92,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values.
                     _fanPrimaryControlModeRegister = new byte[] { 0x04, 0x04, 0x12 }; // Primary control register.
                     _fanPrimaryControlValue = new byte[] { 0b11110011, 0b11001111, 0b11111001 }; // Values to gain control of fans.
-                    _initialFanControlValue = new byte[3]; // To store default value.
-                    _initialFanSecondaryControlValue = new byte[3]; // To store default value.
+                    _initialFanControlValue = new byte[3]; // To store primary default value.
+                    _initialFanSecondaryControlValue = new byte[3]; // To store secondary default value.
                     Controls = new float?[3];
                     break;
+                }
                 case Chip.W83627DHG:
                 case Chip.W83627DHGP:
+                {
                     Voltages = new float?[9];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 0, 0, 5, 5 };
@@ -100,12 +108,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values
                     _fanPrimaryControlModeRegister = new byte[] { 0x04, 0x04, 0x12 }; // added. Primary control register
                     _fanPrimaryControlValue = new byte[] { 0b11110011, 0b11001111, 0b11111001 }; // Values to gain control of fans
-                    _initialFanControlValue = new byte[3]; // added to store default value
-                    _initialFanSecondaryControlValue = new byte[3]; // To store default value.
+                    _initialFanControlValue = new byte[3]; // To store primary default value
+                    _initialFanSecondaryControlValue = new byte[3]; // To store secondary default value.
                     Controls = new float?[3];
                     break;
+                }
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
+                {
                     Voltages = new float?[9];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 0, 0, 5, 5 };
@@ -118,12 +128,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanSecondaryControlValue = new byte[] { 0b11101111, 0b11011111, 0b10111111 }; // Values for secondary register to gain control of fans.
                     _fanTertiaryControlModeRegister = new byte[] { 0x62, 0x7c, 0x62 }; // Tertiary control register. 2nd fan doesn't have Tertiary control, same as secondary to avoid change.
                     _fanTertiaryControlValue = new byte[] { 0b11101111, 0b11011111, 0b11011111 }; // Values for tertiary register to gain control of fans. 2nd fan doesn't have Tertiary control, same as secondary to avoid change.
-                    _initialFanControlValue = new byte[3]; // To store default value.
-                    _initialFanSecondaryControlValue = new byte[3]; // To store default value.
-                    _initialFanTertiaryControlValue = new byte[3]; // To store default value.
+                    _initialFanControlValue = new byte[3]; // To store primary default value.
+                    _initialFanSecondaryControlValue = new byte[3]; // To store secondary default value.
+                    _initialFanTertiaryControlValue = new byte[3]; // To store tertiary default value.
                     Controls = new float?[3];
                     break;
+                }
                 case Chip.W83627HF:
+                {
                     Voltages = new float?[7];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
@@ -132,7 +144,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanPwmRegister = new byte[] { 0x5A, 0x5B }; // Fan PWM values.
                     Controls = new float?[2];
                     break;
+                }
                 case Chip.W83627THF:
+                {
                     Voltages = new float?[7];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
@@ -141,16 +155,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values.
                     _fanPrimaryControlModeRegister = new byte[] { 0x04, 0x04, 0x12 }; // Primary control register.
                     _fanPrimaryControlValue = new byte[] { 0b11110011, 0b11001111, 0b11111001 }; // Values to gain control of fans.
-                    _initialFanControlValue = new byte[3]; // To store default value.
+                    _initialFanControlValue = new byte[3]; // To store primary default value.
                     Controls = new float?[3];
                     break;
+                }
                 case Chip.W83687THF:
+                {
                     Voltages = new float?[7];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
                     _voltageGain = 0.016f;
                     Fans = new float?[3];
                     break;
+                }
             }
         }
 
@@ -358,17 +375,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 newBits = SetBit(newBits, FAN_DIV_BIT1[i], (divisorBits >> 1) & 1);
                 newBits = SetBit(newBits, FAN_DIV_BIT0[i], divisorBits & 1);
             }
-
-            // write new fan divisors
-            /*for (int i = FAN_BIT_REG.Length - 1; i >= 0; i--)
-            {
-                byte oldByte = (byte)(bits & 0xFF);
-                byte newByte = (byte)(newBits & 0xFF);
-                bits >>= 8;
-                newBits >>= 8;
-                if (oldByte != newByte)
-                    WriteByte(0, FAN_BIT_REG[i], newByte);
-            }*/
 
             for (int i = 0; i < Controls.Length; i++)
             {

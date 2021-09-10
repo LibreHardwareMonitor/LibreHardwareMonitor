@@ -2858,8 +2858,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     switch (model)
                     {
                         case Model.P6T: // W83667HG
-                        case Model.P6X58D_E: // W83667HG                 
-                        case Model.RAMPAGE_II_GENE: // W83667HG 
+                        case Model.P6X58D_E: // W83667HG
+                        case Model.RAMPAGE_II_GENE: // W83667HG
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 11.5f, 1.91f));
@@ -2881,7 +2881,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
-                        case Model.RAMPAGE_EXTREME: // W83667HG 
+                        case Model.RAMPAGE_EXTREME: // W83667HG
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+12V", 1, 12, 2));
