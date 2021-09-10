@@ -135,9 +135,13 @@ namespace LibreHardwareMonitor.Interop
         public static bool ADL_Method_Exists(string ADL_Method)
         {
             IntPtr module = Kernel32.LoadLibrary(DllName);
-            bool ret = Kernel32.GetProcAddress(module, ADL_Method) != IntPtr.Zero;
-            Kernel32.FreeLibrary(module);
-            return ret;
+            if (module != IntPtr.Zero)
+            {
+                bool result = Kernel32.GetProcAddress(module, ADL_Method) != IntPtr.Zero;
+                Kernel32.FreeLibrary(module);
+                return result;
+            }
+            return false;
         }
 
         public static ADLStatus ADL_Main_Control_Create(int enumConnectedAdapters)
