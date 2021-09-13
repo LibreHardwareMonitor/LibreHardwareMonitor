@@ -1,6 +1,5 @@
 ﻿using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
-using LibreHardwareMonitor.Utilities;
 using RTSSSharedMemoryNET;
 using System;
 using System.Diagnostics;
