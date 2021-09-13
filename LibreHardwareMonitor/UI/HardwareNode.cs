@@ -19,13 +19,12 @@ namespace LibreHardwareMonitor.UI
         private readonly List<TypeNode> _typeNodes = new List<TypeNode>();
         private readonly string _expandedIdentifier;
         private bool _expanded;
-        private RTSS _rtss;
 
         public event EventHandler PlotSelectionChanged;
+        public event EventHandler OsdSelectionChanged;
 
-        public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager, RTSS rtss)
+        public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager)
         {
-            _rtss = rtss;
             _settings = settings;
             _unitManager = unitManager;
             _expandedIdentifier = new Identifier(hardware.Identifier, "expanded").ToString();
@@ -119,12 +118,14 @@ namespace LibreHardwareMonitor.UI
                     if (sensorNode != null)
                     {
                         sensorNode.PlotSelectionChanged -= SensorPlotSelectionChanged;
+                        sensorNode.OsdSelectionChanged -= SensorOsdSelectionChanged;
                         typeNode.Nodes.Remove(sensorNode);
                         UpdateNode(typeNode);
                     }
                 }
             }
             PlotSelectionChanged?.Invoke(this, null);
+            OsdSelectionChanged?.Invoke(this, null);
         }
 
         private void InsertSorted(Node node, ISensor sensor)
@@ -133,15 +134,20 @@ namespace LibreHardwareMonitor.UI
             while (i < node.Nodes.Count && ((SensorNode)node.Nodes[i]).Sensor.Index < sensor.Index)
                 i++;
 
-            //SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
-            SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager, _rtss);
+            SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
             sensorNode.PlotSelectionChanged += SensorPlotSelectionChanged;
+            sensorNode.OsdSelectionChanged += SensorOsdSelectionChanged;
             node.Nodes.Insert(i, sensorNode);
         }
 
         private void SensorPlotSelectionChanged(object sender, EventArgs e)
         {
             PlotSelectionChanged?.Invoke(this, null);
+        }
+
+        private void SensorOsdSelectionChanged(object sender, EventArgs e)
+        {
+            OsdSelectionChanged?.Invoke(this, null);
         }
 
         private void SensorAdded(ISensor sensor)
@@ -156,6 +162,7 @@ namespace LibreHardwareMonitor.UI
             }
 
             PlotSelectionChanged?.Invoke(this, null);
+            OsdSelectionChanged?.Invoke(this, null);
         }
     }
 }

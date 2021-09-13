@@ -14,21 +14,17 @@ namespace LibreHardwareMonitor.Utilities
         private readonly string _name = "LHM";
         private readonly string _rtssProcessName = "RTSS";
         private ISensor[] _sensorsAdded;
-        private readonly int _updateThreshhold = 1;
-        private int _updateCalls = 1;
+        private readonly int _updateCallsThreshhold = 0; // Max amount of update calls to actually update OSD. 0 is instant
+        private int _updateCalls = 0; // Variable to keep track of update calls
         private int[] _sensorsPriority;
         private bool _showFPS;
         private Color _sensorColor;
         private Color _valueColor;
         private int _textSize;
         private bool _enabled;
-        private UnitManager _unitManager;
-        private PersistentSettings _settings;
 
-        public RTSS(PersistentSettings settings, UnitManager unitManager)
+        public RTSS()
         {
-            _settings = settings;
-            _unitManager = unitManager;
             _sensorColor = Color.Orange;
             _valueColor = Color.White;
         }
@@ -104,28 +100,31 @@ namespace LibreHardwareMonitor.Utilities
                 int num = CalculateSensorPriority(sensor);
                 if (_sensorsAdded != null)
                 {
-                    Array.Resize<ISensor>(ref _sensorsAdded, (int)_sensorsAdded.Length + 1);
-                    Array.Resize<int>(ref _sensorsPriority, (int)_sensorsPriority.Length + 1);
-                    _sensorsPriority[_sensorsPriority.GetUpperBound(0)] = _sensorsPriority[_sensorsPriority.GetUpperBound(0) - 1];
-                    int num1 = 0;
-                    while (num > _sensorsPriority[num1] && num1 < (int)_sensorsAdded.Length - 1)
+                    if (!(Array.IndexOf<ISensor>(_sensorsAdded, sensor) >= 0))
                     {
-                        num1++;
-                    }
-                    if (num1 != (int)_sensorsAdded.Length - 1)
-                    {
-                        for (int i = (int)_sensorsAdded.Length - 2; i >= num1; i--)
+                        Array.Resize<ISensor>(ref _sensorsAdded, (int)_sensorsAdded.Length + 1);
+                        Array.Resize<int>(ref _sensorsPriority, (int)_sensorsPriority.Length + 1);
+                        _sensorsPriority[_sensorsPriority.GetUpperBound(0)] = _sensorsPriority[_sensorsPriority.GetUpperBound(0) - 1];
+                        int num1 = 0;
+                        while (num > _sensorsPriority[num1] && num1 < (int)_sensorsAdded.Length - 1)
                         {
-                            _sensorsAdded[i + 1] = _sensorsAdded[i];
-                            _sensorsPriority[i + 1] = _sensorsPriority[i];
+                            num1++;
                         }
-                        _sensorsAdded[num1] = sensor;
-                        _sensorsPriority[num1] = num;
-                    }
-                    else
-                    {
-                        _sensorsAdded[_sensorsAdded.GetUpperBound(0)] = sensor;
-                        _sensorsPriority[_sensorsPriority.GetUpperBound(0)] = num;
+                        if (num1 != (int)_sensorsAdded.Length - 1)
+                        {
+                            for (int i = (int)_sensorsAdded.Length - 2; i >= num1; i--)
+                            {
+                                _sensorsAdded[i + 1] = _sensorsAdded[i];
+                                _sensorsPriority[i + 1] = _sensorsPriority[i];
+                            }
+                            _sensorsAdded[num1] = sensor;
+                            _sensorsPriority[num1] = num;
+                        }
+                        else
+                        {
+                            _sensorsAdded[_sensorsAdded.GetUpperBound(0)] = sensor;
+                            _sensorsPriority[_sensorsPriority.GetUpperBound(0)] = num;
+                        }
                     }
                 }
                 else
@@ -133,7 +132,6 @@ namespace LibreHardwareMonitor.Utilities
                     _sensorsAdded = new ISensor[] { sensor };
                     _sensorsPriority = new int[] { num };
                 }
-                _settings.SetValue((new Identifier(sensor.Identifier, new string[] { "osd" })).ToString(), true);
             }
             catch (Exception exception)
             {
@@ -350,7 +348,7 @@ namespace LibreHardwareMonitor.Utilities
         {
             ClearOsd();
             _osd = null;
-            _updateCalls = _updateThreshhold;
+            _updateCalls = _updateCallsThreshhold;
         }
 
         private string GetTextToBeDisplayed()
@@ -543,7 +541,6 @@ namespace LibreHardwareMonitor.Utilities
                         _sensorsAdded = null;
                         _sensorsPriority = null;
                     }
-                    _settings.SetValue((new Identifier(sensor.Identifier, new string[] { "osd" })).ToString(), false);
                 }
             }
             catch (Exception exception)
@@ -562,7 +559,7 @@ namespace LibreHardwareMonitor.Utilities
                     {
                         Disonnect();
                     }
-                    else if (_updateCalls != _updateThreshhold)
+                    else if (_updateCalls != _updateCallsThreshhold)
                     {
                         _updateCalls++;
                     }
