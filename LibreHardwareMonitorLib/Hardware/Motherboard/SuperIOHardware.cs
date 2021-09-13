@@ -2383,8 +2383,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("PECI 0 Calibrated", 21));
                             t.Add(new Temperature("PECI 1 Calibrated", 22));
                             t.Add(new Temperature("Virtual", 23));
-                            t.Add(new Temperature("Water In", 24));
-                            t.Add(new Temperature("Water Out", 25));
 
                             string[] fanControlNames = {"Chassis Fan 1", "CPU Fan", "Chassis Fan 2",
                                 "Chassis Fan 3", "High Amp Fan", "W_PUMP+", "AIO Pump"};

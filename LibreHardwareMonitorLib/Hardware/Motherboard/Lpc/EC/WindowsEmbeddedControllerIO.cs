@@ -4,6 +4,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
@@ -35,30 +36,32 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             }
         }
 
-        public byte ReadByte(byte register)
+        public void Read(ushort[] registers, byte[] data)
+        {
+            Trace.Assert(registers.Length <= data.Length, 
+                "data buffer length has to be greater or equal to the registers array length");
+
+            for (int i = 0; i < registers.Length; ++i)
+            {
+                byte bank = (byte)(registers[i] >> 8);
+                byte index = (byte)(registers[i] & 0xFF);
+
+                SwitchBank(bank);
+                data[i] = ReadByte(index);
+            }
+            SwitchBank(0);
+        }
+
+        private byte ReadByte(byte register)
         {
             return ReadLoop<byte>(register, ReadByteOp);
         }
 
-        public ushort ReadWordLE(byte register)
-        {
-            return ReadLoop<ushort>(register, ReadWordLEOp);
-        }
-
-        public ushort ReadWordBE(byte register)
-        {
-            return ReadLoop<ushort>(register, ReadWordBEOp);
-        }
-
-        public void WriteByte(byte register, byte value)
+        private void WriteByte(byte register, byte value)
         {
             WriteLoop(register, value, WriteByteOp);
         }
 
-        public void WriteWord(byte register, ushort value)
-        {
-            WriteLoop(register, value, WriteWordOp);
-        }
 
         public void Dispose()
         {
@@ -67,6 +70,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 _disposed = true;
                 Ring0.ReleaseIsaBusMutex();
             }
+        }
+
+        private byte SwitchBank(byte bank)
+        {
+            byte previous = ReadByte(0xFF);
+            WriteByte(0xFF, bank);
+            return previous;
         }
 
         private TResult ReadLoop<TResult>(byte register, ReadOp<TResult> op) where TResult : new()
@@ -182,7 +192,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
         }
 
 
-        #region Read/Write ops
+#region Read/Write ops
 
         protected bool ReadByteOp(byte register, out byte value)
         {
@@ -225,47 +235,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             return false;
         }
 
-        protected bool ReadWordLEOp(byte register, out ushort value)
-        {
-            return ReadWordOp(register, (byte)(register + 1), out value);
-        }
-
-        protected bool ReadWordBEOp(byte register, out ushort value)
-        {
-            return ReadWordOp((byte)(register + 1), register, out value);
-        }
-
-        protected bool ReadWordOp(byte registerLsb, byte registerMsb, out ushort value)
-        {
-            value = 0;
-
-            if (!ReadByteOp(registerLsb, out byte result))
-            {
-                return false;
-            }
-
-            value = result;
-
-            if (!ReadByteOp(registerMsb, out result))
-            {
-                return false;
-            }
-
-            value |= (ushort)(result << 8);
-
-            return true;
-        }
-
-        protected bool WriteWordOp(byte register, ushort value)
-        {
-            //Byte order: little endia
-
-            byte msb = (byte)(value >> 8);
-            byte lsb = (byte)value;
-
-            return WriteByteOp(register, lsb) && WriteByteOp((byte)(register + 1), msb);
-        }
-
-        #endregion
+#endregion
     }
 }

@@ -9,14 +9,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public interface IEmbeddedControllerIO : IDisposable
     {
-        void WriteByte(byte register, byte value);
-
-        void WriteWord(byte register, ushort value);
-
-        byte ReadByte(byte register);
-
-        ushort ReadWordBE(byte register);
-
-        ushort ReadWordLE(byte register);
+        void Read(ushort[] registers, byte[] data);
     }
 }
