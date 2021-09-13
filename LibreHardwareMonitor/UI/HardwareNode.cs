@@ -19,11 +19,13 @@ namespace LibreHardwareMonitor.UI
         private readonly List<TypeNode> _typeNodes = new List<TypeNode>();
         private readonly string _expandedIdentifier;
         private bool _expanded;
+        private RTSS _rtss;
 
         public event EventHandler PlotSelectionChanged;
 
-        public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager)
+        public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager, RTSS rtss)
         {
+            _rtss = rtss;
             _settings = settings;
             _unitManager = unitManager;
             _expandedIdentifier = new Identifier(hardware.Identifier, "expanded").ToString();
@@ -131,7 +133,8 @@ namespace LibreHardwareMonitor.UI
             while (i < node.Nodes.Count && ((SensorNode)node.Nodes[i]).Sensor.Index < sensor.Index)
                 i++;
 
-            SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
+            //SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
+            SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager, _rtss);
             sensorNode.PlotSelectionChanged += SensorPlotSelectionChanged;
             node.Nodes.Insert(i, sensorNode);
         }

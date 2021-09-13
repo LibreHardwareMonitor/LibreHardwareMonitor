@@ -63,6 +63,15 @@ namespace LibreHardwareMonitor.UI
 
         private bool _selectionDragging;
 
+        private RTSS _rtss;
+        private readonly Color[] _rtssSensorColorPalette;
+        private readonly Color[] _rtssValueColorPalette;
+        private readonly UserRadioGroup _rtssSensorColor;
+        private readonly UserRadioGroup _rtssValueColor;
+        private readonly UserRadioGroup _rtssTextSize;
+        private readonly UserOption _rtssShowFps;
+        private readonly UserOption _rtssEnabled;
+
         public MainForm()
         {
             InitializeComponent();
@@ -100,6 +109,7 @@ namespace LibreHardwareMonitor.UI
             nodeTextBoxMin.DrawText += NodeTextBoxText_DrawText;
             nodeTextBoxMax.DrawText += NodeTextBoxText_DrawText;
             nodeTextBoxText.EditorShowing += NodeTextBoxText_EditorShowing;
+            nodeCheckBoxOsd.IsVisibleValueNeeded += NodeCheckBoxOsd_IsVisibleValueNeeded;
 
             foreach (TreeColumn column in treeView.Columns)
                 column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
@@ -129,6 +139,7 @@ namespace LibreHardwareMonitor.UI
                 minCloseMenuItem.Visible = false;
                 minTrayMenuItem.Visible = false;
                 startMinMenuItem.Visible = false;
+                rtssMenuItem.Visible = false;
             }
             else
             { // Windows
@@ -136,6 +147,7 @@ namespace LibreHardwareMonitor.UI
                 _gadget = new SensorGadget(_computer, _settings, _unitManager);
                 _gadget.HideShowCommand += HideShowClick;
                 _wmiProvider = new WmiProvider(_computer);
+                _rtss = new RTSS(_settings, _unitManager);
             }
 
             treeView.ShowNodeToolTips = true;
@@ -158,6 +170,18 @@ namespace LibreHardwareMonitor.UI
             _plotColorPalette[10] = Color.MediumSeaGreen;
             _plotColorPalette[11] = Color.Olive;
             _plotColorPalette[12] = Color.Firebrick;
+
+            _rtssSensorColorPalette = new Color[9];
+            _rtssSensorColorPalette[0] = Color.White;
+            _rtssSensorColorPalette[1] = Color.Black;
+            _rtssSensorColorPalette[2] = Color.Yellow;
+            _rtssSensorColorPalette[3] = Color.Blue;
+            _rtssSensorColorPalette[4] = Color.Red;
+            _rtssSensorColorPalette[5] = Color.Orange;
+            _rtssSensorColorPalette[6] = Color.Teal;
+            _rtssSensorColorPalette[7] = Color.Green;
+            _rtssSensorColorPalette[8] = Color.Brown;
+            _rtssValueColorPalette = _rtssSensorColorPalette;
 
             _computer.HardwareAdded += HardwareAdded;
             _computer.HardwareRemoved += HardwareRemoved;
@@ -345,6 +369,73 @@ namespace LibreHardwareMonitor.UI
                 }));
             };
 
+            UserOption showOsdColumn = new UserOption("osdMenuItem", false, osdMenuItem, _settings);
+            showOsdColumn.Changed += (EventHandler)((sender, e) => treeView.Columns[4].IsVisible = showOsdColumn.Value);
+
+            _rtssEnabled = new UserOption("enableRtssMenuItem", false, enableRtssMenuItem, _settings);
+            _rtssEnabled.Changed += ((sender, e) =>
+            {
+                _rtss.enabled = _rtssEnabled.Value;
+                if (_rtssEnabled.Value)
+                {
+                    fpsRtssMenuItem.Enabled = true;
+                    sensorColorRtssMenuItem.Enabled = true;
+                    valueColorRtssMenuItem.Enabled = true;
+                }
+                else
+                {
+                    fpsRtssMenuItem.Enabled = false;
+                    sensorColorRtssMenuItem.Enabled = false;
+                    valueColorRtssMenuItem.Enabled = false;
+                }
+            });
+
+            _rtssShowFps = new UserOption("fpsRtssMenuItem", false, fpsRtssMenuItem, _settings);
+            _rtssShowFps.Changed += ((sender, e) =>
+            {
+                if (_rtss == null)
+                    return;
+                _rtss.showFPS = _rtssShowFps.Value;
+            });
+
+            _rtssSensorColor = new UserRadioGroup("rtssSensorColor", 0, new[]
+            {
+                whiteSensorColorRtssMenuItem,
+                blackSensorColorRtssMenuItem,
+                yellowSensorColorRtssMenuItem,
+                blueSensorColorRtssMenuItem,
+                redSensorColorRtssMenuItem,
+                orangeSensorColorRtssMenuItem,
+                tealSensorColorRtssMenuItem,
+                greenSensorColorRtssMenuItem,
+                brownSensorColorRtssMenuItem
+            }, _settings);
+            _rtssSensorColor.Changed += ((sender, e) => _rtss.sensorColor = _rtssSensorColorPalette[_rtssSensorColor.Value]);
+
+            _rtssValueColor = new UserRadioGroup("rtssValueColor", 0, new[]
+            {
+                whiteValueColorRtssMenuItem,
+                blackValueColorRtssMenuItem,
+                yellowValueColorRtssMenuItem,
+                blueValueColorRtssMenuItem,
+                redValueColorRtssMenuItem,
+                orangeValueColorRtssMenuItem,
+                tealValueColorRtssMenuItem,
+                greenValueColorRtssMenuItem,
+                brownValueColorRtssMenuItem
+            }, _settings);
+            _rtssValueColor.Changed += ((sender, e) => _rtss.valueColor = _rtssValueColorPalette[_rtssValueColor.Value]);
+
+            _rtssTextSize = new UserRadioGroup("rtssTextSize", 0, new[]
+            {
+                s100TextSizeRtssMenuItem,
+                s75TextSizeRtssMenuItem,
+                s50TextSizeRtssMenuItem,
+                s25TextSizeRtssMenuItem
+            }, _settings);
+
+            _rtssTextSize.Changed += ((sender, e) => _rtss.textSize = _rtssTextSize.Value);
+
             InitializePlotForm();
             InitializeSplitter();
 
@@ -514,7 +605,8 @@ namespace LibreHardwareMonitor.UI
 
         private void SubHardwareAdded(IHardware hardware, Node node)
         {
-            HardwareNode hardwareNode = new HardwareNode(hardware, _settings, _unitManager);
+            //HardwareNode hardwareNode = new HardwareNode(hardware, _settings, _unitManager);
+            HardwareNode hardwareNode = new HardwareNode(hardware, _settings, _unitManager, _rtss);
             hardwareNode.PlotSelectionChanged += PlotSelectionChanged;
             InsertSorted(node.Nodes, hardwareNode);
             foreach (IHardware subHardware in hardware.SubHardware)
@@ -629,6 +721,13 @@ namespace LibreHardwareMonitor.UI
             e.Value = e.Node.Tag is SensorNode && plotMenuItem.Checked;
         }
 
+        private void NodeCheckBoxOsd_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
+        {
+            //e.Value = e.Node.Tag is SensorNode;
+            SensorNode tag = e.Node.Tag as SensorNode;
+            e.Value = tag != null;
+        }
+
         private void ExitClick(object sender, EventArgs e)
         {
             CloseApplication();
@@ -649,6 +748,24 @@ namespace LibreHardwareMonitor.UI
 
             if (_delayCount < 4)
                 _delayCount++;
+
+            if (_rtss.IsRtssRunning())
+            {
+                _rtss.Update();
+                enableRtssMenuItem.Enabled = true;
+                fpsRtssMenuItem.Enabled = true;
+                sensorColorRtssMenuItem.Enabled = true;
+                valueColorRtssMenuItem.Enabled = true;
+                textSizeRtssMenuItem.Enabled = true;
+            }
+            else
+            {
+                enableRtssMenuItem.Enabled = false;
+                fpsRtssMenuItem.Enabled = false;
+                sensorColorRtssMenuItem.Enabled = false;
+                valueColorRtssMenuItem.Enabled = false;
+                textSizeRtssMenuItem.Enabled = false;
+            }
 
             RestoreCollapsedNodeState(treeView);
         }
@@ -857,6 +974,22 @@ namespace LibreHardwareMonitor.UI
                             else
                             {
                                 _gadget.Add(node.Sensor);
+                            }
+                        };
+                        treeContextMenu.Items.Add(item);
+                    }
+                    if (_rtss != null)
+                    {
+                        ToolStripMenuItem item = new ToolStripMenuItem("Show in RTSS OSD") { Checked = _rtss.Contains(node.Sensor) };
+                        item.Click += delegate
+                        {
+                            if (item.Checked)
+                            {
+                                node.Osd = false;
+                            }
+                            else
+                            {
+                                node.Osd = true;
                             }
                         };
                         treeContextMenu.Items.Add(item);
