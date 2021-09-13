@@ -20,11 +20,9 @@ namespace LibreHardwareMonitor.UI
         private Color? _penColor;
         private bool _plot;
         private bool _osd;
-        private RTSS _rtss;
 
-        public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager, RTSS rtss)
+        public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
         {
-            _rtss = rtss;
             Sensor = sensor;
             _settings = settings;
             _unitManager = unitManager;
@@ -99,10 +97,7 @@ namespace LibreHardwareMonitor.UI
             set
             {
                 _osd = value;
-                if (value)
-                    _rtss.Add(Sensor);
-                else
-                    _rtss.Remove(Sensor);
+                _settings.SetValue(new Identifier(Sensor.Identifier, "osd").ToString(), value);
                 OsdSelectionChanged?.Invoke(this, null);
             }
         }

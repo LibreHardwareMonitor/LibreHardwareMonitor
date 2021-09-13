@@ -147,7 +147,7 @@ namespace LibreHardwareMonitor.UI
                 _gadget = new SensorGadget(_computer, _settings, _unitManager);
                 _gadget.HideShowCommand += HideShowClick;
                 _wmiProvider = new WmiProvider(_computer);
-                _rtss = new RTSS(_settings, _unitManager);
+                _rtss = new RTSS();
             }
 
             treeView.ShowNodeToolTips = true;
@@ -608,6 +608,7 @@ namespace LibreHardwareMonitor.UI
             //HardwareNode hardwareNode = new HardwareNode(hardware, _settings, _unitManager);
             HardwareNode hardwareNode = new HardwareNode(hardware, _settings, _unitManager, _rtss);
             hardwareNode.PlotSelectionChanged += PlotSelectionChanged;
+            hardwareNode.OsdSelectionChanged += OsdSelectionChanged;
             InsertSorted(node.Nodes, hardwareNode);
             foreach (IHardware subHardware in hardware.SubHardware)
                 SubHardwareAdded(subHardware, hardwareNode);
@@ -617,6 +618,7 @@ namespace LibreHardwareMonitor.UI
         {
             SubHardwareAdded(hardware, _root);
             PlotSelectionChanged(this, null);
+            OsdSelectionChanged(this, null);
         }
 
         private void HardwareRemoved(IHardware hardware)
@@ -631,8 +633,10 @@ namespace LibreHardwareMonitor.UI
             {
                 _root.Nodes.Remove(hardwareNode);
                 hardwareNode.PlotSelectionChanged -= PlotSelectionChanged;
+                hardwareNode.OsdSelectionChanged -= OsdSelectionChanged;
             }
             PlotSelectionChanged(this, null);
+            OsdSelectionChanged(this, null);
         }
 
         private void NodeTextBoxText_DrawText(object sender, DrawEventArgs e)
@@ -646,6 +650,24 @@ namespace LibreHardwareMonitor.UI
                 }
                 else
                     e.TextColor = Color.DarkGray;
+            }
+        }
+
+        private void OsdSelectionChanged(object sender, EventArgs e)
+        {
+            foreach (TreeNodeAdv node in treeView.AllNodes)
+            {
+                if (node.Tag is SensorNode sensorNode)
+                {
+                    if (sensorNode.Osd)
+                    {
+                        _rtss.Add(sensorNode.Sensor);
+                    }
+                    else
+                    {
+                        _rtss.Remove(sensorNode.Sensor);
+                    }
+                }
             }
         }
 
