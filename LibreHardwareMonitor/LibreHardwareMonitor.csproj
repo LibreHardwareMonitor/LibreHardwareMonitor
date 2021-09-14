@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="RTSSSharedMemoryNET">
-      <HintPath>..\RTSSSharedMemoryNET.dll</HintPath>
+      <HintPath>..\Libs\RTSSSharedMemoryNET.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Configuration.Install" />
