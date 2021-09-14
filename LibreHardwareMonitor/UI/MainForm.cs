@@ -370,7 +370,7 @@ namespace LibreHardwareMonitor.UI
             };
 
             UserOption showOsdColumn = new UserOption("osdMenuItem", false, osdMenuItem, _settings);
-            showOsdColumn.Changed += (EventHandler)((sender, e) => treeView.Columns[4].IsVisible = showOsdColumn.Value);
+            showOsdColumn.Changed += delegate { treeView.Columns[4].IsVisible = showOsdColumn.Value; };
 
             _rtssEnabled = new UserOption("enableRtssMenuItem", false, enableRtssMenuItem, _settings);
             _rtssEnabled.Changed += ((sender, e) =>
@@ -381,12 +381,14 @@ namespace LibreHardwareMonitor.UI
                     fpsRtssMenuItem.Enabled = true;
                     sensorColorRtssMenuItem.Enabled = true;
                     valueColorRtssMenuItem.Enabled = true;
+                    textSizeRtssMenuItem.Enabled = true;
                 }
                 else
                 {
                     fpsRtssMenuItem.Enabled = false;
                     sensorColorRtssMenuItem.Enabled = false;
                     valueColorRtssMenuItem.Enabled = false;
+                    textSizeRtssMenuItem.Enabled = false;
                 }
             });
 
@@ -654,6 +656,7 @@ namespace LibreHardwareMonitor.UI
 
         private void OsdSelectionChanged(object sender, EventArgs e)
         {
+            _rtss.RemoveAllSensors();
             foreach (TreeNodeAdv node in treeView.AllNodes)
             {
                 if (node.Tag is SensorNode sensorNode)
@@ -661,10 +664,6 @@ namespace LibreHardwareMonitor.UI
                     if (sensorNode.Osd)
                     {
                         _rtss.Add(sensorNode.Sensor);
-                    }
-                    else
-                    {
-                        _rtss.Remove(sensorNode.Sensor);
                     }
                 }
             }
@@ -773,19 +772,11 @@ namespace LibreHardwareMonitor.UI
             if (_rtss.IsRtssRunning())
             {
                 _rtss.Update();
-                enableRtssMenuItem.Enabled = true;
-                fpsRtssMenuItem.Enabled = true;
-                sensorColorRtssMenuItem.Enabled = true;
-                valueColorRtssMenuItem.Enabled = true;
-                textSizeRtssMenuItem.Enabled = true;
+                rtssMenuItem.Enabled = true;
             }
             else
             {
-                enableRtssMenuItem.Enabled = false;
-                fpsRtssMenuItem.Enabled = false;
-                sensorColorRtssMenuItem.Enabled = false;
-                valueColorRtssMenuItem.Enabled = false;
-                textSizeRtssMenuItem.Enabled = false;
+                rtssMenuItem.Enabled = false;
             }
 
             RestoreCollapsedNodeState(treeView);

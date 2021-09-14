@@ -352,7 +352,6 @@ namespace LibreHardwareMonitor.Utilities
 
         private string GetTextToBeDisplayed()
         {
-            int j;
             string str = "";
             string str1 = "";
             int length = 0;
@@ -451,6 +450,7 @@ namespace LibreHardwareMonitor.Utilities
                         }
                         case SensorType.Throughput:
                         {
+                            int j = 0;
                             string[] strArrays = new string[] { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB", "BB" };
                             for (j = 0; value > 1024f && j < (int)strArrays.Length - 1; j++)
                             {
@@ -548,6 +548,11 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
+        public void RemoveAllSensors()
+        {
+            _sensorsAdded = null;
+            _sensorsPriority = null;
+        }
         public void Update()
         {
             try
