@@ -71,6 +71,7 @@ namespace LibreHardwareMonitor.UI
         private readonly UserRadioGroup _rtssTextSize;
         private readonly UserOption _rtssShowFps;
         private readonly UserOption _rtssEnabled;
+        private readonly UserOption _showOsdColumn;
 
         public MainForm()
         {
@@ -369,8 +370,8 @@ namespace LibreHardwareMonitor.UI
                 }));
             };
 
-            UserOption showOsdColumn = new UserOption("osdMenuItem", false, osdMenuItem, _settings);
-            showOsdColumn.Changed += delegate { treeView.Columns[4].IsVisible = showOsdColumn.Value; };
+            _showOsdColumn = new UserOption("osdMenuItem", false, osdMenuItem, _settings);
+            _showOsdColumn.Changed += delegate { treeView.Columns[4].IsVisible = _showOsdColumn.Value; };
 
             _rtssEnabled = new UserOption("enableRtssMenuItem", false, enableRtssMenuItem, _settings);
             _rtssEnabled.Changed += ((sender, e) =>
@@ -382,6 +383,8 @@ namespace LibreHardwareMonitor.UI
                     sensorColorRtssMenuItem.Enabled = true;
                     valueColorRtssMenuItem.Enabled = true;
                     textSizeRtssMenuItem.Enabled = true;
+                    _showOsdColumn.Value = true;
+                    osdMenuItem.Enabled = true;
                 }
                 else
                 {
@@ -389,6 +392,8 @@ namespace LibreHardwareMonitor.UI
                     sensorColorRtssMenuItem.Enabled = false;
                     valueColorRtssMenuItem.Enabled = false;
                     textSizeRtssMenuItem.Enabled = false;
+                    _showOsdColumn.Value = false;
+                    osdMenuItem.Enabled = false;
                 }
             });
 
@@ -743,9 +748,7 @@ namespace LibreHardwareMonitor.UI
 
         private void NodeCheckBoxOsd_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
         {
-            //e.Value = e.Node.Tag is SensorNode;
-            SensorNode tag = e.Node.Tag as SensorNode;
-            e.Value = tag != null;
+            e.Value = e.Node.Tag is SensorNode;
         }
 
         private void ExitClick(object sender, EventArgs e)
@@ -777,6 +780,11 @@ namespace LibreHardwareMonitor.UI
             else
             {
                 rtssMenuItem.Enabled = false;
+                osdMenuItem.Enabled = false;
+                if (_showOsdColumn.Value)
+                {
+                    _showOsdColumn.Value = false;
+                }
             }
 
             RestoreCollapsedNodeState(treeView);
