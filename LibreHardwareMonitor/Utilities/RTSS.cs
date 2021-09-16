@@ -10,22 +10,31 @@ namespace LibreHardwareMonitor.Utilities
     public class RTSS
     {
         private OSD _osd;
-        private readonly string _name = "LHM";
-        private readonly string _rtssProcessName = "RTSS";
-        private ISensor[] _sensorsAdded;
+        private readonly string _name = "LHM"; // Instance name that identifies LHM inside RTSS app
+        private readonly string _rtssProcessName = "RTSS"; // String to identify process name and check if RTSS is running
         private readonly int _updateCallsThreshhold = 0; // Max amount of update calls to actually update OSD. 0 is instant
         private int _updateCalls = 0; // Variable to keep track of update calls
-        private int[] _sensorsPriority;
         private bool _showFPS;
         private Color _sensorColor;
         private Color _valueColor;
         private int _textSize;
         private bool _enabled;
+        private AddedSensors[] _addedSensors;
 
-        public RTSS()
+        private struct AddedSensors
         {
-            _sensorColor = Color.Orange;
-            _valueColor = Color.White;
+            public ISensor _sensor; // Sensor that will be displayed through RTSS
+            public int _priority; // Priority value that each sensor has. Lower number means higher priority, so upper in the list of displayed sensors.
+            public Color _sensorColor; // Color of the sensor name
+            public Color _valueColor; // Color of the sensor value
+
+            public AddedSensors(ISensor sensor, int priority, Color sensorColor, Color valueColor)
+            {
+                _sensor = sensor;
+                _priority = priority;
+                _sensorColor = sensorColor;
+                _valueColor = valueColor;
+            }
         }
 
         public bool enabled
@@ -56,6 +65,18 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
+        public Color valueColor
+        {
+            get
+            {
+                return _valueColor;
+            }
+            set
+            {
+                _valueColor = value;
+            }
+        }
+
         public bool showFPS
         {
             get
@@ -80,196 +101,25 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
-        public Color valueColor
-        {
-            get
-            {
-                return _valueColor;
-            }
-            set
-            {
-                _valueColor = value;
-            }
-        }
-
-        public void Add(ISensor sensor)
+        public void Add(ISensor sensor, int priority, Color sensorColor, Color valueColor)
         {
             try
             {
-                int num = CalculateSensorPriority(sensor);
-                if (_sensorsAdded != null)
+                AddedSensors sensorToAdd = new AddedSensors(sensor, priority, sensorColor, valueColor);
+                if (_addedSensors != null)
                 {
-                    if (!(Array.IndexOf<ISensor>(_sensorsAdded, sensor) >= 0))
-                    {
-                        Array.Resize<ISensor>(ref _sensorsAdded, (int)_sensorsAdded.Length + 1);
-                        Array.Resize<int>(ref _sensorsPriority, (int)_sensorsPriority.Length + 1);
-                        _sensorsPriority[_sensorsPriority.GetUpperBound(0)] = _sensorsPriority[_sensorsPriority.GetUpperBound(0) - 1];
-                        int num1 = 0;
-                        while (num > _sensorsPriority[num1] && num1 < (int)_sensorsAdded.Length - 1)
-                        {
-                            num1++;
-                        }
-                        if (num1 != (int)_sensorsAdded.Length - 1)
-                        {
-                            for (int i = (int)_sensorsAdded.Length - 2; i >= num1; i--)
-                            {
-                                _sensorsAdded[i + 1] = _sensorsAdded[i];
-                                _sensorsPriority[i + 1] = _sensorsPriority[i];
-                            }
-                            _sensorsAdded[num1] = sensor;
-                            _sensorsPriority[num1] = num;
-                        }
-                        else
-                        {
-                            _sensorsAdded[_sensorsAdded.GetUpperBound(0)] = sensor;
-                            _sensorsPriority[_sensorsPriority.GetUpperBound(0)] = num;
-                        }
-                    }
+                    Array.Resize<AddedSensors>(ref _addedSensors, (int)_addedSensors.Length + 1);
+                    _addedSensors[_addedSensors.GetUpperBound(0)] = sensorToAdd;
                 }
                 else
                 {
-                    _sensorsAdded = new ISensor[] { sensor };
-                    _sensorsPriority = new int[] { num };
+                    _addedSensors = new AddedSensors[] { sensorToAdd };
                 }
             }
             catch (Exception exception)
             {
                 Console.WriteLine(string.Concat("Could not add sensor. ", exception.Message));
             }
-        }
-
-        private int CalculateSensorPriority(ISensor sensor)
-        {
-            int num1 = 0;
-            int num2;
-            switch (sensor.Hardware.HardwareType)
-            {
-                case HardwareType.Motherboard:
-                {
-                    num2 = 30000;
-                    break;
-                }
-                case HardwareType.SuperIO:
-                {
-                    num2 = 40000;
-                    break;
-                }
-                case HardwareType.Cpu:
-                {
-                    num2 = 0;
-                    break;
-                }
-                case HardwareType.Memory:
-                {
-                    num2 = 50000;
-                    break;
-                }
-                case HardwareType.GpuNvidia:
-                {
-                    num2 = 20000;
-                    break;
-                }
-                case HardwareType.GpuAmd:
-                {
-                    num2 = 10000;
-                    break;
-                }
-                case HardwareType.Storage:
-                {
-                    num2 = 60000;
-                    break;
-                }
-                case HardwareType.Network:
-                {
-                    num2 = 70000;
-                    break;
-                }
-                default:
-                {
-                    num2 = num1 + 80000;
-                    break;
-                }
-            }
-            int num3;
-            switch (sensor.SensorType)
-            {
-                case SensorType.Voltage:
-                {
-                    num3 = num2 + 900;
-                    break;
-                }
-                case SensorType.Clock:
-                {
-                    num3 = num2 + 300;
-                    break;
-                }
-                case SensorType.Temperature:
-                {
-                    num3 = num2;
-                    break;
-                }
-                case SensorType.Load:
-                {
-                    num3 = num2 + 500;
-                    break;
-                }
-                case SensorType.Frequency:
-                {
-                    num3 = num2 + 400;
-                    break;
-                }
-                case SensorType.Fan:
-                {
-                    num3 = num2 + 200;
-                    break;
-                }
-                case SensorType.Flow:
-                {
-                    num3 = num2 + 1100;
-                    break;
-                }
-                case SensorType.Control:
-                {
-                    num3 = num2 + 100;
-                    break;
-                }
-                case SensorType.Level:
-                {
-                    num3 = num2 + 1200;
-                    break;
-                }
-                case SensorType.Factor:
-                {
-                    num3 = num2 + 1300;
-                    break;
-                }
-                case SensorType.Power:
-                {
-                    num3 = num2 + 700;
-                    break;
-                }
-                case SensorType.Data:
-                {
-                    num3 = num2 + 600;
-                    break;
-                }
-                case SensorType.SmallData:
-                {
-                    num3 = num2 + 1000;
-                    break;
-                }
-                case SensorType.Throughput:
-                {
-                    num3 = num2 + 800;
-                    break;
-                }
-                default:
-                {
-                    num3 = num2 + 1400;
-                    break;
-                }
-            }
-            return num3 + sensor.Index;
         }
 
         private void ClearOsd()
@@ -332,13 +182,13 @@ namespace LibreHardwareMonitor.Utilities
 
         public bool Contains(ISensor sensor)
         {
-            if (_sensorsAdded == null)
+            if (_addedSensors == null)
             {
                 return false;
             }
-            if (Array.IndexOf<ISensor>(_sensorsAdded, sensor) >= 0)
+            if (Array.FindIndex(_addedSensors, s => s._sensor == sensor) >= 0)
             {
-                return true;
+
             }
             return false;
         }
@@ -357,18 +207,22 @@ namespace LibreHardwareMonitor.Utilities
             int length = 0;
             string str2 = "";
             string str3 = "";
+            string sColor = "";
+            string vColor = "";
             int num = 100 - _textSize * 25;
             Console.WriteLine(num);
-            if (_sensorsAdded != null)
+            if (_addedSensors != null)
             {
-                for (int i = 0; i < (int)_sensorsAdded.Length; i++)
+                for (int i = 0; i < (int)_addedSensors.Length; i++)
                 {
+                    /*_addedSensors[i]._sensorColor = sensorColor;
+                    _addedSensors[i]._valueColor = valueColor;*/
                     float value = 0f;
-                    if (_sensorsAdded[i].Value.HasValue)
+                    if (_addedSensors[i]._sensor.Value.HasValue)
                     {
-                        value = (float)_sensorsAdded[i].Value.Value;
+                        value = (float)_addedSensors[i]._sensor.Value.Value;
                     }
-                    switch (_sensorsAdded[i].SensorType)
+                    switch (_addedSensors[i]._sensor.SensorType)
                     {
                         case SensorType.Voltage:
                         {
@@ -471,20 +325,26 @@ namespace LibreHardwareMonitor.Utilities
                     {
                         length = str3.Length + str1.Length + 1;
                     }
-                    str2 = string.Concat(new string[] { str2, "<A0><S0><C250>", _sensorsAdded[i].Name.ToUpper(), ":<C><S><A><A1><S0><C4>", str3, "<C><C4>", str1, "<C><S><A>", Environment.NewLine });
+                    sColor = ColorTranslator.ToHtml(Color.FromArgb((int)_addedSensors[i]._sensorColor.R, (int)_addedSensors[i]._sensorColor.G, (int)_addedSensors[i]._sensorColor.B)).Substring(1);
+                    vColor = ColorTranslator.ToHtml(Color.FromArgb((int)_addedSensors[i]._valueColor.R, (int)_addedSensors[i]._valueColor.G, (int)_addedSensors[i]._valueColor.B)).Substring(1);
+                    str2 = string.Concat(new string[] { str2, "<A0><S0><C=", sColor, ">", _addedSensors[i]._sensor.Name.ToUpper(), ":<C><S><A><A1><S0><C=", vColor, ">", str3, "<C><C=", vColor,">", str1, "<C><S><A>", Environment.NewLine });
                 }
+                
             }
             if (length <= 7)
             {
                 length = 8;
             }
-            string str4 = ColorTranslator.ToHtml(Color.FromArgb((int)_valueColor.R, (int)_valueColor.G, (int)_valueColor.B)).Substring(1);
-            string str5 = ColorTranslator.ToHtml(Color.FromArgb((int)_sensorColor.R, (int)_sensorColor.G, (int)_sensorColor.B)).Substring(1);
-            str = string.Concat(new string[] { "<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), "><C4=", str4, "><C250=", str5, ">", Environment.NewLine });
-            Console.WriteLine(str);
+            sColor = ColorTranslator.ToHtml(Color.FromArgb((int)_sensorColor.R, (int)_sensorColor.G, (int)_sensorColor.B)).Substring(1);
+            vColor = ColorTranslator.ToHtml(Color.FromArgb((int)_valueColor.R, (int)_valueColor.G, (int)_valueColor.B)).Substring(1);
+
+            //str = string.Concat(new string[] { "<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), "><C4=", sColor, "><C250=", vColor, ">", Environment.NewLine });
+            str = string.Concat(new string[] { "<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), ">", Environment.NewLine });
+            //Console.WriteLine(str);
             if (_showFPS)
             {
-                str = string.Concat(str, "<A0><S0><C250><APP>:<C><S><A><A1><S0><C4><FR> FPS<C><S><A>", Environment.NewLine);
+                //str = string.Concat(str, "<A0><S0><C250><APP>:<C><S><A><A1><S0><C4><FR> FPS<C><S><A>", Environment.NewLine);
+                str = string.Concat(str, "<A0><S0><C=", sColor,"><APP>:<C><S><A><A1><S0><C=", vColor,"><FR> FPS<C><S><A>", Environment.NewLine);
             }
             str = string.Concat(str, str2);
             if (str.Length > 0xfff)
@@ -523,7 +383,22 @@ namespace LibreHardwareMonitor.Utilities
         {
             try
             {
-                if (_sensorsAdded != null && Array.IndexOf<ISensor>(_sensorsAdded, sensor) >= 0)
+                if(_addedSensors != null && Array.FindIndex(_addedSensors, s => s._sensor == sensor) >= 0)
+                {
+                    for (int i = Array.FindIndex(_addedSensors, s => s._sensor == sensor); i < (int)_addedSensors.Length - 1; i++)
+                    {
+                        _addedSensors[i] = _addedSensors[i + 1];
+                    }
+                    if ((int)_addedSensors.Length - 1 != 0)
+                    {
+                        Array.Resize<AddedSensors>(ref _addedSensors, (int)_addedSensors.Length - 1);
+                    }
+                    else
+                    {
+                        _addedSensors = null;
+                    }
+                }
+                /*if (_sensorsAdded != null && Array.IndexOf<ISensor>(_sensorsAdded, sensor) >= 0)
                 {
                     for (int i = Array.IndexOf<ISensor>(_sensorsAdded, sensor); i < (int)_sensorsAdded.Length - 1; i++)
                     {
@@ -540,7 +415,7 @@ namespace LibreHardwareMonitor.Utilities
                         _sensorsAdded = null;
                         _sensorsPriority = null;
                     }
-                }
+                }*/
             }
             catch (Exception exception)
             {
@@ -550,8 +425,9 @@ namespace LibreHardwareMonitor.Utilities
 
         public void RemoveAllSensors()
         {
-            _sensorsAdded = null;
-            _sensorsPriority = null;
+            /*_sensorsAdded = null;
+            _sensorsPriority = null;*/
+            _addedSensors = null;
         }
         public void Update()
         {

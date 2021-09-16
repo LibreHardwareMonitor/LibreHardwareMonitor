@@ -425,26 +425,26 @@ namespace LibreHardwareMonitor.UI
             // valueMenuItem
             // 
             this.valueMenuItem.Name = "valueMenuItem";
-            this.valueMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.valueMenuItem.Size = new System.Drawing.Size(180, 22);
             this.valueMenuItem.Text = "Value";
             // 
             // minMenuItem
             // 
             this.minMenuItem.Name = "minMenuItem";
-            this.minMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.minMenuItem.Size = new System.Drawing.Size(180, 22);
             this.minMenuItem.Text = "Min";
             // 
             // maxMenuItem
             // 
             this.maxMenuItem.Name = "maxMenuItem";
-            this.maxMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.maxMenuItem.Size = new System.Drawing.Size(180, 22);
             this.maxMenuItem.Text = "Max";
             // 
             // osdMenuItem
             // 
             this.osdMenuItem.Name = "osdMenuItem";
-            this.osdMenuItem.Size = new System.Drawing.Size(102, 22);
-            this.osdMenuItem.Text = "OSD";
+            this.osdMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.osdMenuItem.Text = "RTSS OSD";
             // 
             // optionsMenuItem
             // 
@@ -1103,6 +1103,7 @@ namespace LibreHardwareMonitor.UI
             // 
             this.osd.Header = "OSD";
             this.osd.SortOrder = System.Windows.Forms.SortOrder.None;
+            this.osd.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.osd.TooltipText = null;
             // 
             // nodeCheckBoxOsd

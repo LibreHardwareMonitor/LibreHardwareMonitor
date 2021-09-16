@@ -238,6 +238,80 @@ namespace LibreHardwareMonitor.UI
                 }
             };
 
+
+
+            _showOsdColumn = new UserOption("osdMenuItem", false, osdMenuItem, _settings);
+            _showOsdColumn.Changed += delegate { treeView.Columns[4].IsVisible = _showOsdColumn.Value; };
+
+            _rtssEnabled = new UserOption("enableRtssMenuItem", false, enableRtssMenuItem, _settings);
+            _rtssEnabled.Changed += ((sender, e) =>
+            {
+                _rtss.enabled = _rtssEnabled.Value;
+                if (_rtssEnabled.Value)
+                {
+                    fpsRtssMenuItem.Enabled = true;
+                    sensorColorRtssMenuItem.Enabled = true;
+                    valueColorRtssMenuItem.Enabled = true;
+                    textSizeRtssMenuItem.Enabled = true;
+                    _showOsdColumn.Value = true;
+                    osdMenuItem.Enabled = true;
+                }
+                else
+                {
+                    fpsRtssMenuItem.Enabled = false;
+                    sensorColorRtssMenuItem.Enabled = false;
+                    valueColorRtssMenuItem.Enabled = false;
+                    textSizeRtssMenuItem.Enabled = false;
+                    _showOsdColumn.Value = false;
+                    osdMenuItem.Enabled = false;
+                }
+            });
+
+            _rtssShowFps = new UserOption("fpsRtssMenuItem", false, fpsRtssMenuItem, _settings);
+            _rtssShowFps.Changed += ((sender, e) =>
+            {
+                if (_rtss == null)
+                    return;
+                _rtss.showFPS = _rtssShowFps.Value;
+            });
+
+            _rtssSensorColor = new UserRadioGroup("rtssSensorColor", 0, new[]
+            {
+                whiteSensorColorRtssMenuItem,
+                blackSensorColorRtssMenuItem,
+                yellowSensorColorRtssMenuItem,
+                blueSensorColorRtssMenuItem,
+                redSensorColorRtssMenuItem,
+                orangeSensorColorRtssMenuItem,
+                tealSensorColorRtssMenuItem,
+                greenSensorColorRtssMenuItem,
+                brownSensorColorRtssMenuItem
+            }, _settings);
+            _rtssSensorColor.Changed += ((sender, e) => _rtss.sensorColor = _rtssSensorColorPalette[_rtssSensorColor.Value]);
+
+            _rtssValueColor = new UserRadioGroup("rtssValueColor", 0, new[]
+            {
+                whiteValueColorRtssMenuItem,
+                blackValueColorRtssMenuItem,
+                yellowValueColorRtssMenuItem,
+                blueValueColorRtssMenuItem,
+                redValueColorRtssMenuItem,
+                orangeValueColorRtssMenuItem,
+                tealValueColorRtssMenuItem,
+                greenValueColorRtssMenuItem,
+                brownValueColorRtssMenuItem
+            }, _settings);
+            _rtssValueColor.Changed += ((sender, e) => _rtss.valueColor = _rtssValueColorPalette[_rtssValueColor.Value]);
+
+            _rtssTextSize = new UserRadioGroup("rtssTextSize", 0, new[]
+            {
+                s100TextSizeRtssMenuItem,
+                s75TextSizeRtssMenuItem,
+                s50TextSizeRtssMenuItem,
+                s25TextSizeRtssMenuItem
+            }, _settings);
+            _rtssTextSize.Changed += ((sender, e) => _rtss.textSize = _rtssTextSize.Value);
+
             _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
             _readMainboardSensors.Changed += delegate
             {
@@ -369,79 +443,6 @@ namespace LibreHardwareMonitor.UI
                     sensor.ValuesTimeWindow = timeWindow;
                 }));
             };
-
-            _showOsdColumn = new UserOption("osdMenuItem", false, osdMenuItem, _settings);
-            _showOsdColumn.Changed += delegate { treeView.Columns[4].IsVisible = _showOsdColumn.Value; };
-
-            _rtssEnabled = new UserOption("enableRtssMenuItem", false, enableRtssMenuItem, _settings);
-            _rtssEnabled.Changed += ((sender, e) =>
-            {
-                _rtss.enabled = _rtssEnabled.Value;
-                if (_rtssEnabled.Value)
-                {
-                    fpsRtssMenuItem.Enabled = true;
-                    sensorColorRtssMenuItem.Enabled = true;
-                    valueColorRtssMenuItem.Enabled = true;
-                    textSizeRtssMenuItem.Enabled = true;
-                    _showOsdColumn.Value = true;
-                    osdMenuItem.Enabled = true;
-                }
-                else
-                {
-                    fpsRtssMenuItem.Enabled = false;
-                    sensorColorRtssMenuItem.Enabled = false;
-                    valueColorRtssMenuItem.Enabled = false;
-                    textSizeRtssMenuItem.Enabled = false;
-                    _showOsdColumn.Value = false;
-                    osdMenuItem.Enabled = false;
-                }
-            });
-
-            _rtssShowFps = new UserOption("fpsRtssMenuItem", false, fpsRtssMenuItem, _settings);
-            _rtssShowFps.Changed += ((sender, e) =>
-            {
-                if (_rtss == null)
-                    return;
-                _rtss.showFPS = _rtssShowFps.Value;
-            });
-
-            _rtssSensorColor = new UserRadioGroup("rtssSensorColor", 0, new[]
-            {
-                whiteSensorColorRtssMenuItem,
-                blackSensorColorRtssMenuItem,
-                yellowSensorColorRtssMenuItem,
-                blueSensorColorRtssMenuItem,
-                redSensorColorRtssMenuItem,
-                orangeSensorColorRtssMenuItem,
-                tealSensorColorRtssMenuItem,
-                greenSensorColorRtssMenuItem,
-                brownSensorColorRtssMenuItem
-            }, _settings);
-            _rtssSensorColor.Changed += ((sender, e) => _rtss.sensorColor = _rtssSensorColorPalette[_rtssSensorColor.Value]);
-
-            _rtssValueColor = new UserRadioGroup("rtssValueColor", 0, new[]
-            {
-                whiteValueColorRtssMenuItem,
-                blackValueColorRtssMenuItem,
-                yellowValueColorRtssMenuItem,
-                blueValueColorRtssMenuItem,
-                redValueColorRtssMenuItem,
-                orangeValueColorRtssMenuItem,
-                tealValueColorRtssMenuItem,
-                greenValueColorRtssMenuItem,
-                brownValueColorRtssMenuItem
-            }, _settings);
-            _rtssValueColor.Changed += ((sender, e) => _rtss.valueColor = _rtssValueColorPalette[_rtssValueColor.Value]);
-
-            _rtssTextSize = new UserRadioGroup("rtssTextSize", 0, new[]
-            {
-                s100TextSizeRtssMenuItem,
-                s75TextSizeRtssMenuItem,
-                s50TextSizeRtssMenuItem,
-                s25TextSizeRtssMenuItem
-            }, _settings);
-
-            _rtssTextSize.Changed += ((sender, e) => _rtss.textSize = _rtssTextSize.Value);
 
             InitializePlotForm();
             InitializeSplitter();
@@ -662,13 +663,17 @@ namespace LibreHardwareMonitor.UI
         private void OsdSelectionChanged(object sender, EventArgs e)
         {
             _rtss.RemoveAllSensors();
+            int priority = 0;
             foreach (TreeNodeAdv node in treeView.AllNodes)
             {
                 if (node.Tag is SensorNode sensorNode)
                 {
                     if (sensorNode.Osd)
                     {
-                        _rtss.Add(sensorNode.Sensor);
+                        Color vColor = _settings.GetValue(new Identifier(sensorNode.Sensor.Identifier, "osdValueColor").ToString(), _rtss.valueColor);
+                        Color sColor = _settings.GetValue(new Identifier(sensorNode.Sensor.Identifier, "osdSensorColor").ToString(), _rtss.sensorColor);
+                        _rtss.Add(sensorNode.Sensor, priority, sColor, vColor);
+                        priority++;
                     }
                 }
             }
@@ -776,6 +781,7 @@ namespace LibreHardwareMonitor.UI
             {
                 _rtss.Update();
                 rtssMenuItem.Enabled = true;
+                osdMenuItem.Enabled = true;
             }
             else
             {
@@ -998,7 +1004,7 @@ namespace LibreHardwareMonitor.UI
                         };
                         treeContextMenu.Items.Add(item);
                     }
-                    if (_rtss != null)
+                    if (_rtss.IsRtssRunning())
                     {
                         ToolStripMenuItem item = new ToolStripMenuItem("Show in RTSS OSD") { Checked = _rtss.Contains(node.Sensor) };
                         item.Click += delegate
@@ -1013,6 +1019,31 @@ namespace LibreHardwareMonitor.UI
                             }
                         };
                         treeContextMenu.Items.Add(item);
+                        treeContextMenu.Items.Add(new ToolStripSeparator());
+                        ToolStripMenuItem item2 = new ToolStripMenuItem("RTSS Sensor Color");
+                        item2.Click += delegate
+                        {
+                            ColorDialog colorDialog = new ColorDialog();
+                            colorDialog.Color = _settings.GetValue(new Identifier(node.Sensor.Identifier, "osdSensorColor").ToString(), _rtss.sensorColor);
+                            if (colorDialog.ShowDialog() == DialogResult.OK)
+                            {
+                                _settings.SetValue(new Identifier(node.Sensor.Identifier, "osdSensorColor").ToString(), colorDialog.Color);
+                                OsdSelectionChanged(this, null);
+                            }
+                        };
+                        treeContextMenu.Items.Add(item2);
+                        ToolStripMenuItem item3 = new ToolStripMenuItem("RTSS Value Color");
+                        item3.Click += delegate
+                        {
+                            ColorDialog colorDialog = new ColorDialog();
+                            colorDialog.Color = _settings.GetValue(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString(), _rtss.valueColor);
+                            if (colorDialog.ShowDialog() == DialogResult.OK)
+                            {
+                                _settings.SetValue(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString(), colorDialog.Color);
+                                OsdSelectionChanged(this, null);
+                            }
+                        };
+                        treeContextMenu.Items.Add(item3);
                     }
                     if (node.Sensor.Control != null)
                     {
