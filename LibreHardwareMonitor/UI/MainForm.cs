@@ -303,6 +303,25 @@ namespace LibreHardwareMonitor.UI
             }, _settings);
             _rtssValueColor.Changed += ((sender, e) => _rtss.valueColor = _rtssValueColorPalette[_rtssValueColor.Value]);
 
+            resetCustomColorsRtssMenuItem.Click += ((sender, e) => 
+            {
+                _rtss.RemoveAllSensors();
+                int priority = 0;
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                    {
+                        _settings.Remove(new Identifier(sensorNode.Sensor.Identifier, "osdValueColor").ToString());
+                        _settings.Remove(new Identifier(sensorNode.Sensor.Identifier, "osdSensorColor").ToString());
+                        if (sensorNode.Osd)
+                        {
+                            _rtss.Add(sensorNode.Sensor, priority, _rtss.sensorColor, _rtss.valueColor);
+                            priority++;
+                        }
+                    }
+                }
+            });
+
             _rtssTextSize = new UserRadioGroup("rtssTextSize", 0, new[]
             {
                 s100TextSizeRtssMenuItem,
@@ -1044,6 +1063,18 @@ namespace LibreHardwareMonitor.UI
                             }
                         };
                         treeContextMenu.Items.Add(item3);
+                        ToolStripMenuItem item4 = new ToolStripMenuItem("RTSS Remove Custom Color");
+                        item4.Click += delegate
+                        {
+                            _settings.Remove(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString());
+                            _settings.Remove(new Identifier(node.Sensor.Identifier, "osdSensorColor").ToString());
+                            OsdSelectionChanged(this, null);
+                        };
+                        if(!_settings.Contains(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString()) && !_settings.Contains(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString()))
+                        {
+                            item4.Enabled = false;
+                        }
+                        treeContextMenu.Items.Add(item4);
                     }
                     if (node.Sensor.Control != null)
                     {

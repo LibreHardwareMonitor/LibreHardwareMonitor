@@ -158,6 +158,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.osd = new Aga.Controls.Tree.TreeColumn();
             this.nodeCheckBoxOsd = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
+            this.resetCustomColorsRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -425,25 +426,25 @@ namespace LibreHardwareMonitor.UI
             // valueMenuItem
             // 
             this.valueMenuItem.Name = "valueMenuItem";
-            this.valueMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.valueMenuItem.Size = new System.Drawing.Size(124, 22);
             this.valueMenuItem.Text = "Value";
             // 
             // minMenuItem
             // 
             this.minMenuItem.Name = "minMenuItem";
-            this.minMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.minMenuItem.Size = new System.Drawing.Size(124, 22);
             this.minMenuItem.Text = "Min";
             // 
             // maxMenuItem
             // 
             this.maxMenuItem.Name = "maxMenuItem";
-            this.maxMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.maxMenuItem.Size = new System.Drawing.Size(124, 22);
             this.maxMenuItem.Text = "Max";
             // 
             // osdMenuItem
             // 
             this.osdMenuItem.Name = "osdMenuItem";
-            this.osdMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.osdMenuItem.Size = new System.Drawing.Size(124, 22);
             this.osdMenuItem.Text = "RTSS OSD";
             // 
             // optionsMenuItem
@@ -817,6 +818,7 @@ namespace LibreHardwareMonitor.UI
             this.fpsRtssMenuItem,
             this.sensorColorRtssMenuItem,
             this.valueColorRtssMenuItem,
+            this.resetCustomColorsRtssMenuItem,
             this.textSizeRtssMenuItem});
             this.rtssMenuItem.Name = "rtssMenuItem";
             this.rtssMenuItem.Size = new System.Drawing.Size(221, 22);
@@ -825,13 +827,13 @@ namespace LibreHardwareMonitor.UI
             // enableRtssMenuItem
             // 
             this.enableRtssMenuItem.Name = "enableRtssMenuItem";
-            this.enableRtssMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.enableRtssMenuItem.Size = new System.Drawing.Size(184, 22);
             this.enableRtssMenuItem.Text = "Enable";
             // 
             // fpsRtssMenuItem
             // 
             this.fpsRtssMenuItem.Name = "fpsRtssMenuItem";
-            this.fpsRtssMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.fpsRtssMenuItem.Size = new System.Drawing.Size(184, 22);
             this.fpsRtssMenuItem.Text = "Show FPS";
             // 
             // sensorColorRtssMenuItem
@@ -847,7 +849,7 @@ namespace LibreHardwareMonitor.UI
             this.greenSensorColorRtssMenuItem,
             this.brownSensorColorRtssMenuItem});
             this.sensorColorRtssMenuItem.Name = "sensorColorRtssMenuItem";
-            this.sensorColorRtssMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.sensorColorRtssMenuItem.Size = new System.Drawing.Size(184, 22);
             this.sensorColorRtssMenuItem.Text = "Sensor Color";
             // 
             // whiteSensorColorRtssMenuItem
@@ -917,61 +919,61 @@ namespace LibreHardwareMonitor.UI
             this.greenValueColorRtssMenuItem,
             this.brownValueColorRtssMenuItem});
             this.valueColorRtssMenuItem.Name = "valueColorRtssMenuItem";
-            this.valueColorRtssMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.valueColorRtssMenuItem.Size = new System.Drawing.Size(184, 22);
             this.valueColorRtssMenuItem.Text = "Value Color";
             // 
             // whiteValueColorRtssMenuItem
             // 
             this.whiteValueColorRtssMenuItem.Name = "whiteValueColorRtssMenuItem";
-            this.whiteValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.whiteValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.whiteValueColorRtssMenuItem.Text = "White";
             // 
             // blackValueColorRtssMenuItem
             // 
             this.blackValueColorRtssMenuItem.Name = "blackValueColorRtssMenuItem";
-            this.blackValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.blackValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.blackValueColorRtssMenuItem.Text = "Black";
             // 
             // yellowValueColorRtssMenuItem
             // 
             this.yellowValueColorRtssMenuItem.Name = "yellowValueColorRtssMenuItem";
-            this.yellowValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.yellowValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.yellowValueColorRtssMenuItem.Text = "Yellow";
             // 
             // blueValueColorRtssMenuItem
             // 
             this.blueValueColorRtssMenuItem.Name = "blueValueColorRtssMenuItem";
-            this.blueValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.blueValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.blueValueColorRtssMenuItem.Text = "Blue";
             // 
             // redValueColorRtssMenuItem
             // 
             this.redValueColorRtssMenuItem.Name = "redValueColorRtssMenuItem";
-            this.redValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.redValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.redValueColorRtssMenuItem.Text = "Red";
             // 
             // orangeValueColorRtssMenuItem
             // 
             this.orangeValueColorRtssMenuItem.Name = "orangeValueColorRtssMenuItem";
-            this.orangeValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.orangeValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.orangeValueColorRtssMenuItem.Text = "Orange";
             // 
             // tealValueColorRtssMenuItem
             // 
             this.tealValueColorRtssMenuItem.Name = "tealValueColorRtssMenuItem";
-            this.tealValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.tealValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.tealValueColorRtssMenuItem.Text = "Teal";
             // 
             // greenValueColorRtssMenuItem
             // 
             this.greenValueColorRtssMenuItem.Name = "greenValueColorRtssMenuItem";
-            this.greenValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.greenValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.greenValueColorRtssMenuItem.Text = "Green";
             // 
             // brownValueColorRtssMenuItem
             // 
             this.brownValueColorRtssMenuItem.Name = "brownValueColorRtssMenuItem";
-            this.brownValueColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.brownValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.brownValueColorRtssMenuItem.Text = "Brown";
             // 
             // textSizeRtssMenuItem
@@ -982,31 +984,31 @@ namespace LibreHardwareMonitor.UI
             this.s50TextSizeRtssMenuItem,
             this.s25TextSizeRtssMenuItem});
             this.textSizeRtssMenuItem.Name = "textSizeRtssMenuItem";
-            this.textSizeRtssMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.textSizeRtssMenuItem.Size = new System.Drawing.Size(184, 22);
             this.textSizeRtssMenuItem.Text = "Text Size";
             // 
             // s100TextSizeRtssMenuItem
             // 
             this.s100TextSizeRtssMenuItem.Name = "s100TextSizeRtssMenuItem";
-            this.s100TextSizeRtssMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.s100TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.s100TextSizeRtssMenuItem.Text = "100%";
             // 
             // s75TextSizeRtssMenuItem
             // 
             this.s75TextSizeRtssMenuItem.Name = "s75TextSizeRtssMenuItem";
-            this.s75TextSizeRtssMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.s75TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.s75TextSizeRtssMenuItem.Text = "75%";
             // 
             // s50TextSizeRtssMenuItem
             // 
             this.s50TextSizeRtssMenuItem.Name = "s50TextSizeRtssMenuItem";
-            this.s50TextSizeRtssMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.s50TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.s50TextSizeRtssMenuItem.Text = "50%";
             // 
             // s25TextSizeRtssMenuItem
             // 
             this.s25TextSizeRtssMenuItem.Name = "s25TextSizeRtssMenuItem";
-            this.s25TextSizeRtssMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.s25TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
             this.s25TextSizeRtssMenuItem.Text = "25%";
             // 
             // helpMenuItem
@@ -1112,6 +1114,12 @@ namespace LibreHardwareMonitor.UI
             this.nodeCheckBoxOsd.EditEnabled = true;
             this.nodeCheckBoxOsd.LeftMargin = 0;
             this.nodeCheckBoxOsd.ParentColumn = this.osd;
+            // 
+            // resetCustomColorsRtssMenuItem
+            // 
+            this.resetCustomColorsRtssMenuItem.Name = "resetCustomColorsRtssMenuItem";
+            this.resetCustomColorsRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.resetCustomColorsRtssMenuItem.Text = "Reset Custom Colors";
             // 
             // MainForm
             // 
@@ -1262,6 +1270,7 @@ namespace LibreHardwareMonitor.UI
         private Aga.Controls.Tree.TreeColumn osd;
         private System.Windows.Forms.ToolStripMenuItem osdMenuItem;
         private Aga.Controls.Tree.NodeControls.NodeCheckBox nodeCheckBoxOsd;
+        private System.Windows.Forms.ToolStripMenuItem resetCustomColorsRtssMenuItem;
     }
 }
 
