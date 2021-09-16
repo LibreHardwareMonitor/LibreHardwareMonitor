@@ -63,7 +63,7 @@ namespace LibreHardwareMonitor.UI
 
         private bool _selectionDragging;
 
-        private RTSS _rtss;
+        private Rtss _rtss;
         private readonly Color[] _rtssSensorColorPalette;
         private readonly Color[] _rtssValueColorPalette;
         private readonly UserRadioGroup _rtssSensorColor;
@@ -148,7 +148,7 @@ namespace LibreHardwareMonitor.UI
                 _gadget = new SensorGadget(_computer, _settings, _unitManager);
                 _gadget.HideShowCommand += HideShowClick;
                 _wmiProvider = new WmiProvider(_computer);
-                _rtss = new RTSS();
+                _rtss = new Rtss();
             }
 
             treeView.ShowNodeToolTips = true;
@@ -255,6 +255,7 @@ namespace LibreHardwareMonitor.UI
                     textSizeRtssMenuItem.Enabled = true;
                     _showOsdColumn.Value = true;
                     osdMenuItem.Enabled = true;
+                    resetCustomColorsRtssMenuItem.Enabled = true;
                 }
                 else
                 {
@@ -264,6 +265,7 @@ namespace LibreHardwareMonitor.UI
                     textSizeRtssMenuItem.Enabled = false;
                     _showOsdColumn.Value = false;
                     osdMenuItem.Enabled = false;
+                    resetCustomColorsRtssMenuItem.Enabled = false;
                 }
             });
 
@@ -287,7 +289,11 @@ namespace LibreHardwareMonitor.UI
                 greenSensorColorRtssMenuItem,
                 brownSensorColorRtssMenuItem
             }, _settings);
-            _rtssSensorColor.Changed += ((sender, e) => _rtss.sensorColor = _rtssSensorColorPalette[_rtssSensorColor.Value]);
+            _rtssSensorColor.Changed += ((sender, e) => 
+            {
+                _rtss.sensorColor = _rtssSensorColorPalette[_rtssSensorColor.Value];
+                OsdSelectionChanged(this,null);
+            });
 
             _rtssValueColor = new UserRadioGroup("rtssValueColor", 0, new[]
             {
@@ -301,7 +307,11 @@ namespace LibreHardwareMonitor.UI
                 greenValueColorRtssMenuItem,
                 brownValueColorRtssMenuItem
             }, _settings);
-            _rtssValueColor.Changed += ((sender, e) => _rtss.valueColor = _rtssValueColorPalette[_rtssValueColor.Value]);
+            _rtssValueColor.Changed += ((sender, e) =>
+            {
+                _rtss.valueColor = _rtssValueColorPalette[_rtssValueColor.Value];
+                OsdSelectionChanged(this, null);
+            });
 
             resetCustomColorsRtssMenuItem.Click += ((sender, e) => 
             {
@@ -1040,6 +1050,7 @@ namespace LibreHardwareMonitor.UI
                         treeContextMenu.Items.Add(item);
                         treeContextMenu.Items.Add(new ToolStripSeparator());
                         ToolStripMenuItem item2 = new ToolStripMenuItem("RTSS Sensor Color");
+                        item2.BackColor = _settings.GetValue(new Identifier(node.Sensor.Identifier, "osdSensorColor").ToString(), item2.BackColor);
                         item2.Click += delegate
                         {
                             ColorDialog colorDialog = new ColorDialog();
@@ -1052,6 +1063,7 @@ namespace LibreHardwareMonitor.UI
                         };
                         treeContextMenu.Items.Add(item2);
                         ToolStripMenuItem item3 = new ToolStripMenuItem("RTSS Value Color");
+                        item3.BackColor = _settings.GetValue(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString(), item3.BackColor);
                         item3.Click += delegate
                         {
                             ColorDialog colorDialog = new ColorDialog();
@@ -1070,7 +1082,7 @@ namespace LibreHardwareMonitor.UI
                             _settings.Remove(new Identifier(node.Sensor.Identifier, "osdSensorColor").ToString());
                             OsdSelectionChanged(this, null);
                         };
-                        if(!_settings.Contains(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString()) && !_settings.Contains(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString()))
+                        if(!_settings.Contains(new Identifier(node.Sensor.Identifier, "osdValueColor").ToString()) && !_settings.Contains(new Identifier(node.Sensor.Identifier, "osdSensorColor").ToString()))
                         {
                             item4.Enabled = false;
                         }

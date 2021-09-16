@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace LibreHardwareMonitor.Utilities
 {
-    public class RTSS
+    public class Rtss
     {
         private OSD _osd;
         private readonly string _name = "LHM"; // Instance name that identifies LHM inside RTSS app
@@ -15,8 +15,8 @@ namespace LibreHardwareMonitor.Utilities
         private readonly int _updateCallsThreshhold = 0; // Max amount of update calls to actually update OSD. 0 is instant
         private int _updateCalls = 0; // Variable to keep track of update calls
         private bool _showFPS;
-        private Color _sensorColor;
-        private Color _valueColor;
+        private Color _sensorColor; // Default sensor color.
+        private Color _valueColor; // Default value color
         private int _textSize;
         private bool _enabled;
         private AddedSensors[] _addedSensors;
@@ -139,45 +139,43 @@ namespace LibreHardwareMonitor.Utilities
 
         private bool Connect()
         {
-            bool flag;
             try
             {
                 if (!enabled)
                 {
                     Disonnect();
-                    flag = false;
+                    return false;
                 }
                 else if (_osd != null)
                 {
                     if (!IsRtssRunning())
                     {
                         Disonnect();
-                        flag = false;
+                        return false;
                     }
                     else
                     {
-                        flag = true;
+                        return true;
                     }
                 }
                 else if (!IsRtssRunning())
                 {
                     Disonnect();
-                    flag = false;
+                    return false;
                 }
                 else
                 {
                     _osd = new OSD(_name);
                     _updateCalls = -3;
-                    flag = false;
+                    return false;
                 }
             }
             catch (Exception exception)
             {
                 Console.WriteLine(string.Concat("Could not initialize RTSS OSD object", exception.Message));
                 Disonnect();
-                flag = false;
             }
-            return flag;
+            return false;
         }
 
         public bool Contains(ISensor sensor)
@@ -186,11 +184,7 @@ namespace LibreHardwareMonitor.Utilities
             {
                 return false;
             }
-            if (Array.FindIndex(_addedSensors, s => s._sensor == sensor) >= 0)
-            {
-
-            }
-            return false;
+            return Array.FindIndex(_addedSensors, s => s._sensor == sensor) >= 0;
         }
 
         public void Disonnect()
@@ -210,13 +204,10 @@ namespace LibreHardwareMonitor.Utilities
             string sColor = "";
             string vColor = "";
             int num = 100 - _textSize * 25;
-            Console.WriteLine(num);
             if (_addedSensors != null)
             {
                 for (int i = 0; i < (int)_addedSensors.Length; i++)
                 {
-                    /*_addedSensors[i]._sensorColor = sensorColor;
-                    _addedSensors[i]._valueColor = valueColor;*/
                     float value = 0f;
                     if (_addedSensors[i]._sensor.Value.HasValue)
                     {
@@ -337,14 +328,10 @@ namespace LibreHardwareMonitor.Utilities
             }
             sColor = ColorTranslator.ToHtml(Color.FromArgb((int)_sensorColor.R, (int)_sensorColor.G, (int)_sensorColor.B)).Substring(1);
             vColor = ColorTranslator.ToHtml(Color.FromArgb((int)_valueColor.R, (int)_valueColor.G, (int)_valueColor.B)).Substring(1);
-
-            //str = string.Concat(new string[] { "<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), "><C4=", sColor, "><C250=", vColor, ">", Environment.NewLine });
-            str = string.Concat(new string[] { "<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), ">", Environment.NewLine });
-            //Console.WriteLine(str);
+            str = string.Concat("<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), ">", Environment.NewLine);
             if (_showFPS)
             {
-                //str = string.Concat(str, "<A0><S0><C250><APP>:<C><S><A><A1><S0><C4><FR> FPS<C><S><A>", Environment.NewLine);
-                str = string.Concat(str, "<A0><S0><C=", sColor,"><APP>:<C><S><A><A1><S0><C=", vColor,"><FR> FPS<C><S><A>", Environment.NewLine);
+                str += string.Concat(str, "<A0><S0><C=", sColor,"><APP>:<C><S><A><A1><S0><C=", vColor,"><FR> FPS<C><S><A>", Environment.NewLine);
             }
             str = string.Concat(str, str2);
             if (str.Length > 0xfff)
@@ -356,15 +343,13 @@ namespace LibreHardwareMonitor.Utilities
 
         public bool IsRtssRunning()
         {
-            bool flag;
             string str;
             try
             {
-                flag = (Process.GetProcessesByName(_rtssProcessName).Length == 0 ? false : true);
+                return (Process.GetProcessesByName(_rtssProcessName).Length == 0 ? false : true);
             }
-            catch (Exception exception1)
+            catch (Exception exception)
             {
-                Exception exception = exception1;
                 if (exception != null)
                 {
                     str = exception.ToString();
@@ -374,9 +359,8 @@ namespace LibreHardwareMonitor.Utilities
                     str = null;
                 }
                 Console.WriteLine(string.Concat("Error checking RTSS process. ", str));
-                flag = false;
+                return false;
             }
-            return flag;
         }
 
         public void Remove(ISensor sensor)
@@ -398,24 +382,6 @@ namespace LibreHardwareMonitor.Utilities
                         _addedSensors = null;
                     }
                 }
-                /*if (_sensorsAdded != null && Array.IndexOf<ISensor>(_sensorsAdded, sensor) >= 0)
-                {
-                    for (int i = Array.IndexOf<ISensor>(_sensorsAdded, sensor); i < (int)_sensorsAdded.Length - 1; i++)
-                    {
-                        _sensorsAdded[i] = _sensorsAdded[i + 1];
-                        _sensorsPriority[i] = _sensorsPriority[i + 1];
-                    }
-                    if ((int)_sensorsAdded.Length - 1 != 0)
-                    {
-                        Array.Resize<ISensor>(ref _sensorsAdded, (int)_sensorsAdded.Length - 1);
-                        Array.Resize<int>(ref _sensorsPriority, (int)_sensorsPriority.Length - 1);
-                    }
-                    else
-                    {
-                        _sensorsAdded = null;
-                        _sensorsPriority = null;
-                    }
-                }*/
             }
             catch (Exception exception)
             {
@@ -425,8 +391,6 @@ namespace LibreHardwareMonitor.Utilities
 
         public void RemoveAllSensors()
         {
-            /*_sensorsAdded = null;
-            _sensorsPriority = null;*/
             _addedSensors = null;
         }
         public void Update()
