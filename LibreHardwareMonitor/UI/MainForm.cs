@@ -316,7 +316,6 @@ namespace LibreHardwareMonitor.UI
             resetCustomColorsRtssMenuItem.Click += ((sender, e) => 
             {
                 _rtss.RemoveAllSensors();
-                int priority = 0;
                 foreach (TreeNodeAdv node in treeView.AllNodes)
                 {
                     if (node.Tag is SensorNode sensorNode)
@@ -325,8 +324,7 @@ namespace LibreHardwareMonitor.UI
                         _settings.Remove(new Identifier(sensorNode.Sensor.Identifier, "osdSensorColor").ToString());
                         if (sensorNode.Osd)
                         {
-                            _rtss.Add(sensorNode.Sensor, priority, _rtss.sensorColor, _rtss.valueColor);
-                            priority++;
+                            _rtss.Add(sensorNode.Sensor, _rtss.sensorColor, _rtss.valueColor);
                         }
                     }
                 }
@@ -701,7 +699,7 @@ namespace LibreHardwareMonitor.UI
                     {
                         Color vColor = _settings.GetValue(new Identifier(sensorNode.Sensor.Identifier, "osdValueColor").ToString(), _rtss.valueColor);
                         Color sColor = _settings.GetValue(new Identifier(sensorNode.Sensor.Identifier, "osdSensorColor").ToString(), _rtss.sensorColor);
-                        _rtss.Add(sensorNode.Sensor, priority, sColor, vColor);
+                        _rtss.Add(sensorNode.Sensor, sColor, vColor);
                         priority++;
                     }
                 }

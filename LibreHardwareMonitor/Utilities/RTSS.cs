@@ -24,14 +24,12 @@ namespace LibreHardwareMonitor.Utilities
         private struct AddedSensors
         {
             public ISensor _sensor; // Sensor that will be displayed through RTSS
-            public int _priority; // Priority value that each sensor has. Lower number means higher priority, so upper in the list of displayed sensors.
             public Color _sensorColor; // Color of the sensor name
             public Color _valueColor; // Color of the sensor value
 
-            public AddedSensors(ISensor sensor, int priority, Color sensorColor, Color valueColor)
+            public AddedSensors(ISensor sensor, Color sensorColor, Color valueColor)
             {
                 _sensor = sensor;
-                _priority = priority;
                 _sensorColor = sensorColor;
                 _valueColor = valueColor;
             }
@@ -101,11 +99,11 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
-        public void Add(ISensor sensor, int priority, Color sensorColor, Color valueColor)
+        public void Add(ISensor sensor, Color sensorColor, Color valueColor)
         {
             try
             {
-                AddedSensors sensorToAdd = new AddedSensors(sensor, priority, sensorColor, valueColor);
+                AddedSensors sensorToAdd = new AddedSensors(sensor, sensorColor, valueColor);
                 if (_addedSensors != null)
                 {
                     Array.Resize<AddedSensors>(ref _addedSensors, (int)_addedSensors.Length + 1);
