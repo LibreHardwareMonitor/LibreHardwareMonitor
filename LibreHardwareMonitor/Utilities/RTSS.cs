@@ -1,5 +1,4 @@
 ﻿using LibreHardwareMonitor.Hardware;
-using LibreHardwareMonitor.UI;
 using RTSSSharedMemoryNET;
 using System;
 using System.Diagnostics;
@@ -10,6 +9,7 @@ namespace LibreHardwareMonitor.Utilities
     public class Rtss
     {
         private OSD _osd;
+        private const int _osdMaxChars = 4095;
         private readonly string _name = "LHM"; // Instance name that identifies LHM inside RTSS app
         private readonly string _rtssProcessName = "RTSS"; // String to identify process name and check if RTSS is running
         private readonly int _updateCallsThreshhold = 0; // Max amount of update calls to actually update OSD. 0 is instant
@@ -196,13 +196,13 @@ namespace LibreHardwareMonitor.Utilities
 
         private string GetTextToBeDisplayed()
         {
-            string str = "";
+            string osdString = "";
             string str1 = "";
-            int length = 0;
             string str2 = "";
             string str3 = "";
             string sColor = "";
             string vColor = "";
+            int osdStringLength = 0;
             int num = 100 - _textSize * 25;
             if (_addedSensors != null)
             {
@@ -312,9 +312,9 @@ namespace LibreHardwareMonitor.Utilities
                             break;
                         }
                     }
-                    if (length <= str3.Length + str1.Length + 1)
+                    if (osdStringLength <= str3.Length + str1.Length + 1)
                     {
-                        length = str3.Length + str1.Length + 1;
+                        osdStringLength = str3.Length + str1.Length + 1;
                     }
                     sColor = ColorTranslator.ToHtml(Color.FromArgb((int)_addedSensors[i]._sensorColor.R, (int)_addedSensors[i]._sensorColor.G, (int)_addedSensors[i]._sensorColor.B)).Substring(1);
                     vColor = ColorTranslator.ToHtml(Color.FromArgb((int)_addedSensors[i]._valueColor.R, (int)_addedSensors[i]._valueColor.G, (int)_addedSensors[i]._valueColor.B)).Substring(1);
@@ -322,23 +322,23 @@ namespace LibreHardwareMonitor.Utilities
                 }
                 
             }
-            if (length <= 7)
+            if (osdStringLength <= 7)
             {
-                length = 8;
+                osdStringLength = 8;
             }
             sColor = ColorTranslator.ToHtml(Color.FromArgb((int)_sensorColor.R, (int)_sensorColor.G, (int)_sensorColor.B)).Substring(1);
             vColor = ColorTranslator.ToHtml(Color.FromArgb((int)_valueColor.R, (int)_valueColor.G, (int)_valueColor.B)).Substring(1);
-            str = string.Concat("<A0=-4><A1=-", length.ToString(), "><A><S0=", num.ToString(), ">", Environment.NewLine);
+            osdString = string.Concat("<A0=-4><A1=-", osdStringLength.ToString(), "><A><S0=", num.ToString(), ">", Environment.NewLine);
             if (_showFPS)
             {
-                str += string.Concat(str, "<A0><S0><C=", sColor,"><APP>:<C><S><A><A1><S0><C=", vColor,"><FR> FPS<C><S><A>", Environment.NewLine);
+                osdString += string.Concat(osdString, "<A0><S0><C=", sColor,"><APP>:<C><S><A><A1><S0><C=", vColor,"><FR> FPS<C><S><A>", Environment.NewLine);
             }
-            str = string.Concat(str, str2);
-            if (str.Length > 0xfff)
+            osdString = string.Concat(osdString, str2);
+            if (osdString.Length > _osdMaxChars)
             {
-                str = str.Substring(0, 0xfff);
+                osdString = osdString.Substring(0, _osdMaxChars);
             }
-            return str;
+            return osdString;
         }
 
         public bool IsRtssRunning()
