@@ -2365,6 +2365,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         }
                         case Model.ROG_CROSSHAIR_VIII_HERO: // NCT6798D
                         case Model.ROG_CROSSHAIR_VIII_DARK_HERO: // NCT6798D
+                        case Model.ROG_CROSSHAIR_VIII_FORMULA: // NCT6798D
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("Voltage #2", 1, true));
