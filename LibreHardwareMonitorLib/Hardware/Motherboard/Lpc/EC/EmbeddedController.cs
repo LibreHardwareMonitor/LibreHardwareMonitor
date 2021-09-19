@@ -12,25 +12,37 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public abstract class EmbeddedController : Hardware
     {
-        private readonly List<EmbeddedControllerSensor> _sensors;
+        private readonly IReadOnlyList<EmbeddedControllerSource> _sources;
+        private readonly List<Sensor> _sensors;
+        private readonly ushort[] _registers;
+        private readonly byte[] _data;
 
         protected EmbeddedController(List<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
         {
+            _sources = sources;
             var indices = new Dictionary<SensorType, int>();
             foreach (SensorType t in Enum.GetValues(typeof(SensorType)))
             {
                 indices.Add(t, 0);
             }
 
-            _sensors = new List<EmbeddedControllerSensor>();
-            foreach (EmbeddedControllerSource s in sources)
+            _sensors = new List<Sensor>();
+            List<ushort> registers = new();
+             foreach (EmbeddedControllerSource s in sources)
             {
                 int index = indices[s.Type];
                 indices[s.Type] = index + 1;
-                _sensors.Add(new EmbeddedControllerSensor(s, index, this, settings));
+                _sensors.Add(new Sensor(s.Name, index, s.Type, this, settings));
+                for (int i = 0; i < s.Size; ++i)
+                {
+                    registers.Add((ushort)(s.Register + i));
+                }
 
                 ActivateSensor(_sensors[_sensors.Count - 1]);
             }
+
+            _registers = registers.ToArray();
+            _data = new byte[_registers.Length];
         }
 
         public override HardwareType HardwareType => HardwareType.EmbeddedController;
@@ -47,13 +59,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 {
                     sources.AddRange(new EmbeddedControllerSource[]
                     {
-                        new("Chipset", 0x3A, SensorType.Temperature, ReadByte),
-                        new("CPU", 0x3B, SensorType.Temperature, ReadByte),
-                        new("Motherboard", 0x3C, SensorType.Temperature, ReadByte),
-                        new("T Sensor", 0x3D, SensorType.Temperature, ReadByte),
-                        new("VRM", 0x3E, SensorType.Temperature, ReadByte),
-                        new("CPU Opt", 0xB0, SensorType.Fan, ReadWordBE),
-                        new("CPU", 0xF4, SensorType.Current, ReadByte)
+                        new("Chipset", SensorType.Temperature, 0x003A, 1),
+                        new("CPU", SensorType.Temperature, 0x003B, 1),
+                        new("Motherboard", SensorType.Temperature, 0x003C, 1),
+                        new("T Sensor", SensorType.Temperature, 0x003D, 1, blank: 0xD8),
+                        new("VRM", SensorType.Temperature, 0x003E, 1),
+                        new("CPU Opt", SensorType.Fan, 0x00B0, 2),
+                        new("CPU", SensorType.Current, 0x00F4, 1)
                     });
 
                     break;
@@ -65,7 +77,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
                 {
-                    sources.Add(new EmbeddedControllerSource("Chipset", 0xB4, SensorType.Fan, ReadWordBE));
+                    sources.Add(new EmbeddedControllerSource("Chipset", SensorType.Fan, 0x00B4, 2));
                     break;
                 }
             }
@@ -76,7 +88,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
                 {
                     // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
-                    sources.Add(new EmbeddedControllerSource("Flow Rate", 0xBC, SensorType.Flow, (ecIO, port) => ecIO.ReadWordBE(port) / 42f * 60f));
+                    sources.Add(new EmbeddedControllerSource("Flow Rate", SensorType.Flow, 0x00BC, 2, 1.0f / 42f * 60f));
+                    sources.Add(new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, 1, blank: 0xD8));
+                    sources.Add(new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, 1, blank: 0xD8));
                     break;
                 }
             }
@@ -95,18 +109,22 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         public override void Update()
         {
-            try
-            {
-                using IEmbeddedControllerIO embeddedControllerIO = AcquireIOInterface();
-
-                foreach (EmbeddedControllerSensor sensor in _sensors)
-                {
-                    sensor.Update(embeddedControllerIO);
-                }
-            }
-            catch (WindowsEmbeddedControllerIO.BusMutexLockingFailedException)
+            if (!TryUpdateData())
             {
                 // just skip this update cycle?
+                return;
+            }
+            
+            int readRegister = 0;
+            for (int si = 0; si < _sensors.Count; ++si)
+            {
+                int val = 0;
+                for (int i = 0; i < _sources[si].Size; ++i, ++readRegister)
+                {
+                    val = (val << 8) + _data[readRegister];
+                }
+                
+                _sensors[si].Value = val != _sources[si].Blank ? val * _sources[si].Factor : null;
             }
         }
 
@@ -123,7 +141,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             try
             {
                 using IEmbeddedControllerIO embeddedControllerIO = AcquireIOInterface();
-
+                ushort[] src = new ushort[0x100];
+                byte[] data = new byte[0x100];
+                for (ushort i = 0; i < src.Length; ++i)
+                {
+                    src[i] = i;
+                }
+                embeddedControllerIO.Read(src, data);
                 for (int i = 0; i <= 0xF; ++i)
                 {
                     r.Append(" ");
@@ -133,7 +157,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     {
                         byte address = (byte)(i << 4 | j);
                         r.Append(" ");
-                        r.Append(embeddedControllerIO.ReadByte(address).ToString("X2", CultureInfo.InvariantCulture));
+                        r.Append(data[address].ToString("X2", CultureInfo.InvariantCulture));
                     }
 
                     r.AppendLine();
@@ -147,38 +171,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             return r.ToString();
         }
 
-        public static float ReadByte(IEmbeddedControllerIO ecIO, byte port)
-        {
-            return ecIO.ReadByte(port);
-        }
-
-        public static float ReadWordLE(IEmbeddedControllerIO ecIO, byte port)
-        {
-            return ecIO.ReadWordLE(port);
-        }
-
-        public static float ReadWordBE(IEmbeddedControllerIO ecIO, byte port)
-        {
-            return ecIO.ReadWordBE(port);
-        }
-
         protected abstract IEmbeddedControllerIO AcquireIOInterface();
 
-        private class EmbeddedControllerSensor : Sensor
+        private bool TryUpdateData()
         {
-            readonly byte _port;
-            readonly EmbeddedControllerReader _reader;
-
-            public EmbeddedControllerSensor(EmbeddedControllerSource embeddedControllerSource, int index, EmbeddedController hardware, ISettings settings)
-                : base(embeddedControllerSource.Name, index, embeddedControllerSource.Type, hardware, settings)
+            try
             {
-                _port = embeddedControllerSource.Port;
-                _reader = embeddedControllerSource.Reader;
+                using IEmbeddedControllerIO embeddedControllerIO = AcquireIOInterface();
+                embeddedControllerIO.Read(_registers, _data);
+                return true;
             }
-
-            public void Update(IEmbeddedControllerIO ecIO)
+            catch (WindowsEmbeddedControllerIO.BusMutexLockingFailedException)
             {
-                Value = _reader(ecIO, _port);
+                return false;
             }
         }
     }
