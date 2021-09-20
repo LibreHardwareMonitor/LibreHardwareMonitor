@@ -56,6 +56,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
                 case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
+                case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 {
                     sources.AddRange(new EmbeddedControllerSource[]
                     {
@@ -76,6 +77,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
+                case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 {
                     sources.Add(new EmbeddedControllerSource("Chipset", SensorType.Fan, 0x00B4, 2));
                     break;
@@ -86,6 +88,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 case Model.ROG_CROSSHAIR_VIII_HERO:
                 case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
+                case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 {
                     // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
                     sources.Add(new EmbeddedControllerSource("Flow Rate", SensorType.Flow, 0x00BC, 2, 1.0f / 42f * 60f));
