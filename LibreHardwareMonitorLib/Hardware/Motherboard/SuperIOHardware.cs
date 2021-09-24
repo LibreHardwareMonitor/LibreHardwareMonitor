@@ -87,7 +87,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             }
                             case ControlMode.Software:
                             {
-                                superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
+                                superIO.SetControl(index, GetSoftwareValueAsByte(cc));
                                 break;
                             }
                             default:
@@ -100,7 +100,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     control.SoftwareControlValueChanged += cc =>
                     {
                         if (cc.ControlMode == ControlMode.Software)
-                            superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
+                            superIO.SetControl(index, GetSoftwareValueAsByte(cc));
                     };
 
                     switch (control.ControlMode)
@@ -117,7 +117,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         }
                         case ControlMode.Software:
                         {
-                            superIO.SetControl(index, (byte)(control.SoftwareValue * 2.55));
+                            superIO.SetControl(index, GetSoftwareValueAsByte(control));
 
                             break;
                         }
@@ -128,6 +128,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     ActivateSensor(sensor);
                 }
             }
+        }
+
+        private static byte GetSoftwareValueAsByte(Control control)
+        {
+            const float percentToByteRatio = 2.55f;
+            float value = control.SoftwareValue * percentToByteRatio;
+            return (byte)value;
         }
 
         private void CreateFanSensors(ISuperIO superIO, ISettings settings, IList<Fan> f)
