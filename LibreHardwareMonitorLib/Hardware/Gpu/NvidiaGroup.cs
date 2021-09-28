@@ -4,14 +4,10 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using LibreHardwareMonitor.Interop;
-using NvAPIWrapper;
-using NvAPIWrapper.GPU;
-using NvAPIWrapper.Native.Exceptions;
 
 namespace LibreHardwareMonitor.Hardware.Gpu
 {
@@ -19,66 +15,72 @@ namespace LibreHardwareMonitor.Hardware.Gpu
     {
         private readonly List<Hardware> _hardware = new();
         private readonly StringBuilder _report = new();
-        private readonly bool _initialized;
 
         public NvidiaGroup(ISettings settings)
         {
+            if (!NvApi.IsAvailable)
+                return;
+
+
             _report.AppendLine("NvApi");
             _report.AppendLine();
 
-            try
+            if (NvApi.NvAPI_GetInterfaceVersionString(out string version) == NvApi.NvStatus.OK)
             {
-                NVIDIA.Initialize();
-                _initialized = true;
+                _report.Append("Version: ");
+                _report.AppendLine(version);
             }
-            catch (Exception e) when (e is NVIDIAApiException or DllNotFoundException)
+
+            NvApi.NvPhysicalGpuHandle[] handles = new NvApi.NvPhysicalGpuHandle[NvApi.MAX_PHYSICAL_GPUS];
+            if (NvApi.NvAPI_EnumPhysicalGPUs == null)
             {
-                // No NVIDIA devices.
+                _report.AppendLine("Error: NvAPI_EnumPhysicalGPUs not available");
+                _report.AppendLine();
                 return;
             }
 
-            try
+            NvApi.NvStatus status = NvApi.NvAPI_EnumPhysicalGPUs(handles, out int count);
+            if (status != NvApi.NvStatus.OK)
             {
-                string interfaceVersion = NVIDIA.InterfaceVersionString;
-                
-                _report.Append("Version: ");
-                _report.AppendLine(interfaceVersion);
+                _report.AppendLine("Status: " + status);
+                _report.AppendLine();
+                return;
             }
-            catch (NVIDIAApiException)
-            { }
 
-            try
+            IDictionary<NvApi.NvPhysicalGpuHandle, NvApi.NvDisplayHandle> displayHandles = new Dictionary<NvApi.NvPhysicalGpuHandle, NvApi.NvDisplayHandle>();
+            if (NvApi.NvAPI_EnumNvidiaDisplayHandle != null && NvApi.NvAPI_GetPhysicalGPUsFromDisplay != null)
             {
-                string driverVersion = NVIDIA.DriverVersion.ToString();
-                
-                _report.Append("Driver: ");
-                _report.AppendLine(driverVersion);
-            }
-            catch (NVIDIAApiException)
-            { }
+                status = NvApi.NvStatus.OK;
+                int i = 0;
+                while (status == NvApi.NvStatus.OK)
+                {
+                    NvApi.NvDisplayHandle displayHandle = new();
+                    status = NvApi.NvAPI_EnumNvidiaDisplayHandle(i, ref displayHandle);
+                    i++;
 
-            try
+                    if (status == NvApi.NvStatus.OK)
+                    {
+                        NvApi.NvPhysicalGpuHandle[] handlesFromDisplay = new NvApi.NvPhysicalGpuHandle[NvApi.MAX_PHYSICAL_GPUS];
+                        if (NvApi.NvAPI_GetPhysicalGPUsFromDisplay(displayHandle, handlesFromDisplay, out uint countFromDisplay) == NvApi.NvStatus.OK)
+                        {
+                            for (int j = 0; j < countFromDisplay; j++)
+                            {
+                                if (!displayHandles.ContainsKey(handlesFromDisplay[j]))
+                                    displayHandles.Add(handlesFromDisplay[j], displayHandle);
+                            }
+                        }
+                    }
+                }
+            }
+
+            _report.Append("Number of GPUs: ");
+            _report.AppendLine(count.ToString(CultureInfo.InvariantCulture));
+
+            for (int i = 0; i < count; i++)
             {
-                string driverBranch = NVIDIA.DriverBranchVersion;
-                
-                _report.Append("Driver branch: ");
-                _report.AppendLine(driverBranch);
+                displayHandles.TryGetValue(handles[i], out NvApi.NvDisplayHandle displayHandle);
+                _hardware.Add(new NvidiaGpu(i, handles[i], displayHandle, settings));
             }
-            catch (NVIDIAApiException)
-            { }
-
-            try
-            {
-                PhysicalGPU[] physicalGpus = PhysicalGPU.GetPhysicalGPUs();
-
-                _report.Append("Number of GPUs: ");
-                _report.AppendLine(physicalGpus.Length.ToString(CultureInfo.InvariantCulture));
-
-                for (int i = 0; i < physicalGpus.Length; i++)
-                    _hardware.Add(new NvidiaGpu(i, physicalGpus[i], settings));
-            }
-            catch (NVIDIAApiException)
-            { }
 
             _report.AppendLine();
         }
@@ -92,21 +94,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public void Close()
         {
-            if (!_initialized)
-                return;
-
-
             foreach (Hardware gpu in _hardware)
                 gpu.Close();
 
             NvidiaML.Close();
-
-            try
-            {
-                NVIDIA.Unload();
-            }
-            catch (Exception e) when (e is NVIDIAApiException or DllNotFoundException)
-            { }
         }
     }
 }
