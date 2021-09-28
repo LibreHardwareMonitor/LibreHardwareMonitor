@@ -119,6 +119,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         X58A_UD3R,
         X79_UD3,
         Z390_AORUS_ULTRA,
+        Z390_AORUS_PRO,
         Z390_M_GAMING,
         Z390_UD,
         Z68A_D3H_B3,
