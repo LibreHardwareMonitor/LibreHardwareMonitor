@@ -57,6 +57,8 @@ namespace LibreHardwareMonitor.Hardware
 
                 _libraryHandle = IntPtr.Zero;
             }
+
+            IsOpen = false;
         }
 
         public static byte[] ReadMemory(IntPtr baseAddress, uint size)

@@ -7,17 +7,23 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public class EmbeddedControllerSource
     {
-        public EmbeddedControllerSource(string name, byte port, SensorType type, EmbeddedControllerReader reader)
+        public EmbeddedControllerSource(string name, SensorType type, ushort register, byte size, float factor = 1.0f, uint blank = uint.MaxValue)
         {
             Name = name;
-            Port = port;
+
+            Register = register;
+            Size = size;
             Type = type;
-            Reader = reader;
+            Factor = factor;
+            Blank = blank;
         }
 
         public string Name { get; }
+        public ushort Register { get; }
+        public byte Size { get; }
+        public float Factor { get; }
 
-        public byte Port { get; }
+        public uint Blank { get; }
 
         public EmbeddedControllerReader Reader { get; }
 

@@ -38,9 +38,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         // ASUS
         CROSSHAIR_III_FORMULA,
         ROG_CROSSHAIR_VIII_HERO,
-        ROG_STRIX_B550_F_GAMING_WIFI,
+        ROG_CROSSHAIR_VIII_DARK_HERO,
+        ROG_CROSSHAIR_VIII_FORMULA,
         ROG_STRIX_X470_I,
         ROG_STRIX_X570_E_GAMING,
+        ROG_STRIX_B550_F_GAMING_WIFI,
+        ROG_STRIX_B550_I_GAMING,
         M2N_SLI_Deluxe,
         M4A79XTD_EVO,
         P5W_DH_Deluxe,
@@ -126,6 +129,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         Z68XP_UD3R,
         X470_AORUS_GAMING_7_WIFI,
         X570_AORUS_MASTER,
+        X570_GAMING_X,
 
         // Shuttle
         FH67,

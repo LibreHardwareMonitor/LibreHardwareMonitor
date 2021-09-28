@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 
@@ -41,8 +42,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                     if (numberOfAdapters > 0)
                     {
+                        List<AmdGpu> potentialHardware = new();
+
                         AtiAdlxx.ADLAdapterInfo[] adapterInfo = new AtiAdlxx.ADLAdapterInfo[numberOfAdapters];
                         if (AtiAdlxx.ADL_Adapter_AdapterInfo_Get(adapterInfo) == AtiAdlxx.ADLStatus.ADL_OK)
+                        {
                             for (int i = 0; i < numberOfAdapters; i++)
                             {
                                 AtiAdlxx.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex, out int isActive);
@@ -56,6 +60,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                                 _report.AppendLine(adapterInfo[i].AdapterName);
                                 _report.Append("UDID: ");
                                 _report.AppendLine(adapterInfo[i].UDID);
+                                _report.Append("PNPString: ");
+                                _report.AppendLine(adapterInfo[i].PNPString);
                                 _report.Append("Present: ");
                                 _report.AppendLine(adapterInfo[i].Present.ToString(CultureInfo.InvariantCulture));
                                 _report.Append("VendorID: 0x");
@@ -70,21 +76,18 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                                 _report.AppendLine(adapterId.ToString("X", CultureInfo.InvariantCulture));
 
                                 if (!string.IsNullOrEmpty(adapterInfo[i].UDID) && adapterInfo[i].VendorID == AtiAdlxx.ATI_VENDOR_ID)
-                                {
-                                    bool found = false;
-                                    foreach (AmdGpu gpu in _hardware)
-                                        if (gpu.BusNumber == adapterInfo[i].BusNumber && gpu.DeviceNumber == adapterInfo[i].DeviceNumber)
-                                        {
-                                            found = true;
-                                            break;
-                                        }
-
-                                    if (!found)
-                                        _hardware.Add(new AmdGpu(adapterInfo[i], settings));
-                                }
+                                    potentialHardware.Add(new AmdGpu(adapterInfo[i], settings));
 
                                 _report.AppendLine();
                             }
+                        }
+
+                        foreach (IGrouping<string, AmdGpu> amdGpus in potentialHardware.GroupBy(x => $"{x.BusNumber}-{x.DeviceNumber}"))
+                        {
+                            var amdGpu = amdGpus.OrderByDescending(x => x.Sensors.Length).FirstOrDefault();
+                            if (amdGpu != null)
+                                _hardware.Add(amdGpu);
+                        }
                     }
                 }
             }

@@ -49,7 +49,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _temperaturePlx;
         private readonly Sensor _temperatureSoC;
         private readonly Sensor _temperatureVddc;
-        private readonly string _windowsDeviceName;
+        private readonly string _d3dDeviceId;
 
         public AmdGpu(AtiAdlxx.ADLAdapterInfo adapterInfo, ISettings settings)
             : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
@@ -91,16 +91,18 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (!Software.OperatingSystem.IsUnix)
             {
-                string convertedPnpString = adapterInfo.PNPString.Replace("\\", "#");
-                string[] deviceIdentifiers = D3DDisplayDevice.GetDeviceIdentifiers();
-                if (deviceIdentifiers != null)
+                string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
+                if (deviceIds != null)
                 {
-                    foreach (string deviceIdentifier in deviceIdentifiers)
+                    foreach (string deviceId in deviceIds)
                     {
-                        if (deviceIdentifier.IndexOf(convertedPnpString, StringComparison.OrdinalIgnoreCase) != -1 &&
-                            D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                        string actualDeviceId = D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);
+
+                        if ((actualDeviceId.IndexOf(adapterInfo.PNPString, StringComparison.OrdinalIgnoreCase) != -1 ||
+                             adapterInfo.PNPString.IndexOf(actualDeviceId, StringComparison.OrdinalIgnoreCase) != -1) &&
+                            D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                         {
-                            _windowsDeviceName = deviceIdentifier;
+                            _d3dDeviceId = deviceId;
 
                             int nodeSensorIndex = 2;
                             int memorySensorIndex = 0;
@@ -129,7 +131,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int enabled = 0;
             int version = 0;
 
-            if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
+            if (AtiAdlxx.ADL_Method_Exists("ADL2_Adapter_FrameMetrics_Caps") && AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
             {
                 if (supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
@@ -220,7 +222,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public override void Update()
         {
-            if (_windowsDeviceName != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_windowsDeviceName, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+            if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
             {
                 _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
                 _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
@@ -737,6 +739,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 }
 
                 r.AppendLine();
+            }
+
+            if (_d3dDeviceId != null)
+            {
+                r.AppendLine("D3D");
+                r.AppendLine();
+                r.AppendLine(" Id: " + _d3dDeviceId);
             }
 
             return r.ToString();

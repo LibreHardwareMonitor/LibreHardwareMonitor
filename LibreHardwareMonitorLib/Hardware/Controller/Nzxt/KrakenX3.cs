@@ -129,6 +129,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 catch (ObjectDisposedException)
                 {
                     // Could be unplugged, or the app is stopping...
+                    return;
                 }
             }
         }
