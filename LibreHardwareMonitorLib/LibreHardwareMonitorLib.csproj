@@ -16,8 +16,7 @@
     <Pack>true</Pack>
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
     <LangVersion>latest</LangVersion>
-    <PackageIcon>package.png</PackageIcon>
-    <PackageIconUrl />
+    <PackageIcon>packageicon.png</PackageIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>
@@ -25,12 +24,6 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="package.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\inpout32.dll" />
     <EmbeddedResource Include="Resources\inpoutx64.dll" />
@@ -52,5 +45,11 @@
     <PackageReference Include="HidSharp" Version="2.1.0" />
     <PackageReference Include="NvAPIWrapper.Net" Version="0.8.1.101" />
     <PackageReference Include="System.Management" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\packageicon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 </Project>
