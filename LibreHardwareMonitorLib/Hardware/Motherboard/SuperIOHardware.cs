@@ -1629,6 +1629,29 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.Z390_AORUS_PRO: // IT879XE
+                        {
+                            v.Add(new Voltage("VCore", 0));
+                            v.Add(new Voltage("DDRVTT AB", 1));
+                            v.Add(new Voltage("Chipset Core", 2));
+                            v.Add(new Voltage("VIN3", 3, true));
+                            v.Add(new Voltage("VCCIO", 4));
+                            v.Add(new Voltage("Voltage #7", 5, true));
+                            v.Add(new Voltage("DDR VPP", 6));
+                            v.Add(new Voltage("3VSB", 7, 1f, 1f));
+                            v.Add(new Voltage("VBat", 8, 1f, 1f));
+                            t.Add(new Temperature("PCIe x8", 0));
+                            t.Add(new Temperature("EC_TEMP2", 1));
+                            t.Add(new Temperature("System #2", 2));
+                            f.Add(new Fan("System Fan #5 Pump", 0));
+                            f.Add(new Fan("System Fan #6 Pump", 1));
+                            f.Add(new Fan("System Fan #4", 2));
+                            c.Add(new Ctrl("Fan Control #5", 0));
+                            c.Add(new Ctrl("Fan Control #6", 1));
+                            c.Add(new Ctrl("Fan Control #4", 2));
+
+                            break;
+                        }
                         default:
                         {
                             v.Add(new Voltage("Voltage #1", 0, true));

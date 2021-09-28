@@ -275,6 +275,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.Z390_M_GAMING;
                 case var _ when name.Equals("Z390 AORUS ULTRA", StringComparison.OrdinalIgnoreCase):
                     return Model.Z390_AORUS_ULTRA;
+                case var _ when name.Equals("Z390 AORUS PRO-CF", StringComparison.OrdinalIgnoreCase):
+                    return Model.Z390_AORUS_PRO;
                 case var _ when name.Equals("Z390 UD", StringComparison.OrdinalIgnoreCase):
                     return Model.Z390_UD;
                 case var _ when name.Equals("FH67", StringComparison.OrdinalIgnoreCase):
