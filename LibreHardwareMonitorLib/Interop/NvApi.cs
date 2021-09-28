@@ -211,7 +211,7 @@ namespace LibreHardwareMonitor.Interop
 
         private static void GetDelegate<T>(uint id, out T newDelegate) where T : class
         {
-            IntPtr ptr = Environment.Is64BitOperatingSystem ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
+            IntPtr ptr = Environment.Is64BitProcess ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
 
             if (ptr != IntPtr.Zero)
                 newDelegate = Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
