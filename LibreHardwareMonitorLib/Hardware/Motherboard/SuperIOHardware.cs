@@ -235,11 +235,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     break;
                 }
                 case Chip.IT8620E:
-                {
-                    GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
-
-                    break;
-                }
                 case Chip.IT8628E:
                 case Chip.IT8655E:
                 case Chip.IT8665E:
