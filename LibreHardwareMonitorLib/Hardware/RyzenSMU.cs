@@ -301,6 +301,10 @@ namespace LibreHardwareMonitor.Hardware
         {
             float[] table = new float[_pmTableSize / 4];
 
+            if (_dramBaseAddr > int.MaxValue)
+                return table;
+
+
             byte[] bytes = InpOut.ReadMemory(new IntPtr(_dramBaseAddr), _pmTableSize);
             if (bytes != null)
                 Buffer.BlockCopy(bytes, 0, table, 0, bytes.Length);
@@ -724,7 +728,7 @@ namespace LibreHardwareMonitor.Hardware
                         return false;
                     }
                 }
-                while (tmp == 0 && 0 != retries--);
+                while (tmp == 0 && retries-- != 0);
 
                 if (retries == 0 && tmp != (uint)Status.OK)
                 {
@@ -751,7 +755,7 @@ namespace LibreHardwareMonitor.Hardware
             return tmp == (uint)Status.OK;
         }
 
-        private void WriteReg(uint addr, uint data)
+        private static void WriteReg(uint addr, uint data)
         {
             if (Ring0.WaitPciBusMutex(10))
             {
@@ -764,7 +768,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        private bool ReadReg(uint addr, ref uint data)
+        private static bool ReadReg(uint addr, ref uint data)
         {
             bool read = false;
 
