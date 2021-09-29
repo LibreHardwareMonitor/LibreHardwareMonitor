@@ -264,7 +264,7 @@ namespace LibreHardwareMonitor.Interop
         {
             public NvPowerTopologyDomain Domain;
             private readonly uint _reserved;
-            public uint PowerUsageInPCM;
+            public uint PowerUsage;
             private readonly uint _reserved1;
         }
 
