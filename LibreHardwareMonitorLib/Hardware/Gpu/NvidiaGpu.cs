@@ -538,7 +538,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
                 if (status == NvApi.NvStatus.OK)
                 {
-                    uint free = memoryInfo.AvailableDedicatedVideoMemory;
+                    uint free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
                     uint total = memoryInfo.DedicatedVideoMemory;
 
                     _memoryTotal.Value = total / 1024;
