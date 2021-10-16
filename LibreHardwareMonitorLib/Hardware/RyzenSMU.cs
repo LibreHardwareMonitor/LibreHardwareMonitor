@@ -86,12 +86,14 @@ namespace LibreHardwareMonitor.Hardware
         {
             _cpuCodeName = GetCpuCodeName(family, model, packageType);
 
-            _supportedCPU = SetAddresses(_cpuCodeName);
+            _supportedCPU = Environment.Is64BitOperatingSystem == Environment.Is64BitProcess && SetAddresses(_cpuCodeName);
 
             if (_supportedCPU)
+            {
                 InpOut.Open();
 
-            SetupPmTableAddrAndSize();
+                SetupPmTableAddrAndSize();
+            }
         }
 
         private static CpuCodeName GetCpuCodeName(uint family, uint model, uint packageType)
@@ -274,13 +276,7 @@ namespace LibreHardwareMonitor.Hardware
 
         public float[] GetPmTable()
         {
-            if (!_supportedCPU)
-                return new float[] { 0 };
-
-            if (!SetupPmTableAddrAndSize())
-                return new float[] { 0 };
-
-            if (!TransferTableToDram())
+            if (!_supportedCPU || !TransferTableToDram())
                 return new float[] { 0 };
 
 
@@ -300,10 +296,6 @@ namespace LibreHardwareMonitor.Hardware
         private float[] ReadDramToArray()
         {
             float[] table = new float[_pmTableSize / 4];
-
-            if (_dramBaseAddr > int.MaxValue)
-                return table;
-
 
             byte[] bytes = InpOut.ReadMemory(new IntPtr(_dramBaseAddr), _pmTableSize);
             if (bytes != null)
