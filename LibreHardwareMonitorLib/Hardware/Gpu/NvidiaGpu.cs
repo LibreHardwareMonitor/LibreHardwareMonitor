@@ -470,13 +470,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (_controls is { Length: > 0 })
             {
-                NvApi.NvFanCoolerControl fanControllers = GetFanCoolersControllers(out status);
-                if (status == NvApi.NvStatus.OK && fanControllers.Count > 0)
+                NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
+                if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
                 {
-                    for (int i = 0; i < fanControllers.Count; i++)
+                    for (int i = 0; i < fanCoolers.Count; i++)
                     {
-                        NvApi.NvFanCoolerControlItem item = fanControllers.Items[i];
-                        _controls[i].Value = item.Level;
+                        NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
+                        _controls[i].Value = item.CurrentLevel;
                     }
                 }
                 else
