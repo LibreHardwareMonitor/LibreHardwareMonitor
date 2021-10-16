@@ -14,7 +14,7 @@ using OperatingSystem = LibreHardwareMonitor.Software.OperatingSystem;
 namespace LibreHardwareMonitor.Hardware.Motherboard
 {
     /// <summary>
-    /// Represents the motherboard of a computer with its LPC and <see cref="EmbeddedController"/>.
+    /// Represents the motherboard of a computer with its <see cref="LpcIO"/> and <see cref="EmbeddedController"/> as <see cref="SubHardware"/>.
     /// </summary>
     public class Motherboard : IHardware
     {
@@ -69,7 +69,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 _lpcIO = new LpcIO();
                 superIO = _lpcIO.SuperIO;
             }
-            
+
             EmbeddedController embeddedController = EmbeddedController.Create(model, settings);
 
             SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
@@ -80,14 +80,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 SubHardware[superIO.Count] = embeddedController;
         }
 
-        /// <summary>
-        /// Triggered when a new <see cref="ISensor"/> is registered.
-        /// </summary>
+        /// <inheritdoc/>
         public event SensorEventHandler SensorAdded;
 
-        /// <summary>
-        /// Triggered when a <see cref="ISensor"/> is removed.
-        /// </summary>
+        /// <inheritdoc/>
         public event SensorEventHandler SensorRemoved;
 
         /// <returns><see cref="HardwareType.Motherboard"/></returns>
@@ -96,10 +92,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             get { return HardwareType.Motherboard; }
         }
 
-        /// <summary>
-        /// Gets the base identifier without a parent.
-        /// </summary>
-        /// <returns>motherboard</returns>
+        /// <inheritdoc/>
         public Identifier Identifier
         {
             get { return new Identifier("motherboard"); }
@@ -119,29 +112,31 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             }
         }
 
-        /// <summary>
-        /// Gets the parent of the selected <see cref="IHardware"/>.
-        /// </summary>
-        /// <returns><langword>null</langword></returns>
+        /// <inheritdoc/>
+        /// <returns>Always <see langword="null"/></returns>
         public virtual IHardware Parent
         {
             get { return null; }
         }
 
+        /// <inheritdoc/>
         public virtual IDictionary<string, string> Properties => new SortedDictionary<string, string>();
 
+        /// <inheritdoc/>
         public ISensor[] Sensors
         {
             get { return new ISensor[0]; }
         }
 
         /// <summary>
-        /// Gets the SMBios information.
+        /// Gets the <see cref="LibreHardwareMonitor.Hardware.SMBios"/> information.
         /// </summary>
         public SMBios SMBios { get; }
 
+        /// <inheritdoc/>
         public IHardware[] SubHardware { get; }
 
+        /// <inheritdoc/>
         public string GetReport()
         {
             StringBuilder r = new();
@@ -156,9 +151,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             return r.ToString();
         }
 
+        /// <summary>
+        /// Motherboard itself cannot be updated. Update <see cref="SubHardware"/> instead.
+        /// </summary>
         public void Update()
-        { }
+        {}
 
+        /// <inheritdoc/>
         public void Accept(IVisitor visitor)
         {
             if (visitor == null)
@@ -168,12 +167,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             visitor.VisitHardware(this);
         }
 
+        /// <inheritdoc/>
         public void Traverse(IVisitor visitor)
         {
             foreach (IHardware hardware in SubHardware)
                 hardware.Accept(visitor);
         }
 
+        /// <summary>
+        /// Closes <see cref="SubHardware"/> using <see cref="Hardware.Close"/>.
+        /// </summary>
         public void Close()
         {
             _lmSensors?.Close();
