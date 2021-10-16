@@ -11,7 +11,11 @@ namespace LibreHardwareMonitor.Hardware
     public delegate void SensorEventHandler(ISensor sensor);
 
     /// <summary>
-    /// An abstract object that stores information about a device. All sensors are available as an array of <see cref="Sensors"/>.
+    /// Abstract object that stores information about a device. All sensors are available as an array of <see cref="Sensors"/>.
+    /// <para>
+    /// Can contain <see cref="SubHardware"/>.
+    /// Type specified in <see cref="HardwareType"/>.
+    /// </para>
     /// </summary>
     public interface IHardware : IElement
     {

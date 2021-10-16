@@ -13,6 +13,9 @@ using OperatingSystem = LibreHardwareMonitor.Software.OperatingSystem;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard
 {
+    /// <summary>
+    /// Represents the motherboard of a computer with its LPC and <see cref="EmbeddedController"/>.
+    /// </summary>
     public class Motherboard : IHardware
     {
         private readonly LMSensors _lmSensors;
@@ -21,6 +24,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         private readonly ISettings _settings;
         private string _customName;
 
+        /// <summary>
+        /// Creates motherboard instance by retrieving information from <see cref="LibreHardwareMonitor.Hardware.SMBios"/> and creates a new <see cref="SubHardware"/> based on data from <see cref="LpcIO"/> and <see cref="EmbeddedController"/>.
+        /// </summary>
+        /// <param name="smBios"><see cref="LibreHardwareMonitor.Hardware.SMBios"/> table containing motherboard data.</param>
+        /// <param name="settings">Additional settings passed by <see cref="IComputer"/>.</param>
         public Motherboard(SMBios smBios, ISettings settings)
         {
             IReadOnlyList<ISuperIO> superIO;
@@ -72,20 +80,34 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 SubHardware[superIO.Count] = embeddedController;
         }
 
+        /// <summary>
+        /// Triggered when a new <see cref="ISensor"/> is registered.
+        /// </summary>
         public event SensorEventHandler SensorAdded;
 
+        /// <summary>
+        /// Triggered when a <see cref="ISensor"/> is removed.
+        /// </summary>
         public event SensorEventHandler SensorRemoved;
 
+        /// <returns><see cref="HardwareType.Motherboard"/></returns>
         public HardwareType HardwareType
         {
             get { return HardwareType.Motherboard; }
         }
 
+        /// <summary>
+        /// Gets the base identifier without a parent.
+        /// </summary>
+        /// <returns>motherboard</returns>
         public Identifier Identifier
         {
             get { return new Identifier("motherboard"); }
         }
 
+        /// <summary>
+        /// Gets the name obtained from <see cref="LibreHardwareMonitor.Hardware.SMBios"/>.
+        /// </summary>
         public string Name
         {
             get { return _customName; }
@@ -97,6 +119,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             }
         }
 
+        /// <summary>
+        /// Gets the parent of the selected <see cref="IHardware"/>.
+        /// </summary>
+        /// <returns><langword>null</langword></returns>
         public virtual IHardware Parent
         {
             get { return null; }
