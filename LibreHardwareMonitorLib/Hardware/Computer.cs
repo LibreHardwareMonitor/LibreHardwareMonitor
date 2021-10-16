@@ -613,6 +613,9 @@ namespace LibreHardwareMonitor.Hardware
                 ReportHardware(subHardware, w);
         }
 
+        /// <summary>
+        /// If opened before, removes all <see cref="IGroup"/> and triggers <see cref="OpCode.Close"/>, <see cref="InpOut.Close"/> and <see cref="Ring0.Close"/>.
+        /// </summary>
         public void Close()
         {
             if (!_open)
@@ -636,6 +639,9 @@ namespace LibreHardwareMonitor.Hardware
             _open = false;
         }
 
+        /// <summary>
+        /// If opened before, removes all <see cref="IGroup"/> and recreates it.
+        /// </summary>
         public void Reset()
         {
             if (!_open)
@@ -658,6 +664,9 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        /// <summary>
+        /// <see cref="Computer"/> specific additional settings passed to its <see cref="IHardware"/>.
+        /// </summary>
         private class Settings : ISettings
         {
             public bool Contains(string name)
