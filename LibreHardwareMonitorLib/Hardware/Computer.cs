@@ -37,7 +37,7 @@ namespace LibreHardwareMonitor.Hardware
         private readonly object _lock = new object();
         private readonly List<IGroup> _groups = new List<IGroup>();
         private readonly ISettings _settings;
-        
+
         private bool _controllerEnabled;
         private bool _cpuEnabled;
         private bool _gpuEnabled;

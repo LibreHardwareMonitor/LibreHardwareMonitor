@@ -95,7 +95,7 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         public static bool operator ==(Identifier id1, Identifier id2)
-        { 
+        {
             if (ReferenceEquals(id1, null) && ReferenceEquals(id2, null))
                 return true;
 

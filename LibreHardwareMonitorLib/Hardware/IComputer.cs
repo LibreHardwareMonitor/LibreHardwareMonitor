@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware
     /// <summary>
     /// Handler that will trigger the actions assigned to it when the event occurs.
     /// </summary>
-    /// <param name="hardware">Component returned to the assigned action.</param>
+    /// <param name="hardware">Component returned to the assigned action(s).</param>
     public delegate void HardwareEventHandler(IHardware hardware);
 
     /// <summary>
