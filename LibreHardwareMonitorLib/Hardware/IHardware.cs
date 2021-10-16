@@ -8,6 +8,10 @@ using System.Collections.Generic;
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Handler that will trigger the actions assigned to it when the event occurs.
+    /// </summary>
+    /// <param name="sensor">Component returned to the assigned action(s).</param>
     public delegate void SensorEventHandler(ISensor sensor);
 
     /// <summary>
@@ -40,12 +44,12 @@ namespace LibreHardwareMonitor.Hardware
         IHardware Parent { get; }
 
         /// <summary>
-        /// Gets an array of all sensors such as temperature, clocks, load etc.
+        /// Gets an array of all sensors such as <see cref="SensorType.Temperature"/>, <see cref="SensorType.Clock"/>, <see cref="SensorType.Load"/> etc.
         /// </summary>
         ISensor[] Sensors { get; }
 
         /// <summary>
-        /// Gets child devices, e.g. SuperIO of the motherboard.
+        /// Gets child devices, e.g. <see cref="LibreHardwareMonitor.Hardware.Motherboard.Lpc.LpcIO"/> of the <see cref="LibreHardwareMonitor.Hardware.Motherboard.Motherboard"/>.
         /// </summary>
         IHardware[] SubHardware { get; }
 
@@ -72,7 +76,7 @@ namespace LibreHardwareMonitor.Hardware
         event SensorEventHandler SensorRemoved;
 
         /// <summary>
-        /// Rarely changed hardware properties that can't be represented as sensors.
+        /// Gets rarely changed hardware properties that can't be represented as sensors.
         /// </summary>
         IDictionary<string, string> Properties { get; }
     }
