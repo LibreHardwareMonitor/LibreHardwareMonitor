@@ -28,28 +28,45 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class Computer : IComputer
     {
+
+        /// <summary>
+        /// Triggered when a new <see cref="IHardware"/> is registered.
+        /// </summary>
         public event HardwareEventHandler HardwareAdded;
+
+        /// <summary>
+        /// Triggered when a <see cref="IHardware"/> is removed.
+        /// </summary>
         public event HardwareEventHandler HardwareRemoved;
 
+        private readonly object _lock = new object();
         private readonly List<IGroup> _groups = new List<IGroup>();
         private readonly ISettings _settings;
+        
         private bool _controllerEnabled;
         private bool _cpuEnabled;
         private bool _gpuEnabled;
-        private readonly object _lock = new object();
         private bool _memoryEnabled;
         private bool _motherboardEnabled;
         private bool _networkEnabled;
         private bool _open;
-        private SMBios _smbios;
         private bool _storageEnabled;
         private bool _psuEnabled;
 
+        private SMBios _smbios;
+
+        /// <summary>
+        /// Creates a new <see cref="IComputer"/> instance with basic initial settings.
+        /// </summary>
         public Computer()
         {
             _settings = new Settings();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="IComputer"/> instance with additional <see cref="ISettings"/>.
+        /// </summary>
+        /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware"/>.</param>
         public Computer(ISettings settings)
         {
             _settings = settings ?? new Settings();

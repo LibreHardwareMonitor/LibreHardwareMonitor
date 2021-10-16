@@ -11,24 +11,6 @@ namespace LibreHardwareMonitor.Hardware
     public delegate void SensorEventHandler(ISensor sensor);
 
     /// <summary>
-    /// Reflects what category the device is.
-    /// </summary>
-    public enum HardwareType
-    {
-        Motherboard,
-        SuperIO,
-        Cpu,
-        Memory,
-        GpuNvidia,
-        GpuAmd,
-        Storage,
-        Network,
-        Cooler,
-        EmbeddedController,
-        Psu
-    }
-
-    /// <summary>
     /// An abstract object that stores information about a device. All sensors are available as an array of <see cref="Sensors"/>.
     /// </summary>
     public interface IHardware : IElement
@@ -39,7 +21,7 @@ namespace LibreHardwareMonitor.Hardware
         HardwareType HardwareType { get; }
 
         /// <summary>
-        /// Gets unique hardware identifier obtained from the computer.
+        /// Gets a unique hardware ID that represents its location.
         /// </summary>
         Identifier Identifier { get; }
 

@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <inheritdoc cref="IHardware">
     public abstract class Hardware : IHardware
     {
         protected readonly HashSet<ISensor> _active = new();
