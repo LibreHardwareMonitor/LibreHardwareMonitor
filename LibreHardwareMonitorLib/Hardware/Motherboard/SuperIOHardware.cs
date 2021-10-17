@@ -2523,10 +2523,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("PECI 1 Calibrated", 22));
                             t.Add(new Temperature("Virtual", 23));
 
-                            //todo
-                            //Find a way to read the value of VRM HS FAN
-                            //It is definitely not controllable as it only supports ON / OFF options but the RPM can be read somewhere
-
                             for (int i = 0; i < superIO.Fans.Length; i++)
                             {
                                 switch (i)
