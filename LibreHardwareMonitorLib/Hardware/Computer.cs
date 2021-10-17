@@ -84,7 +84,7 @@ namespace LibreHardwareMonitor.Hardware
             get
             {
                 if (!_open)
-                    throw new InvalidOperationException("Computer's SMBIOS table cannot be accessed before opening.");
+                    throw new InvalidOperationException("SMBIOS cannot be accessed before opening.");
 
                 return _smbios;
             }
