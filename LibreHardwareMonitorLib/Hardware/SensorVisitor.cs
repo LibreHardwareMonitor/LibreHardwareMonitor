@@ -18,7 +18,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Creates a new observer instance.
         /// </summary>
-        /// <param name="handler"></param>
+        /// <param name="handler">Instance of the <see cref="SensorEventHandler"/> that triggers events during visiting the <see cref="ISensor"/>.</param>
         public SensorVisitor(SensorEventHandler handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
