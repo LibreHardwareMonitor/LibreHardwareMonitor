@@ -84,6 +84,20 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        /// <summary>
+        /// Contains computer information table read in accordance with <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
+        /// </summary>
+        public SMBios SMBios
+        {
+            get
+            {
+                if (!_open)
+                    throw new InvalidOperationException("SMBIOS cannot be accessed before opening.");
+
+                return _smbios;
+            }
+        }
+
         /// <inheritdoc />
         public bool IsCpuEnabled
         {
