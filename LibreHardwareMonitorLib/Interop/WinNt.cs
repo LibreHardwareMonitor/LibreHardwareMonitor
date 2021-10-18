@@ -10,10 +10,16 @@ using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Interop
 {
+    /// <summary>
+    /// Contains Win32 definitions for Windows NT.
+    /// </summary>
     internal static class WinNt
     {
         internal const int STATUS_SUCCESS = 0;
 
+        /// <summary>
+        /// Describes a local identifier for an adapter.
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         internal struct LUID
         {
@@ -21,6 +27,9 @@ namespace LibreHardwareMonitor.Interop
             public readonly int HighPart;
         }
 
+        /// <summary>
+        /// Represents a 64-bit signed integer value.
+        /// </summary>
         [StructLayout(LayoutKind.Explicit, Size = 8)]
         internal struct LARGE_INTEGER
         {

@@ -24,6 +24,9 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\inpout32.dll" />
     <EmbeddedResource Include="Resources\inpoutx64.dll" />

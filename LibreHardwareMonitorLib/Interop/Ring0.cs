@@ -8,6 +8,9 @@
 
 namespace LibreHardwareMonitor.Interop
 {
+    /// <summary>
+    /// Driver with access at kernel level.
+    /// </summary>
     internal static class Ring0
     {
         public const uint INVALID_PCI_ADDRESS = 0xFFFFFFFF;

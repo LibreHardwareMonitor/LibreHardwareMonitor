@@ -28,38 +28,46 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class Computer : IComputer
     {
+        /// <inheritdoc />
         public event HardwareEventHandler HardwareAdded;
+
+        /// <inheritdoc />
         public event HardwareEventHandler HardwareRemoved;
 
+        private readonly object _lock = new object();
         private readonly List<IGroup> _groups = new List<IGroup>();
         private readonly ISettings _settings;
+
         private bool _controllerEnabled;
         private bool _cpuEnabled;
         private bool _gpuEnabled;
-        private readonly object _lock = new object();
         private bool _memoryEnabled;
         private bool _motherboardEnabled;
         private bool _networkEnabled;
         private bool _open;
-        private SMBios _smbios;
         private bool _storageEnabled;
         private bool _psuEnabled;
 
+        private SMBios _smbios;
+
+        /// <summary>
+        /// Creates a new <see cref="IComputer"/> instance with basic initial <see cref="Settings"/>.
+        /// </summary>
         public Computer()
         {
             _settings = new Settings();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="IComputer"/> instance with additional <see cref="ISettings"/>.
+        /// </summary>
+        /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware"/>.</param>
         public Computer(ISettings settings)
         {
             _settings = settings ?? new Settings();
         }
 
-        /// <summary>
-        /// Gets a list of all known <see cref="IHardware"/> after calling <see cref="Open"/>.
-        /// <para>Can be updated by <see cref="IVisitor"/>.</para>
-        /// </summary>
-        /// <returns>List of all enabled devices.</returns>
+        /// <inheritdoc />
         public IList<IHardware> Hardware
         {
             get
@@ -90,10 +98,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Cpu"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsCpuEnabled
         {
             get { return _cpuEnabled; }
@@ -111,18 +116,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about:
-        /// <list>
-        /// <item><see cref="TBalancerGroup"/></item>
-        /// <item><see cref="HeatmasterGroup"/></item>
-        /// <item><see cref="AquaComputerGroup"/></item>
-        /// <item><see cref="AeroCoolGroup"/></item>
-        /// <item><see cref="NzxtGroup"/></item>
-        /// </list>
-        /// devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsControllerEnabled
         {
             get { return _controllerEnabled; }
@@ -152,10 +146,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.GpuAmd"/> or <see cref="HardwareType.GpuNvidia"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsGpuEnabled
         {
             get { return _gpuEnabled; }
@@ -179,10 +170,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Memory"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsMemoryEnabled
         {
             get { return _memoryEnabled; }
@@ -200,10 +188,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Motherboard"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsMotherboardEnabled
         {
             get { return _motherboardEnabled; }
@@ -221,10 +206,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Network"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsNetworkEnabled
         {
             get { return _networkEnabled; }
@@ -242,10 +224,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Storage"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsStorageEnabled
         {
             get { return _storageEnabled; }
@@ -263,10 +242,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Psu"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        /// <inheritdoc />
         public bool IsPsuEnabled
         {
             get { return _psuEnabled; }
@@ -287,10 +263,7 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Generates full LibreHardwareMonitor report for devices that have been enabled.
-        /// </summary>
-        /// <returns>A formatted text string with library, OS and hardware information.</returns>
+        //// <inheritdoc />
         public string GetReport()
         {
             lock (_lock)
@@ -610,6 +583,9 @@ namespace LibreHardwareMonitor.Hardware
                 ReportHardware(subHardware, w);
         }
 
+        /// <summary>
+        /// If opened before, removes all <see cref="IGroup"/> and triggers <see cref="OpCode.Close"/>, <see cref="InpOut.Close"/> and <see cref="Ring0.Close"/>.
+        /// </summary>
         public void Close()
         {
             if (!_open)
@@ -633,6 +609,9 @@ namespace LibreHardwareMonitor.Hardware
             _open = false;
         }
 
+        /// <summary>
+        /// If opened before, removes all <see cref="IGroup"/> and recreates it.
+        /// </summary>
         public void Reset()
         {
             if (!_open)
@@ -655,6 +634,9 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        /// <summary>
+        /// <see cref="Computer"/> specific additional settings passed to its <see cref="IHardware"/>.
+        /// </summary>
         private class Settings : ISettings
         {
             public bool Contains(string name)

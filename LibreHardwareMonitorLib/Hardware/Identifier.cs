@@ -10,6 +10,9 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Represents a unique <see cref="ISensor"/>/<see cref="IHardware"/> identifier in text format with a / separator.
+    /// </summary>
     public class Identifier : IComparable<Identifier>
     {
         private const char Separator = '/';
@@ -28,6 +31,11 @@ namespace LibreHardwareMonitor.Hardware
             _identifier = s.ToString();
         }
 
+        /// <summary>
+        /// Creates a new identifier instance based on the base <see cref="Identifier"/> and additional elements.
+        /// </summary>
+        /// <param name="identifier">Base identifier being the beginning of the new one.</param>
+        /// <param name="extensions">Additional parts by which the base <see cref="Identifier"/> will be extended.</param>
         public Identifier(Identifier identifier, params string[] extensions)
         {
             CheckIdentifiers(extensions);
@@ -87,7 +95,7 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         public static bool operator ==(Identifier id1, Identifier id2)
-        { 
+        {
             if (ReferenceEquals(id1, null) && ReferenceEquals(id2, null))
                 return true;
 
