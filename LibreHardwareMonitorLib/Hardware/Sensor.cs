@@ -189,19 +189,20 @@ namespace LibreHardwareMonitor.Hardware
             using MemoryStream memoryStream = new();
             using GZipStream gZipStream = new(memoryStream, CompressionMode.Compress);
             using BufferedStream outputStream = new(gZipStream, 65536);
-            using BinaryWriter binaryWriter = new(outputStream);
-
-            long t = 0;
-
-            foreach (SensorValue sensorValue in _values)
+            using (BinaryWriter binaryWriter = new(outputStream))
             {
-                long v = sensorValue.Time.ToBinary();
-                binaryWriter.Write(v - t);
-                t = v;
-                binaryWriter.Write(sensorValue.Value);
-            }
+                long t = 0;
 
-            binaryWriter.Flush();
+                foreach (SensorValue sensorValue in _values)
+                {
+                    long v = sensorValue.Time.ToBinary();
+                    binaryWriter.Write(v - t);
+                    t = v;
+                    binaryWriter.Write(sensorValue.Value);
+                }
+
+                binaryWriter.Flush();
+            }
 
             _settings.SetValue(new Identifier(Identifier, "values").ToString(), Convert.ToBase64String(memoryStream.ToArray()));
         }
