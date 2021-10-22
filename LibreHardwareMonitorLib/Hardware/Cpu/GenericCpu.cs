@@ -6,7 +6,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 
@@ -18,9 +17,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
         protected readonly CpuId[][] _cpuId;
         protected readonly uint _family;
         protected readonly uint _model;
-        protected readonly int _processorIndex;
-        protected readonly uint _stepping;
         protected readonly uint _packageType;
+        protected readonly uint _stepping;
 
         private readonly Sensor[] _coreLoads;
         private readonly CpuLoad _cpuLoad;
@@ -32,7 +30,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private long _lastTime;
         private ulong _lastTimeStampCount;
 
-        [SuppressMessage("ReSharper", "VirtualMemberCallInConstructor")]
         public GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(cpuId[0][0].Name, CreateIdentifier(cpuId[0][0].Vendor, processorIndex), settings)
         {
             _cpuId = cpuId;
@@ -42,7 +39,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             _stepping = cpuId[0][0].Stepping;
             _packageType = cpuId[0][0].PkgType;
 
-            _processorIndex = processorIndex;
+            Index = processorIndex;
             _coreCount = cpuId.Length;
 
             // check if processor has MSRs
@@ -107,6 +104,11 @@ namespace LibreHardwareMonitor.Hardware.CPU
         public bool HasModelSpecificRegisters { get; }
 
         public bool HasTimeStampCounter { get; }
+
+        /// <summary>
+        /// Gets the CPU index.
+        /// </summary>
+        public int Index { get; }
 
         public double TimeStampCounterFrequency { get; private set; }
 
@@ -209,7 +211,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public override string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             switch (_vendor)
             {

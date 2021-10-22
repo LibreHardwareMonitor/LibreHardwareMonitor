@@ -14,7 +14,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         protected uint GetPciAddress(byte function, ushort deviceId)
         {
             // assemble the pci address
-            uint address = Ring0.GetPciAddress(PCI_BUS, (byte)(PCI_BASE_DEVICE + _processorIndex), function);
+            uint address = Ring0.GetPciAddress(PCI_BUS, (byte)(PCI_BASE_DEVICE + Index), function);
 
             // verify that we have the correct bus, device and function
             if (!Ring0.ReadPciConfig(address, DEVICE_VENDOR_ID_REGISTER, out uint deviceVendor))
