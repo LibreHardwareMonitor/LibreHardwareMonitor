@@ -17,6 +17,8 @@ namespace LibreHardwareMonitor.Interop
         public const int MAX_POWER_TOPOLOGIES = 4;
         public const int MAX_THERMAL_SENSORS_PER_GPU = 3;
         public const int MAX_USAGES_PER_GPU = 8;
+        public const int THERMAL_SENSOR_RESERVED_COUNT = 8;
+        public const int THERMAL_SENSOR_TEMPERATURE_COUNT = 32;
 
         public const int SHORT_STRING_MAX = 64;
 
@@ -39,6 +41,7 @@ namespace LibreHardwareMonitor.Interop
         public static readonly NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
         public static readonly NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
         public static readonly NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels;
+        public static readonly NvAPI_GPU_GetThermalStatusDelegate NvAPI_GPU_ThermalGetStatus;
 
         private static readonly NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
         private static readonly NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
@@ -87,6 +90,7 @@ namespace LibreHardwareMonitor.Interop
                 GetDelegate(0x814B209F, out NvAPI_GPU_ClientFanCoolersGetControl);
                 GetDelegate(0xA58971A5, out NvAPI_GPU_ClientFanCoolersSetControl);
                 GetDelegate(0x0EDCF624E, out NvAPI_GPU_ClientPowerTopologyGetStatus);
+                GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetStatus);
 
                 IsAvailable = true;
             }
@@ -151,6 +155,9 @@ namespace LibreHardwareMonitor.Interop
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvCoolerLevels NvCoolerLevels);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetThermalStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref PrivateThermalSensorsV2 thermalSensorsStatus);
 
         public enum NvFanControlMode : uint
         {
@@ -500,6 +507,19 @@ namespace LibreHardwareMonitor.Interop
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_COOLERS_PER_GPU)]
             public NvLevel[] Levels;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 8)]
+        public struct PrivateThermalSensorsV2
+        {
+            internal uint Version;
+            internal uint Mask;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = THERMAL_SENSOR_RESERVED_COUNT)]
+            internal int[] Reserved;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = THERMAL_SENSOR_TEMPERATURE_COUNT)]
+            internal int[] Temperatures;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 8)]

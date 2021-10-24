@@ -40,6 +40,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor[] _powers;
         private readonly Sensor _powerUsage;
         private readonly Sensor[] _temperatures;
+        private int thermalSensorsMaxBit;
+        private readonly Sensor hotSpotTemperature;
+        private readonly Sensor memoryJunctionTemperature;
 
         public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
             : base(GetName(handle),
@@ -76,6 +79,31 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                     _temperatures[i] = new Sensor(name, i, SensorType.Temperature, this, new ParameterDescription[0], settings);
                     ActivateSensor(_temperatures[i]);
+                }
+            }
+
+            hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
+            memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
+
+            // Set max bit
+            for (; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
+            {
+                try
+                {
+                    var thermalSensor = new NvApi.PrivateThermalSensorsV2()
+                    {
+                        Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.PrivateThermalSensorsV2>(2),
+                        Mask = 1u << thermalSensorsMaxBit
+                    };
+
+                    var thermalStatus = NvApi.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor);
+
+                    if (thermalStatus != NvApi.NvStatus.OK)
+                        throw new Exception();
+                }
+                catch
+                {
+                    break;
                 }
             }
 
@@ -432,6 +460,33 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     foreach (Sensor sensor in _temperatures)
                         sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
                 }
+            }
+
+            if (thermalSensorsMaxBit > 0)
+            {
+                var thermalSensor = new NvApi.PrivateThermalSensorsV2()
+                {
+                    Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.PrivateThermalSensorsV2>(2),
+                    Mask = (1u << thermalSensorsMaxBit) - 1
+                };
+
+                if (NvApi.NvAPI_GPU_ThermalGetStatus != null &&
+                    NvApi.NvAPI_GPU_ThermalGetStatus(_handle, ref thermalSensor) == NvApi.NvStatus.OK)
+                {
+                    hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256.0f;
+                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[9] / 256.0f;
+                }
+
+                if (hotSpotTemperature.Value != 0)
+                    ActivateSensor(hotSpotTemperature);
+
+                if (memoryJunctionTemperature.Value != 0)
+                    ActivateSensor(memoryJunctionTemperature);
+            }
+            else
+            {
+                hotSpotTemperature.Value = null;
+                memoryJunctionTemperature.Value = null;
             }
 
             if (_clocks is { Length: > 0 })
@@ -938,7 +993,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             var coolers = new NvApi.NvFanCoolersStatus
             {
-                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1), Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1),
+                Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
             };
 
             status = NvApi.NvAPI_GPU_ClientFanCoolersGetStatus(_handle, ref coolers);
@@ -983,7 +1039,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             NvApi.NvDynamicPStatesInfo pStatesInfo = new()
             {
-                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1), Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1),
+                Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
             };
 
             status = NvApi.NvAPI_GPU_GetDynamicPstatesInfoEx(_handle, ref pStatesInfo);
