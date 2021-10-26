@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael Mï¿½ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 namespace LibreHardwareMonitor.UI
@@ -780,9 +780,9 @@ namespace LibreHardwareMonitor.UI
             // 
             // saveFileDialog
             // 
-            this.saveFileDialog.DefaultExt = "txt";
-            this.saveFileDialog.FileName = "LibreHardwareMonitor.Report.txt";
-            this.saveFileDialog.Filter = "Text Documents|*.txt|All Files|*.*";
+            this.saveFileDialog.DefaultExt = "log";
+            this.saveFileDialog.FileName = "LibreHardwareMonitor.Report.log";
+            this.saveFileDialog.Filter = "Logs|*.log|Text Documents|*.txt|All Files|*.*";
             this.saveFileDialog.RestoreDirectory = true;
             this.saveFileDialog.Title = "Save Report As";
             // 
