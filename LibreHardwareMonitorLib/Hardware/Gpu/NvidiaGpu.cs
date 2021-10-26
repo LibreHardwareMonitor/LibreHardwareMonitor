@@ -86,7 +86,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
 
             // Set max bit
-            for (; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
+            for (thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
             {
                 try
                 {
@@ -99,7 +99,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     var thermalStatus = NvApi.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor);
 
                     if (thermalStatus != NvApi.NvStatus.OK)
-                        throw new Exception();
+                        break;
                 }
                 catch
                 {
