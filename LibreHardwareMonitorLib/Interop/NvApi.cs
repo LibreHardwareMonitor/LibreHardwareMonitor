@@ -41,7 +41,7 @@ namespace LibreHardwareMonitor.Interop
         public static readonly NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
         public static readonly NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
         public static readonly NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels;
-        public static readonly NvAPI_GPU_GetThermalStatusDelegate NvAPI_GPU_ThermalGetStatus;
+        public static readonly NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_ThermalGetSensors;
 
         private static readonly NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
         private static readonly NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
@@ -90,7 +90,7 @@ namespace LibreHardwareMonitor.Interop
                 GetDelegate(0x814B209F, out NvAPI_GPU_ClientFanCoolersGetControl);
                 GetDelegate(0xA58971A5, out NvAPI_GPU_ClientFanCoolersSetControl);
                 GetDelegate(0x0EDCF624E, out NvAPI_GPU_ClientPowerTopologyGetStatus);
-                GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetStatus);
+                GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetSensors);
 
                 IsAvailable = true;
             }
@@ -157,7 +157,7 @@ namespace LibreHardwareMonitor.Interop
         public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvCoolerLevels NvCoolerLevels);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetThermalStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref PrivateThermalSensorsV2 thermalSensorsStatus);
+        public delegate NvStatus NvAPI_GPU_GetThermalSensorsDelegate(NvPhysicalGpuHandle gpuHandle, ref NvThermalSensors nvThermalSensors);
 
         public enum NvFanControlMode : uint
         {
@@ -510,7 +510,7 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 8)]
-        public struct PrivateThermalSensorsV2
+        public struct NvThermalSensors
         {
             internal uint Version;
             internal uint Mask;
