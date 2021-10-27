@@ -85,17 +85,27 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             // Thermal sensors.
             _hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
             _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
+            bool hasAnyThermalSensor = false;
 
             for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
             {
                 // Find the maximum thermal sensor mask value.
                 _thermalSensorsMask = 1u << thermalSensorsMaxBit;
-                GetThermalSensors(out NvApi.NvStatus thermalSensorsStatus);
+
+                GetThermalSensors(_thermalSensorsMask, out NvApi.NvStatus thermalSensorsStatus);
                 if (thermalSensorsStatus == NvApi.NvStatus.OK)
+                {
+                    hasAnyThermalSensor = true;
                     continue;
+                }
 
                 _thermalSensorsMask--;
                 break;
+            }
+
+            if (!hasAnyThermalSensor)
+            {
+                _thermalSensorsMask = 0;
             }
 
             // Clock frequencies.
@@ -455,7 +465,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (_thermalSensorsMask > 0)
             {
-                NvApi.NvThermalSensors thermalSensors = GetThermalSensors(out status);
+                NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
 
                 if (status == NvApi.NvStatus.OK)
                 {
@@ -969,7 +979,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             return status == NvApi.NvStatus.OK ? settings : default;
         }
 
-        private NvApi.NvThermalSensors GetThermalSensors(out NvApi.NvStatus status)
+        private NvApi.NvThermalSensors GetThermalSensors(uint mask, out NvApi.NvStatus status)
         {
             if (NvApi.NvAPI_GPU_ThermalGetSensors == null)
             {
@@ -980,7 +990,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             var thermalSensors = new NvApi.NvThermalSensors()
             {
                 Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSensors>(2),
-                Mask = _thermalSensorsMask
+                Mask = mask
             };
 
             status = NvApi.NvAPI_GPU_ThermalGetSensors(_handle, ref thermalSensors);
