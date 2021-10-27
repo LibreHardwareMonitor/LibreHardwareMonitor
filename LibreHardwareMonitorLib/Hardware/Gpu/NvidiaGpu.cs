@@ -40,6 +40,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor[] _powers;
         private readonly Sensor _powerUsage;
         private readonly Sensor[] _temperatures;
+        private uint _thermalSensorsMask;
+        private readonly Sensor _hotSpotTemperature;
+        private readonly Sensor _memoryJunctionTemperature;
 
         public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
             : base(GetName(handle),
@@ -77,6 +80,32 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _temperatures[i] = new Sensor(name, i, SensorType.Temperature, this, new ParameterDescription[0], settings);
                     ActivateSensor(_temperatures[i]);
                 }
+            }
+
+            // Thermal sensors.
+            _hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
+            _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
+            bool hasAnyThermalSensor = false;
+
+            for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
+            {
+                // Find the maximum thermal sensor mask value.
+                _thermalSensorsMask = 1u << thermalSensorsMaxBit;
+
+                GetThermalSensors(_thermalSensorsMask, out NvApi.NvStatus thermalSensorsStatus);
+                if (thermalSensorsStatus == NvApi.NvStatus.OK)
+                {
+                    hasAnyThermalSensor = true;
+                    continue;
+                }
+
+                _thermalSensorsMask--;
+                break;
+            }
+
+            if (!hasAnyThermalSensor)
+            {
+                _thermalSensorsMask = 0;
             }
 
             // Clock frequencies.
@@ -432,6 +461,28 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     foreach (Sensor sensor in _temperatures)
                         sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
                 }
+            }
+
+            if (_thermalSensorsMask > 0)
+            {
+                NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
+
+                if (status == NvApi.NvStatus.OK)
+                {
+                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                }
+
+                if (_hotSpotTemperature.Value != 0)
+                    ActivateSensor(_hotSpotTemperature);
+
+                if (_memoryJunctionTemperature.Value != 0)
+                    ActivateSensor(_memoryJunctionTemperature);
+            }
+            else
+            {
+                _hotSpotTemperature.Value = null;
+                _memoryJunctionTemperature.Value = null;
             }
 
             if (_clocks is { Length: > 0 })
@@ -928,6 +979,24 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             return status == NvApi.NvStatus.OK ? settings : default;
         }
 
+        private NvApi.NvThermalSensors GetThermalSensors(uint mask, out NvApi.NvStatus status)
+        {
+            if (NvApi.NvAPI_GPU_ThermalGetSensors == null)
+            {
+                status = NvApi.NvStatus.Error;
+                return default;
+            }
+
+            var thermalSensors = new NvApi.NvThermalSensors()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSensors>(2),
+                Mask = mask
+            };
+
+            status = NvApi.NvAPI_GPU_ThermalGetSensors(_handle, ref thermalSensors);
+            return status == NvApi.NvStatus.OK ? thermalSensors : default;
+        }
+
         private NvApi.NvFanCoolersStatus GetFanCoolersStatus(out NvApi.NvStatus status)
         {
             if (NvApi.NvAPI_GPU_ClientFanCoolersGetStatus == null)
@@ -938,7 +1007,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             var coolers = new NvApi.NvFanCoolersStatus
             {
-                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1), Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1),
+                Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
             };
 
             status = NvApi.NvAPI_GPU_ClientFanCoolersGetStatus(_handle, ref coolers);
@@ -983,7 +1053,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             NvApi.NvDynamicPStatesInfo pStatesInfo = new()
             {
-                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1), Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1),
+                Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
             };
 
             status = NvApi.NvAPI_GPU_GetDynamicPstatesInfoEx(_handle, ref pStatesInfo);
