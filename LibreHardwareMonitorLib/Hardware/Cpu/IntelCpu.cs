@@ -184,6 +184,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             _microArchitecture = MicroArchitecture.TigerLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
+                        case 0x97: // Alder Lake (7nm)
+                            _microArchitecture = MicroArchitecture.AlderLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x9C: // Jasper Lake (10nm)
+                            _microArchitecture = MicroArchitecture.JasperLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
                         case 0xA7: // Intel Core i5, i6, i7 11xxx (14nm) (Rocket Lake)
                             _microArchitecture = MicroArchitecture.RocketLake;
                             tjMax = GetTjMaxFromMsr();
@@ -235,6 +243,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     break;
                 }
                 case MicroArchitecture.Airmont:
+                case MicroArchitecture.AlderLake:
                 case MicroArchitecture.Broadwell:
                 case MicroArchitecture.CannonLake:
                 case MicroArchitecture.CometLake:
@@ -243,6 +252,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.Haswell:
                 case MicroArchitecture.IceLake:
                 case MicroArchitecture.IvyBridge:
+                case MicroArchitecture.JasperLake:
                 case MicroArchitecture.KabyLake:
                 case MicroArchitecture.Nehalem:
                 case MicroArchitecture.RocketLake:
@@ -348,6 +358,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
 
             if (_microArchitecture == MicroArchitecture.Airmont ||
+                _microArchitecture == MicroArchitecture.AlderLake ||
                 _microArchitecture == MicroArchitecture.Broadwell ||
                 _microArchitecture == MicroArchitecture.CannonLake ||
                 _microArchitecture == MicroArchitecture.CometLake ||
@@ -356,6 +367,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _microArchitecture == MicroArchitecture.Haswell ||
                 _microArchitecture == MicroArchitecture.IceLake ||
                 _microArchitecture == MicroArchitecture.IvyBridge ||
+                _microArchitecture == MicroArchitecture.JasperLake ||
                 _microArchitecture == MicroArchitecture.KabyLake ||
                 _microArchitecture == MicroArchitecture.RocketLake ||
                 _microArchitecture == MicroArchitecture.SandyBridge ||
@@ -532,6 +544,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                 break;
                             }
                             case MicroArchitecture.Airmont:
+                            case MicroArchitecture.AlderLake:
                             case MicroArchitecture.Broadwell:
                             case MicroArchitecture.CannonLake:
                             case MicroArchitecture.CometLake:
@@ -540,6 +553,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             case MicroArchitecture.Haswell:
                             case MicroArchitecture.IceLake:
                             case MicroArchitecture.IvyBridge:
+                            case MicroArchitecture.JasperLake:
                             case MicroArchitecture.KabyLake:
                             case MicroArchitecture.RocketLake:
                             case MicroArchitecture.SandyBridge:
@@ -603,6 +617,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private enum MicroArchitecture
         {
             Airmont,
+            AlderLake,
             Atom,
             Broadwell,
             CannonLake,
@@ -613,6 +628,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             Haswell,
             IceLake,
             IvyBridge,
+            JasperLake,
             KabyLake,
             Nehalem,
             NetBurst,
