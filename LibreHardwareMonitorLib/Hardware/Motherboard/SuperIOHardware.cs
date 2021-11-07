@@ -236,6 +236,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 }
                 case Chip.IT8620E:
                 case Chip.IT8628E:
+                case Chip.IT8631E:
                 case Chip.IT8655E:
                 case Chip.IT8665E:
                 case Chip.IT8686E:
