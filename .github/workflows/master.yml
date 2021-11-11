@@ -6,14 +6,16 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     if: contains(github.event.head_commit.message, 'ci skip') == false
 
     steps:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
-      - uses: microsoft/setup-msbuild@v1.0.2
-    
+      - uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+
       - uses: dorny/paths-filter@v2
         id: changes
         with:
@@ -29,20 +31,20 @@ jobs:
                 if(!$m.Success -or $m.Groups[4].Success -or $m.Groups[5].Success) { $_; }
                 else { $_ -replace $m.Value, ("<Version>{0}.{1}.{2}-pre${{ github.run_number }}</Version>" -f $m.Groups[1].Value,$m.Groups[2].Value,([convert]::ToInt32($m.Groups[3].Value)+1)); }
             } | Set-Content Directory.Build.props
-        
+
       - name: NuGet restore
         run: nuget restore LibreHardwareMonitor.sln
-    
+
       - name: Build
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
-     
+
       - name: Publish net452
         uses: actions/upload-artifact@v2
         with:
           name: LibreHardwareMonitor-net452
           path: |
             bin/Release/net452
-            
+
       - name: Publish netstandard20
         uses: actions/upload-artifact@v2
         with:
