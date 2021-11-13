@@ -41,12 +41,12 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="System.IO.Ports" Version="6.0.0" />
-    <PackageReference Include="System.Management" Version="5.0.0" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="System.Management" Version="5.0.0" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png">
