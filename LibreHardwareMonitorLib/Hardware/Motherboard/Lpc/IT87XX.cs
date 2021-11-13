@@ -78,10 +78,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                          chip == Chip.IT8628E ||
                          chip == Chip.IT8620E ||
                          chip == Chip.IT879XE ||
-                         chip == Chip.IT8655E;
+                         chip == Chip.IT8655E ||
+                         chip == Chip.IT8631E;
 
             switch (chip)
             {
+                case Chip.IT8631E:
+                {
+                    Voltages = new float?[9];
+                    Temperatures = new float?[2];
+                    Fans = new float?[2];
+                    Controls = new float?[2];
+                    break;
+                }
                 case Chip.IT8665E:
                 case Chip.IT8686E:
                 {
@@ -149,6 +158,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 // All others 16mV.
                 case Chip.IT8620E:
                 case Chip.IT8628E:
+                case Chip.IT8631E:
                 case Chip.IT8721F:
                 case Chip.IT8728F:
                 case Chip.IT8771E:

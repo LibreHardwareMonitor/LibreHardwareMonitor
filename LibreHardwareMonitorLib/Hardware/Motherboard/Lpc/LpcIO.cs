@@ -675,6 +675,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case 0x8628:
                     chip = Chip.IT8628E;
                     break;
+                case 0x8631: 
+                    chip = Chip.IT8631E; 
+                    break;
                 case 0x8665:
                     chip = Chip.IT8665E;
                     break;
