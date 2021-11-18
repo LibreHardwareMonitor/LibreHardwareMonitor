@@ -1224,6 +1224,35 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.Z170N_WIFI: // ITE IT8628E
+                        {
+                            v.Add(new Voltage("Vcore", 0, 0, 1));
+                            v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                            v.Add(new Voltage("+12V", 2, 5, 1));
+                            v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                            // NO DIMM CD channels on this motherboard; gives a very tiny voltage reading
+                            // v.Add(new Voltage("DIMM CD", 4, 0, 1));
+                            v.Add(new Voltage("iGPU VAXG", 5, 0, 1));
+                            v.Add(new Voltage("DIMM AB", 6, 0, 1));
+                            v.Add(new Voltage("3VSB", 7, 10, 10));
+                            v.Add(new Voltage("VBat", 8, 10, 10));
+                            v.Add(new Voltage("AVCC3", 9, 54, 10));
+
+                            t.Add(new Temperature("System #1", 0));
+                            t.Add(new Temperature("PCH", 1));
+                            t.Add(new Temperature("CPU", 2));
+                            t.Add(new Temperature("PCIe x16", 3));
+                            t.Add(new Temperature("VRM", 4));
+                            t.Add(new Temperature("System #2", 5));
+
+                            f.Add(new Fan("CPU Fan", 0));
+                            f.Add(new Fan("System Fan", 1));
+
+                            c.Add(new Ctrl("CPU Fan", 0));
+                            c.Add(new Ctrl("System Fan", 1));
+
+                            break;
+                        }
                         case Model.AX370_Gaming_K7: // IT8686E
                         case Model.AX370_Gaming_5:
                         case Model.AB350_Gaming_3: // IT8686E
