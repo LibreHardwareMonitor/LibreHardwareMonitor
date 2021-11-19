@@ -1452,6 +1452,38 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.Z390_AORUS_PRO:
+                        {
+                            v.Add(new Voltage("Vcore", 0));
+                            v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
+                            v.Add(new Voltage("+12V", 2, 5f, 1));
+                            v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                            v.Add(new Voltage("CPU VCCGT", 4));
+                            v.Add(new Voltage("CPU VCCSA", 5));
+                            v.Add(new Voltage("DDR", 6));
+                            v.Add(new Voltage("Voltage #7", 7, true));
+                            v.Add(new Voltage("3VSB", 8, 1f, 1f, -0.312f));
+                            v.Add(new Voltage("VBat", 9, 6f, 1f, 0.01f));
+                            v.Add(new Voltage("AVCC3", 10, 6f, 1f, 0.048f ));
+                            t.Add(new Temperature("System #1", 0));
+                            t.Add(new Temperature("PCH", 1));
+                            t.Add(new Temperature("CPU", 2));
+                            t.Add(new Temperature("PCIe x16", 3));
+                            t.Add(new Temperature("VRM MOS", 4));
+                            t.Add(new Temperature("EC_TEMP1/System #2", 5));
+                            f.Add(new Fan("CPU Fan", 0));
+                            f.Add(new Fan("System Fan #1", 1));
+                            f.Add(new Fan("System Fan #2", 2));
+                            f.Add(new Fan("System Fan #3", 3));
+                            f.Add(new Fan("CPU Optional Fan", 4));
+                            c.Add(new Ctrl("CPU Fan", 0));
+                            c.Add(new Ctrl("System Fan #1", 1));
+                            c.Add(new Ctrl("System Fan #2", 2));
+                            c.Add(new Ctrl("System Fan #3", 3));
+                            c.Add(new Ctrl("CPU Optional Fan", 4));
+
+                            break;
+                        }
                         case Model.Z68A_D3H_B3: // IT8728F
                         {
                             v.Add(new Voltage("VTT", 0));
