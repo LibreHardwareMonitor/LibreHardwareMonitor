@@ -5,13 +5,16 @@
 
 version: 2
 updates:
+    # LibreHardwareMonitor.csproj
   - package-ecosystem: "nuget"
-    directory: "/LibreHardwareMonitor" #LibreHardwareMonitor.csproj
+    directory: "/LibreHardwareMonitor"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+
+    # LibreHardwareMonitorLib.csproj
   - package-ecosystem: "nuget"
-    directory: "/LibreHardwareMonitorLib" #LibreHardwareMonitorLib.csproj
+    directory: "/LibreHardwareMonitorLib" 
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
