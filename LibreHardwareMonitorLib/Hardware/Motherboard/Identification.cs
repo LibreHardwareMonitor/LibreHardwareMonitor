@@ -271,6 +271,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.Z68X_UD7_B3;
                 case var _ when name.Equals("Z68XP-UD3R", StringComparison.OrdinalIgnoreCase):
                     return Model.Z68XP_UD3R;
+                case var _ when name.Equals("Z170N-WIFI-CF", StringComparison.OrdinalIgnoreCase):
+                    return Model.Z170N_WIFI;
                 case var _ when name.Equals("Z390 M GAMING-CF", StringComparison.OrdinalIgnoreCase):
                     return Model.Z390_M_GAMING;
                 case var _ when name.Equals("Z390 AORUS ULTRA", StringComparison.OrdinalIgnoreCase):

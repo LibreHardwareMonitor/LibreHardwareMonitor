@@ -83,6 +83,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             switch (chip)
             {
+                case Chip.IT8628E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[6];
+                    Fans = new float?[4];
+                    Controls = new float?[4];
+                    break;
+                }
                 case Chip.IT8631E:
                 {
                     Voltages = new float?[9];
