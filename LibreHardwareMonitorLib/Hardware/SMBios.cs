@@ -4,11 +4,11 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using LibreHardwareMonitor.Interop;
 
 // ReSharper disable CommentTypo
 // ReSharper disable IdentifierTypo
@@ -546,9 +546,9 @@ namespace LibreHardwareMonitor.Hardware
             {
                 case 0x00: return extendedSize; // Megabytes
                 case 0x01: return extendedSize * 1024; // Gigabytes - might overflow in the future
-                default:
-                    return null; // Other patterns not defined in DMI 3.2.0
             }
+
+            return null; // Other patterns not defined in DMI 3.2.0
         }
 
         /// <summary>
@@ -1012,7 +1012,7 @@ namespace LibreHardwareMonitor.Hardware
                 List<ProcessorCache> processorCacheList = new();
 
                 string[] tables = FirmwareTable.EnumerateTables(Kernel32.Provider.RSMB);
-                if (tables is { Length: >0 })
+                if (tables is { Length: > 0 })
                 {
                     _raw = FirmwareTable.GetTable(Kernel32.Provider.RSMB, tables[0]);
                     if (_raw == null || _raw.Length == 0)
@@ -1327,9 +1327,9 @@ namespace LibreHardwareMonitor.Hardware
                 r.Append("Memory Device [" + i + "] Bank Locator: ");
                 r.AppendLine(MemoryDevices[i].BankLocator);
                 r.Append("Memory Device [" + i + "] Speed: ");
-                r.Append(MemoryDevices[i].Speed);
-                r.AppendLine("Memory Device [" + i + "] Size: ");
-                r.Append(MemoryDevices[i].Size);
+                r.AppendLine(MemoryDevices[i].Speed.ToString());
+                r.Append("Memory Device [" + i + "] Size: ");
+                r.Append(MemoryDevices[i].Size.ToString());
                 r.AppendLine(" MB");
                 r.AppendLine();
             }
