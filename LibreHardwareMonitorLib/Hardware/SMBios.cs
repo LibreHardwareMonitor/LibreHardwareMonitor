@@ -546,9 +546,9 @@ namespace LibreHardwareMonitor.Hardware
             {
                 case 0x00: return extendedSize; // Megabytes
                 case 0x01: return extendedSize * 1024; // Gigabytes - might overflow in the future
-                default:
-                return null; // Other patterns not defined in DMI 3.2.0
             }
+
+            return null; // Other patterns not defined in DMI 3.2.0
         }
 
         /// <summary>
