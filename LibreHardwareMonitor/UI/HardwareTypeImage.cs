@@ -57,6 +57,9 @@ namespace LibreHardwareMonitor.UI
                 case HardwareType.Psu:
                     image = Utilities.EmbeddedResources.GetImage("power-supply.png");
                     break;
+                case HardwareType.Battery:
+                    image = Utilities.EmbeddedResources.GetImage("battery.png");
+                    break;
                 default:
                     image = new Bitmap(1, 1);
                     break;

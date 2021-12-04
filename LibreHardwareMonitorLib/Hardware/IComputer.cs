@@ -76,6 +76,12 @@ namespace LibreHardwareMonitor.Hardware
         bool IsPsuEnabled { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Battery"/> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
+        bool IsBatteryEnabled { get; }
+
+        /// <summary>
         /// Gets a list of all known <see cref="IHardware"/>.
         /// <para>Can be updated by <see cref="IVisitor"/>.</para>
         /// </summary>

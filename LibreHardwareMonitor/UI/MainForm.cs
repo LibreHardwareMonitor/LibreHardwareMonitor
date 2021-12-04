@@ -50,6 +50,7 @@ namespace LibreHardwareMonitor.UI
         private readonly UserOption _readHddSensors;
         private readonly UserOption _readNicSensors;
         private readonly UserOption _readPsuSensors;
+        private readonly UserOption _readBatterySensors;
 
         private readonly UserOption _showGadget;
         private UserRadioGroup _plotLocation;
@@ -259,6 +260,12 @@ namespace LibreHardwareMonitor.UI
             _readPsuSensors.Changed += delegate
             {
                 _computer.IsPsuEnabled = _readPsuSensors.Value;
+            };
+
+            _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
+            _readBatterySensors.Changed += delegate
+            {
+                _computer.IsBatteryEnabled = _readBatterySensors.Value;
             };
 
             _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);

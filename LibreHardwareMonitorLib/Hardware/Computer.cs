@@ -20,6 +20,7 @@ using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.Hardware.Battery;
 
 namespace LibreHardwareMonitor.Hardware
 {
@@ -47,6 +48,7 @@ namespace LibreHardwareMonitor.Hardware
         private bool _open;
         private bool _storageEnabled;
         private bool _psuEnabled;
+        private bool _batteryEnabled;
 
         private SMBios _smbios;
 
@@ -260,6 +262,27 @@ namespace LibreHardwareMonitor.Hardware
                     }
                 }
                 _psuEnabled = value;
+            }
+        }
+
+        /// <inheritdoc />
+        public bool IsBatteryEnabled
+        {
+            get { return _batteryEnabled; }
+            set
+            {
+                if (_open && value != _batteryEnabled)
+                {
+                    if (value)
+                    {
+                        Add(new BatteryGroup(_settings));
+                    }
+                    else
+                    {
+                        RemoveType<BatteryGroup>();
+                    }
+                }
+                _batteryEnabled = value;
             }
         }
 
@@ -506,6 +529,9 @@ namespace LibreHardwareMonitor.Hardware
 
             if (_psuEnabled)
                 Add(new CorsairPsuGroup(_settings));
+
+            if (_batteryEnabled)
+                Add(new BatteryGroup(_settings));
         }
 
         private static void NewSection(TextWriter writer)

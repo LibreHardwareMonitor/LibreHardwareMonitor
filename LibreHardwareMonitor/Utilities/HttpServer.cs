@@ -643,6 +643,8 @@ namespace LibreHardwareMonitor.Utilities
                     return "nic.png";
                 case HardwareType.Psu:
                     return "power-supply.png";
+                case HardwareType.Battery:
+                    return "battery.png";
                 default:
                     return "cpu.png";
             }

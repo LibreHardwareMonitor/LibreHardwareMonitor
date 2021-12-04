@@ -643,6 +643,9 @@ namespace LibreHardwareMonitor.UI
                                 case SensorType.TimeSpan:
                                     format = "{0:g}";
                                     break;
+                                case SensorType.Energy:
+                                    format = "{0:F0} mWh";
+                                    break;
                             }
 
                             if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
