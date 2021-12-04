@@ -72,8 +72,8 @@ namespace LibreHardwareMonitor.Hardware.Battery
             using ManagementObjectCollection collectionStatus = batteryStatusInfo.Get();
             using ManagementObject batteryStatus = collectionStatus.OfType<ManagementObject>().FirstOrDefault();
 
-            //if (batteryStatus == null)
-            //    return;
+            if (batteryStaticData == null || fullChargedCapacity == null || batteryStatus == null)
+                return;
 
 
             _designedCapacity.Value = Convert.ToSingle(batteryStaticData.Properties["DesignedCapacity"].Value);
