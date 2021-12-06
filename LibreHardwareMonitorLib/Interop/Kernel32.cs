@@ -26,6 +26,9 @@ namespace LibreHardwareMonitor.Interop
         internal const byte SMART_LBA_MID = 0x4F;
         internal const byte SMART_LBA_HI_EXCEEDED = 0x2C;
         internal const byte SMART_LBA_MID_EXCEEDED = 0xF4;
+
+        internal const uint LPTR = 0x0000 | 0x0040;
+
         private const string DllName = "kernel32.dll";
 
         [Flags]
@@ -203,6 +206,64 @@ namespace LibreHardwareMonitor.Interop
             out uint lpBytesReturned,
             IntPtr lpOverlapped);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeFileHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref BATTERY_QUERY_INFORMATION lpInBuffer,
+            int nInBufferSize,
+            ref BATTERY_INFORMATION lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeFileHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref uint lpInBuffer,
+            int nInBufferSize,
+            ref uint lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeFileHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref BATTERY_WAIT_STATUS lpInBuffer,
+            int nInBufferSize,
+            ref BATTERY_STATUS lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeFileHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref BATTERY_QUERY_INFORMATION lpInBuffer,
+            int nInBufferSize,
+            IntPtr lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        internal static extern IntPtr LocalFree(IntPtr hMem);
+
         [DllImport(DllName, SetLastError = true)]
         internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
 
@@ -291,7 +352,80 @@ namespace LibreHardwareMonitor.Interop
             IOCTL_SCSI_MINIPORT = 0x04d008,
             IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014,
             IOCTL_SCSI_GET_ADDRESS = 0x41018,
-            IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400
+            IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400,
+            IOCTL_BATTERY_QUERY_TAG = 0x294040,
+            IOCTL_BATTERY_QUERY_INFORMATION = 0x294044,
+            IOCTL_BATTERY_QUERY_STATUS = 0x29404C
+        }
+
+        [Flags]
+        internal enum BatteryCapabilities : uint
+        {
+            BATTERY_CAPACITY_RELATIVE = 0x40000000,
+            BATTERY_IS_SHORT_TERM = 0x20000000,
+            BATTERY_SET_CHARGE_SUPPORTED = 0x00000001,
+            BATTERY_SET_DISCHARGE_SUPPORTED = 0x00000002,
+            BATTERY_SYSTEM_BATTERY = 0x80000000
+        }
+
+        internal enum BATTERY_QUERY_INFORMATION_LEVEL
+        {
+            BatteryInformation,
+            BatteryGranularityInformation,
+            BatteryTemperature,
+            BatteryEstimatedTime,
+            BatteryDeviceName,
+            BatteryManufactureDate,
+            BatteryManufactureName,
+            BatteryUniqueID,
+            BatterySerialNumber
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct BATTERY_QUERY_INFORMATION
+        {
+            public uint BatteryTag;
+            public BATTERY_QUERY_INFORMATION_LEVEL InformationLevel;
+            public uint AtRate;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct BATTERY_INFORMATION
+        {
+            public BatteryCapabilities Capabilities;
+            public byte Technology;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+            public byte[] Reserved;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+            public byte[] Chemistry;
+
+            public uint DesignedCapacity;
+            public uint FullChargedCapacity;
+            public uint DefaultAlert1;
+            public uint DefaultAlert2;
+            public uint CriticalBias;
+            public uint CycleCount;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct BATTERY_WAIT_STATUS
+        {
+            public uint BatteryTag;
+            public uint Timeout;
+            public uint PowerState;
+            public uint LowCapacity;
+            public uint HighCapacity;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct BATTERY_STATUS
+        {
+            public uint PowerState;
+            public uint Capacity;
+            public uint Voltage;
+            public int Rate;
         }
 
         [Flags]

@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Management;
-using System.Linq;
+using LibreHardwareMonitor.Interop;
+using Microsoft.Win32.SafeHandles;
+using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Hardware.Battery
 {
@@ -15,13 +16,17 @@ namespace LibreHardwareMonitor.Hardware.Battery
         private readonly Sensor _chargeDischargeRate;
         private readonly Sensor _degradationPercentage;
 
-        private readonly string _instanceName;
-        private int _wmiFailureCount;
+        private readonly SafeFileHandle _batteryHandle;
+        private readonly uint _batteryTag;
 
-        public Battery(string name, string instanceName, ISettings settings) : base(name, new Identifier("battery"), settings)
+        private Kernel32.BATTERY_INFORMATION _batteryInformation;
+
+        public Battery(string name, SafeFileHandle batteryHandle, Kernel32.BATTERY_INFORMATION batteryInfo, uint batteryTag, ISettings settings) : base(name, new Identifier("battery"), settings)
         {
             Name = name;
-            _instanceName = instanceName;
+            _batteryHandle = batteryHandle;
+            _batteryInformation = batteryInfo;
+            _batteryTag = batteryTag;
 
             _chargePercentage = new Sensor("Charge Level", 0, SensorType.Level, this, settings);
             ActivateSensor(_chargePercentage);
@@ -50,87 +55,52 @@ namespace LibreHardwareMonitor.Hardware.Battery
 
         public override HardwareType HardwareType => HardwareType.Battery;
 
-        private string EscapeBackslash(string s)
-        {
-            return s.Replace(@"\", @"\\");
-        }
-
-        private void UpdateStatisticsFromWmi()
-        {
-            string queryStaticData = $"SELECT * FROM BatteryStaticData WHERE InstanceName=\"{EscapeBackslash(_instanceName)}\"";
-            using var batteryStaticDataInfo = new ManagementObjectSearcher(@"root\WMI", queryStaticData) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
-            using ManagementObjectCollection collectionStaticData = batteryStaticDataInfo.Get();
-            using ManagementObject batteryStaticData = collectionStaticData.OfType<ManagementObject>().FirstOrDefault();
-
-            string queryFullChargedCapacity = $"SELECT * FROM BatteryFullChargedCapacity WHERE InstanceName=\"{EscapeBackslash(_instanceName)}\"";
-            using var batteryFullChargedCapacityInfo = new ManagementObjectSearcher(@"root\WMI", queryFullChargedCapacity) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
-            using ManagementObjectCollection collectionFCC = batteryFullChargedCapacityInfo.Get();
-            using ManagementObject fullChargedCapacity = collectionFCC.OfType<ManagementObject>().FirstOrDefault();
-
-            string queryStatus = $"SELECT * FROM BatteryStatus WHERE InstanceName=\"{EscapeBackslash(_instanceName)}\"";
-            using var batteryStatusInfo = new ManagementObjectSearcher(@"root\WMI", queryStatus) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
-            using ManagementObjectCollection collectionStatus = batteryStatusInfo.Get();
-            using ManagementObject batteryStatus = collectionStatus.OfType<ManagementObject>().FirstOrDefault();
-
-            if (batteryStaticData == null || fullChargedCapacity == null || batteryStatus == null)
-                return;
-
-
-            _designedCapacity.Value = Convert.ToSingle(batteryStaticData.Properties["DesignedCapacity"].Value);
-            _fullChargedCapacity.Value = Convert.ToSingle(fullChargedCapacity.Properties["FullChargedCapacity"].Value);
-            _remainingCapacity.Value = Convert.ToSingle(batteryStatus.Properties["RemainingCapacity"].Value);
-            _voltage.Value = Convert.ToSingle(batteryStatus.Properties["Voltage"].Value) / 1000f;
-            _chargePercentage.Value = _remainingCapacity.Value * 100f / _fullChargedCapacity.Value;
-
-            float chargeRate = Convert.ToSingle(batteryStatus.Properties["ChargeRate"].Value);
-            float dischargeRate = Convert.ToSingle(batteryStatus.Properties["DischargeRate"].Value);
-            if (chargeRate > 0)
-            {
-                _chargeDischargeRate.Name = "Charge Rate";
-                _chargeDischargeRate.Value = chargeRate / 1000f;
-            }
-            else if (dischargeRate > 0)
-            {
-                _chargeDischargeRate.Name = "Discharge Rate";
-                _chargeDischargeRate.Value = dischargeRate / 1000f;
-            }
-            else
-            {
-                _chargeDischargeRate.Name = "Charge/Discharge Rate";
-                _chargeDischargeRate.Value = 0f;
-            }
-
-            _current.Value = _chargeDischargeRate.Value / _voltage.Value;
-            _degradationPercentage.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
-        }
-
         public override void Update()
         {
-            const int wmiRetries = 10;
-
-            //update statistics from WMI on every update
-            if (_wmiFailureCount <= wmiRetries)
+            Kernel32.BATTERY_WAIT_STATUS bws = default;
+            bws.BatteryTag = _batteryTag;
+            Kernel32.BATTERY_STATUS bs = default;
+            if (Kernel32.DeviceIoControl(_batteryHandle,
+                                 Kernel32.IOCTL.IOCTL_BATTERY_QUERY_STATUS,
+                                 ref bws,
+                                 Marshal.SizeOf(bws),
+                                 ref bs,
+                                 Marshal.SizeOf(bs),
+                                 out _,
+                                 IntPtr.Zero))
             {
-                try
+
+                _designedCapacity.Value = Convert.ToSingle(_batteryInformation.DesignedCapacity);
+                _fullChargedCapacity.Value = Convert.ToSingle(_batteryInformation.FullChargedCapacity);
+                _remainingCapacity.Value = Convert.ToSingle(bs.Capacity);
+                _voltage.Value = Convert.ToSingle(bs.Voltage) / 1000f;
+                _chargePercentage.Value = _remainingCapacity.Value * 100f / _fullChargedCapacity.Value;
+
+                if (bs.Rate > 0)
                 {
-                    UpdateStatisticsFromWmi();
-                    _wmiFailureCount = 0;
+                    _chargeDischargeRate.Name = "Charge Rate";
+                    _chargeDischargeRate.Value = bs.Rate / 1000f;
                 }
-                catch
+                else if (bs.Rate < 0)
                 {
-                    if (++_wmiFailureCount == wmiRetries)
-                    {
-                        DeactivateSensor(_chargePercentage);
-                        DeactivateSensor(_voltage);
-                        DeactivateSensor(_current);
-                        DeactivateSensor(_designedCapacity);
-                        DeactivateSensor(_fullChargedCapacity);
-                        DeactivateSensor(_remainingCapacity);
-                        DeactivateSensor(_chargeDischargeRate);
-                        DeactivateSensor(_degradationPercentage);
-                    }
+                    _chargeDischargeRate.Name = "Discharge Rate";
+                    _chargeDischargeRate.Value = Math.Abs(bs.Rate) / 1000f;
                 }
+                else
+                {
+                    _chargeDischargeRate.Name = "Charge/Discharge Rate";
+                    _chargeDischargeRate.Value = 0f;
+                }
+
+                _current.Value = _chargeDischargeRate.Value / _voltage.Value;
+                _degradationPercentage.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
             }
+        }
+
+        public override void Close()
+        {
+            base.Close();
+            _batteryHandle.Close();
         }
     }
 }
