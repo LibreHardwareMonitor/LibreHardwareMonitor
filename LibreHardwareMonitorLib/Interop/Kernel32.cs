@@ -398,7 +398,7 @@ namespace LibreHardwareMonitor.Interop
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
             public byte[] Reserved;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] Chemistry;
 
             public uint DesignedCapacity;
