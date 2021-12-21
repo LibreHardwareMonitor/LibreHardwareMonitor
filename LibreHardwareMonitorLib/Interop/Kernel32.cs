@@ -12,7 +12,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Interop
 {
-    public class Kernel32
+    internal class Kernel32
     {
         public const int ERROR_SERVICE_ALREADY_RUNNING = unchecked((int)0x80070420);
 

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Interop
 {
-    public class SetupApi
+    internal class SetupApi
     {
         internal const int ERROR_INSUFFICIENT_BUFFER = 122;
         internal const int ERROR_NO_MORE_ITEMS = 259;
