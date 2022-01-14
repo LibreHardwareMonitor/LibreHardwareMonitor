@@ -449,26 +449,26 @@ namespace LibreHardwareMonitor.UI
                 switch (_plotLocation.Value)
                 {
                     case 0:
-                    splitContainer.Panel2.Controls.Clear();
-                    splitContainer.Panel2Collapsed = true;
-                    _plotForm.Controls.Add(_plotPanel);
-                    if (_showPlot.Value && Visible)
-                        _plotForm.Show();
-                    break;
+                        splitContainer.Panel2.Controls.Clear();
+                        splitContainer.Panel2Collapsed = true;
+                        _plotForm.Controls.Add(_plotPanel);
+                        if (_showPlot.Value && Visible)
+                            _plotForm.Show();
+                        break;
                     case 1:
-                    _plotForm.Controls.Clear();
-                    _plotForm.Hide();
-                    splitContainer.Orientation = Orientation.Horizontal;
-                    splitContainer.Panel2.Controls.Add(_plotPanel);
-                    splitContainer.Panel2Collapsed = !_showPlot.Value;
-                    break;
+                        _plotForm.Controls.Clear();
+                        _plotForm.Hide();
+                        splitContainer.Orientation = Orientation.Horizontal;
+                        splitContainer.Panel2.Controls.Add(_plotPanel);
+                        splitContainer.Panel2Collapsed = !_showPlot.Value;
+                        break;
                     case 2:
-                    _plotForm.Controls.Clear();
-                    _plotForm.Hide();
-                    splitContainer.Orientation = Orientation.Vertical;
-                    splitContainer.Panel2.Controls.Add(_plotPanel);
-                    splitContainer.Panel2Collapsed = !_showPlot.Value;
-                    break;
+                        _plotForm.Controls.Clear();
+                        _plotForm.Hide();
+                        splitContainer.Orientation = Orientation.Vertical;
+                        splitContainer.Panel2.Controls.Add(_plotPanel);
+                        splitContainer.Panel2Collapsed = !_showPlot.Value;
+                        break;
                 }
             };
 
