@@ -163,6 +163,7 @@ namespace LibreHardwareMonitor.UI
             _computer.HardwareRemoved += HardwareRemoved;
             _computer.Open();
 
+            backgroundUpdater.DoWork += BackgroundUpdater_DoWork;
             timer.Enabled = true;
 
             UserOption showHiddenSensors = new UserOption("hiddenMenuItem", false, hiddenMenuItem, _settings);
@@ -377,6 +378,25 @@ namespace LibreHardwareMonitor.UI
             Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
         }
 
+        private void BackgroundUpdater_DoWork(object sender, DoWorkEventArgs e)
+        {
+            _computer.Accept(_updateVisitor);
+
+            treeView.Invalidate();
+            _plotPanel.InvalidatePlot();
+            _systemTray.Redraw();
+            _gadget?.Redraw();
+            _wmiProvider?.Update();
+
+            if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
+                _logger.Log();
+
+            if (_delayCount < 4)
+                _delayCount++;
+
+            RestoreCollapsedNodeState(treeView);
+        }
+
         private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
         {
             if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
@@ -429,26 +449,26 @@ namespace LibreHardwareMonitor.UI
                 switch (_plotLocation.Value)
                 {
                     case 0:
-                        splitContainer.Panel2.Controls.Clear();
-                        splitContainer.Panel2Collapsed = true;
-                        _plotForm.Controls.Add(_plotPanel);
-                        if (_showPlot.Value && Visible)
-                            _plotForm.Show();
-                        break;
+                    splitContainer.Panel2.Controls.Clear();
+                    splitContainer.Panel2Collapsed = true;
+                    _plotForm.Controls.Add(_plotPanel);
+                    if (_showPlot.Value && Visible)
+                        _plotForm.Show();
+                    break;
                     case 1:
-                        _plotForm.Controls.Clear();
-                        _plotForm.Hide();
-                        splitContainer.Orientation = Orientation.Horizontal;
-                        splitContainer.Panel2.Controls.Add(_plotPanel);
-                        splitContainer.Panel2Collapsed = !_showPlot.Value;
-                        break;
+                    _plotForm.Controls.Clear();
+                    _plotForm.Hide();
+                    splitContainer.Orientation = Orientation.Horizontal;
+                    splitContainer.Panel2.Controls.Add(_plotPanel);
+                    splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    break;
                     case 2:
-                        _plotForm.Controls.Clear();
-                        _plotForm.Hide();
-                        splitContainer.Orientation = Orientation.Vertical;
-                        splitContainer.Panel2.Controls.Add(_plotPanel);
-                        splitContainer.Panel2Collapsed = !_showPlot.Value;
-                        break;
+                    _plotForm.Controls.Clear();
+                    _plotForm.Hide();
+                    splitContainer.Orientation = Orientation.Vertical;
+                    splitContainer.Panel2.Controls.Add(_plotPanel);
+                    splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    break;
                 }
             };
 
@@ -636,21 +656,8 @@ namespace LibreHardwareMonitor.UI
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            _computer.Accept(_updateVisitor);
-
-            treeView.Invalidate();
-            _plotPanel.InvalidatePlot();
-            _systemTray.Redraw();
-            _gadget?.Redraw();
-            _wmiProvider?.Update();
-
-            if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
-                _logger.Log();
-
-            if (_delayCount < 4)
-                _delayCount++;
-
-            RestoreCollapsedNodeState(treeView);
+            if (!backgroundUpdater.IsBusy)
+                backgroundUpdater.RunWorkerAsync();            
         }
 
         private void SaveConfiguration()
@@ -742,6 +749,8 @@ namespace LibreHardwareMonitor.UI
             if (_runWebServer.Value)
                 Server.Quit();
             _systemTray.Dispose();
+            timer.Dispose();
+            backgroundUpdater.Dispose();
 
             Application.Exit();
         }
