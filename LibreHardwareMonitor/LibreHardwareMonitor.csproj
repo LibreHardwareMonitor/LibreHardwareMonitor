@@ -28,6 +28,9 @@
     <PackageReference Include="System.Management" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="RTSSSharedMemoryNET">
+      <HintPath>..\Libs\RTSSSharedMemoryNET.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Configuration.Install" />
   </ItemGroup>

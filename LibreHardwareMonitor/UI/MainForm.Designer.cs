@@ -59,6 +59,7 @@ namespace LibreHardwareMonitor.UI
             this.fanControllerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hddMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nicMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,6 +73,7 @@ namespace LibreHardwareMonitor.UI
             this.valueMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.osdMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startMinMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.minTrayMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -118,6 +120,35 @@ namespace LibreHardwareMonitor.UI
             this.runWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serverPortMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.authWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.rtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.enableRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fpsRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.whiteSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.blackSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yellowSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.blueSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.orangeSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tealSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.greenSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.brownSensorColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.valueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.whiteValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.blackValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yellowValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.blueValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.orangeValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tealValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.greenValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.brownValueColorRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.textSizeRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.s100TextSizeRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.s75TextSizeRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.s50TextSizeRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.s25TextSizeRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -125,7 +156,9 @@ namespace LibreHardwareMonitor.UI
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.splitContainer = new LibreHardwareMonitor.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
-            this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.osd = new Aga.Controls.Tree.TreeColumn();
+            this.nodeCheckBoxOsd = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
+            this.resetCustomColorsRtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -312,6 +345,12 @@ namespace LibreHardwareMonitor.UI
             this.nicMenuItem.Size = new System.Drawing.Size(160, 22);
             this.nicMenuItem.Text = "Network";
             // 
+            // psuMenuItem
+            // 
+            this.psuMenuItem.Name = "psuMenuItem";
+            this.psuMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.psuMenuItem.Text = "Power supplies";
+            // 
             // menuItem6
             // 
             this.menuItem6.Name = "menuItem6";
@@ -378,7 +417,8 @@ namespace LibreHardwareMonitor.UI
             this.columnsMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.valueMenuItem,
             this.minMenuItem,
-            this.maxMenuItem});
+            this.maxMenuItem,
+            this.osdMenuItem});
             this.columnsMenuItem.Name = "columnsMenuItem";
             this.columnsMenuItem.Size = new System.Drawing.Size(188, 22);
             this.columnsMenuItem.Text = "Columns";
@@ -386,20 +426,26 @@ namespace LibreHardwareMonitor.UI
             // valueMenuItem
             // 
             this.valueMenuItem.Name = "valueMenuItem";
-            this.valueMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.valueMenuItem.Size = new System.Drawing.Size(124, 22);
             this.valueMenuItem.Text = "Value";
             // 
             // minMenuItem
             // 
             this.minMenuItem.Name = "minMenuItem";
-            this.minMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.minMenuItem.Size = new System.Drawing.Size(124, 22);
             this.minMenuItem.Text = "Min";
             // 
             // maxMenuItem
             // 
             this.maxMenuItem.Name = "maxMenuItem";
-            this.maxMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.maxMenuItem.Size = new System.Drawing.Size(124, 22);
             this.maxMenuItem.Text = "Max";
+            // 
+            // osdMenuItem
+            // 
+            this.osdMenuItem.Name = "osdMenuItem";
+            this.osdMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.osdMenuItem.Text = "RTSS OSD";
             // 
             // optionsMenuItem
             // 
@@ -416,7 +462,9 @@ namespace LibreHardwareMonitor.UI
             this.loggingIntervalMenuItem,
             this.sensorValuesTimeWindowMenuItem,
             this.webMenuItemSeparator,
-            this.webMenuItem});
+            this.webMenuItem,
+            this.toolStripSeparator1,
+            this.rtssMenuItem});
             this.optionsMenuItem.Name = "optionsMenuItem";
             this.optionsMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsMenuItem.Text = "Options";
@@ -758,6 +806,211 @@ namespace LibreHardwareMonitor.UI
             this.authWebServerMenuItem.Text = "Authentication";
             this.authWebServerMenuItem.Click += new System.EventHandler(this.AuthWebServerMenuItem_Click);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(218, 6);
+            // 
+            // rtssMenuItem
+            // 
+            this.rtssMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.enableRtssMenuItem,
+            this.fpsRtssMenuItem,
+            this.sensorColorRtssMenuItem,
+            this.valueColorRtssMenuItem,
+            this.resetCustomColorsRtssMenuItem,
+            this.textSizeRtssMenuItem});
+            this.rtssMenuItem.Name = "rtssMenuItem";
+            this.rtssMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.rtssMenuItem.Text = "RTSS Options";
+            // 
+            // enableRtssMenuItem
+            // 
+            this.enableRtssMenuItem.Name = "enableRtssMenuItem";
+            this.enableRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.enableRtssMenuItem.Text = "Enable";
+            // 
+            // fpsRtssMenuItem
+            // 
+            this.fpsRtssMenuItem.Name = "fpsRtssMenuItem";
+            this.fpsRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.fpsRtssMenuItem.Text = "Show FPS";
+            // 
+            // sensorColorRtssMenuItem
+            // 
+            this.sensorColorRtssMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.whiteSensorColorRtssMenuItem,
+            this.blackSensorColorRtssMenuItem,
+            this.yellowSensorColorRtssMenuItem,
+            this.blueSensorColorRtssMenuItem,
+            this.redSensorColorRtssMenuItem,
+            this.orangeSensorColorRtssMenuItem,
+            this.tealSensorColorRtssMenuItem,
+            this.greenSensorColorRtssMenuItem,
+            this.brownSensorColorRtssMenuItem});
+            this.sensorColorRtssMenuItem.Name = "sensorColorRtssMenuItem";
+            this.sensorColorRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.sensorColorRtssMenuItem.Text = "Sensor Color";
+            // 
+            // whiteSensorColorRtssMenuItem
+            // 
+            this.whiteSensorColorRtssMenuItem.Name = "whiteSensorColorRtssMenuItem";
+            this.whiteSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.whiteSensorColorRtssMenuItem.Text = "White";
+            // 
+            // blackSensorColorRtssMenuItem
+            // 
+            this.blackSensorColorRtssMenuItem.Name = "blackSensorColorRtssMenuItem";
+            this.blackSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.blackSensorColorRtssMenuItem.Text = "Black";
+            // 
+            // yellowSensorColorRtssMenuItem
+            // 
+            this.yellowSensorColorRtssMenuItem.Name = "yellowSensorColorRtssMenuItem";
+            this.yellowSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.yellowSensorColorRtssMenuItem.Text = "Yellow";
+            // 
+            // blueSensorColorRtssMenuItem
+            // 
+            this.blueSensorColorRtssMenuItem.Name = "blueSensorColorRtssMenuItem";
+            this.blueSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.blueSensorColorRtssMenuItem.Text = "Blue";
+            // 
+            // redSensorColorRtssMenuItem
+            // 
+            this.redSensorColorRtssMenuItem.Name = "redSensorColorRtssMenuItem";
+            this.redSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.redSensorColorRtssMenuItem.Text = "Red";
+            // 
+            // orangeSensorColorRtssMenuItem
+            // 
+            this.orangeSensorColorRtssMenuItem.Name = "orangeSensorColorRtssMenuItem";
+            this.orangeSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.orangeSensorColorRtssMenuItem.Text = "Orange";
+            // 
+            // tealSensorColorRtssMenuItem
+            // 
+            this.tealSensorColorRtssMenuItem.Name = "tealSensorColorRtssMenuItem";
+            this.tealSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.tealSensorColorRtssMenuItem.Text = "Teal";
+            // 
+            // greenSensorColorRtssMenuItem
+            // 
+            this.greenSensorColorRtssMenuItem.Name = "greenSensorColorRtssMenuItem";
+            this.greenSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.greenSensorColorRtssMenuItem.Text = "Green";
+            // 
+            // brownSensorColorRtssMenuItem
+            // 
+            this.brownSensorColorRtssMenuItem.Name = "brownSensorColorRtssMenuItem";
+            this.brownSensorColorRtssMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.brownSensorColorRtssMenuItem.Text = "Brown";
+            // 
+            // valueColorRtssMenuItem
+            // 
+            this.valueColorRtssMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.whiteValueColorRtssMenuItem,
+            this.blackValueColorRtssMenuItem,
+            this.yellowValueColorRtssMenuItem,
+            this.blueValueColorRtssMenuItem,
+            this.redValueColorRtssMenuItem,
+            this.orangeValueColorRtssMenuItem,
+            this.tealValueColorRtssMenuItem,
+            this.greenValueColorRtssMenuItem,
+            this.brownValueColorRtssMenuItem});
+            this.valueColorRtssMenuItem.Name = "valueColorRtssMenuItem";
+            this.valueColorRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.valueColorRtssMenuItem.Text = "Value Color";
+            // 
+            // whiteValueColorRtssMenuItem
+            // 
+            this.whiteValueColorRtssMenuItem.Name = "whiteValueColorRtssMenuItem";
+            this.whiteValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.whiteValueColorRtssMenuItem.Text = "White";
+            // 
+            // blackValueColorRtssMenuItem
+            // 
+            this.blackValueColorRtssMenuItem.Name = "blackValueColorRtssMenuItem";
+            this.blackValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.blackValueColorRtssMenuItem.Text = "Black";
+            // 
+            // yellowValueColorRtssMenuItem
+            // 
+            this.yellowValueColorRtssMenuItem.Name = "yellowValueColorRtssMenuItem";
+            this.yellowValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.yellowValueColorRtssMenuItem.Text = "Yellow";
+            // 
+            // blueValueColorRtssMenuItem
+            // 
+            this.blueValueColorRtssMenuItem.Name = "blueValueColorRtssMenuItem";
+            this.blueValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.blueValueColorRtssMenuItem.Text = "Blue";
+            // 
+            // redValueColorRtssMenuItem
+            // 
+            this.redValueColorRtssMenuItem.Name = "redValueColorRtssMenuItem";
+            this.redValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.redValueColorRtssMenuItem.Text = "Red";
+            // 
+            // orangeValueColorRtssMenuItem
+            // 
+            this.orangeValueColorRtssMenuItem.Name = "orangeValueColorRtssMenuItem";
+            this.orangeValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.orangeValueColorRtssMenuItem.Text = "Orange";
+            // 
+            // tealValueColorRtssMenuItem
+            // 
+            this.tealValueColorRtssMenuItem.Name = "tealValueColorRtssMenuItem";
+            this.tealValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.tealValueColorRtssMenuItem.Text = "Teal";
+            // 
+            // greenValueColorRtssMenuItem
+            // 
+            this.greenValueColorRtssMenuItem.Name = "greenValueColorRtssMenuItem";
+            this.greenValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.greenValueColorRtssMenuItem.Text = "Green";
+            // 
+            // brownValueColorRtssMenuItem
+            // 
+            this.brownValueColorRtssMenuItem.Name = "brownValueColorRtssMenuItem";
+            this.brownValueColorRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.brownValueColorRtssMenuItem.Text = "Brown";
+            // 
+            // textSizeRtssMenuItem
+            // 
+            this.textSizeRtssMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.s100TextSizeRtssMenuItem,
+            this.s75TextSizeRtssMenuItem,
+            this.s50TextSizeRtssMenuItem,
+            this.s25TextSizeRtssMenuItem});
+            this.textSizeRtssMenuItem.Name = "textSizeRtssMenuItem";
+            this.textSizeRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.textSizeRtssMenuItem.Text = "Text Size";
+            // 
+            // s100TextSizeRtssMenuItem
+            // 
+            this.s100TextSizeRtssMenuItem.Name = "s100TextSizeRtssMenuItem";
+            this.s100TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.s100TextSizeRtssMenuItem.Text = "100%";
+            // 
+            // s75TextSizeRtssMenuItem
+            // 
+            this.s75TextSizeRtssMenuItem.Name = "s75TextSizeRtssMenuItem";
+            this.s75TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.s75TextSizeRtssMenuItem.Text = "75%";
+            // 
+            // s50TextSizeRtssMenuItem
+            // 
+            this.s50TextSizeRtssMenuItem.Name = "s50TextSizeRtssMenuItem";
+            this.s50TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.s50TextSizeRtssMenuItem.Text = "50%";
+            // 
+            // s25TextSizeRtssMenuItem
+            // 
+            this.s25TextSizeRtssMenuItem.Name = "s25TextSizeRtssMenuItem";
+            this.s25TextSizeRtssMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.s25TextSizeRtssMenuItem.Text = "25%";
+            // 
             // helpMenuItem
             // 
             this.helpMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -820,6 +1073,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView.Columns.Add(this.value);
             this.treeView.Columns.Add(this.min);
             this.treeView.Columns.Add(this.max);
+            this.treeView.Columns.Add(this.osd);
             this.treeView.DefaultToolTipProvider = null;
             this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView.DragDropMarkColor = System.Drawing.Color.Black;
@@ -835,6 +1089,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView.NodeControls.Add(this.nodeTextBoxValue);
             this.treeView.NodeControls.Add(this.nodeTextBoxMin);
             this.treeView.NodeControls.Add(this.nodeTextBoxMax);
+            this.treeView.NodeControls.Add(this.nodeCheckBoxOsd);
             this.treeView.SelectedNode = null;
             this.treeView.Size = new System.Drawing.Size(386, 354);
             this.treeView.TabIndex = 0;
@@ -846,11 +1101,25 @@ namespace LibreHardwareMonitor.UI
             this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseMove);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseUp);
             // 
-            // psuMenuItem
+            // osd
             // 
-            this.psuMenuItem.Name = "psuMenuItem";
-            this.psuMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.psuMenuItem.Text = "Power supplies";
+            this.osd.Header = "OSD";
+            this.osd.SortOrder = System.Windows.Forms.SortOrder.None;
+            this.osd.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.osd.TooltipText = null;
+            // 
+            // nodeCheckBoxOsd
+            // 
+            this.nodeCheckBoxOsd.DataPropertyName = "Osd";
+            this.nodeCheckBoxOsd.EditEnabled = true;
+            this.nodeCheckBoxOsd.LeftMargin = 0;
+            this.nodeCheckBoxOsd.ParentColumn = this.osd;
+            // 
+            // resetCustomColorsRtssMenuItem
+            // 
+            this.resetCustomColorsRtssMenuItem.Name = "resetCustomColorsRtssMenuItem";
+            this.resetCustomColorsRtssMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.resetCustomColorsRtssMenuItem.Text = "Reset Custom Colors";
             // 
             // MainForm
             // 
@@ -969,6 +1238,39 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem rtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem enableRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fpsRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem whiteSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem blackSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yellowSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem blueSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem orangeSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tealSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem greenSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem brownSensorColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem valueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem whiteValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem blackValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yellowValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem blueValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem orangeValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tealValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem greenValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem brownValueColorRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem textSizeRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem s100TextSizeRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem s75TextSizeRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem s50TextSizeRtssMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem s25TextSizeRtssMenuItem;
+        private Aga.Controls.Tree.TreeColumn osd;
+        private System.Windows.Forms.ToolStripMenuItem osdMenuItem;
+        private Aga.Controls.Tree.NodeControls.NodeCheckBox nodeCheckBoxOsd;
+        private System.Windows.Forms.ToolStripMenuItem resetCustomColorsRtssMenuItem;
     }
 }
 

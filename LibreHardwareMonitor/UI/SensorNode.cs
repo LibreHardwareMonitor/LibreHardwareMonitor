@@ -19,6 +19,7 @@ namespace LibreHardwareMonitor.UI
         private readonly UnitManager _unitManager;
         private Color? _penColor;
         private bool _plot;
+        private bool _osd;
 
         public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
         {
@@ -81,6 +82,7 @@ namespace LibreHardwareMonitor.UI
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
             base.IsVisible = !hidden;
             Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
+            Osd = settings.GetValue(new Identifier(sensor.Identifier, "osd").ToString(), false);
             string id = new Identifier(sensor.Identifier, "penColor").ToString();
 
             if (settings.Contains(id))
@@ -88,6 +90,19 @@ namespace LibreHardwareMonitor.UI
         }
 
         public event EventHandler PlotSelectionChanged;
+
+        public bool Osd
+        {
+            get { return _osd; }
+            set
+            {
+                _osd = value;
+                _settings.SetValue(new Identifier(Sensor.Identifier, "osd").ToString(), value);
+                OsdSelectionChanged?.Invoke(this, null);
+            }
+        }
+
+        public event EventHandler OsdSelectionChanged;
 
         public string Format { get; set; } = "";
 

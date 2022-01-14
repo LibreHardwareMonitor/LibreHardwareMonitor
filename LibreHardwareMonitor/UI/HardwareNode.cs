@@ -21,6 +21,7 @@ namespace LibreHardwareMonitor.UI
         private bool _expanded;
 
         public event EventHandler PlotSelectionChanged;
+        public event EventHandler OsdSelectionChanged;
 
         public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager)
         {
@@ -117,12 +118,14 @@ namespace LibreHardwareMonitor.UI
                     if (sensorNode != null)
                     {
                         sensorNode.PlotSelectionChanged -= SensorPlotSelectionChanged;
+                        sensorNode.OsdSelectionChanged -= SensorOsdSelectionChanged;
                         typeNode.Nodes.Remove(sensorNode);
                         UpdateNode(typeNode);
                     }
                 }
             }
             PlotSelectionChanged?.Invoke(this, null);
+            OsdSelectionChanged?.Invoke(this, null);
         }
 
         private void InsertSorted(Node node, ISensor sensor)
@@ -133,12 +136,18 @@ namespace LibreHardwareMonitor.UI
 
             SensorNode sensorNode = new SensorNode(sensor, _settings, _unitManager);
             sensorNode.PlotSelectionChanged += SensorPlotSelectionChanged;
+            sensorNode.OsdSelectionChanged += SensorOsdSelectionChanged;
             node.Nodes.Insert(i, sensorNode);
         }
 
         private void SensorPlotSelectionChanged(object sender, EventArgs e)
         {
             PlotSelectionChanged?.Invoke(this, null);
+        }
+
+        private void SensorOsdSelectionChanged(object sender, EventArgs e)
+        {
+            OsdSelectionChanged?.Invoke(this, null);
         }
 
         private void SensorAdded(ISensor sensor)
@@ -153,6 +162,7 @@ namespace LibreHardwareMonitor.UI
             }
 
             PlotSelectionChanged?.Invoke(this, null);
+            OsdSelectionChanged?.Invoke(this, null);
         }
     }
 }
