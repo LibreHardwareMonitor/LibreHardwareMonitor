@@ -382,19 +382,11 @@ namespace LibreHardwareMonitor.UI
         {
             _computer.Accept(_updateVisitor);
 
-            treeView.Invalidate();
-            _plotPanel.InvalidatePlot();
-            _systemTray.Redraw();
-            _gadget?.Redraw();
-            _wmiProvider?.Update();
-
             if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
                 _logger.Log();
 
             if (_delayCount < 4)
                 _delayCount++;
-
-            RestoreCollapsedNodeState(treeView);
         }
 
         private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
@@ -656,8 +648,16 @@ namespace LibreHardwareMonitor.UI
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            treeView.Invalidate();
+            _plotPanel.InvalidatePlot();
+            _systemTray.Redraw();
+            _gadget?.Redraw();
+            _wmiProvider?.Update();
+
             if (!backgroundUpdater.IsBusy)
-                backgroundUpdater.RunWorkerAsync();            
+                backgroundUpdater.RunWorkerAsync();
+
+            RestoreCollapsedNodeState(treeView);
         }
 
         private void SaveConfiguration()
