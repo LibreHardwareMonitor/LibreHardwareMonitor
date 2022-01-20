@@ -283,7 +283,7 @@ namespace LibreHardwareMonitor.Hardware
             float[] table = ReadDramToArray();
 
             // Fix for Zen+ empty values on first call.
-            if (table[0] == 0)
+            if (table.Length == 0 || table[0] == 0)
             {
                 Thread.Sleep(10);
                 TransferTableToDram();

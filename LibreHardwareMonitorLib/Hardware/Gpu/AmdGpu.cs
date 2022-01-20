@@ -15,7 +15,6 @@ namespace LibreHardwareMonitor.Hardware.Gpu
     internal sealed class AmdGpu : Hardware
     {
         private readonly int _adapterIndex;
-
         private readonly IntPtr _context = IntPtr.Zero;
         private readonly Sensor _controlSensor;
         private readonly Sensor _coreClock;
@@ -50,6 +49,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly Sensor _temperatureSoC;
         private readonly Sensor _temperatureVddc;
         private readonly string _d3dDeviceId;
+
+        private bool? _newQueryPmLogDataGetExists;
 
         public AmdGpu(AtiAdlxx.ADLAdapterInfo adapterInfo, ISettings settings)
             : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
@@ -131,7 +132,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int enabled = 0;
             int version = 0;
 
-            if (AtiAdlxx.ADL_Method_Exists("ADL2_Adapter_FrameMetrics_Caps") && AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
+            if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) && AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
             {
                 if (supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
@@ -147,12 +148,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _currentOverdriveApiLevel = version;
             }
             else
-                _currentOverdriveApiLevel = -1;
-
-            if (_currentOverdriveApiLevel >= 5)
             {
-                if (AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterIndex, ref _context) != AtiAdlxx.ADLStatus.ADL_OK)
-                    _context = IntPtr.Zero;
+                _currentOverdriveApiLevel = -1;
+            }
+
+            if (_currentOverdriveApiLevel >= 5 && AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Main_Control_Create)) && AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterIndex, ref _context) != AtiAdlxx.ADLStatus.ADL_OK)
+            {
+                _context = IntPtr.Zero;
             }
 
             AtiAdlxx.ADLFanSpeedInfo fanSpeedInfo = new();
@@ -281,7 +283,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             {
                 AtiAdlxx.ADLPMLogDataOutput logDataOutput = new();
 
-                if (AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterIndex, ref logDataOutput) == AtiAdlxx.ADLStatus.ADL_OK)
+                _newQueryPmLogDataGetExists ??= AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_New_QueryPMLogData_Get));
+
+                if (_newQueryPmLogDataGetExists == true && AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterIndex, ref logDataOutput) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_EDGE, _temperatureCore, reset: false);
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_MEM, _temperatureMemory, reset: false);
