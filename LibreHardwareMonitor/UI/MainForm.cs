@@ -163,6 +163,7 @@ namespace LibreHardwareMonitor.UI
             _computer.HardwareRemoved += HardwareRemoved;
             _computer.Open();
 
+            backgroundUpdater.DoWork += BackgroundUpdater_DoWork;
             timer.Enabled = true;
 
             UserOption showHiddenSensors = new UserOption("hiddenMenuItem", false, hiddenMenuItem, _settings);
@@ -375,6 +376,17 @@ namespace LibreHardwareMonitor.UI
             };
 
             Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+        }
+
+        private void BackgroundUpdater_DoWork(object sender, DoWorkEventArgs e)
+        {
+            _computer.Accept(_updateVisitor);
+
+            if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
+                _logger.Log();
+
+            if (_delayCount < 4)
+                _delayCount++;
         }
 
         private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
@@ -636,19 +648,14 @@ namespace LibreHardwareMonitor.UI
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            _computer.Accept(_updateVisitor);
-
             treeView.Invalidate();
             _plotPanel.InvalidatePlot();
             _systemTray.Redraw();
             _gadget?.Redraw();
             _wmiProvider?.Update();
 
-            if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
-                _logger.Log();
-
-            if (_delayCount < 4)
-                _delayCount++;
+            if (!backgroundUpdater.IsBusy)
+                backgroundUpdater.RunWorkerAsync();
 
             RestoreCollapsedNodeState(treeView);
         }
@@ -742,6 +749,8 @@ namespace LibreHardwareMonitor.UI
             if (_runWebServer.Value)
                 Server.Quit();
             _systemTray.Dispose();
+            timer.Dispose();
+            backgroundUpdater.Dispose();
 
             Application.Exit();
         }
