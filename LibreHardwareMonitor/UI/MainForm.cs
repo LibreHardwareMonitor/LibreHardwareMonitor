@@ -387,6 +387,8 @@ namespace LibreHardwareMonitor.UI
 
             if (_delayCount < 4)
                 _delayCount++;
+
+            _plotPanel.InvalidatePlot();
         }
 
         private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
@@ -649,7 +651,6 @@ namespace LibreHardwareMonitor.UI
         private void Timer_Tick(object sender, EventArgs e)
         {
             treeView.Invalidate();
-            _plotPanel.InvalidatePlot();
             _systemTray.Redraw();
             _gadget?.Redraw();
             _wmiProvider?.Update();
