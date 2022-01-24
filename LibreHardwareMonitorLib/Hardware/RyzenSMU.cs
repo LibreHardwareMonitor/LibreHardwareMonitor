@@ -24,7 +24,7 @@ namespace LibreHardwareMonitor.Hardware
         private readonly Dictionary<uint, Dictionary<uint, SmuSensorType>> _supportedPmTableVersions = new()
         {
             {
-                // Zen Raven Ridge APU.
+                // Zen Raven Ridge APU
                 0x001E0004, new Dictionary<uint, SmuSensorType>
                 {
                     { 7, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
@@ -54,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware
                 }
             },
             {
-                // Zen 2.
+                // Zen 2
                 0x00240903, new Dictionary<uint, SmuSensorType>
                 {
                     { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
@@ -71,6 +71,25 @@ namespace LibreHardwareMonitor.Hardware
                     //{ 192, new SmuSensorType { Name = "Core #5", Type = SensorType.Clock, Scale = 1000 } },
                     //{ 193, new SmuSensorType { Name = "Core #6", Type = SensorType.Clock, Scale = 1000 } },
                 }
+            },
+            {
+                // Zen 3 
+                0x00380805, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+			        //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
+			        //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
+			        //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
+			        //{ 190, new SmuSensorType { Name = "Core #3", Type = SensorType.Clock, Scale = 1000 } },
+			        //{ 191, new SmuSensorType { Name = "Core #4", Type = SensorType.Clock, Scale = 1000 } },
+			        //{ 192, new SmuSensorType { Name = "Core #5", Type = SensorType.Clock, Scale = 1000 } },
+			        //{ 193, new SmuSensorType { Name = "Core #6", Type = SensorType.Clock, Scale = 1000 } },
+		        }
             }
         };
 
