@@ -24,7 +24,7 @@ namespace LibreHardwareMonitor.Hardware
         private readonly Dictionary<uint, Dictionary<uint, SmuSensorType>> _supportedPmTableVersions = new()
         {
             {
-                // Zen Raven Ridge APU
+                // Zen Raven Ridge APU.
                 0x001E0004, new Dictionary<uint, SmuSensorType>
                 {
                     { 7, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
@@ -54,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware
                 }
             },
             {
-                // Zen 2
+                // Zen 2.
                 0x00240903, new Dictionary<uint, SmuSensorType>
                 {
                     { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
@@ -73,7 +73,7 @@ namespace LibreHardwareMonitor.Hardware
                 }
             },
             {
-                // Zen 3 
+                // Zen 3.
                 0x00380805, new Dictionary<uint, SmuSensorType>
                 {
                     { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
