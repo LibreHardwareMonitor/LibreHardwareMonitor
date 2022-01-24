@@ -76,8 +76,9 @@ namespace LibreHardwareMonitor.Hardware
                 // Zen 3.
                 0x00380805, new Dictionary<uint, SmuSensorType>
                 {
-                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
-                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    // TDC and EDC don't match the HWiNFO values
+                    //{ 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    //{ 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
                     { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
                     { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                     { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
