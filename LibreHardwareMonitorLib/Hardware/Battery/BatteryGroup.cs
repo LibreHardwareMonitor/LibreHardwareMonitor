@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+using LibreHardwareMonitor.Interop;
+
 namespace LibreHardwareMonitor.Hardware.Battery
 {
     internal class BatteryGroup : IGroup
     {
         private List<Hardware> _hardware = new List<Hardware>();
+
         public IReadOnlyList<IHardware> Hardware => _hardware;
 
         private static IntPtr Offset(IntPtr pointer, long offset) => new IntPtr(pointer.ToInt64() + offset);
@@ -157,6 +157,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
                 battery.Close();
             }
         }
+
         public string GetReport() => null;
     }
 }

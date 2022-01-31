@@ -1,7 +1,7 @@
 ﻿using System;
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Battery
 {
@@ -15,7 +15,6 @@ namespace LibreHardwareMonitor.Hardware.Battery
         private readonly Sensor _remainingCapacity;
         private readonly Sensor _chargeDischargeRate;
         private readonly Sensor _degradationPercentage;
-
         private readonly SafeFileHandle _batteryHandle;
         private readonly uint _batteryTag;
 
