@@ -79,19 +79,27 @@ namespace LibreHardwareMonitor.Hardware.Battery
                 {
                     _chargeDischargeRate.Name = "Charge Rate";
                     _chargeDischargeRate.Value = bs.Rate / 1000f;
+
+                    _current.Name = "Charge Current";
+                    _current.Value = _chargeDischargeRate.Value / _voltage.Value;
                 }
                 else if (bs.Rate < 0)
                 {
                     _chargeDischargeRate.Name = "Discharge Rate";
                     _chargeDischargeRate.Value = Math.Abs(bs.Rate) / 1000f;
+
+                    _current.Name = "Discharge Current";
+                    _current.Value = _chargeDischargeRate.Value / _voltage.Value;
                 }
                 else
                 {
                     _chargeDischargeRate.Name = "Charge/Discharge Rate";
                     _chargeDischargeRate.Value = 0f;
+
+                    _current.Name = "Charge/Discharge Current";
+                    _current.Value = 0f;
                 }
 
-                _current.Value = _chargeDischargeRate.Value / _voltage.Value;
                 _degradationPercentage.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
             }
         }
