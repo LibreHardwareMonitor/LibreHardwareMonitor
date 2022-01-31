@@ -8,9 +8,18 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Battery
 {
+    internal struct BatteryReportInfo
+    {
+        public string Name { get; set; }
+        public uint Tag { get; set; }
+        public SafeFileHandle BatteryHandle { get; set; }
+        public Kernel32.BATTERY_INFORMATION MoreInformation { get; set; }
+    }
+
     internal class BatteryGroup : IGroup
     {
-        private List<Hardware> _hardware = new List<Hardware>();
+        private List<Hardware> _hardware = new();
+        private List<BatteryReportInfo> _batteriesToReport = new();
 
         public IReadOnlyList<IHardware> Hardware => _hardware;
 
@@ -129,6 +138,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
                                                                      IntPtr.Zero))
                                                 {
                                                     string name = Marshal.PtrToStringUni(ptrDevName);
+                                                    _batteriesToReport.Add(new BatteryReportInfo { Name = name, Tag = bqi.BatteryTag, BatteryHandle = battery, MoreInformation = bi });
                                                     _hardware.Add(new Battery(name, battery, bi, bqi.BatteryTag, settings));
                                                 }
                                                 Marshal.FreeCoTaskMem(ptrDevName);
@@ -158,6 +168,64 @@ namespace LibreHardwareMonitor.Hardware.Battery
             }
         }
 
-        public string GetReport() => null;
+        public string GetReport()
+        {
+            StringBuilder reportBuilder = new();
+
+            uint count = 1;
+            foreach (BatteryReportInfo bat in _batteriesToReport)
+            {
+                reportBuilder
+                    .AppendLine($"Battery #{count}:")
+                    .AppendLine($" Name: {bat.Name}")
+                    .AppendLine($" Degradation Level: {100f - (bat.MoreInformation.FullChargedCapacity * 100f / bat.MoreInformation.DesignedCapacity):F2} %")
+                    .AppendLine($" Designed Capacity: {bat.MoreInformation.DesignedCapacity} mWh")
+                    .AppendLine($" Full Charged Capacity: {bat.MoreInformation.FullChargedCapacity} mWh");
+
+                Kernel32.BATTERY_WAIT_STATUS bws = default;
+                bws.BatteryTag = bat.Tag;
+                Kernel32.BATTERY_STATUS bs = default;
+                if (Kernel32.DeviceIoControl(bat.BatteryHandle,
+                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_STATUS,
+                                     ref bws,
+                                     Marshal.SizeOf(bws),
+                                     ref bs,
+                                     Marshal.SizeOf(bs),
+                                     out _,
+                                     IntPtr.Zero))
+                {
+                    reportBuilder
+                        .AppendLine($" Remaining Capacity: {bs.Capacity} mWh")
+                        .AppendLine($" Charge Level: {bs.Capacity * 100f / bat.MoreInformation.FullChargedCapacity:F2} %")
+                        .AppendLine($" Voltage: {Convert.ToSingle(bs.Voltage) / 1000f:F3} V");
+
+                    if (bs.Rate > 0)
+                    {
+                        reportBuilder
+                            .AppendLine($" Charge Rate: {bs.Rate / 1000f:F1} W")
+                            .AppendLine($" Charge Current: {(float)bs.Rate / (float)bs.Voltage:F3} A");
+                    }
+                    else if (bs.Rate < 0)
+                    {
+                        reportBuilder
+                            .AppendLine($" Discharge Rate: {Math.Abs(bs.Rate) / 1000f:F1} W")
+                            .AppendLine($" Discharge Current: {(float)Math.Abs(bs.Rate) / (float)bs.Voltage:F3} A");
+                    }
+                    else
+                    {
+                        reportBuilder
+                            .AppendLine($" Charge/Discharge Rate: {0:F1} W")
+                            .AppendLine($" Charge/Discharge Current: {0:F3} A");
+                    }
+                }
+
+                reportBuilder
+                    .AppendLine();
+
+                count++;
+            }
+
+            return reportBuilder.ToString();
+        }
     }
 }
