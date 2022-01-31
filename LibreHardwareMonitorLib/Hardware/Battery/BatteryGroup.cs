@@ -59,19 +59,24 @@ namespace LibreHardwareMonitor.Hardware.Battery
             IntPtr hdev = SetupApi.SetupDiGetClassDevs(ref SetupApi.GUID_DEVICE_BATTERY, IntPtr.Zero, IntPtr.Zero, SetupApi.DIGCF_PRESENT | SetupApi.DIGCF_DEVICEINTERFACE);
             if (SetupApi.INVALID_HANDLE_VALUE != hdev)
             {
-                // Limit battery search to 100 batteries
-                for (uint idev = 0; idev < 100; idev++)
+                for (uint idev = 0; ; idev++)
                 {
                     SetupApi.SP_DEVICE_INTERFACE_DATA did = default;
                     did.cbSize = (uint)Marshal.SizeOf(typeof(SetupApi.SP_DEVICE_INTERFACE_DATA));
 
-                    if (SetupApi.SetupDiEnumDeviceInterfaces(hdev,
+                    if (!SetupApi.SetupDiEnumDeviceInterfaces(hdev,
                                                              IntPtr.Zero,
                                                              ref SetupApi.GUID_DEVICE_BATTERY,
                                                              idev,
                                                              ref did))
                     {
-                        
+                        if (Marshal.GetLastWin32Error() == SetupApi.ERROR_NO_MORE_ITEMS)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
                         SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                  did,
                                                                  IntPtr.Zero,
@@ -150,10 +155,6 @@ namespace LibreHardwareMonitor.Hardware.Battery
 
                             Kernel32.LocalFree(pdidd);
                         }
-                    }
-                    else if (Marshal.GetLastWin32Error() == SetupApi.ERROR_NO_MORE_ITEMS)
-                    {
-                        break;
                     }
                 }
                 SetupApi.SetupDiDestroyDeviceInfoList(hdev);
