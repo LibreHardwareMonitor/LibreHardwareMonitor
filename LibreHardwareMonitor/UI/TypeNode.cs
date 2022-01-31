@@ -32,7 +32,7 @@ namespace LibreHardwareMonitor.UI
                     Text = "Currents";
                     break;
                 case SensorType.Energy:
-                    Image = Utilities.EmbeddedResources.GetImage("voltage.png");
+                    Image = Utilities.EmbeddedResources.GetImage("battery.png");
                     Text = "Capacities";
                     break;
                 case SensorType.Clock:
