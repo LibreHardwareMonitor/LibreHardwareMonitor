@@ -8,18 +8,9 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Battery
 {
-    internal struct BatteryReportInfo
-    {
-        public string Name { get; set; }
-        public uint Tag { get; set; }
-        public SafeFileHandle BatteryHandle { get; set; }
-        public Kernel32.BATTERY_INFORMATION MoreInformation { get; set; }
-    }
-
     internal class BatteryGroup : IGroup
     {
-        private List<Hardware> _hardware = new();
-        private List<BatteryReportInfo> _batteriesToReport = new();
+        private List<Battery> _hardware = new();
 
         public IReadOnlyList<IHardware> Hardware => _hardware;
 
@@ -140,9 +131,22 @@ namespace LibreHardwareMonitor.Hardware.Battery
                                                                      out _,
                                                                      IntPtr.Zero))
                                                 {
-                                                    string name = Marshal.PtrToStringUni(ptrDevName);
-                                                    _batteriesToReport.Add(new BatteryReportInfo { Name = name, Tag = bqi.BatteryTag, BatteryHandle = battery, MoreInformation = bi });
-                                                    _hardware.Add(new Battery(name, battery, bi, bqi.BatteryTag, settings));
+                                                    IntPtr ptrManName = Marshal.AllocCoTaskMem(MAX_LOADSTRING);
+                                                    bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
+                                                    if (Kernel32.DeviceIoControl(battery,
+                                                                         Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                                                         ref bqi,
+                                                                         Marshal.SizeOf(bqi),
+                                                                         ptrManName,
+                                                                         MAX_LOADSTRING,
+                                                                         out _,
+                                                                         IntPtr.Zero))
+                                                    {
+                                                        string name = Marshal.PtrToStringUni(ptrDevName);
+                                                        string manufacturer = Marshal.PtrToStringUni(ptrManName);
+                                                        _hardware.Add(new Battery(name, manufacturer, battery, bi, bqi.BatteryTag, settings));
+                                                    }
+                                                    Marshal.FreeCoTaskMem(ptrManName);
                                                 }
                                                 Marshal.FreeCoTaskMem(ptrDevName);
                                             }
@@ -172,50 +176,60 @@ namespace LibreHardwareMonitor.Hardware.Battery
             StringBuilder reportBuilder = new();
 
             uint count = 1;
-            foreach (BatteryReportInfo bat in _batteriesToReport)
+            foreach (Battery bat in _hardware)
             {
+                string chemistry = "Unknown";
+                switch (bat.Chemistry)
+                {
+                    case BatteryChemistry.LeadAcid:
+                    chemistry = "Lead Acid";
+                    break;
+                    case BatteryChemistry.NickelCadmium:
+                    chemistry = "Nickel-Cadmium";
+                    break;
+                    case BatteryChemistry.NickelMetalHydride:
+                    chemistry = "Nickel-Metal Hydride";
+                    break;
+                    case BatteryChemistry.LithiumIon:
+                    chemistry = "Lithium Ion";
+                    break;
+                    case BatteryChemistry.NickelZinc:
+                    chemistry = "Nickel-Zinc";
+                    break;
+                    case BatteryChemistry.AlkalineManganese:
+                    chemistry = "Rechargeable Alkaline-Manganese";
+                    break;
+                }
+
                 reportBuilder
                     .AppendLine($"Battery #{count}:")
                     .AppendLine($" Name: {bat.Name}")
-                    .AppendLine($" Degradation Level: {100f - (bat.MoreInformation.FullChargedCapacity * 100f / bat.MoreInformation.DesignedCapacity):F2} %")
-                    .AppendLine($" Designed Capacity: {bat.MoreInformation.DesignedCapacity} mWh")
-                    .AppendLine($" Full Charged Capacity: {bat.MoreInformation.FullChargedCapacity} mWh");
+                    .AppendLine($" Manufacturer: {bat.Manufacturer}")
+                    .AppendLine($" Chemistry: {chemistry}")
+                    .AppendLine($" Degradation Level: {bat.DegradationLevel:F2} %")
+                    .AppendLine($" Designed Capacity: {bat.DesignedCapacity} mWh")
+                    .AppendLine($" Full Charged Capacity: {bat.FullChargedCapacity} mWh")
+                    .AppendLine($" Remaining Capacity: {bat.RemainingCapacity} mWh")
+                    .AppendLine($" Charge Level: {bat.RemainingCapacity * 100f / bat.FullChargedCapacity:F2} %")
+                    .AppendLine($" Voltage: {bat.Voltage:F3} V");
 
-                Kernel32.BATTERY_WAIT_STATUS bws = default;
-                bws.BatteryTag = bat.Tag;
-                Kernel32.BATTERY_STATUS bs = default;
-                if (Kernel32.DeviceIoControl(bat.BatteryHandle,
-                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_STATUS,
-                                     ref bws,
-                                     Marshal.SizeOf(bws),
-                                     ref bs,
-                                     Marshal.SizeOf(bs),
-                                     out _,
-                                     IntPtr.Zero))
+                if (bat.ChargeDischargeRate > 0)
                 {
                     reportBuilder
-                        .AppendLine($" Remaining Capacity: {bs.Capacity} mWh")
-                        .AppendLine($" Charge Level: {bs.Capacity * 100f / bat.MoreInformation.FullChargedCapacity:F2} %")
-                        .AppendLine($" Voltage: {Convert.ToSingle(bs.Voltage) / 1000f:F3} V");
-
-                    if (bs.Rate > 0)
-                    {
-                        reportBuilder
-                            .AppendLine($" Charge Rate: {bs.Rate / 1000f:F1} W")
-                            .AppendLine($" Charge Current: {(float)bs.Rate / (float)bs.Voltage:F3} A");
-                    }
-                    else if (bs.Rate < 0)
-                    {
-                        reportBuilder
-                            .AppendLine($" Discharge Rate: {Math.Abs(bs.Rate) / 1000f:F1} W")
-                            .AppendLine($" Discharge Current: {(float)Math.Abs(bs.Rate) / (float)bs.Voltage:F3} A");
-                    }
-                    else
-                    {
-                        reportBuilder
-                            .AppendLine($" Charge/Discharge Rate: {0:F1} W")
-                            .AppendLine($" Charge/Discharge Current: {0:F3} A");
-                    }
+                        .AppendLine($" Charge Rate: {bat.ChargeDischargeRate:F1} W")
+                        .AppendLine($" Charge Current: {bat.ChargeDischargeRate / bat.Voltage:F3} A");
+                }
+                else if (bat.ChargeDischargeRate < 0)
+                {
+                    reportBuilder
+                        .AppendLine($" Discharge Rate: {Math.Abs(bat.ChargeDischargeRate):F1} W")
+                        .AppendLine($" Discharge Current: {Math.Abs(bat.ChargeDischargeRate) / bat.Voltage:F3} A");
+                }
+                else
+                {
+                    reportBuilder
+                        .AppendLine($" Charge/Discharge Rate: {0:F1} W")
+                        .AppendLine($" Charge/Discharge Current: {0:F3} A");
                 }
 
                 reportBuilder

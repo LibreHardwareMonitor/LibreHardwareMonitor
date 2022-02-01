@@ -399,7 +399,7 @@ namespace LibreHardwareMonitor.Interop
             public byte[] Reserved;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] Chemistry;
+            public char[] Chemistry;
 
             public uint DesignedCapacity;
             public uint FullChargedCapacity;
