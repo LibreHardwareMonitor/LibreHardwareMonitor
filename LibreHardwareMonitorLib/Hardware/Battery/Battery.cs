@@ -21,7 +21,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
     {
         private readonly Sensor _chargeLevel;
         private readonly Sensor _voltage;
-        private readonly Sensor _chargeDischargeeCurrent;
+        private readonly Sensor _chargeDischargeCurrent;
         private readonly Sensor _designedCapacity;
         private readonly Sensor _fullChargedCapacity;
         private readonly Sensor _remainingCapacity;
@@ -79,8 +79,8 @@ namespace LibreHardwareMonitor.Hardware.Battery
             _voltage = new Sensor("Voltage", 1, SensorType.Voltage, this, settings);
             ActivateSensor(_voltage);
 
-            _chargeDischargeeCurrent = new Sensor("Current", 2, SensorType.Current, this, settings);
-            ActivateSensor(_chargeDischargeeCurrent);
+            _chargeDischargeCurrent = new Sensor("Current", 2, SensorType.Current, this, settings);
+            ActivateSensor(_chargeDischargeCurrent);
 
             _designedCapacity = new Sensor("Designed Capacity", 3, SensorType.Energy, this, settings);
             ActivateSensor(_designedCapacity);
@@ -144,8 +144,8 @@ namespace LibreHardwareMonitor.Hardware.Battery
                     _chargeDischargeRate.Name = "Charge Rate";
                     _chargeDischargeRate.Value = bs.Rate / 1000f;
 
-                    _chargeDischargeeCurrent.Name = "Charge Current";
-                    _chargeDischargeeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
+                    _chargeDischargeCurrent.Name = "Charge Current";
+                    _chargeDischargeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
                     ChargeDischargeCurrent = (_chargeDischargeRate.Value / _voltage.Value).GetValueOrDefault();
                 }
                 else if (bs.Rate < 0)
@@ -153,8 +153,8 @@ namespace LibreHardwareMonitor.Hardware.Battery
                     _chargeDischargeRate.Name = "Discharge Rate";
                     _chargeDischargeRate.Value = Math.Abs(bs.Rate) / 1000f;
 
-                    _chargeDischargeeCurrent.Name = "Discharge Current";
-                    _chargeDischargeeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
+                    _chargeDischargeCurrent.Name = "Discharge Current";
+                    _chargeDischargeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
                     ChargeDischargeCurrent = (_chargeDischargeRate.Value / _voltage.Value).GetValueOrDefault();
                 }
                 else
@@ -163,8 +163,8 @@ namespace LibreHardwareMonitor.Hardware.Battery
                     _chargeDischargeRate.Value = 0f;
                     ChargeDischargeRate = 0f;
 
-                    _chargeDischargeeCurrent.Name = "Charge/Discharge Current";
-                    _chargeDischargeeCurrent.Value = 0f;
+                    _chargeDischargeCurrent.Name = "Charge/Discharge Current";
+                    _chargeDischargeCurrent.Value = 0f;
                     ChargeDischargeCurrent = 0f;
                 }
 
