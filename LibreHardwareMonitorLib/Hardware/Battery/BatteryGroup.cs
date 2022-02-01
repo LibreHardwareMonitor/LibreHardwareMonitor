@@ -86,9 +86,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
                         if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
                         {
                             IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                            SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA didd = SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA.Default;
-
-                            Marshal.StructureToPtr(didd, pdidd, true);
+                            Marshal.StructureToPtr(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA.Default, pdidd, true);
 
                             if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                          did,
