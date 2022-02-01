@@ -22,33 +22,33 @@ namespace LibreHardwareMonitor.Interop
             public IntPtr Reserved;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        internal struct SP_DEVICE_INTERFACE_DETAIL_DATA
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal struct SP_DEVICE_INTERFACE_DETAIL_DATA_W
         {
             public uint cbSize;
 
             public char DevicePath;
 
-            public static readonly SP_DEVICE_INTERFACE_DETAIL_DATA Default = new SP_DEVICE_INTERFACE_DETAIL_DATA { cbSize = IntPtr.Size == 4 ? 4U + (uint)Marshal.SystemDefaultCharSize : 8U };
+            public static readonly SP_DEVICE_INTERFACE_DETAIL_DATA_W Default = new SP_DEVICE_INTERFACE_DETAIL_DATA_W { cbSize = IntPtr.Size == 4 ? 4U + (uint)Marshal.SystemDefaultCharSize : 8U };
         }
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         internal static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, IntPtr Enumerator, IntPtr hwndParent, uint Flags);
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SetupDiEnumDeviceInterfaces(IntPtr DeviceInfoSet, IntPtr DeviceInfoData, ref Guid InterfaceClassGuid, uint MemberIndex, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
 
-        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool SetupDiGetDeviceInterfaceDetail(IntPtr DeviceInfoSet,
+        internal static extern bool SetupDiGetDeviceInterfaceDetailW(IntPtr DeviceInfoSet,
                                                                     in SP_DEVICE_INTERFACE_DATA DeviceInterfaceData,
                                                                     [Out, Optional] IntPtr DeviceInterfaceDetailData,
                                                                     uint DeviceInterfaceDetailDataSize,
                                                                     out uint RequiredSize,
                                                                     IntPtr DeviceInfoData = default);
 
-        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
     }

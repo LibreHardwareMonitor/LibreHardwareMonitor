@@ -77,7 +77,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
                     }
                     else
                     {
-                        SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
+                        SetupApi.SetupDiGetDeviceInterfaceDetailW(hdev,
                                                                  did,
                                                                  IntPtr.Zero,
                                                                  0,
@@ -86,16 +86,16 @@ namespace LibreHardwareMonitor.Hardware.Battery
                         if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
                         {
                             IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                            Marshal.StructureToPtr(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA.Default, pdidd, true);
+                            Marshal.StructureToPtr(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W.Default, pdidd, true);
 
-                            if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
+                            if (SetupApi.SetupDiGetDeviceInterfaceDetailW(hdev,
                                                                          did,
                                                                          pdidd,
                                                                          cbRequired,
                                                                          out cbRequired,
                                                                          IntPtr.Zero))
                             {
-                                string devicePath = GetString(Offset(pdidd, 4), CharSet.Auto, cbRequired - 4);
+                                string devicePath = GetString(Offset(pdidd, 4), CharSet.Unicode, cbRequired - 4);
 
                                 SafeFileHandle battery = Kernel32.CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
                                 if (!battery.IsInvalid)
