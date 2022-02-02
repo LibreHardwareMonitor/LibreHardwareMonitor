@@ -143,6 +143,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.CROSSHAIR_III_FORMULA;
                 case var _ when name.Equals("ROG CROSSHAIR VIII HERO", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_CROSSHAIR_VIII_HERO;
+                case var _ when name.Equals("ROG CROSSHAIR VIII HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
+                    return Model.ROG_CROSSHAIR_VIII_HERO_WIFI;
                 case var _ when name.Equals("ROG CROSSHAIR VIII DARK HERO", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_CROSSHAIR_VIII_DARK_HERO;
                 case var _ when name.Equals("ROG CROSSHAIR VIII FORMULA", StringComparison.OrdinalIgnoreCase):

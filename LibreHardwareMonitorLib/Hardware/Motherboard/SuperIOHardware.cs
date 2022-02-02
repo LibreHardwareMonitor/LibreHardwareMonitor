@@ -2483,6 +2483,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             break;
                         }
                         case Model.ROG_CROSSHAIR_VIII_HERO: // NCT6798D
+                        case Model.ROG_CROSSHAIR_VIII_HERO_WIFI: // NCT6798D
                         case Model.ROG_CROSSHAIR_VIII_DARK_HERO: // NCT6798D
                         case Model.ROG_CROSSHAIR_VIII_FORMULA: // NCT6798D
                         {
