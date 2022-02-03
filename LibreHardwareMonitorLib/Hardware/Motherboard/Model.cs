@@ -38,6 +38,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         // ASUS
         CROSSHAIR_III_FORMULA,
         ROG_CROSSHAIR_VIII_HERO,
+        ROG_CROSSHAIR_VIII_HERO_WIFI,
         ROG_CROSSHAIR_VIII_DARK_HERO,
         ROG_CROSSHAIR_VIII_FORMULA,
         ROG_STRIX_X470_I,

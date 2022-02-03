@@ -55,6 +55,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
+                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
                 case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
                 case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 case Model.ROG_STRIX_B550_I_GAMING:
@@ -76,6 +77,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
+                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
                 case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
                 case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 {
@@ -89,6 +91,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 case Model.ROG_STRIX_X570_E_GAMING:
                 case Model.ROG_CROSSHAIR_VIII_HERO:
+                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
                 case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 {
                     sources.Add(new EmbeddedControllerSource("Chipset", SensorType.Fan, 0x00B4, 2));
@@ -108,6 +111,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             switch (model)
             {
                 case Model.ROG_CROSSHAIR_VIII_HERO:
+                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
                 case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
                 case Model.ROG_CROSSHAIR_VIII_FORMULA:
                 {
