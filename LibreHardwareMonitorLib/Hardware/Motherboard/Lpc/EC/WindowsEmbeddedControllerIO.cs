@@ -41,15 +41,26 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             Trace.Assert(registers.Length <= data.Length, 
                 "data buffer length has to be greater or equal to the registers array length");
 
-            for (int i = 0; i < registers.Length; ++i)
-            {
-                byte bank = (byte)(registers[i] >> 8);
-                byte index = (byte)(registers[i] & 0xFF);
+            byte bank = 0;
+            byte prevBank = SwitchBank(bank);
 
-                SwitchBank(bank);
-                data[i] = ReadByte(index);
+            // oops... somebody else is working with the EC too
+            Trace.WriteLineIf(prevBank != 0, "Concurrent access to the ACPI EC detected.\nRace condition possible.");
+
+            // read registers minimizing bank switches.
+            for (int i = 0; i < registers.Length; i++)
+            {
+                byte regBank = (byte)(registers[i] >> 8);
+                byte regIndex = (byte)(registers[i] & 0xFF);
+                // registers are sorted by bank
+                if (regBank > bank)
+                {
+                    bank = SwitchBank(regBank);
+                }
+                data[i] = ReadByte(regIndex);
             }
-            SwitchBank(0);
+
+            SwitchBank(prevBank);
         }
 
         private byte ReadByte(byte register)
@@ -154,10 +165,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             Ring0.WriteIoPort((uint)port, datum);
         }
 
-        public class BusMutexLockingFailedException : ApplicationException
+        public class BusMutexLockingFailedException : EmbeddedController.IOException
         {
             public BusMutexLockingFailedException()
-                : base("Could not lock ISA bus mutex")
+                : base("could not lock ISA bus mutex")
             { }
         }
 

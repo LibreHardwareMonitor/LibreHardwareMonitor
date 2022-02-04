@@ -9,7 +9,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public class WindowsEmbeddedController : EmbeddedController
     {
-        public WindowsEmbeddedController(List<EmbeddedControllerSource> sources, ISettings settings) : base(sources, settings)
+        public WindowsEmbeddedController(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : base(sources, settings)
         { }
 
         protected override IEmbeddedControllerIO AcquireIOInterface()
