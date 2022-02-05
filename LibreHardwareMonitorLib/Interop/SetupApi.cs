@@ -1,4 +1,9 @@
-﻿using System;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Interop
@@ -21,17 +26,7 @@ namespace LibreHardwareMonitor.Interop
             public uint Flags;
             public IntPtr Reserved;
         }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        internal struct SP_DEVICE_INTERFACE_DETAIL_DATA_W
-        {
-            public uint cbSize;
-
-            public char DevicePath;
-
-            public static readonly SP_DEVICE_INTERFACE_DETAIL_DATA_W Default = new SP_DEVICE_INTERFACE_DETAIL_DATA_W { cbSize = IntPtr.Size == 4 ? 4U + (uint)Marshal.SystemDefaultCharSize : 8U };
-        }
-
+        
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         internal static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, IntPtr Enumerator, IntPtr hwndParent, uint Flags);
 
@@ -39,9 +34,9 @@ namespace LibreHardwareMonitor.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SetupDiEnumDeviceInterfaces(IntPtr DeviceInfoSet, IntPtr DeviceInfoData, ref Guid InterfaceClassGuid, uint MemberIndex, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
 
-        [DllImport(DllName, SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport(DllName, SetLastError = true, EntryPoint = "SetupDiGetDeviceInterfaceDetailW", CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool SetupDiGetDeviceInterfaceDetailW(IntPtr DeviceInfoSet,
+        internal static extern bool SetupDiGetDeviceInterfaceDetail(IntPtr DeviceInfoSet,
                                                                     in SP_DEVICE_INTERFACE_DATA DeviceInterfaceData,
                                                                     [Out, Optional] IntPtr DeviceInterfaceDetailData,
                                                                     uint DeviceInterfaceDetailDataSize,

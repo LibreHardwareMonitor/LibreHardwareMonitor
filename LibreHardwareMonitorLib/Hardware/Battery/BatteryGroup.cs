@@ -1,92 +1,67 @@
-﻿using System;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Win32.SafeHandles;
 using LibreHardwareMonitor.Interop;
+using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Battery
 {
     internal class BatteryGroup : IGroup
     {
-        private List<Battery> _hardware = new();
+        private readonly List<Battery> _hardware = new();
 
-        public IReadOnlyList<IHardware> Hardware => _hardware;
-
-        private static IntPtr Offset(IntPtr pointer, long offset) => new IntPtr(pointer.ToInt64() + offset);
-        private static int GetCharSize(CharSet charSet = CharSet.Auto) => charSet == CharSet.Auto ? Marshal.SystemDefaultCharSize : (charSet == CharSet.Unicode ? 2 : 1);
-        private static bool IsValue(IntPtr ptr) => ptr.ToInt64() >> 16 == 0;
-
-        private static string GetString(IntPtr ptr, CharSet charSet = CharSet.Auto, long allocatedBytes = long.MaxValue)
-        {
-            if (IsValue(ptr)) return null;
-            var sb = new StringBuilder();
-            unsafe
-            {
-                var chkLen = 0L;
-                if (GetCharSize(charSet) == 1)
-                {
-                    for (var uptr = (byte*)ptr; chkLen < allocatedBytes && *uptr != 0; chkLen++, uptr++)
-                        sb.Append((char)*uptr);
-                }
-                else
-                {
-                    for (var uptr = (ushort*)ptr; chkLen + 2 <= allocatedBytes && *uptr != 0; chkLen += 2, uptr++)
-                        sb.Append((char)*uptr);
-                }
-            }
-            return sb.ToString();
-        }
-
-        public BatteryGroup(ISettings settings)
+        public unsafe BatteryGroup(ISettings settings)
         {
             // No implementation for battery information on Unix systems
             if (Software.OperatingSystem.IsUnix)
-            {
                 return;
-            }
 
             IntPtr hdev = SetupApi.SetupDiGetClassDevs(ref SetupApi.GUID_DEVICE_BATTERY, IntPtr.Zero, IntPtr.Zero, SetupApi.DIGCF_PRESENT | SetupApi.DIGCF_DEVICEINTERFACE);
-            if (SetupApi.INVALID_HANDLE_VALUE != hdev)
+            if (hdev != SetupApi.INVALID_HANDLE_VALUE)
             {
-                for (uint idev = 0; ; idev++)
+                for (uint i = 0;; i++)
                 {
                     SetupApi.SP_DEVICE_INTERFACE_DATA did = default;
                     did.cbSize = (uint)Marshal.SizeOf(typeof(SetupApi.SP_DEVICE_INTERFACE_DATA));
 
                     if (!SetupApi.SetupDiEnumDeviceInterfaces(hdev,
-                                                             IntPtr.Zero,
-                                                             ref SetupApi.GUID_DEVICE_BATTERY,
-                                                             idev,
-                                                             ref did))
+                                                              IntPtr.Zero,
+                                                              ref SetupApi.GUID_DEVICE_BATTERY,
+                                                              i,
+                                                              ref did))
                     {
                         if (Marshal.GetLastWin32Error() == SetupApi.ERROR_NO_MORE_ITEMS)
-                        {
                             break;
-                        }
                     }
                     else
                     {
-                        SetupApi.SetupDiGetDeviceInterfaceDetailW(hdev,
+                        SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                  did,
                                                                  IntPtr.Zero,
                                                                  0,
                                                                  out uint cbRequired,
                                                                  IntPtr.Zero);
+
                         if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
                         {
                             IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                            Marshal.StructureToPtr(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W.Default, pdidd, true);
+                            Marshal.WriteInt32(pdidd, Environment.Is64BitOperatingSystem ? 8 : 4); // cbSize.
 
-                            if (SetupApi.SetupDiGetDeviceInterfaceDetailW(hdev,
+                            if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                          did,
                                                                          pdidd,
                                                                          cbRequired,
-                                                                         out cbRequired,
+                                                                         out _,
                                                                          IntPtr.Zero))
                             {
-                                string devicePath = GetString(Offset(pdidd, 4), CharSet.Unicode, cbRequired - 4);
+                                string devicePath = new((char*)(pdidd + 4));
 
                                 SafeFileHandle battery = Kernel32.CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
                                 if (!battery.IsInvalid)
@@ -115,39 +90,44 @@ namespace LibreHardwareMonitor.Hardware.Battery
                                                                      out _,
                                                                      IntPtr.Zero))
                                         {
-                                            // Only batteries count
+                                            // Only batteries count.
                                             if (bi.Capabilities == Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY)
                                             {
-                                                const int MAX_LOADSTRING = 100;
+                                                const int maxLoadString = 100;
 
-                                                IntPtr ptrDevName = Marshal.AllocCoTaskMem(MAX_LOADSTRING);
+                                                IntPtr ptrDevName = Marshal.AllocCoTaskMem(maxLoadString);
                                                 bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryDeviceName;
+
                                                 if (Kernel32.DeviceIoControl(battery,
-                                                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                     ref bqi,
-                                                                     Marshal.SizeOf(bqi),
-                                                                     ptrDevName,
-                                                                     MAX_LOADSTRING,
-                                                                     out _,
-                                                                     IntPtr.Zero))
+                                                                             Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                                                             ref bqi,
+                                                                             Marshal.SizeOf(bqi),
+                                                                             ptrDevName,
+                                                                             maxLoadString,
+                                                                             out _,
+                                                                             IntPtr.Zero))
                                                 {
-                                                    IntPtr ptrManName = Marshal.AllocCoTaskMem(MAX_LOADSTRING);
+                                                    IntPtr ptrManName = Marshal.AllocCoTaskMem(maxLoadString);
                                                     bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
+
                                                     if (Kernel32.DeviceIoControl(battery,
-                                                                         Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                         ref bqi,
-                                                                         Marshal.SizeOf(bqi),
-                                                                         ptrManName,
-                                                                         MAX_LOADSTRING,
-                                                                         out _,
-                                                                         IntPtr.Zero))
+                                                                                 Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                                                                 ref bqi,
+                                                                                 Marshal.SizeOf(bqi),
+                                                                                 ptrManName,
+                                                                                 maxLoadString,
+                                                                                 out _,
+                                                                                 IntPtr.Zero))
                                                     {
                                                         string name = Marshal.PtrToStringUni(ptrDevName);
                                                         string manufacturer = Marshal.PtrToStringUni(ptrManName);
+
                                                         _hardware.Add(new Battery(name, manufacturer, battery, bi, bqi.BatteryTag, settings));
                                                     }
+
                                                     Marshal.FreeCoTaskMem(ptrManName);
                                                 }
+
                                                 Marshal.FreeCoTaskMem(ptrDevName);
                                             }
                                         }
@@ -159,82 +139,85 @@ namespace LibreHardwareMonitor.Hardware.Battery
                         }
                     }
                 }
+
                 SetupApi.SetupDiDestroyDeviceInfoList(hdev);
             }
         }
 
+        /// <inheritdoc />
+        public IReadOnlyList<IHardware> Hardware => _hardware;
+
+        /// <inheritdoc />
         public void Close()
         {
-            foreach (Hardware battery in _hardware)
-            {
+            foreach (Battery battery in _hardware)
                 battery.Close();
-            }
         }
 
+        /// <inheritdoc />
         public string GetReport()
         {
             StringBuilder reportBuilder = new();
 
             uint count = 1;
+
             foreach (Battery bat in _hardware)
             {
                 string chemistry = "Unknown";
+
                 switch (bat.Chemistry)
                 {
                     case BatteryChemistry.LeadAcid:
-                    chemistry = "Lead Acid";
-                    break;
+                        chemistry = "Lead Acid";
+                        break;
                     case BatteryChemistry.NickelCadmium:
-                    chemistry = "Nickel-Cadmium";
-                    break;
+                        chemistry = "Nickel-Cadmium";
+                        break;
                     case BatteryChemistry.NickelMetalHydride:
-                    chemistry = "Nickel-Metal Hydride";
-                    break;
+                        chemistry = "Nickel-Metal Hydride";
+                        break;
                     case BatteryChemistry.LithiumIon:
-                    chemistry = "Lithium Ion";
-                    break;
+                        chemistry = "Lithium Ion";
+                        break;
                     case BatteryChemistry.NickelZinc:
-                    chemistry = "Nickel-Zinc";
-                    break;
+                        chemistry = "Nickel-Zinc";
+                        break;
                     case BatteryChemistry.AlkalineManganese:
-                    chemistry = "Rechargeable Alkaline-Manganese";
-                    break;
+                        chemistry = "Rechargeable Alkaline-Manganese";
+                        break;
                 }
 
-                reportBuilder
-                    .AppendLine($"Battery #{count}:")
-                    .AppendLine($" Name: {bat.Name}")
-                    .AppendLine($" Manufacturer: {bat.Manufacturer}")
-                    .AppendLine($" Chemistry: {chemistry}")
-                    .AppendLine($" Degradation Level: {bat.DegradationLevel:F2} %")
-                    .AppendLine($" Designed Capacity: {bat.DesignedCapacity} mWh")
-                    .AppendLine($" Full Charged Capacity: {bat.FullChargedCapacity} mWh")
-                    .AppendLine($" Remaining Capacity: {bat.RemainingCapacity} mWh")
-                    .AppendLine($" Charge Level: {bat.RemainingCapacity * 100f / bat.FullChargedCapacity:F2} %")
-                    .AppendLine($" Voltage: {bat.Voltage:F3} V");
+                reportBuilder.Append("Battery #").Append(count).AppendLine(":")
+                             .Append(" Name: ").AppendLine(bat.Name)
+                             .Append(" Manufacturer: ").AppendLine(bat.Manufacturer)
+                             .Append(" Chemistry: ").AppendLine(chemistry)
+                             .Append(" Degradation Level: ").AppendFormat("{0:F2}", bat.DegradationLevel).AppendLine(" %")
+                             .Append(" Designed Capacity: ").Append(bat.DesignedCapacity).AppendLine(" mWh")
+                             .Append(" Full Charged Capacity: ").Append(bat.FullChargedCapacity).AppendLine(" mWh")
+                             .Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh")
+                             .Append(" Charge Level: ").AppendFormat("{0:F2}", bat.RemainingCapacity * 100f / bat.FullChargedCapacity).AppendLine(" %")
+                             .Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
 
-                if (bat.ChargeDischargeRate > 0)
+                switch (bat.ChargeDischargeRate)
                 {
-                    reportBuilder
-                        .AppendLine($" Charge Rate: {bat.ChargeDischargeRate:F1} W")
-                        .AppendLine($" Charge Current: {bat.ChargeDischargeRate / bat.Voltage:F3} A");
-                }
-                else if (bat.ChargeDischargeRate < 0)
-                {
-                    reportBuilder
-                        .AppendLine($" Discharge Rate: {Math.Abs(bat.ChargeDischargeRate):F1} W")
-                        .AppendLine($" Discharge Current: {Math.Abs(bat.ChargeDischargeRate) / bat.Voltage:F3} A");
-                }
-                else
-                {
-                    reportBuilder
-                        .AppendLine($" Charge/Discharge Rate: {0:F1} W")
-                        .AppendLine($" Charge/Discharge Current: {0:F3} A");
+                    case > 0:
+                        reportBuilder.Append(" Charge Rate: ").AppendFormat("{0:F1}", bat.ChargeDischargeRate).AppendLine(" W")
+                                     .Append(" Charge Current: ").AppendFormat("{0:F3}", bat.ChargeDischargeRate / bat.Voltage).AppendLine(" A");
+
+                        break;
+                    case < 0:
+                        reportBuilder.Append(" Discharge Rate: ").AppendFormat("{0:F1}", Math.Abs(bat.ChargeDischargeRate)).AppendLine(" W")
+                                     .Append(" Discharge Current: ").AppendFormat("{0:F3}", Math.Abs(bat.ChargeDischargeRate) / bat.Voltage).AppendLine(" A");
+
+                        break;
+                    default:
+                        reportBuilder.AppendLine(" Charge/Discharge Rate: 0 W")
+                                     .AppendLine(" Charge/Discharge Current: 0 A");
+
+                        break;
                 }
 
-                reportBuilder
-                    .AppendLine();
-
+                reportBuilder.AppendLine();
                 count++;
             }
 
