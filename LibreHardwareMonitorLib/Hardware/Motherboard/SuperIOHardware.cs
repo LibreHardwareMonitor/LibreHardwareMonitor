@@ -1353,12 +1353,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("System Fan #3", 3));
-                            f.Add(new Fan("CPU OPT Fan", 4));
+                            f.Add(new Fan("CPU Optional Fan", 4));
                             c.Add(new Ctrl("CPU Fan", 0));
                             c.Add(new Ctrl("System Fan #1", 1));
                             c.Add(new Ctrl("System Fan #2", 2));
                             c.Add(new Ctrl("System Fan #3", 3));
-                            c.Add(new Ctrl("CPU OPT Fan", 4));
+                            c.Add(new Ctrl("CPU Optional Fan", 4));
 
                             break;
                         }
@@ -1383,12 +1383,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("PCH Fan", 3));
-                            f.Add(new Fan("CPU OPT Fan", 4));
+                            f.Add(new Fan("CPU Optional Fan", 4));
                             c.Add(new Ctrl("CPU Fan", 0));
                             c.Add(new Ctrl("System Fan #1", 1));
                             c.Add(new Ctrl("System Fan #2", 2));
                             c.Add(new Ctrl("PCH Fan", 3));
-                            c.Add(new Ctrl("CPU OPT Fan", 4));
+                            c.Add(new Ctrl("CPU Optional Fan", 4));
 
                             break;
                         }
@@ -1413,12 +1413,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("PCH Fan", 3));
-                            f.Add(new Fan("CPU OPT Fan", 4));
+                            f.Add(new Fan("CPU Optional Fan", 4));
                             c.Add(new Ctrl("CPU Fan", 0));
                             c.Add(new Ctrl("System Fan #1", 1));
                             c.Add(new Ctrl("System Fan #2", 2));
                             c.Add(new Ctrl("PCH Fan", 3));
-                            c.Add(new Ctrl("CPU OPT Fan", 4));
+                            c.Add(new Ctrl("CPU Optional Fan", 4));
 
                             break;
                         }
@@ -1441,12 +1441,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("PCH Fan", 3));
-                            f.Add(new Fan("CPU OPT Fan", 4));
+                            f.Add(new Fan("CPU Optional Fan", 4));
                             c.Add(new Ctrl("CPU Fan", 0));
                             c.Add(new Ctrl("System Fan #1", 1));
                             c.Add(new Ctrl("System Fan #2", 2));
                             c.Add(new Ctrl("PCH Fan", 3));
-                            c.Add(new Ctrl("CPU OPT Fan", 4));
+                            c.Add(new Ctrl("CPU Optional Fan", 4));
 
                             break;
                         }
