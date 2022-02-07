@@ -82,7 +82,7 @@ namespace LibreHardwareMonitor.Hardware
                     { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
                     { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                     { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    //{ 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
 			        //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
 			        //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
 			        //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
