@@ -171,7 +171,8 @@ namespace LibreHardwareMonitor.UI
                 { SensorType.Factor, "1" },
                 { SensorType.Power, "W" },
                 { SensorType.Data, "GB" },
-                { SensorType.Frequency, "Hz" }
+                { SensorType.Frequency, "Hz" },
+                { SensorType.Energy, "mWh" }
             };
 
             foreach (SensorType type in Enum.GetValues(typeof(SensorType)))

@@ -76,6 +76,9 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.TimeSpan:
                     Format = "{0:g}";
                     break;
+                case SensorType.Energy:
+                    Format = "{0:F0} mWh";
+                    break;
             }
 
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);

@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Security.Permissions;
+using LibreHardwareMonitor.Hardware.Battery;
 using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
@@ -28,16 +28,11 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public class Computer : IComputer
     {
-        /// <inheritdoc />
-        public event HardwareEventHandler HardwareAdded;
-
-        /// <inheritdoc />
-        public event HardwareEventHandler HardwareRemoved;
-
-        private readonly object _lock = new object();
-        private readonly List<IGroup> _groups = new List<IGroup>();
+        private readonly List<IGroup> _groups = new();
+        private readonly object _lock = new();
         private readonly ISettings _settings;
-
+        
+        private bool _batteryEnabled;
         private bool _controllerEnabled;
         private bool _cpuEnabled;
         private bool _gpuEnabled;
@@ -45,13 +40,12 @@ namespace LibreHardwareMonitor.Hardware
         private bool _motherboardEnabled;
         private bool _networkEnabled;
         private bool _open;
-        private bool _storageEnabled;
         private bool _psuEnabled;
-
         private SMBios _smbios;
+        private bool _storageEnabled;
 
         /// <summary>
-        /// Creates a new <see cref="IComputer"/> instance with basic initial <see cref="Settings"/>.
+        /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
         /// </summary>
         public Computer()
         {
@@ -59,13 +53,19 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// Creates a new <see cref="IComputer"/> instance with additional <see cref="ISettings"/>.
+        /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />.
         /// </summary>
-        /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware"/>.</param>
+        /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
         public Computer(ISettings settings)
         {
             _settings = settings ?? new Settings();
         }
+
+        /// <inheritdoc />
+        public event HardwareEventHandler HardwareAdded;
+
+        /// <inheritdoc />
+        public event HardwareEventHandler HardwareRemoved;
 
         /// <inheritdoc />
         public IList<IHardware> Hardware
@@ -74,7 +74,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 lock (_lock)
                 {
-                    List<IHardware> list = new List<IHardware>();
+                    List<IHardware> list = new();
 
                     foreach (IGroup group in _groups)
                         list.AddRange(group.Hardware);
@@ -84,35 +84,25 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <summary>
-        /// Contains computer information table read in accordance with <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
-        /// </summary>
-        public SMBios SMBios
-        {
-            get
-            {
-                if (!_open)
-                    throw new InvalidOperationException("SMBIOS cannot be accessed before opening.");
-
-                return _smbios;
-            }
-        }
-
         /// <inheritdoc />
-        public bool IsCpuEnabled
+        public bool IsBatteryEnabled
         {
-            get { return _cpuEnabled; }
+            get { return _batteryEnabled; }
             set
             {
-                if (_open && value != _cpuEnabled)
+                if (_open && value != _batteryEnabled)
                 {
                     if (value)
-                        Add(new CPU.CpuGroup(_settings));
+                    {
+                        Add(new BatteryGroup(_settings));
+                    }
                     else
-                        RemoveType<CPU.CpuGroup>();
+                    {
+                        RemoveType<BatteryGroup>();
+                    }
                 }
 
-                _cpuEnabled = value;
+                _batteryEnabled = value;
             }
         }
 
@@ -143,6 +133,24 @@ namespace LibreHardwareMonitor.Hardware
                 }
 
                 _controllerEnabled = value;
+            }
+        }
+
+        /// <inheritdoc />
+        public bool IsCpuEnabled
+        {
+            get { return _cpuEnabled; }
+            set
+            {
+                if (_open && value != _cpuEnabled)
+                {
+                    if (value)
+                        Add(new CPU.CpuGroup(_settings));
+                    else
+                        RemoveType<CPU.CpuGroup>();
+                }
+
+                _cpuEnabled = value;
             }
         }
 
@@ -225,6 +233,28 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <inheritdoc />
+        public bool IsPsuEnabled
+        {
+            get { return _psuEnabled; }
+            set
+            {
+                if (_open && value != _psuEnabled)
+                {
+                    if (value)
+                    {
+                        Add(new CorsairPsuGroup(_settings));
+                    }
+                    else
+                    {
+                        RemoveType<CorsairPsuGroup>();
+                    }
+                }
+
+                _psuEnabled = value;
+            }
+        }
+
+        /// <inheritdoc />
         public bool IsStorageEnabled
         {
             get { return _storageEnabled; }
@@ -242,24 +272,17 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        /// <inheritdoc />
-        public bool IsPsuEnabled
+        /// <summary>
+        /// Contains computer information table read in accordance with <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
+        /// </summary>
+        public SMBios SMBios
         {
-            get { return _psuEnabled; }
-            set
+            get
             {
-                if (_open && value != _psuEnabled)
-                {
-                    if (value)
-                    {
-                        Add(new CorsairPsuGroup(_settings));
-                    }
-                    else
-                    {
-                        RemoveType<CorsairPsuGroup>();
-                    }
-                }
-                _psuEnabled = value;
+                if (!_open)
+                    throw new InvalidOperationException("SMBIOS cannot be accessed before opening.");
+
+                return _smbios;
             }
         }
 
@@ -268,7 +291,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             lock (_lock)
             {
-                using StringWriter w = new StringWriter(CultureInfo.InvariantCulture);
+                using StringWriter w = new(CultureInfo.InvariantCulture);
 
                 w.WriteLine();
                 w.WriteLine(nameof(LibreHardwareMonitor) + " Report");
@@ -341,7 +364,7 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// Triggers the <see cref="IVisitor.VisitComputer"/> method for the given observer.
+        /// Triggers the <see cref="IVisitor.VisitComputer" /> method for the given observer.
         /// </summary>
         /// <param name="visitor">Observer who call to devices.</param>
         public void Accept(IVisitor visitor)
@@ -349,12 +372,11 @@ namespace LibreHardwareMonitor.Hardware
             if (visitor == null)
                 throw new ArgumentNullException(nameof(visitor));
 
-
             visitor.VisitComputer(this);
         }
 
         /// <summary>
-        /// Triggers the <see cref="IElement.Accept"/> method with the given visitor for each device in each group.
+        /// Triggers the <see cref="IElement.Accept" /> method with the given visitor for each device in each group.
         /// </summary>
         /// <param name="visitor">Observer who call to devices.</param>
         public void Traverse(IVisitor visitor)
@@ -387,12 +409,10 @@ namespace LibreHardwareMonitor.Hardware
             if (group == null)
                 return;
 
-
             lock (_lock)
             {
                 if (_groups.Contains(group))
                     return;
-
 
                 _groups.Add(group);
 
@@ -417,7 +437,6 @@ namespace LibreHardwareMonitor.Hardware
                 if (!_groups.Contains(group))
                     return;
 
-
                 _groups.Remove(group);
 
                 if (group is IHardwareChanged hardwareChanged)
@@ -438,7 +457,7 @@ namespace LibreHardwareMonitor.Hardware
 
         private void RemoveType<T>() where T : IGroup
         {
-            List<T> list = new List<T>();
+            List<T> list = new();
 
             lock (_lock)
             {
@@ -454,13 +473,13 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// If hasn't been opened before, opens <see cref="SMBios"/>, <see cref="Ring0"/>, <see cref="OpCode"/> and triggers the private <see cref="AddGroups"/> method depending on which categories are enabled.
+        /// If hasn't been opened before, opens <see cref="SMBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
+        /// enabled.
         /// </summary>
         public void Open()
         {
             if (_open)
                 return;
-
 
             _smbios = new SMBios();
 
@@ -506,6 +525,9 @@ namespace LibreHardwareMonitor.Hardware
 
             if (_psuEnabled)
                 Add(new CorsairPsuGroup(_settings));
+
+            if (_batteryEnabled)
+                Add(new BatteryGroup(_settings));
         }
 
         private static void NewSection(TextWriter writer)
@@ -522,7 +544,6 @@ namespace LibreHardwareMonitor.Hardware
             int c = a.SensorType.CompareTo(b.SensorType);
             if (c == 0)
                 return a.Index.CompareTo(b.Index);
-
 
             return c;
         }
@@ -584,13 +605,12 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// If opened before, removes all <see cref="IGroup"/> and triggers <see cref="OpCode.Close"/>, <see cref="InpOut.Close"/> and <see cref="Ring0.Close"/>.
+        /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="Ring0.Close" />.
         /// </summary>
         public void Close()
         {
             if (!_open)
                 return;
-
 
             lock (_lock)
             {
@@ -610,13 +630,12 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// If opened before, removes all <see cref="IGroup"/> and recreates it.
+        /// If opened before, removes all <see cref="IGroup" /> and recreates it.
         /// </summary>
         public void Reset()
         {
             if (!_open)
                 return;
-
 
             RemoveGroups();
             AddGroups();
@@ -635,7 +654,7 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// <see cref="Computer"/> specific additional settings passed to its <see cref="IHardware"/>.
+        /// <see cref="Computer" /> specific additional settings passed to its <see cref="IHardware" />.
         /// </summary>
         private class Settings : ISettings
         {

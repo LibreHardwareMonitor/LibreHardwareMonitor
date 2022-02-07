@@ -21,6 +21,7 @@ namespace LibreHardwareMonitor.Hardware
         Network,
         Cooler,
         EmbeddedController,
-        Psu
+        Psu,
+        Battery
     }
 }

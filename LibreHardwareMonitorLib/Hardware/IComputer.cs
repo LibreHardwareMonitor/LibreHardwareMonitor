@@ -20,77 +20,93 @@ namespace LibreHardwareMonitor.Hardware
     public interface IComputer : IElement
     {
         /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Cpu"/> devices should be enabled and updated.
+        /// Triggered when a new <see cref="IHardware" /> is registered.
         /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsCpuEnabled { get; }
+        event HardwareEventHandler HardwareAdded;
 
         /// <summary>
-        /// Gets or sets a value indicating whether collecting information about:
-        /// <list>
-        /// <item><see cref="LibreHardwareMonitor.Hardware.Controller.TBalancer.TBalancerGroup"/></item>
-        /// <item><see cref="LibreHardwareMonitor.Hardware.Controller.Heatmaster.HeatmasterGroup"/></item>
-        /// <item><see cref="LibreHardwareMonitor.Hardware.Controller.AquaComputer.AquaComputerGroup"/></item>
-        /// <item><see cref="LibreHardwareMonitor.Hardware.Controller.AeroCool.AeroCoolGroup"/></item>
-        /// <item><see cref="LibreHardwareMonitor.Hardware.Controller.Nzxt.NzxtGroup"/></item>
-        /// </list>
-        /// devices should be enabled and updated.
+        /// Triggered when a <see cref="IHardware" /> is removed.
         /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsControllerEnabled { get; }
+        event HardwareEventHandler HardwareRemoved;
 
         /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.GpuAmd"/> or <see cref="HardwareType.GpuNvidia"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsGpuEnabled { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Storage"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsStorageEnabled { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Motherboard"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsMotherboardEnabled { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Network"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsNetworkEnabled { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Memory"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsMemoryEnabled { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Psu"/> devices should be enabled and updated.
-        /// </summary>
-        /// <returns><see langword="true"/> if a given category of devices is already enabled.</returns>
-        bool IsPsuEnabled { get; }
-
-        /// <summary>
-        /// Gets a list of all known <see cref="IHardware"/>.
-        /// <para>Can be updated by <see cref="IVisitor"/>.</para>
+        /// Gets a list of all known <see cref="IHardware" />.
+        /// <para>Can be updated by <see cref="IVisitor" />.</para>
         /// </summary>
         /// <returns>List of all enabled devices.</returns>
         IList<IHardware> Hardware { get; }
 
         /// <summary>
-        /// Triggered when a new <see cref="IHardware"/> is registered.
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Battery" /> devices should be enabled and updated.
         /// </summary>
-        event HardwareEventHandler HardwareAdded;
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsBatteryEnabled { get; }
 
         /// <summary>
-        /// Triggered when a <see cref="IHardware"/> is removed.
+        /// Gets or sets a value indicating whether collecting information about:
+        /// <list>
+        ///     <item>
+        ///         <see cref="Controller.TBalancer.TBalancerGroup" />
+        ///     </item>
+        ///     <item>
+        ///         <see cref="Controller.Heatmaster.HeatmasterGroup" />
+        ///     </item>
+        ///     <item>
+        ///         <see cref="Controller.AquaComputer.AquaComputerGroup" />
+        ///     </item>
+        ///     <item>
+        ///         <see cref="Controller.AeroCool.AeroCoolGroup" />
+        ///     </item>
+        ///     <item>
+        ///         <see cref="Controller.Nzxt.NzxtGroup" />
+        ///     </item>
+        /// </list>
+        /// devices should be enabled and updated.
         /// </summary>
-        event HardwareEventHandler HardwareRemoved;
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsControllerEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Cpu" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsCpuEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.GpuAmd" /> or <see cref="HardwareType.GpuNvidia" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsGpuEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Memory" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsMemoryEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Motherboard" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsMotherboardEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Network" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsNetworkEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Psu" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsPsuEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Storage" /> devices should be enabled and updated.
+        /// </summary>
+        /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+        bool IsStorageEnabled { get; }
 
         /// <summary>
         /// Generates full LibreHardwareMonitor report for devices that have been enabled.
