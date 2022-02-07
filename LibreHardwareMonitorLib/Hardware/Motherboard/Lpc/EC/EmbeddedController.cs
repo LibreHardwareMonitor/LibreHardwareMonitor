@@ -49,9 +49,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
             { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
             { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
-            { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional", SensorType.Fan, 0x00b0, 2) },
-            { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink", SensorType.Fan, 0x00b2, 2) },
-            { ECSensor.FanChipset, new EmbeddedControllerSource("Chipset", SensorType.Fan, 0x00b4, 2) },
+            { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+            { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
+            { ECSensor.FanChipset, new EmbeddedControllerSource("Chipset Fan", SensorType.Fan, 0x00b4, 2) },
             // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
             { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f) },
             { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
