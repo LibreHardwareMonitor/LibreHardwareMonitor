@@ -225,7 +225,12 @@ namespace LibreHardwareMonitor.Hardware
 
             if (Software.OperatingSystem.IsUnix)
             {
+#if NETFRAMEWORK
                 Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
+#else
+                Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
+#endif
+
                 Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
                 MethodInfo mmap = sysCall.GetMethod("mmap");
 
@@ -265,7 +270,12 @@ namespace LibreHardwareMonitor.Hardware
 
             if (Software.OperatingSystem.IsUnix)
             {
+#if NETFRAMEWORK
                 Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
+#else
+                Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
+#endif
+
                 Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
                 MethodInfo method = sysCall.GetMethod("munmap");
                 method?.Invoke(null, new object[] { _codeBuffer, _size });

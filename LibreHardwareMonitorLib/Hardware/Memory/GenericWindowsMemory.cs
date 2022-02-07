@@ -9,7 +9,7 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Memory
 {
-    internal sealed class GenericMemory : Hardware
+    internal sealed class GenericWindowsMemory : Hardware
     {
         private readonly Sensor _physicalMemoryAvailable;
         private readonly Sensor _physicalMemoryLoad;
@@ -18,7 +18,7 @@ namespace LibreHardwareMonitor.Hardware.Memory
         private readonly Sensor _virtualMemoryLoad;
         private readonly Sensor _virtualMemoryUsed;
 
-        public GenericMemory(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
+        public GenericWindowsMemory(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
         {
             _physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
             ActivateSensor(_physicalMemoryUsed);
