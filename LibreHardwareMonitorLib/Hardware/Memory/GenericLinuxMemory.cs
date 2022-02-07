@@ -3,6 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
+
 using System.IO;
 using System.Linq;
 
