@@ -83,14 +83,14 @@ namespace LibreHardwareMonitor.Hardware
                     { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                     { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
                     //{ 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
-			        //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
-			        //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 190, new SmuSensorType { Name = "Core #3", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 191, new SmuSensorType { Name = "Core #4", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 192, new SmuSensorType { Name = "Core #5", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 193, new SmuSensorType { Name = "Core #6", Type = SensorType.Clock, Scale = 1000 } },
-		        }
+                    //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
+                    //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
+                    //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
+                    //{ 190, new SmuSensorType { Name = "Core #3", Type = SensorType.Clock, Scale = 1000 } },
+                    //{ 191, new SmuSensorType { Name = "Core #4", Type = SensorType.Clock, Scale = 1000 } },
+                    //{ 192, new SmuSensorType { Name = "Core #5", Type = SensorType.Clock, Scale = 1000 } },
+                    //{ 193, new SmuSensorType { Name = "Core #6", Type = SensorType.Clock, Scale = 1000 } },
+                }
             }
         };
 
@@ -276,7 +276,6 @@ namespace LibreHardwareMonitor.Hardware
             if (SendCommand(0x02, ref args))
                 return args[0];
 
-
             return 0;
         }
 
@@ -284,7 +283,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (!IsPmTableLayoutDefined())
                 return new Dictionary<uint, SmuSensorType>();
-
 
             return _supportedPmTableVersions[_pmTableVersion];
         }
@@ -298,7 +296,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (!_supportedCPU || !TransferTableToDram())
                 return new float[] { 0 };
-
 
             float[] table = ReadDramToArray();
 
@@ -339,7 +336,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (!GetPmTableVersion(ref _pmTableVersion))
                 return;
-
 
             switch (_cpuCodeName)
             {
@@ -531,7 +527,6 @@ namespace LibreHardwareMonitor.Hardware
             if (!command)
                 return;
 
-
             _dramBaseAddr = args[0] | (args[1] << 32);
         }
 
@@ -543,12 +538,10 @@ namespace LibreHardwareMonitor.Hardware
             if (!command)
                 return;
 
-
             args = new uint[] { 0 };
             command = SendCommand(fn[1], ref args);
             if (!command)
                 return;
-
 
             _dramBaseAddr = args[0];
         }
@@ -563,12 +556,10 @@ namespace LibreHardwareMonitor.Hardware
             if (!command)
                 return;
 
-
             args = new uint[] { 3 };
             command = SendCommand(fn[2], ref args);
             if (!command)
                 return;
-
 
             // 1st Base.
             parts[0] = args[0];
@@ -580,18 +571,15 @@ namespace LibreHardwareMonitor.Hardware
             if (!command)
                 return;
 
-
             args = new uint[] { 5 };
             command = SendCommand(fn[0], ref args);
             if (!command)
                 return;
 
-
             args = new uint[] { 5 };
             command = SendCommand(fn[2], ref args);
             if (!command)
                 return;
-
 
             // 2nd base.
             parts[1] = args[0];
