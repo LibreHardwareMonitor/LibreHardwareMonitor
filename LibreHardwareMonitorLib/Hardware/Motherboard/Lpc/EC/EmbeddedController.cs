@@ -6,20 +6,150 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public abstract class EmbeddedController : Hardware
     {
+        private enum ECSensor
+        {
+            /// <summary>Chipset temperature [℃]</summary>
+            TempChipset,
+            /// <summary>CPU temperature [℃]</summary>
+            TempCPU,
+            /// motherboard temperature [℃]</summary>
+            TempMB,
+            /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
+            TempTSensor,
+            /// <summary>VRM temperature [℃]</summary>
+            TempVrm,
+            /// <summary>CPU_Opt fan [RPM]</summary>
+            FanCPUOpt,
+            /// <summary>VRM heat sink fan [RPM]</summary>
+            FanVrmHS,
+            /// <summary>Chipset fan [RPM]</summary>
+            FanChipset,
+            /// <summary>Water flow sensor reading [RPM]</summary>
+            FanWaterFlow,
+            /// <summary>CPU current [A]</summary>
+            CurrCPU,
+            /// <summary>"Water_In" temperature sensor reading [℃]</summary>
+            TempWaterIn,
+            /// <summary>"Water_Out" temperature sensor reading [℃]</summary>
+            TempWaterOut,
+            Max
+        };
+
+        private static readonly Dictionary<ECSensor, EmbeddedControllerSource> _knownSensors = new()
+        {
+            { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+            { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
+            { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
+            { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
+            { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+            { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+            { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
+            { ECSensor.FanChipset, new EmbeddedControllerSource("Chipset Fan", SensorType.Fan, 0x00b4, 2) },
+            // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
+            { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f) },
+            { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+            { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
+            { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
+        };
+
+        private static readonly Dictionary<Model, ECSensor[]> _boardSensors = new()
+        {
+            {
+                Model.PRIME_X570_PRO,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempVrm, ECSensor.TempTSensor, ECSensor.FanChipset }
+            },
+            {
+                Model.PRO_WS_X570_ACE,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB ,
+                    ECSensor.TempVrm, ECSensor.FanChipset, ECSensor.CurrCPU}
+            },
+            {
+                Model.ROG_CROSSHAIR_VIII_HERO,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
+                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow, ECSensor.CurrCPU}
+            },
+            {
+                Model.ROG_CROSSHAIR_VIII_HERO_WIFI,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
+                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow, ECSensor.CurrCPU}
+            },
+            {
+                Model.ROG_CROSSHAIR_VIII_DARK_HERO,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
+                    ECSensor.FanCPUOpt, ECSensor.FanWaterFlow, ECSensor.CurrCPU
+                }
+            },
+            {
+                Model.CROSSHAIR_III_FORMULA,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm,
+                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.CurrCPU }
+            },
+            {
+                Model.ROG_CROSSHAIR_VIII_IMPACT,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm,
+                    ECSensor.FanChipset, ECSensor.CurrCPU }
+            },
+            {
+                Model.ROG_STRIX_B550_E_GAMING,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.FanCPUOpt }
+            },
+            {
+                Model.ROG_STRIX_B550_I_GAMING,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm,
+                    ECSensor.FanVrmHS, ECSensor.CurrCPU }
+            },
+            {
+                Model.ROG_STRIX_X570_E_GAMING,
+                new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.TempVrm,
+                    ECSensor.FanChipset, ECSensor.CurrCPU }
+            },
+            {
+                Model.ROG_STRIX_X570_F_GAMING,
+                new ECSensor[]{ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                    ECSensor.TempTSensor, ECSensor.FanChipset}
+            },
+            {
+                Model.ROG_STRIX_X570_I_GAMING,
+                new ECSensor[] {
+                    ECSensor.TempTSensor, ECSensor.FanVrmHS, ECSensor.FanChipset, ECSensor.CurrCPU }
+            }
+        };
+
+        static EmbeddedController()
+        {
+            System.Diagnostics.Debug.Assert(_knownSensors.Count == ((int)ECSensor.Max));
+        }
+
         private readonly IReadOnlyList<EmbeddedControllerSource> _sources;
         private readonly List<Sensor> _sensors;
         private readonly ushort[] _registers;
         private readonly byte[] _data;
 
-        protected EmbeddedController(List<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
+        protected EmbeddedController(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
         {
-            _sources = sources;
+            // sorting by address, which implies sorting by bank, for optimized EC access
+            var sourcesList = sources.ToList();
+            sourcesList.Sort((left, right) =>
+            {
+                return left.Register.CompareTo(right.Register);
+            });
+            _sources = sourcesList;
             var indices = new Dictionary<SensorType, int>();
             foreach (SensorType t in Enum.GetValues(typeof(SensorType)))
             {
@@ -28,7 +158,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
             _sensors = new List<Sensor>();
             List<ushort> registers = new();
-             foreach (EmbeddedControllerSource s in sources)
+            foreach (EmbeddedControllerSource s in _sources)
             {
                 int index = indices[s.Type];
                 indices[s.Type] = index + 1;
@@ -49,82 +179,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         internal static EmbeddedController Create(Model model, ISettings settings)
         {
-            var sources = new List<EmbeddedControllerSource>();
-
-            switch (model)
+            if (_boardSensors.TryGetValue(model, out ECSensor[] sensors))
             {
-                case Model.ROG_STRIX_X570_E_GAMING:
-                case Model.ROG_CROSSHAIR_VIII_HERO:
-                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
-                case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
-                case Model.ROG_CROSSHAIR_VIII_FORMULA:
-                case Model.ROG_STRIX_B550_I_GAMING:
-                {
-                    sources.AddRange(new EmbeddedControllerSource[]
-                    {
-                        new("Chipset", SensorType.Temperature, 0x003A, 1),
-                        new("CPU", SensorType.Temperature, 0x003B, 1),
-                        new("Motherboard", SensorType.Temperature, 0x003C, 1),
-                        new("T Sensor", SensorType.Temperature, 0x003D, 1, blank: 0xD8),
-                        new("CPU", SensorType.Current, 0x00F4, 1)
-                    });
+                var sources = sensors.Select(ecs => _knownSensors[ecs]);
 
-                    break;
-                }
-            }
-
-            switch (model)
-            {
-                case Model.ROG_STRIX_X570_E_GAMING:
-                case Model.ROG_CROSSHAIR_VIII_HERO:
-                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
-                case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
-                case Model.ROG_CROSSHAIR_VIII_FORMULA:
-                {
-                    sources.Add(new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003E, 1));
-                    sources.Add(new EmbeddedControllerSource("CPU Opt", SensorType.Fan, 0x00B0, 2));
-                    break;
-                }
-            }
-
-            switch (model)
-            {
-                case Model.ROG_STRIX_X570_E_GAMING:
-                case Model.ROG_CROSSHAIR_VIII_HERO:
-                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
-                case Model.ROG_CROSSHAIR_VIII_FORMULA:
-                {
-                    sources.Add(new EmbeddedControllerSource("Chipset", SensorType.Fan, 0x00B4, 2));
-                    break;
-                }
-            }
-
-            switch (model)
-            {
-                case Model.ROG_STRIX_B550_I_GAMING:
-                {
-                    sources.Add(new EmbeddedControllerSource("VRM HS Fan", SensorType.Fan, 0x00B2, 2));
-                    break;
-                }
-            }
-
-            switch (model)
-            {
-                case Model.ROG_CROSSHAIR_VIII_HERO:
-                case Model.ROG_CROSSHAIR_VIII_HERO_WIFI:
-                case Model.ROG_CROSSHAIR_VIII_DARK_HERO:
-                case Model.ROG_CROSSHAIR_VIII_FORMULA:
-                {
-                    // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
-                    sources.Add(new EmbeddedControllerSource("Flow Rate", SensorType.Flow, 0x00BC, 2, 1.0f / 42f * 60f));
-                    sources.Add(new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, 1, blank: 0xD8));
-                    sources.Add(new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, 1, blank: 0xD8));
-                    break;
-                }
-            }
-
-            if (sources.Count > 0)
-            {
                 return Environment.OSVersion.Platform switch
                 {
                     PlatformID.Win32NT => new WindowsEmbeddedController(sources, settings),
@@ -142,16 +200,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 // just skip this update cycle?
                 return;
             }
-            
+
             int readRegister = 0;
             for (int si = 0; si < _sensors.Count; ++si)
             {
-                int val = 0;
-                for (int i = 0; i < _sources[si].Size; ++i, ++readRegister)
+                int val = _sources[si].Size switch
                 {
-                    val = (val << 8) + _data[readRegister];
-                }
-                
+                    1 => unchecked((sbyte)_data[readRegister]),
+                    2 => unchecked((short)((_data[readRegister] << 8) + _data[readRegister + 1])),
+                    _ => 0,
+                };
+                readRegister += _sources[si].Size;
+
                 _sensors[si].Value = val != _sources[si].Blank ? val * _sources[si].Factor : null;
             }
         }
@@ -191,7 +251,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     r.AppendLine();
                 }
             }
-            catch (WindowsEmbeddedControllerIO.BusMutexLockingFailedException e)
+            catch (IOException e)
             {
                 r.AppendLine(e.Message);
             }
@@ -209,10 +269,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 embeddedControllerIO.Read(_registers, _data);
                 return true;
             }
-            catch (WindowsEmbeddedControllerIO.BusMutexLockingFailedException)
+            catch (IOException)
             {
                 return false;
             }
+        }
+
+        public class IOException: System.IO.IOException {
+            public IOException(string message): base($"ACPI embedded controller I/O error: {message}") { }
         }
     }
 }
