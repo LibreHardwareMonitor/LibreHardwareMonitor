@@ -216,7 +216,7 @@ namespace LibreHardwareMonitor.UI
             }
             _graphics.FillRectangle(_darkBrush, 0.5f, -0.5f, _bitmap.Width - 2, _bitmap.Height);
             float value = Sensor.Value.GetValueOrDefault();
-            float y = 0.16f * (100 - value);
+            float y = (float)(_bitmap.Height * 0.01f) * (100 - value);
             _graphics.FillRectangle(_brush, 0.5f, -0.5f + y, _bitmap.Width - 2, _bitmap.Height - y);
             _graphics.DrawRectangle(_pen, 1, 0, _bitmap.Width - 3, _bitmap.Height - 1);
 
