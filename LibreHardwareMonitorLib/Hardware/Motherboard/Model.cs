@@ -95,6 +95,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         AX370_Gaming_K7,
         B360_AORUS_GAMING_3_WIFI_CF,
         B560M_AORUS_ELITE,
+        B560M_AORUS_PRO,
+        B560M_AORUS_PRO_AX,
         EP45_DS3R,
         EP45_UD3R,
         EX58_EXTREME,

@@ -1332,6 +1332,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             break;
                         }
                         case Model.B560M_AORUS_ELITE: // IT8689E
+                        case Model.B560M_AORUS_PRO:
+                        case Model.B560M_AORUS_PRO_AX:
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));

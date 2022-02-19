@@ -341,6 +341,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 return Model.B360_AORUS_GAMING_3_WIFI_CF;
                 case var _ when name.Equals("B560M AORUS ELITE", StringComparison.OrdinalIgnoreCase):
                     return Model.B560M_AORUS_ELITE;
+                case var _ when name.Equals("B560M AORUS PRO", StringComparison.OrdinalIgnoreCase):
+                    return Model.B560M_AORUS_PRO;
+                case var _ when name.Equals("B560M AORUS PRO AX", StringComparison.OrdinalIgnoreCase):
+                    return Model.B560M_AORUS_PRO_AX;
                 case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Model.Unknown;
