@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using LibreHardwareMonitor.Hardware.Battery;
 using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
@@ -166,11 +167,13 @@ namespace LibreHardwareMonitor.Hardware
                     {
                         Add(new AmdGpuGroup(_settings));
                         Add(new NvidiaGroup(_settings));
+                        Add(new IntelGpuGroup(_groups.SelectMany(x => x.Hardware).Select(x => x as CPU.IntelCpu).FirstOrDefault(x => x != null), _settings));
                     }
                     else
                     {
                         RemoveType<AmdGpuGroup>();
                         RemoveType<NvidiaGroup>();
+                        RemoveType<IntelGpuGroup>();
                     }
                 }
 
@@ -506,6 +509,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 Add(new AmdGpuGroup(_settings));
                 Add(new NvidiaGroup(_settings));
+                Add(new IntelGpuGroup(_groups.SelectMany(x => x.Hardware).Select(x => x as CPU.IntelCpu).FirstOrDefault(x => x != null), _settings));
             }
 
             if (_controllerEnabled)
