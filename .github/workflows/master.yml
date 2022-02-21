@@ -38,12 +38,12 @@ jobs:
       - name: Build
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
 
-      - name: Publish net452
+      - name: Publish net472
         uses: actions/upload-artifact@v2
         with:
-          name: LibreHardwareMonitor-net452
+          name: LibreHardwareMonitor-net472
           path: |
-            bin/Release/net452
+            bin/Release/net472
 
       - name: Publish netstandard20
         uses: actions/upload-artifact@v2
