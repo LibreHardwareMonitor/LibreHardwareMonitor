@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyName>LibreHardwareMonitor</AssemblyName>
     <AssemblyTitle>Libre Hardware Monitor</AssemblyTitle>
     <Copyright>LibreHardwareMonitor</Copyright>
