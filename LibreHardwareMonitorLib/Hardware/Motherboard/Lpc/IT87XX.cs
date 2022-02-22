@@ -309,7 +309,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 if (_hasExtReg)
                 {
-                    WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x7F));
+                    if (Chip == Chip.IT8689E)
+                    {
+                        WriteByte(FAN_PWM_CTRL_REG[index], 0x7F);
+                    }
+                    else
+                    {
+                        WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x7F));    
+                    }
                     WriteByte(FAN_PWM_CTRL_EXT_REG[index], value.Value);
                 }
                 else
