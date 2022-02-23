@@ -7,20 +7,20 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 {
     internal class IntelIntegratedGpu : Hardware
     {
-        private readonly CPU.IntelCpu _intelCpu;
         private readonly string _deviceId;
-        private readonly D3DDisplayDevice.D3DDeviceInfo _deviceInfo;
         private readonly Sensor _dedicatedMemoryUsage;
-        private readonly Sensor _sharedMemoryUsage;
-        private readonly Sensor[] _nodeUsage;
-        private readonly long[] _nodeUsagePrevValue;
-        private readonly DateTime[] _nodeUsagePrevTick;
+        private readonly D3DDisplayDevice.D3DDeviceInfo _deviceInfo;
+        private readonly float _energyUnitMultiplier;
+        private readonly CPU.IntelCpu _intelCpu;
+        private uint _lastEnergyConsumed;
+        private DateTime _lastEnergyTime;
         private const uint MSR_RAPL_POWER_UNIT = 0x606;
         private const uint MSR_PP1_ENERGY_STATUS = 0x641;
-        private readonly float _energyUnitMultiplier;
-        private DateTime _lastEnergyTime;
-        private uint _lastEnergyConsumed;
+        private readonly Sensor[] _nodeUsage;
+        private readonly DateTime[] _nodeUsagePrevTick;
+        private readonly long[] _nodeUsagePrevValue;
         private readonly Sensor _powerSensor;
+        private readonly Sensor _sharedMemoryUsage;
 
         public override HardwareType HardwareType => HardwareType.GpuIntel;
 

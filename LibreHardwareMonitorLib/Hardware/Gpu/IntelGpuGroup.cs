@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using LibreHardwareMonitor.Hardware.CPU;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Gpu
@@ -9,9 +11,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly List<Hardware> _hardware = new();
         private readonly StringBuilder _report = new();
 
-        public IntelGpuGroup(CPU.IntelCpu intelCpu, ISettings settings)
+        public IntelGpuGroup(List<IntelCpu> intelCpus, ISettings settings)
         {
-            if (!Software.OperatingSystem.IsUnix && intelCpu != null)
+            if (!Software.OperatingSystem.IsUnix && intelCpus != null && intelCpus.Any())
             {
                 _report.AppendLine("Intel GPU (D3D)");
                 _report.AppendLine();
@@ -55,7 +57,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                             if (deviceInfo.Integrated)
                             {
-                                _hardware.Add(new IntelIntegratedGpu(intelCpu, deviceId, deviceInfo, settings));
+                                _hardware.Add(new IntelIntegratedGpu(intelCpus.First(), deviceId, deviceInfo, settings));
                             }
                         }
                     }

@@ -168,7 +168,7 @@ namespace LibreHardwareMonitor.Hardware
                     {
                         Add(new AmdGpuGroup(_settings));
                         Add(new NvidiaGroup(_settings));                        
-                        Add(new IntelGpuGroup(GetIntelCpu(), _settings));
+                        Add(new IntelGpuGroup(GetIntelCpus(), _settings));
                     }
                     else
                     {
@@ -510,7 +510,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 Add(new AmdGpuGroup(_settings));
                 Add(new NvidiaGroup(_settings));
-                Add(new IntelGpuGroup(GetIntelCpu(), _settings));
+                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
             }
 
             if (_controllerEnabled)
@@ -658,11 +658,11 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
-        private IntelCpu GetIntelCpu()
+        private List<IntelCpu> GetIntelCpus()
         {
             // create a temporary cpu group if one has not been addded
             var cpuGroup = _groups.Select(x => x as CpuGroup).FirstOrDefault() ?? new CpuGroup(_settings);
-            return cpuGroup.Hardware.Select(x => x as IntelCpu).FirstOrDefault();
+            return cpuGroup.Hardware.Select(x => x as IntelCpu).ToList();
         }
 
         /// <summary>
