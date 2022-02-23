@@ -13,7 +13,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public IntelGpuGroup(List<IntelCpu> intelCpus, ISettings settings)
         {
-            if (!Software.OperatingSystem.IsUnix && intelCpus != null && intelCpus.Any())
+            if (!Software.OperatingSystem.IsUnix && intelCpus?.Count > 0)
             {
                 _report.AppendLine("Intel GPU (D3D)");
                 _report.AppendLine();
@@ -57,6 +57,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                             if (deviceInfo.Integrated)
                             {
+                                // it may seem strange to only use the first cpu here, but in-case we have a multi cpu system
+                                // with integrated graphics (does that exist?), we would pick up the multiple device identifiers
+                                // above and would add one instance for each CPU
                                 _hardware.Add(new IntelIntegratedGpu(intelCpus.First(), deviceId, deviceInfo, settings));
                             }
                         }
