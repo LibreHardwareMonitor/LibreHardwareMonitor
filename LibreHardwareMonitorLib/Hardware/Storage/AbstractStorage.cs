@@ -75,14 +75,12 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (info == null)
                 return null;
 
-
             info.DiskSize = diskSize;
             info.DeviceId = deviceId;
             info.Scsi = $@"\\.\SCSI{scsiPort}:";
 
-            if (info.Removable || info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual || info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
+            if (info.Removable || info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
                 return null;
-
 
             //fallback, when it is not possible to read out with the nvme implementation,
             //try it with the sata smart implementation
@@ -136,7 +134,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             if (data == null)
                 return;
-
 
             ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
             ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
@@ -216,7 +213,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
                         if (!DriveInfos[i].IsReady)
                             continue;
 
-
                         try
                         {
                             totalSize += DriveInfos[i].TotalSize;
@@ -252,7 +248,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
             {
                 if (!di.IsReady)
                     continue;
-
 
                 try
                 {

@@ -23,7 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public bool IdentifyController(SafeHandle hDevice, out Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
         {
             data = Kernel32.CreateStruct<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>();
-            if (hDevice == null || hDevice.IsInvalid)
+            if (hDevice?.IsInvalid != false)
                 return false;
 
             bool result = false;
@@ -83,8 +83,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 {
                     IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                    Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
-                    data = item;
+                    data = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
                     Marshal.FreeHGlobal(buffer);
                     result = true;
                 }
@@ -164,8 +163,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 {
                     IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                    Kernel32.NVME_HEALTH_INFO_LOG item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
-                    data = item;
+                    data = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
                     Marshal.FreeHGlobal(buffer);
                     result = true;
                 }

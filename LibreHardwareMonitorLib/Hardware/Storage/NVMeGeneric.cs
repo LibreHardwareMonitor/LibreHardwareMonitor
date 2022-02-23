@@ -32,8 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         private static NVMeInfo GetDeviceInfo(StorageInfo storageInfo)
         {
             var smart = new NVMeSmart(storageInfo);
-            NVMeInfo info = smart.GetInfo();
-            return info;
+            return smart.GetInfo();
         }
 
         internal static AbstractStorage CreateInstance(StorageInfo storageInfo, ISettings settings)
