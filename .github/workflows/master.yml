@@ -59,6 +59,13 @@ jobs:
           path: |
             bin/Release/net5.0
 
+      - name: Publish net60
+        uses: actions/upload-artifact@v2
+        with:
+          name: LibreHardwareMonitorLib-net60
+          path: |
+            bin/Release/net6.0
+
       - name: Publish nupkg
         uses: actions/upload-artifact@v2
         with:
