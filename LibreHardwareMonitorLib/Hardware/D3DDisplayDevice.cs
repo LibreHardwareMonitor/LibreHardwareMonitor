@@ -50,7 +50,7 @@ namespace LibreHardwareMonitor.Hardware
             return identifier;
         }
 
-        public static bool GetDeviceInfoByIdentifier(string deviceIdentifier, out D3DDeviceInfo deviceInfo, string nodeEngineNamePrefix = "D3D ")
+        public static bool GetDeviceInfoByIdentifier(string deviceIdentifier, out D3DDeviceInfo deviceInfo)
         {
             deviceInfo = new D3DDeviceInfo();
 
@@ -95,7 +95,7 @@ namespace LibreHardwareMonitor.Hardware
                 deviceInfo.Nodes[nodeId] = new D3DDeviceNodeInfo
                 {
                     Id = nodeId,
-                    Name = GetNodeEngineTypeString(nodeMetaData, nodeEngineNamePrefix),
+                    Name = GetNodeEngineTypeString(nodeMetaData),
                     RunningTime = nodeInformation.GlobalInformation.RunningTime.QuadPart,
                     QueryTime = queryTime
                 };
@@ -136,20 +136,20 @@ namespace LibreHardwareMonitor.Hardware
             return status == WinNt.STATUS_SUCCESS;
         }
 
-        private static string GetNodeEngineTypeString(D3dkmth.D3DKMT_NODEMETADATA nodeMetaData, string prefix)
+        private static string GetNodeEngineTypeString(D3dkmth.D3DKMT_NODEMETADATA nodeMetaData)
         {
             return nodeMetaData.NodeData.EngineType switch
             {
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => prefix + (!string.IsNullOrWhiteSpace(nodeMetaData.NodeData.FriendlyName) ? nodeMetaData.NodeData.FriendlyName : "Other"),
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_3D => prefix + "3D",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_DECODE => prefix + "Video Decode",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_ENCODE => prefix + "Video Encode",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_PROCESSING => prefix + "Video Processing",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_SCENE_ASSEMBLY => prefix + "Scene Assembly",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_COPY => prefix + "Copy",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OVERLAY => prefix + "Overlay",
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_CRYPTO => prefix + "Crypto",
-                _ => prefix + "Unknown",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => "D3D " + (!string.IsNullOrWhiteSpace(nodeMetaData.NodeData.FriendlyName) ? nodeMetaData.NodeData.FriendlyName : "Other"),
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_3D => "D3D 3D",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_DECODE => "D3D Video Decode",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_ENCODE => "D3D Video Encode",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_PROCESSING => "D3D Video Processing",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_SCENE_ASSEMBLY => "D3D Scene Assembly",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_COPY => "D3D Copy",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OVERLAY => "D3D Overlay",
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_CRYPTO => "D3D Crypto",
+                _ => "D3D Unknown",
             };
         }
 

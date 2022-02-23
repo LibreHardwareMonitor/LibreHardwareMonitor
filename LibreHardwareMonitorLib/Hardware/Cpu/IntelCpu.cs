@@ -403,6 +403,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
                             continue;
 
+                        // don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead
                         if (i == 2 && !Software.OperatingSystem.IsUnix)
                             continue;
 

@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         public IntelGpuGroup(CPU.IntelCpu intelCpu, ISettings settings)
         {
-            if (!Software.OperatingSystem.IsUnix)
+            if (!Software.OperatingSystem.IsUnix && intelCpu != null)
             {
                 _report.AppendLine("Intel GPU (D3D)");
                 _report.AppendLine();
@@ -36,7 +36,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                     if (isIntel)
                     {
-                        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo, "GPU "))
+                        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                         {
                             _report.Append("GpuSharedLimit: ");
                             _report.AppendLine(deviceInfo.GpuSharedLimit.ToString(CultureInfo.InvariantCulture));

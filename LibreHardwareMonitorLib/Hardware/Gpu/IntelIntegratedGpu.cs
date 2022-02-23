@@ -10,21 +10,17 @@ namespace LibreHardwareMonitor.Hardware.Gpu
         private readonly CPU.IntelCpu _intelCpu;
         private readonly string _deviceId;
         private readonly D3DDisplayDevice.D3DDeviceInfo _deviceInfo;
-
         private readonly Sensor _dedicatedMemoryUsage;
         private readonly Sensor _sharedMemoryUsage;
-
         private readonly Sensor[] _nodeUsage;
         private readonly long[] _nodeUsagePrevValue;
         private readonly DateTime[] _nodeUsagePrevTick;
-
         private const uint MSR_RAPL_POWER_UNIT = 0x606;
         private const uint MSR_PP1_ENERGY_STATUS = 0x641;
         private readonly float _energyUnitMultiplier;
         private DateTime _lastEnergyTime;
         private uint _lastEnergyConsumed;
         private readonly Sensor _powerSensor;
-
 
         public override HardwareType HardwareType => HardwareType.GpuIntel;
 
@@ -41,21 +37,20 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             if (_deviceInfo.GpuDedicatedLimit > 0)
             {
-                _dedicatedMemoryUsage = new Sensor("GPU Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+                _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
             }
-            _sharedMemoryUsage = new Sensor("GPU Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+            _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
 
             if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out var eax, out var _))
             {
-                _energyUnitMultiplier = _intelCpu?.EnergyUnitsMultiplier ?? 1.0f / (1 << (int)((eax >> 8) & 0x1F));
-            }
-
-            if (_energyUnitMultiplier != 0 && Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out eax, out var _))
-            {
-                _lastEnergyTime = DateTime.UtcNow;
-                _lastEnergyConsumed = eax;
-                _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
-                ActivateSensor(_powerSensor);
+                _energyUnitMultiplier = _intelCpu.EnergyUnitsMultiplier;
+                if (_energyUnitMultiplier != 0)
+                {
+                    _lastEnergyTime = DateTime.UtcNow;
+                    _lastEnergyConsumed = eax;
+                    _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
+                    ActivateSensor(_powerSensor);
+                }
             }
 
             _nodeUsage = new Sensor[deviceInfo.Nodes.Length];
