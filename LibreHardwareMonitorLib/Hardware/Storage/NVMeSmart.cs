@@ -21,7 +21,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             NVMeDrive = null;
             string name = storageInfo.Name;
 
-            // Test samsung protocol.
+            // Test Samsung protocol.
             if (NVMeDrive == null && name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeSamsung.IdentifyDevice(storageInfo);
