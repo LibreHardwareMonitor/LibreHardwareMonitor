@@ -4,6 +4,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
 
@@ -237,15 +238,21 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 validTransfer = Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
                 if (validTransfer)
                 {
-                    Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
-                    Marshal.FreeHGlobal(buffer);
+                    var result = Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
+
+                    if (result.DataBuf.Sum(x => (long)x) == 0)
+                    {
+                        handle.Close();
+                        handle = null;
+                    }
                 }
                 else
                 {
-                    Marshal.FreeHGlobal(buffer);
                     handle.Close();
                     handle = null;
                 }
+
+                Marshal.FreeHGlobal(buffer);
             }
 
             return handle;
