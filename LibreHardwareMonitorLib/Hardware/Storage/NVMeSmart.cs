@@ -19,20 +19,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             _driveNumber = storageInfo.Index;
             NVMeDrive = null;
-
-            // Test samsung protocol.
-
-            // Exclude Samsung 980 Pro and PM9A1, these use the NVMeWindows generic protocol.
-            // Samsung 980 Pro can accessed via IdentifyDevice and IdentifyController but not by HealthInfoLog.
             string name = storageInfo.Name;
 
-            if (NVMeDrive == null &&
-                name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1 &&
-                name.IndexOf("980 Pro", StringComparison.OrdinalIgnoreCase) == -1 &&
-                name.IndexOf("MZVL2256HCHQ", StringComparison.OrdinalIgnoreCase) == -1 &&
-                name.IndexOf("MZVL2512HCJQ", StringComparison.OrdinalIgnoreCase) == -1 &&
-                name.IndexOf("MZVL21T0HCLR", StringComparison.OrdinalIgnoreCase) == -1 &&
-                name.IndexOf("MZVL22T0HBLB", StringComparison.OrdinalIgnoreCase) == -1)
+            // Test Samsung protocol.
+            if (NVMeDrive == null && name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeSamsung.IdentifyDevice(storageInfo);
                 if (_handle != null)
