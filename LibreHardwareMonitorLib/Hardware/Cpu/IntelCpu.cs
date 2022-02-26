@@ -30,6 +30,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly Sensor[] _powerSensors;
         private readonly double _timeStampCounterMultiplier;
 
+        public float EnergyUnitsMultiplier => _energyUnitMultiplier;
+
         public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
             // set tjMax
@@ -401,6 +403,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
                             continue;
 
+                        // Don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead.
+                        if (i == 2 && !Software.OperatingSystem.IsUnix)
+                            continue;
 
                         _lastEnergyTime[i] = DateTime.UtcNow;
                         _lastEnergyConsumed[i] = eax;
