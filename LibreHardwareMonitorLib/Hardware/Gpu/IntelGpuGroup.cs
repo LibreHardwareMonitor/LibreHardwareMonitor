@@ -1,8 +1,13 @@
-﻿using LibreHardwareMonitor.Hardware.CPU;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// All Rights Reserved.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
+using LibreHardwareMonitor.Hardware.CPU;
 
 namespace LibreHardwareMonitor.Hardware.Gpu
 {
@@ -18,16 +23,16 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _report.AppendLine("Intel GPU (D3D)");
                 _report.AppendLine();
 
-                var ids = D3DDisplayDevice.GetDeviceIdentifiers();
-                
+                string[] ids = D3DDisplayDevice.GetDeviceIdentifiers();
+
                 _report.Append("Number of adapters: ");
                 _report.AppendLine(ids.Length.ToString(CultureInfo.InvariantCulture));
                 _report.AppendLine();
 
-                for (var i = 0; i < ids.Length; i++)
+                for (int i = 0; i < ids.Length; i++)
                 {
-                    var deviceId = ids[i];
-                    var isIntel = deviceId.IndexOf("VEN_8086") != -1;
+                    string deviceId = ids[i];
+                    bool isIntel = deviceId.IndexOf("VEN_8086", StringComparison.Ordinal) != -1;
 
                     _report.Append("AdapterIndex: ");
                     _report.AppendLine(i.ToString(CultureInfo.InvariantCulture));
@@ -57,10 +62,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                             if (deviceInfo.Integrated)
                             {
-                                // it may seem strange to only use the first cpu here, but in-case we have a multi cpu system
-                                // with integrated graphics (does that exist?), we would pick up the multiple device identifiers
-                                // above and would add one instance for each CPU
-                                _hardware.Add(new IntelIntegratedGpu(intelCpus.First(), deviceId, deviceInfo, settings));
+                                // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),
+                                // we would pick up the multiple device identifiers above and would add one instance for each CPU.
+                                _hardware.Add(new IntelIntegratedGpu(intelCpus[0], deviceId, deviceInfo, settings));
                             }
                         }
                     }
