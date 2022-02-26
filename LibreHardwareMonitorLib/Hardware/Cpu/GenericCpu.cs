@@ -46,23 +46,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
             _coreCount = cpuId.Length;
             _threadCount = cpuId.Sum(x => x.Length);
 
-            // check if processor has MSRs
-            if (cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x20) != 0)
-                HasModelSpecificRegisters = true;
-            else
-                HasModelSpecificRegisters = false;
+            // Check if processor has MSRs.
+            HasModelSpecificRegisters = cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x20) != 0;
 
-            // check if processor has a TSC
-            if (cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x10) != 0)
-                HasTimeStampCounter = true;
-            else
-                HasTimeStampCounter = false;
+            // Check if processor has a TSC.
+            HasTimeStampCounter = cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x10) != 0;
 
-            // check if processor supports an invariant TSC
-            if (cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0)
-                _isInvariantTimeStampCounter = true;
-            else
-                _isInvariantTimeStampCounter = false;
+            // Check if processor supports an invariant TSC.
+            _isInvariantTimeStampCounter = cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0;
 
             _totalLoad = _coreCount > 1 ? new Sensor("CPU Total", 0, SensorType.Load, this, settings) : null;
 
@@ -70,16 +61,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_cpuLoad.IsAvailable)
             {
                 _threadLoads = new Sensor[_threadCount];
-                for (var coreIdx = 0; coreIdx < cpuId.Length; coreIdx++)
+                for (int coreIdx = 0; coreIdx < cpuId.Length; coreIdx++)
                 {
-                    for (var threadIdx = 0; threadIdx < cpuId[coreIdx].Length; threadIdx++)
+                    for (int threadIdx = 0; threadIdx < cpuId[coreIdx].Length; threadIdx++)
                     {
-                        var thread = cpuId[coreIdx][threadIdx].Thread;
+                        int thread = cpuId[coreIdx][threadIdx].Thread;
                         if (thread < _threadLoads.Length)
                         {
-                            // some cores may have 2 threads while others have only one (e.g. P-cores vs E-cores on Intel 12th gen)
-                            var sensorName = CoreString(coreIdx) + (cpuId[coreIdx].Length > 1 ? $" Thread #{threadIdx + 1}" : "");
+                            // Some cores may have 2 threads while others have only one (e.g. P-cores vs E-cores on Intel 12th gen).
+                            string sensorName = CoreString(coreIdx) + (cpuId[coreIdx].Length > 1 ? $" Thread #{threadIdx + 1}" : string.Empty);
                             _threadLoads[thread] = new Sensor(sensorName, thread + 1, SensorType.Load, this, settings);
+
                             ActivateSensor(_threadLoads[thread]);
                         }
                     }
