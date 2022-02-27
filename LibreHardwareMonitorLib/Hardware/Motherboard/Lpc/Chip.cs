@@ -35,7 +35,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         IT8686E = 0x8686,
         IT8688E = 0x8688,
         IT8689E = 0x8689,
-        IT8695E = 0x8695, // name unclear. May be also IT8795E
+        IT8695E = 0x8695,
         IT8705F = 0x8705,
         IT8712F = 0x8712,
         IT8716F = 0x8716,

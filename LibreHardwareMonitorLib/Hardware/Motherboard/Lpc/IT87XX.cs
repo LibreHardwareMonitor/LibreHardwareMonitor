@@ -22,7 +22,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly int _gpioCount;
         private readonly bool _has16BitFanCounter;
         private readonly bool _hasExtReg;
-        private readonly int _countBanks;
+        private readonly int _bankCount;
         private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; // Initial Fan Controller Main Control Register value. 
         private readonly byte[] _initialFanPwmControl = new byte[5]; // This will also store the 2nd control register value.
         private readonly byte[] _initialFanPwmControlExt = new byte[5];
@@ -30,7 +30,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly byte _version;
         private readonly float _voltageGain;
 
-        private bool SupportsMultipleBanks => _countBanks > 1;
+        private bool SupportsMultipleBanks => _bankCount > 1;
 
         public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version)
         {
@@ -72,7 +72,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 ? new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f }
                 : new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf };
 
-            _countBanks = chip switch
+            _bankCount = chip switch
             {
                 Chip.IT8689E => 4,
                 _ => 1
@@ -352,7 +352,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 return r.ToString();
 
             // dump memory of all banks if supported by chip
-            for (byte b = 0; b < _countBanks; b++)
+            for (byte b = 0; b < _bankCount; b++)
             {
                 if (SupportsMultipleBanks && b > 0)
                 {
@@ -384,7 +384,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 SelectBank(0);                
             }
-            
 
             r.AppendLine();
 
@@ -408,7 +407,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         /// <returns></returns>
         private int GetCurrentBank()
         {
-            if (_countBanks <= 1)
+            if (_bankCount <= 1)
                 return 0; // current chip does not support multi bank registers
             
             var value = ReadByte(BANK_REGISTER, out bool valid);
@@ -430,7 +429,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         /// <param name="bankIndex">New bank index. Can be a value of 0-3.</param>
         private void SelectBank(byte bankIndex)
         {
-            if (bankIndex >= _countBanks)
+            if (bankIndex >= _bankCount)
                 return; // current chip does not support that many banks
 
             // hard cap SelectBank to 2 bit values. If we ever have chips with more bank bits rewrite this method.
