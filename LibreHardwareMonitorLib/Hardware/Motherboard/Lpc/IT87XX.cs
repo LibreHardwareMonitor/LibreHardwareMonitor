@@ -16,13 +16,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     {
         private readonly ushort _address;
         private readonly ushort _addressReg;
+        private readonly int _bankCount;
         private readonly ushort _dataReg;
         private readonly bool[] _fansDisabled = new bool[0];
         private readonly ushort _gpioAddress;
         private readonly int _gpioCount;
         private readonly bool _has16BitFanCounter;
         private readonly bool _hasExtReg;
-        private readonly int _bankCount;
         private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; // Initial Fan Controller Main Control Register value. 
         private readonly byte[] _initialFanPwmControl = new byte[5]; // This will also store the 2nd control register value.
         private readonly byte[] _initialFanPwmControlExt = new byte[5];
