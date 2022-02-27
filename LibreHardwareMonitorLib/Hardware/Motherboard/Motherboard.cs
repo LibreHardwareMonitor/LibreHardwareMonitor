@@ -23,6 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         private readonly string _name;
         private readonly ISettings _settings;
         private string _customName;
+        public static readonly List<Hardware> _smbusSensorList = new List<Hardware>();
 
         /// <summary>
         /// Creates motherboard instance by retrieving information from <see cref="LibreHardwareMonitor.Hardware.SMBios"/> and creates a new <see cref="SubHardware"/> based on data from <see cref="LpcIO"/> and <see cref="EmbeddedController"/>.
@@ -72,12 +73,19 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
             EmbeddedController embeddedController = EmbeddedController.Create(model, settings);
 
-            SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
+            _smbusSensorList.Clear();
+            SmbusIO.SmbusDetect(settings);
+
+            SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0) + _smbusSensorList.Count];
             for (int i = 0; i < superIO.Count; i++)
                 SubHardware[i] = new SuperIOHardware(this, superIO[i], manufacturer, model, settings);
 
             if (embeddedController != null)
                 SubHardware[superIO.Count] = embeddedController;
+
+            for (int i = superIO.Count + (embeddedController != null ? 1 : 0);
+                i < superIO.Count + (embeddedController != null ? 1 : 0) + _smbusSensorList.Count; i++)
+                SubHardware[i] = _smbusSensorList[i - superIO.Count + (embeddedController != null ? 1 : 0)];
         }
 
         /// <inheritdoc/>

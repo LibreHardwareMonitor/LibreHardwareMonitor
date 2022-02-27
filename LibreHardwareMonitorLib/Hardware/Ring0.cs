@@ -23,6 +23,7 @@ namespace LibreHardwareMonitor.Hardware
         private static string _filePath;
         private static Mutex _isaBusMutex;
         private static Mutex _pciBusMutex;
+        private static Mutex _smBusMutex;
 
         private static readonly StringBuilder _report = new();
 
@@ -110,6 +111,26 @@ namespace LibreHardwareMonitor.Hardware
             if (!TryCreateOrOpenExistingMutex(ecMutexName, out _ecMutex))
             {
                 // Mutex could not be created or opened.
+            }
+
+            const string smbusMutexName = "Global\\Access_SMBUS.HTP.Method";
+
+            try
+            {
+                _smBusMutex = new Mutex(false, smbusMutexName);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+#if NETFRAMEWORK
+                    _smBusMutex = Mutex.OpenExisting(smbusMutexName, MutexRights.Synchronize);
+#else
+                    _smBusMutex = Mutex.OpenExisting(smbusMutexName);
+#endif
+                }
+                catch
+                { }
             }
         }
 
@@ -375,6 +396,12 @@ namespace LibreHardwareMonitor.Hardware
             {
                 _ecMutex.Close();
                 _ecMutex = null;
+			}
+
+            if (_smBusMutex != null)
+            {
+                _smBusMutex.Close();
+                _smBusMutex = null;
             }
 
             // try to delete temporary driver file again if failed during open
@@ -452,6 +479,28 @@ namespace LibreHardwareMonitor.Hardware
             try
             {
                 return _ecMutex.WaitOne(millisecondsTimeout, false);
+			}
+            catch (AbandonedMutexException)
+            {
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+		
+        public static bool WaitSmBusMutex(int millisecondsTimeout)
+        {
+            if (_smBusMutex == null)
+                return true;
+
+
+            try
+            {
+                if (millisecondsTimeout == 0)
+                    return _smBusMutex.WaitOne();
+                return _smBusMutex.WaitOne(millisecondsTimeout, false);
             }
             catch (AbandonedMutexException)
             {
@@ -466,6 +515,11 @@ namespace LibreHardwareMonitor.Hardware
         public static void ReleaseEcMutex()
         {
             _ecMutex?.ReleaseMutex();
+		}
+
+        public static void ReleaseSmBusMutex()
+        {
+            _smBusMutex?.ReleaseMutex();
         }
 
         public static bool ReadMsr(uint index, out uint eax, out uint edx)
@@ -517,6 +571,26 @@ namespace LibreHardwareMonitor.Hardware
                 return;
 
             WriteIoPortInput input = new() { PortNumber = port, Value = value };
+            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
+        }
+
+        public static ushort ReadSmbus(ushort port)
+        {
+            if (_driver == null)
+                return 0;
+
+            uint value = 0;
+            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
+            ushort retVal = (ushort)(value & 0xff);
+            return retVal;
+        }
+
+        public static void WriteSmbus(ushort port, int value)
+        {
+            if (_driver == null)
+                return;
+
+            WriteIoPortInput input = new WriteIoPortInput { PortNumber = port, Value = (byte)(value & 0xff) };
             _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
         }
 
