@@ -251,6 +251,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                     break;
                 }
+                case Chip.IT8695E:
                 case Chip.IT879XE:
                 {
                     GetIteConfigurationsC(superIO, manufacturer, model, v, t, f, c);
@@ -1516,6 +1517,25 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.Z690_AORUS_PRO:
+                        {
+                            t.Add(new Temperature("System #1", 0));
+                            t.Add(new Temperature("System #2", 1));
+                            t.Add(new Temperature("CPU", 2));
+                            t.Add(new Temperature("PCIe x16", 3));
+                            t.Add(new Temperature("VRM MOS", 4));
+                            f.Add(new Fan("CPU Fan", 0));
+                            f.Add(new Fan("System Fan #1", 1));
+                            f.Add(new Fan("System Fan #2", 2));
+                            f.Add(new Fan("System Fan #3", 3));
+                            f.Add(new Fan("CPU Optional Fan", 4));
+                            c.Add(new Ctrl("CPU Fan", 0));
+                            c.Add(new Ctrl("System Fan #1", 1));
+                            c.Add(new Ctrl("System Fan #2", 2));
+                            c.Add(new Ctrl("System Fan #3", 3));
+                            c.Add(new Ctrl("CPU Optional Fan", 4));
+                            break;
+                        }
                         case Model.Z68A_D3H_B3: // IT8728F
                         {
                             v.Add(new Voltage("VTT", 0));
@@ -1771,6 +1791,18 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("Fan Control #6", 1));
                             c.Add(new Ctrl("Fan Control #4", 2));
 
+                            break;
+                        }
+                        case Model.Z690_AORUS_PRO:
+                        {
+                            t.Add(new Temperature("System #3", 0));
+                            t.Add(new Temperature("System #4", 2));
+                            f.Add(new Fan("System Fan #5", 0));
+                            f.Add(new Fan("System Fan #6", 1));
+                            f.Add(new Fan("System Fan #4", 2));
+                            c.Add(new Ctrl("Fan Control #5", 0));
+                            c.Add(new Ctrl("Fan Control #6", 1));
+                            c.Add(new Ctrl("Fan Control #4", 2));
                             break;
                         }
                         default:

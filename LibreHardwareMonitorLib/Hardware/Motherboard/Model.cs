@@ -139,6 +139,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         Z68X_UD3H_B3,
         Z68X_UD7_B3,
         Z68XP_UD3R,
+        Z690_AORUS_PRO,
         Z170N_WIFI,
         X470_AORUS_GAMING_7_WIFI,
         X570_AORUS_MASTER,
