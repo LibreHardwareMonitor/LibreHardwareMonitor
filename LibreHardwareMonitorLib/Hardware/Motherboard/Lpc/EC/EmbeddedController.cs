@@ -128,6 +128,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 Model.ROG_STRIX_X570_I_GAMING,
                 new ECSensor[] {
                     ECSensor.TempTSensor, ECSensor.FanVrmHS, ECSensor.FanChipset, ECSensor.CurrCPU }
+            },
+            {
+                Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
+                new ECSensor[] {
+                    ECSensor.TempTSensor, ECSensor.TempVrm }
             }
         };
 
