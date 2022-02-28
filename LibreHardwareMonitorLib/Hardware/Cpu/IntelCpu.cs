@@ -18,6 +18,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly Sensor[] _coreClocks;
         private readonly Sensor _coreMax;
         private readonly Sensor[] _coreTemperatures;
+        private readonly Sensor _coreVoltage;
         private readonly Sensor[] _distToTjMaxTemperatures;
 
         private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERY_STATUS, MSR_PP0_ENERY_STATUS, MSR_PP1_ENERY_STATUS, MSR_DRAM_ENERGY_STATUS };
@@ -34,6 +35,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
+            uint eax;
+
             // set tjMax
             float[] tjMax;
             switch (_family)
@@ -264,7 +267,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.TigerLake:
                 case MicroArchitecture.Tremont:
                 {
-                    if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out uint eax, out uint _))
+                    if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     {
                         _timeStampCounterMultiplier = (eax >> 8) & 0xff;
                     }
@@ -382,7 +385,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
                 _lastEnergyConsumed = new uint[_energyStatusMsrs.Length];
 
-                if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint _))
+                if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
                     switch (_microArchitecture)
                     {
                         case MicroArchitecture.Silvermont:
@@ -417,6 +420,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                         ActivateSensor(_powerSensors[i]);
                     }
+                }
+            }
+
+            if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _)) {
+                if (((eax >> 32) & 0xFFFF) > 0)
+                {
+                    _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
+                    ActivateSensor(_coreVoltage);
                 }
             }
 
@@ -614,6 +625,14 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     sensor.Value = _energyUnitMultiplier * unchecked(energyConsumed - _lastEnergyConsumed[sensor.Index]) / deltaTime;
                     _lastEnergyTime[sensor.Index] = time;
                     _lastEnergyConsumed[sensor.Index] = energyConsumed;
+                }
+            }
+
+            if (_coreVoltage != null)
+            {
+                if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint _))
+                {
+                    _coreVoltage.Value = ((eax >> 32) & 0xFFFF) / (float)(1 << 13);
                 }
             }
         }
