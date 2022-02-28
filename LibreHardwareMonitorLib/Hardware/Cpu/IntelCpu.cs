@@ -423,12 +423,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
             }
 
-            if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _)) {
-                if (((eax >> 32) & 0xFFFF) > 0)
-                {
-                    _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
-                    ActivateSensor(_coreVoltage);
-                }
+            if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
+            {
+                _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
+                ActivateSensor(_coreVoltage);
             }
 
             Update();
@@ -492,11 +490,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             float coreMax = float.MinValue;
             float coreAvg = 0;
+            uint eax = 0;
 
             for (int i = 0; i < _coreTemperatures.Length; i++)
             {
                 // if reading is valid
-                if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out uint eax, out uint _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+                if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out uint _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = (eax & 0x007F0000) >> 16;
@@ -528,7 +527,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_packageTemperature != null)
             {
                 // if reading is valid
-                if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
+                if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out uint _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = (eax & 0x007F0000) >> 16;
@@ -548,7 +547,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 for (int i = 0; i < _coreClocks.Length; i++)
                 {
                     System.Threading.Thread.Sleep(1);
-                    if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
+                    if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _, _cpuId[i][0].Affinity))
                     {
                         newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                         switch (_microArchitecture)
@@ -611,7 +610,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     if (sensor == null)
                         continue;
 
-                    if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out uint eax, out uint _))
+                    if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out uint _))
                         continue;
 
 
@@ -628,12 +627,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
             }
 
-            if (_coreVoltage != null)
+            if (_coreVoltage != null && Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _))
             {
-                if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint _))
-                {
-                    _coreVoltage.Value = ((eax >> 32) & 0xFFFF) / (float)(1 << 13);
-                }
+                _coreVoltage.Value = ((eax >> 32) & 0xFFFF) / (float)(1 << 13);
             }
         }
 
