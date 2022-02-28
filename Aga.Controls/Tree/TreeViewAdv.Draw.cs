@@ -136,7 +136,7 @@ namespace Aga.Controls.Tree
 			OnRowDraw(e, node, context, row, rowRect);
 
 			if ((GridLineStyle & GridLineStyle.Horizontal) == GridLineStyle.Horizontal) {
-				e.Graphics.DrawLine(LightGrayPen, 0, rowRect.Bottom, e.Graphics.ClipBounds.Right, rowRect.Bottom);
+				e.Graphics.DrawLine(CustomHorizontalLinePen, 0, rowRect.Bottom, e.Graphics.ClipBounds.Right, rowRect.Bottom);
       }
 
 			if (FullRowSelect)
@@ -147,12 +147,12 @@ namespace Aga.Controls.Tree
 					Rectangle focusRect = new Rectangle(OffsetX, rowRect.Y, ClientRectangle.Width, rowRect.Height);
 					if (context.DrawSelection == DrawSelectionMode.Active)
 					{
-						e.Graphics.FillRectangle(GrayBrush, focusRect);
+						e.Graphics.FillRectangle(CustomSelectedRowBrush, focusRect);
 						context.DrawSelection = DrawSelectionMode.FullRowSelect;
 					}
 					else
 					{
-						e.Graphics.FillRectangle(GrayBrush, focusRect);
+						e.Graphics.FillRectangle(CustomSelectedRowBrush, focusRect);
 						context.DrawSelection = DrawSelectionMode.None;
 					}
 				}

@@ -10,11 +10,12 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
 
@@ -23,13 +24,13 @@ namespace LibreHardwareMonitor.UI
 {
     public sealed partial class MainForm : Form
     {
+        private ToolStripMenuItem _autoThemeMenuItem;
         private int _delayCount;
         private readonly PersistentSettings _settings;
         private readonly UnitManager _unitManager;
         private readonly Computer _computer;
         private readonly Node _root;
         private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
-        private readonly Color[] _plotColorPalette;
         private readonly SystemTray _systemTray;
         private readonly StartupManager _startupManager = new StartupManager();
         private readonly UpdateVisitor _updateVisitor = new UpdateVisitor();
@@ -122,7 +123,6 @@ namespace LibreHardwareMonitor.UI
                 // Unix
                 treeView.RowHeight = Math.Max(treeView.RowHeight, 18);
                 splitContainer.BorderStyle = BorderStyle.None;
-                splitContainer.Border3DStyle = Border3DStyle.Adjust;
                 splitContainer.SplitterWidth = 4;
                 treeView.BorderStyle = BorderStyle.Fixed3D;
                 _plotPanel.BorderStyle = BorderStyle.Fixed3D;
@@ -144,21 +144,6 @@ namespace LibreHardwareMonitor.UI
             nodeTextBoxText.ToolTipProvider = tooltipProvider;
             nodeTextBoxValue.ToolTipProvider = tooltipProvider;
             _logger = new Logger(_computer);
-
-            _plotColorPalette = new Color[13];
-            _plotColorPalette[0] = Color.Blue;
-            _plotColorPalette[1] = Color.OrangeRed;
-            _plotColorPalette[2] = Color.Green;
-            _plotColorPalette[3] = Color.LightSeaGreen;
-            _plotColorPalette[4] = Color.Goldenrod;
-            _plotColorPalette[5] = Color.DarkViolet;
-            _plotColorPalette[6] = Color.YellowGreen;
-            _plotColorPalette[7] = Color.SaddleBrown;
-            _plotColorPalette[8] = Color.RoyalBlue;
-            _plotColorPalette[9] = Color.DeepPink;
-            _plotColorPalette[10] = Color.MediumSeaGreen;
-            _plotColorPalette[11] = Color.Olive;
-            _plotColorPalette[12] = Color.Firebrick;
 
             _computer.HardwareAdded += HardwareAdded;
             _computer.HardwareRemoved += HardwareRemoved;
@@ -355,6 +340,7 @@ namespace LibreHardwareMonitor.UI
 
             InitializePlotForm();
             InitializeSplitter();
+            InitializeTheme();
 
             startupMenuItem.Visible = _startupManager.IsAvailable;
 
@@ -524,6 +510,68 @@ namespace LibreHardwareMonitor.UI
             };
         }
 
+        private void InitializeTheme()
+        {
+
+            mainMenu.Renderer = new ThemedToolStripRenderer();
+            treeContextMenu.Renderer = new ThemedToolStripRenderer();
+            ThemedVScrollIndicator.AddToControl(treeView);
+            ThemedHScrollIndicator.AddToControl(treeView);
+
+            string themeSetting = _settings.GetValue("theme", "auto");
+            bool themeSelected = false;
+
+            void ClearThemeMenu()
+            {
+                foreach (ToolStripItem x in themeMenuItem.DropDownItems)
+                {
+                    if (x is ToolStripMenuItem tmi)
+                        tmi.Checked = false;
+                }
+            }
+
+            if (Theme.SupportsAutoThemeSwitching())
+            {
+                _autoThemeMenuItem = new ToolStripMenuItem();
+                _autoThemeMenuItem.Text = "Auto";
+                _autoThemeMenuItem.Click += (o, e) =>
+                {
+                    ClearThemeMenu();
+                    _autoThemeMenuItem.Checked = true;
+                    Theme.SetAutoTheme();
+                    _settings.SetValue("theme", "auto");
+                };
+                themeMenuItem.DropDownItems.Add(_autoThemeMenuItem);
+            }
+
+            foreach (Theme theme in Theme.All)
+            {
+                ToolStripMenuItem item = new ToolStripMenuItem();
+                item.Text = theme.DisplayName;
+                item.Click += (o, e) =>
+                {
+                    ClearThemeMenu();
+                    item.Checked = true;
+                    Theme.Current = theme;
+                    _settings.SetValue("theme", theme.Id);
+                };
+                themeMenuItem.DropDownItems.Add(item);
+
+                if (themeSetting == theme.Id)
+                {
+                    item.PerformClick();
+                    themeSelected = true;
+                }
+            }
+
+            if (!themeSelected)
+            {
+                themeMenuItem.DropDownItems[0].PerformClick();
+            }
+
+            Theme.Current.Apply(this);
+        }
+
         private void InsertSorted(IList<Node> nodes, HardwareNode node)
         {
             int i = 0;
@@ -593,7 +641,7 @@ namespace LibreHardwareMonitor.UI
                         if (!sensorNode.PenColor.HasValue)
                         {
                             colors.Add(sensorNode.Sensor,
-                              _plotColorPalette[colorIndex % _plotColorPalette.Length]);
+                              Theme.Current.PlotColorPalette[colorIndex % Theme.Current.PlotColorPalette.Length]);
                         }
                         selected.Add(sensorNode.Sensor);
                     }
@@ -615,7 +663,7 @@ namespace LibreHardwareMonitor.UI
                 Color curColor = colors[curSelectedSensor];
                 if (usedColors.Contains(curColor))
                 {
-                    foreach (Color potentialNewColor in _plotColorPalette)
+                    foreach (Color potentialNewColor in Theme.Current.PlotColorPalette)
                     {
                         if (!colors.Values.Contains(potentialNewColor))
                         {
@@ -897,7 +945,7 @@ namespace LibreHardwareMonitor.UI
                             if (i <= control.MaxSoftwareValue &&
                                 i >= control.MinSoftwareValue)
                             {
-                                ToolStripMenuItem item = new ToolStripRadioButtonMenuItem(i + " %");
+                                ToolStripMenuItem item = new ToolStripMenuItem(i + " %");
                                 manualItem.DropDownItems.Add(item);
                                 item.Checked = control.ControlMode == ControlMode.Software && Math.Round(control.SoftwareValue) == i;
                                 int softwareValue = i;
@@ -954,12 +1002,17 @@ namespace LibreHardwareMonitor.UI
         protected override void WndProc(ref Message m)
         {
             const int WM_SYSCOMMAND = 0x112;
+            const int WM_WININICHANGE = 0x001A;
             const int SC_MINIMIZE = 0xF020;
             const int SC_CLOSE = 0xF060;
 
             if (_minimizeToTray.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_MINIMIZE)
             {
                 SysTrayHideShow();
+            }
+            else if (m.Msg == WM_WININICHANGE && Marshal.PtrToStringUni(m.LParam) == "ImmersiveColorSet" && _autoThemeMenuItem?.Checked == true)
+            {
+                Theme.SetAutoTheme();
             }
             else if (_minimizeOnClose.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_CLOSE)
             {

@@ -172,7 +172,7 @@ namespace Aga.Controls.Tree.NodeControls
 			PerformanceAnalyzer.Start("BaseTextControl.Draw");
 			string label = GetLabel(node);
 			Rectangle bounds = GetBounds(node, context);
-			Rectangle focusRect = new Rectangle(bounds.X, context.Bounds.Y,	
+			Rectangle focusRect = new Rectangle(bounds.X, context.Bounds.Y, 
 				bounds.Width, context.Bounds.Height);
 
 			Brush backgroundBrush;
@@ -192,7 +192,7 @@ namespace Aga.Controls.Tree.NodeControls
 					_focusPen.Color = SystemColors.InactiveCaption;
 				context.Graphics.DrawRectangle(_focusPen, focusRect);
 			}
-			
+            
 			PerformanceAnalyzer.Start("BaseTextControl.DrawText");
 			if (UseCompatibleTextRendering)
 				TextRenderer.DrawText(context.Graphics, label, font, bounds, textColor, _formatFlags);
@@ -219,23 +219,23 @@ namespace Aga.Controls.Tree.NodeControls
 
 		private void CreateBrushes(TreeNodeAdv node, DrawContext context, string text, out Brush backgroundBrush, out Color textColor, out Font font, ref string label)
 		{
-			textColor = SystemColors.ControlText;
+            textColor = Parent.ForeColor;
 			backgroundBrush = null;
 			font = context.Font;
-			if (context.DrawSelection == DrawSelectionMode.Active)
-			{
-				textColor = SystemColors.HighlightText;
+            if (context.DrawSelection == DrawSelectionMode.Active)
+            {
+                textColor = SystemColors.HighlightText;
                 backgroundBrush = SystemBrushes.Highlight;
-			}
-			else if (context.DrawSelection == DrawSelectionMode.Inactive)
-			{
-				textColor = SystemColors.ControlText;
+            }
+            else if (context.DrawSelection == DrawSelectionMode.Inactive)
+            {
+                textColor = SystemColors.ControlText;
                 backgroundBrush = SystemBrushes.InactiveBorder;
-			}
-			else if (context.DrawSelection == DrawSelectionMode.FullRowSelect)
-				textColor = SystemColors.ControlText;
+            }
+            else if (context.DrawSelection == DrawSelectionMode.FullRowSelect)
+                textColor = TreeViewAdv.CustomSelectedTextColor;
 
-			if (!context.Enabled)
+            if (!context.Enabled)
 				textColor = SystemColors.GrayText;
 
 			if (DrawTextMustBeFired(node))

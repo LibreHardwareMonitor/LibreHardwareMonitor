@@ -16,6 +16,7 @@ using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
+using LibreHardwareMonitor.UI.Themes;
 
 namespace LibreHardwareMonitor.UI
 {
@@ -51,8 +52,29 @@ namespace LibreHardwareMonitor.UI
             UpdateAxesPosition();
 
             SuspendLayout();
+            ApplyTheme();
             Controls.Add(_plot);
             ResumeLayout(true);
+        }
+
+        public void ApplyTheme()
+        {
+            _model.Background = Theme.Current.PlotBackgroundColor.ToOxyColor();
+            _model.PlotAreaBorderColor = Theme.Current.PlotBorderColor.ToOxyColor();
+            foreach (Axis axis in _model.Axes)
+            {
+                axis.AxislineColor = Theme.Current.PlotBorderColor.ToOxyColor();
+                axis.MajorGridlineColor = Theme.Current.PlotGridMajorColor.ToOxyColor();
+                axis.MinorGridlineColor = Theme.Current.PlotGridMinorColor.ToOxyColor();
+                axis.TextColor = Theme.Current.PlotTextColor.ToOxyColor();
+                axis.TitleColor = Theme.Current.PlotTextColor.ToOxyColor();
+                axis.MinorTicklineColor = Theme.Current.PlotBorderColor.ToOxyColor();
+                axis.TicklineColor = Theme.Current.PlotBorderColor.ToOxyColor();
+            }
+            foreach (LineAnnotation annotation in _model.Annotations.Select(x => x as LineAnnotation).Where(x => x != null))
+            {
+                annotation.Color = Theme.Current.PlotBorderColor.ToOxyColor();
+            }
         }
 
         public void SetCurrentSettings()
@@ -69,6 +91,7 @@ namespace LibreHardwareMonitor.UI
         private ContextMenuStrip CreateMenu()
         {
             ContextMenuStrip menu = new ContextMenuStrip();
+            menu.Renderer = new ThemedToolStripRenderer();
 
             ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem("Stacked Axes");
             _stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, _settings);
@@ -198,7 +221,7 @@ namespace LibreHardwareMonitor.UI
                     ClipByXAxis = false,
                     ClipByYAxis = false,
                     LineStyle = LineStyle.Solid,
-                    Color = OxyColors.Black,
+                    Color = Theme.Current.PlotBorderColor.ToOxyColor(),
                     YAxisKey = typeName,
                     StrokeThickness = 2,
                 };

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -6,10 +7,8 @@ using System.Drawing;
 using System.Security.Permissions;
 using System.Threading;
 using System.Windows.Forms;
-using System.Collections;
-
-using Aga.Controls.Tree.NodeControls;
 using Aga.Controls.Threading;
+using Aga.Controls.Tree.NodeControls;
 
 
 namespace Aga.Controls.Tree
@@ -17,13 +16,21 @@ namespace Aga.Controls.Tree
 	/// <summary>
 	/// Extensible advanced <see cref="TreeView"/> implemented in 100% managed C# code.
 	/// Features: Model/View architecture. Multiple column per node. Ability to select
-	/// multiple tree nodes. Different types of controls for each node column: 
+	/// multiple tree nodes. Different types of controls for each node column:
 	/// <see cref="CheckBox"/>, Icon, Label... Drag and Drop highlighting. Load on
 	/// demand of nodes. Incremental search of nodes.
 	/// </summary>
 	public partial class TreeViewAdv : Control
 	{
-		private const int LeftMargin = 7;
+        public static Action<Graphics, Rectangle, bool> CustomCheckRenderFunc;
+        public static Action<Graphics, Rectangle, bool, bool> CustomColumnBackgroundRenderFunc;
+        public static Action<Graphics, Rectangle, Font, string> CustomColumnTextRenderFunc;
+        public static Color CustomSelectedTextColor = SystemColors.ControlText;
+        public static Pen CustomHorizontalLinePen = new Pen(Color.FromArgb(247, 247, 247));
+        public static Action<Graphics, Rectangle, bool> CustomPlusMinusRenderFunc;
+        public static Brush CustomSelectedRowBrush = new SolidBrush(Color.FromArgb(240, 240, 240));
+
+        private const int LeftMargin = 7;
 		internal const int ItemDragSensivity = 4;
 		private readonly int _columnHeaderHeight;
 		private const int DividerWidth = 9;
@@ -250,6 +257,9 @@ namespace Aga.Controls.Tree
 
 			Font = _font;
 			ExpandingIcon.IconChanged += ExpandingIconChanged;
+
+            BackColor = Color.Black;
+
 		}
 
 		public void SetDPI()

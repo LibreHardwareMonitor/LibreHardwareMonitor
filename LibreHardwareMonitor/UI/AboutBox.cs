@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.UI.Themes;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
@@ -21,6 +22,7 @@ namespace LibreHardwareMonitor.UI
             projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
             licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);
             licenseLinkLabel.Links.Add(0, licenseLinkLabel.Text.Length, "https://www.mozilla.org/en-US/MPL/2.0/");
+            Theme.Current.Apply(this);
         }
 
         private void LinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

@@ -79,41 +79,42 @@ namespace LibreHardwareMonitor.UI
             this.minCloseMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startupMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.separatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
+            this.themeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.temperatureUnitsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.celsiusMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.fahrenheitMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.celsiusMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fahrenheitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plotLocationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.plotWindowMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.plotBottomMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.plotRightMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.plotWindowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.plotBottomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.plotRightMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.log1sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log2sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log5sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log10sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log1minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log2minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log5minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log10minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log30minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log1hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log2hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.log6hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.log1sMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log2sMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log5sMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log10sMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log30sMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log1minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log2minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log5minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log10minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log30minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log1hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log2hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.log6hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sensorValuesTimeWindowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.timeWindow30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow1minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow2minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow5minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow10minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow30minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow1hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow2hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow6hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow12hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.timeWindow24hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.timeWindow30sMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow1minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow2minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow5minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow10minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow30minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow1hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow2hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow6hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow12hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeWindow24hMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.webMenuItemSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.webMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -419,6 +420,7 @@ namespace LibreHardwareMonitor.UI
             this.minCloseMenuItem,
             this.startupMenuItem,
             this.separatorMenuItem,
+            this.themeMenuItem,
             this.temperatureUnitsMenuItem,
             this.plotLocationMenuItem,
             this.logSeparatorMenuItem,
@@ -459,6 +461,12 @@ namespace LibreHardwareMonitor.UI
             // 
             this.separatorMenuItem.Name = "separatorMenuItem";
             this.separatorMenuItem.Size = new System.Drawing.Size(218, 6);
+            // 
+            // themeMenuItem
+            // 
+            this.themeMenuItem.Name = "themeMenuItem";
+            this.themeMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.themeMenuItem.Text = "Theme";
             // 
             // temperatureUnitsMenuItem
             // 
@@ -803,8 +811,6 @@ namespace LibreHardwareMonitor.UI
             // 
             // splitContainer
             // 
-            this.splitContainer.Border3DStyle = System.Windows.Forms.Border3DStyle.Raised;
-            this.splitContainer.Color = System.Drawing.SystemColors.Control;
             this.splitContainer.Cursor = System.Windows.Forms.Cursors.Default;
             this.splitContainer.Location = new System.Drawing.Point(12, 12);
             this.splitContainer.Name = "splitContainer";
@@ -924,10 +930,11 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem valueMenuItem;
         private System.Windows.Forms.ToolStripMenuItem minMenuItem;
         private System.Windows.Forms.ToolStripMenuItem maxMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem themeMenuItem;
         private System.Windows.Forms.ToolStripMenuItem temperatureUnitsMenuItem;
         private System.Windows.Forms.ToolStripSeparator webMenuItemSeparator;
-        private ToolStripRadioButtonMenuItem celsiusMenuItem;
-        private ToolStripRadioButtonMenuItem fahrenheitMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem celsiusMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fahrenheitMenuItem;
         private System.Windows.Forms.ToolStripSeparator MenuItem2;
         private System.Windows.Forms.ToolStripMenuItem resetMinMaxMenuItem;
         private System.Windows.Forms.ToolStripSeparator MenuItem3;
@@ -936,9 +943,9 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem resetMenuItem;
         private System.Windows.Forms.ToolStripSeparator menuItem6;
         private System.Windows.Forms.ToolStripMenuItem plotLocationMenuItem;
-        private ToolStripRadioButtonMenuItem plotWindowMenuItem;
-        private ToolStripRadioButtonMenuItem plotBottomMenuItem;
-        private ToolStripRadioButtonMenuItem plotRightMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem plotWindowMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem plotBottomMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem plotRightMenuItem;
         private System.Windows.Forms.ToolStripMenuItem webMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem serverPortMenuItem;
@@ -951,32 +958,32 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem logSensorsMenuItem;
         private System.Windows.Forms.ToolStripSeparator logSeparatorMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loggingIntervalMenuItem;
-        private ToolStripRadioButtonMenuItem log1sMenuItem;
-        private ToolStripRadioButtonMenuItem log2sMenuItem;
-        private ToolStripRadioButtonMenuItem log5sMenuItem;
-        private ToolStripRadioButtonMenuItem log10sMenuItem;
-        private ToolStripRadioButtonMenuItem log30sMenuItem;
-        private ToolStripRadioButtonMenuItem log1minMenuItem;
-        private ToolStripRadioButtonMenuItem log2minMenuItem;
-        private ToolStripRadioButtonMenuItem log5minMenuItem;
-        private ToolStripRadioButtonMenuItem log10minMenuItem;
-        private ToolStripRadioButtonMenuItem log30minMenuItem;
-        private ToolStripRadioButtonMenuItem log1hMenuItem;
-        private ToolStripRadioButtonMenuItem log2hMenuItem;
-        private ToolStripRadioButtonMenuItem log6hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log1sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log2sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log5sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log10sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log30sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log1minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log2minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log5minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log10minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log30minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log1hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log2hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem log6hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nicMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sensorValuesTimeWindowMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow30sMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow1minMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow2minMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow5minMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow10minMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow30minMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow1hMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow2hMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow6hMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow12hMenuItem;
-        private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow30sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow1minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow2minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow5minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow10minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow30minMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow1hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow2hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow6hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow12hMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;

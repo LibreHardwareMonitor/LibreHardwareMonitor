@@ -249,6 +249,12 @@ namespace Aga.Controls.Tree
 
         private void DrawContent(Graphics gr, Rectangle bounds, Font font)
         {
+            if (TreeViewAdv.CustomColumnTextRenderFunc != null)
+            {
+                TreeViewAdv.CustomColumnTextRenderFunc(gr, bounds, font, Header);
+                return;
+            }
+
             Rectangle innerBounds = new Rectangle(bounds.X + HeaderLeftMargin, bounds.Y,
                                    bounds.Width - HeaderLeftMargin - HeaderRightMargin,
                                    bounds.Height);
@@ -304,6 +310,12 @@ namespace Aga.Controls.Tree
 
 		internal static void DrawBackground(Graphics gr, Rectangle bounds, bool pressed, bool hot)
 		{
+            if (TreeViewAdv.CustomColumnBackgroundRenderFunc != null)
+            {
+                TreeViewAdv.CustomColumnBackgroundRenderFunc(gr, bounds, pressed, hot);
+                return;
+            }
+
 			if (Application.RenderWithVisualStyles)
 			{
 				CreateRenderers();
