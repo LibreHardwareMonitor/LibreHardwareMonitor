@@ -1622,7 +1622,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
-
                         default:
                         {
                             v.Add(new Voltage("Voltage #1", 0, true));
