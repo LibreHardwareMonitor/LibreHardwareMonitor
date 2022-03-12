@@ -1656,7 +1656,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         case Model.B660GTN: //IT8613E 
                             // This board has some problems with their app controlling fans that I was able to replicate here so I guess is a BIOS problem with the pins.
                             // Biostar is aware so expect changes in the control pins with new bios.
-                            / /In the meantime, it's possible to control CPUFAN and CPUOPT1m but not SYSFAN1.
+                            // In the meantime, it's possible to control CPUFAN and CPUOPT1m but not SYSFAN1.
                         {
                             // The parameters are extracted from the Biostar app config file. 
                             v.Add(new Voltage("Vcore", 0, 0, 1));
