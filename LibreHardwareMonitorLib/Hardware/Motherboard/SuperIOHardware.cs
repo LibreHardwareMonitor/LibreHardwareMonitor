@@ -1654,29 +1654,29 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     switch (model)
                     {
                         case Model.B660GTN: //IT8613E 
-                            //This board have some problems with their app Controling fans that I was able to replicate here so I guess is a Bios problem with the pins.
-                            //Biostar is aware so expect changes in the control pins with new bios.
-                            //In the meantime is possible to control CPUFAN and CPUOPT1 but not SYSFAN1. Readings are ok tho 
+                            // This board has some problems with their app controlling fans that I was able to replicate here so I guess is a BIOS problem with the pins.
+                            // Biostar is aware so expect changes in the control pins with new bios.
+                            / /In the meantime, it's possible to control CPUFAN and CPUOPT1m but not SYSFAN1.
                         {
-                            //the parameters are extracted from the Biostar app config file. 
-                            v.Add(new Voltage("Vcore", 0, 0, 1)); //this is right
-                            v.Add(new Voltage("DRAM", 1, 0, 1));  //This is exact
-                            v.Add(new Voltage("+12V", 2, 5, 1));  //Reads higher than it should 
-                            v.Add(new Voltage("+5V", 3, 147, 100));  //Again reads higher
-                            //Comented because I don't know if it makes sense
-                            //v.Add(new Voltage("VCC ST", 4)); // reads 4.2V
-                            //v.Add(new Voltage("VCCIN AUX", 5)); // reads 2.2V
-                            //v.Add(new Voltage("CPU GT", 6)); // reads 2.6V
-                            //v.Add(new Voltage("3VSB", 7, 10, 10)); //reads 5.8V ? 
-                            v.Add(new Voltage("VBat", 8, 10, 10)); //reads higher than it should 3.4V 
-                            t.Add(new Temperature("System1", 0));
-                            t.Add(new Temperature("System2", 1));  //not sure what sensor is this. it doesn't climb under stress 
+                            // The parameters are extracted from the Biostar app config file. 
+                            v.Add(new Voltage("Vcore", 0, 0, 1));
+                            v.Add(new Voltage("DIMM", 1, 0, 1));
+                            v.Add(new Voltage("+12V", 2, 5, 1)); // Reads higher than it should.
+                            v.Add(new Voltage("+5V", 3, 147, 100));  // Reads higher than it should.
+                            // Commented because I don't know if it makes sense.
+                            //v.Add(new Voltage("VCC ST", 4)); // Reads 4.2V.
+                            //v.Add(new Voltage("VCCIN AUX", 5)); // Reads 2.2V.
+                            //v.Add(new Voltage("CPU GT", 6)); // Reads 2.6V.
+                            //v.Add(new Voltage("3VSB", 7, 10, 10)); // Reads 5.8V ? 
+                            v.Add(new Voltage("VBat", 8, 10, 10)); // Reads higher than it should at 3.4V.
+                            t.Add(new Temperature("System 1", 0));
+                            t.Add(new Temperature("System 2", 1));  // Not sure what sensor is this.
                             t.Add(new Temperature("CPU", 2));
                             f.Add(new Fan("CPU Fan", 1));
-                            f.Add(new Fan("CPU OPT fan", 2));
-                            f.Add(new Fan("SYSFAN", 4));
+                            f.Add(new Fan("CPU Optional fan", 2));
+                            f.Add(new Fan("System Fan", 4));
                             c.Add(new Ctrl("CPU Fan", 1));
-                            c.Add(new Ctrl("CPU OPT Fan", 2));
+                            c.Add(new Ctrl("CPU Optional Fan", 2));
 
                             break;
                         }
