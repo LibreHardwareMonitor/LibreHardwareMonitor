@@ -234,6 +234,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                     break;
                 }
+                case Chip.IT8613E:
                 case Chip.IT8620E:
                 case Chip.IT8628E:
                 case Chip.IT8631E:
@@ -1618,6 +1619,65 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
                             f.Add(new Fan("System Fan #3", 3));
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            v.Add(new Voltage("Voltage #1", 0, true));
+                            v.Add(new Voltage("Voltage #2", 1, true));
+                            v.Add(new Voltage("Voltage #3", 2, true));
+                            v.Add(new Voltage("Voltage #4", 3, true));
+                            v.Add(new Voltage("Voltage #5", 4, true));
+                            v.Add(new Voltage("Voltage #6", 5, true));
+                            v.Add(new Voltage("Voltage #7", 6, true));
+                            v.Add(new Voltage("3VSB", 7, 10, 10, 0, true));
+                            v.Add(new Voltage("VBat", 8, 10, 10));
+
+                            for (int i = 0; i < superIO.Temperatures.Length; i++)
+                                t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+                case Manufacturer.Biostar:
+                {
+                    switch (model)
+                    {
+                        case Model.B660GTN: //IT8613E 
+                            //This board have some problems with their app Controling fans that I was able to replicate here so I guess is a Bios problem with the pins.
+                            //Biostar is aware so expect changes in the control pins with new bios.
+                            //In the meantime is possible to control CPUFAN and CPUOPT1 but not SYSFAN1. Readings are ok tho 
+                        {
+                            //the parameters are extracted from the Biostar app config file. 
+                            v.Add(new Voltage("Vcore", 0, 0, 1)); //this is right
+                            v.Add(new Voltage("DRAM", 1, 0, 1));  //This is exact
+                            v.Add(new Voltage("+12V", 2, 5, 1));  //Reads higher than it should 
+                            v.Add(new Voltage("+5V", 3, 147, 100));  //Again reads higher
+                            //Comented because I don't know if it makes sense
+                            //v.Add(new Voltage("VCC ST", 4)); // reads 4.2V
+                            //v.Add(new Voltage("VCCIN AUX", 5)); // reads 2.2V
+                            //v.Add(new Voltage("CPU GT", 6)); // reads 2.6V
+                            //v.Add(new Voltage("3VSB", 7, 10, 10)); //reads 5.8V ? 
+                            v.Add(new Voltage("VBat", 8, 10, 10)); //reads higher than it should 3.4V 
+                            t.Add(new Temperature("System1", 0));
+                            t.Add(new Temperature("System2", 1));  //not sure what sensor is this. it doesn't climb under stress 
+                            t.Add(new Temperature("CPU", 2));
+                            f.Add(new Fan("CPU Fan", 1));
+                            f.Add(new Fan("CPU OPT fan", 2));
+                            f.Add(new Fan("SYSFAN", 4));
+                            c.Add(new Ctrl("CPU Fan", 1));
+                            c.Add(new Ctrl("CPU OPT Fan", 2));
 
                             break;
                         }
