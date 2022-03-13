@@ -87,12 +87,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                          chip == Chip.IT8695E ||
                          chip == Chip.IT8628E ||
                          chip == Chip.IT8620E ||
+                         chip == Chip.IT8613E ||
                          chip == Chip.IT879XE ||
                          chip == Chip.IT8655E ||
                          chip == Chip.IT8631E;
 
             switch (chip)
             {
+                case Chip.IT8613E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[4];
+                    Fans = new float?[5];
+                    Controls = new float?[4];
+                    break;
+                }
                 case Chip.IT8628E:
                 {
                     Voltages = new float?[10];
@@ -182,6 +191,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution.
                 // All others 16mV.
+                case Chip.IT8613E:
                 case Chip.IT8620E:
                 case Chip.IT8628E:
                 case Chip.IT8631E:

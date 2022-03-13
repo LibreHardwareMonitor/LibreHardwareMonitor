@@ -349,6 +349,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.B560M_AORUS_PRO_AX;
                 case var _ when name.Equals("ROG STRIX Z690-A GAMING WIFI D4", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4;
+                case var _ when name.Equals("B660GTN", StringComparison.OrdinalIgnoreCase):
+                    return Model.B660GTN;
                 case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
                 case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                     return Model.Unknown;

@@ -669,6 +669,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             Chip chip;
             switch (chipId)
             {
+                case 0x8613:
+                    chip = Chip.IT8613E;
+                    break;
                 case 0x8620:
                     chip = Chip.IT8620E;
                     break;
