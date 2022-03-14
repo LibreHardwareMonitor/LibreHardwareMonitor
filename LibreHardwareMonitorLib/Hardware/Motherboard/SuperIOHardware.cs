@@ -1677,6 +1677,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan", 4));
                             c.Add(new Ctrl("CPU Fan", 1));
                             c.Add(new Ctrl("CPU Optional Fan", 2));
+                            c.Add(new Ctrl("System Fan", 4));
 
                             break;
                         }
