@@ -97,9 +97,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8613E:
                 {
                     Voltages = new float?[10];
-                    Temperatures = new float?[4];
+                    Temperatures = new float?[3];
                     Fans = new float?[5];
-                    Controls = new float?[4];
+                    Controls = new float?[5];
                     break;
                 }
                 case Chip.IT8628E:
