@@ -30,7 +30,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         public WindowsEmbeddedControllerIO()
         {
-            if (!Ring0.WaitIsaBusMutex(10))
+            if (!Ring0.WaitEcMutex(10))
             {
                 throw new BusMutexLockingFailedException();
             }
@@ -79,7 +79,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             if (!_disposed)
             {
                 _disposed = true;
-                Ring0.ReleaseIsaBusMutex();
+                Ring0.ReleaseEcMutex();
             }
         }
 

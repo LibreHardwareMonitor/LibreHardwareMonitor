@@ -22,6 +22,7 @@ namespace LibreHardwareMonitor.Hardware
         private static string _filePath;
         private static Mutex _isaBusMutex;
         private static Mutex _pciBusMutex;
+        private static Mutex _ecMutex;
 
         private static readonly StringBuilder _report = new();
 
@@ -136,6 +137,35 @@ namespace LibreHardwareMonitor.Hardware
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName, MutexRights.Synchronize);
 #else
                     _pciBusMutex = Mutex.OpenExisting(pciMutexName);
+#endif
+                }
+                catch
+                { }
+            }
+
+            const string ecMutexName = "Global\\Access_EC";
+
+            try
+            {
+#if NETFRAMEWORK
+                //mutex permissions set to everyone to allow other software to access the hardware
+                //otherwise other monitoring software cant access
+                var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
+                var securitySettings = new MutexSecurity();
+                securitySettings.AddAccessRule(allowEveryoneRule);
+                _ecMutex = new Mutex(false, ecMutexName, out _, securitySettings);
+#else
+                _ecMutex = new Mutex(false, ecMutexName);
+#endif
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+#if NETFRAMEWORK
+                    _ecMutex = Mutex.OpenExisting(ecMutexName, MutexRights.Synchronize);
+#else
+                    _ecMutex = Mutex.OpenExisting(ecMutexName);
 #endif
                 }
                 catch
@@ -354,6 +384,12 @@ namespace LibreHardwareMonitor.Hardware
                 _pciBusMutex = null;
             }
 
+            if (_ecMutex != null)
+            {
+                _ecMutex.Close();
+                _ecMutex = null;
+            }
+
             // try to delete temporary driver file again if failed during open
             DeleteDriver();
         }
@@ -421,6 +457,31 @@ namespace LibreHardwareMonitor.Hardware
         public static void ReleasePciBusMutex()
         {
             _pciBusMutex?.ReleaseMutex();
+        }
+
+        public static bool WaitEcMutex(int millisecondsTimeout)
+        {
+            if (_ecMutex == null)
+                return true;
+
+
+            try
+            {
+                return _ecMutex.WaitOne(millisecondsTimeout, false);
+            }
+            catch (AbandonedMutexException)
+            {
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        public static void ReleaseEcMutex()
+        {
+            _ecMutex?.ReleaseMutex();
         }
 
         public static bool ReadMsr(uint index, out uint eax, out uint edx)
