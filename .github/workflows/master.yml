@@ -74,7 +74,7 @@ jobs:
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
       - name: Publish to NuGet
-        uses: rohith/publish-nuget@v2
+        uses: alirezanet/publish-nuget@v3
         with:
           PROJECT_FILE_PATH: LibreHardwareMonitorLib/LibreHardwareMonitorLib.csproj
           VERSION_FILE_PATH: Directory.Build.props
