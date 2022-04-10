@@ -1,5 +1,6 @@
 ﻿using HidSharp;
 using System;
+using System.Threading.Tasks;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Corsair
 {
@@ -8,10 +9,20 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
     /// https://github.com/audiohacked/OpenCorsairLink/issues/70
     internal interface ICommanderProCommand
     {
-        void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer);
+        Task ExecuteAsync(CommanderProDevice device);
     }
 
-    internal class GetFanRpmCommand: ICommanderProCommand
+    internal abstract class CommanderProCommand : ICommanderProCommand
+    {
+        public async Task ExecuteAsync(CommanderProDevice device)
+        {
+            await device.DoAsync(DoExecute);
+        }
+
+        public abstract void DoExecute(HidStream hidStream, byte[] readBuffer, byte[] writeBuffer);
+    }
+
+    internal class GetFanRpmCommand: CommanderProCommand
     {
         private readonly Sensor _sensor;
 
@@ -20,27 +31,28 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _sensor = sensor;
         }
 
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
+        public override void DoExecute(HidStream hidStream, byte[] readBuffer, byte[] writeBuffer)
         {
-            _writeBuffer[0] = 0x21;
-            _writeBuffer[1] = Convert.ToByte(_sensor.Index);
-            Array.Clear(_writeBuffer, 2, _writeBuffer.Length - 2);
+            writeBuffer[0] = 0x21;
+            writeBuffer[1] = Convert.ToByte(_sensor.Index);
+            Array.Clear(writeBuffer, 2, writeBuffer.Length - 2);
 
-            _stream.Write(_writeBuffer);
-            _stream.Read(_readBuffer);
+            hidStream.Write(writeBuffer);
+            hidStream.Read(readBuffer);
 
             // big endian 2 bytes response
 
-            int value = _readBuffer[1] << 8 | _readBuffer[2];
+            int value = readBuffer[1] << 8 | readBuffer[2];
 
             _sensor.Value = value;
         }
     }
 
-    internal class SetFanSpeedPercentCommand: ICommanderProCommand
+    internal class SetFanSpeedPercentCommand: CommanderProCommand
     {
         private Control _control;
         private Sensor _sensor;
+        private byte _value;
 
         public SetFanSpeedPercentCommand(Control control)
         {
@@ -48,26 +60,24 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _sensor = control.Sensor as Sensor;
         }
 
-        public byte Value { get; set; }
-
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
+        public override void DoExecute(HidStream stream, byte[] readBuffer, byte[] writeBuffer)
         {
             if ( _control.ControlMode != ControlMode.Software )
             {
                 return;
             }
 
-            _writeBuffer[0] = 0x23;
-            _writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
-            _writeBuffer[2] = Convert.ToByte(_control.SoftwareValue);
-            Array.Clear(_writeBuffer, 3, _writeBuffer.Length - 3);
+            writeBuffer[0] = 0x23;
+            writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
+            writeBuffer[2] = Convert.ToByte(Convert.ToInt32(Math.Round(_control.SoftwareValue)));
+            Array.Clear(writeBuffer, 3, writeBuffer.Length - 3);
 
-            _stream.Write(_writeBuffer);
+            stream.Write(writeBuffer);
             _sensor.Value = _control.SoftwareValue;
         }
     }
 
-    internal class SetFanRpmCommand : ICommanderProCommand
+    internal class SetFanRpmCommand : CommanderProCommand
     {
         private Control _control;
         private readonly byte[] _rpmAsBytes;
@@ -80,41 +90,27 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _sensor = control.Sensor as Sensor;
         }
 
-        public byte Value { get; set; }
-
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
+        public override void DoExecute(HidStream stream, byte[] readBuffer, byte[] writeBuffer)
         {
             if (_control.ControlMode != ControlMode.Software)
             {
                 return;
             }
 
-            _writeBuffer[0] = 0x24;
-            _writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
-            _writeBuffer[2] = _rpmAsBytes[1];
-            _writeBuffer[3] = _rpmAsBytes[0];
+            writeBuffer[0] = 0x24;
+            writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
+            writeBuffer[2] = _rpmAsBytes[1];
+            writeBuffer[3] = _rpmAsBytes[0];
 
-            Array.Clear(_writeBuffer, 4, _writeBuffer.Length - 4);
+            Array.Clear(writeBuffer, 4, writeBuffer.Length - 4);
 
-            _stream.Write(_writeBuffer);
+            stream.Write(writeBuffer);
             _sensor.Value = _control.SoftwareValue;
         }
     }
 
 
-    internal class GetFansModeCommand : ICommanderProCommand
-    {
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
-        {
-            _writeBuffer[0] = 0x20;
-            Array.Clear(_writeBuffer, 1, _writeBuffer.Length - 1);
-
-            _stream.Write(_writeBuffer);
-            _stream.Read(_readBuffer);
-        }
-    }
-
-    internal class SetCurrentFanModeCommand: ICommanderProCommand
+    internal class SetCurrentFanModeCommand: CommanderProCommand
     {
         private Control _control;
 
@@ -123,19 +119,19 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _control = sensor;
         }
 
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
+        public override void DoExecute(HidStream stream, byte[] readBuffer, byte[] writeBuffer)
         {
             if (_control.ControlMode != ControlMode.Software)
             {
                 return;
             }
 
-            _writeBuffer[0] = 0x28;
-            _writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
-            _writeBuffer[2] = GetControlModeByte(_control.ControlMode);
-            Array.Clear(_writeBuffer, 3, _writeBuffer.Length - 3);
+            writeBuffer[0] = 0x28;
+            writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
+            writeBuffer[2] = GetControlModeByte(_control.ControlMode);
+            Array.Clear(writeBuffer, 3, writeBuffer.Length - 3);
 
-            _stream.Write(_writeBuffer);
+            stream.Write(writeBuffer);
         }
 
         public byte GetControlModeByte(ControlMode controlMode)
@@ -148,7 +144,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
         }
     }
 
-    internal class SetFanModeCommand : ICommanderProCommand
+    internal class SetFanModeCommand : CommanderProCommand
     {
         private readonly Control _control;
         private readonly byte _mode;
@@ -159,39 +155,23 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _mode = mode;
         }
 
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
+        public override void DoExecute(HidStream stream, byte[] readBuffer, byte[] writeBuffer)
         {
             if (_control.ControlMode != ControlMode.Software)
             {
                 return;
             }
 
-            _writeBuffer[0] = 0x28;
-            _writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
-            _writeBuffer[2] = _mode;
-            Array.Clear(_writeBuffer, 3, _writeBuffer.Length - 3);
+            writeBuffer[0] = 0x28;
+            writeBuffer[1] = Convert.ToByte(_control.Sensor.Index);
+            writeBuffer[2] = _mode;
+            Array.Clear(writeBuffer, 3, writeBuffer.Length - 3);
 
-            _stream.Write(_writeBuffer);
+            stream.Write(writeBuffer);
         }
     }
 
-    internal class GetTemperatureSensorsConnectedStatusCommand: ICommanderProCommand
-    {
-        public GetTemperatureSensorsConnectedStatusCommand()
-        {
-        }
-
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
-        {
-            _writeBuffer[0] = 0x10;
-            Array.Clear(_writeBuffer, 1, _writeBuffer.Length - 1);
-
-            _stream.Write(_writeBuffer);
-            _stream.Read(_readBuffer);
-        }
-    }
-
-    internal class GetTemperatureCommand : ICommanderProCommand
+    internal class GetTemperatureCommand : CommanderProCommand
     {
         private readonly Sensor _sensor;
 
@@ -200,16 +180,16 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _sensor = sensor;
         }
 
-        public void Execute(HidStream _stream, byte[] _readBuffer, byte[] _writeBuffer)
+        public override void DoExecute(HidStream stream, byte[] readBuffer, byte[] writeBuffer)
         {
-            _writeBuffer[0] = 0x11;
-            _writeBuffer[1] = Convert.ToByte(_sensor.Index);
-            Array.Clear(_writeBuffer, 2, _writeBuffer.Length - 2);
+            writeBuffer[0] = 0x11;
+            writeBuffer[1] = Convert.ToByte(_sensor.Index);
+            Array.Clear(writeBuffer, 2, writeBuffer.Length - 2);
 
-            _stream.Write(_writeBuffer);
-            _stream.Read(_readBuffer);
+            stream.Write(writeBuffer);
+            stream.Read(readBuffer);
 
-            _sensor.Value = (int)(_readBuffer[1] << 8 | _readBuffer[2]) / 100f;
+            _sensor.Value = (int)(readBuffer[1] << 8 | readBuffer[2]) / 100f;
         }
     }
 }
