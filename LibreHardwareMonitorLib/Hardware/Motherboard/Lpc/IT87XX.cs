@@ -16,6 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     {
         private readonly ushort _address;
         private readonly ushort _addressReg;
+        private readonly int _bankCount;
         private readonly ushort _dataReg;
         private readonly bool[] _fansDisabled = new bool[0];
         private readonly ushort _gpioAddress;
@@ -28,6 +29,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[5];
         private readonly byte _version;
         private readonly float _voltageGain;
+
+        private bool SupportsMultipleBanks => _bankCount > 1;
 
         public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version)
         {
@@ -67,7 +70,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             FAN_PWM_CTRL_REG = chip == Chip.IT8665E
                 ? new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f }
-                : new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7 };
+                : new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf };
+
+            _bankCount = chip switch
+            {
+                Chip.IT8689E => 4,
+                _ => 1
+            };
 
             _hasExtReg = chip == Chip.IT8721F ||
                          chip == Chip.IT8728F ||
@@ -75,14 +84,24 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                          chip == Chip.IT8686E ||
                          chip == Chip.IT8688E ||
                          chip == Chip.IT8689E ||
+                         chip == Chip.IT8695E ||
                          chip == Chip.IT8628E ||
                          chip == Chip.IT8620E ||
+                         chip == Chip.IT8613E ||
                          chip == Chip.IT879XE ||
                          chip == Chip.IT8655E ||
                          chip == Chip.IT8631E;
 
             switch (chip)
             {
+                case Chip.IT8613E:
+                {
+                    Voltages = new float?[10];
+                    Temperatures = new float?[4];
+                    Fans = new float?[5];
+                    Controls = new float?[4];
+                    break;
+                }
                 case Chip.IT8628E:
                 {
                     Voltages = new float?[10];
@@ -122,6 +141,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     Temperatures = new float?[6];
                     Fans = new float?[5];
                     Controls = new float?[5];
+                    break;
+                }
+                case Chip.IT8695E:
+                {
+                    Voltages = new float?[6];
+                    Temperatures = new float?[3];
+                    Fans = new float?[3];
+                    Controls = new float?[3];
                     break;
                 }
                 case Chip.IT8655E:
@@ -164,6 +191,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution.
                 // All others 16mV.
+                case Chip.IT8613E:
                 case Chip.IT8620E:
                 case Chip.IT8628E:
                 case Chip.IT8631E:
@@ -176,6 +204,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8689E:
                 {
                     _voltageGain = 0.012f;
+                    break;
+                }
+                case Chip.IT8695E:
+                {
+                    _voltageGain = 11f / 1000f;
                     break;
                 }
                 case Chip.IT8655E:
@@ -286,7 +319,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 if (_hasExtReg)
                 {
-                    WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x7F));
+                    if (Chip == Chip.IT8689E)
+                    {
+                        WriteByte(FAN_PWM_CTRL_REG[index], 0x7F);
+                    }
+                    else
+                    {
+                        WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x7F));    
+                    }
                     WriteByte(FAN_PWM_CTRL_EXT_REG[index], value.Value);
                 }
                 else
@@ -321,24 +361,38 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (!Ring0.WaitIsaBusMutex(100))
                 return r.ToString();
 
-
-            r.AppendLine("Environment Controller Registers");
-            r.AppendLine();
-            r.AppendLine("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
-            r.AppendLine();
-            for (int i = 0; i <= 0xA; i++)
+            // dump memory of all banks if supported by chip
+            for (byte b = 0; b < _bankCount; b++)
             {
-                r.Append(" ");
-                r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
-                r.Append("  ");
-                for (int j = 0; j <= 0xF; j++)
+                if (SupportsMultipleBanks && b > 0)
+                {
+                    SelectBank(b);    
+                }
+                r.AppendLine($"Environment Controller Registers Bank {b}");
+                r.AppendLine();
+                r.AppendLine("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
+                r.AppendLine();
+                for (int i = 0; i <= 0xA; i++)
                 {
                     r.Append(" ");
-                    byte value = ReadByte((byte)((i << 4) | j), out bool valid);
-                    r.Append(valid ? value.ToString("X2", CultureInfo.InvariantCulture) : "??");
-                }
+                    r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
+                    r.Append("  ");
+                    for (int j = 0; j <= 0xF; j++)
+                    {
+                        r.Append(" ");
+                        byte value = ReadByte((byte)((i << 4) | j), out bool valid);
+                        r.Append(valid ? value.ToString("X2", CultureInfo.InvariantCulture) : "??");
+                    }
 
+                    r.AppendLine();
+                }
+                
                 r.AppendLine();
+            }
+
+            if (SupportsMultipleBanks)
+            {
+                SelectBank(0);                
             }
 
             r.AppendLine();
@@ -355,6 +409,49 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             r.AppendLine();
             Ring0.ReleaseIsaBusMutex();
             return r.ToString();
+        }
+    
+        /// <summary>
+        /// Return the currently active bank index.
+        /// </summary>
+        /// <returns></returns>
+        private int GetCurrentBank()
+        {
+            if (_bankCount <= 1)
+                return 0; // current chip does not support multi bank registers
+            
+            var value = ReadByte(BANK_REGISTER, out bool valid);
+            if (valid)
+            {
+                return (value & 0x60) >> 5;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// Selects another bank. Memory from 0x10-0xAF swaps to data from new bank.
+        /// Beware to select the default bank 0 after changing.
+        /// Bank selection is reset after power cycle.
+        /// </summary>
+        /// <param name="bankIndex">New bank index. Can be a value of 0-3.</param>
+        private void SelectBank(byte bankIndex)
+        {
+            if (bankIndex >= _bankCount)
+                return; // current chip does not support that many banks
+
+            // hard cap SelectBank to 2 bit values. If we ever have chips with more bank bits rewrite this method.
+            bankIndex &= 0x3;
+
+            var value = ReadByte(BANK_REGISTER, out bool valid);
+            if (valid)
+            {
+                value &= 0x9F;
+                value |= (byte)(bankIndex << 5);
+                WriteByte(BANK_REGISTER, value );
+            }
         }
 
         public void Update()
@@ -535,6 +632,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private const byte CONFIGURATION_REGISTER = 0x00;
         private const byte DATA_REGISTER_OFFSET = 0x06;
+        private const byte BANK_REGISTER = 0x06; // bit 5-6 define selected bank
         private const byte FAN_TACHOMETER_16BIT_REGISTER = 0x0C;
         private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
 

@@ -27,6 +27,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         F71889ED = 0x0909,
         F71889F = 0x0723,
 
+        IT8613E = 0x8613,
         IT8620E = 0x8620,
         IT8628E = 0x8628,
         IT8631E = 0x8631,
@@ -35,6 +36,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         IT8686E = 0x8686,
         IT8688E = 0x8688,
         IT8689E = 0x8689,
+        IT8695E = 0x8695,
         IT8705F = 0x8705,
         IT8712F = 0x8712,
         IT8716F = 0x8716,
@@ -91,7 +93,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.F71889ED: return "Fintek F71889ED";
                 case Chip.F71889F: return "Fintek F71889F";
                 case Chip.F71808E: return "Fintek F71808E";
-
+                case Chip.IT8613E: return "ITE IT8613E";
                 case Chip.IT8620E: return "ITE IT8620E";
                 case Chip.IT8628E: return "ITE IT8628E";
                 case Chip.IT8631E: return "ITE IT8631E";
@@ -100,6 +102,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case Chip.IT8686E: return "ITE IT8686E";
                 case Chip.IT8688E: return "ITE IT8688E";
                 case Chip.IT8689E: return "ITE IT8689E";
+                case Chip.IT8695E: return "ITE IT8695E";
                 case Chip.IT8705F: return "ITE IT8705F";
                 case Chip.IT8712F: return "ITE IT8712F";
                 case Chip.IT8716F: return "ITE IT8716F";

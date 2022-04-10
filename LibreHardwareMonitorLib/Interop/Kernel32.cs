@@ -29,6 +29,8 @@ namespace LibreHardwareMonitor.Interop
 
         internal const uint LPTR = 0x0000 | 0x0040;
 
+        internal const uint BATTERY_UNKNOWN_TIME = 0xFFFFFFFF;
+
         private const string DllName = "kernel32.dll";
 
         [Flags]
@@ -258,6 +260,19 @@ namespace LibreHardwareMonitor.Interop
             out uint lpBytesReturned,
             IntPtr lpOverlapped);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl
+        (
+            SafeFileHandle hDevice,
+            IOCTL dwIoControlCode,
+            ref BATTERY_QUERY_INFORMATION lpInBuffer,
+            int nInBufferSize,
+            ref uint lpOutBuffer,
+            int nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
         internal static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
 
@@ -275,7 +290,7 @@ namespace LibreHardwareMonitor.Interop
 
         [DllImport(DllName, ExactSpelling = true)]
         internal static extern IntPtr GetProcAddress(IntPtr module, string methodName);
-        
+
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FreeLibrary(IntPtr module);
@@ -285,7 +300,7 @@ namespace LibreHardwareMonitor.Interop
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
         internal static extern IntPtr GetCurrentThread();
-        
+
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
         public static extern ushort GetActiveProcessorGroupCount();
 
@@ -303,9 +318,9 @@ namespace LibreHardwareMonitor.Interop
         (
             SafeFileHandle device,
             IOControlCode ioControlCode,
-            [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
+            [MarshalAs(UnmanagedType.AsAny)][In] object inBuffer,
             uint inBufferSize,
-            [MarshalAs(UnmanagedType.AsAny)] [Out] object outBuffer,
+            [MarshalAs(UnmanagedType.AsAny)][Out] object outBuffer,
             uint nOutBufferSize,
             out uint bytesReturned,
             IntPtr overlapped);

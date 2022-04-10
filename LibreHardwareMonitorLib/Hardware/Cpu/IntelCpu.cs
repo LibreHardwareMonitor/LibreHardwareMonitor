@@ -18,6 +18,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly Sensor[] _coreClocks;
         private readonly Sensor _coreMax;
         private readonly Sensor[] _coreTemperatures;
+        private readonly Sensor _coreVoltage;
         private readonly Sensor[] _distToTjMaxTemperatures;
 
         private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERY_STATUS, MSR_PP0_ENERY_STATUS, MSR_PP1_ENERY_STATUS, MSR_DRAM_ENERGY_STATUS };
@@ -30,8 +31,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly Sensor[] _powerSensors;
         private readonly double _timeStampCounterMultiplier;
 
+        public float EnergyUnitsMultiplier => _energyUnitMultiplier;
+
         public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
+            uint eax;
+
             // set tjMax
             float[] tjMax;
             switch (_family)
@@ -262,7 +267,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.TigerLake:
                 case MicroArchitecture.Tremont:
                 {
-                    if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out uint eax, out uint _))
+                    if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     {
                         _timeStampCounterMultiplier = (eax >> 8) & 0xff;
                     }
@@ -380,7 +385,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
                 _lastEnergyConsumed = new uint[_energyStatusMsrs.Length];
 
-                if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint _))
+                if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
                     switch (_microArchitecture)
                     {
                         case MicroArchitecture.Silvermont:
@@ -401,6 +406,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
                             continue;
 
+                        // Don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead.
+                        if (i == 2 && !Software.OperatingSystem.IsUnix)
+                            continue;
 
                         _lastEnergyTime[i] = DateTime.UtcNow;
                         _lastEnergyConsumed[i] = eax;
@@ -413,6 +421,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         ActivateSensor(_powerSensors[i]);
                     }
                 }
+            }
+
+            if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
+            {
+                _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
+                ActivateSensor(_coreVoltage);
             }
 
             Update();
@@ -476,11 +490,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             float coreMax = float.MinValue;
             float coreAvg = 0;
+            uint eax = 0;
 
             for (int i = 0; i < _coreTemperatures.Length; i++)
             {
                 // if reading is valid
-                if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out uint eax, out uint _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+                if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out uint _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = (eax & 0x007F0000) >> 16;
@@ -512,7 +527,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_packageTemperature != null)
             {
                 // if reading is valid
-                if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
+                if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out uint _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = (eax & 0x007F0000) >> 16;
@@ -532,7 +547,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 for (int i = 0; i < _coreClocks.Length; i++)
                 {
                     System.Threading.Thread.Sleep(1);
-                    if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
+                    if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _, _cpuId[i][0].Affinity))
                     {
                         newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                         switch (_microArchitecture)
@@ -595,7 +610,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     if (sensor == null)
                         continue;
 
-                    if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out uint eax, out uint _))
+                    if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out uint _))
                         continue;
 
 
@@ -610,6 +625,11 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     _lastEnergyTime[sensor.Index] = time;
                     _lastEnergyConsumed[sensor.Index] = energyConsumed;
                 }
+            }
+
+            if (_coreVoltage != null && Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _))
+            {
+                _coreVoltage.Value = ((eax >> 32) & 0xFFFF) / (float)(1 << 13);
             }
         }
 

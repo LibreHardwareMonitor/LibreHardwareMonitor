@@ -26,7 +26,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
             IntPtr hdev = SetupApi.SetupDiGetClassDevs(ref SetupApi.GUID_DEVICE_BATTERY, IntPtr.Zero, IntPtr.Zero, SetupApi.DIGCF_PRESENT | SetupApi.DIGCF_DEVICEINTERFACE);
             if (hdev != SetupApi.INVALID_HANDLE_VALUE)
             {
-                for (uint i = 0;; i++)
+                for (uint i = 0; ; i++)
                 {
                     SetupApi.SP_DEVICE_INTERFACE_DATA did = default;
                     did.cbSize = (uint)Marshal.SizeOf(typeof(SetupApi.SP_DEVICE_INTERFACE_DATA));
@@ -197,6 +197,11 @@ namespace LibreHardwareMonitor.Hardware.Battery
                              .Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh")
                              .Append(" Charge Level: ").AppendFormat("{0:F2}", bat.RemainingCapacity * 100f / bat.FullChargedCapacity).AppendLine(" %")
                              .Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
+
+                if (bat.RemainingTime != Kernel32.BATTERY_UNKNOWN_TIME)
+                {
+                    reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime)).AppendLine();
+                }
 
                 switch (bat.ChargeDischargeRate)
                 {

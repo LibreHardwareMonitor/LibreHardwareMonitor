@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.CPU
@@ -14,17 +15,19 @@ namespace LibreHardwareMonitor.Hardware.CPU
     public class GenericCpu : Hardware
     {
         protected readonly int _coreCount;
+        protected readonly int _threadCount;
         protected readonly CpuId[][] _cpuId;
         protected readonly uint _family;
         protected readonly uint _model;
         protected readonly uint _packageType;
         protected readonly uint _stepping;
 
-        private readonly Sensor[] _coreLoads;
         private readonly CpuLoad _cpuLoad;
         private readonly double _estimatedTimeStampCounterFrequency;
         private readonly double _estimatedTimeStampCounterFrequencyError;
         private readonly bool _isInvariantTimeStampCounter;
+        private readonly Sensor[] _threadLoads;
+
         private readonly Sensor _totalLoad;
         private readonly Vendor _vendor;
         private long _lastTime;
@@ -41,37 +44,37 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             Index = processorIndex;
             _coreCount = cpuId.Length;
+            _threadCount = cpuId.Sum(x => x.Length);
 
-            // check if processor has MSRs
-            if (cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x20) != 0)
-                HasModelSpecificRegisters = true;
-            else
-                HasModelSpecificRegisters = false;
+            // Check if processor has MSRs.
+            HasModelSpecificRegisters = cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x20) != 0;
 
-            // check if processor has a TSC
-            if (cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x10) != 0)
-                HasTimeStampCounter = true;
-            else
-                HasTimeStampCounter = false;
+            // Check if processor has a TSC.
+            HasTimeStampCounter = cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x10) != 0;
 
-            // check if processor supports an invariant TSC
-            if (cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0)
-                _isInvariantTimeStampCounter = true;
-            else
-                _isInvariantTimeStampCounter = false;
+            // Check if processor supports an invariant TSC.
+            _isInvariantTimeStampCounter = cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0;
 
             _totalLoad = _coreCount > 1 ? new Sensor("CPU Total", 0, SensorType.Load, this, settings) : null;
-
-            _coreLoads = new Sensor[_coreCount];
-            for (int i = 0; i < _coreLoads.Length; i++)
-                _coreLoads[i] = new Sensor(CoreString(i), i + 1, SensorType.Load, this, settings);
 
             _cpuLoad = new CpuLoad(cpuId);
             if (_cpuLoad.IsAvailable)
             {
-                foreach (Sensor sensor in _coreLoads)
+                _threadLoads = new Sensor[_threadCount];
+                for (int coreIdx = 0; coreIdx < cpuId.Length; coreIdx++)
                 {
-                    ActivateSensor(sensor);
+                    for (int threadIdx = 0; threadIdx < cpuId[coreIdx].Length; threadIdx++)
+                    {
+                        int thread = cpuId[coreIdx][threadIdx].Thread;
+                        if (thread < _threadLoads.Length)
+                        {
+                            // Some cores may have 2 threads while others have only one (e.g. P-cores vs E-cores on Intel 12th gen).
+                            string sensorName = CoreString(coreIdx) + (cpuId[coreIdx].Length > 1 ? $" Thread #{threadIdx + 1}" : string.Empty);
+                            _threadLoads[thread] = new Sensor(sensorName, thread + 1, SensorType.Load, this, settings);
+
+                            ActivateSensor(_threadLoads[thread]);
+                        }
+                    }
                 }
 
                 if (_totalLoad != null)
@@ -295,8 +298,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_cpuLoad.IsAvailable)
             {
                 _cpuLoad.Update();
-                for (int i = 0; i < _coreLoads.Length; i++)
-                    _coreLoads[i].Value = _cpuLoad.GetCoreLoad(i);
+
+                if (_threadLoads != null)
+                {
+                    for (int i = 0; i < _threadLoads.Length; i++)
+                    {
+                        if (_threadLoads[i] != null)
+                        {
+                            _threadLoads[i].Value = _cpuLoad.GetThreadLoad(i);
+                        }
+                    }
+                }
 
                 if (_totalLoad != null)
                     _totalLoad.Value = _cpuLoad.GetTotalLoad();

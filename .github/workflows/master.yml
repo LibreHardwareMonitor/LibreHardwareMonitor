@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: windows-2022
-    if: contains(github.event.head_commit.message, 'ci skip') == false
-
     steps:
       - uses: actions/checkout@v2
       - uses: nuget/setup-nuget@v1
@@ -38,12 +36,12 @@ jobs:
       - name: Build
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
 
-      - name: Publish net452
+      - name: Publish net472
         uses: actions/upload-artifact@v2
         with:
-          name: LibreHardwareMonitor-net452
+          name: LibreHardwareMonitor-net472
           path: |
-            bin/Release/net452
+            bin/Release/net472
 
       - name: Publish netstandard20
         uses: actions/upload-artifact@v2
@@ -59,6 +57,13 @@ jobs:
           path: |
             bin/Release/net5.0
 
+      - name: Publish net60
+        uses: actions/upload-artifact@v2
+        with:
+          name: LibreHardwareMonitorLib-net60
+          path: |
+            bin/Release/net6.0
+
       - name: Publish nupkg
         uses: actions/upload-artifact@v2
         with:
@@ -67,10 +72,4 @@ jobs:
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
       - name: Publish to NuGet
-        uses: rohith/publish-nuget@v2
-        with:
-          PROJECT_FILE_PATH: LibreHardwareMonitorLib/LibreHardwareMonitorLib.csproj
-          VERSION_FILE_PATH: Directory.Build.props
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          INCLUDE_SYMBOLS: false
-          TAG_COMMIT: false
+        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}

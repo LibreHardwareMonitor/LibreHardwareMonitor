@@ -66,6 +66,7 @@ namespace LibreHardwareMonitor.Hardware
             if (!adapterType.Value.HasFlag(D3dkmth.D3DKMT_ADAPTERTYPE_FLAGS.SoftwareDevice))
                 return false;
 
+            deviceInfo.Integrated = !adapterType.Value.HasFlag(D3dkmth.D3DKMT_ADAPTERTYPE_FLAGS.HybridIntegrated);
 
             GetQueryStatisticsAdapterInformation(out status, adapter, out D3dkmth.D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation);
             if (status != WinNt.STATUS_SUCCESS)
@@ -93,12 +94,19 @@ namespace LibreHardwareMonitor.Hardware
 
                 deviceInfo.Nodes[nodeId] = new D3DDeviceNodeInfo
                 {
-                    Id = nodeId, 
-                    Name = GetNodeEngineTypeString(nodeMetaData), 
-                    RunningTime = nodeInformation.GlobalInformation.RunningTime.QuadPart, 
+                    Id = nodeId,
+                    Name = GetNodeEngineTypeString(nodeMetaData),
+                    RunningTime = nodeInformation.GlobalInformation.RunningTime.QuadPart,
                     QueryTime = queryTime
                 };
             }
+
+            GetSegmentSize(out status, adapter, out D3dkmth.D3DKMT_SEGMENTSIZEINFO segmentSizeInfo);
+            if (status != WinNt.STATUS_SUCCESS)
+                return false;
+
+            deviceInfo.GpuSharedLimit = segmentSizeInfo.SharedSystemMemorySize;
+            deviceInfo.GpuDedicatedLimit = segmentSizeInfo.DedicatedSystemMemorySize;
 
             for (uint segmentId = 0; segmentId < segmentCount; segmentId++)
             {
@@ -107,7 +115,6 @@ namespace LibreHardwareMonitor.Hardware
                     return false;
 
 
-                ulong commitLimit = segmentInformation.CommitLimit;
                 ulong bytesResident = segmentInformation.BytesResident;
                 ulong bytesCommitted = segmentInformation.BytesCommitted;
 
@@ -115,13 +122,11 @@ namespace LibreHardwareMonitor.Hardware
 
                 if (aperture == 1)
                 {
-                    deviceInfo.GpuSharedLimit += commitLimit;
                     deviceInfo.GpuSharedUsed += bytesResident;
                     deviceInfo.GpuSharedMax += bytesCommitted;
                 }
                 else
                 {
-                    deviceInfo.GpuDedicatedLimit += commitLimit;
                     deviceInfo.GpuDedicatedUsed += bytesResident;
                     deviceInfo.GpuDedicatedMax += bytesCommitted;
                 }
@@ -135,7 +140,7 @@ namespace LibreHardwareMonitor.Hardware
         {
             return nodeMetaData.NodeData.EngineType switch
             {
-                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => "D3D " + nodeMetaData.NodeData.FriendlyName,
+                D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => "D3D " + (!string.IsNullOrWhiteSpace(nodeMetaData.NodeData.FriendlyName) ? nodeMetaData.NodeData.FriendlyName : "Other"),
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_3D => "D3D 3D",
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_DECODE => "D3D Video Decode",
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_ENCODE => "D3D Video Encode",
@@ -146,6 +151,29 @@ namespace LibreHardwareMonitor.Hardware
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_CRYPTO => "D3D Crypto",
                 _ => "D3D Unknown",
             };
+        }
+
+        private static void GetSegmentSize
+        (
+            out uint status,
+            D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter,
+            out D3dkmth.D3DKMT_SEGMENTSIZEINFO sizeInformation)
+        {
+            IntPtr segmentSizePtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3dkmth.D3DKMT_SEGMENTSIZEINFO)));
+            sizeInformation = new D3dkmth.D3DKMT_SEGMENTSIZEINFO();
+            Marshal.StructureToPtr(sizeInformation, segmentSizePtr, true);
+
+            var queryAdapterInfo = new D3dkmth.D3DKMT_QUERYADAPTERINFO
+            {
+                hAdapter = adapter.hAdapter,
+                Type = D3dkmth.KMTQUERYADAPTERINFOTYPE.KMTQAITYPE_GETSEGMENTSIZE,
+                pPrivateDriverData = segmentSizePtr,
+                PrivateDriverDataSize = Marshal.SizeOf(typeof(D3dkmth.D3DKMT_SEGMENTSIZEINFO))
+            };
+
+            status = Gdi32.D3DKMTQueryAdapterInfo(ref queryAdapterInfo);
+            sizeInformation = Marshal.PtrToStructure<D3dkmth.D3DKMT_SEGMENTSIZEINFO>(segmentSizePtr);
+            Marshal.FreeHGlobal(segmentSizePtr);
         }
 
         private static void GetNodeMetaData(out uint status, D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, out D3dkmth.D3DKMT_NODEMETADATA nodeMetaDataResult)
@@ -261,6 +289,7 @@ namespace LibreHardwareMonitor.Hardware
             public ulong GpuDedicatedMax;
 
             public D3DDeviceNodeInfo[] Nodes;
-        }
+            public bool Integrated;
+}
     }
 }

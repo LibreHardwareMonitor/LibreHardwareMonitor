@@ -23,6 +23,7 @@ namespace LibreHardwareMonitor.Hardware.Battery
         private readonly Sensor _designedCapacity;
         private readonly Sensor _fullChargedCapacity;
         private readonly Sensor _remainingCapacity;
+        private readonly Sensor _remainingTime;
         private readonly Sensor _voltage;
 
         public Battery
@@ -98,6 +99,9 @@ namespace LibreHardwareMonitor.Hardware.Battery
 
             _degradationPercentage = new Sensor("Degradation Level", 0, SensorType.Level, this, settings);
             ActivateSensor(_degradationPercentage);
+
+            _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
+            ActivateSensor(_remainingTime);
         }
 
         public float ChargeDischargeCurrent { get; private set; }
@@ -119,6 +123,8 @@ namespace LibreHardwareMonitor.Hardware.Battery
         public string Manufacturer { get; }
 
         public float RemainingCapacity { get; private set; }
+
+        public uint RemainingTime { get; private set; }
 
         public float Voltage { get; private set; }
 
@@ -183,6 +189,31 @@ namespace LibreHardwareMonitor.Hardware.Battery
                 }
 
                 _degradationPercentage.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
+            }
+
+            uint estimatedRunTime = 0;
+            Kernel32.BATTERY_QUERY_INFORMATION bqi = default;
+            bqi.BatteryTag = _batteryTag;
+            bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryEstimatedTime;
+            if (Kernel32.DeviceIoControl(_batteryHandle,
+                                         Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                         ref bqi,
+                                         Marshal.SizeOf(bqi),
+                                         ref estimatedRunTime,
+                                         Marshal.SizeOf<uint>(),
+                                         out _,
+                                         IntPtr.Zero))
+            {
+                RemainingTime = estimatedRunTime;
+                if (estimatedRunTime != Kernel32.BATTERY_UNKNOWN_TIME)
+                {
+                    ActivateSensor(_remainingTime);
+                    _remainingTime.Value = estimatedRunTime;
+                }
+                else
+                {
+                    DeactivateSensor(_remainingTime);
+                }
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyName>LibreHardwareMonitor</AssemblyName>
     <AssemblyTitle>Libre Hardware Monitor</AssemblyTitle>
     <Copyright>LibreHardwareMonitor</Copyright>
@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="TaskScheduler" Version="2.10.0" />
+    <PackageReference Include="TaskScheduler" Version="2.10.1" />
     <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.0" />
     <PackageReference Include="System.Management" Version="5.0.0" />

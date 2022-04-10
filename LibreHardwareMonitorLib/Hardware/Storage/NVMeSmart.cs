@@ -19,12 +19,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             _driveNumber = storageInfo.Index;
             NVMeDrive = null;
+            string name = storageInfo.Name;
 
-            // Test samsung protocol.
-
-            // Exclude Samsung 980 Pro, this SSD uses the NVMeWindows generic protocol.
-            // Samsung 980 Pro can accessed via IdentifyDevice and IdentifyController but not by HealthInfoLog.
-            if (NVMeDrive == null && storageInfo.Name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1 && storageInfo.Name.IndexOf("980 Pro", StringComparison.OrdinalIgnoreCase) == -1)
+            // Test Samsung protocol.
+            if (NVMeDrive == null && name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeSamsung.IdentifyDevice(storageInfo);
                 if (_handle != null)
@@ -34,7 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
 
             // Test Intel protocol.
-            if (NVMeDrive == null && storageInfo.Name.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) > -1)
+            if (NVMeDrive == null && name.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeIntel.IdentifyDevice(storageInfo);
                 if (_handle != null)
@@ -44,7 +42,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             }
 
             // Test Intel raid protocol.
-            if (NVMeDrive == null && storageInfo.Name.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) > -1)
+            if (NVMeDrive == null && name.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 _handle = NVMeIntelRst.IdentifyDevice(storageInfo);
                 if (_handle != null)
@@ -68,11 +66,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             get
             {
-                if (_handle == null || _handle.IsInvalid)
-                    return false;
-
-
-                return true;
+                return _handle is { IsInvalid: false };
             }
         }
 
@@ -118,7 +112,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (_handle == null || _handle.IsClosed)
                 return null;
 
-
             bool valid = false;
             var data = new Kernel32.NVME_IDENTIFY_CONTROLLER_DATA();
             if (NVMeDrive != null)
@@ -126,7 +119,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             if (!valid)
                 return null;
-
 
             return new NVMeInfo(_driveNumber, data);
         }
@@ -136,7 +128,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (_handle == null || _handle.IsClosed)
                 return null;
 
-
             bool valid = false;
             var data = new Kernel32.NVME_HEALTH_INFO_LOG();
             if (NVMeDrive != null)
@@ -144,7 +135,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             if (!valid)
                 return null;
-
 
             return new NVMeHealthInfo(data);
         }

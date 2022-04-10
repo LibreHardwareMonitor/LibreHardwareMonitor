@@ -49,6 +49,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         ROG_STRIX_B550_E_GAMING,
         ROG_STRIX_B550_F_GAMING_WIFI,
         ROG_STRIX_B550_I_GAMING,
+        ROG_STRIX_Z690_A_GAMING_WIFI_D4,
         M2N_SLI_Deluxe,
         M4A79XTD_EVO,
         P5W_DH_Deluxe,
@@ -70,6 +71,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         TUF_X470_PLUS_GAMING,
         Z170_A,
         TUF_GAMING_B550M_PLUS_WIFI,
+
+        //BIOSTAR
+        B660GTN,
 
         // DFI
         LP_BI_P45_T2RS_Elite,
@@ -95,6 +99,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         AX370_Gaming_K7,
         B360_AORUS_GAMING_3_WIFI_CF,
         B560M_AORUS_ELITE,
+        B560M_AORUS_PRO,
+        B560M_AORUS_PRO_AX,
         EP45_DS3R,
         EP45_UD3R,
         EX58_EXTREME,
@@ -137,6 +143,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         Z68X_UD3H_B3,
         Z68X_UD7_B3,
         Z68XP_UD3R,
+        Z690_AORUS_PRO,
         Z170N_WIFI,
         X470_AORUS_GAMING_7_WIFI,
         X570_AORUS_MASTER,
