@@ -52,7 +52,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
     {
         private Control _control;
         private Sensor _sensor;
-        private byte _value;
 
         public SetFanSpeedPercentCommand(Control control)
         {

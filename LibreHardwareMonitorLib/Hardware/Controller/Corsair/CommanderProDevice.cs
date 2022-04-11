@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
     {
         private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(3);
         private readonly HidStream _hidStream;
-        private byte[] _writeBuffer = new byte[63];
+        private byte[] _writeBuffer = new byte[64];
         private byte[] _readBuffer = new byte[16];
         private SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
 
@@ -45,7 +45,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _semaphoreSlim.Release();
         }
 
-        public IEnumerable<int> GetDetectedFanIndexes()
+        public int[] GetDetectedFanIndexes()
         {
             _semaphoreSlim.Wait(_defaultTimeout);
 
@@ -55,19 +55,22 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _hidStream.Write(_writeBuffer);
             _hidStream.Read(_readBuffer);
 
+            List<int> indexes = new List<int>();
             for (int i = 0; i < 6; i++)
             {
                 byte value = _readBuffer[i];
                 if (value == 0x1 || value == 0x2)
                 {
-                    yield return i;
+                    indexes.Add(i);
                 }
             }
 
             _semaphoreSlim.Release();
+
+            return indexes.ToArray();
         }
 
-        public IEnumerable<int> GetDetectedTemperatureSensorIndexes()
+        public int[] GetDetectedTemperatureSensorIndexes()
         {
             _semaphoreSlim.Wait(_defaultTimeout);
 
@@ -77,16 +80,19 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             _hidStream.Write(_writeBuffer);
             _hidStream.Read(_readBuffer);
 
+            List<int> indexes = new List<int>();
             for (int i = 0; i < 4; i++)
             {
                 byte value = _readBuffer[i];
                 if (value == 0x1)
                 {
-                    yield return i;
+                    indexes.Add(i);
                 }
             }
 
             _semaphoreSlim.Release();
+
+            return indexes.ToArray();
         }
 
         public void Dispose() => _hidStream.Close();
