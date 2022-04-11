@@ -33,6 +33,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
                         Sensor fan = new($"Commander Pro Fan #{i}", i, SensorType.Fan, this, settings);
                         Sensor controlSensor = new("Commander Pro Fan Control #1", i, SensorType.Control, this, settings);
                         Control control = new(controlSensor, settings, 0, 100);
+                        controlSensor.Control = control;
 
                         _report.AppendLine($"Fan index {i} found ");
 

@@ -38,61 +38,82 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
 
         public async Task DoAsync(CommanderProAction action)
         {
-            await _semaphoreSlim.WaitAsync(_defaultTimeout);
-
-            action(_hidStream, _readBuffer, _writeBuffer);
-
-            _semaphoreSlim.Release();
+            try
+            {
+                await _semaphoreSlim.WaitAsync(_defaultTimeout);
+                action(_hidStream, _readBuffer, _writeBuffer);
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
         }
 
         public int[] GetDetectedFanIndexes()
         {
-            _semaphoreSlim.Wait(_defaultTimeout);
-
-            _writeBuffer[0] = 0x20;
-            Array.Clear(_writeBuffer, 1, _writeBuffer.Length - 1);
-
-            _hidStream.Write(_writeBuffer);
-            _hidStream.Read(_readBuffer);
-
-            List<int> indexes = new List<int>();
-            for (int i = 0; i < 6; i++)
+            try
             {
-                byte value = _readBuffer[i];
-                if (value == 0x1 || value == 0x2)
+                _semaphoreSlim.Wait(_defaultTimeout);
+
+                _writeBuffer.Clear();
+                Span<byte> writeSpan = _writeBuffer.GetWriteBufferSpan(1);
+                writeSpan[0] = 0x20;
+
+                _hidStream.Write(_writeBuffer);
+                _hidStream.Read(_readBuffer);
+
+                Span<byte> readSpan = _readBuffer.GetReadBufferSpan(6);
+
+                List<int> indexes = new List<int>();
+                for (int i = 0; i < readSpan.Length; i++)
                 {
-                    indexes.Add(i);
+                    byte value = readSpan[i];
+                    if (value == 0x1 || value == 0x2)
+                    {
+                        indexes.Add(i);
+                    }
                 }
+
+                return indexes.ToArray();
             }
-
-            _semaphoreSlim.Release();
-
-            return indexes.ToArray();
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
         }
 
         public int[] GetDetectedTemperatureSensorIndexes()
         {
-            _semaphoreSlim.Wait(_defaultTimeout);
-
-            _writeBuffer[0] = 0x10;
-            Array.Clear(_writeBuffer, 1, _writeBuffer.Length - 1);
-
-            _hidStream.Write(_writeBuffer);
-            _hidStream.Read(_readBuffer);
-
-            List<int> indexes = new List<int>();
-            for (int i = 0; i < 4; i++)
+            try
             {
-                byte value = _readBuffer[i];
-                if (value == 0x1)
+                _semaphoreSlim.Wait(_defaultTimeout);
+
+                _writeBuffer.Clear();
+
+                Span<byte> writeSpan = _writeBuffer.GetWriteBufferSpan(1);
+                writeSpan[1] = 0x10;
+
+                _hidStream.Write(_writeBuffer);
+                _hidStream.Read(_readBuffer);
+
+                List<int> indexes = new List<int>();
+                for (int i = 0; i < 4; i++)
                 {
-                    indexes.Add(i);
+                    byte value = _readBuffer[i + Constants.READ_OFFSET];
+                    if (value == 0x1)
+                    {
+                        indexes.Add(i);
+                    }
                 }
+
+               
+
+                return indexes.ToArray();
             }
-
-            _semaphoreSlim.Release();
-
-            return indexes.ToArray();
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
         }
 
         public void Dispose() => _hidStream.Close();
