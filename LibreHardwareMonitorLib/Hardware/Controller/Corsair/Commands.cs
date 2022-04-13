@@ -70,11 +70,11 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
             }
 
             writeBuffer.Clear();
-            Span<byte> span = writeBuffer.GetWriteBufferSpan(3);
+            Span<byte> writeSpan = writeBuffer.GetWriteBufferSpan(3);
 
-            span[0] = 0x23;
-            span[1] = Convert.ToByte(_control.Sensor.Index);
-            span[2] = Convert.ToByte(Convert.ToInt32(Math.Round(_control.SoftwareValue)));
+            writeSpan[0] = 0x23;
+            writeSpan[1] = Convert.ToByte(_control.Sensor.Index);
+            writeSpan[2] = Convert.ToByte(Convert.ToInt32(Math.Round(_control.SoftwareValue)));
 
             stream.Write(writeBuffer);
             _sensor.Value = _control.SoftwareValue;
@@ -176,9 +176,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
 
             Span<byte> writeSpan = writeBuffer.GetWriteBufferSpan(3);
 
-            writeSpan[1] = 0x28;
-            writeSpan[2] = Convert.ToByte(_control.Sensor.Index);
-            writeSpan[3] = _mode;
+            writeSpan[0] = 0x28;
+            writeSpan[1] = Convert.ToByte(_control.Sensor.Index);
+            writeSpan[2] = _mode;
 
             stream.Write(writeBuffer);
         }

@@ -91,22 +91,22 @@ namespace LibreHardwareMonitor.Hardware.Controller.Corsair
                 _writeBuffer.Clear();
 
                 Span<byte> writeSpan = _writeBuffer.GetWriteBufferSpan(1);
-                writeSpan[1] = 0x10;
+                writeSpan[0] = 0x10;
 
                 _hidStream.Write(_writeBuffer);
                 _hidStream.Read(_readBuffer);
 
+                Span<byte> readSpan = _readBuffer.GetReadBufferSpan(4);
+
                 List<int> indexes = new List<int>();
                 for (int i = 0; i < 4; i++)
                 {
-                    byte value = _readBuffer[i + Constants.READ_OFFSET];
+                    byte value = readSpan[i];
                     if (value == 0x1)
                     {
                         indexes.Add(i);
                     }
                 }
-
-               
 
                 return indexes.ToArray();
             }
