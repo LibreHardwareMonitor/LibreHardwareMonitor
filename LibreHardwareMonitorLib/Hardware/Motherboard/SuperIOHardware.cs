@@ -1397,6 +1397,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             break;
                         }
                         case Model.X570_AORUS_MASTER: // IT8688E
+                        case Model.X570_AORUS_ULTRA:
                         {
                             v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
@@ -1790,6 +1791,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     switch (model)
                     {
                         case Model.X570_AORUS_MASTER: // IT879XE
+                        case Model.X570_AORUS_ULTRA:
                         {
                             v.Add(new Voltage("CPU VDD18", 0));
                             v.Add(new Voltage("DDRVTT AB", 1));
