@@ -14,6 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class IT87XX : ISuperIO
     {
+        private const int MaxFanHeaders = 6;
         private readonly ushort _address;
         private readonly ushort _addressReg;
         private readonly int _bankCount;
@@ -24,9 +25,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly bool _has16BitFanCounter;
         private readonly bool _hasExtReg;
         private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; // Initial Fan Controller Main Control Register value. 
-        private readonly byte[] _initialFanPwmControl = new byte[5]; // This will also store the 2nd control register value.
-        private readonly byte[] _initialFanPwmControlExt = new byte[5];
-        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[5];
+        private readonly byte[] _initialFanPwmControl = new byte[MaxFanHeaders]; // This will also store the 2nd control register value.
+        private readonly byte[] _initialFanPwmControlExt = new byte[MaxFanHeaders];
+        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[MaxFanHeaders];
         private readonly byte _version;
         private readonly float _voltageGain;
 
@@ -139,8 +140,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 {
                     Voltages = new float?[10];
                     Temperatures = new float?[6];
-                    Fans = new float?[5];
-                    Controls = new float?[5];
+                    Fans = new float?[6];
+                    Controls = new float?[6];
                     break;
                 }
                 case Chip.IT8695E:
@@ -643,7 +644,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private const byte VOLTAGE_BASE_REG = 0x20;
 
         private readonly byte[] FAN_PWM_CTRL_REG;
-        private readonly byte[] FAN_PWM_CTRL_EXT_REG = { 0x63, 0x6b, 0x73, 0x7b, 0xa3 };
+        private readonly byte[] FAN_PWM_CTRL_EXT_REG = { 0x63, 0x6b, 0x73, 0x7b, 0xa3, 0xab};
         private readonly byte[] FAN_TACHOMETER_EXT_REG = { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4d };
         private readonly byte[] FAN_TACHOMETER_REG = { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
 
