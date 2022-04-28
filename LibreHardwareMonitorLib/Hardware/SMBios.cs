@@ -1329,7 +1329,7 @@ namespace LibreHardwareMonitor.Hardware
                 r.Append("Memory Device [" + i + "] Speed: ");
                 r.AppendLine(MemoryDevices[i].Speed.ToString());
                 r.Append("Memory Device [" + i + "] Size: ");
-                r.Append(MemoryDevices[i].Size.ToString());
+                r.AppendLine(MemoryDevices[i].Size.ToString());
                 r.AppendLine(" MB");
                 r.AppendLine();
             }
