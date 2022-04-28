@@ -2572,11 +2572,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             t.Add(new Temperature("Temperature #4", 5));
                             t.Add(new Temperature("Temperature #5", 6));
 
-                            for (int i = 0; i < superIO.Fans.Length; i++)
-                                f.Add(new Fan("Fan #" + (i + 1), i));
+                            // CPU Fan Optional uses the same fancontrol as CPU Fan.
+                            // Water Pump speed can only be read from the EC.
+                            string[] fanNames = { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "CPU Fan Optional" };
+                            string[] fanControlNames = { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Water Pump" };
 
-                            for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                            for (int i = 0; i < fanNames.Length; i++)
+                                f.Add(new Fan(fanNames[i], i));
+
+                            for (int i = 0; i < fanControlNames.Length; i++)
+                                c.Add(new Ctrl(fanControlNames[i] + " Control", i));
 
                             break;
                         }
