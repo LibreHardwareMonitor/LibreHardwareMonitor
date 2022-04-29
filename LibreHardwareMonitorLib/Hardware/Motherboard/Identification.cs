@@ -301,6 +301,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.AX370_Gaming_K7;
                 case var _ when name.Equals("PRIME X370-PRO", StringComparison.OrdinalIgnoreCase):
                     return Model.PRIME_X370_PRO;
+                case var _ when name.Equals("PRIME X470-PRO", StringComparison.OrdinalIgnoreCase):
+                    return Model.PRIME_X470_PRO;
                 case var _ when name.Equals("PRIME X570-PRO", StringComparison.OrdinalIgnoreCase):
                     return Model.PRIME_X570_PRO;
                 case var _ when name.Equals("Pro WS X570-ACE", StringComparison.OrdinalIgnoreCase):
