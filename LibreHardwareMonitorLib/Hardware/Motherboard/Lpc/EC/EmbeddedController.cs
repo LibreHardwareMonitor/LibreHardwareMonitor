@@ -177,11 +177,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             ),
         };
 
-        static EmbeddedController()
-        {
-            System.Diagnostics.Debug.Assert(_knownSensors.Count == ((int)ECSensor.Max));
-        }
-
         private readonly IReadOnlyList<EmbeddedControllerSource> _sources;
         private readonly List<Sensor> _sensors;
         private readonly ushort[] _registers;
