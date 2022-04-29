@@ -135,6 +135,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             },
         };
 
+        // If you are updating board information, please consider sharing your changes with the corresponding Linux driver.
+        // You can do that at https://github.com/zeule/asus-ec-sensors or contribute directly to Linux HWMON.
+        // If you are adding a new board, please share DSDT table for the board at https://github.com/zeule/asus-ec-sensors.
+        // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
         private static readonly BoardInfo[] _boards = new BoardInfo[]{
             new(Model.PRIME_X470_PRO, BoardFamily.Amd400,
                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
