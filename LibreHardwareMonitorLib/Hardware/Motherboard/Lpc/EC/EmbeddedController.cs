@@ -25,6 +25,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             TempTSensor,
             /// <summary>VRM temperature [℃]</summary>
             TempVrm,
+            /// <summary>CPU Core voltage [mV]</summary>
+            VoltageCPU,
             /// <summary>CPU_Opt fan [RPM]</summary>
             FanCPUOpt,
             /// <summary>VRM heat sink fan [RPM]</summary>
@@ -51,6 +53,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
             { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
             { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+            { ECSensor.VoltageCPU, new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f) },
             { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
             { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
             { ECSensor.FanChipset, new EmbeddedControllerSource("Chipset Fan", SensorType.Fan, 0x00b4, 2) },
@@ -72,55 +75,57 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 Model.PRO_WS_X570_ACE,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB ,
-                    ECSensor.TempVrm, ECSensor.FanChipset, ECSensor.CurrCPU}
+                    ECSensor.TempVrm, ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU}
             },
             {
                 Model.ROG_CROSSHAIR_VIII_HERO,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
-                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow, ECSensor.CurrCPU}
+                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow, 
+                    ECSensor.CurrCPU, ECSensor.VoltageCPU}
             },
             {
                 Model.ROG_CROSSHAIR_VIII_HERO_WIFI,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
-                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow, ECSensor.CurrCPU}
+                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow, 
+                    ECSensor.CurrCPU, ECSensor.VoltageCPU}
             },
             {
                 Model.ROG_CROSSHAIR_VIII_DARK_HERO,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
-                    ECSensor.FanCPUOpt, ECSensor.FanWaterFlow, ECSensor.CurrCPU
+                    ECSensor.FanCPUOpt, ECSensor.FanWaterFlow, ECSensor.CurrCPU, ECSensor.VoltageCPU
                 }
             },
             {
                 Model.CROSSHAIR_III_FORMULA,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm,
-                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.CurrCPU }
+                    ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU }
             },
             {
                 Model.ROG_CROSSHAIR_VIII_IMPACT,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm,
-                    ECSensor.FanChipset, ECSensor.CurrCPU }
+                    ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU }
             },
             {
                 Model.ROG_STRIX_B550_E_GAMING,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                    ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.FanCPUOpt }
+                    ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.FanCPUOpt, ECSensor.VoltageCPU }
             },
             {
                 Model.ROG_STRIX_B550_I_GAMING,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm,
-                    ECSensor.FanVrmHS, ECSensor.CurrCPU }
+                    ECSensor.FanVrmHS, ECSensor.CurrCPU, ECSensor.VoltageCPU }
             },
             {
                 Model.ROG_STRIX_X570_E_GAMING,
                 new ECSensor[] { ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                     ECSensor.TempTSensor, ECSensor.TempVrm,
-                    ECSensor.FanChipset, ECSensor.CurrCPU }
+                    ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU }
             },
             {
                 Model.ROG_STRIX_X570_F_GAMING,
@@ -130,7 +135,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             {
                 Model.ROG_STRIX_X570_I_GAMING,
                 new ECSensor[] {
-                    ECSensor.TempTSensor, ECSensor.FanVrmHS, ECSensor.FanChipset, ECSensor.CurrCPU }
+                    ECSensor.TempTSensor, ECSensor.FanVrmHS, ECSensor.FanChipset, 
+                    ECSensor.CurrCPU, ECSensor.VoltageCPU }
             },
             {
                 Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
