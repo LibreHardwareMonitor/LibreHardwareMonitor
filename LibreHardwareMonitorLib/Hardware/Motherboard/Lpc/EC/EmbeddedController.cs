@@ -48,6 +48,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         private enum BoardFamily
         {
+            Amd400,
             Amd500,
             Intel100,
             Intel600,
@@ -76,6 +77,24 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 
         private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
         {
+            {
+                BoardFamily.Amd400,
+                new()  // no chipset fans in this generation
+                {
+                    { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                    { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
+                    { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
+                    { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
+                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { ECSensor.VoltageCPU, new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f) },
+                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00bc, 2) },
+                    { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
+                    { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00b4, 2, factor: 1.0f / 42f * 60f) },
+                    { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                    { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x010d, blank: -40) },
+                    { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x010b, blank: -40) },
+                }
+            },
             {
                 BoardFamily.Amd500,
                 new()
@@ -117,7 +136,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
         };
 
         private static readonly BoardInfo[] _boards = new BoardInfo[]{
-            new(Model.PRIME_X570_PRO, BoardFamily.Amd500,
+            new(Model.PRIME_X470_PRO, BoardFamily.Amd400,
+               ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+               ECSensor.TempVrm, ECSensor.TempVrm, ECSensor.FanCPUOpt,
+               ECSensor.CurrCPU, ECSensor.VoltageCPU
+            ),
+            new (Model.PRIME_X570_PRO, BoardFamily.Amd500,
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                 ECSensor.TempVrm, ECSensor.TempTSensor, ECSensor.FanChipset
             ),
