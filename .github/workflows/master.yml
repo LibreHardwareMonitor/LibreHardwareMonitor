@@ -72,4 +72,9 @@ jobs:
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
       - name: Publish to NuGet
-        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
+        uses: alirezanet/publish-nuget@v3.0.0
+        with:
+          PROJECT_FILE_PATH: LibreHardwareMonitorLib/LibreHardwareMonitorLib.csproj
+          VERSION_FILE_PATH: Directory.Build.props
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          TAG_COMMIT: false		
