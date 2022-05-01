@@ -59,6 +59,7 @@ namespace LibreHardwareMonitor.UI
         private readonly UserOption _runWebServer;
         private readonly UserOption _logSensors;
         private readonly UserRadioGroup _loggingInterval;
+        private UserRadioGroup updateInterval;
         private readonly UserRadioGroup _sensorValuesTimeWindow;
         private readonly Logger _logger;
 
@@ -352,6 +353,25 @@ namespace LibreHardwareMonitor.UI
                     sensor.ValuesTimeWindow = timeWindow;
                 }));
             };
+
+            updateInterval = new UserRadioGroup("updateInterval", 2,
+                   new[] { update100msMenuItem, update500msMenuItem, update1sMenuItem,
+        update2sMenuItem, update3sMenuItem, update5sMenuItem,update10sMenuItem},
+                   _settings);
+            updateInterval.Changed += (sender, e) => {
+                switch (updateInterval.Value)
+                {
+                    case 0: timer.Interval = 100; break;
+                    case 1: timer.Interval = 500; break;
+                    case 2: timer.Interval = 1000; break;
+                    case 3: timer.Interval = 2000; break;
+                    case 4: timer.Interval = 3000; break;
+                    case 5: timer.Interval = 5000; break;
+                    case 6: timer.Interval = 10000; break;
+                }
+            };
+
+
 
             InitializePlotForm();
             InitializeSplitter();
@@ -655,8 +675,15 @@ namespace LibreHardwareMonitor.UI
             CloseApplication();
         }
 
+
+        private DateTime? firstTick = null;
+        private TimeSpan warmup = new TimeSpan(0, 0, 5);
         private void Timer_Tick(object sender, EventArgs e)
         {
+            // Stop the timer. Needed when an update is slower than the interval itself.
+            timer.Enabled = false;
+            if (firstTick == null)
+                firstTick = DateTime.Now;
             treeView.Invalidate();
             _systemTray.Redraw();
             _gadget?.Redraw();
@@ -666,6 +693,7 @@ namespace LibreHardwareMonitor.UI
                 backgroundUpdater.RunWorkerAsync();
 
             RestoreCollapsedNodeState(treeView);
+            timer.Enabled = true;
         }
 
         private void SaveConfiguration()
@@ -1071,5 +1099,15 @@ namespace LibreHardwareMonitor.UI
         }
 
         public bool AuthWebServerMenuItemChecked { get { return authWebServerMenuItem.Checked; } set { authWebServerMenuItem.Checked = value; } }
+
+        private void update30sMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void mainMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
     }
 }
