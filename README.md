@@ -6,8 +6,8 @@ Libre Hardware Monitor, a fork of Open Hardware Monitor, is free software that c
 ## What's included?
 | Name| .NET | Build Status |
 | --- | --- | --- | 
-| **LibreHardwareMonitor** <br /> Windows Forms based application that presents all data in a graphical interface | .NET Framework 4.5.2 | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/workflows/CI/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) | 
-| **LibreHardwareMonitorLib** <br /> Library that allows you to use all features in your own application | .NET Framework 4.5.2,<br />.NET Standard 2.0,<br />.NET 5.0,<br />.NET 6.0 | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/workflows/CI/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) | 
+| **LibreHardwareMonitor** <br /> Windows Forms based application that presents all data in a graphical interface | .NET Framework 4.7.2 | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/workflows/CI/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) | 
+| **LibreHardwareMonitorLib** <br /> Library that allows you to use all features in your own application | .NET Framework 4.7,<br />.NET Standard 2.0,<br />.NET 5.0,<br />.NET 6.0 | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/workflows/CI/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) | 
 
 ## What can you do?
 With the help of LibreHardwareMonitor you can read information from devices such as:
@@ -26,9 +26,10 @@ The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
 You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
 
 ## What's the easiest way to start?
-**LibreHardwareMonitor application:** - [How to compile the application](https://docs.microsoft.com/en-us/visualstudio/ide/compiling-and-building-in-visual-studio)
+**LibreHardwareMonitor application:** - [How to compile the application](https://docs.microsoft.com/en-us/visualstudio/ide/compiling-and-building-in-visual-studio)  
+*Compiling LibreHardwareMonitor requires [Visual Studio 2022](https://docs.microsoft.com/en-us/visualstudio/ide/whats-new-visual-studio-2022?view=vs-2022).*
 1. Download the repository and compile 'LibreHardwareMonitor'.
-2. You can start the **net452\LibreHardwareMonitor.exe** application immediately.
+2. You can start the **net472\LibreHardwareMonitor.exe** application immediately.
 
 **NuGet Package** - [How to use NuGet](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio)
 1. Add the [LibreHardwareMonitorLib package](https://www.nuget.org/packages/LibreHardwareMonitorLib/) to your application.

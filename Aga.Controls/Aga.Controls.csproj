@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProductVersion>9.0.30729</ProductVersion>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>Aga.Controls</AssemblyTitle>
     <Description>http://sourceforge.net/projects/treeviewadv/</Description>
     <Copyright>Copyright © Andrey Gliznetsov 2006 - 2009</Copyright>
