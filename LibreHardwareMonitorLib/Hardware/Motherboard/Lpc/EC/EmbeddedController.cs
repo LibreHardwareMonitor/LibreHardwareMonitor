@@ -149,6 +149,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                 ECSensor.TempVrm, ECSensor.TempTSensor, ECSensor.FanChipset
             ),
+            new(Model.PROART_X570_CREATOR_WIFI, BoardFamily.Amd500,
+                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
+                ECSensor.TempVrm, ECSensor.TempTSensor, ECSensor.FanCPUOpt, 
+                ECSensor.CurrCPU, ECSensor.VoltageCPU
+            ),
             new(Model.PRO_WS_X570_ACE, BoardFamily.Amd500,
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                 ECSensor.TempVrm, ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU
