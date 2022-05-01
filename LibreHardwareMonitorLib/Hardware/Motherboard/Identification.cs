@@ -305,6 +305,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.PRIME_X470_PRO;
                 case var _ when name.Equals("PRIME X570-PRO", StringComparison.OrdinalIgnoreCase):
                     return Model.PRIME_X570_PRO;
+                case var _ when name.Equals("ProArt X570-CREATOR WIFI", StringComparison.OrdinalIgnoreCase):
+                    return Model.PROART_X570_CREATOR_WIFI;
                 case var _ when name.Equals("Pro WS X570-ACE", StringComparison.OrdinalIgnoreCase):
                     return Model.PRO_WS_X570_ACE;
                 case var _ when name.Equals("ROG MAXIMUS X APEX", StringComparison.OrdinalIgnoreCase):
