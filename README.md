@@ -29,7 +29,7 @@ You can check if it works properly on your motherboard. For many manufacturers, 
 **LibreHardwareMonitor application:** - [How to compile the application](https://docs.microsoft.com/en-us/visualstudio/ide/compiling-and-building-in-visual-studio)  
 *Compiling LibreHardwareMonitor requires [Visual Studio 2022](https://docs.microsoft.com/en-us/visualstudio/ide/whats-new-visual-studio-2022?view=vs-2022).*
 1. Download the repository and compile 'LibreHardwareMonitor'.
-2. You can start the **net452\LibreHardwareMonitor.exe** application immediately.
+2. You can start the **net472\LibreHardwareMonitor.exe** application immediately.
 
 **NuGet Package** - [How to use NuGet](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio)
 1. Add the [LibreHardwareMonitorLib package](https://www.nuget.org/packages/LibreHardwareMonitorLib/) to your application.
