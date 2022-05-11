@@ -432,11 +432,9 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
 
             _coreVIDs = new Sensor[_coreCount];
-            coreSensorId = 1;
             for (int i = 0; i < _coreVIDs.Length; i++)
             {
                 _coreVIDs[i] = new Sensor(CoreString(i), i + 1, SensorType.Voltage, this, settings);
-                coreSensorId++;
                 ActivateSensor(_coreVIDs[i]);
             }
 
