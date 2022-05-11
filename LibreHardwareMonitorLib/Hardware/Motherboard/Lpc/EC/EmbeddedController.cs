@@ -158,7 +158,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                 ECSensor.TempVrm, ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU
             ),
-            new(new Model[] {Model.ROG_CROSSHAIR_VIII_HERO, Model.ROG_CROSSHAIR_VIII_HERO_WIFI }, BoardFamily.Amd500,
+            new(new Model[] {Model.ROG_CROSSHAIR_VIII_HERO, Model.ROG_CROSSHAIR_VIII_HERO_WIFI, Model.ROG_CROSSHAIR_VIII_FORMULA }, BoardFamily.Amd500,
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                 ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
                 ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow,
@@ -168,11 +168,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
                 ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
                 ECSensor.FanCPUOpt, ECSensor.FanWaterFlow, ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.CROSSHAIR_III_FORMULA, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm,
-                ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU
             ),
             new(Model.ROG_CROSSHAIR_VIII_IMPACT, BoardFamily.Amd500,
                 ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
