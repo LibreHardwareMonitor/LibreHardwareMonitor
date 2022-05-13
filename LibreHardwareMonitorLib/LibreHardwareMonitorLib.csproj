@@ -50,9 +50,8 @@
     <PackageReference Include="System.Management" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\packageicon.png">
+    <None Include="Resources\packageicon.png" PackagePath="">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 </Project>
