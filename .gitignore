@@ -1,6 +1,9 @@
 *.user
 *.suo
 Bin/
+bin/
 Obj/
+obj/
+.idea/
 .vs/
 packages/
