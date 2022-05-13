@@ -1,9 +1,7 @@
 *.user
 *.suo
-Bin/
-bin/
-Obj/
-obj/
+[Bb]in/
+[Oo]bj/
 .idea/
 .vs/
 packages/
