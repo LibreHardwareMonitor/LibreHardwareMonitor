@@ -50,6 +50,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         ROG_STRIX_B550_F_GAMING_WIFI,
         ROG_STRIX_B550_I_GAMING,
         ROG_STRIX_Z690_A_GAMING_WIFI_D4,
+        ROG_MAXIMUS_Z690_EXTREME_GLACIAL,
         M2N_SLI_Deluxe,
         M4A79XTD_EVO,
         P5W_DH_Deluxe,

@@ -43,6 +43,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             TempWaterIn,
             /// <summary>"Water_Out" temperature sensor reading [℃]</summary>
             TempWaterOut,
+            /// <summary>Water block temperature sensor reading [℃]</summary>
+            TempWaterBlockIn,
             Max
         };
 
@@ -131,6 +133,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 {
                     { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                     { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
+                    { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
+                    { ECSensor.TempWaterBlockIn, new EmbeddedControllerSource("Water Block In", SensorType.Temperature, 0x0102, blank: -40) },
+                    { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) }, // todo: need validation for this calculation
                 }
             },
         };
@@ -198,6 +204,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             ),
             new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4, BoardFamily.Intel600,
                 ECSensor.TempTSensor, ECSensor.TempVrm
+            ),
+            new(Model.ROG_MAXIMUS_Z690_EXTREME_GLACIAL, BoardFamily.Intel600,
+                ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut, ECSensor.TempWaterBlockIn, ECSensor.FanWaterFlow
             ),
             new(Model.Z170_A, BoardFamily.Intel100,
                 ECSensor.TempTSensor, ECSensor.TempChipset, ECSensor.FanWaterPump, 
