@@ -2703,13 +2703,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("AVSB", 2, 34, 34));
                             v.Add(new Voltage("3VCC", 3, 34, 34));
                             v.Add(new Voltage("+12V", 4, 11, 1));
-                            v.Add(new Voltage("IVR Atom L2 Cluster1", 5));
+                            v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
                             v.Add(new Voltage("Voltage #7", 6));
-                            v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
-                            v.Add(new Voltage("BAT_3V", 8, 34, 34));
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
+                            v.Add(new Voltage("VBat", 8, 34, 34));
                             v.Add(new Voltage("VTT", 9, 1, 1));
                             v.Add(new Voltage("Voltage #11", 10));
-                            v.Add(new Voltage("IVR Atom L2 Cluster0", 11, 1, 1));
+                            v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                             v.Add(new Voltage("PCH", 12));
                             v.Add(new Voltage("Voltage #14", 13));
                             v.Add(new Voltage("Voltage #15", 14));
@@ -2856,7 +2856,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
-
                         default:
                         {
                             v.Add(new Voltage("Vcore", 0));
