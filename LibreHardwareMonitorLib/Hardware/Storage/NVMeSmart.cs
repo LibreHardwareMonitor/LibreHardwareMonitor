@@ -28,6 +28,10 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 if (_handle != null)
                 {
                     NVMeDrive = new NVMeSamsung();
+                    if (!NVMeDrive.IdentifyController(_handle, out _))
+                    {
+                        NVMeDrive = null;
+                    }
                 }
             }
 
