@@ -94,82 +94,28 @@ namespace LibreHardwareMonitor.Hardware
             if (!_driver.IsOpen)
                 _driver = null;
 
-            const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
+            // define the mutex security
+            MutexSecurity mutexSecurity = CreateMutexSecurity(MutexRights.Synchronize | MutexRights.Modify);
 
-            try
+            const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
+            if (!TryCreateOrOpenExistingMutex(isaMutexName, mutexSecurity, out _isaBusMutex))
             {
-#if NETFRAMEWORK
-                //mutex permissions set to everyone to allow other software to access the hardware
-                //otherwise other monitoring software cant access
-                var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
-                var securitySettings = new MutexSecurity();
-                securitySettings.AddAccessRule(allowEveryoneRule);
-                _isaBusMutex = new Mutex(false, isaMutexName, out _, securitySettings);
-#else
-                _isaBusMutex = new Mutex(false, isaMutexName);
-#endif
-            }
-            catch (UnauthorizedAccessException)
-            {
-                try
-                {
-#if NETFRAMEWORK
-                    _isaBusMutex = Mutex.OpenExisting(isaMutexName, MutexRights.Synchronize);
-#else
-                    _isaBusMutex = Mutex.OpenExisting(isaMutexName);
-#endif
-                }
-                catch
-                { }
+                // mutex could not be created or opened
+                // todo: now what?
             }
 
             const string pciMutexName = "Global\\Access_PCI";
-
-            try
+            if (!TryCreateOrOpenExistingMutex(pciMutexName, mutexSecurity, out _pciBusMutex))
             {
-                _pciBusMutex = new Mutex(false, pciMutexName);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                try
-                {
-#if NETFRAMEWORK
-                    _pciBusMutex = Mutex.OpenExisting(pciMutexName, MutexRights.Synchronize);
-#else
-                    _pciBusMutex = Mutex.OpenExisting(pciMutexName);
-#endif
-                }
-                catch
-                { }
+                // mutex could not be created or opened
+                // todo: now what?
             }
 
             const string ecMutexName = "Global\\Access_EC";
-
-            try
+            if (!TryCreateOrOpenExistingMutex(ecMutexName, mutexSecurity, out _ecMutex))
             {
-#if NETFRAMEWORK
-                //mutex permissions set to everyone to allow other software to access the hardware
-                //otherwise other monitoring software cant access
-                var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
-                var securitySettings = new MutexSecurity();
-                securitySettings.AddAccessRule(allowEveryoneRule);
-                _ecMutex = new Mutex(false, ecMutexName, out _, securitySettings);
-#else
-                _ecMutex = new Mutex(false, ecMutexName);
-#endif
-            }
-            catch (UnauthorizedAccessException)
-            {
-                try
-                {
-#if NETFRAMEWORK
-                    _ecMutex = Mutex.OpenExisting(ecMutexName, MutexRights.Synchronize);
-#else
-                    _ecMutex = Mutex.OpenExisting(ecMutexName);
-#endif
-                }
-                catch
-                { }
+                // mutex could not be created or opened
+                // todo: now what?
             }
         }
 
@@ -230,6 +176,64 @@ namespace LibreHardwareMonitor.Hardware
 
             // file still has not the right size, something is wrong
             return false;
+        }
+
+        private static bool TryCreateOrOpenExistingMutex(string name, MutexSecurity mutexSecurity, out Mutex mutex)
+        {
+            mutex = null;
+
+#if NETFRAMEWORK
+            try
+            {
+                // if the CreateMutex call fails, the framework will attempt to use OpenMutex
+                // to open the named mutex requesting SYNCHRONIZE and MUTEX_MODIFY rights.
+                mutex = new Mutex(false, name, out _, mutexSecurity);
+                return true;
+            }
+            catch (WaitHandleCannotBeOpenedException)
+            {
+                // the mutex cannot be opened, probably because a Win32 object of a different
+                // type with the same name already exists.
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // the mutex exists, but the current process or thread token does not
+                // have permission to open the mutex with SYNCHRONIZE | MUTEX_MODIFY rights.
+                return false;
+
+            }
+            catch
+            {
+                return false;
+            }
+#else
+            try
+            {
+                mutex = new Mutex(false, name);
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+                    mutex = Mutex.OpenExisting(name);
+                    return true;
+                }
+                catch { }
+            }
+            return false;
+#endif
+        }
+
+        private static MutexSecurity CreateMutexSecurity(MutexRights eventRights)
+        {
+            MutexSecurity mutexSecurity = new MutexSecurity();
+            SecurityIdentifier identity = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+            AccessControlType type = AccessControlType.Allow;
+            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, eventRights, type));
+
+            return mutexSecurity;
         }
 
         private static void DeleteDriver()
