@@ -80,7 +80,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 Marshal.StructureToPtr(buffers, buffer, false);
 
                 validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
-                if (validTransfer)
+                if (validTransfer && buffers.DataBuf.Any(x => x != 0))
                 {
                     IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                     IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
@@ -240,7 +240,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 {
                     var result = Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
 
-                    if (result.DataBuf.Sum(x => (long)x) == 0)
+                    if (result.DataBuf.All(x => x == 0))
                     {
                         handle.Close();
                         handle = null;
