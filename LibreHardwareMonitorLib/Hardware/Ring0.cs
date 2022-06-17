@@ -94,25 +94,22 @@ namespace LibreHardwareMonitor.Hardware
             if (!_driver.IsOpen)
                 _driver = null;
 
-            // define the mutex security
-            MutexSecurity mutexSecurity = CreateMutexSecurity(MutexRights.Synchronize | MutexRights.Modify);
-
             const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
-            if (!TryCreateOrOpenExistingMutex(isaMutexName, mutexSecurity, out _isaBusMutex))
+            if (!TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex))
             {
                 // mutex could not be created or opened
                 // todo: now what?
             }
 
             const string pciMutexName = "Global\\Access_PCI";
-            if (!TryCreateOrOpenExistingMutex(pciMutexName, mutexSecurity, out _pciBusMutex))
+            if (!TryCreateOrOpenExistingMutex(pciMutexName, out _pciBusMutex))
             {
                 // mutex could not be created or opened
                 // todo: now what?
             }
 
             const string ecMutexName = "Global\\Access_EC";
-            if (!TryCreateOrOpenExistingMutex(ecMutexName, mutexSecurity, out _ecMutex))
+            if (!TryCreateOrOpenExistingMutex(ecMutexName, out _ecMutex))
             {
                 // mutex could not be created or opened
                 // todo: now what?
@@ -178,11 +175,47 @@ namespace LibreHardwareMonitor.Hardware
             return false;
         }
 
+        private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
+        {
+#if NETFRAMEWORK
+            MutexSecurity mutexSecurity = CreateMutexSecurity(MutexRights.Synchronize | MutexRights.Modify);
+            return TryCreateOrOpenExistingMutex(name, mutexSecurity, out mutex);
+#else
+            mutex = null;
+            try
+            {
+                mutex = new Mutex(false, name);
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+                    mutex = Mutex.OpenExisting(name);
+                    return true;
+                }
+                catch { }
+            }
+            return false;
+#endif
+        }
+
+#if NETFRAMEWORK
+        private static MutexSecurity CreateMutexSecurity(MutexRights eventRights)
+        {
+            MutexSecurity mutexSecurity = new MutexSecurity();
+            SecurityIdentifier identity = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+            AccessControlType type = AccessControlType.Allow;
+            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, eventRights, type));
+
+            return mutexSecurity;
+        }
+
         private static bool TryCreateOrOpenExistingMutex(string name, MutexSecurity mutexSecurity, out Mutex mutex)
         {
             mutex = null;
 
-#if NETFRAMEWORK
+
             try
             {
                 // if the CreateMutex call fails, the framework will attempt to use OpenMutex
@@ -207,34 +240,8 @@ namespace LibreHardwareMonitor.Hardware
             {
                 return false;
             }
-#else
-            try
-            {
-                mutex = new Mutex(false, name);
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                try
-                {
-                    mutex = Mutex.OpenExisting(name);
-                    return true;
-                }
-                catch { }
-            }
-            return false;
+        }
 #endif
-        }
-
-        private static MutexSecurity CreateMutexSecurity(MutexRights eventRights)
-        {
-            MutexSecurity mutexSecurity = new MutexSecurity();
-            SecurityIdentifier identity = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-            AccessControlType type = AccessControlType.Allow;
-            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, eventRights, type));
-
-            return mutexSecurity;
-        }
 
         private static void DeleteDriver()
         {
