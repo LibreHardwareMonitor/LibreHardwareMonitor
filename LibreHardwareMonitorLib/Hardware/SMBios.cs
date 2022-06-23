@@ -837,6 +837,10 @@ namespace LibreHardwareMonitor.Hardware
 
             int family = GetByte(0x06);
             Family = (ProcessorFamily)(family == 254 ? GetWord(0x28) : family);
+
+            L1CacheHandle = GetWord(0x1A);
+            L2CacheHandle = GetWord(0x1C);
+            L3CacheHandle = GetWord(0x1E);
         }
 
         /// <summary>
@@ -860,9 +864,24 @@ namespace LibreHardwareMonitor.Hardware
         public int ExternalClock { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorFamily" />
+        /// Gets <inheritdoc cref="ProcessorFamily" />
         /// </summary>
         public ProcessorFamily Family { get; }
+
+        /// <summary>
+        /// Gets the L1 cache handle.
+        /// </summary>
+        public int L1CacheHandle { get; }
+
+        /// <summary>
+        /// Gets the L2 cache handle.
+        /// </summary>
+        public int L2CacheHandle { get; }
+
+        /// <summary>
+        /// Gets the L3 cache handle.
+        /// </summary>
+        public int L3CacheHandle { get; }
 
         /// <summary>
         /// Gets the string number of Processor Manufacturer.
@@ -886,7 +905,7 @@ namespace LibreHardwareMonitor.Hardware
         public string Serial { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorSocket" />
+        /// Gets <inheritdoc cref="ProcessorSocket" />
         /// </summary>
         public ProcessorSocket Socket { get; }
 
@@ -913,6 +932,7 @@ namespace LibreHardwareMonitor.Hardware
     {
         internal ProcessorCache(byte[] data, IList<string> strings) : base(data, strings)
         {
+            Handle = GetWord(0x02);
             Designation = GetCacheDesignation();
             Associativity = (CacheAssociativity)GetByte(0x12);
             Size = GetWord(0x09);
@@ -927,6 +947,11 @@ namespace LibreHardwareMonitor.Hardware
         /// Gets <inheritdoc cref="CacheDesignation" />
         /// </summary>
         public CacheDesignation Designation { get; }
+
+        /// <summary>
+        /// Gets the handle.
+        /// </summary>
+        public int Handle { get; }
 
         /// <summary>
         /// Gets the value that represents the installed cache size.
@@ -1054,6 +1079,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 List<MemoryDevice> memoryDeviceList = new();
                 List<ProcessorCache> processorCacheList = new();
+                List<ProcessorInformation> processorInformationList = new();
 
                 string[] tables = FirmwareTable.EnumerateTables(Kernel32.Provider.RSMB);
                 if (tables is { Length: > 0 })
@@ -1129,19 +1155,17 @@ namespace LibreHardwareMonitor.Hardware
                                 }
                                 case 0x04:
                                 {
-                                    Processor = new ProcessorInformation(data, strings);
+                                    processorInformationList.Add(new ProcessorInformation(data, strings));
                                     break;
                                 }
                                 case 0x07:
                                 {
-                                    ProcessorCache processorCache = new(data, strings);
-                                    processorCacheList.Add(processorCache);
+                                    processorCacheList.Add(new ProcessorCache(data, strings));
                                     break;
                                 }
                                 case 0x11:
                                 {
-                                    MemoryDevice memoryDevice = new(data, strings);
-                                    memoryDeviceList.Add(memoryDevice);
+                                    memoryDeviceList.Add(new MemoryDevice(data, strings));
                                     break;
                                 }
                             }
@@ -1151,6 +1175,7 @@ namespace LibreHardwareMonitor.Hardware
 
                 MemoryDevices = memoryDeviceList.ToArray();
                 ProcessorCaches = processorCacheList.ToArray();
+                Processors = processorInformationList.ToArray();
             }
         }
 
@@ -1175,14 +1200,14 @@ namespace LibreHardwareMonitor.Hardware
         public MemoryDevice[] MemoryDevices { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ProcessorInformation" />
-        /// </summary>
-        public ProcessorInformation Processor { get; }
-
-        /// <summary>
         /// Gets <inheritdoc cref="ProcessorCache" />
         /// </summary>
         public ProcessorCache[] ProcessorCaches { get; }
+
+        /// <summary>
+        /// Gets <inheritdoc cref="ProcessorInformation" />
+        /// </summary>
+        public ProcessorInformation[] Processors { get; }
 
         /// <summary>
         /// Gets <inheritdoc cref="SystemInformation" />
@@ -1313,40 +1338,43 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine();
             }
 
-            if (Processor != null)
+            if (Processors != null)
             {
-                r.Append("Processor Manufacturer: ");
-                r.AppendLine(Processor.ManufacturerName);
-                r.Append("Processor Type: ");
-                r.AppendLine(Processor.ProcessorType.ToString());
-                r.Append("Processor Version: ");
-                r.AppendLine(Processor.Version);
-                r.Append("Processor Serial: ");
-                r.AppendLine(Processor.Serial);
-                r.Append("Processor Socket Destignation: ");
-                r.AppendLine(Processor.SocketDesignation);
-                r.Append("Processor Socket: ");
-                r.AppendLine(Processor.Socket.ToString());
-                r.Append("Processor Version: ");
-                r.AppendLine(Processor.Version);
-                r.Append("Processor Family: ");
-                r.AppendLine(Processor.Family.ToString());
-                r.Append("Processor Core Count: ");
-                r.AppendLine(Processor.CoreCount.ToString());
-                r.Append("Processor Core Enabled: ");
-                r.AppendLine(Processor.CoreEnabled.ToString());
-                r.Append("Processor Thread Count: ");
-                r.AppendLine(Processor.ThreadCount.ToString());
-                r.Append("Processor External Clock: ");
-                r.Append(Processor.ExternalClock);
-                r.AppendLine(" Mhz");
-                r.Append("Processor Max Speed: ");
-                r.Append(Processor.MaxSpeed);
-                r.AppendLine(" Mhz");
-                r.Append("Processor Current Speed: ");
-                r.Append(Processor.CurrentSpeed);
-                r.AppendLine(" Mhz");
-                r.AppendLine();
+                foreach (ProcessorInformation processor in Processors)
+                {
+                    r.Append("Processor Manufacturer: ");
+                    r.AppendLine(processor.ManufacturerName);
+                    r.Append("Processor Type: ");
+                    r.AppendLine(processor.ProcessorType.ToString());
+                    r.Append("Processor Version: ");
+                    r.AppendLine(processor.Version);
+                    r.Append("Processor Serial: ");
+                    r.AppendLine(processor.Serial);
+                    r.Append("Processor Socket Destignation: ");
+                    r.AppendLine(processor.SocketDesignation);
+                    r.Append("Processor Socket: ");
+                    r.AppendLine(processor.Socket.ToString());
+                    r.Append("Processor Version: ");
+                    r.AppendLine(processor.Version);
+                    r.Append("Processor Family: ");
+                    r.AppendLine(processor.Family.ToString());
+                    r.Append("Processor Core Count: ");
+                    r.AppendLine(processor.CoreCount.ToString());
+                    r.Append("Processor Core Enabled: ");
+                    r.AppendLine(processor.CoreEnabled.ToString());
+                    r.Append("Processor Thread Count: ");
+                    r.AppendLine(processor.ThreadCount.ToString());
+                    r.Append("Processor External Clock: ");
+                    r.Append(processor.ExternalClock);
+                    r.AppendLine(" Mhz");
+                    r.Append("Processor Max Speed: ");
+                    r.Append(processor.MaxSpeed);
+                    r.AppendLine(" Mhz");
+                    r.Append("Processor Current Speed: ");
+                    r.Append(processor.CurrentSpeed);
+                    r.AppendLine(" Mhz");
+                    r.AppendLine();
+                }
             }
 
             for (int i = 0; i < ProcessorCaches.Length; i++)
