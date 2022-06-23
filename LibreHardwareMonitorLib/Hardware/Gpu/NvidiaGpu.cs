@@ -176,7 +176,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             }
 
             NvApi.NvFanCoolerControl fanControllers = GetFanCoolersControllers(out status);
-            if (status == NvApi.NvStatus.OK && fanControllers.Count > 0)
+            if (status == NvApi.NvStatus.OK && fanControllers.Count > 0 && fanCoolers.Count > 0)
             {
                 _controls = new Sensor[fanControllers.Count];
                 _fanControls = new Control[fanControllers.Count];
