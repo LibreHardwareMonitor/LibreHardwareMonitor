@@ -954,7 +954,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            NvApi.NvMemoryInfo memoryInfo = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvMemoryInfo>(2) };
+            NvApi.NvMemoryInfo memoryInfo = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvMemoryInfo>(2)
+            };
 
             status = NvApi.NvAPI_GPU_GetMemoryInfo(_displayHandle.Value, ref memoryInfo);
             return status == NvApi.NvStatus.OK ? memoryInfo : default;
@@ -968,7 +971,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            NvApi.NvGpuClockFrequencies clockFrequencies = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvGpuClockFrequencies>(_clockVersion) };
+            NvApi.NvGpuClockFrequencies clockFrequencies = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvGpuClockFrequencies>(_clockVersion)
+            };
 
             status = NvApi.NvAPI_GPU_GetAllClockFrequencies(_handle, ref clockFrequencies);
             return status == NvApi.NvStatus.OK ? clockFrequencies : default;
@@ -982,7 +988,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            NvApi.NvThermalSettings settings = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(1), Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU, };
+            NvApi.NvThermalSettings settings = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(1), 
+                Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU,
+            };
 
             status = NvApi.NvAPI_GPU_GetThermalSettings(_handle, (int)NvApi.NvThermalTarget.All, ref settings);
             return status == NvApi.NvStatus.OK ? settings : default;
@@ -996,7 +1006,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            var thermalSensors = new NvApi.NvThermalSensors { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSensors>(2), Mask = mask };
+            var thermalSensors = new NvApi.NvThermalSensors
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSensors>(2), 
+                Mask = mask
+            };
 
             status = NvApi.NvAPI_GPU_ThermalGetSensors(_handle, ref thermalSensors);
             return status == NvApi.NvStatus.OK ? thermalSensors : default;
@@ -1012,7 +1026,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             var coolers = new NvApi.NvFanCoolersStatus
             {
-                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1), Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1), 
+                Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
             };
 
             status = NvApi.NvAPI_GPU_ClientFanCoolersGetStatus(_handle, ref coolers);
@@ -1027,7 +1042,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            var controllers = new NvApi.NvFanCoolerControl { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolerControl>(1) };
+            var controllers = new NvApi.NvFanCoolerControl
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolerControl>(1)
+            };
 
             status = NvApi.NvAPI_GPU_ClientFanCoolersGetControl(_handle, ref controllers);
             return status == NvApi.NvStatus.OK ? controllers : default;
@@ -1041,7 +1059,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            NvApi.NvCoolerSettings settings = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvCoolerSettings>(2), Cooler = new NvApi.NvCooler[NvApi.MAX_COOLERS_PER_GPU] };
+            NvApi.NvCoolerSettings settings = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvCoolerSettings>(2), 
+                Cooler = new NvApi.NvCooler[NvApi.MAX_COOLERS_PER_GPU]
+            };
 
             status = NvApi.NvAPI_GPU_GetCoolerSettings(_handle, NvApi.NvCoolerTarget.All, ref settings);
             return status == NvApi.NvStatus.OK ? settings : default;
@@ -1057,7 +1079,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
             NvApi.NvDynamicPStatesInfo pStatesInfo = new()
             {
-                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1), Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1), 
+                Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
             };
 
             status = NvApi.NvAPI_GPU_GetDynamicPstatesInfoEx(_handle, ref pStatesInfo);
@@ -1072,7 +1095,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            NvApi.NvUsages usages = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvUsages>(1) };
+            NvApi.NvUsages usages = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvUsages>(1)
+            };
 
             status = NvApi.NvAPI_GPU_GetUsages(_handle, ref usages);
             return status == NvApi.NvStatus.OK ? usages : default;
@@ -1086,7 +1112,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 return default;
             }
 
-            NvApi.NvPowerTopology powerTopology = new() { Version = NvApi.MAKE_NVAPI_VERSION<NvApi.NvPowerTopology>(1) };
+            NvApi.NvPowerTopology powerTopology = new()
+            {
+                Version = NvApi.MAKE_NVAPI_VERSION<NvApi.NvPowerTopology>(1)
+            };
 
             status = NvApi.NvAPI_GPU_ClientPowerTopologyGetStatus(_handle, ref powerTopology);
             return status == NvApi.NvStatus.OK ? powerTopology : default;
