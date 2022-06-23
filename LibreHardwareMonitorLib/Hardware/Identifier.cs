@@ -11,7 +11,7 @@ using System.Text;
 namespace LibreHardwareMonitor.Hardware
 {
     /// <summary>
-    /// Represents a unique <see cref="ISensor"/>/<see cref="IHardware"/> identifier in text format with a / separator.
+    /// Represents a unique <see cref="ISensor" />/<see cref="IHardware" /> identifier in text format with a / separator.
     /// </summary>
     public class Identifier : IComparable<Identifier>
     {
@@ -21,7 +21,7 @@ namespace LibreHardwareMonitor.Hardware
         public Identifier(params string[] identifiers)
         {
             CheckIdentifiers(identifiers);
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             for (int i = 0; i < identifiers.Length; i++)
             {
                 s.Append(Separator);
@@ -32,14 +32,14 @@ namespace LibreHardwareMonitor.Hardware
         }
 
         /// <summary>
-        /// Creates a new identifier instance based on the base <see cref="Identifier"/> and additional elements.
+        /// Creates a new identifier instance based on the base <see cref="Identifier" /> and additional elements.
         /// </summary>
         /// <param name="identifier">Base identifier being the beginning of the new one.</param>
-        /// <param name="extensions">Additional parts by which the base <see cref="Identifier"/> will be extended.</param>
+        /// <param name="extensions">Additional parts by which the base <see cref="Identifier" /> will be extended.</param>
         public Identifier(Identifier identifier, params string[] extensions)
         {
             CheckIdentifiers(extensions);
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             s.Append(identifier);
             for (int i = 0; i < extensions.Length; i++)
             {
@@ -50,11 +50,11 @@ namespace LibreHardwareMonitor.Hardware
             _identifier = s.ToString();
         }
 
+        /// <inheritdoc />
         public int CompareTo(Identifier other)
         {
             if (other == null)
                 return 1;
-
 
             return string.Compare(_identifier,
                                   other._identifier,
@@ -70,25 +70,26 @@ namespace LibreHardwareMonitor.Hardware
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return _identifier;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (obj == null)
                 return false;
 
-
             Identifier id = obj as Identifier;
             if (id == null)
                 return false;
 
-
             return _identifier == id._identifier;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return _identifier.GetHashCode();
@@ -96,10 +97,10 @@ namespace LibreHardwareMonitor.Hardware
 
         public static bool operator ==(Identifier id1, Identifier id2)
         {
-            if (ReferenceEquals(id1, null) && ReferenceEquals(id2, null))
+            if (id1 is null && id2 is null)
                 return true;
 
-            return !ReferenceEquals(id1, null) && id1.Equals(id2);
+            return id1 is not null && id1.Equals(id2);
         }
 
         public static bool operator !=(Identifier id1, Identifier id2)
@@ -112,7 +113,6 @@ namespace LibreHardwareMonitor.Hardware
             if (id1 == null)
                 return id2 != null;
 
-
             return id1.CompareTo(id2) < 0;
         }
 
@@ -120,7 +120,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (id1 == null)
                 return false;
-
 
             return id1.CompareTo(id2) > 0;
         }

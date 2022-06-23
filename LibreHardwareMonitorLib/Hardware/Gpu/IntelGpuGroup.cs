@@ -41,31 +41,28 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     _report.Append("IsIntel: ");
                     _report.AppendLine(isIntel.ToString(CultureInfo.InvariantCulture));
 
-                    if (isIntel)
+                    if (isIntel && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                     {
-                        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
-                        {
-                            _report.Append("GpuSharedLimit: ");
-                            _report.AppendLine(deviceInfo.GpuSharedLimit.ToString(CultureInfo.InvariantCulture));
-                            _report.Append("GpuSharedUsed: ");
-                            _report.AppendLine(deviceInfo.GpuSharedUsed.ToString(CultureInfo.InvariantCulture));
-                            _report.Append("GpuSharedMax: ");
-                            _report.AppendLine(deviceInfo.GpuSharedMax.ToString(CultureInfo.InvariantCulture));
-                            _report.Append("GpuDedicatedLimit: ");
-                            _report.AppendLine(deviceInfo.GpuDedicatedLimit.ToString(CultureInfo.InvariantCulture));
-                            _report.Append("GpuDedicatedUsed: ");
-                            _report.AppendLine(deviceInfo.GpuDedicatedUsed.ToString(CultureInfo.InvariantCulture));
-                            _report.Append("GpuDedicatedMax: ");
-                            _report.AppendLine(deviceInfo.GpuDedicatedMax.ToString(CultureInfo.InvariantCulture));
-                            _report.Append("Integrated: ");
-                            _report.AppendLine(deviceInfo.Integrated.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuSharedLimit: ");
+                        _report.AppendLine(deviceInfo.GpuSharedLimit.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuSharedUsed: ");
+                        _report.AppendLine(deviceInfo.GpuSharedUsed.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuSharedMax: ");
+                        _report.AppendLine(deviceInfo.GpuSharedMax.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuDedicatedLimit: ");
+                        _report.AppendLine(deviceInfo.GpuDedicatedLimit.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuDedicatedUsed: ");
+                        _report.AppendLine(deviceInfo.GpuDedicatedUsed.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuDedicatedMax: ");
+                        _report.AppendLine(deviceInfo.GpuDedicatedMax.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("Integrated: ");
+                        _report.AppendLine(deviceInfo.Integrated.ToString(CultureInfo.InvariantCulture));
 
-                            if (deviceInfo.Integrated)
-                            {
-                                // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),
-                                // we would pick up the multiple device identifiers above and would add one instance for each CPU.
-                                _hardware.Add(new IntelIntegratedGpu(intelCpus[0], deviceId, deviceInfo, settings));
-                            }
+                        if (deviceInfo.Integrated)
+                        {
+                            // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),
+                            // we would pick up the multiple device identifiers above and would add one instance for each CPU.
+                            _hardware.Add(new IntelIntegratedGpu(intelCpus[0], deviceId, deviceInfo, settings));
                         }
                     }
 
