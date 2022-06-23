@@ -1,49 +1,46 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu
 {
-    internal class IntelIntegratedGpu : Hardware
+    internal class IntelIntegratedGpu : GenericGpu
     {
-        private readonly string _deviceId;
-        private readonly Sensor _dedicatedMemoryUsage;
-        private readonly D3DDisplayDevice.D3DDeviceInfo _deviceInfo;
-        private readonly float _energyUnitMultiplier;
-        private readonly CPU.IntelCpu _intelCpu;
-        private uint _lastEnergyConsumed;
-        private DateTime _lastEnergyTime;
-        private const uint MSR_RAPL_POWER_UNIT = 0x606;
         private const uint MSR_PP1_ENERGY_STATUS = 0x641;
+        private const uint MSR_RAPL_POWER_UNIT = 0x606;
+
+        private readonly Sensor _dedicatedMemoryUsage;
+        private readonly string _deviceId;
+        private readonly float _energyUnitMultiplier;
         private readonly Sensor[] _nodeUsage;
         private readonly DateTime[] _nodeUsagePrevTick;
         private readonly long[] _nodeUsagePrevValue;
         private readonly Sensor _powerSensor;
         private readonly Sensor _sharedMemoryUsage;
 
-        public override HardwareType HardwareType => HardwareType.GpuIntel;
+        private uint _lastEnergyConsumed;
+        private DateTime _lastEnergyTime;
 
         public IntelIntegratedGpu(CPU.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
             : base(GetName(deviceId),
-                  new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
-                  settings)
+                   new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
+                   settings)
         {
-            _intelCpu = intelCpu;
             _deviceId = deviceId;
-            _deviceInfo = deviceInfo;
 
-            var memorySensorIndex = 0;
+            int memorySensorIndex = 0;
 
-            if (_deviceInfo.GpuDedicatedLimit > 0)
+            if (deviceInfo.GpuDedicatedLimit > 0)
             {
                 _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
             }
+
             _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
 
-            if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out var eax, out var _))
+            if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint _))
             {
-                _energyUnitMultiplier = _intelCpu.EnergyUnitsMultiplier;
+                _energyUnitMultiplier = intelCpu.EnergyUnitsMultiplier;
                 if (_energyUnitMultiplier != 0)
                 {
                     _lastEnergyTime = DateTime.UtcNow;
@@ -57,14 +54,19 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             _nodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
             _nodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-            var nodeSensorIndex = 0;
-            foreach(var node in deviceInfo.Nodes.OrderBy(x => x.Name))
+            int nodeSensorIndex = 0;
+            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
             {
                 _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings);
                 _nodeUsagePrevValue[node.Id] = node.RunningTime;
                 _nodeUsagePrevTick[node.Id] = node.QueryTime;
             }
         }
+
+        /// <inheritdoc />
+        public override string DeviceId => D3DDisplayDevice.GetActualDeviceIdentifier(_deviceId);
+
+        public override HardwareType HardwareType => HardwareType.GpuIntel;
 
         public override void Update()
         {
@@ -79,9 +81,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
                 ActivateSensor(_sharedMemoryUsage);
 
-                if (_powerSensor != null && Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out var eax, out var _))
+                if (_powerSensor != null && Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
                 {
-                    var time = DateTime.UtcNow;
+                    DateTime time = DateTime.UtcNow;
                     uint energyConsumed = eax;
                     float deltaTime = (float)(time - _lastEnergyTime).TotalSeconds;
                     if (deltaTime >= 0.01)
@@ -92,7 +94,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     }
                 }
 
-                foreach (var node in deviceInfo.Nodes)
+                foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
                 {
                     long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
                     long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
@@ -107,7 +109,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
         private static string GetName(string deviceId)
         {
-            var path = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\" + D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);
+            string path = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\" + D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);
 
             if (Registry.GetValue(path, "DeviceDesc", null) is string deviceDesc)
             {

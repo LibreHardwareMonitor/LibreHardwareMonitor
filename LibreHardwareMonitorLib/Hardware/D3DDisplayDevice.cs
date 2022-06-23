@@ -18,36 +18,33 @@ namespace LibreHardwareMonitor.Hardware
             if (CfgMgr32.CM_Get_Device_Interface_List_Size(out uint size, ref CfgMgr32.GUID_DISPLAY_DEVICE_ARRIVAL, null, CfgMgr32.CM_GET_DEVICE_INTERFACE_LIST_PRESENT) != CfgMgr32.CR_SUCCESS)
                 return null;
 
-
             char[] data = new char[size];
             if (CfgMgr32.CM_Get_Device_Interface_List(ref CfgMgr32.GUID_DISPLAY_DEVICE_ARRIVAL, null, data, (uint)data.Length, CfgMgr32.CM_GET_DEVICE_INTERFACE_LIST_PRESENT) == CfgMgr32.CR_SUCCESS)
                 return new string(data).Split('\0').Where(m => !string.IsNullOrEmpty(m)).ToArray();
-
 
             return null;
         }
 
         public static string GetActualDeviceIdentifier(string deviceIdentifier)
         {
-            string identifier = deviceIdentifier;
+            if (string.IsNullOrEmpty(deviceIdentifier))
+                return deviceIdentifier;
 
             // For example:
             // \\?\ROOT#BasicRender#0000#{1ca05180-a699-450a-9a0c-de4fbe3ddd89}  -->  ROOT\BasicRender\0000
             // \\?\PCI#VEN_1002&DEV_731F&SUBSYS_57051682&REV_C4#6&e539058&0&00000019#{1ca05180-a699-450a-9a0c-de4fbe3ddd89}  -->  PCI\VEN_1002&DEV_731F&SUBSYS_57051682&REV_C4\6&e539058&0&00000019
 
-            if (identifier.StartsWith(@"\\?\"))
-                identifier = identifier.Substring(4);
+            if (deviceIdentifier.StartsWith(@"\\?\"))
+                deviceIdentifier = deviceIdentifier.Substring(4);
 
-            if (identifier.Length > 0 && identifier[identifier.Length - 1] == '}')
+            if (deviceIdentifier.Length > 0 && deviceIdentifier[deviceIdentifier.Length - 1] == '}')
             {
-                int lastIndex = identifier.LastIndexOf('{');
+                int lastIndex = deviceIdentifier.LastIndexOf('{');
                 if (lastIndex > 0)
-                    identifier = identifier.Substring(0, lastIndex - 1);
+                    deviceIdentifier = deviceIdentifier.Substring(0, lastIndex - 1);
             }
 
-            identifier = identifier.Replace('#', '\\');
-
-            return identifier;
+            return deviceIdentifier.Replace('#', '\\');
         }
 
         public static bool GetDeviceInfoByIdentifier(string deviceIdentifier, out D3DDeviceInfo deviceInfo)
@@ -57,7 +54,6 @@ namespace LibreHardwareMonitor.Hardware
             OpenAdapterFromDeviceName(out uint status, deviceIdentifier, out D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter);
             if (status != WinNt.STATUS_SUCCESS)
                 return false;
-
 
             GetAdapterType(out status, adapter, out D3dkmth.D3DKMT_ADAPTERTYPE adapterType);
             if (status != WinNt.STATUS_SUCCESS)
@@ -72,7 +68,6 @@ namespace LibreHardwareMonitor.Hardware
             if (status != WinNt.STATUS_SUCCESS)
                 return false;
 
-
             uint segmentCount = adapterInformation.NbSegments;
             uint nodeCount = adapterInformation.NodeCount;
 
@@ -86,11 +81,9 @@ namespace LibreHardwareMonitor.Hardware
                 if (status != WinNt.STATUS_SUCCESS)
                     return false;
 
-
                 GetQueryStatisticsNode(out status, adapter, nodeId, out D3dkmth.D3DKMT_QUERYSTATISTICS_NODE_INFORMATION nodeInformation);
                 if (status != WinNt.STATUS_SUCCESS)
                     return false;
-
 
                 deviceInfo.Nodes[nodeId] = new D3DDeviceNodeInfo
                 {
@@ -113,7 +106,6 @@ namespace LibreHardwareMonitor.Hardware
                 GetQueryStatisticsSegment(out status, adapter, segmentId, out D3dkmth.D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION segmentInformation);
                 if (status != WinNt.STATUS_SUCCESS)
                     return false;
-
 
                 ulong bytesResident = segmentInformation.BytesResident;
                 ulong bytesCommitted = segmentInformation.BytesCommitted;
@@ -290,6 +282,6 @@ namespace LibreHardwareMonitor.Hardware
 
             public D3DDeviceNodeInfo[] Nodes;
             public bool Integrated;
-}
+        }
     }
 }
