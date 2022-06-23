@@ -4,11 +4,11 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using LibreHardwareMonitor.Interop;
 
 // ReSharper disable CommentTypo
 // ReSharper disable IdentifierTypo
@@ -425,6 +425,45 @@ namespace LibreHardwareMonitor.Hardware
         L3
     }
 
+    /// <summary>
+    /// Memory type.
+    /// </summary>
+    public enum MemoryType
+    {
+        Other = 0x01,
+        Unknown = 0x02,
+        DRAM = 0x03,
+        EDRAM = 0x04,
+        VRAM = 0x05,
+        SRAM = 0x06,
+        RAM = 0x07,
+        ROM = 0x08,
+        FLASH = 0x09,
+        EEPROM = 0x0a,
+        FEPROM = 0x0b,
+        EPROM = 0x0c,
+        CDRAM = 0x0d,
+        _3DRAM = 0x0e,
+        SDRAM = 0x0f,
+        SGRAM = 0x10,
+        RDRAM = 0x11,
+        DDR = 0x12,
+        DDR2 = 0x13,
+        DDR2_FBDIMM = 0x14,
+        DDR3 = 0x18,
+        FBD2 = 0x19,
+        DDR4 = 0x1a,
+        LPDDR = 0x1b,
+        LPDDR2 = 0x1c,
+        LPDDR3 = 0x1d,
+        LPDDR4 = 0x1e,
+        LogicalNonVolatileDevice = 0x1f,
+        HBM = 0x20,
+        HBM2 = 0x21,
+        DDR5 = 0x22,
+        LPDDR5 = 0x23,
+    }
+
     public class InformationBase
     {
         private readonly byte[] _data;
@@ -451,7 +490,6 @@ namespace LibreHardwareMonitor.Hardware
             if (offset < _data.Length && offset >= 0)
                 return _data[offset];
 
-
             return 0;
         }
 
@@ -465,7 +503,6 @@ namespace LibreHardwareMonitor.Hardware
             if (offset + 1 < _data.Length && offset >= 0)
                 return (_data[offset + 1] << 8) | _data[offset];
 
-
             return 0;
         }
 
@@ -478,7 +515,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (offset < _data.Length && _data[offset] > 0 && _data[offset] <= _strings.Count)
                 return _strings[_data[offset] - 1];
-
 
             return string.Empty;
         }
@@ -537,7 +573,6 @@ namespace LibreHardwareMonitor.Hardware
             bool isExtendedBiosRomSize = biosRomSize == 0xFF && extendedBiosRomSize != 0;
             if (!isExtendedBiosRomSize)
                 return 65536 * (ulong)(biosRomSize + 1);
-
 
             int unit = (extendedBiosRomSize & 0xC000) >> 14;
             ulong extendedSize = (ulong)(extendedBiosRomSize & ~0xC000) * 1024 * 1024;
@@ -915,7 +950,6 @@ namespace LibreHardwareMonitor.Hardware
             if (rawCacheType.Contains("L3"))
                 return CacheDesignation.L3;
 
-
             return CacheDesignation.Other;
         }
     }
@@ -934,6 +968,7 @@ namespace LibreHardwareMonitor.Hardware
             PartNumber = GetString(0x1A).Trim();
             Speed = GetWord(0x15);
             Size = GetWord(0x0C);
+            Type = (MemoryType)GetByte(0x12);
 
             if (GetWord(0x1C) > 0)
                 Size += GetWord(0x1C);
@@ -970,9 +1005,15 @@ namespace LibreHardwareMonitor.Hardware
         public int Size { get; }
 
         /// <summary>
-        /// Gets the the value that identifies the maximum capable speed of the device, in mega transfers per second (MT/s).
+        /// Gets the value that identifies the maximum capable speed of the device, in mega transfers per second (MT/s).
         /// </summary>
         public int Speed { get; }
+
+        /// <summary>
+        /// Gets the type of this memory device.
+        /// </summary>
+        /// <value>The type.</value>
+        public MemoryType Type { get; }
     }
 
     /// <summary>
@@ -983,6 +1024,9 @@ namespace LibreHardwareMonitor.Hardware
         private readonly byte[] _raw;
         private readonly Version _version;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SMBios" /> class.
+        /// </summary>
         public SMBios()
         {
             if (Software.OperatingSystem.IsUnix)
@@ -1004,7 +1048,7 @@ namespace LibreHardwareMonitor.Hardware
                 string biosDate = ReadSysFs("/sys/class/dmi/id/bios_date");
                 Bios = new BiosInformation(biosVendor, biosVersion, biosDate);
 
-                MemoryDevices = new MemoryDevice[0];
+                MemoryDevices = Array.Empty<MemoryDevice>();
             }
             else
             {
@@ -1017,7 +1061,6 @@ namespace LibreHardwareMonitor.Hardware
                     _raw = FirmwareTable.GetTable(Kernel32.Provider.RSMB, tables[0]);
                     if (_raw == null || _raw.Length == 0)
                         return;
-
 
                     byte majorVersion = _raw[1];
                     byte minorVersion = _raw[2];
@@ -1037,7 +1080,6 @@ namespace LibreHardwareMonitor.Hardware
 
                             if (offset + length > _raw.Length)
                                 break;
-
 
                             byte[] data = new byte[length];
                             Array.Copy(_raw, offset, data, 0, length);
