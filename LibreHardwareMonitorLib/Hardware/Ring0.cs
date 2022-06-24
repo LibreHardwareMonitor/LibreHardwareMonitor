@@ -19,10 +19,10 @@ namespace LibreHardwareMonitor.Hardware
     internal static class Ring0
     {
         private static KernelDriver _driver;
+        private static Mutex _ecMutex;
         private static string _filePath;
         private static Mutex _isaBusMutex;
         private static Mutex _pciBusMutex;
-        private static Mutex _ecMutex;
 
         private static readonly StringBuilder _report = new();
 
@@ -97,19 +97,19 @@ namespace LibreHardwareMonitor.Hardware
             const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
             if (!TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex))
             {
-                // Mutex could not be created or opened
+                // Mutex could not be created or opened.
             }
 
             const string pciMutexName = "Global\\Access_PCI";
             if (!TryCreateOrOpenExistingMutex(pciMutexName, out _pciBusMutex))
             {
-                // Mutex could not be created or opened
+                // Mutex could not be created or opened.
             }
 
             const string ecMutexName = "Global\\Access_EC";
             if (!TryCreateOrOpenExistingMutex(ecMutexName, out _ecMutex))
             {
-                // Mutex could not be created or opened
+                // Mutex could not be created or opened.
             }
         }
 
@@ -137,7 +137,7 @@ namespace LibreHardwareMonitor.Hardware
 
             if (buffer == null)
                 return false;
-            
+
             try
             {
                 using FileStream target = new(filePath, FileMode.Create);
@@ -175,14 +175,28 @@ namespace LibreHardwareMonitor.Hardware
         private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
         {
 #if NETFRAMEWORK
-            MutexSecurity mutexSecurity = new MutexSecurity();
-            SecurityIdentifier identity = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-            AccessControlType type = AccessControlType.Allow;
-            MutexRights eventRights = MutexRights.Synchronize | MutexRights.Modify;
-            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, eventRights, type));
-            return TryCreateOrOpenExistingMutex(name, mutexSecurity, out mutex);
+            MutexSecurity mutexSecurity = new();
+            SecurityIdentifier identity = new(WellKnownSidType.WorldSid, null);
+            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, MutexRights.Synchronize | MutexRights.Modify, AccessControlType.Allow));
+
+            try
+            {
+                // If the CreateMutex call fails, the framework will attempt to use OpenMutex
+                // to open the named mutex requesting SYNCHRONIZE and MUTEX_MODIFY rights.
+                mutex = new Mutex(false, name, out _, mutexSecurity);
+                return true;
+            }
+            catch
+            {
+                // WaitHandleCannotBeOpenedException:
+                // The mutex cannot be opened, probably because a Win32 object of a different type with the same name already exists.
+
+                // UnauthorizedAccessException:
+                // The mutex exists, but the current process or thread token does not have permission to open the mutex with SYNCHRONIZE | MUTEX_MODIFY rights.
+                mutex = null;
+                return false;
+            }
 #else
-            mutex = null;
             try
             {
                 mutex = new Mutex(false, name);
@@ -196,37 +210,12 @@ namespace LibreHardwareMonitor.Hardware
                     return true;
                 }
                 catch { }
+
+                mutex = null;
             }
             return false;
 #endif
         }
-
-#if NETFRAMEWORK
-        private static bool TryCreateOrOpenExistingMutex(string name, MutexSecurity mutexSecurity, out Mutex mutex)
-        {
-            mutex = null;
-
-            try
-            {
-                // If the CreateMutex call fails, the framework will attempt to use OpenMutex
-                // to open the named mutex requesting SYNCHRONIZE and MUTEX_MODIFY rights.
-                mutex = new Mutex(false, name, out _, mutexSecurity);
-                return true;
-            }
-            catch
-            {
-                // WaitHandleCannotBeOpenedException:
-                // The mutex cannot be opened, probably because a Win32 object of a different
-                // type with the same name already exists.
-
-                // UnauthorizedAccessException:
-                // The mutex exists, but the current process or thread token does not
-                // have permission to open the mutex with SYNCHRONIZE | MUTEX_MODIFY rights.
-
-                return false;
-            }
-        }
-#endif
 
         private static void DeleteDriver()
         {
@@ -412,7 +401,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_isaBusMutex == null)
                 return true;
 
-
             try
             {
                 return _isaBusMutex.WaitOne(millisecondsTimeout, false);
@@ -437,7 +425,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_pciBusMutex == null)
                 return true;
 
-
             try
             {
                 return _pciBusMutex.WaitOne(millisecondsTimeout, false);
@@ -461,7 +448,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_ecMutex == null)
                 return true;
-
 
             try
             {
@@ -511,7 +497,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver == null)
                 return false;
 
-
             WriteMsrInput input = new() { Register = index, Value = ((ulong)edx << 32) | eax };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
         }
@@ -520,7 +505,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_driver == null)
                 return 0;
-
 
             uint value = 0;
             _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
@@ -531,7 +515,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_driver == null)
                 return;
-
 
             WriteIoPortInput input = new() { PortNumber = port, Value = value };
             _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
@@ -561,7 +544,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver == null || (regAddress & 3) != 0)
                 return false;
 
-
             WritePciConfigInput input = new() { PciAddress = pciAddress, RegAddress = regAddress, Value = value };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_PCI_CONFIG, input);
         }
@@ -571,7 +553,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_driver == null)
                 return false;
 
-
             ReadMemoryInput input = new() { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
         }
@@ -580,7 +561,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_driver == null)
                 return false;
-
 
             ReadMemoryInput input = new() { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
             return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
