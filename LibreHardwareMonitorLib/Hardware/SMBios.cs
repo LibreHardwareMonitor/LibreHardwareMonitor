@@ -17,9 +17,9 @@ using LibreHardwareMonitor.Interop;
 namespace LibreHardwareMonitor.Hardware
 {
     /// <summary>
-    /// Chassis security status based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.3</see>.
+    /// System enclosure security status based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.3</see>.
     /// </summary>
-    public enum ChassisSecurityStatus
+    public enum SystemEnclosureSecurityStatus
     {
         Other = 1,
         Unknown,
@@ -29,9 +29,9 @@ namespace LibreHardwareMonitor.Hardware
     }
 
     /// <summary>
-    /// Chassis state based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.2</see>.
+    /// System enclosure state based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.2</see>.
     /// </summary>
-    public enum ChassisStates
+    public enum SystemEnclosureState
     {
         Other = 1,
         Unknown,
@@ -42,9 +42,9 @@ namespace LibreHardwareMonitor.Hardware
     }
 
     /// <summary>
-    /// Chassis type based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.1</see>.
+    /// System enclosure type based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.4.1</see>.
     /// </summary>
-    public enum ChassisType
+    public enum SystemEnclosureType
     {
         Other = 1,
         Unknown,
@@ -713,11 +713,11 @@ namespace LibreHardwareMonitor.Hardware
     }
 
     /// <summary>
-    /// Chassis information obtained from the SMBIOS table.
+    /// System enclosure obtained from the SMBIOS table.
     /// </summary>
-    public class ChassisInformation : InformationBase
+    public class SystemEnclosure : InformationBase
     {
-        internal ChassisInformation(byte[] data, IList<string> strings) : base(data, strings)
+        internal SystemEnclosure(byte[] data, IList<string> strings) : base(data, strings)
         {
             ManufacturerName = GetString(0x04).Trim();
             Version = GetString(0x06).Trim();
@@ -727,11 +727,11 @@ namespace LibreHardwareMonitor.Hardware
             PowerCords = GetByte(0x12);
             SKU = GetString(0x15).Trim();
             LockDetected = (GetByte(0x05) & 128) == 128;
-            ChassisType = (ChassisType)(GetByte(0x05) & 127);
-            BootUpState = (ChassisStates)GetByte(0x09);
-            PowerSupplyState = (ChassisStates)GetByte(0x0A);
-            ThermalState = (ChassisStates)GetByte(0x0B);
-            SecurityStatus = (ChassisSecurityStatus)GetByte(0x0C);
+            Type = (SystemEnclosureType)(GetByte(0x05) & 127);
+            BootUpState = (SystemEnclosureState)GetByte(0x09);
+            PowerSupplyState = (SystemEnclosureState)GetByte(0x0A);
+            ThermalState = (SystemEnclosureState)GetByte(0x0B);
+            SecurityStatus = (SystemEnclosureSecurityStatus)GetByte(0x0C);
         }
 
         /// <summary>
@@ -740,19 +740,19 @@ namespace LibreHardwareMonitor.Hardware
         public string AssetTag { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ChassisStates" />
+        /// Gets <inheritdoc cref="SystemEnclosureState" />
         /// </summary>
-        public ChassisStates BootUpState { get; }
+        public SystemEnclosureState BootUpState { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ChassisType" />
+        /// Gets <inheritdoc cref="Type" />
         /// </summary>
-        public ChassisType ChassisType { get; }
+        public SystemEnclosureType Type { get; }
 
         /// <summary>
-        /// Gets or sets the chassis lock.
+        /// Gets or sets the system enclosure lock.
         /// </summary>
-        /// <returns>Chassis lock is present if <see langword="true" />. Otherwise, either a lock is not present or it is unknown if the enclosure has a lock.</returns>
+        /// <returns>System enclosure lock is present if <see langword="true" />. Otherwise, either a lock is not present or it is unknown if the enclosure has a lock.</returns>
         public bool LockDetected { get; set; }
 
         /// <summary>
@@ -768,7 +768,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the state of the enclosure’s power supply (or supplies) when last booted.
         /// </summary>
-        public ChassisStates PowerSupplyState { get; }
+        public SystemEnclosureState PowerSupplyState { get; }
 
         /// <summary>
         /// Gets the height of the enclosure, in 'U's. A U is a standard unit of measure for the height of a rack or rack-mountable component and is equal to 1.75 inches or 4.445 cm. A value of <c>0</c>
@@ -779,7 +779,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the physical security status of the enclosure when last booted.
         /// </summary>
-        public ChassisSecurityStatus SecurityStatus { get; set; }
+        public SystemEnclosureSecurityStatus SecurityStatus { get; set; }
 
         /// <summary>
         /// Gets the string describing the chassis or enclosure serial number.
@@ -794,7 +794,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the thermal state of the enclosure when last booted.
         /// </summary>
-        public ChassisStates ThermalState { get; }
+        public SystemEnclosureState ThermalState { get; }
 
         /// <summary>
         /// Gets the number of null-terminated string representing the chassis or enclosure version.
@@ -969,11 +969,11 @@ namespace LibreHardwareMonitor.Hardware
     }
 
     /// <summary>
-    /// Processor cache information obtained from the SMBIOS table.
+    /// Cache information obtained from the SMBIOS table.
     /// </summary>
-    public class ProcessorCache : InformationBase
+    public class CacheInformation : InformationBase
     {
-        internal ProcessorCache(byte[] data, IList<string> strings) : base(data, strings)
+        internal CacheInformation(byte[] data, IList<string> strings) : base(data, strings)
         {
             Handle = GetWord(0x02);
             Designation = GetCacheDesignation();
@@ -1121,7 +1121,7 @@ namespace LibreHardwareMonitor.Hardware
             else
             {
                 List<MemoryDevice> memoryDeviceList = new();
-                List<ProcessorCache> processorCacheList = new();
+                List<CacheInformation> processorCacheList = new();
                 List<ProcessorInformation> processorInformationList = new();
 
                 string[] tables = FirmwareTable.EnumerateTables(Kernel32.Provider.RSMB);
@@ -1193,7 +1193,7 @@ namespace LibreHardwareMonitor.Hardware
                                 }
                                 case 0x03:
                                 {
-                                    Chassis = new ChassisInformation(data, strings);
+                                    SystemEnclosure = new SystemEnclosure(data, strings);
                                     break;
                                 }
                                 case 0x04:
@@ -1203,7 +1203,7 @@ namespace LibreHardwareMonitor.Hardware
                                 }
                                 case 0x07:
                                 {
-                                    processorCacheList.Add(new ProcessorCache(data, strings));
+                                    processorCacheList.Add(new CacheInformation(data, strings));
                                     break;
                                 }
                                 case 0x11:
@@ -1233,9 +1233,9 @@ namespace LibreHardwareMonitor.Hardware
         public BaseBoardInformation Board { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ChassisInformation" />
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.SystemEnclosure" />
         /// </summary>
-        public ChassisInformation Chassis { get; }
+        public SystemEnclosure SystemEnclosure { get; }
 
         /// <summary>
         /// Gets <inheritdoc cref="MemoryDevice" />
@@ -1243,9 +1243,9 @@ namespace LibreHardwareMonitor.Hardware
         public MemoryDevice[] MemoryDevices { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="ProcessorCache" />
+        /// Gets <inheritdoc cref="CacheInformation" />
         /// </summary>
-        public ProcessorCache[] ProcessorCaches { get; }
+        public CacheInformation[] ProcessorCaches { get; }
 
         /// <summary>
         /// Gets <inheritdoc cref="ProcessorInformation" />
@@ -1342,42 +1342,42 @@ namespace LibreHardwareMonitor.Hardware
                 r.AppendLine();
             }
 
-            if (Chassis != null)
+            if (SystemEnclosure != null)
             {
-                r.Append("Chassis Type: ");
-                r.AppendLine(Chassis.ChassisType.ToString());
-                r.Append("Chassis Manufacturer: ");
-                r.AppendLine(Chassis.ManufacturerName);
-                r.Append("Chassis Version: ");
-                r.AppendLine(Chassis.Version);
-                r.Append("Chassis Serial: ");
-                r.AppendLine(Chassis.SerialNumber);
-                r.Append("Chassis Asset Tag: ");
-                r.AppendLine(Chassis.AssetTag);
-                if (!string.IsNullOrEmpty(Chassis.SKU))
+                r.Append("System Enclosure Type: ");
+                r.AppendLine(SystemEnclosure.Type.ToString());
+                r.Append("System Enclosure Manufacturer: ");
+                r.AppendLine(SystemEnclosure.ManufacturerName);
+                r.Append("System Enclosure Version: ");
+                r.AppendLine(SystemEnclosure.Version);
+                r.Append("System Enclosure Serial: ");
+                r.AppendLine(SystemEnclosure.SerialNumber);
+                r.Append("System Enclosure Asset Tag: ");
+                r.AppendLine(SystemEnclosure.AssetTag);
+                if (!string.IsNullOrEmpty(SystemEnclosure.SKU))
                 {
-                    r.Append("Chassis SKU: ");
-                    r.AppendLine(Chassis.SKU);
+                    r.Append("System Enclosure SKU: ");
+                    r.AppendLine(SystemEnclosure.SKU);
                 }
 
-                r.Append("Chassis Boot Up State: ");
-                r.AppendLine(Chassis.BootUpState.ToString());
-                r.Append("Chassis Power Supply State: ");
-                r.AppendLine(Chassis.PowerSupplyState.ToString());
-                r.Append("Chassis Thermal State: ");
-                r.AppendLine(Chassis.ThermalState.ToString());
-                r.Append("Chassis Power Cords: ");
-                r.AppendLine(Chassis.PowerCords.ToString());
-                if (Chassis.RackHeight > 0)
+                r.Append("System Enclosure Boot Up State: ");
+                r.AppendLine(SystemEnclosure.BootUpState.ToString());
+                r.Append("System Enclosure Power Supply State: ");
+                r.AppendLine(SystemEnclosure.PowerSupplyState.ToString());
+                r.Append("System Enclosure Thermal State: ");
+                r.AppendLine(SystemEnclosure.ThermalState.ToString());
+                r.Append("System Enclosure Power Cords: ");
+                r.AppendLine(SystemEnclosure.PowerCords.ToString());
+                if (SystemEnclosure.RackHeight > 0)
                 {
-                    r.Append("Chassis Rack Height: ");
-                    r.AppendLine(Chassis.RackHeight.ToString());
+                    r.Append("System Enclosure Rack Height: ");
+                    r.AppendLine(SystemEnclosure.RackHeight.ToString());
                 }
 
-                r.Append("Chassis Lock Detected: ");
-                r.AppendLine(Chassis.LockDetected ? "Yes" : "No");
-                r.Append("Chassis Security Status: ");
-                r.AppendLine(Chassis.SecurityStatus.ToString());
+                r.Append("System Enclosure Lock Detected: ");
+                r.AppendLine(SystemEnclosure.LockDetected ? "Yes" : "No");
+                r.Append("System Enclosure Security Status: ");
+                r.AppendLine(SystemEnclosure.SecurityStatus.ToString());
                 r.AppendLine();
             }
 
