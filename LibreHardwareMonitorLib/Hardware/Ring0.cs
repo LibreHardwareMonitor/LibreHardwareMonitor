@@ -97,22 +97,19 @@ namespace LibreHardwareMonitor.Hardware
             const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
             if (!TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex))
             {
-                // mutex could not be created or opened
-                // todo: now what?
+                // Mutex could not be created or opened
             }
 
             const string pciMutexName = "Global\\Access_PCI";
             if (!TryCreateOrOpenExistingMutex(pciMutexName, out _pciBusMutex))
             {
-                // mutex could not be created or opened
-                // todo: now what?
+                // Mutex could not be created or opened
             }
 
             const string ecMutexName = "Global\\Access_EC";
             if (!TryCreateOrOpenExistingMutex(ecMutexName, out _ecMutex))
             {
-                // mutex could not be created or opened
-                // todo: now what?
+                // Mutex could not be created or opened
             }
         }
 
@@ -178,14 +175,18 @@ namespace LibreHardwareMonitor.Hardware
         private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
         {
 #if NETFRAMEWORK
-            MutexSecurity mutexSecurity = CreateMutexSecurity(MutexRights.Synchronize | MutexRights.Modify);
+            MutexSecurity mutexSecurity = new MutexSecurity();
+            SecurityIdentifier identity = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+            AccessControlType type = AccessControlType.Allow;
+            MutexRights eventRights = MutexRights.Synchronize | MutexRights.Modify;
+            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, eventRights, type));
             return TryCreateOrOpenExistingMutex(name, mutexSecurity, out mutex);
 #else
             mutex = null;
             try
             {
                 mutex = new Mutex(false, name);
-                return false;
+                return true;
             }
             catch (UnauthorizedAccessException)
             {
@@ -201,43 +202,27 @@ namespace LibreHardwareMonitor.Hardware
         }
 
 #if NETFRAMEWORK
-        private static MutexSecurity CreateMutexSecurity(MutexRights eventRights)
-        {
-            MutexSecurity mutexSecurity = new MutexSecurity();
-            SecurityIdentifier identity = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-            AccessControlType type = AccessControlType.Allow;
-            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, eventRights, type));
-
-            return mutexSecurity;
-        }
-
         private static bool TryCreateOrOpenExistingMutex(string name, MutexSecurity mutexSecurity, out Mutex mutex)
         {
             mutex = null;
 
-
             try
             {
-                // if the CreateMutex call fails, the framework will attempt to use OpenMutex
+                // If the CreateMutex call fails, the framework will attempt to use OpenMutex
                 // to open the named mutex requesting SYNCHRONIZE and MUTEX_MODIFY rights.
                 mutex = new Mutex(false, name, out _, mutexSecurity);
                 return true;
             }
-            catch (WaitHandleCannotBeOpenedException)
-            {
-                // the mutex cannot be opened, probably because a Win32 object of a different
-                // type with the same name already exists.
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // the mutex exists, but the current process or thread token does not
-                // have permission to open the mutex with SYNCHRONIZE | MUTEX_MODIFY rights.
-                return false;
-
-            }
             catch
             {
+                // WaitHandleCannotBeOpenedException:
+                // The mutex cannot be opened, probably because a Win32 object of a different
+                // type with the same name already exists.
+
+                // UnauthorizedAccessException:
+                // The mutex exists, but the current process or thread token does not
+                // have permission to open the mutex with SYNCHRONIZE | MUTEX_MODIFY rights.
+
                 return false;
             }
         }
@@ -247,14 +232,16 @@ namespace LibreHardwareMonitor.Hardware
         {
             try
             {
-                // try to delete the driver file
+                // Try to delete the driver file
                 if (_filePath != null && File.Exists(_filePath))
                     File.Delete(_filePath);
 
                 _filePath = null;
             }
             catch
-            { }
+            {
+                // Mutex could not be created or opened
+            }
         }
 
         private static string GetServiceName()
