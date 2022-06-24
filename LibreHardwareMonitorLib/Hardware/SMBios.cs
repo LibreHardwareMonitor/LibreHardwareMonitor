@@ -301,6 +301,22 @@ namespace LibreHardwareMonitor.Hardware
         Dsp,
         VideoProcessor
     }
+    
+    /// <summary>
+    /// Processor characteristics based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.9</see>.
+    /// </summary>
+    [Flags]
+    public enum ProcessorCharacteristics
+    {
+        None = 0,
+        _64BitCapable = 1,
+        MultiCore = 2,
+        HardwareThread = 4,
+        ExecuteProtection = 8,
+        EnhancedVirtualization = 16,
+        PowerPerformanceControl = 32,
+        _128BitCapable = 64
+    }
 
     /// <summary>
     /// Processor type based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.1</see>.
@@ -745,11 +761,6 @@ namespace LibreHardwareMonitor.Hardware
         public SystemEnclosureState BootUpState { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="Type" />
-        /// </summary>
-        public SystemEnclosureType Type { get; }
-
-        /// <summary>
         /// Gets or sets the system enclosure lock.
         /// </summary>
         /// <returns>System enclosure lock is present if <see langword="true" />. Otherwise, either a lock is not present or it is unknown if the enclosure has a lock.</returns>
@@ -795,6 +806,11 @@ namespace LibreHardwareMonitor.Hardware
         /// Gets the thermal state of the enclosure when last booted.
         /// </summary>
         public SystemEnclosureState ThermalState { get; }
+
+        /// <summary>
+        /// Gets <inheritdoc cref="Type" />
+        /// </summary>
+        public SystemEnclosureType Type { get; }
 
         /// <summary>
         /// Gets the number of null-terminated string representing the chassis or enclosure version.
@@ -864,6 +880,31 @@ namespace LibreHardwareMonitor.Hardware
             Id = GetQword(0x08);
             Handle = GetWord(0x02);
 
+            byte characteristics1 = GetByte(0x26);
+            byte characteristics2 = GetByte(0x27);
+
+            Characteristics = ProcessorCharacteristics.None;
+            if (IsBitSet(characteristics1, 2))
+                Characteristics |= ProcessorCharacteristics._64BitCapable;
+
+            if (IsBitSet(characteristics1, 3))
+                Characteristics |= ProcessorCharacteristics.MultiCore;
+
+            if (IsBitSet(characteristics1, 4))
+                Characteristics |= ProcessorCharacteristics.HardwareThread;
+
+            if (IsBitSet(characteristics1, 5))
+                Characteristics |= ProcessorCharacteristics.ExecuteProtection;
+
+            if (IsBitSet(characteristics1, 6))
+                Characteristics |= ProcessorCharacteristics.EnhancedVirtualization;
+
+            if (IsBitSet(characteristics1, 7))
+                Characteristics |= ProcessorCharacteristics.PowerPerformanceControl;
+
+            if (IsBitSet(characteristics2, 0))
+                Characteristics |= ProcessorCharacteristics._128BitCapable;
+
             ProcessorType = (ProcessorType)GetByte(0x05);
             Socket = (ProcessorSocket)GetByte(0x19);
 
@@ -873,7 +914,17 @@ namespace LibreHardwareMonitor.Hardware
             L1CacheHandle = GetWord(0x1A);
             L2CacheHandle = GetWord(0x1C);
             L3CacheHandle = GetWord(0x1E);
+
+            bool IsBitSet(byte b, int pos)
+            {
+                return (b & (1 << pos)) != 0;
+            }
         }
+
+        /// <summary>
+        /// Gets the characteristics of the processor.
+        /// </summary>
+        public ProcessorCharacteristics Characteristics { get; }
 
         /// <summary>
         /// Gets the value that represents the number of cores per processor socket.
@@ -1233,11 +1284,6 @@ namespace LibreHardwareMonitor.Hardware
         public BaseBoardInformation Board { get; }
 
         /// <summary>
-        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.SystemEnclosure" />
-        /// </summary>
-        public SystemEnclosure SystemEnclosure { get; }
-
-        /// <summary>
         /// Gets <inheritdoc cref="MemoryDevice" />
         /// </summary>
         public MemoryDevice[] MemoryDevices { get; }
@@ -1256,6 +1302,11 @@ namespace LibreHardwareMonitor.Hardware
         /// Gets <inheritdoc cref="SystemInformation" />
         /// </summary>
         public SystemInformation System { get; }
+
+        /// <summary>
+        /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.SystemEnclosure" />
+        /// </summary>
+        public SystemEnclosure SystemEnclosure { get; }
 
         private static string ReadSysFs(string path)
         {
