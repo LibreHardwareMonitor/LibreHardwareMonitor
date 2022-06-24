@@ -484,8 +484,8 @@ namespace LibreHardwareMonitor.Hardware
         /// Gets the byte.
         /// </summary>
         /// <param name="offset">The offset.</param>
-        /// <returns><see cref="int" />.</returns>
-        protected int GetByte(int offset)
+        /// <returns><see cref="byte" />.</returns>
+        protected byte GetByte(int offset)
         {
             if (offset < _data.Length && offset >= 0)
                 return _data[offset];
@@ -497,11 +497,43 @@ namespace LibreHardwareMonitor.Hardware
         /// Gets the word.
         /// </summary>
         /// <param name="offset">The offset.</param>
-        /// <returns><see cref="int" />.</returns>
-        protected int GetWord(int offset)
+        /// <returns><see cref="ushort" />.</returns>
+        protected ushort GetWord(int offset)
         {
             if (offset + 1 < _data.Length && offset >= 0)
-                return (_data[offset + 1] << 8) | _data[offset];
+            {
+                return BitConverter.ToUInt16(_data, offset);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets the dword.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns><see cref="ushort" />.</returns>
+        protected uint GetDword(int offset)
+        {
+            if (offset + 3 < _data.Length && offset >= 0)
+            {
+                return BitConverter.ToUInt32(_data, offset);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets the qword.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns><see cref="ulong" />.</returns>
+        protected ulong GetQword(int offset)
+        {
+            if (offset + 7 < _data.Length && offset >= 0)
+            {
+                return BitConverter.ToUInt64(_data, offset);
+            }
 
             return 0;
         }
@@ -568,7 +600,7 @@ namespace LibreHardwareMonitor.Hardware
         private ulong? GetSize()
         {
             int biosRomSize = GetByte(0x09);
-            int extendedBiosRomSize = GetWord(0x18);
+            ushort extendedBiosRomSize = GetWord(0x18);
 
             bool isExtendedBiosRomSize = biosRomSize == 0xFF && extendedBiosRomSize != 0;
             if (!isExtendedBiosRomSize)
@@ -602,9 +634,7 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (month > 12)
                 {
-                    int tmp = month;
-                    month = day;
-                    day = tmp;
+                    (month, day) = (day, month);
                 }
 
                 return new DateTime(year < 100 ? 1900 + year : year, month, day);
@@ -733,7 +763,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the number of power cords associated with the enclosure or chassis.
         /// </summary>
-        public int PowerCords { get; }
+        public byte PowerCords { get; }
 
         /// <summary>
         /// Gets the state of the enclosure’s power supply (or supplies) when last booted.
@@ -744,7 +774,7 @@ namespace LibreHardwareMonitor.Hardware
         /// Gets the height of the enclosure, in 'U's. A U is a standard unit of measure for the height of a rack or rack-mountable component and is equal to 1.75 inches or 4.445 cm. A value of <c>0</c>
         /// indicates that the enclosure height is unspecified.
         /// </summary>
-        public int RackHeight { get; }
+        public byte RackHeight { get; }
 
         /// <summary>
         /// Gets the physical security status of the enclosure when last booted.
@@ -831,6 +861,8 @@ namespace LibreHardwareMonitor.Hardware
             MaxSpeed = GetWord(0x14);
             CurrentSpeed = GetWord(0x16);
             Serial = GetString(0x20).Trim();
+            Id = GetQword(0x08);
+            Handle = GetWord(0x02);
 
             ProcessorType = (ProcessorType)GetByte(0x05);
             Socket = (ProcessorSocket)GetByte(0x19);
@@ -846,22 +878,22 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the value that represents the number of cores per processor socket.
         /// </summary>
-        public int CoreCount { get; }
+        public ushort CoreCount { get; }
 
         /// <summary>
         /// Gets the value that represents the number of enabled cores per processor socket.
         /// </summary>
-        public int CoreEnabled { get; }
+        public ushort CoreEnabled { get; }
 
         /// <summary>
         /// Gets the value that represents the current processor speed (in MHz).
         /// </summary>
-        public int CurrentSpeed { get; }
+        public ushort CurrentSpeed { get; }
 
         /// <summary>
         /// Gets the external Clock Frequency, in MHz. If the value is unknown, the field is set to 0.
         /// </summary>
-        public int ExternalClock { get; }
+        public ushort ExternalClock { get; }
 
         /// <summary>
         /// Gets <inheritdoc cref="ProcessorFamily" />
@@ -869,19 +901,30 @@ namespace LibreHardwareMonitor.Hardware
         public ProcessorFamily Family { get; }
 
         /// <summary>
+        /// Gets the handle.
+        /// </summary>
+        /// <value>The handle.</value>
+        public ushort Handle { get; }
+
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        public ulong Id { get; }
+
+        /// <summary>
         /// Gets the L1 cache handle.
         /// </summary>
-        public int L1CacheHandle { get; }
+        public ushort L1CacheHandle { get; }
 
         /// <summary>
         /// Gets the L2 cache handle.
         /// </summary>
-        public int L2CacheHandle { get; }
+        public ushort L2CacheHandle { get; }
 
         /// <summary>
         /// Gets the L3 cache handle.
         /// </summary>
-        public int L3CacheHandle { get; }
+        public ushort L3CacheHandle { get; }
 
         /// <summary>
         /// Gets the string number of Processor Manufacturer.
@@ -891,7 +934,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the value that represents the maximum processor speed (in MHz) supported by the system for this processor socket.
         /// </summary>
-        public int MaxSpeed { get; }
+        public ushort MaxSpeed { get; }
 
         /// <summary>
         /// Gets <inheritdoc cref="LibreHardwareMonitor.Hardware.ProcessorType" />
@@ -917,7 +960,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the value that represents the number of threads per processor socket.
         /// </summary>
-        public int ThreadCount { get; }
+        public ushort ThreadCount { get; }
 
         /// <summary>
         /// Gets the value that represents the string number describing the Processor.
@@ -951,12 +994,12 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the handle.
         /// </summary>
-        public int Handle { get; }
+        public ushort Handle { get; }
 
         /// <summary>
         /// Gets the value that represents the installed cache size.
         /// </summary>
-        public int Size { get; }
+        public ushort Size { get; }
 
         /// <summary>
         /// Gets the cache designation.
@@ -1027,12 +1070,12 @@ namespace LibreHardwareMonitor.Hardware
         /// <summary>
         /// Gets the size of the memory device. If the value is 0, no memory device is installed in the socket.
         /// </summary>
-        public int Size { get; }
+        public ushort Size { get; }
 
         /// <summary>
         /// Gets the value that identifies the maximum capable speed of the device, in mega transfers per second (MT/s).
         /// </summary>
-        public int Speed { get; }
+        public ushort Speed { get; }
 
         /// <summary>
         /// Gets the type of this memory device.
