@@ -2829,6 +2829,58 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
                         }
+                        case Model.ROG_STRIX_X570_I_GAMING: //NCT6798D
+                        {
+                            v.Add(new Voltage("Vcore", 0, 10, 10));
+                            v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly
+                            v.Add(new Voltage("AVCC", 2, 10, 10));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
+                            v.Add(new Voltage("+12V", 4, 11, 1)); //Probably not updating properly
+                            v.Add(new Voltage("3VSB", 7, 34, 34));
+                            v.Add(new Voltage("VBat", 8, 34, 34));
+                            v.Add(new Voltage("VTT", 9));
+                            t.Add(new Temperature("CPU", 1));
+                            t.Add(new Temperature("Motherboard", 2));
+                            t.Add(new Temperature("Temperature #3", 3));
+                            t.Add(new Temperature("Temperature #4", 4));
+                            t.Add(new Temperature("Temperature #5", 5));
+                            t.Add(new Temperature("Temperature #6", 6));
+                            t.Add(new Temperature("Temperature #7", 7));
+                            t.Add(new Temperature("Temperature #21", 21));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                            {
+                                switch (i)
+                                {
+                                    case 0:
+                                    f.Add(new Fan("Chassis Fan", 0));
+                                    break;
+                                    case 1:
+                                    f.Add(new Fan("CPU Fan", 1));
+                                    break;
+                                    case 4:
+                                    f.Add(new Fan("AIO Pump", 4));
+                                    break;
+                                }
+                            }
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                            {
+                                switch (i)
+                                {
+                                    case 0:
+                                    c.Add(new Ctrl("Chassis Fan Control", 0));
+                                    break;
+                                    case 1:
+                                    c.Add(new Ctrl("CPU Fan Control", 1));
+                                    break;
+                                    case 4:
+                                    c.Add(new Ctrl("AIO Pump Control", 4));
+                                    break;
+                                }
+                            }
+                            break;
+                        }
                         case Model.ROG_STRIX_B550_F_GAMING_WIFI: // NCT6798D-R
                         {
                             v.Add(new Voltage("Vcore", 0, 2, 2));

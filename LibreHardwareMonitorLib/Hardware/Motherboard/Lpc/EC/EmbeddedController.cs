@@ -200,7 +200,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             ),
             new(Model.ROG_STRIX_X570_I_GAMING, BoardFamily.Amd500,
                 ECSensor.TempTSensor, ECSensor.FanVrmHS, ECSensor.FanChipset,
-                ECSensor.CurrCPU, ECSensor.VoltageCPU
+                ECSensor.CurrCPU, ECSensor.VoltageCPU, ECSensor.TempChipset,
+                ECSensor.TempVrm
             ),
             new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4, BoardFamily.Intel600,
                 ECSensor.TempTSensor, ECSensor.TempVrm
