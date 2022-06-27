@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
@@ -18,51 +17,46 @@ using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
 
-
 namespace LibreHardwareMonitor.UI
 {
     public sealed partial class MainForm : Form
     {
-        private int _delayCount;
-        private readonly PersistentSettings _settings;
-        private readonly UnitManager _unitManager;
-        private readonly Computer _computer;
-        private readonly Node _root;
-        private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
-        private readonly Color[] _plotColorPalette;
-        private readonly SystemTray _systemTray;
-        private readonly StartupManager _startupManager = new StartupManager();
-        private readonly UpdateVisitor _updateVisitor = new UpdateVisitor();
-        private readonly SensorGadget _gadget;
-        private Form _plotForm;
-        private readonly PlotPanel _plotPanel;
-
-        private UserOption _showPlot;
-        private readonly UserOption _minimizeToTray;
-        private readonly UserOption _minimizeOnClose;
         private readonly UserOption _autoStart;
-
-        private readonly UserOption _readMainboardSensors;
+        private readonly Computer _computer;
+        private readonly SensorGadget _gadget;
+        private readonly Logger _logger;
+        private readonly UserRadioGroup _loggingInterval;
+        private readonly UserOption _logSensors;
+        private readonly UserOption _minimizeOnClose;
+        private readonly UserOption _minimizeToTray;
+        private readonly Color[] _plotColorPalette;
+        private readonly PlotPanel _plotPanel;
+        private readonly UserOption _readBatterySensors;
         private readonly UserOption _readCpuSensors;
-        private readonly UserOption _readRamSensors;
-        private readonly UserOption _readGpuSensors;
         private readonly UserOption _readFanControllersSensors;
+        private readonly UserOption _readGpuSensors;
         private readonly UserOption _readHddSensors;
+        private readonly UserOption _readMainboardSensors;
         private readonly UserOption _readNicSensors;
         private readonly UserOption _readPsuSensors;
-        private readonly UserOption _readBatterySensors;
-
+        private readonly UserOption _readRamSensors;
+        private readonly Node _root;
+        private readonly UserOption _runWebServer;
+        private readonly UserRadioGroup _sensorValuesTimeWindow;
+        private readonly PersistentSettings _settings;
         private readonly UserOption _showGadget;
-        private UserRadioGroup _plotLocation;
+        private readonly StartupManager _startupManager = new();
+        private readonly SystemTray _systemTray;
+        private readonly UnitManager _unitManager;
+        private readonly UpdateVisitor _updateVisitor = new();
         private readonly WmiProvider _wmiProvider;
 
-        private readonly UserOption _runWebServer;
-        private readonly UserOption _logSensors;
-        private readonly UserRadioGroup _loggingInterval;
-        private readonly UserRadioGroup _sensorValuesTimeWindow;
-        private readonly Logger _logger;
-
+        private int _delayCount;
+        private Form _plotForm;
+        private UserRadioGroup _plotLocation;
         private bool _selectionDragging;
+        private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
+        private UserOption _showPlot;
 
         public MainForm()
         {
@@ -105,7 +99,7 @@ namespace LibreHardwareMonitor.UI
             foreach (TreeColumn column in treeView.Columns)
                 column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
 
-            TreeModel treeModel = new TreeModel();
+            TreeModel treeModel = new();
             _root = new Node(Environment.MachineName) { Image = EmbeddedResources.GetImage("computer.png") };
 
             treeModel.Nodes.Add(_root);
@@ -132,7 +126,8 @@ namespace LibreHardwareMonitor.UI
                 startMinMenuItem.Visible = false;
             }
             else
-            { // Windows
+            {
+                // Windows
                 treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
                 _gadget = new SensorGadget(_computer, _settings, _unitManager);
                 _gadget.HideShowCommand += HideShowClick;
@@ -167,36 +162,21 @@ namespace LibreHardwareMonitor.UI
             backgroundUpdater.DoWork += BackgroundUpdater_DoWork;
             timer.Enabled = true;
 
-            UserOption showHiddenSensors = new UserOption("hiddenMenuItem", false, hiddenMenuItem, _settings);
-            showHiddenSensors.Changed += delegate
-            {
-                treeModel.ForceVisible = showHiddenSensors.Value;
-            };
+            UserOption showHiddenSensors = new("hiddenMenuItem", false, hiddenMenuItem, _settings);
+            showHiddenSensors.Changed += delegate { treeModel.ForceVisible = showHiddenSensors.Value; };
 
-            UserOption showValue = new UserOption("valueMenuItem", true, valueMenuItem, _settings);
-            showValue.Changed += delegate
-            {
-                treeView.Columns[1].IsVisible = showValue.Value;
-            };
+            UserOption showValue = new("valueMenuItem", true, valueMenuItem, _settings);
+            showValue.Changed += delegate { treeView.Columns[1].IsVisible = showValue.Value; };
 
-            UserOption showMin = new UserOption("minMenuItem", false, minMenuItem, _settings);
-            showMin.Changed += delegate
-            {
-                treeView.Columns[2].IsVisible = showMin.Value;
-            };
+            UserOption showMin = new("minMenuItem", false, minMenuItem, _settings);
+            showMin.Changed += delegate { treeView.Columns[2].IsVisible = showMin.Value; };
 
-            UserOption showMax = new UserOption("maxMenuItem", true, maxMenuItem, _settings);
-            showMax.Changed += delegate
-            {
-                treeView.Columns[3].IsVisible = showMax.Value;
-            };
+            UserOption showMax = new("maxMenuItem", true, maxMenuItem, _settings);
+            showMax.Changed += delegate { treeView.Columns[3].IsVisible = showMax.Value; };
 
             var _ = new UserOption("startMinMenuItem", false, startMinMenuItem, _settings);
             _minimizeToTray = new UserOption("minTrayMenuItem", true, minTrayMenuItem, _settings);
-            _minimizeToTray.Changed += delegate
-            {
-                _systemTray.IsMainIconEnabled = _minimizeToTray.Value;
-            };
+            _minimizeToTray.Changed += delegate { _systemTray.IsMainIconEnabled = _minimizeToTray.Value; };
 
             _minimizeOnClose = new UserOption("minCloseMenuItem", false, minCloseMenuItem, _settings);
 
@@ -209,65 +189,41 @@ namespace LibreHardwareMonitor.UI
                 }
                 catch (InvalidOperationException)
                 {
-                    MessageBox.Show("Updating the auto-startup option failed.", "Error",
-                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Updating the auto-startup option failed.",
+                                    "Error",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+
                     _autoStart.Value = _startupManager.Startup;
                 }
             };
 
             _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
-            _readMainboardSensors.Changed += delegate
-            {
-                _computer.IsMotherboardEnabled = _readMainboardSensors.Value;
-            };
+            _readMainboardSensors.Changed += delegate { _computer.IsMotherboardEnabled = _readMainboardSensors.Value; };
 
             _readCpuSensors = new UserOption("cpuMenuItem", true, cpuMenuItem, _settings);
-            _readCpuSensors.Changed += delegate
-            {
-                _computer.IsCpuEnabled = _readCpuSensors.Value;
-            };
+            _readCpuSensors.Changed += delegate { _computer.IsCpuEnabled = _readCpuSensors.Value; };
 
             _readRamSensors = new UserOption("ramMenuItem", true, ramMenuItem, _settings);
-            _readRamSensors.Changed += delegate
-            {
-                _computer.IsMemoryEnabled = _readRamSensors.Value;
-            };
+            _readRamSensors.Changed += delegate { _computer.IsMemoryEnabled = _readRamSensors.Value; };
 
             _readGpuSensors = new UserOption("gpuMenuItem", true, gpuMenuItem, _settings);
-            _readGpuSensors.Changed += delegate
-            {
-                _computer.IsGpuEnabled = _readGpuSensors.Value;
-            };
+            _readGpuSensors.Changed += delegate { _computer.IsGpuEnabled = _readGpuSensors.Value; };
 
             _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
-            _readFanControllersSensors.Changed += delegate
-            {
-                _computer.IsControllerEnabled = _readFanControllersSensors.Value;
-            };
+            _readFanControllersSensors.Changed += delegate { _computer.IsControllerEnabled = _readFanControllersSensors.Value; };
 
             _readHddSensors = new UserOption("hddMenuItem", true, hddMenuItem, _settings);
-            _readHddSensors.Changed += delegate
-            {
-                _computer.IsStorageEnabled = _readHddSensors.Value;
-            };
+            _readHddSensors.Changed += delegate { _computer.IsStorageEnabled = _readHddSensors.Value; };
 
             _readNicSensors = new UserOption("nicMenuItem", true, nicMenuItem, _settings);
-            _readNicSensors.Changed += delegate
-            {
-                _computer.IsNetworkEnabled = _readNicSensors.Value;
-            };
+            _readNicSensors.Changed += delegate { _computer.IsNetworkEnabled = _readNicSensors.Value; };
 
             _readPsuSensors = new UserOption("psuMenuItem", true, psuMenuItem, _settings);
-            _readPsuSensors.Changed += delegate
-            {
-                _computer.IsPsuEnabled = _readPsuSensors.Value;
-            };
+            _readPsuSensors.Changed += delegate { _computer.IsPsuEnabled = _readPsuSensors.Value; };
 
             _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
-            _readBatterySensors.Changed += delegate
-            {
-                _computer.IsBatteryEnabled = _readBatterySensors.Value;
-            };
+            _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
 
             _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
             _showGadget.Changed += delegate
@@ -279,7 +235,12 @@ namespace LibreHardwareMonitor.UI
             celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
             fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-            Server = new HttpServer(_root, _settings.GetValue("listenerPort", 8085), _settings.GetValue("authenticationEnabled", false), _settings.GetValue("authenticationUserName", ""), _settings.GetValue("authenticationPassword", ""));
+            Server = new HttpServer(_root,
+                                    _settings.GetValue("listenerPort", 8085),
+                                    _settings.GetValue("authenticationEnabled", false),
+                                    _settings.GetValue("authenticationUserName", ""),
+                                    _settings.GetValue("authenticationPassword", ""));
+
             if (Server.PlatformNotSupported)
             {
                 webMenuItemSeparator.Visible = false;
@@ -299,58 +260,131 @@ namespace LibreHardwareMonitor.UI
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
 
-            _loggingInterval = new UserRadioGroup("loggingInterval", 0,
-                new[] { log1sMenuItem, log2sMenuItem, log5sMenuItem, log10sMenuItem,
-                log30sMenuItem, log1minMenuItem, log2minMenuItem, log5minMenuItem,
-                log10minMenuItem, log30minMenuItem, log1hMenuItem, log2hMenuItem,
-                log6hMenuItem}, _settings);
+            _loggingInterval = new UserRadioGroup("loggingInterval",
+                                                  0,
+                                                  new[]
+                                                  {
+                                                      log1sMenuItem,
+                                                      log2sMenuItem,
+                                                      log5sMenuItem,
+                                                      log10sMenuItem,
+                                                      log30sMenuItem,
+                                                      log1minMenuItem,
+                                                      log2minMenuItem,
+                                                      log5minMenuItem,
+                                                      log10minMenuItem,
+                                                      log30minMenuItem,
+                                                      log1hMenuItem,
+                                                      log2hMenuItem,
+                                                      log6hMenuItem
+                                                  },
+                                                  _settings);
+
             _loggingInterval.Changed += (sender, e) =>
             {
                 switch (_loggingInterval.Value)
                 {
-                    case 0: _logger.LoggingInterval = new TimeSpan(0, 0, 1); break;
-                    case 1: _logger.LoggingInterval = new TimeSpan(0, 0, 2); break;
-                    case 2: _logger.LoggingInterval = new TimeSpan(0, 0, 5); break;
-                    case 3: _logger.LoggingInterval = new TimeSpan(0, 0, 10); break;
-                    case 4: _logger.LoggingInterval = new TimeSpan(0, 0, 30); break;
-                    case 5: _logger.LoggingInterval = new TimeSpan(0, 1, 0); break;
-                    case 6: _logger.LoggingInterval = new TimeSpan(0, 2, 0); break;
-                    case 7: _logger.LoggingInterval = new TimeSpan(0, 5, 0); break;
-                    case 8: _logger.LoggingInterval = new TimeSpan(0, 10, 0); break;
-                    case 9: _logger.LoggingInterval = new TimeSpan(0, 30, 0); break;
-                    case 10: _logger.LoggingInterval = new TimeSpan(1, 0, 0); break;
-                    case 11: _logger.LoggingInterval = new TimeSpan(2, 0, 0); break;
-                    case 12: _logger.LoggingInterval = new TimeSpan(6, 0, 0); break;
+                    case 0:
+                        _logger.LoggingInterval = new TimeSpan(0, 0, 1);
+                        break;
+                    case 1:
+                        _logger.LoggingInterval = new TimeSpan(0, 0, 2);
+                        break;
+                    case 2:
+                        _logger.LoggingInterval = new TimeSpan(0, 0, 5);
+                        break;
+                    case 3:
+                        _logger.LoggingInterval = new TimeSpan(0, 0, 10);
+                        break;
+                    case 4:
+                        _logger.LoggingInterval = new TimeSpan(0, 0, 30);
+                        break;
+                    case 5:
+                        _logger.LoggingInterval = new TimeSpan(0, 1, 0);
+                        break;
+                    case 6:
+                        _logger.LoggingInterval = new TimeSpan(0, 2, 0);
+                        break;
+                    case 7:
+                        _logger.LoggingInterval = new TimeSpan(0, 5, 0);
+                        break;
+                    case 8:
+                        _logger.LoggingInterval = new TimeSpan(0, 10, 0);
+                        break;
+                    case 9:
+                        _logger.LoggingInterval = new TimeSpan(0, 30, 0);
+                        break;
+                    case 10:
+                        _logger.LoggingInterval = new TimeSpan(1, 0, 0);
+                        break;
+                    case 11:
+                        _logger.LoggingInterval = new TimeSpan(2, 0, 0);
+                        break;
+                    case 12:
+                        _logger.LoggingInterval = new TimeSpan(6, 0, 0);
+                        break;
                 }
             };
 
-            _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow", 10,
-                new[] { timeWindow30sMenuItem, timeWindow1minMenuItem, timeWindow2minMenuItem,
-                timeWindow5minMenuItem, timeWindow10minMenuItem, timeWindow30minMenuItem,
-                timeWindow1hMenuItem, timeWindow2hMenuItem, timeWindow6hMenuItem,
-                timeWindow12hMenuItem, timeWindow24hMenuItem}, _settings);
+            _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow",
+                                                         10,
+                                                         new[]
+                                                         {
+                                                             timeWindow30sMenuItem,
+                                                             timeWindow1minMenuItem,
+                                                             timeWindow2minMenuItem,
+                                                             timeWindow5minMenuItem,
+                                                             timeWindow10minMenuItem,
+                                                             timeWindow30minMenuItem,
+                                                             timeWindow1hMenuItem,
+                                                             timeWindow2hMenuItem,
+                                                             timeWindow6hMenuItem,
+                                                             timeWindow12hMenuItem,
+                                                             timeWindow24hMenuItem
+                                                         },
+                                                         _settings);
+
             _sensorValuesTimeWindow.Changed += (sender, e) =>
             {
                 TimeSpan timeWindow = TimeSpan.Zero;
                 switch (_sensorValuesTimeWindow.Value)
                 {
-                    case 0: timeWindow = new TimeSpan(0, 0, 30); break;
-                    case 1: timeWindow = new TimeSpan(0, 1, 0); break;
-                    case 2: timeWindow = new TimeSpan(0, 2, 0); break;
-                    case 3: timeWindow = new TimeSpan(0, 5, 0); break;
-                    case 4: timeWindow = new TimeSpan(0, 10, 0); break;
-                    case 5: timeWindow = new TimeSpan(0, 30, 0); break;
-                    case 6: timeWindow = new TimeSpan(1, 0, 0); break;
-                    case 7: timeWindow = new TimeSpan(2, 0, 0); break;
-                    case 8: timeWindow = new TimeSpan(6, 0, 0); break;
-                    case 9: timeWindow = new TimeSpan(12, 0, 0); break;
-                    case 10: timeWindow = new TimeSpan(24, 0, 0); break;
+                    case 0:
+                        timeWindow = new TimeSpan(0, 0, 30);
+                        break;
+                    case 1:
+                        timeWindow = new TimeSpan(0, 1, 0);
+                        break;
+                    case 2:
+                        timeWindow = new TimeSpan(0, 2, 0);
+                        break;
+                    case 3:
+                        timeWindow = new TimeSpan(0, 5, 0);
+                        break;
+                    case 4:
+                        timeWindow = new TimeSpan(0, 10, 0);
+                        break;
+                    case 5:
+                        timeWindow = new TimeSpan(0, 30, 0);
+                        break;
+                    case 6:
+                        timeWindow = new TimeSpan(1, 0, 0);
+                        break;
+                    case 7:
+                        timeWindow = new TimeSpan(2, 0, 0);
+                        break;
+                    case 8:
+                        timeWindow = new TimeSpan(6, 0, 0);
+                        break;
+                    case 9:
+                        timeWindow = new TimeSpan(12, 0, 0);
+                        break;
+                    case 10:
+                        timeWindow = new TimeSpan(24, 0, 0);
+                        break;
                 }
 
-                _computer.Accept(new SensorVisitor(delegate (ISensor sensor)
-                {
-                    sensor.ValuesTimeWindow = timeWindow;
-                }));
+                _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
             };
 
             InitializePlotForm();
@@ -385,6 +419,14 @@ namespace LibreHardwareMonitor.UI
             Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
         }
 
+        public bool AuthWebServerMenuItemChecked
+        {
+            get { return authWebServerMenuItem.Checked; }
+            set { authWebServerMenuItem.Checked = value; }
+        }
+
+        public HttpServer Server { get; }
+
         private void BackgroundUpdater_DoWork(object sender, DoWorkEventArgs e)
         {
             _computer.Accept(_updateVisitor);
@@ -409,10 +451,7 @@ namespace LibreHardwareMonitor.UI
         private void InitializeSplitter()
         {
             splitContainer.SplitterDistance = _settings.GetValue("splitContainer.SplitterDistance", 400);
-            splitContainer.SplitterMoved += delegate
-            {
-                _settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance);
-            };
+            splitContainer.SplitterMoved += delegate { _settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance); };
         }
 
         private void InitializePlotForm()
@@ -443,8 +482,10 @@ namespace LibreHardwareMonitor.UI
                 {
                     splitContainer.Panel2Collapsed = !_showPlot.Value;
                 }
+
                 treeView.Invalidate();
             };
+
             _plotLocation.Changed += delegate
             {
                 switch (_plotLocation.Value)
@@ -455,6 +496,7 @@ namespace LibreHardwareMonitor.UI
                         _plotForm.Controls.Add(_plotPanel);
                         if (_showPlot.Value && Visible)
                             _plotForm.Show();
+
                         break;
                     case 1:
                         _plotForm.Controls.Clear();
@@ -473,7 +515,7 @@ namespace LibreHardwareMonitor.UI
                 }
             };
 
-            _plotForm.FormClosing += delegate (object sender, FormClosingEventArgs e)
+            _plotForm.FormClosing += delegate(object sender, FormClosingEventArgs e)
             {
                 if (e.CloseReason == CloseReason.UserClosing)
                 {
@@ -482,10 +524,10 @@ namespace LibreHardwareMonitor.UI
                     {
                         _showPlot.Value = false;
                     }
+
                     e.Cancel = true;
                 }
             };
-
 
             void MoveOrResizePlotForm(object sender, EventArgs e)
             {
@@ -503,15 +545,14 @@ namespace LibreHardwareMonitor.UI
 
             _plotForm.VisibleChanged += delegate
             {
-                Rectangle bounds = new Rectangle(_plotForm.Location, _plotForm.Size);
+                Rectangle bounds = new(_plotForm.Location, _plotForm.Size);
                 Screen screen = Screen.FromRectangle(bounds);
                 Rectangle intersection = Rectangle.Intersect(screen.WorkingArea, bounds);
                 if (intersection.Width < Math.Min(16, bounds.Width) ||
                     intersection.Height < Math.Min(16, bounds.Height))
                 {
-                    _plotForm.Location = new Point(
-                      screen.WorkingArea.Width / 2 - bounds.Width / 2,
-                      screen.WorkingArea.Height / 2 - bounds.Height / 2);
+                    _plotForm.Location = new Point(screen.WorkingArea.Width / 2 - bounds.Width / 2,
+                                                   screen.WorkingArea.Height / 2 - bounds.Height / 2);
                 }
             };
 
@@ -535,7 +576,7 @@ namespace LibreHardwareMonitor.UI
 
         private void SubHardwareAdded(IHardware hardware, Node node)
         {
-            HardwareNode hardwareNode = new HardwareNode(hardware, _settings, _unitManager);
+            HardwareNode hardwareNode = new(hardware, _settings, _unitManager);
             hardwareNode.PlotSelectionChanged += PlotSelectionChanged;
             InsertSorted(node.Nodes, hardwareNode);
             foreach (IHardware subHardware in hardware.SubHardware)
@@ -550,17 +591,19 @@ namespace LibreHardwareMonitor.UI
 
         private void HardwareRemoved(IHardware hardware)
         {
-            List<HardwareNode> nodesToRemove = new List<HardwareNode>();
+            List<HardwareNode> nodesToRemove = new();
             foreach (Node node in _root.Nodes)
             {
                 if (node is HardwareNode hardwareNode && hardwareNode.Hardware == hardware)
                     nodesToRemove.Add(hardwareNode);
             }
+
             foreach (HardwareNode hardwareNode in nodesToRemove)
             {
                 _root.Nodes.Remove(hardwareNode);
                 hardwareNode.PlotSelectionChanged -= PlotSelectionChanged;
             }
+
             PlotSelectionChanged(this, null);
         }
 
@@ -580,7 +623,7 @@ namespace LibreHardwareMonitor.UI
 
         private void PlotSelectionChanged(object sender, EventArgs e)
         {
-            List<ISensor> selected = new List<ISensor>();
+            List<ISensor> selected = new();
             IDictionary<ISensor, Color> colors = new Dictionary<ISensor, Color>();
             int colorIndex = 0;
 
@@ -593,10 +636,12 @@ namespace LibreHardwareMonitor.UI
                         if (!sensorNode.PenColor.HasValue)
                         {
                             colors.Add(sensorNode.Sensor,
-                              _plotColorPalette[colorIndex % _plotColorPalette.Length]);
+                                       _plotColorPalette[colorIndex % _plotColorPalette.Length]);
                         }
+
                         selected.Add(sensorNode.Sensor);
                     }
+
                     colorIndex++;
                 }
             }
@@ -636,6 +681,7 @@ namespace LibreHardwareMonitor.UI
                 if (node.Tag is SensorNode sensorNode && sensorNode.Plot && sensorNode.PenColor.HasValue)
                     colors.Add(sensorNode.Sensor, sensorNode.PenColor.Value);
             }
+
             _sensorPlotColors = colors;
             _plotPanel.SetSensors(selected, colors);
         }
@@ -673,7 +719,6 @@ namespace LibreHardwareMonitor.UI
             if (_plotPanel == null || _settings == null)
                 return;
 
-
             _plotPanel.SetCurrentSettings();
 
             foreach (TreeColumn column in treeView.Columns)
@@ -692,21 +737,29 @@ namespace LibreHardwareMonitor.UI
             }
             catch (UnauthorizedAccessException)
             {
-                MessageBox.Show("Access to the path '" + fileName + "' is denied. " +
-                  "The current settings could not be saved.",
-                  "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Access to the path '" +
+                                fileName +
+                                "' is denied. " +
+                                "The current settings could not be saved.",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
             }
             catch (IOException)
             {
-                MessageBox.Show("The path '" + fileName + "' is not writeable. " +
-                  "The current settings could not be saved.",
-                  "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("The path '" +
+                                fileName +
+                                "' is not writeable. " +
+                                "The current settings could not be saved.",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
             }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            Rectangle newBounds = new Rectangle
+            Rectangle newBounds = new()
             {
                 X = _settings.GetValue("mainForm.Location.X", Location.X),
                 Y = _settings.GetValue("mainForm.Location.Y", Location.Y),
@@ -714,7 +767,7 @@ namespace LibreHardwareMonitor.UI
                 Height = _settings.GetValue("mainForm.Height", 640)
             };
 
-            Rectangle fullWorkingArea = new Rectangle(int.MaxValue, int.MaxValue, int.MinValue, int.MinValue);
+            Rectangle fullWorkingArea = new(int.MaxValue, int.MaxValue, int.MinValue, int.MinValue);
 
             foreach (Screen screen in Screen.AllScreens)
                 fullWorkingArea = Rectangle.Union(fullWorkingArea, screen.Bounds);
@@ -725,6 +778,7 @@ namespace LibreHardwareMonitor.UI
                 newBounds.X = (Screen.PrimaryScreen.WorkingArea.Width / 2) - (newBounds.Width / 2);
                 newBounds.Y = (Screen.PrimaryScreen.WorkingArea.Height / 2) - (newBounds.Height / 2);
             }
+
             Bounds = newBounds;
 
             RestoreCollapsedNodeState(treeView);
@@ -735,9 +789,9 @@ namespace LibreHardwareMonitor.UI
         private void RestoreCollapsedNodeState(TreeViewAdv treeViewAdv)
         {
             var collapsedHwNodes = treeViewAdv.AllNodes
-                .Where(n => n.IsExpanded && n.Tag is IExpandPersistNode expandPersistNode && !expandPersistNode.Expanded)
-                .OrderByDescending(n => n.Level)
-                .ToList();
+                                              .Where(n => n.IsExpanded && n.Tag is IExpandPersistNode expandPersistNode && !expandPersistNode.Expanded)
+                                              .OrderByDescending(n => n.Level)
+                                              .ToList();
 
             foreach (TreeNodeAdv node in collapsedHwNodes)
             {
@@ -756,6 +810,7 @@ namespace LibreHardwareMonitor.UI
             SaveConfiguration();
             if (_runWebServer.Value)
                 Server.Quit();
+
             _systemTray.Dispose();
             timer.Dispose();
             backgroundUpdater.Dispose();
@@ -798,61 +853,52 @@ namespace LibreHardwareMonitor.UI
                     if (node.Sensor.Parameters.Count > 0)
                     {
                         ToolStripItem item = new ToolStripMenuItem("Parameters...");
-                        item.Click += delegate
-                        {
-                            ShowParameterForm(node.Sensor);
-                        };
+                        item.Click += delegate { ShowParameterForm(node.Sensor); };
                         treeContextMenu.Items.Add(item);
                     }
+
                     if (nodeTextBoxText.EditEnabled)
                     {
                         ToolStripItem item = new ToolStripMenuItem("Rename");
-                        item.Click += delegate
-                        {
-                            nodeTextBoxText.BeginEdit();
-                        };
+                        item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                         treeContextMenu.Items.Add(item);
                     }
+
                     if (node.IsVisible)
                     {
                         ToolStripItem item = new ToolStripMenuItem("Hide");
-                        item.Click += delegate
-                        {
-                            node.IsVisible = false;
-                        };
+                        item.Click += delegate { node.IsVisible = false; };
                         treeContextMenu.Items.Add(item);
                     }
                     else
                     {
                         ToolStripItem item = new ToolStripMenuItem("Unhide");
-                        item.Click += delegate
-                        {
-                            node.IsVisible = true;
-                        };
+                        item.Click += delegate { node.IsVisible = true; };
                         treeContextMenu.Items.Add(item);
                     }
+
                     treeContextMenu.Items.Add(new ToolStripSeparator());
                     {
                         ToolStripItem item = new ToolStripMenuItem("Pen Color...");
                         item.Click += delegate
                         {
-                            ColorDialog dialog = new ColorDialog { Color = node.PenColor.GetValueOrDefault() };
+                            ColorDialog dialog = new() { Color = node.PenColor.GetValueOrDefault() };
                             if (dialog.ShowDialog() == DialogResult.OK)
                                 node.PenColor = dialog.Color;
                         };
+
                         treeContextMenu.Items.Add(item);
                     }
+
                     {
                         ToolStripItem item = new ToolStripMenuItem("Reset Pen Color");
-                        item.Click += delegate
-                        {
-                            node.PenColor = null;
-                        };
+                        item.Click += delegate { node.PenColor = null; };
                         treeContextMenu.Items.Add(item);
                     }
+
                     treeContextMenu.Items.Add(new ToolStripSeparator());
                     {
-                        ToolStripMenuItem item = new ToolStripMenuItem("Show in Tray") { Checked = _systemTray.Contains(node.Sensor) };
+                        ToolStripMenuItem item = new("Show in Tray") { Checked = _systemTray.Contains(node.Sensor) };
                         item.Click += delegate
                         {
                             if (item.Checked)
@@ -860,11 +906,13 @@ namespace LibreHardwareMonitor.UI
                             else
                                 _systemTray.Add(node.Sensor, true);
                         };
+
                         treeContextMenu.Items.Add(item);
                     }
+
                     if (_gadget != null)
                     {
-                        ToolStripMenuItem item = new ToolStripMenuItem("Show in Gadget") { Checked = _gadget.Contains(node.Sensor) };
+                        ToolStripMenuItem item = new("Show in Gadget") { Checked = _gadget.Contains(node.Sensor) };
                         item.Click += delegate
                         {
                             if (item.Checked)
@@ -876,20 +924,19 @@ namespace LibreHardwareMonitor.UI
                                 _gadget.Add(node.Sensor);
                             }
                         };
+
                         treeContextMenu.Items.Add(item);
                     }
+
                     if (node.Sensor.Control != null)
                     {
                         treeContextMenu.Items.Add(new ToolStripSeparator());
                         IControl control = node.Sensor.Control;
-                        ToolStripMenuItem controlItem = new ToolStripMenuItem("Control");
+                        ToolStripMenuItem controlItem = new("Control");
                         ToolStripItem defaultItem = new ToolStripMenuItem("Default") { Checked = control.ControlMode == ControlMode.Default };
                         controlItem.DropDownItems.Add(defaultItem);
-                        defaultItem.Click += delegate
-                        {
-                            control.SetDefault();
-                        };
-                        ToolStripMenuItem manualItem = new ToolStripMenuItem("Manual");
+                        defaultItem.Click += delegate { control.SetDefault(); };
+                        ToolStripMenuItem manualItem = new("Manual");
                         controlItem.DropDownItems.Add(manualItem);
                         manualItem.Checked = control.ControlMode == ControlMode.Software;
                         for (int i = 0; i <= 100; i += 5)
@@ -901,12 +948,10 @@ namespace LibreHardwareMonitor.UI
                                 manualItem.DropDownItems.Add(item);
                                 item.Checked = control.ControlMode == ControlMode.Software && Math.Round(control.SoftwareValue) == i;
                                 int softwareValue = i;
-                                item.Click += delegate
-                                {
-                                    control.SetSoftware(softwareValue);
-                                };
+                                item.Click += delegate { control.SetSoftware(softwareValue); };
                             }
                         }
+
                         treeContextMenu.Items.Add(controlItem);
                     }
 
@@ -920,10 +965,7 @@ namespace LibreHardwareMonitor.UI
                     if (nodeTextBoxText.EditEnabled)
                     {
                         ToolStripItem item = new ToolStripMenuItem("Rename");
-                        item.Click += delegate
-                        {
-                            nodeTextBoxText.BeginEdit();
-                        };
+                        item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                         treeContextMenu.Items.Add(item);
                     }
 
@@ -963,7 +1005,6 @@ namespace LibreHardwareMonitor.UI
             }
             else if (_minimizeOnClose.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_CLOSE)
             {
-
                 //Apparently the user wants to minimize rather than close
                 //Now we still need to check if we're going to the tray or not
                 //Note: the correct way to do this would be to send out SC_MINIMIZE,
@@ -987,7 +1028,7 @@ namespace LibreHardwareMonitor.UI
 
         private void ShowParameterForm(ISensor sensorForm)
         {
-            ParameterForm form = new ParameterForm { Parameters = sensorForm.Parameters, captionLabel = { Text = sensorForm.Name } };
+            ParameterForm form = new() { Parameters = sensorForm.Parameters, captionLabel = { Text = sensorForm.Name } };
             form.ShowDialog();
         }
 
@@ -1013,7 +1054,7 @@ namespace LibreHardwareMonitor.UI
 
         private void ResetMinMaxMenuItem_Click(object sender, EventArgs e)
         {
-            _computer.Accept(new SensorVisitor(delegate (ISensor sensorClick)
+            _computer.Accept(new SensorVisitor(delegate(ISensor sensorClick)
             {
                 sensorClick.ResetMin();
                 sensorClick.ResetMax();
@@ -1063,13 +1104,9 @@ namespace LibreHardwareMonitor.UI
             new PortForm(this).ShowDialog();
         }
 
-        public HttpServer Server { get; }
-
         private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
         {
             new AuthForm(this).ShowDialog();
         }
-
-        public bool AuthWebServerMenuItemChecked { get { return authWebServerMenuItem.Checked; } set { authWebServerMenuItem.Checked = value; } }
     }
 }

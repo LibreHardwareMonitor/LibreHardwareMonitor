@@ -10,8 +10,10 @@ using System.Management.Instrumentation;
 using LibreHardwareMonitor.Hardware;
 
 [assembly: Instrumented("root/LibreHardwareMonitor")]
+
 [System.ComponentModel.RunInstaller(true)]
-public class InstanceInstaller : DefaultManagementProjectInstaller { }
+public class InstanceInstaller : DefaultManagementProjectInstaller
+{ }
 
 namespace LibreHardwareMonitor.Wmi
 {
@@ -21,73 +23,81 @@ namespace LibreHardwareMonitor.Wmi
     /// </summary>
     public class WmiProvider : IDisposable
     {
-        private List<IWmiObject> _activeInstances;
+        private readonly object _activeInstancesLock = new();
+        private readonly List<IWmiObject> _activeInstances;
 
         public WmiProvider(IComputer computer)
         {
             _activeInstances = new List<IWmiObject>();
             foreach (IHardware hardware in computer.Hardware)
-            {
-                ComputerHardwareAdded(hardware);
-            }
-            computer.HardwareAdded += ComputerHardwareAdded;
-            computer.HardwareRemoved += ComputerHardwareRemoved;
+                OnHardwareAdded(hardware);
+
+            computer.HardwareAdded += OnHardwareAdded;
+            computer.HardwareRemoved += OnHardwareRemoved;
         }
 
         public void Update()
         {
-            foreach (IWmiObject instance in _activeInstances)
-                instance.Update();
+            lock (_activeInstancesLock)
+            {
+                foreach (IWmiObject instance in _activeInstances)
+                    instance.Update();
+            }
         }
 
-        #region Eventhandlers
-
-        private void ComputerHardwareAdded(IHardware hardware)
+        private void OnHardwareAdded(IHardware hardware)
         {
-            if (!Exists(hardware.Identifier.ToString()))
+            lock (_activeInstancesLock)
             {
-                foreach (ISensor sensor in hardware.Sensors)
-                    HardwareSensorAdded(sensor);
-
-                hardware.SensorAdded += HardwareSensorAdded;
-                hardware.SensorRemoved += HardwareSensorRemoved;
-
-                Hardware hw = new Hardware(hardware);
-                _activeInstances.Add(hw);
-
-                try
+                if (!_activeInstances.Exists(h => h.Identifier == hardware.Identifier.ToString()))
                 {
-                    Instrumentation.Publish(hw);
+                    foreach (ISensor sensor in hardware.Sensors)
+                        OnSensorAdded(sensor);
+
+                    hardware.SensorAdded += OnSensorAdded;
+                    hardware.SensorRemoved += HardwareSensorRemoved;
+
+                    Hardware hw = new(hardware);
+                    _activeInstances.Add(hw);
+
+                    try
+                    {
+                        Instrumentation.Publish(hw);
+                    }
+                    catch
+                    { }
                 }
-                catch { }
             }
 
             foreach (IHardware subHardware in hardware.SubHardware)
-                ComputerHardwareAdded(subHardware);
+                OnHardwareAdded(subHardware);
         }
 
-        private void HardwareSensorAdded(ISensor data)
+        private void OnSensorAdded(ISensor data)
         {
-            Sensor sensor = new Sensor(data);
-            _activeInstances.Add(sensor);
+            Sensor sensor = new(data);
+
+            lock (_activeInstancesLock)
+                _activeInstances.Add(sensor);
 
             try
             {
                 Instrumentation.Publish(sensor);
             }
-            catch { }
+            catch
+            { }
         }
 
-        private void ComputerHardwareRemoved(IHardware hardware)
+        private void OnHardwareRemoved(IHardware hardware)
         {
-            hardware.SensorAdded -= HardwareSensorAdded;
+            hardware.SensorAdded -= OnSensorAdded;
             hardware.SensorRemoved -= HardwareSensorRemoved;
 
             foreach (ISensor sensor in hardware.Sensors)
                 HardwareSensorRemoved(sensor);
 
             foreach (IHardware subHardware in hardware.SubHardware)
-                ComputerHardwareRemoved(subHardware);
+                OnHardwareRemoved(subHardware);
 
             RevokeInstance(hardware.Identifier.ToString());
         }
@@ -97,46 +107,39 @@ namespace LibreHardwareMonitor.Wmi
             RevokeInstance(sensor.Identifier.ToString());
         }
 
-        #endregion
-
-        #region Helpers
-
-        private bool Exists(string identifier)
-        {
-            return _activeInstances.Exists(h => h.Identifier == identifier);
-        }
-
         private void RevokeInstance(string identifier)
         {
-            int instanceIndex = _activeInstances.FindIndex(
-              item => item.Identifier == identifier.ToString()
-            );
-
-            if (instanceIndex == -1)
-                return;
-
-            try
+            lock (_activeInstancesLock)
             {
-                Instrumentation.Revoke(_activeInstances[instanceIndex]);
+                int instanceIndex = _activeInstances.FindIndex(item => item.Identifier == identifier);
+                if (instanceIndex == -1)
+                    return;
+
+                try
+                {
+                    Instrumentation.Revoke(_activeInstances[instanceIndex]);
+                }
+                catch
+                { }
+
+                _activeInstances.RemoveAt(instanceIndex);
             }
-            catch { }
-
-            _activeInstances.RemoveAt(instanceIndex);
         }
-
-        #endregion
 
         public void Dispose()
         {
-            foreach (IWmiObject instance in _activeInstances)
+            lock (_activeInstancesLock)
             {
-                try
+                foreach (IWmiObject instance in _activeInstances)
                 {
-                    Instrumentation.Revoke(instance);
+                    try
+                    {
+                        Instrumentation.Revoke(instance);
+                    }
+                    catch
+                    { }
                 }
-                catch { }
             }
-            _activeInstances = null;
         }
     }
 }
