@@ -16,7 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
         private readonly byte[] _rawData = new byte[64];
         private readonly HidStream _stream;
         private readonly Sensor[] _temperatures = new Sensor[2];
-        
+
         private ushort _externalTemperature;
 
         public MPS(HidDevice dev, ISettings settings) : base("MPS", new Identifier(dev.DevicePath), settings)
@@ -33,12 +33,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 Name = "MPS";
                 FirmwareVersion = ExtractFirmwareVersion();
 
-                _temperatures[0] = new Sensor("External", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperatures[0] = new Sensor("External", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[0]);
-                _temperatures[1] = new Sensor("Internal Water", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperatures[1] = new Sensor("Internal Water", 1, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[1]);
 
-                _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
+                _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_pumpFlow);
             }
         }
@@ -78,7 +78,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
             if (_rawData[0] != MPS_REPORT_ID)
                 return;
-
 
             _pumpFlow.Value = BitConverter.ToUInt16(_rawData, MPSDataIndexes.PumpFlow) / 10f;
 

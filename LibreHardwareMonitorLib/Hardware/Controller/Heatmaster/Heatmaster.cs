@@ -17,7 +17,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
     internal sealed class Heatmaster : Hardware, IDisposable
     {
         private readonly bool _available;
-        private readonly StringBuilder _buffer = new StringBuilder();
+        private readonly StringBuilder _buffer = new();
         private readonly Sensor[] _controls;
         private readonly Sensor[] _fans;
         private readonly int _firmwareCrc;
@@ -117,7 +117,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         private string ReadLine(int timeout)
         {
             int i = 0;
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
             while (i <= timeout)
             {
                 while (_serialPort.BytesToRead > 0)
@@ -160,7 +160,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
             if (s != null && s[0] == '"' && s[s.Length - 1] == '"')
                 return s.Substring(1, s.Length - 2);
 
-
             return null;
         }
 
@@ -169,7 +168,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
             string s = ReadField(device, field);
             if (int.TryParse(s, out int i))
                 return i;
-
 
             return 0;
         }
@@ -194,54 +192,50 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         private void ProcessUpdateLine(string line)
         {
             Match match = Regex.Match(line, @">\[0:(\d+)\]([0-9:\|-]+)");
-            if (match.Success)
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int device))
             {
-                if (int.TryParse(match.Groups[1].Value, out int device))
+                foreach (string s in match.Groups[2].Value.Split('|'))
                 {
-                    foreach (string s in match.Groups[2].Value.Split('|'))
+                    string[] strings = s.Split(':');
+                    int[] ints = new int[strings.Length];
+                    bool valid = true;
+                    for (int i = 0; i < ints.Length; i++)
                     {
-                        string[] strings = s.Split(':');
-                        int[] ints = new int[strings.Length];
-                        bool valid = true;
-                        for (int i = 0; i < ints.Length; i++)
+                        if (!int.TryParse(strings[i], out ints[i]))
                         {
-                            if (!int.TryParse(strings[i], out ints[i]))
+                            valid = false;
+                            break;
+                        }
+                    }
+
+                    if (!valid)
+                        continue;
+
+                    switch (device)
+                    {
+                        case 32:
+                            if (ints.Length == 3 && ints[0] <= _fans.Length)
                             {
-                                valid = false;
-                                break;
+                                _fans[ints[0] - 1].Value = ints[1];
+                                _controls[ints[0] - 1].Value = (100 / 255.0f) * ints[2];
                             }
-                        }
 
-                        if (!valid)
-                            continue;
+                            break;
+                        case 48:
+                            if (ints.Length == 2 && ints[0] <= _temperatures.Length)
+                                _temperatures[ints[0] - 1].Value = 0.1f * ints[1];
 
+                            break;
+                        case 64:
+                            if (ints.Length == 3 && ints[0] <= _flows.Length)
+                                _flows[ints[0] - 1].Value = 0.1f * ints[1];
 
-                        switch (device)
-                        {
-                            case 32:
-                                if (ints.Length == 3 && ints[0] <= _fans.Length)
-                                {
-                                    _fans[ints[0] - 1].Value = ints[1];
-                                    _controls[ints[0] - 1].Value = (100 / 255.0f) * ints[2];
-                                }
+                            break;
+                        case 80:
+                            if (ints.Length == 2 && ints[0] <= _relays.Length)
+                                _relays[ints[0] - 1].Value = 100 * ints[1];
 
-                                break;
-                            case 48:
-                                if (ints.Length == 2 && ints[0] <= _temperatures.Length)
-                                    _temperatures[ints[0] - 1].Value = 0.1f * ints[1];
-
-                                break;
-                            case 64:
-                                if (ints.Length == 3 && ints[0] <= _flows.Length)
-                                    _flows[ints[0] - 1].Value = 0.1f * ints[1];
-
-                                break;
-                            case 80:
-                                if (ints.Length == 2 && ints[0] <= _relays.Length)
-                                    _relays[ints[0] - 1].Value = 100 * ints[1];
-
-                                break;
-                        }
+                            break;
                     }
                 }
             }
@@ -251,7 +245,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         {
             if (!_available)
                 return;
-
 
             while (_serialPort.IsOpen && _serialPort.BytesToRead > 0)
             {
@@ -270,7 +263,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
 
         public override string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
             r.AppendLine("Heatmaster");
             r.AppendLine();
             r.Append("Port: ");

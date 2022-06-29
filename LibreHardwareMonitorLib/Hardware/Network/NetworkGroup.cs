@@ -16,10 +16,10 @@ namespace LibreHardwareMonitor.Hardware.Network
         public event HardwareEventHandler HardwareAdded;
         public event HardwareEventHandler HardwareRemoved;
 
-        private readonly Dictionary<string, Network> _networks = new Dictionary<string, Network>();
-        private readonly object _scanLock = new object();
+        private readonly Dictionary<string, Network> _networks = new();
+        private readonly object _scanLock = new();
         private readonly ISettings _settings;
-        private List<Network> _hardware = new List<Network>();
+        private List<Network> _hardware = new();
 
         public NetworkGroup(ISettings settings)
         {
@@ -72,23 +72,21 @@ namespace LibreHardwareMonitor.Hardware.Network
                 if (networkInterfaces == null)
                     return;
 
-
                 var foundNetworkInterfaces = networkInterfaces.ToDictionary(x => x.Id, x => x);
 
                 // Remove network interfaces that no longer exist.
-                List<string> removeKeys = new List<string>();
+                List<string> removeKeys = new();
                 foreach (KeyValuePair<string, Network> networkInterfacePair in _networks)
                 {
                     if (foundNetworkInterfaces.ContainsKey(networkInterfacePair.Key))
                         continue;
-
 
                     removeKeys.Add(networkInterfacePair.Key);
                 }
 
                 foreach (string key in removeKeys)
                 {
-                    var network = _networks[key];
+                    Network network = _networks[key];
                     network.Close();
                     _networks.Remove(key);
 

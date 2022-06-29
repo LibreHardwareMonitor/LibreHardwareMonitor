@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -21,7 +22,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
         private readonly MethodDelegate _alternativeRequest;
         private readonly Sensor[] _analogTemperatures = new Sensor[4];
         private readonly Sensor[] _controls = new Sensor[4];
-        private readonly List<ISensor> _deactivating = new List<ISensor>();
+        private readonly List<ISensor> _deactivating = new();
         private readonly Sensor[] _digitalTemperatures = new Sensor[8];
         private readonly Sensor[] _fans = new Sensor[4];
         private readonly Sensor[] _miniNgControls = new Sensor[4];
@@ -31,10 +32,10 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
         private readonly byte _protocolVersion;
         private readonly Sensor[] _sensorHubFlows = new Sensor[2];
         private readonly Sensor[] _sensorHubTemperatures = new Sensor[6];
-        private byte[] _alternativeData = new byte[0];
+        private byte[] _alternativeData = Array.Empty<byte>();
         private readonly byte[] _data = new byte[285];
         private Ftd2xx.FT_HANDLE _handle;
-        private byte[] _primaryData = new byte[0];
+        private byte[] _primaryData = Array.Empty<byte>();
 
         public TBalancer(int portIndex, byte protocolVersion, ISettings settings) :
             base("T-Balancer bigNG", new Identifier("bigng", portIndex.ToString(CultureInfo.InvariantCulture)), settings)
@@ -60,7 +61,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
             offset += _sensorHubTemperatures.Length;
 
             for (int i = 0; i < _miniNgTemperatures.Length; i++)
-                _miniNgTemperatures[i] = new Sensor("miniNG #" + (i / 2 + 1) + " Sensor " + (i % 2 + 1), offset + i, SensorType.Temperature, this, parameter, settings);
+                _miniNgTemperatures[i] = new Sensor("miniNG #" + ((i / 2) + 1) + " Sensor " + ((i % 2) + 1), offset + i, SensorType.Temperature, this, parameter, settings);
 
             for (int i = 0; i < _sensorHubFlows.Length; i++)
             {
@@ -79,7 +80,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
             for (int i = 0; i < _miniNgControls.Length; i++)
             {
-                _miniNgControls[i] = new Sensor("miniNG #" + (i / 2 + 1) + " Fan Channel " + (i % 2 + 1), 4 + i, SensorType.Control, this, settings);
+                _miniNgControls[i] = new Sensor("miniNG #" + ((i / 2) + 1) + " Fan Channel " + ((i % 2) + 1), 4 + i, SensorType.Control, this, settings);
             }
 
             _alternativeRequest = DelayedAlternativeRequest;
@@ -114,18 +115,17 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
         private void ReadMiniNg(int number)
         {
-            int offset = 1 + number * 65;
+            int offset = 1 + (number * 65);
 
             if (_data[offset + 61] != EndFlag)
                 return;
 
-
             for (int i = 0; i < 2; i++)
             {
-                Sensor sensor = _miniNgTemperatures[number * 2 + i];
+                Sensor sensor = _miniNgTemperatures[(number * 2) + i];
                 if (_data[offset + 7 + i] > 0)
                 {
-                    sensor.Value = 0.5f * _data[offset + 7 + i] +
+                    sensor.Value = (0.5f * _data[offset + 7 + i]) +
                                    sensor.Parameters[0].Value;
 
                     ActivateSensor(sensor);
@@ -138,17 +138,17 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
             for (int i = 0; i < 2; i++)
             {
-                if (_miniNgFans[number * 2 + i] == null)
-                    _miniNgFans[number * 2 + i] = new Sensor("miniNG #" + (number + 1) + " Fan Channel " + (i + 1), 4 + number * 2 + i, SensorType.Fan, this, _settings);
+                if (_miniNgFans[(number * 2) + i] == null)
+                    _miniNgFans[(number * 2) + i] = new Sensor("miniNG #" + (number + 1) + " Fan Channel " + (i + 1), 4 + (number * 2) + i, SensorType.Fan, this, _settings);
 
-                Sensor sensor = _miniNgFans[number * 2 + i];
-                sensor.Value = 20.0f * _data[offset + 43 + 2 * i];
+                Sensor sensor = _miniNgFans[(number * 2) + i];
+                sensor.Value = 20.0f * _data[offset + 43 + (2 * i)];
                 ActivateSensor(sensor);
             }
 
             for (int i = 0; i < 2; i++)
             {
-                Sensor sensor = _miniNgControls[number * 2 + i];
+                Sensor sensor = _miniNgControls[(number * 2) + i];
                 sensor.Value = _data[offset + 15 + i];
                 ActivateSensor(sensor);
             }
@@ -163,13 +163,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
                 return;
             }
 
-            if (_data[1] == 255 || _data[1] == 88)
+            if (_data[1] is 255 or 88)
             {
                 // bigNG
 
                 if (_data[274] != _protocolVersion)
                     return;
-
 
                 if (_primaryData.Length == 0)
                     _primaryData = new byte[_data.Length];
@@ -180,7 +179,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
                 {
                     if (_data[238 + i] > 0)
                     {
-                        _digitalTemperatures[i].Value = 0.5f * _data[238 + i] + _digitalTemperatures[i].Parameters[0].Value;
+                        _digitalTemperatures[i].Value = (0.5f * _data[238 + i]) + _digitalTemperatures[i].Parameters[0].Value;
                         ActivateSensor(_digitalTemperatures[i]);
                     }
                     else
@@ -193,7 +192,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
                 {
                     if (_data[260 + i] > 0)
                     {
-                        _analogTemperatures[i].Value = 0.5f * _data[260 + i] + _analogTemperatures[i].Parameters[0].Value;
+                        _analogTemperatures[i].Value = (0.5f * _data[260 + i]) + _analogTemperatures[i].Parameters[0].Value;
                         ActivateSensor(_analogTemperatures[i]);
                     }
                     else
@@ -206,7 +205,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
                 {
                     if (_data[246 + i] > 0)
                     {
-                        _sensorHubTemperatures[i].Value = 0.5f * _data[246 + i] + _sensorHubTemperatures[i].Parameters[0].Value;
+                        _sensorHubTemperatures[i].Value = (0.5f * _data[246 + i]) + _sensorHubTemperatures[i].Parameters[0].Value;
                         ActivateSensor(_sensorHubTemperatures[i]);
                     }
                     else
@@ -232,7 +231,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
                 for (int i = 0; i < _fans.Length; i++)
                 {
-                    float maxRpm = 11.5f * ((_data[149 + 2 * i] << 8) | _data[148 + 2 * i]);
+                    float maxRpm = 11.5f * ((_data[149 + (2 * i)] << 8) | _data[148 + (2 * i)]);
 
                     if (_fans[i] == null)
                     {
@@ -278,7 +277,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
         public override string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             r.AppendLine("T-Balancer bigNG");
             r.AppendLine();

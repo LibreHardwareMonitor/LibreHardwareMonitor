@@ -73,7 +73,7 @@ namespace LibreHardwareMonitor.Hardware
 
             deviceInfo.Nodes = new D3DDeviceNodeInfo[nodeCount];
 
-            var queryTime = DateTime.Now;
+            DateTime queryTime = DateTime.Now;
 
             for (uint nodeId = 0; nodeId < nodeCount; nodeId++)
             {

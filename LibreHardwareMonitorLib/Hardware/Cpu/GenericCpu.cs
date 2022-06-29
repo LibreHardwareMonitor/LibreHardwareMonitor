@@ -15,12 +15,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
     public class GenericCpu : Hardware
     {
         protected readonly int _coreCount;
-        protected readonly int _threadCount;
         protected readonly CpuId[][] _cpuId;
         protected readonly uint _family;
         protected readonly uint _model;
         protected readonly uint _packageType;
         protected readonly uint _stepping;
+        protected readonly int _threadCount;
 
         private readonly CpuLoad _cpuLoad;
         private readonly double _estimatedTimeStampCounterFrequency;
@@ -120,25 +120,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_coreCount == 1)
                 return "CPU Core";
 
-
             return "CPU Core #" + (i + 1);
         }
 
         private static Identifier CreateIdentifier(Vendor vendor, int processorIndex)
         {
-            string s;
-            switch (vendor)
+            string s = vendor switch
             {
-                case Vendor.AMD:
-                    s = "amdcpu";
-                    break;
-                case Vendor.Intel:
-                    s = "intelcpu";
-                    break;
-                default:
-                    s = "genericcpu";
-                    break;
-            }
+                Vendor.AMD => "amdcpu",
+                Vendor.Intel => "intelcpu",
+                _ => "genericcpu",
+            };
 
             return new Identifier(s, processorIndex.ToString(CultureInfo.InvariantCulture));
         }
@@ -244,7 +236,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             r.AppendLine();
 
             uint[] msrArray = GetMsrs();
-            if (msrArray != null && msrArray.Length > 0)
+            if (msrArray is { Length: > 0 })
             {
                 for (int i = 0; i < _cpuId.Length; i++)
                 {
@@ -284,7 +276,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     // ignore the first reading because there are no initial values
                     // ignore readings with too large or too small time window
-                    if (_lastTime != 0 && delta > 0.5 && delta < 2)
+                    if (_lastTime != 0 && delta is > 0.5 and < 2)
                     {
                         // update the TSC frequency with the new value
                         TimeStampCounterFrequency = (timeStampCount - _lastTimeStampCount) / (1e6 * delta);

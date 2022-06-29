@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
@@ -26,7 +27,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             // AM2+ 65nm +21 offset
             uint model = cpuId[0][0].Model;
-            if (model >= 0x69 && model != 0xc1 && model != 0x6c && model != 0x7c)
+            if (model is >= 0x69 and not 0xc1 and not 0x6c and not 0x7c)
                 offset += 21;
 
             if (model < 40)
@@ -58,7 +59,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
             else
             {
-                _coreTemperatures = new Sensor[0];
+                _coreTemperatures = Array.Empty<Sensor>();
             }
 
             _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, MISCELLANEOUS_CONTROL_DEVICE_ID);
@@ -81,7 +82,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public override string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
             r.Append(base.GetReport());
             r.Append("Miscellaneous Control Address: 0x");
             r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
@@ -92,7 +93,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
         public override void Update()
         {
             base.Update();
-            
+
             if (Ring0.WaitPciBusMutex(10))
             {
                 if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
@@ -118,7 +119,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 Ring0.ReleasePciBusMutex();
             }
-
 
             if (HasTimeStampCounter)
             {
@@ -156,7 +156,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const uint FIDVID_STATUS = 0xC0010042;
         private const ushort MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1103;
         private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
-
         private const uint THERMTRIP_STATUS_REGISTER = 0xE4;
         // ReSharper restore InconsistentNaming
     }

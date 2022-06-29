@@ -20,7 +20,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         private readonly PerformanceValue _perfWrite = new();
         private readonly StorageInfo _storageInfo;
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
-        
+
         private ulong _lastReadRateCounter;
         private double _lastTime;
         private DateTime _lastUpdate = DateTime.MinValue;
@@ -91,14 +91,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     return x;
             }
 
-            if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeAta ||
-                info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeSata ||
-                info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
-            {
-                return AtaStorage.CreateInstance(info, settings);
-            }
-
-            return StorageGeneric.CreateInstance(info, settings);
+            return info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeAta or Kernel32.STORAGE_BUS_TYPE.BusTypeSata or Kernel32.STORAGE_BUS_TYPE.BusTypeNvme
+                ? AtaStorage.CreateInstance(info, settings)
+                : StorageGeneric.CreateInstance(info, settings);
         }
 
         protected virtual void CreateSensors()
@@ -225,7 +220,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                     }
 
                     if (totalSize > 0)
-                        _usageSensor.Value = 100.0f - (100.0f * totalFreeSpace) / totalSize;
+                        _usageSensor.Value = 100.0f - ((100.0f * totalFreeSpace) / totalSize);
                     else
                         _usageSensor.Value = null;
                 }

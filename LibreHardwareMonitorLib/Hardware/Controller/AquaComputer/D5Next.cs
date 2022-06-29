@@ -34,15 +34,15 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
                 Name = $"D5Next";
                 FirmwareVersion = Convert.ToUInt16(_rawData[14] | (_rawData[13] << 8));
-                _temperatures[0] = new Sensor("Water Temperature", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperatures[0] = new Sensor("Water Temperature", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[0]);
-                
-                _rpmSensors[0] = new Sensor("Pump", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
+
+                _rpmSensors[0] = new Sensor("Pump", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_rpmSensors[0]);
             }
         }
 
-        public ushort FirmwareVersion { get; private set; }
+        public ushort FirmwareVersion { get; }
 
         public override HardwareType HardwareType
         {

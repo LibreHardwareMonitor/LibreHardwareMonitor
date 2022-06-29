@@ -11,8 +11,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
     public class AquaComputerGroup : IGroup
     {
-        private readonly List<IHardware> _hardware = new List<IHardware>();
-        private readonly StringBuilder _report = new StringBuilder();
+        private readonly List<IHardware> _hardware = new();
+        private readonly StringBuilder _report = new();
 
         public AquaComputerGroup(ISettings settings)
         {
@@ -27,50 +27,44 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 switch (dev.ProductID)
                 {
                     case 0xF00E:
-                    {
-                        var device = new D5Next(dev, settings);
+                        var d5Next = new D5Next(dev, settings);
                         _report.AppendLine($"Device name: {productName}");
-                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
+                        _report.AppendLine($"Firmware version: {d5Next.FirmwareVersion}");
                         _report.AppendLine();
-                        _hardware.Add(device);
+                        _hardware.Add(d5Next);
                         break;
-                    }
+
                     case 0xf0b6:
-                    {
-                        var device = new AquastreamXT(dev, settings);
+                        var aquastreamXt = new AquastreamXT(dev, settings);
                         _report.AppendLine($"Device name: {productName}");
-                        _report.AppendLine($"Device variant: {device.Variant}");
-                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
-                        _report.AppendLine($"{device.Status}");
+                        _report.AppendLine($"Device variant: {aquastreamXt.Variant}");
+                        _report.AppendLine($"Firmware version: {aquastreamXt.FirmwareVersion}");
+                        _report.AppendLine($"{aquastreamXt.Status}");
                         _report.AppendLine();
-                        _hardware.Add(device);
+                        _hardware.Add(aquastreamXt);
                         break;
-                    }
+
                     case 0xf003:
-                    {
-                        var device = new MPS(dev, settings);
+                        var mps = new MPS(dev, settings);
                         _report.AppendLine($"Device name: {productName}");
-                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
-                        _report.AppendLine($"{device.Status}");
+                        _report.AppendLine($"Firmware version: {mps.FirmwareVersion}");
+                        _report.AppendLine($"{mps.Status}");
                         _report.AppendLine();
-                        _hardware.Add(device);
+                        _hardware.Add(mps);
                         break;
-                    }
+
                     case 0xF011:
-                    {
-                        var device = new Octo(dev, settings);
+                        var octo = new Octo(dev, settings);
                         _report.AppendLine($"Device name: {productName}");
-                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
+                        _report.AppendLine($"Firmware version: {octo.FirmwareVersion}");
                         _report.AppendLine();
-                        _hardware.Add(device);
+                        _hardware.Add(octo);
                         break;
-                    }
+
                     default:
-                    {
                         _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
                         _report.AppendLine();
                         break;
-                    }
                 }
             }
 

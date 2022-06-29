@@ -133,14 +133,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             int version = 0;
 
             if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) &&
-                AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK)
+                AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK && supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
             {
-                if (supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
-                {
-                    _frameMetricsStarted = true;
-                    _fullscreenFps.Value = -1;
-                    ActivateSensor(_fullscreenFps);
-                }
+                _frameMetricsStarted = true;
+                _fullscreenFps.Value = -1;
+                ActivateSensor(_fullscreenFps);
             }
 
             if (AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
@@ -581,7 +578,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             try
             {
                 var adlf = new AtiAdlxx.ADLFanSpeedValue { SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM };
-                var status = AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref adlf);
+                AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref adlf);
                 r.Append(" Status RPM: ");
                 r.AppendLine(status.ToString());
                 r.AppendFormat(" Value RPM: {0}{1}", adlf.FanSpeed, Environment.NewLine);
@@ -686,7 +683,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                 r.AppendLine();
                 try
                 {
-                    var status = AtiAdlxx.ADL2_OverdriveN_PerformanceStatus_Get(_context, _adapterInfo.AdapterIndex, out var ps);
+                    AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_OverdriveN_PerformanceStatus_Get(_context, _adapterInfo.AdapterIndex, out AtiAdlxx.ADLODNPerformanceStatus ps);
 
                     r.Append(" Status: ");
                     r.AppendLine(status.ToString());

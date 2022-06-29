@@ -69,7 +69,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
                 out Kernel32.ATTRIBUTECMDOUTPARAMS result, Marshal.SizeOf<Kernel32.ATTRIBUTECMDOUTPARAMS>(), out _, IntPtr.Zero);
 
-            return isValid ? result.Attributes : new Kernel32.SMART_ATTRIBUTE[0];
+            return isValid ? result.Attributes : Array.Empty<Kernel32.SMART_ATTRIBUTE>();
         }
 
         public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
@@ -90,7 +90,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
                 out Kernel32.THRESHOLDCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.THRESHOLDCMDOUTPARAMS>(), out _, IntPtr.Zero);
 
-            return isValid ? result.Thresholds : new Kernel32.SMART_THRESHOLD[0];
+            return isValid ? result.Thresholds : Array.Empty<Kernel32.SMART_THRESHOLD>();
         }
 
         public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
@@ -167,10 +167,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         protected void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && !_handle.IsClosed)
             {
-                if (!_handle.IsClosed)
-                    _handle.Close();
+                _handle.Close();
             }
         }
 

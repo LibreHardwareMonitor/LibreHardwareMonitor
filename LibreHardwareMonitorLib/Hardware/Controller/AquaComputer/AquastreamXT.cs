@@ -40,37 +40,36 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 Name = $"Aquastream XT {Variant}";
                 FirmwareVersion = BitConverter.ToUInt16(_rawData, 50);
 
-                _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperatures[0] = new Sensor("External Fan VRM", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[0]);
-                _temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperatures[1] = new Sensor("External", 1, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[1]);
-                _temperatures[2] = new Sensor("Internal Water", 2, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperatures[2] = new Sensor("Internal Water", 2, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[2]);
 
-                _voltages[0] = new Sensor("External Fan", 1, SensorType.Voltage, this, new ParameterDescription[0], settings);
+                _voltages[0] = new Sensor("External Fan", 1, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_voltages[0]);
-                _voltages[1] = new Sensor("Pump", 2, SensorType.Voltage, this, new ParameterDescription[0], settings);
+                _voltages[1] = new Sensor("Pump", 2, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_voltages[1]);
 
-                _pumpPower = new Sensor("Pump", 0, SensorType.Power, this, new ParameterDescription[0], settings);
+                _pumpPower = new Sensor("Pump", 0, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_pumpPower);
 
-                _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, new ParameterDescription[0], settings);
+                _pumpFlow = new Sensor("Pump", 0, SensorType.Flow, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_pumpFlow);
 
-                _rpmSensors[0] = new Sensor("External Fan", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
+                _rpmSensors[0] = new Sensor("External Fan", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_rpmSensors[0]);
-                _rpmSensors[1] = new Sensor("Pump", 1, SensorType.Fan, this, new ParameterDescription[0], settings);
+                _rpmSensors[1] = new Sensor("Pump", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_rpmSensors[1]);
 
-                _fanControl = new Sensor("External Fan", 0, SensorType.Control, this, new ParameterDescription[0], settings);
-                Control control = new Control(_fanControl, settings, 0, 100);
-                _fanControl.Control = control;
+                _fanControl = new Sensor("External Fan", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
+                _fanControl.Control = new Control(_fanControl, settings, 0, 100);
 
                 ActivateSensor(_fanControl);
-                _frequencies[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, new ParameterDescription[0], settings);
+                _frequencies[0] = new Sensor("Pump Frequency", 0, SensorType.Frequency, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_frequencies[0]);
-                _frequencies[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, new ParameterDescription[0], settings);
+                _frequencies[1] = new Sensor("Pump MaxFrequency", 1, SensorType.Frequency, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_frequencies[1]);
             }
         }
@@ -107,7 +106,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 if (mode.HasFlag(MODE.MODE_FAN_AMP))
                     return "Advanced";
 
-
                 return "Standard";
             }
         }
@@ -127,7 +125,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 
             if (_rawData[0] != 0x4)
                 return;
-
 
             //var rawSensorsFan = BitConverter.ToUInt16(rawData, 1);                        //unknown - redundant?
             //var rawSensorsExt = BitConverter.ToUInt16(rawData, 3);                        //unknown - redundant?

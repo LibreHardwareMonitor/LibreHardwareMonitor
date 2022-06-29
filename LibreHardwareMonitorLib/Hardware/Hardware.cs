@@ -78,7 +78,7 @@ namespace LibreHardwareMonitor.Hardware
         /// <inheritdoc />
         public IHardware[] SubHardware
         {
-            get { return new IHardware[0]; }
+            get { return Array.Empty<IHardware>(); }
         }
 
         /// <inheritdoc />
@@ -95,7 +95,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (visitor == null)
                 throw new ArgumentNullException(nameof(visitor));
-
 
             visitor.VisitHardware(this);
         }

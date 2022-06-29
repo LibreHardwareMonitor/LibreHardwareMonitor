@@ -22,13 +22,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private readonly Sensor _coreVoltage;
         private readonly byte _cStatesIoOffset;
         private readonly Sensor[] _cStatesResidency;
-        private readonly bool _isSvi2;
         private readonly bool _hasSmuTemperatureRegister;
+        private readonly bool _isSvi2;
         private readonly uint _miscellaneousControlAddress;
         private readonly Sensor _northbridgeVoltage;
         private readonly FileStream _temperatureStream;
         private readonly double _timeStampCounterMultiplier;
-
 
         public Amd10Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
         {
@@ -45,91 +44,54 @@ namespace LibreHardwareMonitor.Hardware.CPU
             switch (_family)
             {
                 case 0x10:
-                {
                     miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x11:
-                {
                     miscellaneousControlDeviceId = FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x12:
-                {
                     miscellaneousControlDeviceId = FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x14:
-                {
                     miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                     break;
-                }
                 case 0x15:
-                {
                     switch (_model & 0xF0)
                     {
                         case 0x00:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x10:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x30:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID;
                             break;
-                        }
                         case 0x70:
-                        {
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID;
                             _hasSmuTemperatureRegister = true;
                             break;
-                        }
-                            case 0x60:
-                        {
+                        case 0x60:
                             miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
                             _hasSmuTemperatureRegister = true;
                             break;
-                        }
                         default:
-                        {
                             miscellaneousControlDeviceId = 0;
                             break;
-                        }
                     }
+
                     break;
-                }
                 case 0x16:
-                {
-                    switch (_model & 0xF0)
+                    miscellaneousControlDeviceId = (_model & 0xF0) switch
                     {
-                        case 0x00:
-                        {
-                            miscellaneousControlDeviceId = FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID;
-                            break;
-                        }
-                        case 0x30:
-                        {
-                            miscellaneousControlDeviceId = FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID;
-                            break;
-                        }
-                        default:
-                        {
-                            miscellaneousControlDeviceId = 0;
-                            break;
-                        }
-                    }
+                        0x00 => FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID,
+                        0x30 => FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID,
+                        _ => 0,
+                    };
                     break;
-                }
                 default:
-                {
                     miscellaneousControlDeviceId = 0;
                     break;
-                }
             }
 
             // get the pci address for the Miscellaneous Control registers
@@ -146,7 +108,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             bool corePerformanceBoostSupport = (cpuId[0][0].ExtData[7, 3] & (1 << 9)) > 0;
 
             // set affinity to the first thread for all frequency estimations
-            var previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
+            GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
 
             // disable core performance boost
             Ring0.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
@@ -174,25 +136,23 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             if (Software.OperatingSystem.IsUnix)
             {
-                string[] devicePaths = Directory.GetDirectories("/sys/class/hwmon/");
-                foreach (string path in devicePaths)
+                foreach (string path in Directory.GetDirectories("/sys/class/hwmon/"))
                 {
                     string name = null;
                     try
                     {
-                        using StreamReader reader = new StreamReader(path + "/device/name");
+                        using StreamReader reader = new(path + "/device/name");
 
                         name = reader.ReadLine();
                     }
                     catch (IOException)
                     { }
 
-                    switch (name)
+                    _temperatureStream = name switch
                     {
-                        case "k10temp":
-                            _temperatureStream = new FileStream(path + "/device/temp1_input", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                            break;
-                    }
+                        "k10temp" => new FileStream(path + "/device/temp1_input", FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                        _ => _temperatureStream
+                    };
                 }
             }
 
@@ -203,7 +163,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 if (dev == 0x43851002)
                     _cStatesIoOffset = (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C);
-                else if (dev == 0x780B1022 || dev == 0x790B1022)
+                else if (dev is 0x780B1022 or 0x790B1022)
                     _cStatesIoOffset = 0x9C;
             }
 
@@ -224,7 +184,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             EstimateTimeStampCounterMultiplier(0);
 
             // estimate the multiplier
-            List<double> estimate = new List<double>(3);
+            List<double> estimate = new(3);
             for (int i = 0; i < 3; i++)
                 estimate.Add(EstimateTimeStampCounterMultiplier(0.025));
 
@@ -278,7 +238,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         public override string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
             r.Append(base.GetReport());
             r.Append("Miscellaneous Control Address: 0x");
             r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
@@ -297,73 +257,50 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private double GetCoreMultiplier(uint cofVidEax)
         {
+            uint cpuDid;
+            uint cpuFid;
+
             switch (_family)
             {
                 case 0x10:
                 case 0x11:
                 case 0x15:
                 case 0x16:
-                {
                     // 8:6 CpuDid: current core divisor ID
                     // 5:0 CpuFid: current core frequency ID
-                    uint cpuDid = (cofVidEax >> 6) & 7;
-                    uint cpuFid = cofVidEax & 0x1F;
+                    cpuDid = (cofVidEax >> 6) & 7;
+                    cpuFid = cofVidEax & 0x1F;
                     return 0.5 * (cpuFid + 0x10) / (1 << (int)cpuDid);
-                }
+
                 case 0x12:
-                {
                     // 8:4 CpuFid: current CPU core frequency ID
                     // 3:0 CpuDid: current CPU core divisor ID
-                    uint cpuFid = (cofVidEax >> 4) & 0x1F;
-                    uint cpuDid = cofVidEax & 0xF;
-                    double divisor;
-                    switch (cpuDid)
+                    cpuFid = (cofVidEax >> 4) & 0x1F;
+                    cpuDid = cofVidEax & 0xF;
+                    double divisor = cpuDid switch
                     {
-                        case 0:
-                            divisor = 1;
-                            break;
-                        case 1:
-                            divisor = 1.5;
-                            break;
-                        case 2:
-                            divisor = 2;
-                            break;
-                        case 3:
-                            divisor = 3;
-                            break;
-                        case 4:
-                            divisor = 4;
-                            break;
-                        case 5:
-                            divisor = 6;
-                            break;
-                        case 6:
-                            divisor = 8;
-                            break;
-                        case 7:
-                            divisor = 12;
-                            break;
-                        case 8:
-                            divisor = 16;
-                            break;
-                        default:
-                            divisor = 1;
-                            break;
-                    }
-
+                        0 => 1,
+                        1 => 1.5,
+                        2 => 2,
+                        3 => 3,
+                        4 => 4,
+                        5 => 6,
+                        6 => 8,
+                        7 => 12,
+                        8 => 16,
+                        _ => 1,
+                    };
                     return (cpuFid + 0x10) / divisor;
-                }
+
                 case 0x14:
-                {
                     // 8:4: current CPU core divisor ID most significant digit
                     // 3:0: current CPU core divisor ID least significant digit
                     uint divisorIdMsd = (cofVidEax >> 4) & 0x1F;
                     uint divisorIdLsd = cofVidEax & 0xF;
                     Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
                     uint frequencyId = value & 0x1F;
-                    return (frequencyId + 0x10) /
-                           (divisorIdMsd + (divisorIdLsd * 0.25) + 1);
-                }
+                    return (frequencyId + 0x10) / (divisorIdMsd + (divisorIdLsd * 0.25) + 1);
+
                 default:
                     return 1;
             }
@@ -371,13 +308,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private static string ReadFirstLine(Stream stream)
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new();
 
             try
             {
                 stream.Seek(0, SeekOrigin.Begin);
                 int b = stream.ReadByte();
-                while (b != -1 && b != 10)
+                while (b is not (-1) and not 10)
                 {
                     stringBuilder.Append((char)b);
                     b = stream.ReadByte();
@@ -407,16 +344,16 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         {
                             if (_family == 0x15 && (_model & 0xF0) == 0x00)
                             {
-                                _coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
+                                _coreTemperature.Value = (((value >> 21) & 0x7FC) / 8.0f) + _coreTemperature.Parameters[0].Value - 49;
                             }
                             else
                             {
-                                _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value - 49;
+                                _coreTemperature.Value = (((value >> 21) & 0x7FF) / 8.0f) + _coreTemperature.Parameters[0].Value - 49;
                             }
                         }
                         else
                         {
-                            _coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value;
+                            _coreTemperature.Value = (((value >> 21) & 0x7FF) / 8.0f) + _coreTemperature.Parameters[0].Value;
                         }
 
                         ActivateSensor(_coreTemperature);
@@ -466,14 +403,15 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         _coreClocks[i].Value = (float)TimeStampCounterFrequency;
                     }
 
-                    float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - 0.00625f * vid : 0;
-                    float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - 0.0125f * vid : 0;
+                    float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - (0.00625f * vid) : 0;
+
+                    float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - (0.0125f * vid) : 0;
 
                     float newCoreVoltage, newNbVoltage;
                     uint coreVid60 = (curEax >> 9) & 0x7F;
                     if (_isSvi2)
                     {
-                        newCoreVoltage = SVI2Volt(curEax >> 13 & 0x80 | coreVid60);
+                        newCoreVoltage = SVI2Volt((curEax >> 13 & 0x80) | coreVid60);
                         newNbVoltage = SVI2Volt(curEax >> 24);
                     }
                     else
@@ -560,7 +498,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const ushort FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID = 0x15B3;
         private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
         private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
-
         // ReSharper restore InconsistentNaming
     }
 }

@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware
     /// </summary>
     public readonly struct GroupAffinity
     {
-        public static GroupAffinity Undefined = new GroupAffinity(ushort.MaxValue, 0);
+        public static GroupAffinity Undefined = new(ushort.MaxValue, 0);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupAffinity" /> struct.
@@ -52,9 +52,8 @@ namespace LibreHardwareMonitor.Hardware
         /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
         public override bool Equals(object o)
         {
-            if (o == null || GetType() != o.GetType()) 
+            if (o == null || GetType() != o.GetType())
                 return false;
-
 
             GroupAffinity a = (GroupAffinity)o;
             return (Group == a.Group) && (Mask == a.Mask);

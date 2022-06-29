@@ -238,7 +238,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 validTransfer = Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
                 if (validTransfer)
                 {
-                    var result = Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
+                    Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS result = Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
 
                     if (result.DataBuf.All(x => x == 0))
                     {

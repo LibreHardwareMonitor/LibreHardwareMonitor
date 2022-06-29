@@ -71,7 +71,6 @@ namespace LibreHardwareMonitor.Hardware
 
         /// <summary>
         /// An <see langword="event"/> that will be triggered when one of the sensors is removed.
-        /// 
         /// </summary>
         event SensorEventHandler SensorRemoved;
 

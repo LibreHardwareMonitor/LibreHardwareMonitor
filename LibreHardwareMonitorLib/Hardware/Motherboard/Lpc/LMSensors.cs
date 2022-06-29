@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -15,13 +16,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class LMSensors
     {
-        private readonly List<ISuperIO> _superIOs = new List<ISuperIO>();
+        private readonly List<ISuperIO> _superIOs = new();
 
         public LMSensors()
         {
-            string[] basePaths = Directory.GetDirectories("/sys/class/hwmon/");
-
-            foreach (string basePath in basePaths)
+            foreach (string basePath in Directory.GetDirectories("/sys/class/hwmon/"))
             {
                 foreach (string devicePath in new[] { "/device", string.Empty })
                 {
@@ -30,7 +29,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     string name = null;
                     try
                     {
-                        using (StreamReader reader = new StreamReader(path + "/name"))
+                        using (StreamReader reader = new(path + "/name"))
                             name = reader.ReadLine();
                     }
                     catch (IOException)
@@ -188,7 +187,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 for (int i = 0; i < fanPaths.Length; i++)
                     _fanStreams[i] = new FileStream(fanPaths[i], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-                Controls = new float?[0];
+                Controls = Array.Empty<float?>();
             }
 
             public Chip Chip { get; }
@@ -263,12 +262,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             private string ReadFirstLine(Stream stream)
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 try
                 {
                     stream.Seek(0, SeekOrigin.Begin);
                     int b = stream.ReadByte();
-                    while (b != -1 && b != 10)
+                    while (b is not (-1) and not 10)
                     {
                         sb.Append((char)b);
                         b = stream.ReadByte();

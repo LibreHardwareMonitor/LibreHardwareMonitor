@@ -23,10 +23,9 @@ namespace LibreHardwareMonitor.Hardware
             _settings = settings;
             _isDefault = !settings.Contains(Identifier.ToString());
             _value = description.DefaultValue;
-            if (!_isDefault)
+            if (!_isDefault && !float.TryParse(settings.GetValue(Identifier.ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out _value))
             {
-                if (!float.TryParse(settings.GetValue(Identifier.ToString(), "0"), NumberStyles.Float, CultureInfo.InvariantCulture, out _value))
-                    _value = description.DefaultValue;
+                _value = description.DefaultValue;
             }
         }
 
@@ -81,7 +80,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (visitor == null)
                 throw new ArgumentNullException(nameof(visitor));
-
 
             visitor.VisitParameter(this);
         }

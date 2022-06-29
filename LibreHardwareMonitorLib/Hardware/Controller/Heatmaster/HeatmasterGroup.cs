@@ -17,8 +17,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
 {
     internal class HeatmasterGroup : IGroup
     {
-        private readonly List<Heatmaster> _hardware = new List<Heatmaster>();
-        private readonly StringBuilder _report = new StringBuilder();
+        private readonly List<Heatmaster> _hardware = new();
+        private readonly StringBuilder _report = new();
 
         public HeatmasterGroup(ISettings settings)
         {
@@ -26,14 +26,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
             if (Software.OperatingSystem.IsUnix)
                 return;
 
-
             string[] portNames = GetRegistryPortNames();
             for (int i = 0; i < portNames.Length; i++)
             {
                 bool isValid = false;
                 try
                 {
-                    using (SerialPort serialPort = new SerialPort(portNames[i], 38400, Parity.None, 8, StopBits.One))
+                    using (SerialPort serialPort = new(portNames[i], 38400, Parity.None, 8, StopBits.One))
                     {
                         serialPort.NewLine = ((char)0x0D).ToString();
                         _report.Append("Port Name: ");
@@ -137,7 +136,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         {
             if (_report.Length > 0)
             {
-                StringBuilder r = new StringBuilder();
+                StringBuilder r = new();
                 r.AppendLine("Serial Port Heatmaster");
                 r.AppendLine();
                 r.Append(_report);
@@ -157,7 +156,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         private static string ReadLine(SerialPort port, int timeout)
         {
             int i = 0;
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
             while (i < timeout)
             {
                 while (port.BytesToRead > 0)
@@ -182,7 +181,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
 
         private static string[] GetRegistryPortNames()
         {
-            List<string> result = new List<string>();
+            List<string> result = new();
             string[] paths = { string.Empty, "&MI_00" };
             try
             {

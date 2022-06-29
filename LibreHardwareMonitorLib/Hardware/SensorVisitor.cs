@@ -33,7 +33,6 @@ namespace LibreHardwareMonitor.Hardware
             if (computer == null)
                 throw new ArgumentNullException(nameof(computer));
 
-
             computer.Traverse(this);
         }
 
@@ -45,7 +44,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (hardware == null)
                 throw new ArgumentNullException(nameof(hardware));
-
 
             hardware.Traverse(this);
         }

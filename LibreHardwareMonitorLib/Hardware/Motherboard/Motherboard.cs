@@ -54,7 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
             }
             else
             {
-                _name = Manufacturer.Unknown.ToString();
+                _name = nameof(Manufacturer.Unknown);
             }
 
             _customName = settings.GetValue(new Identifier(Identifier, "name").ToString(), _name);
@@ -125,7 +125,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         /// <inheritdoc/>
         public ISensor[] Sensors
         {
-            get { return new ISensor[0]; }
+            get { return Array.Empty<ISensor>(); }
         }
 
         /// <summary>
@@ -162,7 +162,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
         {
             if (visitor == null)
                 throw new ArgumentNullException(nameof(visitor));
-
 
             visitor.VisitHardware(this);
         }

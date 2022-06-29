@@ -13,7 +13,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 {
     internal class CpuGroup : IGroup
     {
-        private readonly List<GenericCpu> _hardware = new List<GenericCpu>();
+        private readonly List<GenericCpu> _hardware = new();
         private readonly CpuId[][][] _threads;
 
         public CpuGroup(ISettings settings)
@@ -26,7 +26,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 if (threads.Length == 0)
                     continue;
-
 
                 CpuId[][] coreThreads = GroupThreadsByCore(threads);
                 _threads[index] = coreThreads;
@@ -76,8 +75,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (_threads == null)
                 return null;
 
-
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
             r.AppendLine("CPUID");
             r.AppendLine();
             for (int i = 0; i < _threads.Length; i++)
@@ -125,8 +123,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private static CpuId[][] GetProcessorThreads()
         {
-            List<CpuId> threads = new List<CpuId>();
-            
+            List<CpuId> threads = new();
+
             for (int i = 0; i < ThreadAffinity.ProcessorGroupCount; i++)
             {
                 for (int j = 0; j < 64; j++)
@@ -135,7 +133,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     {
                         if (!ThreadAffinity.IsValid(GroupAffinity.Single((ushort)i, j)))
                             continue;
-
 
                         var cpuid = CpuId.Get(i, j);
                         if (cpuid != null)
@@ -149,8 +146,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 }
             }
 
-
-            SortedDictionary<uint, List<CpuId>> processors = new SortedDictionary<uint, List<CpuId>>();
+            SortedDictionary<uint, List<CpuId>> processors = new();
             foreach (CpuId thread in threads)
             {
                 processors.TryGetValue(thread.ProcessorId, out List<CpuId> list);
@@ -176,7 +172,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
         private static CpuId[][] GroupThreadsByCore(IEnumerable<CpuId> threads)
         {
-            SortedDictionary<uint, List<CpuId>> cores = new SortedDictionary<uint, List<CpuId>>();
+            SortedDictionary<uint, List<CpuId>> cores = new();
             foreach (CpuId thread in threads)
             {
                 cores.TryGetValue(thread.CoreId, out List<CpuId> coreList);
