@@ -85,7 +85,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (!GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
                 return;
 
-
             for (int i = 0; i < Math.Min(newTotalTimes.Length, _totalTimes.Length); i++)
             {
                 if (newTotalTimes[i] - _totalTimes[i] < 100000)
@@ -107,7 +106,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
             if (count > 0)
             {
-                total = 1.0f - total / count;
+                total = 1.0f - (total / count);
                 total = total < 0 ? 0 : total;
             }
             else

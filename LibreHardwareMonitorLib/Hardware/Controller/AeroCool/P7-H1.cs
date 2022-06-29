@@ -67,8 +67,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
                         {
                             for (int i = 0; i < 5; i++)
                             {
-                                int speed = inputReportBuffer[i * 3 + 2] * 256 + inputReportBuffer[i * 3 + 3];
-                                _speeds[i] = speed;
+                                _speeds[i] = (inputReportBuffer[(i * 3) + 2] * 256) + inputReportBuffer[(i * 3) + 3];
                             }
                         }
                     }

@@ -343,7 +343,6 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             if (!SendCommand(stream, 3, Command.PROD_STR, 0, out byte[] productArr))
                 throw new CommunicationProtocolError(stream.Device, "Can't read product");
 
-
             string ArrayToString(byte[] ar)
             {
                 int i = 0;
@@ -356,7 +355,6 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 
                 return Encoding.ASCII.GetString(trimmed);
             }
-
 
             return new FirmwareInfo { Vendor = ArrayToString(vendorArr), Product = ArrayToString(productArr) };
         }
@@ -372,19 +370,16 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                 case Command.RAIL_VOLTS:
                 case Command.RAIL_AMPS:
                 case Command.RAIL_WATTS:
+                    if (!SendCommand(stream, 2, Command.SELECT_RAIL, rail, out _))
                     {
-                        if (!SendCommand(stream, 2, Command.SELECT_RAIL, rail, out _))
-                        {
-                            data = null;
-                            return false;
-                        }
-
-                        break;
+                        data = null;
+                        return false;
                     }
+
+                    break;
             }
 
             return SendCommand(stream, 3, cmd, 0, out data);
-
 
             //  mutex_unlock(&priv->lock) ;
             //  return ret;
@@ -404,29 +399,13 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
              * supported (HX1200i)
              */
             int tmp = BitConverter.ToInt32(data, 0); // ((int)data[3] << 24) + (data[2] << 16) + (data[1] << 8) + data[0];
-            switch (cmd)
+            return cmd switch
             {
-                case Command.RAIL_VOLTS_HCRIT:
-                case Command.RAIL_VOLTS_LCRIT:
-                case Command.RAIL_AMPS_HCRIT:
-                case Command.TEMP_HCRIT:
-                case Command.IN_VOLTS:
-                case Command.IN_AMPS:
-                case Command.RAIL_VOLTS:
-                case Command.RAIL_AMPS:
-                case Command.TEMP0:
-                case Command.TEMP1:
-                case Command.FAN_RPM:
-                case Command.RAIL_WATTS:
-                case Command.TOTAL_WATTS:
-                    return Linear11ToFloat32((ushort)tmp); // Linear11ToInt((ushort)tmp, 1000000);
-                case Command.TOTAL_UPTIME:
-                case Command.UPTIME:
-                case Command.OCPMODE:
-                    return tmp;
-            }
-
-            return null;
+                Command.RAIL_VOLTS_HCRIT or Command.RAIL_VOLTS_LCRIT or Command.RAIL_AMPS_HCRIT or Command.TEMP_HCRIT or Command.IN_VOLTS or Command.IN_AMPS or Command.RAIL_VOLTS or Command.RAIL_AMPS
+                    or Command.TEMP0 or Command.TEMP1 or Command.FAN_RPM or Command.RAIL_WATTS or Command.TOTAL_WATTS => Linear11ToFloat32((ushort)tmp), // Linear11ToInt((ushort)tmp, 1000000);
+                Command.TOTAL_UPTIME or Command.UPTIME or Command.OCPMODE => tmp,
+                _ => null,
+            };
         }
 
         public struct Criticals

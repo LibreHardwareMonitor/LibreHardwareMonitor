@@ -48,23 +48,23 @@ namespace LibreHardwareMonitor.Hardware.Memory
         {
             try
             {
-                var memoryInfo = File.ReadAllLines("/proc/meminfo");
+                string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
 
                 {
-                    var totalMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
-                    var freeMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
-                    var cachedMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
+                    float totalMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
+                    float freeMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
+                    float cachedMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
 
-                    var usedMemory_GB = totalMemory_GB - freeMemory_GB - cachedMemory_GB;
+                    float usedMemory_GB = totalMemory_GB - freeMemory_GB - cachedMemory_GB;
 
                     _physicalMemoryUsed.Value = usedMemory_GB;
                     _physicalMemoryAvailable.Value = totalMemory_GB;
                     _physicalMemoryLoad.Value = 100.0f * (usedMemory_GB / totalMemory_GB);
                 }
                 {
-                    var totalSwapMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
-                    var freeSwapMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
-                    var usedSwapMemory_GB = totalSwapMemory_GB - freeSwapMemory_GB;
+                    float totalSwapMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
+                    float freeSwapMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
+                    float usedSwapMemory_GB = totalSwapMemory_GB - freeSwapMemory_GB;
 
                     _virtualMemoryUsed.Value = usedSwapMemory_GB;
                     _virtualMemoryAvailable.Value = totalSwapMemory_GB;
@@ -87,8 +87,8 @@ namespace LibreHardwareMonitor.Hardware.Memory
         {
             // Example: "MemTotal:       32849676 kB"
 
-            var valueWithUnit = line.Split(':').Skip(1).First().Trim();
-            var valueAsString = valueWithUnit.Split(' ').First();
+            string valueWithUnit = line.Split(':').Skip(1).First().Trim();
+            string valueAsString = valueWithUnit.Split(' ').First();
 
             return long.Parse(valueAsString);
         }

@@ -17,12 +17,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 {
     internal class TBalancerGroup : IGroup
     {
-        private readonly List<TBalancer> _hardware = new List<TBalancer>();
-        private readonly StringBuilder _report = new StringBuilder();
+        private readonly List<TBalancer> _hardware = new();
+        private readonly StringBuilder _report = new();
 
         public TBalancerGroup(ISettings settings)
         {
             uint numDevices;
+
             try
             {
                 if (!Ftd2xx.DllExists())
@@ -37,7 +38,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
                     return;
                 }
             }
-            catch (Exception e) when (e is DllNotFoundException || e is ArgumentNullException || e is EntryPointNotFoundException || e is BadImageFormatException)
+            catch (Exception e) when (e is DllNotFoundException or ArgumentNullException or EntryPointNotFoundException or BadImageFormatException)
             {
                 return;
             }
@@ -160,7 +161,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
         {
             if (_report.Length > 0)
             {
-                StringBuilder r = new StringBuilder();
+                StringBuilder r = new();
                 r.AppendLine("FTD2XX");
                 r.AppendLine();
                 r.Append(_report);

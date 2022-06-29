@@ -191,7 +191,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr ptr = Marshal.AllocHGlobal(size);
             ADLStatus result = ADL_Adapter_AdapterInfo_Get(ptr, size);
             for (int i = 0; i < info.Length; i++)
-                info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + i * elementSize), typeof(ADLAdapterInfo));
+                info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + (i * elementSize)), typeof(ADLAdapterInfo));
 
             Marshal.FreeHGlobal(ptr);
 

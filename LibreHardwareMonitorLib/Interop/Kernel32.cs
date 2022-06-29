@@ -1284,7 +1284,7 @@ namespace LibreHardwareMonitor.Interop
             public byte Reserved3;
 
             /// <summary>
-            /// byte 532:533 O - Atomic Compare & Write Unit (ACWU)
+            /// byte 532:533 O - Atomic Compare and Write Unit (ACWU)
             /// </summary>
             public ushort ACWU;
 

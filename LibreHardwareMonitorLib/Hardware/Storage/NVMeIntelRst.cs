@@ -59,8 +59,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 Kernel32.RtlCopyMemory(ptr, newPtr, (uint)len);
                 Marshal.FreeHGlobal(buffer);
 
-                Kernel32.NVME_IDENTIFY_CONTROLLER_DATA item = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(ptr);
-                data = item;
+                data = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(ptr);
                 Marshal.FreeHGlobal(ptr);
                 result = true;
             }
@@ -106,8 +105,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
             {
                 IntPtr offset = Marshal.OffsetOf<Kernel32.NVME_PASS_THROUGH_IOCTL>(nameof(Kernel32.NVME_PASS_THROUGH_IOCTL.DataBuffer));
                 IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                Kernel32.NVME_HEALTH_INFO_LOG item = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
-                data = item;
+                data = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
                 Marshal.FreeHGlobal(buffer);
                 result = true;
             }

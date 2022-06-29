@@ -59,7 +59,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 
                 Name = "Nzxt Kraken X3";
 
-                _pump = new Sensor("Pump Control", 0, SensorType.Control, this, new ParameterDescription[0], settings);
+                _pump = new Sensor("Pump Control", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
                 _pumpControl = new Control(_pump, settings, 0, 100);
                 _pump.Control = _pumpControl;
                 _pumpControl.ControlModeChanged += SoftwareControlValueChanged;
@@ -67,17 +67,17 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 SoftwareControlValueChanged(_pumpControl);
                 ActivateSensor(_pump);
 
-                _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, new ParameterDescription[0], settings);
+                _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_pumpRpm);
 
-                _temperature = new Sensor("Internal Water", 0, SensorType.Temperature, this, new ParameterDescription[0], settings);
+                _temperature = new Sensor("Internal Water", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperature);
 
                 ThreadPool.UnsafeQueueUserWorkItem(ContinuousRead, _rawData);
             }
         }
 
-        public string FirmwareVersion { get; private set; }
+        public string FirmwareVersion { get; }
 
         public override HardwareType HardwareType => HardwareType.Cooler;
 
@@ -141,7 +141,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             {
                 if (_rawData[0] == 0x75 && _rawData[1] == 0x02)
                 {
-                    _temperature.Value = _rawData[15] + _rawData[16] / 10.0f;
+                    _temperature.Value = _rawData[15] + (_rawData[16] / 10.0f);
                     _pumpRpm.Value = (_rawData[18] << 8) | _rawData[17];
 
                     // The following logic makes sure the pump is set to the controlling value. This pump sometimes sets itself to 0% when instructed to a value.

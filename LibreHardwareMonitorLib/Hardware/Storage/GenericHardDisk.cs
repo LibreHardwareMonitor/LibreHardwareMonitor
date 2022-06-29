@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     [NamePrefix("")]
     public class GenericHardDisk : AtaStorage
     {
-        private static readonly List<SmartAttribute> _smartAttributes = new List<SmartAttribute>
+        private static readonly List<SmartAttribute> _smartAttributes = new()
         {
             new SmartAttribute(0x01, SmartNames.ReadErrorRate),
             new SmartAttribute(0x02, SmartNames.ThroughputPerformance),

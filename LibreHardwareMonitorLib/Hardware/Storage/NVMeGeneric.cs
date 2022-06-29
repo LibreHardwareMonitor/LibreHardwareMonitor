@@ -14,12 +14,12 @@ namespace LibreHardwareMonitor.Hardware.Storage
         private const ulong Scale = 1000000;
         private const ulong Units = 512;
         private readonly NVMeInfo _info;
-        private readonly List<NVMeSensor> _sensors = new List<NVMeSensor>();
+        private readonly List<NVMeSensor> _sensors = new();
 
         /// <summary>
         /// Gets the SMART data.
         /// </summary>
-        public NVMeSmart Smart { get; private set; }
+        public NVMeSmart Smart { get; }
 
         private NVMeGeneric(StorageInfo storageInfo, NVMeInfo info, int index, ISettings settings)
           : base(storageInfo, info.Model, info.Revision, "nvme", index, settings)
@@ -90,7 +90,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
             if (health == null)
                 return;
 
-
             foreach (NVMeSensor sensor in _sensors)
                 sensor.Update(health);
         }
@@ -99,7 +98,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
         {
             if (_info == null)
                 return;
-
 
             r.AppendLine("PCI Vendor ID: 0x" + _info.VID.ToString("x04"));
             if (_info.VID != _info.SSVID)
@@ -114,7 +112,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
             NVMeHealthInfo health = Smart.GetHealthInfo();
             if (health == null)
                 return;
-
 
             if (health.CriticalWarning == Kernel32.NVME_CRITICAL_WARNING.None)
                 r.AppendLine("Critical Warning: -");
@@ -181,11 +178,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
             public void Update(NVMeHealthInfo health)
             {
                 float v = _getValue(health);
-                if (SensorType == SensorType.Temperature)
-                {
-                    if (v < -1000 || v > 1000)
-                        return;
-                }
+                if (SensorType == SensorType.Temperature && v is < -1000 or > 1000)
+                    return;
+
                 Value = v;
             }
         }

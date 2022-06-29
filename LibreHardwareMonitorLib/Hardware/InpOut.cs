@@ -25,7 +25,6 @@ namespace LibreHardwareMonitor.Hardware
             if (IsOpen)
                 return true;
 
-
             _filePath = GetFilePath();
             if (_filePath != null && (File.Exists(_filePath) || Extract(_filePath)))
             {
@@ -111,7 +110,6 @@ namespace LibreHardwareMonitor.Hardware
             catch (IOException)
             { }
 
-
             const string fileName = "inpout.dll";
 
             try
@@ -129,14 +127,11 @@ namespace LibreHardwareMonitor.Hardware
             if (!string.IsNullOrEmpty(filePath))
                 return Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, fileName);
 
-
             filePath = GetPathFromAssembly(typeof(Ring0).Assembly);
             if (!string.IsNullOrEmpty(filePath))
                 return Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, fileName);
 
-
             return null;
-
 
             static string GetPathFromAssembly(Assembly assembly)
             {
@@ -177,7 +172,6 @@ namespace LibreHardwareMonitor.Hardware
 
             if (buffer == null)
                 return false;
-
 
             try
             {

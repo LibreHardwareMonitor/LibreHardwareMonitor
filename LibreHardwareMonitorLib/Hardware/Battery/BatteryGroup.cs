@@ -163,29 +163,16 @@ namespace LibreHardwareMonitor.Hardware.Battery
 
             foreach (Battery bat in _hardware)
             {
-                string chemistry = "Unknown";
-
-                switch (bat.Chemistry)
+                string chemistry = bat.Chemistry switch
                 {
-                    case BatteryChemistry.LeadAcid:
-                        chemistry = "Lead Acid";
-                        break;
-                    case BatteryChemistry.NickelCadmium:
-                        chemistry = "Nickel-Cadmium";
-                        break;
-                    case BatteryChemistry.NickelMetalHydride:
-                        chemistry = "Nickel-Metal Hydride";
-                        break;
-                    case BatteryChemistry.LithiumIon:
-                        chemistry = "Lithium Ion";
-                        break;
-                    case BatteryChemistry.NickelZinc:
-                        chemistry = "Nickel-Zinc";
-                        break;
-                    case BatteryChemistry.AlkalineManganese:
-                        chemistry = "Rechargeable Alkaline-Manganese";
-                        break;
-                }
+                    BatteryChemistry.LeadAcid => "Lead Acid",
+                    BatteryChemistry.NickelCadmium => "Nickel-Cadmium",
+                    BatteryChemistry.NickelMetalHydride => "Nickel-Metal Hydride",
+                    BatteryChemistry.LithiumIon => "Lithium Ion",
+                    BatteryChemistry.NickelZinc => "Nickel-Zinc",
+                    BatteryChemistry.AlkalineManganese => "Rechargeable Alkaline-Manganese",
+                    _ => "Unknown"
+                };
 
                 reportBuilder.Append("Battery #").Append(count).AppendLine(":")
                              .Append(" Name: ").AppendLine(bat.Name)

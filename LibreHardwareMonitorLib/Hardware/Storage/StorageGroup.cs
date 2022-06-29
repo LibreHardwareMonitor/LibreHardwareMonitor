@@ -21,9 +21,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
             using var diskDriveSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive") { Options = { Timeout = TimeSpan.FromSeconds(10) } };
-            using ManagementObjectCollection diskDrives = diskDriveSearcher.Get();
-
-            foreach (ManagementBaseObject diskDrive in diskDrives)
+            foreach (ManagementBaseObject diskDrive in diskDriveSearcher.Get())
             {
                 string deviceId = (string)diskDrive.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
                 uint idx = Convert.ToUInt32(diskDrive.Properties["Index"].Value);

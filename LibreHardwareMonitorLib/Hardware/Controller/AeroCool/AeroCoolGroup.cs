@@ -11,8 +11,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
 {
     public class AeroCoolGroup : IGroup
     {
-        private readonly List<IHardware> _hardware = new List<IHardware>();
-        private readonly StringBuilder _report = new StringBuilder();
+        private readonly List<IHardware> _hardware = new();
+        private readonly StringBuilder _report = new();
 
         public AeroCoolGroup(ISettings settings)
         {
@@ -22,7 +22,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
             foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x2E97))
             {
                 int hubno = dev.ProductID - 0x1000;
-                if (dev.DevicePath.Contains("mi_02") && (hubno >= 1) && (hubno <= 8))
+                if (dev.DevicePath.Contains("mi_02") && hubno is >= 1 and <= 8)
                 {
                     var device = new P7H1(dev, settings);
                     _report.AppendLine($"Device name: {device.Name}");

@@ -69,7 +69,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             }
         }
 
-        public ushort FirmwareVersion { get; private set; }
+        public ushort FirmwareVersion { get; }
 
         public override HardwareType HardwareType
         {

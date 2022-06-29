@@ -15,26 +15,26 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
     internal class W836XX : ISuperIO
     {
         private readonly ushort _address;
-        private readonly bool[] _peciTemperature = new bool[0];
         private readonly byte _revision;
-        private readonly byte[] _voltageBank = new byte[0];
+        private readonly bool[] _peciTemperature = Array.Empty<bool>();
+        private readonly byte[] _voltageBank = Array.Empty<byte>();
         private readonly float _voltageGain = 0.008f;
-        private readonly byte[] _voltageRegister = new byte[0];
+        private readonly byte[] _voltageRegister = Array.Empty<byte>();
 
         // Added to control fans. 
-        private readonly byte[] _fanPwmRegister = new byte[0];
-        private readonly byte[] _fanPrimaryControlModeRegister = new byte[0];
-        private readonly byte[] _fanPrimaryControlValue = new byte[0];
-        private readonly byte[] _fanSecondaryControlModeRegister = new byte[0];
-        private readonly byte[] _fanSecondaryControlValue = new byte[0];
-        private readonly byte[] _fanTertiaryControlModeRegister = new byte[0];
-        private readonly byte[] _fanTertiaryControlValue = new byte[0];
+        private readonly byte[] _fanPwmRegister = Array.Empty<byte>();
+        private readonly byte[] _fanPrimaryControlModeRegister = Array.Empty<byte>();
+        private readonly byte[] _fanPrimaryControlValue = Array.Empty<byte>();
+        private readonly byte[] _fanSecondaryControlModeRegister = Array.Empty<byte>();
+        private readonly byte[] _fanSecondaryControlValue = Array.Empty<byte>();
+        private readonly byte[] _fanTertiaryControlModeRegister = Array.Empty<byte>();
+        private readonly byte[] _fanTertiaryControlValue = Array.Empty<byte>();
 
-        private readonly byte[] _initialFanControlValue = new byte[0];
-        private readonly byte[] _initialFanSecondaryControlValue = new byte[0];
-        private readonly byte[] _initialFanTertiaryControlValue = new byte[0];
+        private readonly byte[] _initialFanControlValue = Array.Empty<byte>();
+        private readonly byte[] _initialFanSecondaryControlValue = Array.Empty<byte>();
+        private readonly byte[] _initialFanTertiaryControlValue = Array.Empty<byte>();
+        private readonly bool[] _restoreDefaultFanPwmControlRequired = Array.Empty<bool>();
 
-        private bool[] _restoreDefaultFanPwmControlRequired = new bool[0];
 
         public W836XX(Chip chip, byte revision, ushort address)
         {
@@ -45,64 +45,60 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (!IsWinbondVendor())
                 return;
 
-
             Temperatures = new float?[3];
             _peciTemperature = new bool[3];
             switch (chip)
             {
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
-                {
                     // note temperature sensor registers that read PECI
                     byte flag = ReadByte(0, TEMPERATURE_SOURCE_SELECT_REG);
                     _peciTemperature[0] = (flag & 0x04) != 0;
                     _peciTemperature[1] = (flag & 0x40) != 0;
                     _peciTemperature[2] = false;
                     break;
-                }
+
                 case Chip.W83627DHG:
                 case Chip.W83627DHGP:
-                {
                     // note temperature sensor registers that read PECI
                     byte sel = ReadByte(0, TEMPERATURE_SOURCE_SELECT_REG);
                     _peciTemperature[0] = (sel & 0x07) != 0;
                     _peciTemperature[1] = (sel & 0x70) != 0;
                     _peciTemperature[2] = false;
                     break;
-                }
+
                 default:
-                {
                     // no PECI support
                     _peciTemperature[0] = false;
                     _peciTemperature[1] = false;
                     _peciTemperature[2] = false;
                     break;
-                }
             }
 
             switch (chip)
             {
                 case Chip.W83627EHF:
-                {
                     Voltages = new float?[10];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x50, 0x51, 0x52 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 0, 0, 5, 5, 5 };
                     _voltageGain = 0.008f;
+
                     Fans = new float?[5];
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values.
                     _fanPrimaryControlModeRegister = new byte[] { 0x04, 0x04, 0x12 }; // Primary control register.
                     _fanPrimaryControlValue = new byte[] { 0b11110011, 0b11001111, 0b11111001 }; // Values to gain control of fans.
                     _initialFanControlValue = new byte[3]; // To store primary default value.
                     _initialFanSecondaryControlValue = new byte[3]; // To store secondary default value.
+
                     Controls = new float?[3];
                     break;
-                }
+
                 case Chip.W83627DHG:
                 case Chip.W83627DHGP:
-                {
                     Voltages = new float?[9];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 0, 0, 5, 5 };
+
                     _voltageGain = 0.008f;
                     Fans = new float?[5];
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values
@@ -110,16 +106,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanPrimaryControlValue = new byte[] { 0b11110011, 0b11001111, 0b11111001 }; // Values to gain control of fans
                     _initialFanControlValue = new byte[3]; // To store primary default value
                     _initialFanSecondaryControlValue = new byte[3]; // To store secondary default value.
+
                     Controls = new float?[3];
                     break;
-                }
+
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
-                {
                     Voltages = new float?[9];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 0, 0, 5, 5 };
                     _voltageGain = 0.008f;
+
                     Fans = new float?[5];
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values.
                     _fanPrimaryControlModeRegister = new byte[] { 0x04, 0x04, 0x12 }; // Primary control register.
@@ -128,70 +125,73 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _fanSecondaryControlValue = new byte[] { 0b11101111, 0b11011111, 0b10111111 }; // Values for secondary register to gain control of fans.
                     _fanTertiaryControlModeRegister = new byte[] { 0x62, 0x7c, 0x62 }; // Tertiary control register. 2nd fan doesn't have Tertiary control, same as secondary to avoid change.
                     _fanTertiaryControlValue = new byte[] { 0b11101111, 0b11011111, 0b11011111 }; // Values for tertiary register to gain control of fans. 2nd fan doesn't have Tertiary control, same as secondary to avoid change.
+
                     _initialFanControlValue = new byte[3]; // To store primary default value.
                     _initialFanSecondaryControlValue = new byte[3]; // To store secondary default value.
                     _initialFanTertiaryControlValue = new byte[3]; // To store tertiary default value.
                     Controls = new float?[3];
                     break;
-                }
+
                 case Chip.W83627HF:
-                {
                     Voltages = new float?[7];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
                     _voltageGain = 0.016f;
+
                     Fans = new float?[3];
                     _fanPwmRegister = new byte[] { 0x5A, 0x5B }; // Fan PWM values.
+
                     Controls = new float?[2];
                     break;
-                }
+
                 case Chip.W83627THF:
-                {
                     Voltages = new float?[7];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
                     _voltageGain = 0.016f;
+
                     Fans = new float?[3];
                     _fanPwmRegister = new byte[] { 0x01, 0x03, 0x11 }; // Fan PWM values.
                     _fanPrimaryControlModeRegister = new byte[] { 0x04, 0x04, 0x12 }; // Primary control register.
                     _fanPrimaryControlValue = new byte[] { 0b11110011, 0b11001111, 0b11111001 }; // Values to gain control of fans.
                     _initialFanControlValue = new byte[3]; // To store primary default value.
+
                     Controls = new float?[3];
                     break;
-                }
+
                 case Chip.W83687THF:
-                {
                     Voltages = new float?[7];
                     _voltageRegister = new byte[] { 0x20, 0x21, 0x22, 0x23, 0x24, 0x50, 0x51 };
                     _voltageBank = new byte[] { 0, 0, 0, 0, 0, 5, 5 };
                     _voltageGain = 0.016f;
+
                     Fans = new float?[3];
                     break;
-                }
             }
         }
 
         public Chip Chip { get; }
 
-        public float?[] Controls { get; } = new float?[0];
+        public float?[] Controls { get; } = Array.Empty<float?>();
 
-        public float?[] Fans { get; } = new float?[0];
+        public float?[] Fans { get; } = Array.Empty<float?>();
 
-        public float?[] Temperatures { get; } = new float?[0];
+        public float?[] Temperatures { get; } = Array.Empty<float?>();
 
-        public float?[] Voltages { get; } = new float?[0];
+        public float?[] Voltages { get; } = Array.Empty<float?>();
 
         public byte? ReadGpio(int index)
         {
             return null;
         }
 
-        public void WriteGpio(int index, byte value) { }
+        public void WriteGpio(int index, byte value)
+        { }
 
         public void SetControl(int index, byte? value)
         {
             if (index < 0 || index >= Controls.Length)
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
 
             if (!Ring0.WaitIsaBusMutex(10))
                 return;
@@ -208,17 +208,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         {
                             WriteByte(0, _fanSecondaryControlModeRegister[index], (byte)(_fanSecondaryControlValue[index] & ReadByte(0, _fanSecondaryControlModeRegister[index])));
                         }
-                        if (_fanTertiaryControlModeRegister.Length > 0)
+
+                        if (_fanTertiaryControlModeRegister.Length > 0 && _fanTertiaryControlModeRegister[index] != _fanSecondaryControlModeRegister[index])
                         {
-                            if (_fanTertiaryControlModeRegister[index] != _fanSecondaryControlModeRegister[index])
-                            {
-                                WriteByte(0, _fanTertiaryControlModeRegister[index], (byte)(_fanTertiaryControlValue[index] & ReadByte(0, _fanTertiaryControlModeRegister[index])));
-                            }
+                            WriteByte(0, _fanTertiaryControlModeRegister[index], (byte)(_fanTertiaryControlValue[index] & ReadByte(0, _fanTertiaryControlModeRegister[index])));
                         }
                     }
                 }
+
                 // set output value
-                WriteByte(0, _fanPwmRegister[index], (byte)(value.Value));
+                WriteByte(0, _fanPwmRegister[index], value.Value);
             }
             else
             {
@@ -230,53 +229,68 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void SaveDefaultFanPwmControl(int index) //added to save initial control values
         {
-            if (_fanPrimaryControlModeRegister.Length > 0 && _initialFanControlValue.Length > 0 && _fanPrimaryControlValue.Length > 0 && _restoreDefaultFanPwmControlRequired.Length > 0)
+            if (_fanPrimaryControlModeRegister.Length > 0 &&
+                _initialFanControlValue.Length > 0 &&
+                _fanPrimaryControlValue.Length > 0 &&
+                _restoreDefaultFanPwmControlRequired.Length > 0 &&
+                !_restoreDefaultFanPwmControlRequired[index])
             {
-                if (!_restoreDefaultFanPwmControlRequired[index])
+                _initialFanControlValue[index] = ReadByte(0, _fanPrimaryControlModeRegister[index]);
+                if (_fanSecondaryControlModeRegister.Length > 0 && _initialFanSecondaryControlValue.Length > 0 && _fanSecondaryControlValue.Length > 0)
                 {
-                    _initialFanControlValue[index] = ReadByte(0, _fanPrimaryControlModeRegister[index]);
-                    if (_fanSecondaryControlModeRegister.Length > 0 && _initialFanSecondaryControlValue.Length > 0 && _fanSecondaryControlValue.Length > 0)
+                    if (_fanSecondaryControlModeRegister[index] != _fanPrimaryControlModeRegister[index])
                     {
-                        if (_fanSecondaryControlModeRegister[index] != _fanPrimaryControlModeRegister[index])
-                        {
-                            _initialFanSecondaryControlValue[index] = ReadByte(0, _fanSecondaryControlModeRegister[index]);
-                        }
-                        if (_fanTertiaryControlModeRegister.Length > 0 && _initialFanTertiaryControlValue.Length > 0 && _fanTertiaryControlValue.Length > 0)
-                        {
-                            if (_fanTertiaryControlModeRegister[index] != _fanSecondaryControlModeRegister[index])
-                            {
-                                _initialFanTertiaryControlValue[index] = ReadByte(0, _fanTertiaryControlModeRegister[index]);
-                            }
-                        }
+                        _initialFanSecondaryControlValue[index] = ReadByte(0, _fanSecondaryControlModeRegister[index]);
                     }
-                    _restoreDefaultFanPwmControlRequired[index] = true;
+
+                    if (_fanTertiaryControlModeRegister.Length > 0 &&
+                        _initialFanTertiaryControlValue.Length > 0 &&
+                        _fanTertiaryControlValue.Length > 0 &&
+                        _fanTertiaryControlModeRegister[index] != _fanSecondaryControlModeRegister[index])
+                    {
+                        _initialFanTertiaryControlValue[index] = ReadByte(0, _fanTertiaryControlModeRegister[index]);
+                    }
                 }
+
+                _restoreDefaultFanPwmControlRequired[index] = true;
             }
         }
 
         private void RestoreDefaultFanPwmControl(int index) //added to restore initial control values
         {
-            if (_fanPrimaryControlModeRegister.Length > 0 && _initialFanControlValue.Length > 0 && _fanPrimaryControlValue.Length > 0 && _restoreDefaultFanPwmControlRequired.Length > 0)
+            if (_fanPrimaryControlModeRegister.Length > 0 &&
+                _initialFanControlValue.Length > 0 &&
+                _fanPrimaryControlValue.Length > 0 &&
+                _restoreDefaultFanPwmControlRequired.Length > 0 &&
+                _restoreDefaultFanPwmControlRequired[index])
             {
-                if (_restoreDefaultFanPwmControlRequired[index])
+                WriteByte(0,
+                          _fanPrimaryControlModeRegister[index],
+                          (byte)((_initialFanControlValue[index] & ~_fanPrimaryControlValue[index]) |
+                                 ReadByte(0, _fanPrimaryControlModeRegister[index]))); //bitwise operands to change only desired bits
+
+                if (_fanSecondaryControlModeRegister.Length > 0 && _initialFanSecondaryControlValue.Length > 0 && _fanSecondaryControlValue.Length > 0)
                 {
-                    WriteByte(0, _fanPrimaryControlModeRegister[index], (byte)((_initialFanControlValue[index] & ~_fanPrimaryControlValue[index]) | ReadByte(0, _fanPrimaryControlModeRegister[index]))); //bitwise operands to change only desired bits
-                    if (_fanSecondaryControlModeRegister.Length > 0 && _initialFanSecondaryControlValue.Length > 0 && _fanSecondaryControlValue.Length > 0)
+                    if (_fanSecondaryControlModeRegister[index] != _fanPrimaryControlModeRegister[index])
                     {
-                        if (_fanSecondaryControlModeRegister[index] != _fanPrimaryControlModeRegister[index])
-                        {
-                            WriteByte(0, _fanSecondaryControlModeRegister[index], (byte)((_initialFanSecondaryControlValue[index] & ~_fanSecondaryControlValue[index]) | ReadByte(0, _fanSecondaryControlModeRegister[index]))); //bitwise operands to change only desired bits
-                        }
-                        if (_fanTertiaryControlModeRegister.Length > 0 && _initialFanTertiaryControlValue.Length > 0 && _fanTertiaryControlValue.Length > 0)
-                        {
-                            if (_fanTertiaryControlModeRegister[index] != _fanSecondaryControlModeRegister[index])
-                            {
-                                WriteByte(0, _fanTertiaryControlModeRegister[index], (byte)((_initialFanTertiaryControlValue[index] & ~_fanTertiaryControlValue[index]) | ReadByte(0, _fanTertiaryControlModeRegister[index]))); //bitwise operands to change only desired bits
-                            }
-                        }
+                        WriteByte(0,
+                                  _fanSecondaryControlModeRegister[index],
+                                  (byte)((_initialFanSecondaryControlValue[index] & ~_fanSecondaryControlValue[index]) |
+                                         ReadByte(0, _fanSecondaryControlModeRegister[index]))); //bitwise operands to change only desired bits
                     }
-                    _restoreDefaultFanPwmControlRequired[index] = false;
+
+                    if (_fanTertiaryControlModeRegister.Length > 0 &&
+                        _initialFanTertiaryControlValue.Length > 0 &&
+                        _fanTertiaryControlValue.Length > 0 &&
+                        _fanTertiaryControlModeRegister[index] != _fanSecondaryControlModeRegister[index])
+                    {
+                        WriteByte(0,
+                                  _fanTertiaryControlModeRegister[index],
+                                  (byte)((_initialFanTertiaryControlValue[index] & ~_fanTertiaryControlValue[index]) | ReadByte(0, _fanTertiaryControlModeRegister[index]))); //bitwise operands to change only desired bits
+                    }
                 }
+
+                _restoreDefaultFanPwmControlRequired[index] = false;
             }
         }
 
@@ -284,7 +298,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         {
             if (!Ring0.WaitIsaBusMutex(10))
                 return;
-
 
             for (int i = 0; i < Voltages.Length; i++)
             {
@@ -299,7 +312,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         if ((vrmConfiguration & 0x01) == 0)
                             fValue = 0.016f * value; // VRM8 formula
                         else
-                            fValue = 0.00488f * value + 0.69f; // VRM9 formula
+                            fValue = (0.00488f * value) + 0.69f; // VRM9 formula
                     }
                     else
                     {
@@ -334,7 +347,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     value |= ReadByte(TEMPERATURE_BANK[i], (byte)(TEMPERATURE_REG[i] + 1)) >> 7;
 
                 float temperature = value / 2.0f;
-                if (temperature <= 125 && temperature >= -55 && !_peciTemperature[i])
+                if (temperature is <= 125 and >= -55 && !_peciTemperature[i])
                 {
                     Temperatures[i] = temperature;
                 }
@@ -355,14 +368,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 // assemble fan divisor
                 int divisorBits = (int)(
-                  (((bits >> FAN_DIV_BIT2[i]) & 1) << 2) |
-                  (((bits >> FAN_DIV_BIT1[i]) & 1) << 1) |
-                  ((bits >> FAN_DIV_BIT0[i]) & 1));
+                    (((bits >> FAN_DIV_BIT2[i]) & 1) << 2) |
+                    (((bits >> FAN_DIV_BIT1[i]) & 1) << 1) |
+                    ((bits >> FAN_DIV_BIT0[i]) & 1));
 
                 int divisor = 1 << divisorBits;
 
-                float value = count < 0xff ? 1.35e6f / (count * divisor) : 0;
-                Fans[i] = value;
+                Fans[i] = count < 0xff ? 1.35e6f / (count * divisor) : 0;
 
                 // update fan divisor
                 if (count > 192 && divisorBits < 7)
@@ -387,7 +399,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         public string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             r.AppendLine("LPC " + GetType().Name);
             r.AppendLine();
@@ -401,7 +413,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             if (!Ring0.WaitIsaBusMutex(100))
                 return r.ToString();
-
 
             r.AppendLine("Hardware Monitor Registers");
             r.AppendLine();
@@ -471,9 +482,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if ((value & 1) != value)
                 throw new ArgumentException("Value must be one bit only.");
 
-            if (bit < 0 || bit > 63)
+            if (bit is < 0 or > 63)
                 throw new ArgumentException("Bit out of range.");
-
 
             ulong mask = (ulong)1 << bit;
             return value > 0 ? target | mask : target & ~mask;

@@ -130,77 +130,31 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (family == 0x17)
             {
-                switch (model)
+                return model switch
                 {
-                    case 0x01:
-                    {
-                        return packageType == 7 ? CpuCodeName.Threadripper : CpuCodeName.SummitRidge;
-                    }
-                    case 0x08:
-                    {
-                        return packageType == 7 ? CpuCodeName.Colfax : CpuCodeName.PinnacleRidge;
-                    }
-                    case 0x11:
-                    {
-                        return CpuCodeName.RavenRidge;
-                    }
-                    case 0x18:
-                    {
-                        return packageType == 2 ? CpuCodeName.RavenRidge2 : CpuCodeName.Picasso;
-                    }
-                    case 0x20:
-                    {
-                        return CpuCodeName.Dali;
-                    }
-                    case 0x31:
-                    {
-                        return CpuCodeName.CastlePeak;
-                    }
-                    case 0x60:
-                    {
-                        return CpuCodeName.Renoir;
-                    }
-                    case 0x71:
-                    {
-                        return CpuCodeName.Matisse;
-                    }
-                    case 0x90:
-                    {
-                        return CpuCodeName.Vangogh;
-                    }
-                    default:
-                    {
-                        return CpuCodeName.Undefined;
-                    }
-                }
+                    0x01 => packageType == 7 ? CpuCodeName.Threadripper : CpuCodeName.SummitRidge,
+                    0x08 => packageType == 7 ? CpuCodeName.Colfax : CpuCodeName.PinnacleRidge,
+                    0x11 => CpuCodeName.RavenRidge,
+                    0x18 => packageType == 2 ? CpuCodeName.RavenRidge2 : CpuCodeName.Picasso,
+                    0x20 => CpuCodeName.Dali,
+                    0x31 => CpuCodeName.CastlePeak,
+                    0x60 => CpuCodeName.Renoir,
+                    0x71 => CpuCodeName.Matisse,
+                    0x90 => CpuCodeName.Vangogh,
+                    _ => CpuCodeName.Undefined,
+                };
             }
 
             if (family == 0x19)
             {
-                switch (model)
+                return model switch
                 {
-                    case 0x00:
-                    {
-                        return CpuCodeName.Milan;
-                    }
-                    case 0x20:
-                    case 0x21:
-                    {
-                        return CpuCodeName.Vermeer;
-                    }
-                    case 0x40:
-                    {
-                        return CpuCodeName.Rembrandt;
-                    }
-                    case 0x50:
-                    {
-                        return CpuCodeName.Cezanne;
-                    }
-                    default:
-                    {
-                        return CpuCodeName.Undefined;
-                    }
-                }
+                    0x00 => CpuCodeName.Milan,
+                    0x20 or 0x21 => CpuCodeName.Vermeer,
+                    0x40 => CpuCodeName.Rembrandt,
+                    0x50 => CpuCodeName.Cezanne,
+                    _ => CpuCodeName.Undefined,
+                };
             }
 
             return CpuCodeName.Undefined;
@@ -242,40 +196,32 @@ namespace LibreHardwareMonitor.Hardware
                 case CpuCodeName.CastlePeak:
                 case CpuCodeName.Matisse:
                 case CpuCodeName.Vermeer:
-                {
                     _cmdAddr = 0x3B10524;
                     _rspAddr = 0x3B10570;
                     _argsAddr = 0x3B10A40;
-
                     return true;
-                }
+
                 case CpuCodeName.Colfax:
                 case CpuCodeName.SummitRidge:
                 case CpuCodeName.Threadripper:
                 case CpuCodeName.PinnacleRidge:
-                {
                     _cmdAddr = 0x3B1051C;
                     _rspAddr = 0x3B10568;
                     _argsAddr = 0x3B10590;
-
                     return true;
-                }
+
                 case CpuCodeName.Renoir:
                 case CpuCodeName.Picasso:
                 case CpuCodeName.RavenRidge:
                 case CpuCodeName.RavenRidge2:
                 case CpuCodeName.Dali:
-                {
                     _cmdAddr = 0x3B10A20;
                     _rspAddr = 0x3B10A80;
                     _argsAddr = 0x3B10A88;
-
                     return true;
-                }
+
                 default:
-                {
                     return false;
-                }
             }
         }
 
@@ -350,146 +296,96 @@ namespace LibreHardwareMonitor.Hardware
             switch (_cpuCodeName)
             {
                 case CpuCodeName.Matisse:
-                {
                     switch (_pmTableVersion)
                     {
                         case 0x240902:
-                        {
                             _pmTableSize = 0x514;
                             break;
-                        }
                         case 0x240903:
-                        {
                             _pmTableSize = 0x518;
                             break;
-                        }
                         case 0x240802:
-                        {
                             _pmTableSize = 0x7E0;
                             break;
-                        }
                         case 0x240803:
-                        {
                             _pmTableSize = 0x7E4;
                             break;
-                        }
                         default:
-                        {
                             return;
-                        }
                     }
-
                     break;
-                }
+
                 case CpuCodeName.Vermeer:
-                {
                     switch (_pmTableVersion)
                     {
                         case 0x2D0903:
-                        {
                             _pmTableSize = 0x594;
                             break;
-                        }
                         case 0x380904:
-                        {
                             _pmTableSize = 0x5A4;
                             break;
-                        }
                         case 0x380905:
-                        {
                             _pmTableSize = 0x5D0;
                             break;
-                        }
                         case 0x2D0803:
-                        {
                             _pmTableSize = 0x894;
                             break;
-                        }
                         case 0x380804:
-                        {
                             _pmTableSize = 0x8A4;
                             break;
-                        }
                         case 0x380805:
-                        {
                             _pmTableSize = 0x8F0;
                             break;
-                        }
                         default:
-                        {
                             return;
-                        }
                     }
-
                     break;
-                }
+
                 case CpuCodeName.Renoir:
-                {
                     switch (_pmTableVersion)
                     {
                         case 0x370000:
-                        {
                             _pmTableSize = 0x794;
                             break;
-                        }
                         case 0x370001:
-                        {
                             _pmTableSize = 0x884;
                             break;
-                        }
                         case 0x370002:
                         case 0x370003:
-                        {
                             _pmTableSize = 0x88C;
                             break;
-                        }
                         case 0x370004:
-                        {
                             _pmTableSize = 0x8AC;
                             break;
-                        }
                         case 0x370005:
-                        {
                             _pmTableSize = 0x8C8;
                             break;
-                        }
                         default:
-                        {
                             return;
-                        }
                     }
-
                     break;
-                }
+
                 case CpuCodeName.Cezanne:
-                {
                     switch (_pmTableVersion)
                     {
                         case 0x400005:
-                        {
                             _pmTableSize = 0x944;
                             break;
-                        }
-                        default:
-                        {
-                            return;
-                        }
-                    }
 
+                        default:
+                            return;
+                    }
                     break;
-                }
+
                 case CpuCodeName.Picasso:
                 case CpuCodeName.RavenRidge:
                 case CpuCodeName.RavenRidge2:
-                {
                     _pmTableSizeAlt = 0xA4;
                     _pmTableSize = 0x608 + _pmTableSizeAlt;
                     break;
-                }
+
                 default:
-                {
                     return;
-                }
             }
         }
 
@@ -502,25 +398,17 @@ namespace LibreHardwareMonitor.Hardware
             {
                 case CpuCodeName.RavenRidge:
                 case CpuCodeName.Picasso:
-                {
                     fn = 0x0c;
                     break;
-                }
                 case CpuCodeName.Matisse:
                 case CpuCodeName.Vermeer:
-                {
                     fn = 0x08;
                     break;
-                }
                 case CpuCodeName.Renoir:
-                {
                     fn = 0x06;
                     break;
-                }
                 default:
-                {
                     return false;
-                }
             }
 
             bool ret = SendCommand(fn, ref args);
@@ -607,44 +495,34 @@ namespace LibreHardwareMonitor.Hardware
                 case CpuCodeName.Vermeer:
                 case CpuCodeName.Matisse:
                 case CpuCodeName.CastlePeak:
-                {
                     fn[0] = 0x06;
                     SetupAddrClass1(fn);
-
                     return;
-                }
+
                 case CpuCodeName.Renoir:
-                {
                     fn[0] = 0x66;
                     SetupAddrClass1(fn);
-
                     return;
-                }
+
                 case CpuCodeName.Colfax:
                 case CpuCodeName.PinnacleRidge:
-                {
                     fn[0] = 0x0b;
                     fn[1] = 0x0c;
                     SetupAddrClass2(fn);
-
                     return;
-                }
+
                 case CpuCodeName.Dali:
                 case CpuCodeName.Picasso:
                 case CpuCodeName.RavenRidge:
                 case CpuCodeName.RavenRidge2:
-                {
                     fn[0] = 0x0a;
                     fn[1] = 0x3d;
                     fn[2] = 0x0b;
                     SetupAddrClass3(fn);
+                    return;
 
-                    return;
-                }
                 default:
-                {
                     return;
-                }
             }
         }
 
@@ -657,28 +535,23 @@ namespace LibreHardwareMonitor.Hardware
             {
                 case CpuCodeName.Matisse:
                 case CpuCodeName.Vermeer:
-                {
                     fn = 0x05;
                     break;
-                }
+
                 case CpuCodeName.Renoir:
-                {
                     args[0] = 3;
                     fn = 0x65;
                     break;
-                }
+
                 case CpuCodeName.Picasso:
                 case CpuCodeName.RavenRidge:
                 case CpuCodeName.RavenRidge2:
-                {
                     args[0] = 3;
                     fn = 0x3d;
                     break;
-                }
+
                 default:
-                {
                     return false;
-                }
             }
 
             return SendCommand(fn, ref args);

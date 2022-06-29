@@ -15,8 +15,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 {
     internal class AmdGpuGroup : IGroup
     {
-        private readonly List<AmdGpu> _hardware = new List<AmdGpu>();
-        private readonly StringBuilder _report = new StringBuilder();
+        private readonly List<AmdGpu> _hardware = new();
+        private readonly StringBuilder _report = new();
         private readonly AtiAdlxx.ADLStatus _status;
 
         public AmdGpuGroup(ISettings settings)
@@ -84,7 +84,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
 
                         foreach (IGrouping<string, AmdGpu> amdGpus in potentialHardware.GroupBy(x => $"{x.BusNumber}-{x.DeviceNumber}"))
                         {
-                            var amdGpu = amdGpus.OrderByDescending(x => x.Sensors.Length).FirstOrDefault();
+                            AmdGpu amdGpu = amdGpus.OrderByDescending(x => x.Sensors.Length).FirstOrDefault();
                             if (amdGpu != null)
                                 _hardware.Add(amdGpu);
                         }

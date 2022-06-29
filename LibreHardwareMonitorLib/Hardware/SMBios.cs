@@ -301,7 +301,7 @@ namespace LibreHardwareMonitor.Hardware
         Dsp,
         VideoProcessor
     }
-    
+
     /// <summary>
     /// Processor characteristics based on <see href="https://www.dmtf.org/dsp/DSP0134">DMTF SMBIOS Reference Specification v.3.3.0, Chapter 7.5.9</see>.
     /// </summary>
@@ -1228,40 +1228,26 @@ namespace LibreHardwareMonitor.Hardware
                             switch (type)
                             {
                                 case 0x00:
-                                {
                                     Bios = new BiosInformation(data, strings);
                                     break;
-                                }
                                 case 0x01:
-                                {
                                     System = new SystemInformation(data, strings);
                                     break;
-                                }
                                 case 0x02:
-                                {
                                     Board = new BaseBoardInformation(data, strings);
                                     break;
-                                }
                                 case 0x03:
-                                {
                                     SystemEnclosure = new SystemEnclosure(data, strings);
                                     break;
-                                }
                                 case 0x04:
-                                {
                                     processorInformationList.Add(new ProcessorInformation(data, strings));
                                     break;
-                                }
                                 case 0x07:
-                                {
                                     processorCacheList.Add(new CacheInformation(data, strings));
                                     break;
-                                }
                                 case 0x11:
-                                {
                                     memoryDeviceList.Add(new MemoryDevice(data, strings));
                                     break;
-                                }
                             }
                         }
                     }
@@ -1359,9 +1345,9 @@ namespace LibreHardwareMonitor.Hardware
                     const int megabyte = 1024 * 1024;
                     r.Append("BIOS Size: ");
                     if (Bios.Size > megabyte)
-                        r.AppendLine(Bios.Size.Value / megabyte + " MB");
+                        r.AppendLine((Bios.Size.Value / megabyte) + " MB");
                     else
-                        r.AppendLine(Bios.Size.Value / 1024 + " KB");
+                        r.AppendLine((Bios.Size.Value / 1024) + " KB");
                 }
 
                 r.AppendLine();

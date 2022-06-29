@@ -34,7 +34,6 @@ namespace LibreHardwareMonitor.Hardware
             if (size <= 0)
                 return null;
 
-
             IntPtr allocatedBuffer = IntPtr.Zero;
 
             try
@@ -44,7 +43,6 @@ namespace LibreHardwareMonitor.Hardware
                 Interop.Kernel32.GetSystemFirmwareTable(provider, table, allocatedBuffer, size);
                 if (Marshal.GetLastWin32Error() != 0)
                     return null;
-
 
                 byte[] buffer = new byte[size];
                 Marshal.Copy(allocatedBuffer, buffer, 0, size);

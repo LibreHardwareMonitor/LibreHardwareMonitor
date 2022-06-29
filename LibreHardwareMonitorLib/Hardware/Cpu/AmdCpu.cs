@@ -23,7 +23,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
             if (deviceVendor != (deviceId << 16 | AMD_VENDOR_ID))
                 return Interop.Ring0.INVALID_PCI_ADDRESS;
 
-
             return address;
         }
 

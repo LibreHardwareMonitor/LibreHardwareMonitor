@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             Voltages = new float?[chip == Chip.F71858 ? 3 : 9];
             Temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
-            Fans = new float?[chip == Chip.F71882 || chip == Chip.F71858 ? 4 : 3];
+            Fans = new float?[chip is Chip.F71882 or Chip.F71858 ? 4 : 3];
             Controls = new float?[chip == Chip.F71878AD ? 3 : 0];
         }
 
@@ -52,10 +52,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (index < 0 || index >= Controls.Length)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-
             if (!Ring0.WaitIsaBusMutex(10))
                 return;
-
 
             if (value.HasValue)
             {
@@ -73,7 +71,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         public string GetReport()
         {
-            StringBuilder r = new StringBuilder();
+            StringBuilder r = new();
 
             r.AppendLine("LPC " + GetType().Name);
             r.AppendLine();
@@ -83,7 +81,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             if (!Ring0.WaitIsaBusMutex(100))
                 return r.ToString();
-
 
             r.AppendLine("Hardware Monitor Registers");
             r.AppendLine();
@@ -115,7 +112,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             if (!Ring0.WaitIsaBusMutex(10))
                 return;
 
-
             for (int i = 0; i < Voltages.Length; i++)
             {
                 if (Chip == Chip.F71808E && i == 6)
@@ -137,15 +133,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.F71858:
                     {
                         int tableMode = 0x3 & ReadByte(TEMPERATURE_CONFIG_REG);
-                        int high = ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * i));
-                        int low = ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * i + 1));
-                        if (high != 0xbb && high != 0xcc)
+                        int high = ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * i)));
+                        int low = ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * i) + 1));
+                        if (high is not 0xbb and not 0xcc)
                         {
                             int bits = 0;
                             switch (tableMode)
                             {
                                 case 0:
-                                    bits = 0;
                                     break;
                                 case 1:
                                     bits = 0;
@@ -172,8 +167,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         break;
                     default:
                     {
-                        sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * (i + 1)));
-                        if (value < sbyte.MaxValue && value > 0)
+                        sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * (i + 1))));
+                        if (value is < sbyte.MaxValue and > 0)
                             Temperatures[i] = value;
                         else
                             Temperatures[i] = null;

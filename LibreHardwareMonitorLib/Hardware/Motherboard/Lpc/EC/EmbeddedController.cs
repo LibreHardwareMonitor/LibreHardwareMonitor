@@ -13,75 +13,154 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
 {
     public abstract class EmbeddedController : Hardware
     {
-        private enum ECSensor
+        // If you are updating board information, please consider sharing your changes with the corresponding Linux driver.
+        // You can do that at https://github.com/zeule/asus-ec-sensors or contribute directly to Linux HWMON.
+        // If you are adding a new board, please share DSDT table for the board at https://github.com/zeule/asus-ec-sensors.
+        // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
+        private static readonly BoardInfo[] _boards =
         {
-            /// <summary>Chipset temperature [℃]</summary>
-            TempChipset,
-            /// <summary>CPU temperature [℃]</summary>
-            TempCPU,
-            /// motherboard temperature [℃]</summary>
-            TempMB,
-            /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
-            TempTSensor,
-            /// <summary>VRM temperature [℃]</summary>
-            TempVrm,
-            /// <summary>CPU Core voltage [mV]</summary>
-            VoltageCPU,
-            /// <summary>CPU_Opt fan [RPM]</summary>
-            FanCPUOpt,
-            /// <summary>VRM heat sink fan [RPM]</summary>
-            FanVrmHS,
-            /// <summary>Chipset fan [RPM]</summary>
-            FanChipset,
-            /// <summary>Water Pump [RPM]</summary>
-            FanWaterPump,
-            /// <summary>Water flow sensor reading [RPM]</summary>
-            FanWaterFlow,
-            /// <summary>CPU current [A]</summary>
-            CurrCPU,
-            /// <summary>"Water_In" temperature sensor reading [℃]</summary>
-            TempWaterIn,
-            /// <summary>"Water_Out" temperature sensor reading [℃]</summary>
-            TempWaterOut,
-            /// <summary>Water block temperature sensor reading [℃]</summary>
-            TempWaterBlockIn,
-            Max
-        };
-
-        private enum BoardFamily
-        {
-            Amd400,
-            Amd500,
-            Intel100,
-            Intel600,
-        }
-
-        private struct BoardInfo
-        {
-            public BoardInfo(Model[] models, BoardFamily family, params ECSensor[] sensors)
-            {
-                Models = models;
-                Family = family;
-                Sensors = sensors;
-            }
-
-            public BoardInfo(Model model, BoardFamily family, params ECSensor[] sensors)
-            {
-                Models = new Model[] { model };
-                Family = family;
-                Sensors = sensors;
-            }
-
-            public Model[] Models { get; }
-            public BoardFamily Family { get; }
-            public ECSensor[] Sensors { get; }
+            new(Model.PRIME_X470_PRO,
+                BoardFamily.Amd400,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempVrm,
+                ECSensor.TempVrm,
+                ECSensor.FanCPUOpt,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.PRIME_X570_PRO,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempVrm,
+                ECSensor.TempTSensor,
+                ECSensor.FanChipset),
+            new(Model.PROART_X570_CREATOR_WIFI,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempVrm,
+                ECSensor.TempTSensor,
+                ECSensor.FanCPUOpt,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.PRO_WS_X570_ACE,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempVrm,
+                ECSensor.FanChipset,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(new[] { Model.ROG_CROSSHAIR_VIII_HERO, Model.ROG_CROSSHAIR_VIII_HERO_WIFI, Model.ROG_CROSSHAIR_VIII_FORMULA },
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm,
+                ECSensor.TempWaterIn,
+                ECSensor.TempWaterOut,
+                ECSensor.FanCPUOpt,
+                ECSensor.FanChipset,
+                ECSensor.FanWaterFlow,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.ROG_CROSSHAIR_VIII_DARK_HERO,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm,
+                ECSensor.TempWaterIn,
+                ECSensor.TempWaterOut,
+                ECSensor.FanCPUOpt,
+                ECSensor.FanWaterFlow,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.ROG_CROSSHAIR_VIII_IMPACT,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm,
+                ECSensor.FanChipset,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.ROG_STRIX_B550_E_GAMING,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm,
+                ECSensor.FanCPUOpt),
+            new(Model.ROG_STRIX_B550_I_GAMING,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm,
+                ECSensor.FanVrmHS,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.ROG_STRIX_X570_E_GAMING,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm,
+                ECSensor.FanChipset,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
+            new(Model.ROG_STRIX_X570_F_GAMING,
+                BoardFamily.Amd500,
+                ECSensor.TempChipset,
+                ECSensor.TempCPU,
+                ECSensor.TempMB,
+                ECSensor.TempTSensor,
+                ECSensor.FanChipset),
+            new(Model.ROG_STRIX_X570_I_GAMING,
+                BoardFamily.Amd500,
+                ECSensor.TempTSensor,
+                ECSensor.FanVrmHS,
+                ECSensor.FanChipset,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU,
+                ECSensor.TempChipset,
+                ECSensor.TempVrm),
+            new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
+                BoardFamily.Intel600,
+                ECSensor.TempTSensor,
+                ECSensor.TempVrm),
+            new(Model.ROG_MAXIMUS_Z690_EXTREME_GLACIAL,
+                BoardFamily.Intel600,
+                ECSensor.TempVrm,
+                ECSensor.TempWaterIn,
+                ECSensor.TempWaterOut,
+                ECSensor.TempWaterBlockIn,
+                ECSensor.FanWaterFlow),
+            new(Model.Z170_A,
+                BoardFamily.Intel100,
+                ECSensor.TempTSensor,
+                ECSensor.TempChipset,
+                ECSensor.FanWaterPump,
+                ECSensor.CurrCPU,
+                ECSensor.VoltageCPU),
         };
 
         private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
         {
             {
-                BoardFamily.Amd400,
-                new()  // no chipset fans in this generation
+                BoardFamily.Amd400, new Dictionary<ECSensor, EmbeddedControllerSource>() // no chipset fans in this generation
                 {
                     { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                     { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
@@ -98,8 +177,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 }
             },
             {
-                BoardFamily.Amd500,
-                new()
+                BoardFamily.Amd500, new Dictionary<ECSensor, EmbeddedControllerSource>
                 {
                     { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                     { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
@@ -118,8 +196,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 }
             },
             {
-                BoardFamily.Intel100,
-                new() {
+                BoardFamily.Intel100, new Dictionary<ECSensor, EmbeddedControllerSource>
+                {
                     { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                     { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                     { ECSensor.FanWaterPump, new EmbeddedControllerSource("Water Pump", SensorType.Fan, 0x00bc, 2) },
@@ -128,8 +206,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 }
             },
             {
-                BoardFamily.Intel600,
-                new()
+                BoardFamily.Intel600, new Dictionary<ECSensor, EmbeddedControllerSource>
                 {
                     { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                     { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
@@ -141,93 +218,17 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             },
         };
 
-        // If you are updating board information, please consider sharing your changes with the corresponding Linux driver.
-        // You can do that at https://github.com/zeule/asus-ec-sensors or contribute directly to Linux HWMON.
-        // If you are adding a new board, please share DSDT table for the board at https://github.com/zeule/asus-ec-sensors.
-        // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
-        private static readonly BoardInfo[] _boards = new BoardInfo[]{
-            new(Model.PRIME_X470_PRO, BoardFamily.Amd400,
-               ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-               ECSensor.TempVrm, ECSensor.TempVrm, ECSensor.FanCPUOpt,
-               ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new (Model.PRIME_X570_PRO, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempVrm, ECSensor.TempTSensor, ECSensor.FanChipset
-            ),
-            new(Model.PROART_X570_CREATOR_WIFI, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempVrm, ECSensor.TempTSensor, ECSensor.FanCPUOpt, 
-                ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.PRO_WS_X570_ACE, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempVrm, ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(new Model[] {Model.ROG_CROSSHAIR_VIII_HERO, Model.ROG_CROSSHAIR_VIII_HERO_WIFI, Model.ROG_CROSSHAIR_VIII_FORMULA }, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
-                ECSensor.FanCPUOpt, ECSensor.FanChipset, ECSensor.FanWaterFlow,
-                ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.ROG_CROSSHAIR_VIII_DARK_HERO, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut,
-                ECSensor.FanCPUOpt, ECSensor.FanWaterFlow, ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.ROG_CROSSHAIR_VIII_IMPACT, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm,
-                ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.ROG_STRIX_B550_E_GAMING, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm, ECSensor.FanCPUOpt
-            ),
-            new(Model.ROG_STRIX_B550_I_GAMING, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm,
-                ECSensor.FanVrmHS, ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.ROG_STRIX_X570_E_GAMING, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.TempVrm,
-                ECSensor.FanChipset, ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-            new(Model.ROG_STRIX_X570_F_GAMING, BoardFamily.Amd500,
-                ECSensor.TempChipset, ECSensor.TempCPU, ECSensor.TempMB,
-                ECSensor.TempTSensor, ECSensor.FanChipset
-            ),
-            new(Model.ROG_STRIX_X570_I_GAMING, BoardFamily.Amd500,
-                ECSensor.TempTSensor, ECSensor.FanVrmHS, ECSensor.FanChipset,
-                ECSensor.CurrCPU, ECSensor.VoltageCPU, ECSensor.TempChipset,
-                ECSensor.TempVrm
-            ),
-            new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4, BoardFamily.Intel600,
-                ECSensor.TempTSensor, ECSensor.TempVrm
-            ),
-            new(Model.ROG_MAXIMUS_Z690_EXTREME_GLACIAL, BoardFamily.Intel600,
-                ECSensor.TempVrm, ECSensor.TempWaterIn, ECSensor.TempWaterOut, ECSensor.TempWaterBlockIn, ECSensor.FanWaterFlow
-            ),
-            new(Model.Z170_A, BoardFamily.Intel100,
-                ECSensor.TempTSensor, ECSensor.TempChipset, ECSensor.FanWaterPump, 
-                ECSensor.CurrCPU, ECSensor.VoltageCPU
-            ),
-        };
+        private readonly byte[] _data;
+        private readonly ushort[] _registers;
+        private readonly List<Sensor> _sensors;
 
         private readonly IReadOnlyList<EmbeddedControllerSource> _sources;
-        private readonly List<Sensor> _sensors;
-        private readonly ushort[] _registers;
-        private readonly byte[] _data;
 
         protected EmbeddedController(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
         {
             // sorting by address, which implies sorting by bank, for optimized EC access
             var sourcesList = sources.ToList();
-            sourcesList.Sort((left, right) =>
-            {
-                return left.Register.CompareTo(right.Register);
-            });
+            sourcesList.Sort((left, right) => left.Register.CompareTo(right.Register));
             _sources = sourcesList;
             var indices = new Dictionary<SensorType, int>();
             foreach (SensorType t in Enum.GetValues(typeof(SensorType)))
@@ -261,10 +262,12 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             var boards = _boards.Where(b => b.Models.Contains(model)).ToList();
             if (boards.Count == 0)
                 return null;
+
             if (boards.Count > 1)
                 throw new MultipleBoardRecordsFoundException(model.ToString());
+
             BoardInfo board = boards[0];
-            var sources = board.Sensors.Select(ecs => _knownSensors[board.Family][ecs]);
+            IEnumerable<EmbeddedControllerSource> sources = board.Sensors.Select(ecs => _knownSensors[board.Family][ecs]);
 
             return Environment.OSVersion.Platform switch
             {
@@ -290,6 +293,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     2 => unchecked((short)((_data[readRegister] << 8) + _data[readRegister + 1])),
                     _ => 0,
                 };
+
                 readRegister += _sources[si].Size;
 
                 _sensors[si].Value = val != _sources[si].Blank ? val * _sources[si].Factor : null;
@@ -315,6 +319,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 {
                     src[i] = i;
                 }
+
                 embeddedControllerIO.Read(src, data);
                 for (int i = 0; i <= 0xF; ++i)
                 {
@@ -355,18 +360,102 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             }
         }
 
-        public class IOException: System.IO.IOException {
-            public IOException(string message): base($"ACPI embedded controller I/O error: {message}") { }
+        private enum ECSensor
+        {
+            /// <summary>Chipset temperature [℃]</summary>
+            TempChipset,
+
+            /// <summary>CPU temperature [℃]</summary>
+            TempCPU,
+
+            /// <summary>motherboard temperature [℃]</summary>
+            TempMB,
+
+            /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
+            TempTSensor,
+
+            /// <summary>VRM temperature [℃]</summary>
+            TempVrm,
+
+            /// <summary>CPU Core voltage [mV]</summary>
+            VoltageCPU,
+
+            /// <summary>CPU_Opt fan [RPM]</summary>
+            FanCPUOpt,
+
+            /// <summary>VRM heat sink fan [RPM]</summary>
+            FanVrmHS,
+
+            /// <summary>Chipset fan [RPM]</summary>
+            FanChipset,
+
+            /// <summary>Water Pump [RPM]</summary>
+            FanWaterPump,
+
+            /// <summary>Water flow sensor reading [RPM]</summary>
+            FanWaterFlow,
+
+            /// <summary>CPU current [A]</summary>
+            CurrCPU,
+
+            /// <summary>"Water_In" temperature sensor reading [℃]</summary>
+            TempWaterIn,
+
+            /// <summary>"Water_Out" temperature sensor reading [℃]</summary>
+            TempWaterOut,
+
+            /// <summary>Water block temperature sensor reading [℃]</summary>
+            TempWaterBlockIn,
+            Max
         }
 
-        public class BadConfigurationException: System.Exception
+        private enum BoardFamily
         {
-            public BadConfigurationException(string message): base(message) { }
+            Amd400,
+            Amd500,
+            Intel100,
+            Intel600,
+        }
+
+        private struct BoardInfo
+        {
+            public BoardInfo(Model[] models, BoardFamily family, params ECSensor[] sensors)
+            {
+                Models = models;
+                Family = family;
+                Sensors = sensors;
+            }
+
+            public BoardInfo(Model model, BoardFamily family, params ECSensor[] sensors)
+            {
+                Models = new[] { model };
+                Family = family;
+                Sensors = sensors;
+            }
+
+            public Model[] Models { get; }
+
+            public BoardFamily Family { get; }
+
+            public ECSensor[] Sensors { get; }
+        }
+
+        public class IOException : System.IO.IOException
+        {
+            public IOException(string message) : base($"ACPI embedded controller I/O error: {message}")
+            { }
+        }
+
+        public class BadConfigurationException : Exception
+        {
+            public BadConfigurationException(string message) : base(message)
+            { }
         }
 
         public class MultipleBoardRecordsFoundException : BadConfigurationException
         {
-            public MultipleBoardRecordsFoundException(string model) : base($"Multiple board records refer to the same model '{model}'") { }
+            public MultipleBoardRecordsFoundException(string model) : base($"Multiple board records refer to the same model '{model}'")
+            { }
         }
     }
 }

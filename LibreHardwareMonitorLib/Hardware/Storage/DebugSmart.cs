@@ -385,7 +385,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 {
                     string[] array = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    if (array.Length != 4 && array.Length != 5)
+                    if (array.Length is not 4 and not 5)
                         throw new Exception();
 
                     var v = new Kernel32.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };

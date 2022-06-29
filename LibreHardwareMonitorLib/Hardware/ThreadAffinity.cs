@@ -34,10 +34,9 @@ namespace LibreHardwareMonitor.Hardware
         /// <returns><c>true</c> if the specified affinity is valid; otherwise, <c>false</c>.</returns>
         public static bool IsValid(GroupAffinity affinity)
         {
-            if (Software.OperatingSystem.IsUnix)
+            if (Software.OperatingSystem.IsUnix && affinity.Group > 0)
             {
-                if (affinity.Group > 0)
-                    return false;
+                return false;
             }
 
             try
@@ -45,7 +44,6 @@ namespace LibreHardwareMonitor.Hardware
                 GroupAffinity previousAffinity = Set(affinity);
                 if (previousAffinity == GroupAffinity.Undefined)
                     return false;
-
 
                 Set(previousAffinity);
                 return true;
@@ -66,22 +64,18 @@ namespace LibreHardwareMonitor.Hardware
             if (affinity == GroupAffinity.Undefined)
                 return GroupAffinity.Undefined;
 
-
             if (Software.OperatingSystem.IsUnix)
             {
                 if (affinity.Group > 0)
                     throw new ArgumentOutOfRangeException(nameof(affinity));
 
-
                 ulong result = 0;
                 if (LibC.sched_getaffinity(0, (IntPtr)8, ref result) != 0)
                     return GroupAffinity.Undefined;
 
-
                 ulong mask = affinity.Mask;
                 if (LibC.sched_setaffinity(0, (IntPtr)8, ref mask) != 0)
                     return GroupAffinity.Undefined;
-
 
                 return new GroupAffinity(0, result);
             }
@@ -115,7 +109,6 @@ namespace LibreHardwareMonitor.Hardware
             {
                 if (affinity.Group > 0)
                     throw new ArgumentOutOfRangeException(nameof(affinity));
-
 
                 ulong previous = (ulong)Kernel32.SetThreadAffinityMask(currentThread, uIntPtrMask);
 

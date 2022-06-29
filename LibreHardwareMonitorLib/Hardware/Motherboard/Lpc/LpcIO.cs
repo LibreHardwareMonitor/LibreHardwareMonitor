@@ -14,8 +14,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 {
     internal class LpcIO
     {
-        private readonly StringBuilder _report = new StringBuilder();
-        private readonly List<ISuperIO> _superIOs = new List<ISuperIO>();
+        private readonly StringBuilder _report = new();
+        private readonly List<ISuperIO> _superIOs = new();
 
         public LpcIO()
         {
@@ -24,7 +24,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             if (!Ring0.WaitIsaBusMutex(100))
                 return;
-
 
             Detect();
 
@@ -51,26 +50,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             port.SmscEnter();
 
             ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
-            Chip chip;
-            switch (chipId)
-            {
-                default:
-                    chip = Chip.Unknown;
-                    break;
-            }
 
-            if (chip == Chip.Unknown)
-            {
-                if (chipId != 0 && chipId != 0xffff)
-                {
-                    port.SmscExit();
-                    ReportUnknownChip(port, "SMSC", chipId);
-                }
-            }
-            else
+            if (chipId is not 0 and not 0xffff)
             {
                 port.SmscExit();
-                return true;
+                ReportUnknownChip(port, "SMSC", chipId);
             }
 
             return false;
@@ -112,408 +96,291 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             switch (id)
             {
                 case 0x05:
-                {
                     switch (revision)
                     {
                         case 0x07:
-                        {
                             chip = Chip.F71858;
                             logicalDeviceNumber = F71858_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x41:
-                        {
                             chip = Chip.F71882;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x06:
-                {
                     switch (revision)
                     {
                         case 0x01:
-                        {
                             chip = Chip.F71862;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x07:
-                {
                     switch (revision)
                     {
                         case 0x23:
-                        {
                             chip = Chip.F71889F;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x08:
-                {
                     switch (revision)
                     {
                         case 0x14:
-                        {
                             chip = Chip.F71869;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x09:
-                {
                     switch (revision)
                     {
                         case 0x01:
-                        {
                             chip = Chip.F71808E;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x09:
-                        {
                             chip = Chip.F71889ED;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x10:
-                {
                     switch (revision)
                     {
                         case 0x05:
-                        {
                             chip = Chip.F71889AD;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x07:
-                        {
                             chip = Chip.F71869A;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x11:
-                {
                     switch (revision)
                     {
                         case 0x06:
-                        {
                             chip = Chip.F71878AD;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x18:
-                        {
                             chip = Chip.F71811;
                             logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x52:
-                {
                     switch (revision)
                     {
                         case 0x17:
                         case 0x3A:
                         case 0x41:
-                        {
                             chip = Chip.W83627HF;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x82:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x80:
-                        {
                             chip = Chip.W83627THF;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x85:
-                {
                     switch (revision)
                     {
                         case 0x41:
-                        {
                             chip = Chip.W83687THF;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0x88:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x50:
                         case 0x60:
-                        {
                             chip = Chip.W83627EHF;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xA0:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x20:
-                        {
                             chip = Chip.W83627DHG;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xA5:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x10:
-                        {
                             chip = Chip.W83667HG;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xB0:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x70:
-                        {
                             chip = Chip.W83627DHGP;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xB3:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x50:
-                        {
                             chip = Chip.W83667HGB;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xB4:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x70:
-                        {
                             chip = Chip.NCT6771F;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xC3:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x30:
-                        {
                             chip = Chip.NCT6776F;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xC4:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x50:
-                        {
                             chip = Chip.NCT610XD;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xC5:
-                {
                     switch (revision & 0xF0)
                     {
                         case 0x60:
-                        {
                             chip = Chip.NCT6779D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xC8:
-                {
                     switch (revision)
                     {
                         case 0x03:
-                        {
                             chip = Chip.NCT6791D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xC9:
-                {
                     switch (revision)
                     {
                         case 0x11:
-                        {
                             chip = Chip.NCT6792D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x13:
-                        {
                             chip = Chip.NCT6792DA;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xD1:
-                {
                     switch (revision)
                     {
                         case 0x21:
-                        {
                             chip = Chip.NCT6793D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xD3:
-                {
                     switch (revision)
                     {
                         case 0x52:
-                        {
                             chip = Chip.NCT6795D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xD4:
-                {
                     switch (revision)
                     {
                         case 0x23:
-                        {
                             chip = Chip.NCT6796D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x2A:
-                        {
                             chip = Chip.NCT6796DR;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x51:
-                        {
                             chip = Chip.NCT6797D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                         case 0x2B:
-                        {
                             chip = Chip.NCT6798D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 0xD5:
-                {
                     switch (revision)
                     {
                         case 0x92:
-                        {
                             chip = Chip.NCT6687D;
                             logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                             break;
-                        }
                     }
-
                     break;
-                }
+
                 case 199:
-                {
                     switch (revision)
                     {
                         case 50:
@@ -522,12 +389,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             break;
                     }
                     break;
-                }
             }
 
             if (chip == Chip.Unknown)
             {
-                if (id != 0 && id != 0xff)
+                if (id is not 0 and not 0xff)
                 {
                     port.WinbondNuvotonFintekExit();
                     ReportUnknownChip(port, "Winbond / Nuvoton / Fintek", (id << 8) | revision);
@@ -543,15 +409,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 ushort vendorId = port.ReadWord(FINTEK_VENDOR_ID_REGISTER);
 
                 // disable the hardware monitor i/o space lock on NCT679XD chips
-                if (address == verify && (chip == Chip.NCT6791D ||
-                                          chip == Chip.NCT6792D ||
-                                          chip == Chip.NCT6792DA ||
-                                          chip == Chip.NCT6793D ||
-                                          chip == Chip.NCT6795D ||
-                                          chip == Chip.NCT6796D || 
-                                          chip == Chip.NCT6796DR || 
-                                          chip == Chip.NCT6798D || 
-                                          chip == Chip.NCT6797D))
+                if (address == verify &&
+                    chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D)
                 {
                     port.NuvotonDisableIOSpaceLock();
                 }
@@ -597,10 +456,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.W83667HG:
                     case Chip.W83667HGB:
                     case Chip.W83687THF:
-                    {
                         _superIOs.Add(new W836XX(chip, revision, address));
                         break;
-                    }
+
                     case Chip.NCT610XD:
                     case Chip.NCT6771F:
                     case Chip.NCT6776F:
@@ -616,10 +474,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.NCT6798D:
                     case Chip.NCT6687D:
                     case Chip.NCT6683D:
-                    {
                         _superIOs.Add(new Nct677X(chip, revision, address, port));
                         break;
-                    }
+
                     case Chip.F71858:
                     case Chip.F71862:
                     case Chip.F71869:
@@ -630,7 +487,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     case Chip.F71889ED:
                     case Chip.F71889F:
                     case Chip.F71808E:
-                    {
                         if (vendorId != FINTEK_VENDOR_ID)
                         {
                             _report.Append("Chip ID: 0x");
@@ -646,7 +502,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                         _superIOs.Add(new F718XX(chip, address));
                         break;
-                    }
                 }
 
                 return true;
@@ -659,9 +514,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         {
             // IT87XX can enter only on port 0x2E
             // IT8792 using 0x4E
-            if (port.RegisterPort != 0x2E && port.RegisterPort != 0x4E)
+            if (port.RegisterPort is not 0x2E and not 0x4E)
                 return false;
-
 
             port.IT87Enter();
 
@@ -678,8 +532,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 case 0x8628:
                     chip = Chip.IT8628E;
                     break;
-                case 0x8631: 
-                    chip = Chip.IT8631E; 
+                case 0x8631:
+                    chip = Chip.IT8631E;
                     break;
                 case 0x8665:
                     chip = Chip.IT8665E;
@@ -739,7 +593,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
             if (chip == Chip.Unknown)
             {
-                if (chipId != 0 && chipId != 0xffff)
+                if (chipId is not 0 and not 0xffff)
                 {
                     port.IT87Exit();
 
@@ -748,7 +602,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             }
             else
             {
-                port.Select(IT87_ENVIRONMENT_CONTROLLER_LDN);               
+                port.Select(IT87_ENVIRONMENT_CONTROLLER_LDN);
 
                 ushort address = port.ReadWord(BASE_ADDRESS_REGISTER);
                 Thread.Sleep(1);

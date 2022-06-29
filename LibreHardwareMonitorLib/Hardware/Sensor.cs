@@ -174,7 +174,6 @@ namespace LibreHardwareMonitor.Hardware
             if (visitor == null)
                 throw new ArgumentNullException(nameof(visitor));
 
-
             visitor.VisitSensor(this);
         }
 
@@ -237,7 +236,6 @@ namespace LibreHardwareMonitor.Hardware
                             DateTime time = DateTime.FromBinary(t);
                             if (time > now)
                                 break;
-
 
                             float value = reader.ReadSingle();
                             AppendValue(value, time);

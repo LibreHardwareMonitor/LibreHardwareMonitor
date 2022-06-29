@@ -107,7 +107,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             private readonly Sensor _packagePower;
             private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> _smuSensors = new();
             private readonly Sensor _socVoltage;
-            
+
             private Sensor _ccdsAverageTemperature;
             private Sensor _ccdsMaxTemperature;
             private DateTime _lastPwrTime = new(0);
@@ -186,26 +186,22 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     switch (cpuId.Model)
                     {
                         case 0x31: // Threadripper 3000.
-                        {
                             sviPlane0Offset = F17H_M01H_SVI + 0x14;
                             sviPlane1Offset = F17H_M01H_SVI + 0x10;
                             supportsPerCcdTemperatures = true;
                             break;
-                        }
+
                         case 0x71: // Zen 2.
                         case 0x21: // Zen 3.
-                        {
                             sviPlane0Offset = F17H_M01H_SVI + 0x10;
                             sviPlane1Offset = F17H_M01H_SVI + 0xC;
                             supportsPerCcdTemperatures = true;
                             break;
-                        }
+
                         default: // Zen and Zen+.
-                        {
                             sviPlane0Offset = F17H_M01H_SVI + 0xC;
                             sviPlane1Offset = F17H_M01H_SVI + 0x10;
                             break;
-                        }
                     }
 
                     // SVI0_PLANE0_VDDCOR [24:16]
@@ -348,17 +344,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 if ((smuSvi0Tfn & 0x01) == 0)
                 {
                     svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
-                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
+                    vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
                     _coreVoltage.Value = (float)vcc;
 
                     _cpu.ActivateSensor(_coreVoltage);
                 }
 
                 // SoC (0x02), not every Zen cpu has this voltage.
-                if (cpuId.Model == 0x11 || cpuId.Model == 0x21 || cpuId.Model == 0x71 || cpuId.Model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
+                if (cpuId.Model is 0x11 or 0x21 or 0x71 or 0x31 || (smuSvi0Tfn & 0x02) == 0)
                 {
                     svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
-                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
+                    vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
                     _socVoltage.Value = (float)vcc;
 
                     _cpu.ActivateSensor(_socVoltage);
@@ -375,7 +371,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     float[] smuData = _cpu._smu.GetPmTable();
 
-                    foreach (var sensor in _smuSensors)
+                    foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
                     {
                         if (smuData.Length > sensor.Key.Key)
                         {
@@ -495,7 +491,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     return;
 
 
-                var previousAffinity = ThreadAffinity.Set(cpu.Affinity);
+                GroupAffinity previousAffinity = ThreadAffinity.Set(cpu.Affinity);
 
                 // MSRC001_0299
                 // TU [19:16]
@@ -546,7 +542,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
 
                 // Voltage
                 const double vidStep = 0.00625;
-                double vcc = 1.550 - vidStep * curCpuVid;
+                double vcc = 1.550 - (vidStep * curCpuVid);
                 _vcore.Value = (float)vcc;
 
                 // power consumption
@@ -592,7 +588,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
         private const uint MSR_PSTATE_0 = 0xC0010064;
         private const uint MSR_PWR_UNIT = 0xC0010299;
         private const uint PERF_CTL_0 = 0xC0010000;
-
         private const uint PERF_CTR_0 = 0xC0010004;
         // ReSharper restore InconsistentNaming
     }
