@@ -25,6 +25,8 @@ namespace LibreHardwareMonitor.Interop
 
         public const int ADL_DRIVER_OK = 0;
 
+        public const int ADL_FALSE = 0;
+
         public const int ADL_MAX_ADAPTERS = 40;
         public const int ADL_MAX_DEVICENAME = 32;
         public const int ADL_MAX_DISPLAYS = 40;
@@ -32,8 +34,6 @@ namespace LibreHardwareMonitor.Interop
         public const int ADL_MAX_GLSYNC_PORTS = 8;
         public const int ADL_MAX_NUM_DISPLAYMODES = 1024;
         public const int ADL_MAX_PATH = 256;
-
-        public const int ADL_FALSE = 0;
         public const int ADL_TRUE = 1;
 
         public const int ATI_VENDOR_ID = 0x1002;
@@ -52,84 +52,111 @@ namespace LibreHardwareMonitor.Interop
         public delegate IntPtr Context(int size);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Main_Control_Destroy();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Adapter_ID_Get(int adapterIndex, out int adapterId);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Display_AdapterID_Get(int adapterIndex, out int adapterId);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Adapter_Active_Get(int adapterIndex, out int status);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_ODParameters_Get(int adapterIndex, out ADLODParameters parameters);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_CurrentActivity_Get(int iAdapterIndex, ref ADLPMActivity activity);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_OverdriveN_Temperature_Get(IntPtr context, int adapterIndex, ADLODNTemperatureType iTemperatureType, ref int temp);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_FanSpeedToDefault_Set(int adapterIndex, int thermalControllerIndex);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_OverdriveN_PerformanceStatus_Get(IntPtr context, int adapterIndex, out ADLODNPerformanceStatus performanceStatus);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Overdrive_Caps(int adapterIndex, ref int supported, ref int enabled, ref int version);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Overdrive6_CurrentPower_Get(IntPtr context, int adapterIndex, ADLODNCurrentPowerType powerType, ref int currentValue);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int connectedAdapters, ref IntPtr context);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Main_Control_Destroy(IntPtr context);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_New_QueryPMLogData_Get(IntPtr context, int adapterIndex, ref ADLPMLogDataOutput aDLPMLogDataOutput);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL_Graphics_Versions_Get(out ADLVersionsInfo versionInfo);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Adapter_FrameMetrics_Caps(IntPtr context, int adapterIndex, ref int supported);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Adapter_FrameMetrics_Get(IntPtr context, int adapterIndex, int displayIndex, ref float fps);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Adapter_FrameMetrics_Start(IntPtr context, int adapterIndex, int displayIndex);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern ADLStatus ADL2_Adapter_FrameMetrics_Stop(IntPtr context, int adapterIndex, int displayIndex);
 
         public static bool ADL_Method_Exists(string ADL_Method)
@@ -141,6 +168,7 @@ namespace LibreHardwareMonitor.Interop
                 Kernel32.FreeLibrary(module);
                 return result;
             }
+
             return false;
         }
 
@@ -148,7 +176,7 @@ namespace LibreHardwareMonitor.Interop
         {
             try
             {
-                return Kernel32.LoadLibrary(DllName) != IntPtr.Zero ? ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters) : ADLStatus.ADL_ERR;
+                return ADL_Method_Exists(nameof(ADL_Main_Control_Create)) ? ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters) : ADLStatus.ADL_ERR;
             }
             catch
             {
@@ -161,7 +189,7 @@ namespace LibreHardwareMonitor.Interop
             int elementSize = Marshal.SizeOf(typeof(ADLAdapterInfo));
             int size = info.Length * elementSize;
             IntPtr ptr = Marshal.AllocHGlobal(size);
-            var result = ADL_Adapter_AdapterInfo_Get(ptr, size);
+            ADLStatus result = ADL_Adapter_AdapterInfo_Get(ptr, size);
             for (int i = 0; i < info.Length; i++)
                 info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + i * elementSize), typeof(ADLAdapterInfo));
 
@@ -382,7 +410,7 @@ namespace LibreHardwareMonitor.Interop
             public int FanSpeed;
             public int Flags;
         }
-        
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct ADLFanSpeedInfo
         {

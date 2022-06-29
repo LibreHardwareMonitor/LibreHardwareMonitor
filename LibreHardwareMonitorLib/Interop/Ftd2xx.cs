@@ -20,48 +20,60 @@ namespace LibreHardwareMonitor.Interop
             if (module == IntPtr.Zero)
                 return false;
 
-
             Kernel32.FreeLibrary(module);
             return true;
         }
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_CreateDeviceInfoList(out uint numDevices);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_GetDeviceInfoList([Out] FT_DEVICE_INFO_NODE[] deviceInfoNodes, ref uint length);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_Open(int device, out FT_HANDLE handle);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_Close(FT_HANDLE handle);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_SetBaudRate(FT_HANDLE handle, uint baudRate);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_SetDataCharacteristics(FT_HANDLE handle, byte wordLength, byte stopBits, byte parity);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_SetFlowControl(FT_HANDLE handle, FT_FLOW_CONTROL flowControl, byte xon, byte xoff);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_SetTimeouts(FT_HANDLE handle, uint readTimeout, uint writeTimeout);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_Write(FT_HANDLE handle, byte[] buffer, uint bytesToWrite, out uint bytesWritten);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_Purge(FT_HANDLE handle, FT_PURGE mask);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_GetStatus(FT_HANDLE handle, out uint amountInRxQueue, out uint amountInTxQueue, out uint eventStatus);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_Read(FT_HANDLE handle, [Out] byte[] buffer, uint bytesToRead, out uint bytesReturned);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern FT_STATUS FT_ReadByte(FT_HANDLE handle, out byte buffer, uint bytesToRead, out uint bytesReturned);
 
         public static FT_STATUS Write(FT_HANDLE handle, byte[] buffer)
@@ -69,7 +81,6 @@ namespace LibreHardwareMonitor.Interop
             FT_STATUS status = FT_Write(handle, buffer, (uint)buffer.Length, out uint bytesWritten);
             if (bytesWritten != buffer.Length)
                 return FT_STATUS.FT_FAILED_TO_WRITE_DEVICE;
-
 
             return status;
         }
@@ -79,7 +90,6 @@ namespace LibreHardwareMonitor.Interop
             if (FT_GetStatus(handle, out uint amountInRxQueue, out uint _, out uint _) == FT_STATUS.FT_OK)
                 return (int)amountInRxQueue;
 
-
             return 0;
         }
 
@@ -88,7 +98,6 @@ namespace LibreHardwareMonitor.Interop
             FT_STATUS status = FT_ReadByte(handle, out byte buffer, 1, out uint bytesReturned);
             if (status != FT_STATUS.FT_OK || bytesReturned != 1)
                 throw new InvalidOperationException();
-
 
             return buffer;
         }

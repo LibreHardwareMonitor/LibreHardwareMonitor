@@ -76,6 +76,7 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern int NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, [Out] SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] SystemInformation, int SystemInformationLength, out IntPtr ReturnLength);
     }
 }

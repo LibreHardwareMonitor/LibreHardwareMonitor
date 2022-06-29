@@ -17,10 +17,13 @@ namespace LibreHardwareMonitor.Interop
         public const int MAX_POWER_TOPOLOGIES = 4;
         public const int MAX_THERMAL_SENSORS_PER_GPU = 3;
         public const int MAX_USAGES_PER_GPU = 8;
+
+        public const int SHORT_STRING_MAX = 64;
         public const int THERMAL_SENSOR_RESERVED_COUNT = 8;
         public const int THERMAL_SENSOR_TEMPERATURE_COUNT = 32;
 
-        public const int SHORT_STRING_MAX = 64;
+        private const string DllName = "nvapi.dll";
+        private const string DllName64 = "nvapi64.dll";
 
         public static readonly NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle;
         public static readonly NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs;
@@ -52,17 +55,12 @@ namespace LibreHardwareMonitor.Interop
 
             try
             {
+                if (!DllExists())
+                    return;
+
                 GetDelegate(0x0150E828, out nvApiInitialize);
             }
-            catch (DllNotFoundException)
-            {
-                return;
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return;
-            }
-            catch (ArgumentNullException)
+            catch (Exception e) when (e is DllNotFoundException or ArgumentNullException or EntryPointNotFoundException or BadImageFormatException)
             {
                 return;
             }
@@ -148,6 +146,9 @@ namespace LibreHardwareMonitor.Interop
         public delegate NvStatus NvAPI_GPU_GetTachReadingDelegate(NvPhysicalGpuHandle gpuHandle, out int value);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetThermalSensorsDelegate(NvPhysicalGpuHandle gpuHandle, ref NvThermalSensors nvThermalSensors);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate NvStatus NvAPI_GPU_GetThermalSettingsDelegate(NvPhysicalGpuHandle gpuHandle, int sensorIndex, ref NvThermalSettings NvThermalSettings);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -155,9 +156,6 @@ namespace LibreHardwareMonitor.Interop
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvCoolerLevels NvCoolerLevels);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate NvStatus NvAPI_GPU_GetThermalSensorsDelegate(NvPhysicalGpuHandle gpuHandle, ref NvThermalSensors nvThermalSensors);
 
         public enum NvFanControlMode : uint
         {
@@ -192,10 +190,12 @@ namespace LibreHardwareMonitor.Interop
 
         public static bool IsAvailable { get; }
 
-        [DllImport(@"nvapi.dll", EntryPoint = @"nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
+        [DllImport(DllName, EntryPoint = "nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern IntPtr NvAPI32_QueryInterface(uint interfaceId);
 
-        [DllImport(@"nvapi64.dll", EntryPoint = @"nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
+        [DllImport(DllName64, EntryPoint = "nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern IntPtr NvAPI64_QueryInterface(uint interfaceId);
 
         public static NvStatus NvAPI_GPU_GetFullName(NvPhysicalGpuHandle gpuHandle, out string name)
@@ -218,12 +218,22 @@ namespace LibreHardwareMonitor.Interop
 
         private static void GetDelegate<T>(uint id, out T newDelegate) where T : class
         {
-            IntPtr ptr = Environment.Is64BitProcess ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
+            IntPtr ptr = Environment.Is64BitOperatingSystem ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
 
             if (ptr != IntPtr.Zero)
                 newDelegate = Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
             else
                 newDelegate = null;
+        }
+
+        public static bool DllExists()
+        {
+            IntPtr module = Kernel32.LoadLibrary(Environment.Is64BitOperatingSystem ? DllName64 : DllName);
+            if (module == IntPtr.Zero)
+                return false;
+
+            Kernel32.FreeLibrary(module);
+            return true;
         }
 
         internal static int MAKE_NVAPI_VERSION<T>(int ver)

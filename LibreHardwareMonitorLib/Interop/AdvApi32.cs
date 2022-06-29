@@ -15,13 +15,16 @@ namespace LibreHardwareMonitor.Interop
         private const string DllName = "advapi32.dll";
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr OpenSCManager(string lpMachineName, string lpDatabaseName, SC_MANAGER_ACCESS_MASK dwDesiredAccess);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CloseServiceHandle(IntPtr hSCObject);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr CreateService
         (
             IntPtr hSCManager,
@@ -39,17 +42,21 @@ namespace LibreHardwareMonitor.Interop
             string lpPassword);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, SERVICE_ACCESS_MASK dwDesiredAccess);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteService(IntPtr hService);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool StartService(IntPtr hService, uint dwNumServiceArgs, string[] lpServiceArgVectors);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool ControlService(IntPtr hService, SERVICE_CONTROL dwControl, ref SERVICE_STATUS lpServiceStatus);
 

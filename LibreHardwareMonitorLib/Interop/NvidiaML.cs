@@ -21,8 +21,8 @@ namespace LibreHardwareMonitor.Interop
         private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
         private static WindowsNvmlGetHandleByPciBusIdDelegate _windowsNvmlDeviceGetHandleByPciBusId;
         private static WindowsNvmlDeviceGetPcieThroughputDelegate _windowsNvmlDeviceGetPcieThroughputDelegate;
-        private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
         private static WindowsNvmlDeviceGetPciInfo _windowsNvmlDeviceGetPciInfo;
+        private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
         private static WindowsNvmlDelegate _windowsNvmlInit;
         private static WindowsNvmlDelegate _windowsNvmlShutdown;
 
@@ -217,7 +217,6 @@ namespace LibreHardwareMonitor.Interop
             else
                 return false;
 
-
             IntPtr nvmlGetHandle = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex_v2");
             if (nvmlGetHandle != IntPtr.Zero)
                 _windowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
@@ -236,20 +235,18 @@ namespace LibreHardwareMonitor.Interop
             else
                 return false;
 
-
             IntPtr nvmlGetPcieThroughput = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetPcieThroughput");
             if (nvmlGetPcieThroughput != IntPtr.Zero)
                 _windowsNvmlDeviceGetPcieThroughputDelegate = (WindowsNvmlDeviceGetPcieThroughputDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPcieThroughput, typeof(WindowsNvmlDeviceGetPcieThroughputDelegate));
             else
                 return false;
 
-
             IntPtr nvmlGetHandlePciBus = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByPciBusId_v2");
             if (nvmlGetHandlePciBus != IntPtr.Zero)
                 _windowsNvmlDeviceGetHandleByPciBusId = (WindowsNvmlGetHandleByPciBusIdDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandlePciBus, typeof(WindowsNvmlGetHandleByPciBusIdDelegate));
             else
                 return false;
-            
+
             IntPtr nvmlDeviceGetPciInfo = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetPciInfo_v2");
             if (nvmlDeviceGetPciInfo != IntPtr.Zero)
                 _windowsNvmlDeviceGetPciInfo = (WindowsNvmlDeviceGetPciInfo)Marshal.GetDelegateForFunctionPointer(nvmlDeviceGetPciInfo, typeof(WindowsNvmlDeviceGetPciInfo));
@@ -397,7 +394,7 @@ namespace LibreHardwareMonitor.Interop
 
         [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPcieThroughput", ExactSpelling = true)]
         private static extern NvmlReturn nvmlDeviceGetPcieThroughput(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
-        
+
         [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPciInfo_v2")]
         private static extern NvmlReturn nvmlDeviceGetPciInfo(NvmlDevice device, ref NvmlPciInfo pci);
 

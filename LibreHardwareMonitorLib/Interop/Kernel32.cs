@@ -17,19 +17,19 @@ namespace LibreHardwareMonitor.Interop
         public const int ERROR_SERVICE_ALREADY_RUNNING = unchecked((int)0x80070420);
 
         public const int ERROR_SERVICE_EXISTS = unchecked((int)0x80070431);
+
+        internal const uint BATTERY_UNKNOWN_TIME = 0xFFFFFFFF;
         internal const string IntelNVMeMiniPortSignature1 = "NvmeMini";
         internal const string IntelNVMeMiniPortSignature2 = "IntelNvm";
+
+        internal const uint LPTR = 0x0000 | 0x0040;
 
         internal const int MAX_DRIVE_ATTRIBUTES = 512;
         internal const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
         internal const byte SMART_LBA_HI = 0xC2;
-        internal const byte SMART_LBA_MID = 0x4F;
         internal const byte SMART_LBA_HI_EXCEEDED = 0x2C;
+        internal const byte SMART_LBA_MID = 0x4F;
         internal const byte SMART_LBA_MID_EXCEEDED = 0xF4;
-
-        internal const uint LPTR = 0x0000 | 0x0040;
-
-        internal const uint BATTERY_UNKNOWN_TIME = 0xFFFFFFFF;
 
         private const string DllName = "kernel32.dll";
 
@@ -90,10 +90,12 @@ namespace LibreHardwareMonitor.Interop
         }
 
         [DllImport(DllName, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern SafeFileHandle CreateFile
         (
             [MarshalAs(UnmanagedType.LPTStr)] string lpFileName,
@@ -105,6 +107,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr hTemplateFile);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -118,6 +121,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -131,6 +135,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -144,6 +149,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -157,6 +163,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -170,6 +177,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -183,6 +191,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -196,6 +205,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -209,6 +219,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -222,6 +233,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -235,6 +247,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -248,6 +261,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -261,6 +275,7 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl
         (
@@ -274,58 +289,73 @@ namespace LibreHardwareMonitor.Interop
             IntPtr lpOverlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr LocalFree(IntPtr hMem);
 
         [DllImport(DllName, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
 
         [DllImport(DllName, SetLastError = false)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern void RtlCopyMemory(IntPtr Destination, IntPtr Source, uint Length);
 
         [DllImport(DllName, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr LoadLibrary(string lpFileName);
 
         [DllImport(DllName, ExactSpelling = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr GetProcAddress(IntPtr module, string methodName);
 
         [DllImport(DllName)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FreeLibrary(IntPtr module);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern UIntPtr SetThreadAffinityMask(IntPtr handle, UIntPtr mask);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr GetCurrentThread();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern ushort GetActiveProcessorGroupCount();
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        internal static extern ushort GetActiveProcessorGroupCount();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-        public static extern bool SetThreadGroupAffinity(IntPtr thread, ref GROUP_AFFINITY groupAffinity, out GROUP_AFFINITY previousGroupAffinity);
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        internal static extern bool SetThreadGroupAffinity(IntPtr thread, ref GROUP_AFFINITY groupAffinity, out GROUP_AFFINITY previousGroupAffinity);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, MEM flAllocationType, PAGE flProtect);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, MEM dwFreeType);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern bool DeviceIoControl
         (
             SafeFileHandle device,
             IOControlCode ioControlCode,
-            [MarshalAs(UnmanagedType.AsAny)][In] object inBuffer,
+            [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
             uint inBufferSize,
-            [MarshalAs(UnmanagedType.AsAny)][Out] object outBuffer,
+            [MarshalAs(UnmanagedType.AsAny)] [Out] object outBuffer,
             uint nOutBufferSize,
             out uint bytesReturned,
             IntPtr overlapped);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern IntPtr CreateFile
         (
             string lpFileName,
@@ -337,9 +367,11 @@ namespace LibreHardwareMonitor.Interop
             IntPtr hTemplateFile);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
