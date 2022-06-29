@@ -562,10 +562,8 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         switch (_microArchitecture)
                         {
                             case MicroArchitecture.Nehalem:
-                                uint multiplier = eax & 0xff;
-                                _coreClocks[i].Value = (float)(multiplier * newBusClock);
+                                _coreClocks[i].Value = (float)((eax & 0xff) * newBusClock);
                                 break;
-
                             case MicroArchitecture.Airmont:
                             case MicroArchitecture.AlderLake:
                             case MicroArchitecture.Broadwell:
@@ -584,13 +582,10 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             case MicroArchitecture.Skylake:
                             case MicroArchitecture.TigerLake:
                             case MicroArchitecture.Tremont:
-                                uint multiplier = (eax >> 8) & 0xff;
-                                _coreClocks[i].Value = (float)(multiplier * newBusClock);
+                                _coreClocks[i].Value = (float)(((eax >> 8) & 0xff) * newBusClock);
                                 break;
-
                             default:
-                                double multiplier = ((eax >> 8) & 0x1f) + (0.5 * ((eax >> 14) & 1));
-                                _coreClocks[i].Value = (float)(multiplier * newBusClock);
+                                _coreClocks[i].Value = (float)((((eax >> 8) & 0x1f) + (0.5 * ((eax >> 14) & 1))) * newBusClock);
                                 break;
                         }
                     }
