@@ -48,13 +48,6 @@ jobs:
           name: LibreHardwareMonitorLib-netstandard20
           path: |
             bin/Release/netstandard2.0
-
-      - name: Publish net50
-        uses: actions/upload-artifact@v2
-        with:
-          name: LibreHardwareMonitorLib-net50
-          path: |
-            bin/Release/net5.0
             
       - name: Publish net60
         uses: actions/upload-artifact@v2
