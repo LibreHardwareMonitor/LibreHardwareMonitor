@@ -2663,8 +2663,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("+5V",              1,  4,  1));
                             v.Add(new Voltage("+3.3V",            3,  34, 34));
                             v.Add(new Voltage("+12V",             4,  6,  1));
-                            v.Add(new Voltage("DRAM Voltage CD",  11, 10, 10));
-                            v.Add(new Voltage("DRAM Voltage AB",  13));
+                            v.Add(new Voltage("DIMM Voltage CD",  11, 10, 10));
+                            v.Add(new Voltage("DIMM Voltage AB",  13));
                             v.Add(new Voltage("1.8V PPL Voltage", 14));
 
                             t.Add(new Temperature("CPU",             1));
