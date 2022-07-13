@@ -2693,7 +2693,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 {
                                     case 0: c.Add(new Ctrl("Chassis Fan Control", 0)); break;
                                     case 1: c.Add(new Ctrl("CPU Fan Control",     1)); break;
-                                    case 2: c.Add(new Ctrl("CPU OPT Fan Control", 2)); break;
+                                    case 2: c.Add(new Ctrl("CPU Optional Fan Control", 2)); break;
                                     case 4: c.Add(new Ctrl("AIO Pump Control",    4)); break;
                                 }
                             }
