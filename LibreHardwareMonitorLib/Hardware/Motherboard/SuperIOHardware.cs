@@ -334,7 +334,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
 
@@ -414,7 +414,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 f.Add(new Fan("Fan #" + (i + 1), i));
 
             for (int i = 0; i < superIO.Controls.Length; i++)
-                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                c.Add(new Ctrl("Fan #" + (i + 1), i));
         }
 
         private static void GetIteConfigurationsA
@@ -521,7 +521,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("Fan 6", 5));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -543,7 +543,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -643,7 +643,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -870,7 +870,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -895,7 +895,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
             }
@@ -1004,7 +1004,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             //offset: 2, because the first two always show zero
                             for (int i = 2; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i - 1), i));
+                                c.Add(new Ctrl("Fan #" + (i - 1), i));
 
                             break;
 
@@ -1026,7 +1026,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -1070,7 +1070,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -1205,7 +1205,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -1230,7 +1230,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -1552,7 +1552,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -1606,7 +1606,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -1648,7 +1648,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -1673,7 +1673,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
             }
@@ -1722,7 +1722,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -1742,9 +1742,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #5 Pump", 0));
                             f.Add(new Fan("System Fan #6 Pump", 1));
                             f.Add(new Fan("System Fan #4", 2));
-                            c.Add(new Ctrl("Fan Control #5", 0));
-                            c.Add(new Ctrl("Fan Control #6", 1));
-                            c.Add(new Ctrl("Fan Control #4", 2));
+                            c.Add(new Ctrl("Fan #5", 0));
+                            c.Add(new Ctrl("Fan #6", 1));
+                            c.Add(new Ctrl("Fan #4", 2));
 
                             break;
 
@@ -1754,9 +1754,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             f.Add(new Fan("System Fan #5", 0));
                             f.Add(new Fan("System Fan #6", 1));
                             f.Add(new Fan("System Fan #4", 2));
-                            c.Add(new Ctrl("Fan Control #5", 0));
-                            c.Add(new Ctrl("Fan Control #6", 1));
-                            c.Add(new Ctrl("Fan Control #4", 2));
+                            c.Add(new Ctrl("Fan #5", 0));
+                            c.Add(new Ctrl("Fan #6", 1));
+                            c.Add(new Ctrl("Fan #4", 2));
                             break;
 
                         default:
@@ -1777,7 +1777,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -1802,7 +1802,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
             }
@@ -1876,7 +1876,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
             }
@@ -1967,7 +1967,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -1990,7 +1990,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -2041,7 +2041,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -2064,7 +2064,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -2090,7 +2090,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
             }
@@ -2131,7 +2131,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -2172,7 +2172,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -2203,7 +2203,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -2306,7 +2306,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -2415,7 +2415,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan(fanNames[i], i));
 
                             for (int i = 0; i < fanControlNames.Length; i++)
-                                c.Add(new Ctrl(fanControlNames[i] + " Control", i));
+                                c.Add(new Ctrl(fanControlNames[i], i));
 
                             break;
 
@@ -2464,7 +2464,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -2517,7 +2517,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
                                 string.Format("Expected {0} fan register in the SuperIO chip", fanControlNames.Length));
                             System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
-                                "Expected counts of fan controls and fan speed registers to be equal");
+                                "Expected counts of cans controls and fan speed registers to be equal");
 
                             for (int i = 0; i < fanControlNames.Length; i++)
                                 f.Add(new Fan(fanControlNames[i], i));
@@ -2644,13 +2644,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 switch (i)
                                 {
                                     case 0:
-                                        c.Add(new Ctrl("Chassis Fan Control", 0));
+                                        c.Add(new Ctrl("Chassis Fan", 0));
                                         break;
                                     case 1:
-                                        c.Add(new Ctrl("CPU Fan Control", 1));
+                                        c.Add(new Ctrl("CPU Fan", 1));
                                         break;
                                     case 4:
-                                        c.Add(new Ctrl("AIO Pump Control", 4));
+                                        c.Add(new Ctrl("AIO Pump", 4));
                                         break;
                                 }
                             }
@@ -2691,10 +2691,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             {
                                 switch (i)
                                 {
-                                    case 0: c.Add(new Ctrl("Chassis Fan Control", 0)); break;
-                                    case 1: c.Add(new Ctrl("CPU Fan Control",     1)); break;
-                                    case 2: c.Add(new Ctrl("CPU Optional Fan Control", 2)); break;
-                                    case 4: c.Add(new Ctrl("AIO Pump Control",    4)); break;
+                                    case 0: c.Add(new Ctrl("Chassis Fan", 0)); break;
+                                    case 1: c.Add(new Ctrl("CPU Fan",     1)); break;
+                                    case 2: c.Add(new Ctrl("CPU Optional Fan", 2)); break;
+                                    case 4: c.Add(new Ctrl("AIO Pump",    4)); break;
                                 }
                             }
 
@@ -2739,13 +2739,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 switch (i)
                                 {
                                     case 0:
-                                        c.Add(new Ctrl("Chassis Fan Control", 0));
+                                        c.Add(new Ctrl("Chassis Fan", 0));
                                         break;
                                     case 1:
-                                        c.Add(new Ctrl("CPU Fan Control", 1));
+                                        c.Add(new Ctrl("CPU Fan", 1));
                                         break;
                                     case 4:
-                                        c.Add(new Ctrl("AIO Pump Control", 4));
+                                        c.Add(new Ctrl("AIO Pump", 4));
                                         break;
                                 }
                             }
@@ -2773,7 +2773,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
 
@@ -2805,7 +2805,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -2939,7 +2939,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                 f.Add(new Fan("Fan #" + (i + 1), i));
 
                             for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                                c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                             break;
                     }
@@ -2974,7 +2974,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                         f.Add(new Fan("Fan #" + (i + 1), i));
 
                     for (int i = 0; i < superIO.Controls.Length; i++)
-                        c.Add(new Ctrl("Fan Control #" + (i + 1), i));
+                        c.Add(new Ctrl("Fan #" + (i + 1), i));
 
                     break;
             }
