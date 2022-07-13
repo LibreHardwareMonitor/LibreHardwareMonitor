@@ -1561,11 +1561,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                 case Manufacturer.Biostar:
                     switch (model)
                     {
-                        case Model.B660GTN: //IT8613E 
+                        case Model.B660GTN: //IT8613E
                                             // This board has some problems with their app controlling fans that I was able to replicate here so I guess is a BIOS problem with the pins.
                                             // Biostar is aware so expect changes in the control pins with new bios.
                                             // In the meantime, it's possible to control CPUFAN and CPUOPT1m but not SYSFAN1.
-                                            // The parameters are extracted from the Biostar app config file. 
+                                            // The parameters are extracted from the Biostar app config file.
                             v.Add(new Voltage("Vcore", 0, 0, 1));
                             v.Add(new Voltage("DIMM", 1, 0, 1));
                             v.Add(new Voltage("+12V", 2, 5, 1)); // Reads higher than it should.
@@ -1574,7 +1574,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                                                      //v.Add(new Voltage("VCC ST", 4)); // Reads 4.2V.
                                                                      //v.Add(new Voltage("VCCIN AUX", 5)); // Reads 2.2V.
                                                                      //v.Add(new Voltage("CPU GT", 6)); // Reads 2.6V.
-                                                                     //v.Add(new Voltage("3VSB", 7, 10, 10)); // Reads 5.8V ? 
+                                                                     //v.Add(new Voltage("3VSB", 7, 10, 10)); // Reads 5.8V ?
                             v.Add(new Voltage("VBat", 8, 10, 10)); // Reads higher than it should at 3.4V.
                             t.Add(new Temperature("System 1", 0));
                             t.Add(new Temperature("System 2", 1));  // Not sure what sensor is this.
@@ -2652,6 +2652,49 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                                     case 4:
                                         c.Add(new Ctrl("AIO Pump Control", 4));
                                         break;
+                                }
+                            }
+
+                            break;
+
+                        case Model.ROG_ZENITH_II_EXTREME: // NCT6798D
+                            // Voltage = value + (value - Vf) * Ri / Rf.
+                            v.Add(new Voltage("Vcore",            0));
+                            v.Add(new Voltage("+5V",              1,  4,  1));
+                            v.Add(new Voltage("+3.3V",            3,  34, 34));
+                            v.Add(new Voltage("+12V",             4,  6,  1));
+                            v.Add(new Voltage("DIMM Voltage CD",  11, 10, 10));
+                            v.Add(new Voltage("DIMM Voltage AB",  13));
+                            v.Add(new Voltage("1.8V PPL Voltage", 14));
+
+                            t.Add(new Temperature("CPU",             1));
+                            t.Add(new Temperature("Motherboard",     2));
+                            t.Add(new Temperature("Temperature #3",  3));
+                            t.Add(new Temperature("Temperature #4",  4));
+                            t.Add(new Temperature("Temperature #5",  5));
+                            t.Add(new Temperature("Temperature #6",  6));
+                            t.Add(new Temperature("Temperature #7",  7));
+                            t.Add(new Temperature("Temperature #21", 21));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                            {
+                                switch (i)
+                                {
+                                    case 0: f.Add(new Fan("Chassis Fan", 0)); break;
+                                    case 1: f.Add(new Fan("CPU Fan",     1)); break;
+                                    case 2: f.Add(new Fan("CPU Optional Fan", 2)); break;
+                                    case 4: f.Add(new Fan("AIO Pump",    4)); break;
+                                }
+                            }
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                            {
+                                switch (i)
+                                {
+                                    case 0: c.Add(new Ctrl("Chassis Fan Control", 0)); break;
+                                    case 1: c.Add(new Ctrl("CPU Fan Control",     1)); break;
+                                    case 2: c.Add(new Ctrl("CPU Optional Fan Control", 2)); break;
+                                    case 4: c.Add(new Ctrl("AIO Pump Control",    4)); break;
                                 }
                             }
 
