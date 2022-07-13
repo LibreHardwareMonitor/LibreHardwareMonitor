@@ -317,6 +317,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                     return Model.X399_AORUS_Gaming_7;
                 case var _ when name.Equals("ROG ZENITH EXTREME", StringComparison.OrdinalIgnoreCase):
                     return Model.ROG_ZENITH_EXTREME;
+                case var _ when name.Equals("ROG ZENITH II EXTREME", StringComparison.OrdinalIgnoreCase):
+                    return Model.ROG_ZENITH_II_EXTREME;
                 case var _ when name.Equals("Z170-A", StringComparison.OrdinalIgnoreCase):
                     return Model.Z170_A;
                 case var _ when name.Equals("Z77 Pro4-M", StringComparison.OrdinalIgnoreCase):
