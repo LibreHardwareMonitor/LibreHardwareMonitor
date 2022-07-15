@@ -18,8 +18,15 @@ With the help of LibreHardwareMonitor you can read information from devices such
 - Network cards
 
 ## Where can I download it?
-You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).<br/>
-If you're **signed in to GitHub**, you can also download the latest builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Click on a result and download **Binaries** under **Artifacts**.
+You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).
+
+You can also download the latest builds [here](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master). You can also get a build of a particular run by inputting the link of the run to https://nightly.link/ without signing in to GitHub.
+
+You can also install [`librehardwaremonitor`](https://scoop.sh/#/apps?q=librehardwaremonitor&s=0&d=1&o=true) easily via [Scoop](https://scoop.sh/):
+```
+scoop bucket add extras
+scoop install librehardwaremonitor
+```
 
 ## How can I help improve it?
 The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
