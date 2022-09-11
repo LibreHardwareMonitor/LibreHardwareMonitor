@@ -1425,10 +1425,11 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             v.Add(new Voltage("3VSB", 7, 1f, 1f));
                             v.Add(new Voltage("VBat", 8, 1f, 1f));
                             t.Add(new Temperature("System #1", 0));
-                            t.Add(new Temperature("System #2", 1));
+                            t.Add(new Temperature("PCH", 1));
                             t.Add(new Temperature("CPU", 2));
                             t.Add(new Temperature("PCIe x16", 3));
                             t.Add(new Temperature("VRM MOS", 4));
+                            t.Add(new Temperature("EC_TEMP1", 5));
                             f.Add(new Fan("CPU Fan", 0));
                             f.Add(new Fan("System Fan #1", 1));
                             f.Add(new Fan("System Fan #2", 2));
@@ -1758,14 +1759,15 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             break;
 
                         case Model.Z690_AORUS_PRO:
-                            t.Add(new Temperature("System #3", 0));
-                            t.Add(new Temperature("System #4", 2));
-                            f.Add(new Fan("System Fan #5", 0));
-                            f.Add(new Fan("System Fan #6", 1));
+                            t.Add(new Temperature("PCIe x4", 0));
+                            t.Add(new Temperature("EC_TEMP2", 1));
+                            t.Add(new Temperature("System #2", 2));
+                            f.Add(new Fan("System Fan #5 Pump", 0));
+                            f.Add(new Fan("System Fan #6 Pump", 1));
                             f.Add(new Fan("System Fan #4", 2));
-                            c.Add(new Ctrl("Fan #5", 0));
-                            c.Add(new Ctrl("Fan #6", 1));
-                            c.Add(new Ctrl("Fan #4", 2));
+                            c.Add(new Ctrl("System Fan #5 Pump", 0));
+                            c.Add(new Ctrl("System Fan #6 Pump", 1));
+                            c.Add(new Ctrl("System Fan #4", 2));
                             break;
 
                         default:
