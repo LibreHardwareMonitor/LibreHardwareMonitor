@@ -19,6 +19,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private static readonly byte[] _initialize1 = { 0x01, 0x5c };
         private static readonly byte[] _initialize2 = { 0x01, 0x5d };
         private static readonly byte[] _initialize3 = { 0x01, 0x59 };
+        private readonly byte[] _setFanSpeedMsg;
 
         private readonly HidStream _stream;
         private readonly Dictionary<int, byte[]> _rawData = new Dictionary<int, byte[]>();
@@ -28,6 +29,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private readonly Sensor[] _voltages = new Sensor[FansCount];
         private readonly Sensor[] _currents = new Sensor[FansCount];
         private readonly Sensor[] _powers = new Sensor[FansCount];
+        private readonly Sensor[] _pwmControls = new Sensor[FansCount];
+        private readonly Sensor _noise;
 
         private readonly Control[] _fanControls = new Control[FansCount];
 
@@ -37,6 +40,11 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             {
                 for (int fanID = 0; fanID < FansCount; fanID++)
                     _rawData[fanID] = new byte[21];
+
+                _setFanSpeedMsg = new byte[65];
+                _setFanSpeedMsg[0] = 0x02;
+                _setFanSpeedMsg[1] = 0x4d;
+                _setFanSpeedMsg[3] = 0x00;
 
                 _stream.Write(_initialize1);
                 _stream.Write(_initialize2);
@@ -57,14 +65,15 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 // Initialize all sensors and controls for all fans
                 for (int i = 0; i < FansCount; i++)
                 {
-                    _rpmSensors[i] = new Sensor($"Fan {i + 1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
-                    _voltages[i] = new Sensor($"Fan {i + 1}", i, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
-                    _currents[i] = new Sensor($"Fan {i + 1}", i, SensorType.Current, this, Array.Empty<ParameterDescription>(), settings);
-                    _powers[i] = new Sensor($"Fan {i + 1}", i, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
+                    _rpmSensors[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+                    _voltages[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
+                    _currents[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Current, this, Array.Empty<ParameterDescription>(), settings);
+                    _powers[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
+                    _pwmControls[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
 
-                    _fanControls[i] = new Control(_rpmSensors[i], settings, 0, 100);
+                    _fanControls[i] = new Control(_pwmControls[i], settings, 0, 100);
 
-                    _rpmSensors[i].Control = _fanControls[i];
+                    _pwmControls[i].Control = _fanControls[i];
                     _fanControls[i].ControlModeChanged += SoftwareControlValueChanged;
                     _fanControls[i].SoftwareControlValueChanged += SoftwareControlValueChanged;
                     SoftwareControlValueChanged(_fanControls[i]);
@@ -73,7 +82,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     ActivateSensor(_voltages[i]);
                     ActivateSensor(_currents[i]);
                     ActivateSensor(_powers[i]);
+                    ActivateSensor(_pwmControls[i]);
+
+                    // NZXT GRID does not report current PWM value. So we need to initialize it with some value to keep GUI and device values in sync.
+                    _fanControls[i].SetDefault();
                 }
+                _noise = new Sensor($"GRID Noise", 0, SensorType.Noise, this, Array.Empty<ParameterDescription>(), settings);
+                ActivateSensor(_noise);
 
                 ThreadPool.UnsafeQueueUserWorkItem(ContinuousRead, _rawData);
             }
@@ -91,26 +106,22 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 byte fanSpeed = (byte)(value > 100 ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
 
                 //_controlling = true;
-                byte[] msg = new byte[65];
-                msg[0] = 0x02;
-                msg[1] = 0x4d;
-                msg[2] = (byte)control.Sensor.Index;
-                msg[3] = 0x00;
-                msg[4] = fanSpeed;
+                _setFanSpeedMsg[2] = (byte)control.Sensor.Index;
+                _setFanSpeedMsg[4] = fanSpeed;
 
-                _stream.Write(msg);
+                _stream.Write(_setFanSpeedMsg);
+
+                _pwmControls[control.Sensor.Index].Value = value;
             }
             else if (control.ControlMode == ControlMode.Default)
             {
                 // There isn't a "default" mode, but let's say a safe setting is 40%
-                byte[] msg = new byte[65];
-                msg[0] = 0x02;
-                msg[1] = 0x4d;
-                msg[2] = (byte)control.Sensor.Index;
-                msg[3] = 0x00;
-                msg[4] = 40;
+                _setFanSpeedMsg[2] = (byte)control.Sensor.Index;
+                _setFanSpeedMsg[4] = 40;
 
-                _stream.Write(msg);
+                _stream.Write(_setFanSpeedMsg);
+
+                _pwmControls[control.Sensor.Index].Value = 40;
             }
         }
 
@@ -162,6 +173,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     _currents[fanID].Value = _rawData[fanID][9] + _rawData[fanID][10] / 100.0f;
                     _powers[fanID].Value = _currents[fanID].Value * _voltages[fanID].Value;
                 }
+                _noise.Value = _rawData[2][1];
             }
         }
     }
