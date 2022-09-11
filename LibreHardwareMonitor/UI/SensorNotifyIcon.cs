@@ -182,6 +182,7 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.Data:
                 case SensorType.Load:
                 case SensorType.Energy:
+                case SensorType.Noise:
                     return $"{Sensor.Value:F0}";
                 default:
                     return "-";
@@ -257,6 +258,7 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.Data: format = "\n{0}: {1:F0} GB"; break;
                 case SensorType.Factor: format = "\n{0}: {1:F3} GB"; break;
                 case SensorType.Energy: format = "\n{0}: {0:F0} mWh"; break;
+                case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
             }
             string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
 

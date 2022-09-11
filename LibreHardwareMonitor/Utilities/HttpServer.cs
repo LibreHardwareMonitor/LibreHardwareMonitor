@@ -675,6 +675,8 @@ namespace LibreHardwareMonitor.Utilities
                     return "level.png";
                 case SensorType.Power:
                     return "power.png";
+                case SensorType.Noise:
+                    return "loudspeaker.png";
                 case SensorType.Throughput:
                     return "throughput.png";
                 default:
