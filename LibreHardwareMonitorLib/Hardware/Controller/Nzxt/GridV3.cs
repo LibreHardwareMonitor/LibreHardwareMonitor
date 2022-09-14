@@ -10,9 +10,9 @@ using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 {
-    /**
-     * Support for the GRID+ V3 devices from NZXT
-     */
+    /// <summary>
+    /// Support for the NZXT GRID+ V3 devices
+    /// </summary>
     internal sealed class GridV3 : Hardware
     {
         // Some initialization messages to send to the controller. No visible effects but NZXT CAM send them.
@@ -24,22 +24,24 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private readonly HidStream _stream;
         private readonly Dictionary<int, byte[]> _rawData = new Dictionary<int, byte[]>();
 
-        private const int FansCount = 6;
-        private readonly Sensor[] _rpmSensors = new Sensor[FansCount];
-        private readonly Sensor[] _voltages = new Sensor[FansCount];
-        private readonly Sensor[] _currents = new Sensor[FansCount];
-        private readonly Sensor[] _powers = new Sensor[FansCount];
-        private readonly Sensor[] _pwmControls = new Sensor[FansCount];
+        private const int FANS_COUNT = 6;
+        private readonly Sensor[] _rpmSensors = new Sensor[FANS_COUNT];
+        private readonly Sensor[] _voltages = new Sensor[FANS_COUNT];
+        private readonly Sensor[] _currents = new Sensor[FANS_COUNT];
+        private readonly Sensor[] _powers = new Sensor[FANS_COUNT];
+        private readonly Sensor[] _pwmControls = new Sensor[FANS_COUNT];
         private readonly Sensor _noise;
 
-        private readonly Control[] _fanControls = new Control[FansCount];
+        private readonly Control[] _fanControls = new Control[FANS_COUNT];
 
         public GridV3(HidDevice dev, ISettings settings) : base("NZXT GRID+ V3", new Identifier("nzxt", "gridv3", dev.GetSerialNumber().TrimStart('0')), settings)
         {
             if (dev.TryOpen(out _stream))
             {
-                for (int fanID = 0; fanID < FansCount; fanID++)
+                for (int fanID = 0; fanID < FANS_COUNT; fanID++)
+                {
                     _rawData[fanID] = new byte[21];
+                }
 
                 _setFanSpeedMsg = new byte[65];
                 _setFanSpeedMsg[0] = 0x02;
@@ -63,7 +65,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 Name = "NZXT GRID+ V3";
 
                 // Initialize all sensors and controls for all fans
-                for (int i = 0; i < FansCount; i++)
+                for (int i = 0; i < FANS_COUNT; i++)
                 {
                     _rpmSensors[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                     _voltages[i] = new Sensor($"GRID Fan #{i + 1}", i, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
@@ -90,7 +92,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 _noise = new Sensor($"GRID Noise", 0, SensorType.Noise, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_noise);
 
-                ThreadPool.UnsafeQueueUserWorkItem(ContinuousRead, _rawData);
+                Thread readGridReports = new Thread(ContinuousRead);
+                readGridReports.Start(_rawData);
             }
         }
 
@@ -166,7 +169,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             // The NZXT GRID+ V3 series sends updates periodically. We have to read it in a seperate thread, this call just reads that data.
             lock (_rawData)
             {
-                for (int fanID = 0; fanID < FansCount; fanID++)
+                for (int fanID = 0; fanID < FANS_COUNT; fanID++)
                 {
                     _rpmSensors[fanID].Value = (_rawData[fanID][3] << 8) | _rawData[fanID][4];
                     _voltages[fanID].Value = _rawData[fanID][7] + _rawData[fanID][8] / 100.0f;
