@@ -193,9 +193,17 @@ namespace LibreHardwareMonitor.Hardware.CPU
                                 tjMax = GetTjMaxFromMsr();
                                 break;
 
-                            case 0x97: // Alder Lake-S (Intel 7/10nm)
-                            case 0x9A: // Alder Lake-H (Intel 7/10nm)
+                            case 0x97: // Alder Lake (7/10nm)
+                            case 0x9A: // Alder Lake-L (7/10nm)
+                            case 0xBE: // Alder Lake-N (7/10nm)
                                 _microArchitecture = MicroArchitecture.AlderLake;
+                                tjMax = GetTjMaxFromMsr();
+                                break;
+
+							case 0xB7: // Raptor Lake (7nm)
+							case 0xBA: // Raptor Lake-P (7nm)
+							case 0xBF: // Raptor Lake-N (7nm)
+                                _microArchitecture = MicroArchitecture.RaptorLake;
                                 tjMax = GetTjMaxFromMsr();
                                 break;
 
@@ -266,6 +274,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 case MicroArchitecture.JasperLake:
                 case MicroArchitecture.KabyLake:
                 case MicroArchitecture.Nehalem:
+                case MicroArchitecture.RaptorLake:
                 case MicroArchitecture.RocketLake:
                 case MicroArchitecture.SandyBridge:
                 case MicroArchitecture.Silvermont:
@@ -377,6 +386,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 MicroArchitecture.IvyBridge or
                 MicroArchitecture.JasperLake or
                 MicroArchitecture.KabyLake or
+                MicroArchitecture.RaptorLake or
                 MicroArchitecture.RocketLake or
                 MicroArchitecture.SandyBridge or
                 MicroArchitecture.Silvermont or
@@ -577,6 +587,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                             case MicroArchitecture.IvyBridge:
                             case MicroArchitecture.JasperLake:
                             case MicroArchitecture.KabyLake:
+                            case MicroArchitecture.RaptorLake:
                             case MicroArchitecture.RocketLake:
                             case MicroArchitecture.SandyBridge:
                             case MicroArchitecture.Silvermont:
@@ -670,6 +681,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             Skylake,
             TigerLake,
             Tremont,
+            RaptorLake,
             Unknown
         }
 
