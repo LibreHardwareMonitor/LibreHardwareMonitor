@@ -25,12 +25,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private readonly Dictionary<int, byte[]> _rawData = new Dictionary<int, byte[]>();
 
         private const int FANS_COUNT = 6;
-        private readonly Sensor[] _rpmSensors = new Sensor[FANS_COUNT];
-        private readonly Sensor[] _voltages = new Sensor[FANS_COUNT];
+        private readonly Sensor _noise;
         private readonly Sensor[] _currents = new Sensor[FANS_COUNT];
         private readonly Sensor[] _powers = new Sensor[FANS_COUNT];
         private readonly Sensor[] _pwmControls = new Sensor[FANS_COUNT];
-        private readonly Sensor _noise;
+        private readonly Sensor[] _rpmSensors = new Sensor[FANS_COUNT];
+        private readonly Sensor[] _voltages = new Sensor[FANS_COUNT];
 
         private readonly Control[] _fanControls = new Control[FANS_COUNT];
 
