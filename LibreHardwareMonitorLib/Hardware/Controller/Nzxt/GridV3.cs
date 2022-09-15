@@ -11,7 +11,7 @@ using HidSharp;
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 {
     /// <summary>
-    /// Support for the NZXT GRID+ V3 devices
+    /// Support for the NZXT GRID+ V3 devices.
     /// </summary>
     internal sealed class GridV3 : Hardware
     {
@@ -19,12 +19,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private static readonly byte[] _initialize1 = { 0x01, 0x5c };
         private static readonly byte[] _initialize2 = { 0x01, 0x5d };
         private static readonly byte[] _initialize3 = { 0x01, 0x59 };
-        private readonly byte[] _setFanSpeedMsg;
 
+        private const int FANS_COUNT = 6;
+
+        private readonly byte[] _setFanSpeedMsg;
         private readonly HidStream _stream;
         private readonly Dictionary<int, byte[]> _rawData = new Dictionary<int, byte[]>();
 
-        private const int FANS_COUNT = 6;
         private readonly Sensor _noise;
         private readonly Sensor[] _currents = new Sensor[FANS_COUNT];
         private readonly Sensor[] _powers = new Sensor[FANS_COUNT];
@@ -92,7 +93,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 _noise = new Sensor($"GRID Noise", 0, SensorType.Noise, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_noise);
 
-                Thread readGridReports = new Thread(ContinuousRead);
+                Thread readGridReports = new Thread(ContinuousRead) { IsBackground = true };
                 readGridReports.Start(_rawData);
             }
         }
