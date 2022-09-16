@@ -91,6 +91,10 @@ namespace LibreHardwareMonitor.UI
                     Image = Utilities.EmbeddedResources.GetImage("time.png");
                     Text = "Times";
                     break;
+                case SensorType.Noise:
+                    Image = Utilities.EmbeddedResources.GetImage("loudspeaker.png");
+                    Text = "Noise Levels";
+                    break;
             }
 
             NodeAdded += TypeNode_NodeAdded;

@@ -646,6 +646,9 @@ namespace LibreHardwareMonitor.UI
                                 case SensorType.Energy:
                                     format = "{0:F0} mWh";
                                     break;
+                                case SensorType.Noise:
+                                    format = "{0:F0} dBA";
+                                    break;
                             }
 
                             if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)

@@ -79,6 +79,9 @@ namespace LibreHardwareMonitor.UI
                 case SensorType.Energy:
                     Format = "{0:F0} mWh";
                     break;
+                case SensorType.Noise:
+                    Format = "{0:F0} dBA";
+                    break;
             }
 
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
