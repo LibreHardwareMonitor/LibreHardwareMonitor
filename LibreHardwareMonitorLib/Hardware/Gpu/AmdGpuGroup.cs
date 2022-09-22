@@ -50,7 +50,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                             for (int i = 0; i < numberOfAdapters; i++)
                             {
                                 AtiAdlxx.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex, out int isActive);
-                                AtiAdlxx.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out int adapterId);
+
+                                int adapterId = -1;
+                                if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Adapter_ID_Get)))
+                                    AtiAdlxx.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out adapterId);
 
                                 _report.Append("AdapterIndex: ");
                                 _report.AppendLine(i.ToString(CultureInfo.InvariantCulture));
