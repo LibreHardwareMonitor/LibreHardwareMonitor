@@ -38,7 +38,7 @@ namespace LibreHardwareMonitor.UI
         private double _dpiXScale = 1;
         private double _dpiYScale = 1;
         private Point _rightClickEnter;
-        private bool _skipNextContextMenu = false;
+        private bool _cancelContextMenu = false;
 
         public PlotPanel(PersistentSettings settings, UnitManager unitManager)
         {
@@ -60,10 +60,9 @@ namespace LibreHardwareMonitor.UI
             {
                 if (e.Button == MouseButtons.Right)
                 {
-                    if (!_skipNextContextMenu && e.Location.DistanceTo(_rightClickEnter) > 10.0f)
+                    if (!_cancelContextMenu && e.Location.DistanceTo(_rightClickEnter) > 10.0f)
                     {
-                        _skipNextContextMenu = true;
-                        System.Diagnostics.Debug.WriteLine("Skipping next context menu", _rightClickEnter);
+                        _cancelContextMenu = true;
                     }
                 }
             };
@@ -91,10 +90,10 @@ namespace LibreHardwareMonitor.UI
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Opening += (sender, e) =>
             {
-                if (_skipNextContextMenu)
+                if (_cancelContextMenu)
                 {
                     e.Cancel = true;
-                    _skipNextContextMenu = false;
+                    _cancelContextMenu = false;
                 }
             };
 
