@@ -37,6 +37,8 @@ namespace LibreHardwareMonitor.UI
         private float _dpiY;
         private double _dpiXScale = 1;
         private double _dpiYScale = 1;
+        private Point _rightClickEnter;
+        private bool _cancelContextMenu = false;
 
         public PlotPanel(PersistentSettings settings, UnitManager unitManager)
         {
@@ -47,7 +49,24 @@ namespace LibreHardwareMonitor.UI
             _model = CreatePlotModel();
 
             _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenuStrip = CreateMenu() };
-            
+            _plot.MouseDown += (sender, e) =>
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    _rightClickEnter = e.Location;
+                }
+            };
+            _plot.MouseMove += (sender, e) =>
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    if (!_cancelContextMenu && e.Location.DistanceTo(_rightClickEnter) > 10.0f)
+                    {
+                        _cancelContextMenu = true;
+                    }
+                }
+            };
+
             UpdateAxesPosition();
 
             SuspendLayout();
@@ -69,6 +88,14 @@ namespace LibreHardwareMonitor.UI
         private ContextMenuStrip CreateMenu()
         {
             ContextMenuStrip menu = new ContextMenuStrip();
+            menu.Opening += (sender, e) =>
+            {
+                if (_cancelContextMenu)
+                {
+                    e.Cancel = true;
+                    _cancelContextMenu = false;
+                }
+            };
 
             ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem("Stacked Axes");
             _stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, _settings);
