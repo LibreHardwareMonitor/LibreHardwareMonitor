@@ -8,48 +8,47 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 
-namespace LibreHardwareMonitor.Hardware.Storage
+namespace LibreHardwareMonitor.Hardware.Storage;
+
+internal class StorageGroup : IGroup
 {
-    internal class StorageGroup : IGroup
+    private readonly List<AbstractStorage> _hardware = new();
+
+    public StorageGroup(ISettings settings)
     {
-        private readonly List<AbstractStorage> _hardware = new();
+        if (Software.OperatingSystem.IsUnix)
+            return;
 
-        public StorageGroup(ISettings settings)
+        //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
+        using var diskDriveSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive") { Options = { Timeout = TimeSpan.FromSeconds(10) } };
+        foreach (ManagementBaseObject diskDrive in diskDriveSearcher.Get())
         {
-            if (Software.OperatingSystem.IsUnix)
-                return;
+            string deviceId = (string)diskDrive.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
+            uint idx = Convert.ToUInt32(diskDrive.Properties["Index"].Value);
+            ulong diskSize = Convert.ToUInt64(diskDrive.Properties["Size"].Value);
+            int scsi = Convert.ToInt32(diskDrive.Properties["SCSIPort"].Value);
 
-            //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
-            using var diskDriveSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive") { Options = { Timeout = TimeSpan.FromSeconds(10) } };
-            foreach (ManagementBaseObject diskDrive in diskDriveSearcher.Get())
+            if (deviceId != null)
             {
-                string deviceId = (string)diskDrive.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
-                uint idx = Convert.ToUInt32(diskDrive.Properties["Index"].Value);
-                ulong diskSize = Convert.ToUInt64(diskDrive.Properties["Size"].Value);
-                int scsi = Convert.ToInt32(diskDrive.Properties["SCSIPort"].Value);
-
-                if (deviceId != null)
+                var instance = AbstractStorage.CreateInstance(deviceId, idx, diskSize, scsi, settings);
+                if (instance != null)
                 {
-                    var instance = AbstractStorage.CreateInstance(deviceId, idx, diskSize, scsi, settings);
-                    if (instance != null)
-                    {
-                        _hardware.Add(instance);
-                    }
+                    _hardware.Add(instance);
                 }
             }
         }
+    }
 
-        public IReadOnlyList<IHardware> Hardware => _hardware;
+    public IReadOnlyList<IHardware> Hardware => _hardware;
 
-        public string GetReport()
-        {
-            return null;
-        }
+    public string GetReport()
+    {
+        return null;
+    }
 
-        public void Close()
-        {
-            foreach (AbstractStorage storage in _hardware)
-                storage.Close();
-        }
+    public void Close()
+    {
+        foreach (AbstractStorage storage in _hardware)
+            storage.Close();
     }
 }

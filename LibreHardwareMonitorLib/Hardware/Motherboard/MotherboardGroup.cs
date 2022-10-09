@@ -6,29 +6,28 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Motherboard
+namespace LibreHardwareMonitor.Hardware.Motherboard;
+
+internal class MotherboardGroup : IGroup
 {
-    internal class MotherboardGroup : IGroup
+    private readonly Motherboard[] _motherboards;
+
+    public MotherboardGroup(SMBios smbios, ISettings settings)
     {
-        private readonly Motherboard[] _motherboards;
+        _motherboards = new Motherboard[1];
+        _motherboards[0] = new Motherboard(smbios, settings);
+    }
 
-        public MotherboardGroup(SMBios smbios, ISettings settings)
-        {
-            _motherboards = new Motherboard[1];
-            _motherboards[0] = new Motherboard(smbios, settings);
-        }
+    public IReadOnlyList<IHardware> Hardware => _motherboards;
 
-        public IReadOnlyList<IHardware> Hardware => _motherboards;
+    public void Close()
+    {
+        foreach (Motherboard mainboard in _motherboards)
+            mainboard.Close();
+    }
 
-        public void Close()
-        {
-            foreach (Motherboard mainboard in _motherboards)
-                mainboard.Close();
-        }
-
-        public string GetReport()
-        {
-            return null;
-        }
+    public string GetReport()
+    {
+        return null;
     }
 }

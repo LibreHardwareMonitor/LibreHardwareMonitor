@@ -7,41 +7,40 @@
 using System;
 using System.Windows.Forms;
 
-namespace LibreHardwareMonitor.UI
+namespace LibreHardwareMonitor.UI;
+
+public partial class AuthForm : Form
 {
-    public partial class AuthForm : Form
+    private readonly MainForm _parent;
+
+    public AuthForm(MainForm m)
     {
-        private readonly MainForm _parent;
+        InitializeComponent();
+        _parent = m;
+    }
 
-        public AuthForm(MainForm m)
-        {
-            InitializeComponent();
-            _parent = m;
-        }
+    private void AuthForm_Load(object sender, EventArgs e)
+    {
+        httpAuthUsernameTextBox.Enabled = httpAuthPasswordTextBox.Enabled = enableHTTPAuthCheckBox.Checked = _parent.Server.AuthEnabled;
+        httpAuthUsernameTextBox.Text = _parent.Server.UserName;
+    }
 
-        private void AuthForm_Load(object sender, EventArgs e)
-        {
-            httpAuthUsernameTextBox.Enabled = httpAuthPasswordTextBox.Enabled = enableHTTPAuthCheckBox.Checked = _parent.Server.AuthEnabled;
-            httpAuthUsernameTextBox.Text = _parent.Server.UserName;
-        }
+    private void HttpAuthCancelButton_Click(object sender, EventArgs e)
+    {
+        Close();
+    }
 
-        private void HttpAuthCancelButton_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
+    private void HttpAuthOkButton_Click(object sender, EventArgs e)
+    {
+        _parent.Server.UserName = httpAuthUsernameTextBox.Text;
+        _parent.Server.Password = httpAuthPasswordTextBox.Text;
+        _parent.Server.AuthEnabled = enableHTTPAuthCheckBox.Checked;
+        _parent.AuthWebServerMenuItemChecked = _parent.Server.AuthEnabled;
+        Close();
+    }
 
-        private void HttpAuthOkButton_Click(object sender, EventArgs e)
-        {
-            _parent.Server.UserName = httpAuthUsernameTextBox.Text;
-            _parent.Server.Password = httpAuthPasswordTextBox.Text;
-            _parent.Server.AuthEnabled = enableHTTPAuthCheckBox.Checked;
-            _parent.AuthWebServerMenuItemChecked = _parent.Server.AuthEnabled;
-            Close();
-        }
-
-        private void EnableHTTPAuthCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            httpAuthUsernameTextBox.Enabled = httpAuthPasswordTextBox.Enabled = enableHTTPAuthCheckBox.Checked;
-        }
+    private void EnableHTTPAuthCheckBox_CheckedChanged(object sender, EventArgs e)
+    {
+        httpAuthUsernameTextBox.Enabled = httpAuthPasswordTextBox.Enabled = enableHTTPAuthCheckBox.Checked;
     }
 }

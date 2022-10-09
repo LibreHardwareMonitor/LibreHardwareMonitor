@@ -12,287 +12,286 @@ using System.Management;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.Storage
+namespace LibreHardwareMonitor.Hardware.Storage;
+
+public abstract class AbstractStorage : Hardware
 {
-    public abstract class AbstractStorage : Hardware
+    private readonly PerformanceValue _perfTotal = new();
+    private readonly PerformanceValue _perfWrite = new();
+    private readonly StorageInfo _storageInfo;
+    private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
+
+    private ulong _lastReadRateCounter;
+    private double _lastTime;
+    private DateTime _lastUpdate = DateTime.MinValue;
+    private ulong _lastWriteRateCounter;
+    private Sensor _sensorDiskReadRate;
+    private Sensor _sensorDiskTotalActivity;
+    private Sensor _sensorDiskWriteActivity;
+    private Sensor _sensorDiskWriteRate;
+    private Sensor _usageSensor;
+    private int _wmiFailureCount;
+
+    internal AbstractStorage(StorageInfo storageInfo, string name, string firmwareRevision, string id, int index, ISettings settings)
+        : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings)
     {
-        private readonly PerformanceValue _perfTotal = new();
-        private readonly PerformanceValue _perfWrite = new();
-        private readonly StorageInfo _storageInfo;
-        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
+        _storageInfo = storageInfo;
+        FirmwareRevision = firmwareRevision;
+        Index = index;
 
-        private ulong _lastReadRateCounter;
-        private double _lastTime;
-        private DateTime _lastUpdate = DateTime.MinValue;
-        private ulong _lastWriteRateCounter;
-        private Sensor _sensorDiskReadRate;
-        private Sensor _sensorDiskTotalActivity;
-        private Sensor _sensorDiskWriteActivity;
-        private Sensor _sensorDiskWriteRate;
-        private Sensor _usageSensor;
-        private int _wmiFailureCount;
+        string[] logicalDrives = WindowsStorage.GetLogicalDrives(index);
+        var driveInfoList = new List<DriveInfo>(logicalDrives.Length);
 
-        internal AbstractStorage(StorageInfo storageInfo, string name, string firmwareRevision, string id, int index, ISettings settings)
-            : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings)
+        foreach (string logicalDrive in logicalDrives)
         {
-            _storageInfo = storageInfo;
-            FirmwareRevision = firmwareRevision;
-            Index = index;
-
-            string[] logicalDrives = WindowsStorage.GetLogicalDrives(index);
-            var driveInfoList = new List<DriveInfo>(logicalDrives.Length);
-
-            foreach (string logicalDrive in logicalDrives)
+            try
             {
-                try
+                var di = new DriveInfo(logicalDrive);
+                if (di.TotalSize > 0)
+                    driveInfoList.Add(new DriveInfo(logicalDrive));
+            }
+            catch (ArgumentException)
+            { }
+            catch (IOException)
+            { }
+            catch (UnauthorizedAccessException)
+            { }
+        }
+
+        DriveInfos = driveInfoList.ToArray();
+    }
+
+    public DriveInfo[] DriveInfos { get; }
+
+    public string FirmwareRevision { get; }
+
+    public override HardwareType HardwareType => HardwareType.Storage;
+
+    public int Index { get; }
+
+    public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
+    {
+        StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
+        if (info == null)
+            return null;
+
+        info.DiskSize = diskSize;
+        info.DeviceId = deviceId;
+        info.Scsi = $@"\\.\SCSI{scsiPort}:";
+
+        if (info.Removable || info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
+            return null;
+
+        //fallback, when it is not possible to read out with the nvme implementation,
+        //try it with the sata smart implementation
+        if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
+        {
+            AbstractStorage x = NVMeGeneric.CreateInstance(info, settings);
+            if (x != null)
+                return x;
+        }
+
+        return info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeAta or Kernel32.STORAGE_BUS_TYPE.BusTypeSata or Kernel32.STORAGE_BUS_TYPE.BusTypeNvme
+            ? AtaStorage.CreateInstance(info, settings)
+            : StorageGeneric.CreateInstance(info, settings);
+    }
+
+    protected virtual void CreateSensors()
+    {
+        if (DriveInfos.Length > 0)
+        {
+            _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
+            ActivateSensor(_usageSensor);
+        }
+
+        _sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, _settings);
+        ActivateSensor(_sensorDiskWriteActivity);
+
+        _sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, _settings);
+        ActivateSensor(_sensorDiskTotalActivity);
+
+        _sensorDiskReadRate = new Sensor("Read Rate", 34, SensorType.Throughput, this, _settings);
+        ActivateSensor(_sensorDiskReadRate);
+
+        _sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, _settings);
+        ActivateSensor(_sensorDiskWriteRate);
+    }
+
+    protected abstract void UpdateSensors();
+
+    private void UpdateStatisticsFromWmi(int driveIndex)
+    {
+        string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
+
+        using var perfData = new ManagementObjectSearcher(query) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
+        using ManagementObjectCollection collection = perfData.Get();
+        using ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault();
+
+        if (data == null)
+            return;
+
+        ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
+        ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
+        _perfWrite.Update(value, valueBase);
+        _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
+
+        value = (ulong)data.Properties["PercentIdleTime"].Value;
+        valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
+        _perfTotal.Update(value, valueBase);
+        _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
+
+        ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
+        ulong readRate = readRateCounter - _lastReadRateCounter;
+        _lastReadRateCounter = readRateCounter;
+
+        ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
+        ulong writeRate = writeRateCounter - _lastWriteRateCounter;
+        _lastWriteRateCounter = writeRateCounter;
+
+        ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
+        ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
+        double currentTime = (double)timestampPerfTime / frequencyPerfTime;
+
+        double timeDeltaSeconds = currentTime - _lastTime;
+        if (_lastTime == 0 || timeDeltaSeconds > 0.2)
+        {
+            double writeSpeed = writeRate * (1 / timeDeltaSeconds);
+            _sensorDiskWriteRate.Value = (float)writeSpeed;
+
+            double readSpeed = readRate * (1 / timeDeltaSeconds);
+            _sensorDiskReadRate.Value = (float)readSpeed;
+        }
+
+        if (_lastTime == 0 || timeDeltaSeconds > 0.2)
+            _lastTime = currentTime;
+    }
+
+    public override void Update()
+    {
+        const int wmiRetries = 10;
+
+        //update statistics from WMI on every update
+        if (_storageInfo != null && _wmiFailureCount <= wmiRetries)
+        {
+            try
+            {
+                UpdateStatisticsFromWmi(_storageInfo.Index);
+                _wmiFailureCount = 0;
+            }
+            catch
+            {
+                if (++_wmiFailureCount == wmiRetries)
                 {
-                    var di = new DriveInfo(logicalDrive);
-                    if (di.TotalSize > 0)
-                        driveInfoList.Add(new DriveInfo(logicalDrive));
+                    DeactivateSensor(_sensorDiskTotalActivity);
+                    DeactivateSensor(_sensorDiskWriteActivity);
+                    DeactivateSensor(_sensorDiskReadRate);
+                    DeactivateSensor(_sensorDiskWriteRate);
                 }
-                catch (ArgumentException)
-                { }
-                catch (IOException)
-                { }
-                catch (UnauthorizedAccessException)
-                { }
             }
-
-            DriveInfos = driveInfoList.ToArray();
         }
 
-        public DriveInfo[] DriveInfos { get; }
-
-        public string FirmwareRevision { get; }
-
-        public override HardwareType HardwareType => HardwareType.Storage;
-
-        public int Index { get; }
-
-        public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
+        //read out with updateInterval
+        TimeSpan tDiff = DateTime.UtcNow - _lastUpdate;
+        if (tDiff > _updateInterval)
         {
-            StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
-            if (info == null)
-                return null;
+            _lastUpdate = DateTime.UtcNow;
 
-            info.DiskSize = diskSize;
-            info.DeviceId = deviceId;
-            info.Scsi = $@"\\.\SCSI{scsiPort}:";
+            UpdateSensors();
 
-            if (info.Removable || info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
-                return null;
-
-            //fallback, when it is not possible to read out with the nvme implementation,
-            //try it with the sata smart implementation
-            if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
+            if (_usageSensor != null)
             {
-                AbstractStorage x = NVMeGeneric.CreateInstance(info, settings);
-                if (x != null)
-                    return x;
-            }
+                long totalSize = 0;
+                long totalFreeSpace = 0;
 
-            return info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeAta or Kernel32.STORAGE_BUS_TYPE.BusTypeSata or Kernel32.STORAGE_BUS_TYPE.BusTypeNvme
-                ? AtaStorage.CreateInstance(info, settings)
-                : StorageGeneric.CreateInstance(info, settings);
-        }
-
-        protected virtual void CreateSensors()
-        {
-            if (DriveInfos.Length > 0)
-            {
-                _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
-                ActivateSensor(_usageSensor);
-            }
-
-            _sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, _settings);
-            ActivateSensor(_sensorDiskWriteActivity);
-
-            _sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, _settings);
-            ActivateSensor(_sensorDiskTotalActivity);
-
-            _sensorDiskReadRate = new Sensor("Read Rate", 34, SensorType.Throughput, this, _settings);
-            ActivateSensor(_sensorDiskReadRate);
-
-            _sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, _settings);
-            ActivateSensor(_sensorDiskWriteRate);
-        }
-
-        protected abstract void UpdateSensors();
-
-        private void UpdateStatisticsFromWmi(int driveIndex)
-        {
-            string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
-
-            using var perfData = new ManagementObjectSearcher(query) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
-            using ManagementObjectCollection collection = perfData.Get();
-            using ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault();
-
-            if (data == null)
-                return;
-
-            ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
-            ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
-            _perfWrite.Update(value, valueBase);
-            _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
-
-            value = (ulong)data.Properties["PercentIdleTime"].Value;
-            valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
-            _perfTotal.Update(value, valueBase);
-            _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
-
-            ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
-            ulong readRate = readRateCounter - _lastReadRateCounter;
-            _lastReadRateCounter = readRateCounter;
-
-            ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
-            ulong writeRate = writeRateCounter - _lastWriteRateCounter;
-            _lastWriteRateCounter = writeRateCounter;
-
-            ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
-            ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
-            double currentTime = (double)timestampPerfTime / frequencyPerfTime;
-
-            double timeDeltaSeconds = currentTime - _lastTime;
-            if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-            {
-                double writeSpeed = writeRate * (1 / timeDeltaSeconds);
-                _sensorDiskWriteRate.Value = (float)writeSpeed;
-
-                double readSpeed = readRate * (1 / timeDeltaSeconds);
-                _sensorDiskReadRate.Value = (float)readSpeed;
-            }
-
-            if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-                _lastTime = currentTime;
-        }
-
-        public override void Update()
-        {
-            const int wmiRetries = 10;
-
-            //update statistics from WMI on every update
-            if (_storageInfo != null && _wmiFailureCount <= wmiRetries)
-            {
-                try
+                for (int i = 0; i < DriveInfos.Length; i++)
                 {
-                    UpdateStatisticsFromWmi(_storageInfo.Index);
-                    _wmiFailureCount = 0;
-                }
-                catch
-                {
-                    if (++_wmiFailureCount == wmiRetries)
+                    if (!DriveInfos[i].IsReady)
+                        continue;
+
+                    try
                     {
-                        DeactivateSensor(_sensorDiskTotalActivity);
-                        DeactivateSensor(_sensorDiskWriteActivity);
-                        DeactivateSensor(_sensorDiskReadRate);
-                        DeactivateSensor(_sensorDiskWriteRate);
+                        totalSize += DriveInfos[i].TotalSize;
+                        totalFreeSpace += DriveInfos[i].TotalFreeSpace;
                     }
+                    catch (IOException)
+                    { }
+                    catch (UnauthorizedAccessException)
+                    { }
                 }
-            }
 
-            //read out with updateInterval
-            TimeSpan tDiff = DateTime.UtcNow - _lastUpdate;
-            if (tDiff > _updateInterval)
-            {
-                _lastUpdate = DateTime.UtcNow;
-
-                UpdateSensors();
-
-                if (_usageSensor != null)
-                {
-                    long totalSize = 0;
-                    long totalFreeSpace = 0;
-
-                    for (int i = 0; i < DriveInfos.Length; i++)
-                    {
-                        if (!DriveInfos[i].IsReady)
-                            continue;
-
-                        try
-                        {
-                            totalSize += DriveInfos[i].TotalSize;
-                            totalFreeSpace += DriveInfos[i].TotalFreeSpace;
-                        }
-                        catch (IOException)
-                        { }
-                        catch (UnauthorizedAccessException)
-                        { }
-                    }
-
-                    if (totalSize > 0)
-                        _usageSensor.Value = 100.0f - ((100.0f * totalFreeSpace) / totalSize);
-                    else
-                        _usageSensor.Value = null;
-                }
+                if (totalSize > 0)
+                    _usageSensor.Value = 100.0f - ((100.0f * totalFreeSpace) / totalSize);
+                else
+                    _usageSensor.Value = null;
             }
         }
+    }
 
-        protected abstract void GetReport(StringBuilder r);
+    protected abstract void GetReport(StringBuilder r);
 
-        public override string GetReport()
+    public override string GetReport()
+    {
+        var r = new StringBuilder();
+        r.AppendLine("Storage");
+        r.AppendLine();
+        r.AppendLine("Drive Name: " + _name);
+        r.AppendLine("Firmware Version: " + FirmwareRevision);
+        r.AppendLine();
+        GetReport(r);
+
+        foreach (DriveInfo di in DriveInfos)
         {
-            var r = new StringBuilder();
-            r.AppendLine("Storage");
-            r.AppendLine();
-            r.AppendLine("Drive Name: " + _name);
-            r.AppendLine("Firmware Version: " + FirmwareRevision);
-            r.AppendLine();
-            GetReport(r);
+            if (!di.IsReady)
+                continue;
 
-            foreach (DriveInfo di in DriveInfos)
+            try
             {
-                if (!di.IsReady)
-                    continue;
-
-                try
-                {
-                    r.AppendLine("Logical Drive Name: " + di.Name);
-                    r.AppendLine("Format: " + di.DriveFormat);
-                    r.AppendLine("Total Size: " + di.TotalSize);
-                    r.AppendLine("Total Free Space: " + di.TotalFreeSpace);
-                    r.AppendLine();
-                }
-                catch (IOException)
-                { }
-                catch (UnauthorizedAccessException)
-                { }
+                r.AppendLine("Logical Drive Name: " + di.Name);
+                r.AppendLine("Format: " + di.DriveFormat);
+                r.AppendLine("Total Size: " + di.TotalSize);
+                r.AppendLine("Total Free Space: " + di.TotalFreeSpace);
+                r.AppendLine();
             }
-
-            return r.ToString();
+            catch (IOException)
+            { }
+            catch (UnauthorizedAccessException)
+            { }
         }
 
-        public override void Traverse(IVisitor visitor)
+        return r.ToString();
+    }
+
+    public override void Traverse(IVisitor visitor)
+    {
+        foreach (ISensor sensor in Sensors)
+            sensor.Accept(visitor);
+    }
+
+    /// <summary>
+    /// Helper to calculate the disk performance with base timestamps
+    /// https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-perfrawdata
+    /// </summary>
+    private class PerformanceValue
+    {
+        public double Result { get; private set; }
+
+        private ulong Time { get; set; }
+
+        private ulong Value { get; set; }
+
+        public void Update(ulong val, ulong valBase)
         {
-            foreach (ISensor sensor in Sensors)
-                sensor.Accept(visitor);
-        }
+            ulong diffValue = val - Value;
+            ulong diffTime = valBase - Time;
 
-        /// <summary>
-        /// Helper to calculate the disk performance with base timestamps
-        /// https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-perfrawdata
-        /// </summary>
-        private class PerformanceValue
-        {
-            public double Result { get; private set; }
+            Value = val;
+            Time = valBase;
+            Result = 100.0 / diffTime * diffValue;
 
-            private ulong Time { get; set; }
-
-            private ulong Value { get; set; }
-
-            public void Update(ulong val, ulong valBase)
-            {
-                ulong diffValue = val - Value;
-                ulong diffTime = valBase - Time;
-
-                Value = val;
-                Time = valBase;
-                Result = 100.0 / diffTime * diffValue;
-
-                //sometimes it is possible that diff_value > diff_timebase
-                //limit result to 100%, this is because timing issues during read from pcie controller an latency between IO operation
-                if (Result > 100)
-                    Result = 100;
-            }
+            //sometimes it is possible that diff_value > diff_timebase
+            //limit result to 100%, this is because timing issues during read from pcie controller an latency between IO operation
+            if (Result > 100)
+                Result = 100;
         }
     }
 }

@@ -3,11 +3,10 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Hardware
+namespace LibreHardwareMonitor.Hardware;
+
+internal interface IHardwareChanged
 {
-    internal interface IHardwareChanged
-    {
-        event HardwareEventHandler HardwareAdded;
-        event HardwareEventHandler HardwareRemoved;
-    }
+    event HardwareEventHandler HardwareAdded;
+    event HardwareEventHandler HardwareRemoved;
 }

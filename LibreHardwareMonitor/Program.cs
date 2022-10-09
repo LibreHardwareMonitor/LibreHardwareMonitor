@@ -9,56 +9,55 @@ using System.IO;
 using System.Windows.Forms;
 using LibreHardwareMonitor.UI;
 
-namespace LibreHardwareMonitor
+namespace LibreHardwareMonitor;
+
+public static class Program
 {
-    public static class Program
+    [STAThread]
+    public static void Main()
     {
-        [STAThread]
-        public static void Main()
-        {
-            if (!AllRequiredFilesAvailable())
-                Environment.Exit(0);
+        if (!AllRequiredFilesAvailable())
+            Environment.Exit(0);
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            using (MainForm form = new MainForm())
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        using (MainForm form = new MainForm())
+        {
+            form.FormClosed += delegate
             {
-                form.FormClosed += delegate
-                {
-                    Application.Exit();
-                };
-                Application.Run();
-            }
+                Application.Exit();
+            };
+            Application.Run();
         }
+    }
 
-        private static bool IsFileAvailable(string fileName)
+    private static bool IsFileAvailable(string fileName)
+    {
+        string path = Path.GetDirectoryName(Application.ExecutablePath) + Path.DirectorySeparatorChar;
+        if (!File.Exists(path + fileName))
         {
-            string path = Path.GetDirectoryName(Application.ExecutablePath) + Path.DirectorySeparatorChar;
-            if (!File.Exists(path + fileName))
-            {
-                MessageBox.Show("The following file could not be found: " + fileName +
-                  "\nPlease extract all files from the archive.", "Error",
-                   MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            return true;
+            MessageBox.Show("The following file could not be found: " + fileName +
+                            "\nPlease extract all files from the archive.", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
         }
+        return true;
+    }
 
-        private static bool AllRequiredFilesAvailable()
-        {
-            if (!IsFileAvailable("Aga.Controls.dll"))
-                return false;
+    private static bool AllRequiredFilesAvailable()
+    {
+        if (!IsFileAvailable("Aga.Controls.dll"))
+            return false;
 
-            if (!IsFileAvailable("LibreHardwareMonitorLib.dll"))
-                return false;
+        if (!IsFileAvailable("LibreHardwareMonitorLib.dll"))
+            return false;
 
-            if (!IsFileAvailable("OxyPlot.dll"))
-                return false;
+        if (!IsFileAvailable("OxyPlot.dll"))
+            return false;
 
-            if (!IsFileAvailable("OxyPlot.WindowsForms.dll"))
-                return false;
+        if (!IsFileAvailable("OxyPlot.WindowsForms.dll"))
+            return false;
 
-            return true;
-        }
+        return true;
     }
 }

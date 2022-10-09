@@ -4,31 +4,30 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Hardware
+namespace LibreHardwareMonitor.Hardware;
+
+public enum ControlMode
 {
-    public enum ControlMode
-    {
-        Undefined,
-        Software,
-        Default
-    }
+    Undefined,
+    Software,
+    Default
+}
 
-    public interface IControl
-    {
-        ControlMode ControlMode { get; }
+public interface IControl
+{
+    ControlMode ControlMode { get; }
 
-        Identifier Identifier { get; }
+    Identifier Identifier { get; }
 
-        float MaxSoftwareValue { get; }
+    float MaxSoftwareValue { get; }
 
-        float MinSoftwareValue { get; }
+    float MinSoftwareValue { get; }
 
-        ISensor Sensor { get; }
+    ISensor Sensor { get; }
 
-        float SoftwareValue { get; }
+    float SoftwareValue { get; }
 
-        void SetDefault();
+    void SetDefault();
 
-        void SetSoftware(float value);
-    }
+    void SetSoftware(float value);
 }

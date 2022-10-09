@@ -5,10 +5,9 @@
 
 using System;
 
-namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
+namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
+
+public interface IEmbeddedControllerIO : IDisposable
 {
-    public interface IEmbeddedControllerIO : IDisposable
-    {
-        void Read(ushort[] registers, byte[] data);
-    }
+    void Read(ushort[] registers, byte[] data);
 }
