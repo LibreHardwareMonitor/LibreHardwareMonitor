@@ -137,7 +137,6 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 if (!allAttributesFound)
                     continue;
 
-
                 // check if there is a matching name prefix for this type
                 if (type.GetCustomAttributes(typeof(NamePrefixAttribute), true) is NamePrefixAttribute[] namePrefixes)
                 {

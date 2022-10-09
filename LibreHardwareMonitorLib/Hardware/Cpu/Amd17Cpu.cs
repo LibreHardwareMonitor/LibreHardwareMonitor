@@ -145,7 +145,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 if (cpuId == null)
                     return;
 
-
                 GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId.Affinity);
 
                 // MSRC001_0299
@@ -490,7 +489,6 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 if (cpu == null)
                     return;
 
-
                 GroupAffinity previousAffinity = ThreadAffinity.Set(cpu.Affinity);
 
                 // MSRC001_0299
@@ -502,8 +500,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 // MSRC001_029A
                 // total_energy [31:0]
                 DateTime sampleTime = DateTime.Now;
-                uint eax;
-                Ring0.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
+                Ring0.ReadMsr(MSR_CORE_ENERGY_STAT, out uint eax, out _);
                 uint totalEnergy = eax;
 
                 // MSRC001_0293

@@ -15,39 +15,35 @@ namespace LibreHardwareMonitor.Hardware.Storage
     {
         public static Storage.StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
         {
-            using (SafeHandle handle = Kernel32.OpenDevice(deviceId))
+            using SafeHandle handle = Kernel32.OpenDevice(deviceId);
+            if (handle?.IsInvalid != false)
+                return null;
+
+            var query = new Kernel32.STORAGE_PROPERTY_QUERY { PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty, QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery };
+
+            if (!Kernel32.DeviceIoControl(handle,
+                                          Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY,
+                                          ref query,
+                                          Marshal.SizeOf(query),
+                                          out Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER header,
+                                          Marshal.SizeOf<Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER>(),
+                                          out _,
+                                          IntPtr.Zero))
             {
-                if (handle == null || handle.IsInvalid)
+                return null;
+            }
+
+            IntPtr descriptorPtr = Marshal.AllocHGlobal((int)header.Size);
+            try
+            {
+                if (!Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out _, IntPtr.Zero))
                     return null;
 
-
-                var query = new Kernel32.STORAGE_PROPERTY_QUERY { PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty, QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery };
-
-                if (!Kernel32.DeviceIoControl(handle,
-                                              Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY,
-                                              ref query,
-                                              Marshal.SizeOf(query),
-                                              out Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER header,
-                                              Marshal.SizeOf<Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER>(),
-                                              out _,
-                                              IntPtr.Zero))
-                {
-                    return null;
-                }
-
-                IntPtr descriptorPtr = Marshal.AllocHGlobal((int)header.Size);
-                try
-                {
-                    if (!Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out _, IntPtr.Zero))
-                        return null;
-
-
-                    return new StorageInfo((int)driveIndex, descriptorPtr);
-                }
-                finally
-                {
-                    Marshal.FreeHGlobal(descriptorPtr);
-                }
+                return new StorageInfo((int)driveIndex, descriptorPtr);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(descriptorPtr);
             }
         }
 
@@ -57,22 +53,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             try
             {
-                using (var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex))
+                using var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex);
+                foreach (ManagementBaseObject o in s.Get())
                 {
-                    using (ManagementObjectCollection dpc = s.Get())
+                    if (o is ManagementObject dp)
                     {
-                        foreach (ManagementBaseObject o in dpc)
+                        foreach (ManagementBaseObject ld in dp.GetRelated("Win32_LogicalDisk"))
                         {
-                            if (o is ManagementObject dp)
-                            {
-                                using (ManagementObjectCollection ldc = dp.GetRelated("Win32_LogicalDisk"))
-                                {
-                                    foreach (ManagementBaseObject ld in ldc)
-                                    {
-                                        list.Add(((string)ld["Name"]).TrimEnd(':'));
-                                    }
-                                }
-                            }
+                            list.Add(((string)ld["Name"]).TrimEnd(':'));
                         }
                     }
                 }

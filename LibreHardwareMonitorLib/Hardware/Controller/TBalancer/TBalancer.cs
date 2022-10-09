@@ -43,7 +43,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
             _portIndex = portIndex;
             _protocolVersion = protocolVersion;
 
-            ParameterDescription[] parameter = { new ParameterDescription("Offset [°C]", "Temperature offset.", 0) };
+            ParameterDescription[] parameter = { new("Offset [°C]", "Temperature offset.", 0) };
             int offset = 0;
             for (int i = 0; i < _digitalTemperatures.Length; i++)
                 _digitalTemperatures[i] = new Sensor("Digital Sensor " + i, offset + i, SensorType.Temperature, this, parameter, settings);
@@ -138,8 +138,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
 
             for (int i = 0; i < 2; i++)
             {
-                if (_miniNgFans[(number * 2) + i] == null)
-                    _miniNgFans[(number * 2) + i] = new Sensor("miniNG #" + (number + 1) + " Fan Channel " + (i + 1), 4 + (number * 2) + i, SensorType.Fan, this, _settings);
+                _miniNgFans[(number * 2) + i] ??= new Sensor("miniNG #" + (number + 1) + " Fan Channel " + (i + 1), 4 + (number * 2) + i, SensorType.Fan, this, _settings);
 
                 Sensor sensor = _miniNgFans[(number * 2) + i];
                 sensor.Value = 20.0f * _data[offset + 43 + (2 * i)];
@@ -233,20 +232,17 @@ namespace LibreHardwareMonitor.Hardware.Controller.TBalancer
                 {
                     float maxRpm = 11.5f * ((_data[149 + (2 * i)] << 8) | _data[148 + (2 * i)]);
 
-                    if (_fans[i] == null)
-                    {
-                        _fans[i] = new Sensor("Fan Channel " + i,
-                                              i,
-                                              SensorType.Fan,
-                                              this,
-                                              new[]
-                                              {
-                                                  new ParameterDescription("MaxRPM",
-                                                                           "Maximum revolutions per minute (RPM) of the fan.",
-                                                                           maxRpm)
-                                              },
-                                              _settings);
-                    }
+                    _fans[i] ??= new Sensor("Fan Channel " + i,
+                                            i,
+                                            SensorType.Fan,
+                                            this,
+                                            new[]
+                                            {
+                                                new ParameterDescription("MaxRPM",
+                                                                         "Maximum revolutions per minute (RPM) of the fan.",
+                                                                         maxRpm)
+                                            },
+                                            _settings);
 
                     float value;
                     if ((_data[136] & (1 << i)) == 0) // pwm mode

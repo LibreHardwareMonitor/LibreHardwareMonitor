@@ -53,7 +53,6 @@ namespace LibreHardwareMonitor.Hardware.Network
                 if (NetworkInterface == null)
                     return;
 
-
                 long newTick = Stopwatch.GetTimestamp();
                 double dt = new TimeSpan(newTick - _lastTick).TotalSeconds;
 

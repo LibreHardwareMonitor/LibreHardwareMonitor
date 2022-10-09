@@ -18,9 +18,7 @@ namespace LibreHardwareMonitor.Hardware.Memory
         private readonly Sensor _virtualMemoryLoad;
         private readonly Sensor _virtualMemoryUsed;
 
-
         public override HardwareType HardwareType => HardwareType.Memory;
-
 
         public GenericLinuxMemory(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
         {
@@ -42,7 +40,6 @@ namespace LibreHardwareMonitor.Hardware.Memory
             _virtualMemoryLoad = new Sensor("Virtual Memory", 1, SensorType.Load, this, settings);
             ActivateSensor(_virtualMemoryLoad);
         }
-
 
         public override void Update()
         {
@@ -83,7 +80,7 @@ namespace LibreHardwareMonitor.Hardware.Memory
             }
         }
 
-        private long GetMemInfoValue(string line)
+        private static long GetMemInfoValue(string line)
         {
             // Example: "MemTotal:       32849676 kB"
 

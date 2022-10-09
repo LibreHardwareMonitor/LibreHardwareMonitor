@@ -154,7 +154,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 ECSensor.TempChipset,
                 ECSensor.FanWaterPump,
                 ECSensor.CurrCPU,
-                ECSensor.VoltageCPU),
+                ECSensor.VoltageCPU)
         };
 
         private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
@@ -173,7 +173,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00b4, 2, factor: 1.0f / 42f * 60f) },
                     { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                     { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x010d, blank: -40) },
-                    { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x010b, blank: -40) },
+                    { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x010b, blank: -40) }
                 }
             },
             {
@@ -192,7 +192,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f) },
                     { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                     { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
-                    { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
+                    { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) }
                 }
             },
             {
@@ -202,7 +202,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                     { ECSensor.FanWaterPump, new EmbeddedControllerSource("Water Pump", SensorType.Fan, 0x00bc, 2) },
                     { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
-                    { ECSensor.VoltageCPU, new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f) },
+                    { ECSensor.VoltageCPU, new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f) }
                 }
             },
             {
@@ -213,9 +213,9 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                     { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                     { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                     { ECSensor.TempWaterBlockIn, new EmbeddedControllerSource("Water Block In", SensorType.Temperature, 0x0102, blank: -40) },
-                    { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) }, // todo: need validation for this calculation
+                    { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
                 }
-            },
+            }
         };
 
         private readonly byte[] _data;
@@ -260,11 +260,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
         internal static EmbeddedController Create(Model model, ISettings settings)
         {
             var boards = _boards.Where(b => b.Models.Contains(model)).ToList();
-            if (boards.Count == 0)
-                return null;
-
-            if (boards.Count > 1)
-                throw new MultipleBoardRecordsFoundException(model.ToString());
+            switch (boards.Count)
+            {
+                case 0:
+                    return null;
+                case > 1:
+                    throw new MultipleBoardRecordsFoundException(model.ToString());
+            }
 
             BoardInfo board = boards[0];
             IEnumerable<EmbeddedControllerSource> sources = board.Sensors.Select(ecs => _knownSensors[board.Family][ecs]);
@@ -291,7 +293,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
                 {
                     1 => unchecked((sbyte)_data[readRegister]),
                     2 => unchecked((short)((_data[readRegister] << 8) + _data[readRegister + 1])),
-                    _ => 0,
+                    _ => 0
                 };
 
                 readRegister += _sources[si].Size;
@@ -414,7 +416,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             Amd400,
             Amd500,
             Intel100,
-            Intel600,
+            Intel600
         }
 
         private struct BoardInfo

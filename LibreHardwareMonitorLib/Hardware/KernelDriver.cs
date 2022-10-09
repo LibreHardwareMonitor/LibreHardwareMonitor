@@ -117,7 +117,6 @@ namespace LibreHardwareMonitor.Hardware
             if (_device == null)
                 return false;
 
-
             return Kernel32.DeviceIoControl(_device, ioControlCode, inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer), null, 0, out uint _, IntPtr.Zero);
         }
 
@@ -125,7 +124,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_device == null)
                 return false;
-
 
             object boxedOutBuffer = outBuffer;
             bool b = Kernel32.DeviceIoControl(_device,
@@ -145,7 +143,6 @@ namespace LibreHardwareMonitor.Hardware
         {
             if (_device == null)
                 return false;
-
 
             object boxedOutBuffer = outBuffer;
             bool b = Kernel32.DeviceIoControl(_device,
@@ -176,7 +173,6 @@ namespace LibreHardwareMonitor.Hardware
             IntPtr manager = AdvApi32.OpenSCManager(null, null, AdvApi32.SC_MANAGER_ACCESS_MASK.SC_MANAGER_ALL_ACCESS);
             if (manager == IntPtr.Zero)
                 return false;
-
 
             IntPtr service = AdvApi32.OpenService(manager, _serviceName, AdvApi32.SERVICE_ACCESS_MASK.SERVICE_ALL_ACCESS);
             if (service == IntPtr.Zero)

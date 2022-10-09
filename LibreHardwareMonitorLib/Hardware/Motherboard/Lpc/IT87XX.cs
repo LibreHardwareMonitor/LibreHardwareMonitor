@@ -180,7 +180,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
                 Chip.IT8695E => 11f / 1000f,
                 Chip.IT8655E or Chip.IT8665E or Chip.IT879XE => 0.0109f,
-                _ => 0.016f,
+                _ => 0.016f
             };
 
             // Older IT8705F and IT8721F revisions do not have 16-bit fan counters.
@@ -209,7 +209,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             {
                 Chip.IT8712F or Chip.IT8716F or Chip.IT8718F or Chip.IT8726F => 5,
                 Chip.IT8720F or Chip.IT8721F => 8,
-                _ => 0,
+                _ => 0
             };
         }
 
@@ -558,7 +558,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         // Address of the Fan Controller Main Control Register.
         // No need for the 2nd control register (bit 7 of 0x15 0x16 0x17),
         // as PWM value will set it to manual mode when new value is set.
-        private readonly byte FAN_MAIN_CTRL_REG = 0x13;
+        private const byte FAN_MAIN_CTRL_REG = 0x13;
 
 #pragma warning restore IDE1006 // Naming Styles
         // ReSharper restore InconsistentNaming

@@ -22,7 +22,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
         private static readonly byte[][] _setPumpTargetMap = new byte[101][]; // Sacrifice memory to speed this up with a lookup instead of a copy operation
 
         private readonly Sensor _pump;
-        private readonly Control _pumpControl;
         private readonly Sensor _pumpRpm;
         private readonly byte[] _rawData = new byte[64];
         private readonly HidStream _stream;
@@ -60,11 +59,11 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                 Name = "Nzxt Kraken X3";
 
                 _pump = new Sensor("Pump Control", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
-                _pumpControl = new Control(_pump, settings, 0, 100);
-                _pump.Control = _pumpControl;
-                _pumpControl.ControlModeChanged += SoftwareControlValueChanged;
-                _pumpControl.SoftwareControlValueChanged += SoftwareControlValueChanged;
-                SoftwareControlValueChanged(_pumpControl);
+                Control pumpControl = new(_pump, settings, 0, 100);
+                _pump.Control = pumpControl;
+                pumpControl.ControlModeChanged += SoftwareControlValueChanged;
+                pumpControl.SoftwareControlValueChanged += SoftwareControlValueChanged;
+                SoftwareControlValueChanged(pumpControl);
                 ActivateSensor(_pump);
 
                 _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
@@ -88,7 +87,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             if (control.ControlMode == ControlMode.Software)
             {
                 float value = control.SoftwareValue;
-                byte pumpSpeedIndex = (byte)(value > 100 ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
+                byte pumpSpeedIndex = (byte)(value > 100 ? 100 : value < 0 ? 0 : value); // Clamp the value, anything out of range will fail
 
                 _controlling = true;
                 _stream.Write(_setPumpTargetMap[pumpSpeedIndex]);
@@ -152,7 +151,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     else if (_pump.Value != _rawData[19])
                     {
                         float value = _pump.Value.GetValueOrDefault();
-                        byte pumpSpeedIndex = (byte)(value > 100 ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
+                        byte pumpSpeedIndex = (byte)(value > 100 ? 100 : value < 0 ? 0 : value); // Clamp the value, anything out of range will fail
                         _stream.Write(_setPumpTargetMap[pumpSpeedIndex]);
                     }
                     else

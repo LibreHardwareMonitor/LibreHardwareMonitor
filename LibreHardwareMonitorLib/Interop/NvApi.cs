@@ -586,7 +586,7 @@ namespace LibreHardwareMonitor.Interop
             CurrentFrequency,
             BaseClock,
             BoostClock,
-            ClockTypeNumber,
+            ClockTypeNumber
         }
 
         internal enum NvCoolerTarget

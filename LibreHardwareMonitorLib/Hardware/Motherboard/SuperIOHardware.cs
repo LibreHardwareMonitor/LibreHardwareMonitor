@@ -2146,7 +2146,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
 
                             break;
 
-
                         case Model.AB350_Pro4: //NCT6779D
                         case Model.AB350M_Pro4:
                         case Model.AB350M:
@@ -2287,7 +2286,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             c.Add(new Ctrl("CPU Fan #2", 2));
                             c.Add(new Ctrl("Chipset Fan", 3));
                             break;
-
 
                         default:
                             v.Add(new Voltage("Vcore", 0, 10, 10));
@@ -2526,7 +2524,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard
                             fanControlNames = new[] {"Chassis Fan 1", "CPU Fan", "Chassis Fan 2",
                                 "Chassis Fan 3", "High Amp Fan", "W_PUMP+", "AIO Pump"};
                             System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
-                                string.Format("Expected {0} fan register in the SuperIO chip", fanControlNames.Length));
+                                $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                             System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
                                 "Expected counts of cans controls and fan speed registers to be equal");
 

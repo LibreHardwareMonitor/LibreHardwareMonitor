@@ -29,8 +29,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     string name = null;
                     try
                     {
-                        using (StreamReader reader = new(path + "/name"))
-                            name = reader.ReadLine();
+                        using StreamReader reader = new(path + "/name");
+                        name = reader.ReadLine();
                     }
                     catch (IOException)
                     { }
@@ -260,14 +260,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                 }
             }
 
-            private string ReadFirstLine(Stream stream)
+            private static string ReadFirstLine(Stream stream)
             {
                 StringBuilder sb = new();
                 try
                 {
                     stream.Seek(0, SeekOrigin.Begin);
                     int b = stream.ReadByte();
-                    while (b is not (-1) and not 10)
+                    while (b is not -1 and not 10)
                     {
                         sb.Append((char)b);
                         b = stream.ReadByte();

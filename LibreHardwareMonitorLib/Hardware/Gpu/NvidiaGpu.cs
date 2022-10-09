@@ -213,7 +213,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
                     for (int i = 0; i < coolerSettings.Count; i++)
                     {
                         NvApi.NvCooler cooler = coolerSettings.Cooler[i];
-                        string name = "GPU Fan" + (coolerSettings.Count > 1 ? " " + (cooler.Controller) : string.Empty);
+                        string name = "GPU Fan" + (coolerSettings.Count > 1 ? " " + cooler.Controller : string.Empty);
 
                         _controls[i] = new Sensor(name, i, SensorType.Control, this, settings);
                         ActivateSensor(_controls[i]);
@@ -991,7 +991,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             NvApi.NvThermalSettings settings = new()
             {
                 Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(1),
-                Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU,
+                Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU
             };
 
             status = NvApi.NvAPI_GPU_GetThermalSettings(_handle, (int)NvApi.NvThermalTarget.All, ref settings);

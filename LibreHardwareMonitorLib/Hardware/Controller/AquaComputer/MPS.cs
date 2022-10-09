@@ -10,6 +10,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
 {
     internal sealed class MPS : Hardware
     {
+        public const int ExternalTemperature = 43;
+        public const int InternalWaterTemperature = 45;
+        public const int PumpFlow = 35;
         private const byte MPS_REPORT_ID = 0x2;
 
         private readonly Sensor _pumpFlow;
@@ -79,9 +82,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             if (_rawData[0] != MPS_REPORT_ID)
                 return;
 
-            _pumpFlow.Value = BitConverter.ToUInt16(_rawData, MPSDataIndexes.PumpFlow) / 10f;
+            _pumpFlow.Value = BitConverter.ToUInt16(_rawData, PumpFlow) / 10f;
 
-            _externalTemperature = BitConverter.ToUInt16(_rawData, MPSDataIndexes.ExternalTemperature);
+            _externalTemperature = BitConverter.ToUInt16(_rawData, ExternalTemperature);
             //sensor reading returns Int16.MaxValue (32767), when not connected
             if (_externalTemperature != short.MaxValue)
             {
@@ -92,19 +95,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 _temperatures[0].Value = null;
             }
 
-            _temperatures[1].Value = BitConverter.ToUInt16(_rawData, MPSDataIndexes.InternalWaterTemperature) / 100f;
+            _temperatures[1].Value = BitConverter.ToUInt16(_rawData, InternalWaterTemperature) / 100f;
         }
 
         private ushort ExtractFirmwareVersion()
         {
             return BitConverter.ToUInt16(_rawData, 3);
-        }
-
-        private sealed class MPSDataIndexes
-        {
-            public const int ExternalTemperature = 43;
-            public const int InternalWaterTemperature = 45;
-            public const int PumpFlow = 35;
         }
     }
 }

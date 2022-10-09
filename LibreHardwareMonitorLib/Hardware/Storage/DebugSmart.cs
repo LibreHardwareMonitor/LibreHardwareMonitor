@@ -14,7 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
     internal class DebugSmart : ISmart
     {
         private readonly Drive[] _drives = {
-            new Drive("KINGSTON SNV425S264GB", null, 16,
+            new("KINGSTON SNV425S264GB", null, 16,
                 @" 01 000000000000 100 100      
                 02 000000000000 100 100      
                 03 000000000000 100 100      
@@ -32,7 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 F0 000000000000 100 100      
                 AA 07007B000000 100 100      
                 AD 0E1E71304919 100 100"),
-            new Drive("PLEXTOR  PX-128M2S", "1.03", 16,
+            new("PLEXTOR  PX-128M2S", "1.03", 16,
                 @" 01 000000000000 100 100 0   
                 03 000000000000 100 100 0   
                 04 000000000000 100 100 0   
@@ -50,7 +50,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C5 000000000000 100 100 0   
                 C6 000000000000 100 100 0   
                 C7 000000000000 100 100 0"),
-            new Drive("OCZ-VERTEX2", "1.25", 16,
+            new("OCZ-VERTEX2", "1.25", 16,
                 @" 01 DADAD5000000 100 106 50
                 05 000000000000 100 100 3 
                 09 DF0900004A2F 100 100 0 
@@ -70,7 +70,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 EA 000600000000 0   0   0 
                 F1 000600000000 0   0   0 
                 F2 801200000000 0   0   0"),
-            new Drive("WDC WD5000AADS-00S9B0", null, 10,
+            new("WDC WD5000AADS-00S9B0", null, 10,
                 @" 1   000000000000 200 200         
                 3   820D00000000 149 150         
                 4   610800000000 98  98          
@@ -91,7 +91,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 130 7B0300010002 1   41          
                 5   000000000000 0   0           
                 1   000000000000 0   0"),
-            new Drive("INTEL SSDSA2M080G2GC", null, 10,
+            new("INTEL SSDSA2M080G2GC", null, 10,
                 @" 3   000000000000 100 100         
                 4   000000000000 100 100         
                 5   010000000000 100 100         
@@ -106,7 +106,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 233 000000000000 98  98          
                 184 000000000000 100 100         
                 1   000000000000 0   0"),
-            new Drive("OCZ-VERTEX", null, 10,
+            new("OCZ-VERTEX", null, 10,
                 @" 1   000000000000 0   8   
                 9   000000000000 30  99  
                 12  000000000000 0   15  
@@ -129,7 +129,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 211 000000000000 0   0   
                 212 000000000000 0   0   
                 213 000000000000 0   0"),
-            new Drive("INTEL SSDSA2CW120G3", null, 16,
+            new("INTEL SSDSA2CW120G3", null, 16,
                 @"03 000000000000 100 100 0
                 04 000000000000 100 100 0
                 05 000000000000 100 100 0
@@ -149,7 +149,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 E9 000000000000 100 100 0
                 F1 FF4300000000 100 100 0
                 F2 264F00000000 100 100 0"),
-            new Drive("CORSAIR CMFSSD-128GBG2D", "VBM19C1Q", 16,
+            new("CORSAIR CMFSSD-128GBG2D", "VBM19C1Q", 16,
                 @"09 100900000000 99  99  0 
                 0C 560200000000 99  99  0 
                 AF 000000000000 100 100 10
@@ -167,7 +167,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C7 810100000000 253 253 0 
                 E8 240000000000 60  60  10
                 E9 630594120000 92  92  0"),
-            new Drive("Maxtor 6L300R0", null, 10,
+            new("Maxtor 6L300R0", null, 10,
                 @"3   9E5500000000 183 193         
                 4   0A0D00000000 252 252         
                 5   010000000000 253 253         
@@ -202,7 +202,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 59  FC3203030100 205 0           
                 1   000000000000 0   0           
                 144 000000000000 0   34 "),
-            new Drive("M4-CT256M4SSD2", "0309", 16,
+            new("M4-CT256M4SSD2", "0309", 16,
                 @"01 000000000000 100 100 50     
                 05 000000000000 100 100 10     
                 09 AB0100000000 100 100 1      
@@ -226,7 +226,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C7 000000000000 100 100 1      
                 CA 000000000000 100 100 1      
                 CE 000000000000 100 100 1 "),
-            new Drive("C300-CTFDDAC256MAG", "0007", 16,
+            new("C300-CTFDDAC256MAG", "0007", 16,
                 @"01 000000000000 100 100 0  
                 05 000000000000 100 100 0  
                 09 4C0A00000000 100 100 0  
@@ -249,7 +249,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C7 000000000000 100 100 0  
                 CA 000000000000 100 100 0  
                 CE 000000000000 100 100 0"),
-            new Drive("M4-CT064M4SSD2", "0009", 16,
+            new("M4-CT064M4SSD2", "0009", 16,
                 @"01 000000000000 100 100 50
                 05 000000000000 100 100 10
                 09 260000000000 100 100 1 
@@ -273,7 +273,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C7 000000000000 100 100 1 
                 CA 000000000000 100 100 1 
                 CE 000000000000 100 100 1"),
-            new Drive("M4-CT128M4SSD2", "000F", 16,
+            new("M4-CT128M4SSD2", "000F", 16,
                 @"01 000000000000 100 100 50 
                 05 000000000000 100 100 10 
                 09 CA1400000000 100 100 1  
@@ -297,7 +297,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C7 000000000000 100 100 1  
                 CA 010000000000 99  99  1  
                 CE 000000000000 100 100 1 "),
-            new Drive("Samsung SSD 840 PRO Series", "DXM05B0Q", 16,
+            new("Samsung SSD 840 PRO Series", "DXM05B0Q", 16,
                 @"05 000000000000 100 100 10 
                 09 541200000000 99  99  0  
                 0C 820500000000 98  98  0  

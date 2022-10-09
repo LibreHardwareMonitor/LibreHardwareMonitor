@@ -141,7 +141,7 @@ namespace LibreHardwareMonitor.Hardware
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_COPY => "D3D Copy",
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OVERLAY => "D3D Overlay",
                 D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_CRYPTO => "D3D Crypto",
-                _ => "D3D Unknown",
+                _ => "D3D Unknown"
             };
         }
 
@@ -226,7 +226,7 @@ namespace LibreHardwareMonitor.Hardware
             D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter,
             out D3dkmth.D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation)
         {
-            var queryStatistics = new D3dkmth.D3DKMT_QUERYSTATISTICS { AdapterLuid = adapter.AdapterLuid, Type = D3dkmth.D3DKMT_QUERYSTATISTICS_TYPE.D3DKMT_QUERYSTATISTICS_ADAPTER, };
+            var queryStatistics = new D3dkmth.D3DKMT_QUERYSTATISTICS { AdapterLuid = adapter.AdapterLuid, Type = D3dkmth.D3DKMT_QUERYSTATISTICS_TYPE.D3DKMT_QUERYSTATISTICS_ADAPTER };
 
             status = Gdi32.D3DKMTQueryStatistics(ref queryStatistics);
 

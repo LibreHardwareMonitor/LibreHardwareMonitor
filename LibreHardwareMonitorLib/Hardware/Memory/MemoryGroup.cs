@@ -14,14 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Memory
 
         public MemoryGroup(ISettings settings)
         {
-            if (Software.OperatingSystem.IsUnix)
-            {
-                _hardware = new Hardware[] { new GenericLinuxMemory("Generic Memory", settings) };
-            }
-            else
-            {
-                _hardware = new Hardware[] { new GenericWindowsMemory("Generic Memory", settings) };
-            }
+            _hardware = new Hardware[] { Software.OperatingSystem.IsUnix ? new GenericLinuxMemory("Generic Memory", settings) : new GenericWindowsMemory("Generic Memory", settings) };
         }
 
         public string GetReport()

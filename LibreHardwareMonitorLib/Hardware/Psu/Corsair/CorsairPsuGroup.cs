@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
             0x1c0a, // RM650i
             0x1c0b, // RM750i
             0x1c0c, // RM850i
-            0x1c0d, // RM1000i
+            0x1c0d // RM1000i
             // 0x1c11, // AX1600i
         };
 

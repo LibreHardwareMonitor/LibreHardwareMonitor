@@ -50,7 +50,7 @@ namespace LibreHardwareMonitor.Hardware
                     { 166, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
                     { 177, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                     { 178, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                    { 342, new SmuSensorType { Name = "Displays", Type = SensorType.Factor, Scale = 1 } },
+                    { 342, new SmuSensorType { Name = "Displays", Type = SensorType.Factor, Scale = 1 } }
                 }
             },
             {
@@ -62,7 +62,7 @@ namespace LibreHardwareMonitor.Hardware
                     { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
                     { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                     { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } }
                     //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
                     //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
                     //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
@@ -99,7 +99,7 @@ namespace LibreHardwareMonitor.Hardware
                     { 280, new SmuSensorType { Name = "Core #13 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
                     { 281, new SmuSensorType { Name = "Core #14 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
                     { 282, new SmuSensorType { Name = "Core #15 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                    { 283, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                    { 283, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
                 }
             }
         };
@@ -141,7 +141,7 @@ namespace LibreHardwareMonitor.Hardware
                     0x60 => CpuCodeName.Renoir,
                     0x71 => CpuCodeName.Matisse,
                     0x90 => CpuCodeName.Vangogh,
-                    _ => CpuCodeName.Undefined,
+                    _ => CpuCodeName.Undefined
                 };
             }
 
@@ -153,7 +153,7 @@ namespace LibreHardwareMonitor.Hardware
                     0x20 or 0x21 => CpuCodeName.Vermeer,
                     0x40 => CpuCodeName.Rembrandt,
                     0x50 => CpuCodeName.Cezanne,
-                    _ => CpuCodeName.Undefined,
+                    _ => CpuCodeName.Undefined
                 };
             }
 

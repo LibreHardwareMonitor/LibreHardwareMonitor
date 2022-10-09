@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 //Reading output report instead of feature report, as the measurements are in the output report
                 _stream.Read(_rawData);
                 
-                Name = $"OCTO";
+                Name = "OCTO";
                 FirmwareVersion = GetConvertedValue(OctoDataIndexes.FIRMWARE_VERSION).GetValueOrDefault(0);
 
                 // Initialize the 4 temperature sensors

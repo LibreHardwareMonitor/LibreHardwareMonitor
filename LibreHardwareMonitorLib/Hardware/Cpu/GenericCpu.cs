@@ -129,13 +129,13 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 Vendor.AMD => "amdcpu",
                 Vendor.Intel => "intelcpu",
-                _ => "genericcpu",
+                _ => "genericcpu"
             };
 
             return new Identifier(s, processorIndex.ToString(CultureInfo.InvariantCulture));
         }
 
-        private void EstimateTimeStampCounterFrequency(out double frequency, out double error)
+        private static void EstimateTimeStampCounterFrequency(out double frequency, out double error)
         {
             // preload the function
             EstimateTimeStampCounterFrequency(0, out double f, out double e);

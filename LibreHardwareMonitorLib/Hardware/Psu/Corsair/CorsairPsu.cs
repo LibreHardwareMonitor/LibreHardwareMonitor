@@ -237,7 +237,6 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
         }
     }
 
-
     #region Exception classes
 
     public class CommunicationProtocolError : ApplicationException
@@ -248,7 +247,6 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
     }
 
     #endregion
-
 
     #region PSU USB communication protocol implementation
 
@@ -267,8 +265,8 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
 #endif
         static float Linear11ToFloat32(ushort val)
         {
-            int exp = ((short)val) >> 11;
-            int mant = (((short)(val & 0x7ff)) << 5) >> 5;
+            int exp = (short)val >> 11;
+            int mant = ((short)(val & 0x7ff) << 5) >> 5;
             return mant * (float)Math.Pow(2, exp);
         }
 
@@ -404,7 +402,7 @@ namespace LibreHardwareMonitor.Hardware.Psu.Corsair
                 Command.RAIL_VOLTS_HCRIT or Command.RAIL_VOLTS_LCRIT or Command.RAIL_AMPS_HCRIT or Command.TEMP_HCRIT or Command.IN_VOLTS or Command.IN_AMPS or Command.RAIL_VOLTS or Command.RAIL_AMPS
                     or Command.TEMP0 or Command.TEMP1 or Command.FAN_RPM or Command.RAIL_WATTS or Command.TOTAL_WATTS => Linear11ToFloat32((ushort)tmp), // Linear11ToInt((ushort)tmp, 1000000);
                 Command.TOTAL_UPTIME or Command.UPTIME or Command.OCPMODE => tmp,
-                _ => null,
+                _ => null
             };
         }
 

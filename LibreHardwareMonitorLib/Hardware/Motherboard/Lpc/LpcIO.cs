@@ -520,76 +520,31 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             port.IT87Enter();
 
             ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
-            Chip chip;
-            switch (chipId)
+            Chip chip = chipId switch
             {
-                case 0x8613:
-                    chip = Chip.IT8613E;
-                    break;
-                case 0x8620:
-                    chip = Chip.IT8620E;
-                    break;
-                case 0x8628:
-                    chip = Chip.IT8628E;
-                    break;
-                case 0x8631:
-                    chip = Chip.IT8631E;
-                    break;
-                case 0x8665:
-                    chip = Chip.IT8665E;
-                    break;
-                case 0x8655:
-                    chip = Chip.IT8655E;
-                    break;
-                case 0x8686:
-                    chip = Chip.IT8686E;
-                    break;
-                case 0x8688:
-                    chip = Chip.IT8688E;
-                    break;
-                case 0x8689:
-                    chip = Chip.IT8689E;
-                    break;
-                case 0x8695:
-                    chip = Chip.IT8695E;
-                    break;
-                case 0x8705:
-                    chip = Chip.IT8705F;
-                    break;
-                case 0x8712:
-                    chip = Chip.IT8712F;
-                    break;
-                case 0x8716:
-                    chip = Chip.IT8716F;
-                    break;
-                case 0x8718:
-                    chip = Chip.IT8718F;
-                    break;
-                case 0x8720:
-                    chip = Chip.IT8720F;
-                    break;
-                case 0x8721:
-                    chip = Chip.IT8721F;
-                    break;
-                case 0x8726:
-                    chip = Chip.IT8726F;
-                    break;
-                case 0x8728:
-                    chip = Chip.IT8728F;
-                    break;
-                case 0x8771:
-                    chip = Chip.IT8771E;
-                    break;
-                case 0x8772:
-                    chip = Chip.IT8772E;
-                    break;
-                case 0x8733:
-                    chip = Chip.IT879XE;
-                    break;
-                default:
-                    chip = Chip.Unknown;
-                    break;
-            }
+                0x8613 => Chip.IT8613E,
+                0x8620 => Chip.IT8620E,
+                0x8628 => Chip.IT8628E,
+                0x8631 => Chip.IT8631E,
+                0x8665 => Chip.IT8665E,
+                0x8655 => Chip.IT8655E,
+                0x8686 => Chip.IT8686E,
+                0x8688 => Chip.IT8688E,
+                0x8689 => Chip.IT8689E,
+                0x8695 => Chip.IT8695E,
+                0x8705 => Chip.IT8705F,
+                0x8712 => Chip.IT8712F,
+                0x8716 => Chip.IT8716F,
+                0x8718 => Chip.IT8718F,
+                0x8720 => Chip.IT8720F,
+                0x8721 => Chip.IT8721F,
+                0x8726 => Chip.IT8726F,
+                0x8728 => Chip.IT8728F,
+                0x8771 => Chip.IT8771E,
+                0x8772 => Chip.IT8772E,
+                0x8733 => Chip.IT879XE,
+                _ => Chip.Unknown
+            };
 
             if (chip == Chip.Unknown)
             {
