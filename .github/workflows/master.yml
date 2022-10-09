@@ -43,13 +43,6 @@ jobs:
           path: |
             bin/Release/net472
 
-      - name: Publish netstandard20
-        uses: actions/upload-artifact@v2
-        with:
-          name: LibreHardwareMonitorLib-netstandard20
-          path: |
-            bin/Release/netstandard2.0
-
       - name: Publish net60
         uses: actions/upload-artifact@v2
         with:
