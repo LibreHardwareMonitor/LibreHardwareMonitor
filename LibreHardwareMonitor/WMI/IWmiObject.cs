@@ -4,15 +4,14 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Wmi
-{
-    interface IWmiObject
-    {
-        // Both of these get exposed to WMI
-        string Name { get; }
-        string Identifier { get; }
+namespace LibreHardwareMonitor.Wmi;
 
-        // Not exposed.
-        void Update();
-    }
+interface IWmiObject
+{
+    // Both of these get exposed to WMI
+    string Name { get; }
+    string Identifier { get; }
+
+    // Not exposed.
+    void Update();
 }

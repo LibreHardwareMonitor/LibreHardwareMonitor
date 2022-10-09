@@ -7,52 +7,51 @@ using System.Collections.Generic;
 using System.Text;
 using HidSharp;
 
-namespace LibreHardwareMonitor.Hardware.Controller.AeroCool
+namespace LibreHardwareMonitor.Hardware.Controller.AeroCool;
+
+public class AeroCoolGroup : IGroup
 {
-    public class AeroCoolGroup : IGroup
+    private readonly List<IHardware> _hardware = new();
+    private readonly StringBuilder _report = new();
+
+    public AeroCoolGroup(ISettings settings)
     {
-        private readonly List<IHardware> _hardware = new();
-        private readonly StringBuilder _report = new();
+        _report.AppendLine("AeroCool Hardware");
+        _report.AppendLine();
 
-        public AeroCoolGroup(ISettings settings)
+        foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x2E97))
         {
-            _report.AppendLine("AeroCool Hardware");
-            _report.AppendLine();
-
-            foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x2E97))
+            int hubno = dev.ProductID - 0x1000;
+            if (dev.DevicePath.Contains("mi_02") && hubno is >= 1 and <= 8)
             {
-                int hubno = dev.ProductID - 0x1000;
-                if (dev.DevicePath.Contains("mi_02") && hubno is >= 1 and <= 8)
-                {
-                    var device = new P7H1(dev, settings);
-                    _report.AppendLine($"Device name: {device.Name}");
-                    _report.AppendLine($"HUB number: {device.HubNumber}");
-                    _report.AppendLine();
-                    _hardware.Add(device);
-                }
-            }
-
-            if (_hardware.Count == 0)
-            {
-                _report.AppendLine("No AeroCool Hardware found.");
+                var device = new P7H1(dev, settings);
+                _report.AppendLine($"Device name: {device.Name}");
+                _report.AppendLine($"HUB number: {device.HubNumber}");
                 _report.AppendLine();
+                _hardware.Add(device);
             }
         }
 
-        public IReadOnlyList<IHardware> Hardware => _hardware;
-
-        public void Close()
+        if (_hardware.Count == 0)
         {
-            foreach (IHardware iHardware in _hardware)
-            {
-                if (iHardware is Hardware hardware)
-                    hardware.Close();
-            }
+            _report.AppendLine("No AeroCool Hardware found.");
+            _report.AppendLine();
         }
+    }
 
-        public string GetReport()
+    public IReadOnlyList<IHardware> Hardware => _hardware;
+
+    public void Close()
+    {
+        foreach (IHardware iHardware in _hardware)
         {
-            return _report.ToString();
+            if (iHardware is Hardware hardware)
+                hardware.Close();
         }
+    }
+
+    public string GetReport()
+    {
+        return _report.ToString();
     }
 }

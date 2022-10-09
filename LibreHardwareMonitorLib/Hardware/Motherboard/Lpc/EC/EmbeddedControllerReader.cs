@@ -3,7 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
-{
-    public delegate float EmbeddedControllerReader(IEmbeddedControllerIO ecIO, ushort register);
-}
+namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
+
+public delegate float EmbeddedControllerReader(IEmbeddedControllerIO ecIO, ushort register);

@@ -8,16 +8,15 @@ using System.Runtime.InteropServices;
 
 // ReSharper disable InconsistentNaming
 
-namespace LibreHardwareMonitor.Interop
+namespace LibreHardwareMonitor.Interop;
+
+internal class LibC
 {
-    internal class LibC
-    {
-        private const string DllName = "libc";
+    private const string DllName = "libc";
 
-        [DllImport(DllName)]
-        internal static extern int sched_getaffinity(int pid, IntPtr maskSize, ref ulong mask);
+    [DllImport(DllName)]
+    internal static extern int sched_getaffinity(int pid, IntPtr maskSize, ref ulong mask);
 
-        [DllImport(DllName)]
-        internal static extern int sched_setaffinity(int pid, IntPtr maskSize, ref ulong mask);
-    }
+    [DllImport(DllName)]
+    internal static extern int sched_setaffinity(int pid, IntPtr maskSize, ref ulong mask);
 }

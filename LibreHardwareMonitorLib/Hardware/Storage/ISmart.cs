@@ -7,20 +7,19 @@
 using System;
 using LibreHardwareMonitor.Interop;
 
-namespace LibreHardwareMonitor.Hardware.Storage
+namespace LibreHardwareMonitor.Hardware.Storage;
+
+public interface ISmart : IDisposable
 {
-    public interface ISmart : IDisposable
-    {
-        bool IsValid { get; }
+    bool IsValid { get; }
 
-        void Close();
+    void Close();
 
-        bool EnableSmart();
+    bool EnableSmart();
 
-        Kernel32.SMART_ATTRIBUTE[] ReadSmartData();
+    Kernel32.SMART_ATTRIBUTE[] ReadSmartData();
 
-        Kernel32.SMART_THRESHOLD[] ReadSmartThresholds();
+    Kernel32.SMART_THRESHOLD[] ReadSmartThresholds();
 
-        bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision);
-    }
+    bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision);
 }

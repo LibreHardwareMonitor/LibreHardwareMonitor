@@ -3,37 +3,36 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Hardware
+namespace LibreHardwareMonitor.Hardware;
+
+/// <summary>
+/// Abstract object that stores information about the limits of <see cref="ISensor"/>.
+/// </summary>
+public interface ISensorLimits
 {
     /// <summary>
-    /// Abstract object that stores information about the limits of <see cref="ISensor"/>.
+    /// Upper limit of <see cref="ISensor"/> value.
     /// </summary>
-    public interface ISensorLimits
-    {
-        /// <summary>
-        /// Upper limit of <see cref="ISensor"/> value.
-        /// </summary>
-        float? HighLimit { get; }
-
-        /// <summary>
-        /// Lower limit of <see cref="ISensor"/> value.
-        /// </summary>
-        float? LowLimit { get; }
-    }
+    float? HighLimit { get; }
 
     /// <summary>
-    /// Abstract object that stores information about the critical limits of <see cref="ISensor"/>.
+    /// Lower limit of <see cref="ISensor"/> value.
     /// </summary>
-    public interface ICriticalSensorLimits
-    {
-        /// <summary>
-        /// Critical upper limit of <see cref="ISensor"/> value.
-        /// </summary>
-        float? CriticalHighLimit { get; }
+    float? LowLimit { get; }
+}
 
-        /// <summary>
-        /// Critical lower limit of <see cref="ISensor"/> value.
-        /// </summary>
-        float? CriticalLowLimit { get; }
-    }
+/// <summary>
+/// Abstract object that stores information about the critical limits of <see cref="ISensor"/>.
+/// </summary>
+public interface ICriticalSensorLimits
+{
+    /// <summary>
+    /// Critical upper limit of <see cref="ISensor"/> value.
+    /// </summary>
+    float? CriticalHighLimit { get; }
+
+    /// <summary>
+    /// Critical lower limit of <see cref="ISensor"/> value.
+    /// </summary>
+    float? CriticalLowLimit { get; }
 }

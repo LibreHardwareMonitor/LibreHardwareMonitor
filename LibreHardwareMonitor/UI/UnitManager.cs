@@ -6,40 +6,38 @@
 
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.UI
+namespace LibreHardwareMonitor.UI;
+
+public enum TemperatureUnit
+{
+    Celsius = 0,
+    Fahrenheit = 1
+}
+
+public class UnitManager
 {
 
-    public enum TemperatureUnit
+    private readonly PersistentSettings _settings;
+    private TemperatureUnit _temperatureUnit;
+
+    public UnitManager(PersistentSettings settings)
     {
-        Celsius = 0,
-        Fahrenheit = 1
+        _settings = settings;
+        _temperatureUnit = (TemperatureUnit)settings.GetValue("TemperatureUnit", (int)TemperatureUnit.Celsius);
     }
 
-    public class UnitManager
+    public TemperatureUnit TemperatureUnit
     {
-
-        private readonly PersistentSettings _settings;
-        private TemperatureUnit _temperatureUnit;
-
-        public UnitManager(PersistentSettings settings)
+        get { return _temperatureUnit; }
+        set
         {
-            _settings = settings;
-            _temperatureUnit = (TemperatureUnit)settings.GetValue("TemperatureUnit", (int)TemperatureUnit.Celsius);
+            _temperatureUnit = value;
+            _settings.SetValue("TemperatureUnit", (int)_temperatureUnit);
         }
+    }
 
-        public TemperatureUnit TemperatureUnit
-        {
-            get { return _temperatureUnit; }
-            set
-            {
-                _temperatureUnit = value;
-                _settings.SetValue("TemperatureUnit", (int)_temperatureUnit);
-            }
-        }
-
-        public static float? CelsiusToFahrenheit(float? valueInCelsius)
-        {
-            return valueInCelsius * 1.8f + 32;
-        }
+    public static float? CelsiusToFahrenheit(float? valueInCelsius)
+    {
+        return valueInCelsius * 1.8f + 32;
     }
 }
