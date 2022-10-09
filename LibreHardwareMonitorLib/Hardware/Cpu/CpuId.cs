@@ -53,7 +53,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                 {
                     "GenuineIntel" => Vendor.Intel,
                     "AuthenticAMD" => Vendor.AMD,
-                    _ => Vendor.Unknown,
+                    _ => Vendor.Unknown
                 };
 
                 if (OpCode.CpuId(CPUID_EXT, 0, out eax, out _, out _, out _))

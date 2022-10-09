@@ -32,7 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             public readonly int HalfBit;
             public readonly ushort SourceRegister;
             public readonly ushort? AlternateRegister;
-        };
+        }
 
         private readonly ushort[] _fanCountRegister;
         private readonly ushort[] _fanRpmRegister;
@@ -280,7 +280,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         new(null, 0x106),
                         new(null, 0x108),
                         new(null, 0x10A),
-                        new(null, 0x10C),
+                        new(null, 0x10C)
                     };
 
                     // VIN0 +12V
@@ -426,7 +426,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     if (valid && _voltageRegisters[i] == _voltageVBatRegister)
                         valid = (ReadByte(_vBatMonitorControlRegister) & 0x01) > 0;
 
-                    Voltages[i] = valid ? value : (float?)null;
+                    Voltages[i] = valid ? value : null;
                 }
                 else
                 {
@@ -501,7 +501,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                         temperature = 0.5f * value;
                         System.Diagnostics.Debug.WriteLine("Temperature register {0} final temperature: {1}.", i, temperature);
-                        if (temperature is > 125 or < (-55))
+                        if (temperature is > 125 or < -55)
                         {
                             temperature = null;
                             System.Diagnostics.Debug.WriteLine("Temperature register {0} discarded: Out of range.", i);
@@ -533,7 +533,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         temperatureSourceMask |= 1L << (byte)source;
 
                         temperature = 0.5f * value;
-                        if (temperature is > 125 or < (-55))
+                        if (temperature is > 125 or < -55)
                             temperature = null;
 
                         for (int j = 0; j < Temperatures.Length; j++)

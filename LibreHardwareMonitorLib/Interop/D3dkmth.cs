@@ -329,8 +329,8 @@ namespace LibreHardwareMonitor.Interop
         {
             public WinNt.LARGE_INTEGER RunningTime; // 100ns
             public uint ContextSwitch;
-            readonly D3DKMT_QUERYSTATISTICS_PREEMPTION_INFORMATION PreemptionStatistics;
-            readonly D3DKMT_QUERYSTATISTICS_PACKET_INFORMATION PacketStatistics;
+            private readonly D3DKMT_QUERYSTATISTICS_PREEMPTION_INFORMATION PreemptionStatistics;
+            private readonly D3DKMT_QUERYSTATISTICS_PACKET_INFORMATION PacketStatistics;
             private fixed ulong Reserved[8];
         }
 
@@ -557,7 +557,7 @@ namespace LibreHardwareMonitor.Interop
             KMTQAITYPE_PARAVIRTUALIZATION_RENDER = 68,
             KMTQAITYPE_SERVICENAME = 69,
             KMTQAITYPE_WDDM_2_7_CAPS = 70,
-            KMTQAITYPE_TRACKEDWORKLOAD_SUPPORT = 72,
+            KMTQAITYPE_TRACKEDWORKLOAD_SUPPORT = 72
         }
     }
 }

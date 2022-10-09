@@ -73,7 +73,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             WriteLoop(register, value, WriteByteOp);
         }
 
-
         public void Dispose()
         {
             if (!_disposed)
@@ -201,7 +200,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC
             SciEventPending = 0x20, // SCI_EVT
             SmiEventPending = 0x40 // SMI_EVT
         }
-
 
 #region Read/Write ops
 

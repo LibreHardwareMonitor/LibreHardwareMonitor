@@ -153,16 +153,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 // high and mid registers are unchanged, which means that the drive is healthy
                 return true;
             }
-            else if (Kernel32.SMART_LBA_HI_EXCEEDED == result.irDriveRegs.bCylHighReg && Kernel32.SMART_LBA_MID_EXCEEDED == result.irDriveRegs.bCylLowReg)
+
+            if (Kernel32.SMART_LBA_HI_EXCEEDED == result.irDriveRegs.bCylHighReg && Kernel32.SMART_LBA_MID_EXCEEDED == result.irDriveRegs.bCylLowReg)
             {
                 // high and mid registers are exceeded, which means that the drive is unhealthy
                 return false;
             }
-            else
-            {
-                // response is not clear
-                return null;
-            }
+            // response is not clear
+            return null;
         }
 
         protected void Dispose(bool disposing)

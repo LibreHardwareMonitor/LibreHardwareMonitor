@@ -112,7 +112,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public Storage.NVMeInfo GetInfo()
         {
-            if (_handle == null || _handle.IsClosed)
+            if (_handle?.IsClosed != false)
                 return null;
 
             bool valid = false;
@@ -128,7 +128,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         public Storage.NVMeHealthInfo GetHealthInfo()
         {
-            if (_handle == null || _handle.IsClosed)
+            if (_handle?.IsClosed != false)
                 return null;
 
             bool valid = false;

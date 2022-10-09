@@ -100,7 +100,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVME_HEALTH_INFO_LOG data)
         {
             data = Kernel32.CreateStruct<Kernel32.NVME_HEALTH_INFO_LOG>();
-            if (hDevice == null || hDevice.IsInvalid)
+            if (hDevice?.IsInvalid != false)
                 return false;
 
             bool result = false;
@@ -180,9 +180,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
         public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
         {
             SafeHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
-            if (handle == null || handle.IsInvalid)
+            if (handle?.IsInvalid != false)
                 return null;
-
 
             Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
 

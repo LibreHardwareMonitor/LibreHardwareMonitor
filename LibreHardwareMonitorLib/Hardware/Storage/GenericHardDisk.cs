@@ -72,13 +72,13 @@ namespace LibreHardwareMonitor.Hardware.Storage
             new SmartAttribute(0xF2, SmartNames.TotalLbasRead),
             new SmartAttribute(0xFA, SmartNames.ReadErrorRetryRate),
             new SmartAttribute(0xFE, SmartNames.FreeFallProtection),
-            new SmartAttribute(0xC2, SmartNames.Temperature, (r, v, p) => r[0] + (p?[0].Value ?? 0),
+            new SmartAttribute(0xC2, SmartNames.Temperature, (r, _, p) => r[0] + (p?[0].Value ?? 0),
                 SensorType.Temperature, 0, SmartNames.Temperature, false,
                 new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\n" + "Temperature = Value + Offset.", 0) }),
-            new SmartAttribute(0xE7, SmartNames.Temperature, (r, v, p) => r[0] + (p?[0].Value ?? 0),
+            new SmartAttribute(0xE7, SmartNames.Temperature, (r, _, p) => r[0] + (p?[0].Value ?? 0),
                 SensorType.Temperature, 0, SmartNames.Temperature, false,
                 new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\n" + "Temperature = Value + Offset.", 0) }),
-            new SmartAttribute(0xBE, SmartNames.TemperatureDifferenceFrom100, (r, v, p) => r[0] + (p?[0].Value ?? 0),
+            new SmartAttribute(0xBE, SmartNames.TemperatureDifferenceFrom100, (r, _, p) => r[0] + (p?[0].Value ?? 0),
                 SensorType.Temperature, 0, "Temperature", false,
                 new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\n" + "Temperature = Value + Offset.", 0) })
         };

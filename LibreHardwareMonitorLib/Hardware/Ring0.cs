@@ -73,7 +73,7 @@ namespace LibreHardwareMonitor.Hardware
                         }
                         else
                         {
-                            _report.Append("Status: Installing driver \"").Append(_filePath).Append("\" failed").AppendLine((File.Exists(_filePath) ? " and file exists" : string.Empty));
+                            _report.Append("Status: Installing driver \"").Append(_filePath).Append("\" failed").AppendLine(File.Exists(_filePath) ? " and file exists" : string.Empty);
                             _report.Append("First Exception: ").AppendLine(installError);
                             _report.Append("Second Exception: ").AppendLine(secondError);
                         }

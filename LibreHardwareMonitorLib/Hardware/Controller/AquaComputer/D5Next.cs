@@ -32,7 +32,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
                 //Reading output report instead of feature report, as the measurements are in the output report
                 _stream.Read(_rawData);
 
-                Name = $"D5Next";
+                Name = "D5Next";
                 FirmwareVersion = Convert.ToUInt16(_rawData[14] | (_rawData[13] << 8));
                 _temperatures[0] = new Sensor("Water Temperature", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[0]);
@@ -60,7 +60,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer
             //Reading output report instead of feature report, as the measurements are in the output report
             _stream.Read(_rawData);
             _temperatures[0].Value = (_rawData[88] | (_rawData[87] << 8)) / 100f; //Water Temp
-            _rpmSensors[0].Value = (_rawData[117] | (_rawData[116] << 8)); //Pump RPM
+            _rpmSensors[0].Value = _rawData[117] | (_rawData[116] << 8); //Pump RPM
         }
     }
 }

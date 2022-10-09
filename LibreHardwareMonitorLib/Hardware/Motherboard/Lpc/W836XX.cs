@@ -35,7 +35,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
         private readonly byte[] _initialFanTertiaryControlValue = Array.Empty<byte>();
         private readonly bool[] _restoreDefaultFanPwmControlRequired = Array.Empty<bool>();
 
-
         public W836XX(Chip chip, byte revision, ushort address)
         {
             _address = address;
@@ -376,12 +375,16 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
                 Fans[i] = count < 0xff ? 1.35e6f / (count * divisor) : 0;
 
-                // update fan divisor
-                if (count > 192 && divisorBits < 7)
-                    divisorBits++;
-
-                if (count < 96 && divisorBits > 0)
-                    divisorBits--;
+                switch (count)
+                {
+                    // update fan divisor
+                    case > 192 when divisorBits < 7:
+                        divisorBits++;
+                        break;
+                    case < 96 when divisorBits > 0:
+                        divisorBits--;
+                        break;
+                }
 
                 newBits = SetBit(newBits, FAN_DIV_BIT2[i], (divisorBits >> 2) & 1);
                 newBits = SetBit(newBits, FAN_DIV_BIT1[i], (divisorBits >> 1) & 1);
@@ -391,7 +394,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
             for (int i = 0; i < Controls.Length; i++)
             {
                 byte value = ReadByte(0, _fanPwmRegister[i]);
-                Controls[i] = (float)Math.Round((value) * 100.0f / 0xFF);
+                Controls[i] = (float)Math.Round(value * 100.0f / 0xFF);
             }
 
             Ring0.ReleaseIsaBusMutex();

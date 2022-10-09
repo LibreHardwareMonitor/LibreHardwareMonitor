@@ -24,7 +24,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
 
         private readonly byte[] _setFanSpeedMsg;
         private readonly HidStream _stream;
-        private readonly Dictionary<int, byte[]> _rawData = new Dictionary<int, byte[]>();
+        private readonly Dictionary<int, byte[]> _rawData = new();
 
         private readonly Sensor _noise;
         private readonly Sensor[] _currents = new Sensor[FANS_COUNT];
@@ -90,10 +90,10 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
                     // NZXT GRID does not report current PWM value. So we need to initialize it with some value to keep GUI and device values in sync.
                     _fanControls[i].SetDefault();
                 }
-                _noise = new Sensor($"GRID Noise", 0, SensorType.Noise, this, Array.Empty<ParameterDescription>(), settings);
+                _noise = new Sensor("GRID Noise", 0, SensorType.Noise, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_noise);
 
-                Thread readGridReports = new Thread(ContinuousRead) { IsBackground = true };
+                Thread readGridReports = new(ContinuousRead) { IsBackground = true };
                 readGridReports.Start(_rawData);
             }
         }
@@ -107,7 +107,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt
             if (control.ControlMode == ControlMode.Software)
             {
                 float value = control.SoftwareValue;
-                byte fanSpeed = (byte)(value > 100 ? 100 : (value < 0) ? 0 : value); // Clamp the value, anything out of range will fail
+                byte fanSpeed = (byte)(value > 100 ? 100 : value < 0 ? 0 : value); // Clamp the value, anything out of range will fail
 
                 //_controlling = true;
                 _setFanSpeedMsg[2] = (byte)control.Sensor.Index;

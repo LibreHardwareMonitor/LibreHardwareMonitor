@@ -427,7 +427,7 @@ namespace LibreHardwareMonitor.Hardware
         _32Way,
         _48Way,
         _64Way,
-        _20Way,
+        _20Way
     }
 
     /// <summary>
@@ -477,7 +477,7 @@ namespace LibreHardwareMonitor.Hardware
         HBM = 0x20,
         HBM2 = 0x21,
         DDR5 = 0x22,
-        LPDDR5 = 0x23,
+        LPDDR5 = 0x23
     }
 
     public class InformationBase

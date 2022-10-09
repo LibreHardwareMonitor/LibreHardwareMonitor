@@ -19,7 +19,7 @@ namespace LibreHardwareMonitor.Hardware.Network
         private readonly Dictionary<string, Network> _networks = new();
         private readonly object _scanLock = new();
         private readonly ISettings _settings;
-        private List<Network> _hardware = new();
+        private readonly List<Network> _hardware = new();
 
         public NetworkGroup(ISettings settings)
         {

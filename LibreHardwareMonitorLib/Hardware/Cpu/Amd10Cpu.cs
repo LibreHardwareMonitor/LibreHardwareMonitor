@@ -86,7 +86,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                     {
                         0x00 => FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID,
                         0x30 => FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID,
-                        _ => 0,
+                        _ => 0
                     };
                     break;
                 default:
@@ -161,10 +161,12 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 Ring0.ReadPciConfig(addr, 8, out uint rev);
 
-                if (dev == 0x43851002)
-                    _cStatesIoOffset = (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C);
-                else if (dev is 0x780B1022 or 0x790B1022)
-                    _cStatesIoOffset = 0x9C;
+                _cStatesIoOffset = dev switch
+                {
+                    0x43851002 => (byte)((rev & 0xFF) < 0x40 ? 0xB3 : 0x9C),
+                    0x780B1022 or 0x790B1022 => 0x9C,
+                    _ => _cStatesIoOffset
+                };
             }
 
             if (_cStatesIoOffset != 0)
@@ -288,7 +290,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
                         6 => 8,
                         7 => 12,
                         8 => 16,
-                        _ => 1,
+                        _ => 1
                     };
                     return (cpuFid + 0x10) / divisor;
 
@@ -314,7 +316,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             {
                 stream.Seek(0, SeekOrigin.Begin);
                 int b = stream.ReadByte();
-                while (b is not (-1) and not 10)
+                while (b is not -1 and not 10)
                 {
                     stringBuilder.Append((char)b);
                     b = stream.ReadByte();
@@ -447,7 +449,7 @@ namespace LibreHardwareMonitor.Hardware.CPU
             }
         }
 
-        private bool ReadSmuRegister(uint address, out uint value)
+        private static bool ReadSmuRegister(uint address, out uint value)
         {
             if (Ring0.WaitPciBusMutex(10))
             {

@@ -85,8 +85,10 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
                 {
                     int device = 81 + i;
                     string name = ReadString(device, 'C');
-                    _relays[i] = new Sensor(name, device, SensorType.Control, this, settings);
-                    _relays[i].Value = 100 * ReadInteger(device, 'S');
+                    _relays[i] = new Sensor(name, device, SensorType.Control, this, settings)
+                    {
+                        Value = 100 * ReadInteger(device, 'S')
+                    };
                     ActivateSensor(_relays[i]);
                 }
 
@@ -157,7 +159,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
         private string ReadString(int device, char field)
         {
             string s = ReadField(device, field);
-            if (s != null && s[0] == '"' && s[s.Length - 1] == '"')
+            if (s?[0] == '"' && s[s.Length - 1] == '"')
                 return s.Substring(1, s.Length - 2);
 
             return null;

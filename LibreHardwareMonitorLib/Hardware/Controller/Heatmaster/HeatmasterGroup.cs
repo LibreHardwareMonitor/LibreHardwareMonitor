@@ -32,87 +32,85 @@ namespace LibreHardwareMonitor.Hardware.Controller.Heatmaster
                 bool isValid = false;
                 try
                 {
-                    using (SerialPort serialPort = new(portNames[i], 38400, Parity.None, 8, StopBits.One))
+                    using SerialPort serialPort = new(portNames[i], 38400, Parity.None, 8, StopBits.One);
+                    serialPort.NewLine = ((char)0x0D).ToString();
+                    _report.Append("Port Name: ");
+                    _report.AppendLine(portNames[i]);
+                    try
                     {
-                        serialPort.NewLine = ((char)0x0D).ToString();
-                        _report.Append("Port Name: ");
-                        _report.AppendLine(portNames[i]);
-                        try
+                        serialPort.Open();
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        _report.AppendLine("Exception: Access Denied");
+                    }
+
+                    if (serialPort.IsOpen)
+                    {
+                        serialPort.DiscardInBuffer();
+                        serialPort.DiscardOutBuffer();
+                        serialPort.Write(new byte[] { 0xAA }, 0, 1);
+
+                        int j = 0;
+                        while (serialPort.BytesToRead == 0 && j < 10)
                         {
-                            serialPort.Open();
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            _report.AppendLine("Exception: Access Denied");
+                            Thread.Sleep(20);
+                            j++;
                         }
 
-                        if (serialPort.IsOpen)
+                        if (serialPort.BytesToRead > 0)
                         {
-                            serialPort.DiscardInBuffer();
-                            serialPort.DiscardOutBuffer();
-                            serialPort.Write(new byte[] { 0xAA }, 0, 1);
-
-                            int j = 0;
-                            while (serialPort.BytesToRead == 0 && j < 10)
+                            bool flag = false;
+                            while (serialPort.BytesToRead > 0 && !flag)
                             {
-                                Thread.Sleep(20);
-                                j++;
+                                flag |= serialPort.ReadByte() == 0xAA;
                             }
 
-                            if (serialPort.BytesToRead > 0)
+                            if (flag)
                             {
-                                bool flag = false;
-                                while (serialPort.BytesToRead > 0 && !flag)
+                                serialPort.WriteLine("[0:0]RH");
+                                try
                                 {
-                                    flag |= serialPort.ReadByte() == 0xAA;
-                                }
-
-                                if (flag)
-                                {
-                                    serialPort.WriteLine("[0:0]RH");
-                                    try
+                                    int k = 0;
+                                    int revision = 0;
+                                    while (k < 5)
                                     {
-                                        int k = 0;
-                                        int revision = 0;
-                                        while (k < 5)
+                                        string line = ReadLine(serialPort, 100);
+                                        if (line.StartsWith("-[0:0]RH:", StringComparison.Ordinal))
                                         {
-                                            string line = ReadLine(serialPort, 100);
-                                            if (line.StartsWith("-[0:0]RH:", StringComparison.Ordinal))
-                                            {
-                                                revision = int.Parse(line.Substring(9), CultureInfo.InvariantCulture);
-                                                break;
-                                            }
-
-                                            k++;
+                                            revision = int.Parse(line.Substring(9), CultureInfo.InvariantCulture);
+                                            break;
                                         }
 
-                                        isValid = revision == 770;
-                                        if (!isValid)
-                                        {
-                                            _report.Append("Status: Wrong Hardware Revision " + revision.ToString(CultureInfo.InvariantCulture));
-                                        }
+                                        k++;
                                     }
-                                    catch (TimeoutException)
+
+                                    isValid = revision == 770;
+                                    if (!isValid)
                                     {
-                                        _report.AppendLine("Status: Timeout Reading Revision");
+                                        _report.Append("Status: Wrong Hardware Revision " + revision.ToString(CultureInfo.InvariantCulture));
                                     }
                                 }
-                                else
+                                catch (TimeoutException)
                                 {
-                                    _report.AppendLine("Status: Wrong Startflag");
+                                    _report.AppendLine("Status: Timeout Reading Revision");
                                 }
                             }
                             else
                             {
-                                _report.AppendLine("Status: No Response");
+                                _report.AppendLine("Status: Wrong Startflag");
                             }
-
-                            serialPort.DiscardInBuffer();
                         }
                         else
                         {
-                            _report.AppendLine("Status: Port not Open");
+                            _report.AppendLine("Status: No Response");
                         }
+
+                        serialPort.DiscardInBuffer();
+                    }
+                    else
+                    {
+                        _report.AppendLine("Status: Port not Open");
                     }
                 }
                 catch (Exception e)
