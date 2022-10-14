@@ -1108,5 +1108,17 @@ namespace LibreHardwareMonitor.UI
         {
             new AuthForm(this).ShowDialog();
         }
+
+        private void treeContextMenu_Opening(object sender, CancelEventArgs e)
+        {
+
+        }
+
+        private void selectiveLoggingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SelectiveLogging sl = new SelectiveLogging(treeView.Model);
+
+            sl.ShowDialog();
+        }
     }
 }

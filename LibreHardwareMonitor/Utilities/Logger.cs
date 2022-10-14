@@ -13,23 +13,23 @@ using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.Utilities
 {
-    public class Logger
+    public class Logger : ILogger
     {
         private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}.csv";
 
-        private readonly IComputer _computer;
+        public IComputer Computer { get; private set; }
 
         private DateTime _day = DateTime.MinValue;
         private string _fileName;
         private string[] _identifiers;
         private ISensor[] _sensors;
-        private DateTime _lastLoggedTime = DateTime.MinValue;
+        public DateTime LastLoggedTime { get; private set; }
 
         public Logger(IComputer computer)
         {
-            _computer = computer;
-            _computer.HardwareAdded += HardwareAdded;
-            _computer.HardwareRemoved += HardwareRemoved;
+            Computer = computer;
+            Computer.HardwareAdded += HardwareAdded;
+            Computer.HardwareRemoved += HardwareRemoved;
         }
 
         private void HardwareRemoved(IHardware hardware)
@@ -120,7 +120,7 @@ namespace LibreHardwareMonitor.Utilities
                     if (sensor.Identifier.ToString() == _identifiers[i])
                         _sensors[i] = sensor;
             });
-            visitor.VisitComputer(_computer);
+            visitor.VisitComputer(Computer);
             return true;
         }
 
@@ -131,7 +131,7 @@ namespace LibreHardwareMonitor.Utilities
             {
                 list.Add(sensor);
             });
-            visitor.VisitComputer(_computer);
+            visitor.VisitComputer(Computer);
             _sensors = list.ToArray();
             _identifiers = _sensors.Select(s => s.Identifier.ToString()).ToArray();
 
@@ -140,23 +140,29 @@ namespace LibreHardwareMonitor.Utilities
                 writer.Write(",");
                 for (int i = 0; i < _sensors.Length; i++)
                 {
-                    writer.Write(_sensors[i].Identifier);
-                    if (i < _sensors.Length - 1)
-                        writer.Write(",");
-                    else
-                        writer.WriteLine();
+                    if (_sensors[i].LogOutput)
+                    {
+                        writer.Write(_sensors[i].Identifier);
+                        if (i < _sensors.Length - 1)
+                            writer.Write(",");
+                        else
+                            writer.WriteLine();
+                    }
                 }
 
                 writer.Write("Time,");
                 for (int i = 0; i < _sensors.Length; i++)
                 {
-                    writer.Write('"');
-                    writer.Write(_sensors[i].Name);
-                    writer.Write('"');
-                    if (i < _sensors.Length - 1)
-                        writer.Write(",");
-                    else
-                        writer.WriteLine();
+                    if (_sensors[i].LogOutput)
+                    {
+                        writer.Write('"');
+                        writer.Write(_sensors[i].Name);
+                        writer.Write('"');
+                        if (i < _sensors.Length - 1)
+                            writer.Write(",");
+                        else
+                            writer.WriteLine();
+                    }
                 }
             }
         }
@@ -167,7 +173,7 @@ namespace LibreHardwareMonitor.Utilities
         {
             DateTime now = DateTime.Now;
 
-            if (_lastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
+            if (LastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
                 return;
 
             if (_day != now.Date || !File.Exists(_fileName))
@@ -187,7 +193,7 @@ namespace LibreHardwareMonitor.Utilities
                     writer.Write(",");
                     for (int i = 0; i < _sensors.Length; i++)
                     {
-                        if (_sensors[i] != null)
+                        if (_sensors[i] != null && _sensors[i].LogOutput)
                         {
                             float? value = _sensors[i].Value;
                             if (value.HasValue)
@@ -202,7 +208,7 @@ namespace LibreHardwareMonitor.Utilities
             }
             catch (IOException) { }
 
-            _lastLoggedTime = now;
+            LastLoggedTime = now;
         }
     }
 }

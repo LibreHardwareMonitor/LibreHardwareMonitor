@@ -123,5 +123,7 @@ namespace LibreHardwareMonitor.Hardware
         /// Resets a value stored in <see cref="Max"/>.
         /// </summary>
         void ResetMax();
+
+        bool LogOutput { get; }
     }
 }
