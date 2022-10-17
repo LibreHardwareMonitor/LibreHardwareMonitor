@@ -16,6 +16,7 @@ using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
+using LibreHardwareMonitor.UI.Themes;
 
 namespace LibreHardwareMonitor.UI;
 
@@ -48,7 +49,7 @@ public class PlotPanel : UserControl
         SetDpi();
         _model = CreatePlotModel();
 
-        _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenuStrip = CreateMenu() };
+        _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.Black, ContextMenuStrip = CreateMenu() };
         _plot.MouseDown += (sender, e) =>
         {
             if (e.Button == MouseButtons.Right)
@@ -70,8 +71,29 @@ public class PlotPanel : UserControl
         UpdateAxesPosition();
 
         SuspendLayout();
+        ApplyTheme();
         Controls.Add(_plot);
         ResumeLayout(true);
+    }
+
+    public void ApplyTheme()
+    {
+        _model.Background = Theme.Current.PlotBackgroundColor.ToOxyColor();
+        _model.PlotAreaBorderColor = Theme.Current.PlotBorderColor.ToOxyColor();
+        foreach (Axis axis in _model.Axes)
+        {
+            axis.AxislineColor = Theme.Current.PlotBorderColor.ToOxyColor();
+            axis.MajorGridlineColor = Theme.Current.PlotGridMajorColor.ToOxyColor();
+            axis.MinorGridlineColor = Theme.Current.PlotGridMinorColor.ToOxyColor();
+            axis.TextColor = Theme.Current.PlotTextColor.ToOxyColor();
+            axis.TitleColor = Theme.Current.PlotTextColor.ToOxyColor();
+            axis.MinorTicklineColor = Theme.Current.PlotBorderColor.ToOxyColor();
+            axis.TicklineColor = Theme.Current.PlotBorderColor.ToOxyColor();
+        }
+        foreach (LineAnnotation annotation in _model.Annotations.Select(x => x as LineAnnotation).Where(x => x != null))
+        {
+            annotation.Color = Theme.Current.PlotBorderColor.ToOxyColor();
+        }
     }
 
     public void SetCurrentSettings()
@@ -88,6 +110,7 @@ public class PlotPanel : UserControl
     private ContextMenuStrip CreateMenu()
     {
         ContextMenuStrip menu = new ContextMenuStrip();
+        menu.Renderer = new ThemedToolStripRenderer();
         menu.Opening += (sender, e) =>
         {
             if (_cancelContextMenu)
@@ -226,7 +249,7 @@ public class PlotPanel : UserControl
                 ClipByXAxis = false,
                 ClipByYAxis = false,
                 LineStyle = LineStyle.Solid,
-                Color = OxyColors.Black,
+                Color = Theme.Current.PlotBorderColor.ToOxyColor(),
                 YAxisKey = typeName,
                 StrokeThickness = 2,
             };
@@ -274,7 +297,7 @@ public class PlotPanel : UserControl
             _dpiYScale = _dpiY / defaultDpi;
     }
 
-    public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
+    public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors, double strokeThickness)
     {
         _model.Series.Clear();
         var types = new HashSet<SensorType>();
@@ -303,7 +326,7 @@ public class PlotPanel : UserControl
             {
                 ItemsSource = sensor.Values.Select(value => CreateDataPoint(sensor.SensorType, value)),
                 Color = colors[sensor].ToOxyColor(),
-                StrokeThickness = 1,
+                StrokeThickness = strokeThickness,
                 YAxisKey = _axes[sensor.SensorType].Key,
                 Title = sensor.Hardware.Name + " " + sensor.Name
             };
@@ -321,6 +344,16 @@ public class PlotPanel : UserControl
         }
 
         UpdateAxesPosition();
+        InvalidatePlot();
+    }
+
+    public void UpdateStrokeThickness(double strokeThickness)
+    {
+        foreach (LineSeries series in _model.Series)
+        {
+            series.StrokeThickness = strokeThickness;
+        }
+
         InvalidatePlot();
     }
 

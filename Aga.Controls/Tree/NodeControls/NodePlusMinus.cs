@@ -59,7 +59,12 @@ namespace Aga.Controls.Tree.NodeControls
 				int scaledX = node.Tree.GetScaledSize(ImageSize, false);
 				int scaledY = node.Tree.GetScaledSize(ImageSize);
 				int dy = (int)Math.Round((float)(r.Height - scaledY) / 2);
-				if (Application.RenderWithVisualStyles)
+                if (TreeViewAdv.CustomPlusMinusRenderFunc != null)
+                {
+                    TreeViewAdv.CustomPlusMinusRenderFunc(context.Graphics, r, node.IsExpanded);
+                    return;
+                }
+                else if (Application.RenderWithVisualStyles)
 				{
 					VisualStyleRenderer renderer;
 					if (node.IsExpanded)
