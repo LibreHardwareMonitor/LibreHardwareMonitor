@@ -59,7 +59,6 @@ namespace LibreHardwareMonitor.UI
             this.fanControllerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hddMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nicMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -133,6 +132,8 @@ namespace LibreHardwareMonitor.UI
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.splitContainer = new LibreHardwareMonitor.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
+            this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundUpdater = new System.ComponentModel.BackgroundWorker();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
