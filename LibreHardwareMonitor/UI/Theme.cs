@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
-using Aga.Controls.Tree.NodeControls;
 using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.UI.Themes

@@ -20,6 +20,7 @@ namespace LibreHardwareMonitor.UI.Themes
             Color.Firebrick
         };
 
+        public LightTheme(string id, string displayName) : base(id, displayName) { }
         public override Color ForegroundColor => Color.FromArgb(0, 0, 0);
         public override Color BackgroundColor => Color.FromArgb(255, 255, 255);
         public override Color HyperlinkColor => Color.FromArgb(0, 0, 255);

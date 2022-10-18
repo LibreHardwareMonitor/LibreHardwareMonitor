@@ -467,6 +467,7 @@ public sealed partial class MainForm : Form
                 _autoThemeMenuItem.Checked = true;
                 Theme.SetAutoTheme();
                 _settings.SetValue("theme", "auto");
+                PlotSelectionChanged(o, e);
             };
             themeMenuItem.DropDownItems.Add(_autoThemeMenuItem);
         }
@@ -481,6 +482,7 @@ public sealed partial class MainForm : Form
                 item.Checked = true;
                 Theme.Current = theme;
                 _settings.SetValue("theme", theme.Id);
+                PlotSelectionChanged(o, e);
             };
             themeMenuItem.DropDownItems.Add(item);
 
