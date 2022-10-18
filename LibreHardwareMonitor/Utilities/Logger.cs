@@ -124,11 +124,12 @@ namespace LibreHardwareMonitor.Utilities
             return true;
         }
 
-        private void CreateNewLogFile()
+        private void CreateNewLogFile(bool selectiveLogging = false, List<string> Identifiers = null)
         {
             IList<ISensor> list = new List<ISensor>();
             SensorVisitor visitor = new SensorVisitor(sensor =>
             {
+
                 list.Add(sensor);
             });
             visitor.VisitComputer(Computer);
@@ -140,7 +141,7 @@ namespace LibreHardwareMonitor.Utilities
                 writer.Write(",");
                 for (int i = 0; i < _sensors.Length; i++)
                 {
-                    if (_sensors[i].LogOutput)
+                    if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
                     {
                         writer.Write(_sensors[i].Identifier);
                         if (i < _sensors.Length - 1)
@@ -153,7 +154,7 @@ namespace LibreHardwareMonitor.Utilities
                 writer.Write("Time,");
                 for (int i = 0; i < _sensors.Length; i++)
                 {
-                    if (_sensors[i].LogOutput)
+                    if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
                     {
                         writer.Write('"');
                         writer.Write(_sensors[i].Name);
@@ -171,6 +172,11 @@ namespace LibreHardwareMonitor.Utilities
 
         public void Log()
         {
+            Log(false, null);
+        }
+
+        public void Log(bool selectiveLogging = false, List<string> Identifiers = null)
+        { 
             DateTime now = DateTime.Now;
 
             if (LastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
@@ -193,7 +199,8 @@ namespace LibreHardwareMonitor.Utilities
                     writer.Write(",");
                     for (int i = 0; i < _sensors.Length; i++)
                     {
-                        if (_sensors[i] != null && _sensors[i].LogOutput)
+                        if (_sensors[i] != null &&
+                            (!selectiveLogging || (Identifiers.Contains(_sensors[i].Name))))
                         {
                             float? value = _sensors[i].Value;
                             if (value.HasValue)

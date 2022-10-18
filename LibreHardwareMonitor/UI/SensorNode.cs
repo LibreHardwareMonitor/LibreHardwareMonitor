@@ -19,6 +19,7 @@ namespace LibreHardwareMonitor.UI
         private readonly UnitManager _unitManager;
         private Color? _penColor;
         private bool _plot;
+        private bool _logOutput;
 
         public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
         {
@@ -84,6 +85,16 @@ namespace LibreHardwareMonitor.UI
                     break;
             }
 
+            // Initial setting for .config without "logoutput" property
+            if (settings.Contains(new Identifier(sensor.Identifier, "logoutput").ToString()))
+            {
+                LogOutput = settings.GetValue(new Identifier(sensor.Identifier, "logoutput").ToString(), true);
+            }
+            else
+            {
+                settings.SetValue(new Identifier(sensor.Identifier, "logoutput").ToString(), true);
+            }
+
             bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
             base.IsVisible = !hidden;
             Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
@@ -142,6 +153,16 @@ namespace LibreHardwareMonitor.UI
                 _plot = value;
                 _settings.SetValue(new Identifier(Sensor.Identifier, "plot").ToString(), value);
                 PlotSelectionChanged?.Invoke(this, null);
+            }
+        }
+
+        public bool LogOutput
+        {
+            get { return _logOutput; }
+            set
+            {
+                _logOutput = value;
+                _settings.SetValue(new Identifier(Sensor.Identifier, "logoutput").ToString(), value);
             }
         }
 

@@ -539,7 +539,7 @@ namespace LibreHardwareMonitor.UI
             this.selectiveLoggingMenuItem.Name = "selectiveLoggingMenuItem";
             this.selectiveLoggingMenuItem.Size = new System.Drawing.Size(221, 22);
             this.selectiveLoggingMenuItem.Text = "Selective Logging";
-            this.selectiveLoggingMenuItem.Click += new System.EventHandler(this.selectiveLoggingToolStripMenuItem_Click);
+            this.selectiveLoggingMenuItem.CheckedChanged += new System.EventHandler(this.SelectiveLoggingChanged);
             // 
             // loggingIntervalMenuItem
             // 

@@ -24,7 +24,6 @@ namespace LibreHardwareMonitor.Hardware
         private string _name;
         private float _sum;
         private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
-        private bool _logOutput = true;
 
         public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
             this(name, index, sensorType, hardware, null, settings)
@@ -43,8 +42,7 @@ namespace LibreHardwareMonitor.Hardware
             Hardware hardware,
             ParameterDescription[] parameterDescriptions,
             ISettings settings,
-            bool disableHistory = false,
-            bool logOutput = true)
+            bool disableHistory = false)
         {
             Index = index;
             IsDefaultHidden = defaultHidden;
@@ -64,7 +62,6 @@ namespace LibreHardwareMonitor.Hardware
             _defaultName = name;
             _name = settings.GetValue(new Identifier(Identifier, "name").ToString(), name);
             _trackMinMax = !disableHistory;
-            LogOutput = logOutput;
 
             if (disableHistory)
             {
@@ -91,18 +88,6 @@ namespace LibreHardwareMonitor.Hardware
         public int Index { get; }
 
         public bool IsDefaultHidden { get; }
-
-        public bool LogOutput
-        {
-            get
-            {
-                return _logOutput;
-            }
-            private set
-            {
-                _logOutput = value;
-            }
-        }
 
         public float? Max { get; private set; }
 

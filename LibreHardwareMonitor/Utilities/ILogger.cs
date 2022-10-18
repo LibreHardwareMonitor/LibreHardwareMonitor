@@ -16,6 +16,8 @@ namespace LibreHardwareMonitor.Utilities
 
         TimeSpan LoggingInterval { get; set; }
 
-        void Log();
+        //void Log();
+
+        void Log(bool selecetiveLogging = false, List<string> Identifiers = null);
     }
 }

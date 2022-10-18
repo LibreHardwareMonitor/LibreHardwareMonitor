@@ -27,6 +27,7 @@ namespace LibreHardwareMonitor.UI
         private readonly Logger _logger;
         private readonly UserRadioGroup _loggingInterval;
         private readonly UserOption _logSensors;
+        private readonly UserOption _selectiveLogging;
         private readonly UserOption _minimizeOnClose;
         private readonly UserOption _minimizeToTray;
         private readonly Color[] _plotColorPalette;
@@ -259,6 +260,8 @@ namespace LibreHardwareMonitor.UI
             authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
+            _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, selectiveLoggingMenuItem, _settings);
+            _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
             _loggingInterval = new UserRadioGroup("loggingInterval",
                                                   0,
@@ -417,6 +420,16 @@ namespace LibreHardwareMonitor.UI
             };
 
             Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+        }
+
+        private void SelectiveLoggingChanged(object sender, EventArgs e)
+        {
+            if (_selectiveLogging != null && _selectiveLogging.Value)
+            {
+                SelectiveLogging sl = new SelectiveLogging(treeView.Model);
+
+                sl.ShowDialog();
+            }
         }
 
         public bool AuthWebServerMenuItemChecked
@@ -1114,11 +1127,5 @@ namespace LibreHardwareMonitor.UI
 
         }
 
-        private void selectiveLoggingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SelectiveLogging sl = new SelectiveLogging(treeView.Model);
-
-            sl.ShowDialog();
-        }
     }
 }

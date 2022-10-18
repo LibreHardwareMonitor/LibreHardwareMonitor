@@ -680,7 +680,15 @@ namespace LibreHardwareMonitor.Hardware
             public void SetValue(string name, string value)
             { }
 
+            public void SetValue(string name, bool value)
+            { }
+
             public string GetValue(string name, string value)
+            {
+                return value;
+            }
+
+            public bool GetValue(string name, bool value)
             {
                 return value;
             }

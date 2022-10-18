@@ -25,11 +25,25 @@ namespace LibreHardwareMonitor.Hardware
         void SetValue(string name, string value);
 
         /// <summary>
+        /// Assigns a setting option to a given key.
+        /// </summary>
+        /// <param name="name">Key to which the setting value is assigned.</param>
+        /// <param name="value">Text setting value.</param>
+        void SetValue(string name, bool value);
+
+        /// <summary>
         /// Gets a setting option assigned to the given key.
         /// </summary>
         /// <param name="name">Key to which the setting value is assigned.</param>
         /// <param name="value">Default value.</param>
         string GetValue(string name, string value);
+
+        /// <summary>
+        /// Gets a setting option assigned to the given key.
+        /// </summary>
+        /// <param name="name">Key to which the setting value is assigned.</param>
+        /// <param name="value">Default value.</param>
+        bool GetValue(string name, bool value);
 
         /// <summary>
         /// Removes a setting with the specified key from the settings collection.
