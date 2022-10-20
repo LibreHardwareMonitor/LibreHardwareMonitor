@@ -129,7 +129,6 @@ namespace LibreHardwareMonitor.Utilities
             IList<ISensor> list = new List<ISensor>();
             SensorVisitor visitor = new SensorVisitor(sensor =>
             {
-
                 list.Add(sensor);
             });
             visitor.VisitComputer(Computer);
@@ -168,6 +167,25 @@ namespace LibreHardwareMonitor.Utilities
             }
         }
 
+        public void UpdateStructure(bool selectiveLogging = false, List<string> Identifiers = null)
+        {
+
+            DateTime now = DateTime.Now;
+            _day = now.Date;
+            _fileName = GetFileName(_day);
+
+            try
+            {
+                File.Move(_fileName, Path.ChangeExtension(_fileName, ".old_structure.csv"));
+            }
+            catch
+            {
+                
+            }
+
+            CreateNewLogFile(selectiveLogging, Identifiers);
+        }
+
         public TimeSpan LoggingInterval { get; set; }
 
         public void Log()
@@ -188,7 +206,7 @@ namespace LibreHardwareMonitor.Utilities
                 _fileName = GetFileName(_day);
 
                 if (!OpenExistingLogFile())
-                    CreateNewLogFile();
+                    CreateNewLogFile(selectiveLogging, Identifiers);
             }
 
             try

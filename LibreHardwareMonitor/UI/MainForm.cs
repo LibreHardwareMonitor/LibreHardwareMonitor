@@ -260,7 +260,10 @@ namespace LibreHardwareMonitor.UI
             authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
-            _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, selectiveLoggingMenuItem, _settings);
+            _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, hiddenSelLogMenuItem, _settings, false);
+            //to remove, only for testing
+            _selectiveLogging.Value = true;
+            //
             _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
             _loggingInterval = new UserRadioGroup("loggingInterval",
@@ -424,11 +427,46 @@ namespace LibreHardwareMonitor.UI
 
         private void SelectiveLoggingChanged(object sender, EventArgs e)
         {
-            if (_selectiveLogging != null && _selectiveLogging.Value)
-            {
-                SelectiveLogging sl = new SelectiveLogging(treeView.Model);
+            
+        }
 
-                sl.ShowDialog();
+        private void selectiveLoggingMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_selectiveLogging != null)
+            {
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                    {
+                        sensorNode.LogOutputTemp = sensorNode.LogOutput;
+                    }
+                }
+
+                SelectiveLoggingForm sl = new SelectiveLoggingForm(treeView.Model, _selectiveLogging);
+
+                if (sl.ShowDialog() != DialogResult.Yes)
+                    return;
+
+                selectiveLoggingMenuItem.Checked = sl.SelectiveLogging;
+                _selectiveLogging.Value = sl.SelectiveLogging;
+                bool _previousLogState = _logSensors.Value;
+                _logSensors.Value = false;
+
+                List<string> sensorSelection = new List<string>();
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                    {
+                        sensorNode.LogOutput = sensorNode.LogOutputTemp;
+
+                        if (sensorNode.LogOutput)
+                            sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
+                    }
+                }
+
+                _logger.UpdateStructure(sl.SelectiveLogging, sensorSelection);
+
+                _logSensors.Value = _previousLogState;
             }
         }
 
@@ -1127,5 +1165,6 @@ namespace LibreHardwareMonitor.UI
 
         }
 
+       
     }
 }
