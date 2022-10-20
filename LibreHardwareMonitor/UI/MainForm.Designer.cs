@@ -90,6 +90,7 @@ namespace LibreHardwareMonitor.UI
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectiveLoggingMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hiddenSelLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.log1sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.log2sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -116,11 +117,13 @@ namespace LibreHardwareMonitor.UI
             this.timeWindow6hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.timeWindow12hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.timeWindow24hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.timeWindow7dMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.webMenuItemSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.webMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serverPortMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.authWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
             this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -430,10 +433,12 @@ namespace LibreHardwareMonitor.UI
             this.logSeparatorMenuItem,
             this.logSensorsMenuItem,
             this.selectiveLoggingMenuItem,
+            this.hiddenSelLogMenuItem,
             this.loggingIntervalMenuItem,
             this.sensorValuesTimeWindowMenuItem,
             this.webMenuItemSeparator,
-            this.webMenuItem});
+            this.webMenuItem,
+            this.toolStripComboBox1});
             this.optionsMenuItem.Name = "optionsMenuItem";
             this.optionsMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsMenuItem.Text = "Options";
@@ -540,6 +545,14 @@ namespace LibreHardwareMonitor.UI
             this.selectiveLoggingMenuItem.Size = new System.Drawing.Size(221, 22);
             this.selectiveLoggingMenuItem.Text = "Selective Logging";
             this.selectiveLoggingMenuItem.CheckedChanged += new System.EventHandler(this.SelectiveLoggingChanged);
+            this.selectiveLoggingMenuItem.Click += new System.EventHandler(this.selectiveLoggingMenuItem_Click);
+            // 
+            // hiddenSelLogMenuItem
+            // 
+            this.hiddenSelLogMenuItem.Name = "hiddenSelLogMenuItem";
+            this.hiddenSelLogMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.hiddenSelLogMenuItem.Text = "hiddenSelLogMenuItem";
+            this.hiddenSelLogMenuItem.Visible = false;
             // 
             // loggingIntervalMenuItem
             // 
@@ -665,7 +678,8 @@ namespace LibreHardwareMonitor.UI
             this.timeWindow2hMenuItem,
             this.timeWindow6hMenuItem,
             this.timeWindow12hMenuItem,
-            this.timeWindow24hMenuItem});
+            this.timeWindow24hMenuItem,
+            this.timeWindow7dMenuItem});
             this.sensorValuesTimeWindowMenuItem.Name = "sensorValuesTimeWindowMenuItem";
             this.sensorValuesTimeWindowMenuItem.Size = new System.Drawing.Size(221, 22);
             this.sensorValuesTimeWindowMenuItem.Text = "Sensor Values Time Window";
@@ -747,6 +761,13 @@ namespace LibreHardwareMonitor.UI
             this.timeWindow24hMenuItem.Size = new System.Drawing.Size(107, 22);
             this.timeWindow24hMenuItem.Text = "24h";
             // 
+            // timeWindow7dMenuItem
+            // 
+            this.timeWindow7dMenuItem.CheckOnClick = true;
+            this.timeWindow7dMenuItem.Name = "timeWindow7dMenuItem";
+            this.timeWindow7dMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.timeWindow7dMenuItem.Text = "7d";
+            // 
             // webMenuItemSeparator
             // 
             this.webMenuItemSeparator.Name = "webMenuItemSeparator";
@@ -782,6 +803,17 @@ namespace LibreHardwareMonitor.UI
             this.authWebServerMenuItem.Text = "Authentication";
             this.authWebServerMenuItem.Click += new System.EventHandler(this.AuthWebServerMenuItem_Click);
             // 
+            // toolStripComboBox1
+            // 
+            this.toolStripComboBox1.Items.AddRange(new object[] {
+            "re",
+            "ere",
+            "re",
+            "re",
+            "rer"});
+            this.toolStripComboBox1.Name = "toolStripComboBox1";
+            this.toolStripComboBox1.Size = new System.Drawing.Size(121, 23);
+            // 
             // helpMenuItem
             // 
             this.helpMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -801,7 +833,6 @@ namespace LibreHardwareMonitor.UI
             // 
             this.treeContextMenu.Name = "treeContextMenu";
             this.treeContextMenu.Size = new System.Drawing.Size(61, 4);
-            this.treeContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.treeContextMenu_Opening);
             // 
             // saveFileDialog
             // 
@@ -986,11 +1017,14 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem timeWindow6hMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow12hMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
+        private ToolStripRadioButtonMenuItem timeWindow7dMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem selectiveLoggingMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hiddenSelLogMenuItem;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
     }
 }
 

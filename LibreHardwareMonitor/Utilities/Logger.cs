@@ -129,7 +129,6 @@ namespace LibreHardwareMonitor.Utilities
             IList<ISensor> list = new List<ISensor>();
             SensorVisitor visitor = new SensorVisitor(sensor =>
             {
-
                 list.Add(sensor);
             });
             visitor.VisitComputer(Computer);
@@ -138,34 +137,45 @@ namespace LibreHardwareMonitor.Utilities
 
             using (StreamWriter writer = new StreamWriter(_fileName, false))
             {
-                writer.Write(",");
+                string s = ",";
+
                 for (int i = 0; i < _sensors.Length; i++)
                 {
                     if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
-                    {
-                        writer.Write(_sensors[i].Identifier);
-                        if (i < _sensors.Length - 1)
-                            writer.Write(",");
-                        else
-                            writer.WriteLine();
-                    }
+                        s += _sensors[i].Identifier.ToString() + ",";
+                }
+                s = s.TrimEnd(new char[1] { ',' });
+                writer.WriteLine(s);
+
+                s  = "Time,";
+                for (int i = 0; i < _sensors.Length; i++)
+                {
+                    if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
+                        s += _sensors[i].Name + ",";
                 }
 
-                writer.Write("Time,");
-                for (int i = 0; i < _sensors.Length; i++)
-                {
-                    if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
-                    {
-                        writer.Write('"');
-                        writer.Write(_sensors[i].Name);
-                        writer.Write('"');
-                        if (i < _sensors.Length - 1)
-                            writer.Write(",");
-                        else
-                            writer.WriteLine();
-                    }
-                }
+                s = s.TrimEnd(new char[1] {','});
+                writer.WriteLine(s);
             }
+        }
+
+        public void UpdateStructure(bool selectiveLogging = false, List<string> Identifiers = null)
+        {
+
+            DateTime now = DateTime.Now;
+            _day = now.Date;
+            _fileName = GetFileName(_day);
+
+            try
+            {
+                File.Move(_fileName, Path.ChangeExtension(_fileName, ".old_structure.csv"));
+            }
+            catch
+            {
+                
+            }
+
+            CreateNewLogFile(selectiveLogging, Identifiers);
         }
 
         public TimeSpan LoggingInterval { get; set; }
@@ -188,29 +198,47 @@ namespace LibreHardwareMonitor.Utilities
                 _fileName = GetFileName(_day);
 
                 if (!OpenExistingLogFile())
-                    CreateNewLogFile();
+                    CreateNewLogFile(selectiveLogging, Identifiers);
             }
 
             try
             {
                 using (StreamWriter writer = new StreamWriter(new FileStream(_fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))
                 {
+                    /*
                     writer.Write(now.ToString("G", CultureInfo.InvariantCulture));
                     writer.Write(",");
                     for (int i = 0; i < _sensors.Length; i++)
                     {
                         if (_sensors[i] != null &&
-                            (!selectiveLogging || (Identifiers.Contains(_sensors[i].Name))))
+                            (!selectiveLogging || (Identifiers.Contains(_sensors[i].Identifier.ToString()))))
                         {
                             float? value = _sensors[i].Value;
                             if (value.HasValue)
                                 writer.Write(value.Value.ToString("R", CultureInfo.InvariantCulture));
+
+                            if (i < _sensors.Length - 1)
+                                writer.Write(",");
+                            else
+                                writer.WriteLine();
                         }
-                        if (i < _sensors.Length - 1)
-                            writer.Write(",");
-                        else
-                            writer.WriteLine();
                     }
+                    */
+
+                    string s = now.ToString("G", CultureInfo.InvariantCulture) + ",";
+
+                    for (int i = 0; i < _sensors.Length; i++)
+                    {
+                        if (_sensors[i] != null &&
+                            (!selectiveLogging || (Identifiers.Contains(_sensors[i].Identifier.ToString()))))
+                        {
+                            float? value = _sensors[i].Value;
+                            if (value.HasValue)
+                                s += value.Value.ToString("R", CultureInfo.InvariantCulture) + ",";
+                        }
+                    }
+                    s = s.TrimEnd(new char[1] { ',' });
+                    writer.WriteLine(s);
                 }
             }
             catch (IOException) { }

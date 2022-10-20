@@ -260,7 +260,10 @@ namespace LibreHardwareMonitor.UI
             authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
-            _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, selectiveLoggingMenuItem, _settings);
+            _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, hiddenSelLogMenuItem, _settings, false);
+            //to remove, only for testing
+            _selectiveLogging.Value = true;
+            //
             _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
             _loggingInterval = new UserRadioGroup("loggingInterval",
@@ -343,7 +346,8 @@ namespace LibreHardwareMonitor.UI
                                                              timeWindow2hMenuItem,
                                                              timeWindow6hMenuItem,
                                                              timeWindow12hMenuItem,
-                                                             timeWindow24hMenuItem
+                                                             timeWindow24hMenuItem,
+                                                             timeWindow7dMenuItem
                                                          },
                                                          _settings);
 
@@ -385,6 +389,9 @@ namespace LibreHardwareMonitor.UI
                     case 10:
                         timeWindow = new TimeSpan(24, 0, 0);
                         break;
+                    case 11:
+                        timeWindow = new TimeSpan(24*7, 0, 0);
+                        break;
                 }
 
                 _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
@@ -424,12 +431,64 @@ namespace LibreHardwareMonitor.UI
 
         private void SelectiveLoggingChanged(object sender, EventArgs e)
         {
-            if (_selectiveLogging != null && _selectiveLogging.Value)
-            {
-                SelectiveLogging sl = new SelectiveLogging(treeView.Model);
+            
+        }
 
-                sl.ShowDialog();
+        private void selectiveLoggingMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_selectiveLogging != null)
+            {
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                    {
+                        sensorNode.LogOutputTemp = sensorNode.LogOutput;
+                    }
+                }
+
+                SelectiveLoggingForm sl = new SelectiveLoggingForm(treeView.Model, _selectiveLogging);
+
+                if (sl.ShowDialog() != DialogResult.Yes)
+                    return;
+
+                selectiveLoggingMenuItem.Checked = sl.SelectiveLogging;
+                _selectiveLogging.Value = sl.SelectiveLogging;
+                bool _previousLogState = _logSensors.Value;
+                _logSensors.Value = false;
+
+                List<string> sensorSelection = new List<string>();
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                    {
+                        sensorNode.LogOutput = sensorNode.LogOutputTemp;
+
+                        if (sensorNode.LogOutput)
+                            sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
+                    }
+                }
+
+                _logger.UpdateStructure(_selectiveLogging.Value, SensorsToLog());
+
+                _logSensors.Value = _previousLogState;
             }
+        }
+
+        private List<string> SensorsToLog()
+        {
+            List<string> sensorSelection = new List<string>();
+            foreach (TreeNodeAdv node in treeView.AllNodes)
+            {
+                if (node.Tag is SensorNode sensorNode)
+                {
+                    if (!_selectiveLogging.Value)
+                        sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
+                    else if  (sensorNode.LogOutput)
+                        sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
+                }
+            }
+
+            return sensorSelection;
         }
 
         public bool AuthWebServerMenuItemChecked
@@ -445,7 +504,7 @@ namespace LibreHardwareMonitor.UI
             _computer.Accept(_updateVisitor);
 
             if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
-                _logger.Log();
+                _logger.Log(_selectiveLogging.Value, SensorsToLog());
 
             if (_delayCount < 4)
                 _delayCount++;
@@ -1121,11 +1180,5 @@ namespace LibreHardwareMonitor.UI
         {
             new AuthForm(this).ShowDialog();
         }
-
-        private void treeContextMenu_Opening(object sender, CancelEventArgs e)
-        {
-
-        }
-
     }
 }

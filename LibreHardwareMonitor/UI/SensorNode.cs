@@ -20,6 +20,7 @@ namespace LibreHardwareMonitor.UI
         private Color? _penColor;
         private bool _plot;
         private bool _logOutput;
+        private bool _logOutputTemp;
 
         public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
         {
@@ -162,8 +163,15 @@ namespace LibreHardwareMonitor.UI
             set
             {
                 _logOutput = value;
+                LogOutputTemp = value;
                 _settings.SetValue(new Identifier(Sensor.Identifier, "logoutput").ToString(), value);
             }
+        }
+
+        public bool LogOutputTemp
+        {
+            get { return _logOutputTemp; }
+            set { _logOutputTemp = value; }
         }
 
         public ISensor Sensor { get; }
