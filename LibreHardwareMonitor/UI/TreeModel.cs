@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Aga.Controls.Tree;
 
 namespace LibreHardwareMonitor.UI;
@@ -59,12 +60,10 @@ public class TreeModel : ITreeModel
         Node node = GetNode(treePath);
         if (node != null)
         {
-            foreach (Node n in node.Nodes)
-                if (_forceVisible || n.IsVisible)
-                    yield return n;
+            return node.Nodes.Where(n => _forceVisible || n.IsVisible).ToList();
         }
-        else
-        { }
+
+        return Enumerable.Empty<Node>();
     }
 
     public bool IsLeaf(TreePath treePath)
