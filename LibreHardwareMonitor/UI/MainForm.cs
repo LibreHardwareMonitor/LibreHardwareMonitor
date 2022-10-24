@@ -262,7 +262,7 @@ namespace LibreHardwareMonitor.UI
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
             _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, hiddenSelLogMenuItem, _settings, false);
             //to remove, only for testing
-            _selectiveLogging.Value = true;
+            //_selectiveLogging.Value = true;
             //
             _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
