@@ -456,16 +456,10 @@ namespace LibreHardwareMonitor.UI
                 bool _previousLogState = _logSensors.Value;
                 _logSensors.Value = false;
 
-                List<string> sensorSelection = new List<string>();
                 foreach (TreeNodeAdv node in treeView.AllNodes)
                 {
                     if (node.Tag is SensorNode sensorNode)
-                    {
                         sensorNode.LogOutput = sensorNode.LogOutputTemp;
-
-                        if (sensorNode.LogOutput)
-                            sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
-                    }
                 }
 
                 _logger.UpdateStructure(_selectiveLogging.Value, SensorsToLog());
