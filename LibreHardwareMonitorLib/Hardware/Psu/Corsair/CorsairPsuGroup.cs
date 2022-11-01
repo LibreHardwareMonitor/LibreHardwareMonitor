@@ -21,11 +21,14 @@ public class CorsairPsuGroup : IGroup
         0x1c06, // HX850i
         0x1c07, // HX1000i
         0x1c08, // HX1200i
+        0x1c1f, // HX1500i
+
         0x1c09, // RM550i
         0x1c0a, // RM650i
         0x1c0b, // RM750i
         0x1c0c, // RM850i
-        0x1c0d // RM1000i
+        0x1c0d, // RM1000i
+
         // 0x1c11, // AX1600i
     };
 
