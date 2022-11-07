@@ -319,10 +319,6 @@ public class Kernel32
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern UIntPtr SetThreadAffinityMask(IntPtr handle, UIntPtr mask);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern IntPtr GetCurrentThread();
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
