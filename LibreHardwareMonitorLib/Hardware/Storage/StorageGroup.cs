@@ -20,7 +20,7 @@ internal class StorageGroup : IGroup
         if (Software.OperatingSystem.IsUnix)
             return;
 
-        var virtualDiskMap = DiskToPhysicalDisk();
+        var indexToPhysicalDiskMap = DiskToPhysicalDisk();
 
         //https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
         using var diskDriveSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive") { Options = { Timeout = TimeSpan.FromSeconds(10) } };
@@ -30,7 +30,6 @@ internal class StorageGroup : IGroup
             uint idx = Convert.ToUInt32(diskDrive.Properties["Index"].Value);
             ulong diskSize = Convert.ToUInt64(diskDrive.Properties["Size"].Value);
             int scsi = Convert.ToInt32(diskDrive.Properties["SCSIPort"].Value);
-            string serialNumber = ExtractSerialNumber((string)diskDrive.Properties["SerialNumber"].Value);
 
             if (deviceId != null)
             {
@@ -40,13 +39,13 @@ internal class StorageGroup : IGroup
                     _hardware.Add(instance);
                 }
 
-                if (serialNumber != null && virtualDiskMap.ContainsKey(serialNumber))
+                if (indexToPhysicalDiskMap.ContainsKey(idx))
                 {
-                    var physicalDisks = virtualDiskMap[serialNumber];
-                    foreach (PhysicalDisk physicalDisk in physicalDisks)
+                    var physicalDisks = indexToPhysicalDiskMap[idx];
+                    foreach ((string, ulong) physicalDisk in physicalDisks)
                     {
-                        var physicialDiskIdx = Convert.ToUInt32(physicalDisk.deviceId);
-                        var physicalDiskInstance = AbstractStorage.CreateInstance($"\\\\.\\PHYSICALDRIVE{physicalDisk.deviceId}", physicialDiskIdx, physicalDisk.size, scsi, settings);
+                        var physicialDiskIdx = Convert.ToUInt32(physicalDisk.Item1);
+                        var physicalDiskInstance = AbstractStorage.CreateInstance($"\\\\.\\PHYSICALDRIVE{physicalDisk.Item1}", physicialDiskIdx, physicalDisk.Item2, scsi, settings);
                         if (physicalDiskInstance != null)
                         {
                             _hardware.Add(physicalDiskInstance);
@@ -58,74 +57,104 @@ internal class StorageGroup : IGroup
     }
 
     /// <summary>
-    /// Returns a map of serialNumber -> physical disk properties.
+    /// Returns a map of diskIndex -> physical disk properties.
     /// If you are using Windows Storage Spaces, one or more physical disks are put together to form a single disk (for better performance and/or resilience).
-    /// We can use the Storage Management API to find the device ids of these "hidden" physical disks. 
+    /// We can use the Storage Management API to find the device ids of these "hidden" physical disks.
+    ///
+    /// There's a bit of gymnastics, but basically this method is just doing a join between the tables: MSFT_Disk, MSFT_VirtualDiskToDisk, MSFT_VirtualDiskToPhysicalDisk, MSFT_PhysicalDisk
     /// </summary>
     /// <returns></returns>
-    private Dictionary<string, List<PhysicalDisk>> DiskToPhysicalDisk()
+    private static Dictionary<UInt32, List<(string, ulong)>> DiskToPhysicalDisk()
     {
-        var physicalDiskMap = new Dictionary<string, PhysicalDisk>();
-        ManagementScope managementScope = new ManagementScope("\\\\.\\ROOT\\Microsoft\\Windows\\Storage");
-        //https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-physicaldisk
-        using var physicalDiskSearcher = new ManagementObjectSearcher(managementScope, new ObjectQuery("SELECT * FROM MSFT_PhysicalDisk"));
-        foreach (ManagementBaseObject physicalDisk in physicalDiskSearcher.Get())
+        try
         {
-            var sn = ExtractSerialNumber((string)physicalDisk["ObjectId"]);
-            var deviceId = (string)physicalDisk["DeviceId"];
-            var size = (ulong)physicalDisk["Size"];
-            if (sn != null)
+            var physicalDiskMap = new Dictionary<string, (string, ulong)>();
+            ManagementScope managementScope = new ManagementScope("\\\\.\\ROOT\\Microsoft\\Windows\\Storage");
+            //https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-physicaldisk
+            using var physicalDiskSearcher = new ManagementObjectSearcher(managementScope, new ObjectQuery("SELECT * FROM MSFT_PhysicalDisk"));
+            foreach (ManagementBaseObject physicalDisk in physicalDiskSearcher.Get())
             {
-                physicalDiskMap.Add(sn, new PhysicalDisk(deviceId, size));
-            }
-        }
-
-        var virtualDiskMap = new Dictionary<string, List<PhysicalDisk>>();
-        //https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-virtualdisktophysicaldisk
-        using var virtualToPhysicalDiskSearcher = new ManagementObjectSearcher(managementScope, new ObjectQuery("SELECT * FROM MSFT_VirtualDiskToPhysicalDisk"));
-        foreach (ManagementBaseObject virtualToPhysicalDisk in virtualToPhysicalDiskSearcher.Get())
-        {
-            var virtualDiskSn = ExtractSerialNumber((string)virtualToPhysicalDisk["VirtualDisk"]);
-            var physicalDiskSn = ExtractSerialNumber((string)virtualToPhysicalDisk["PhysicalDisk"]);
-            if (virtualDiskSn != null && physicalDiskSn != null && physicalDiskMap.ContainsKey(physicalDiskSn))
-            {
-                if (!virtualDiskMap.ContainsKey(virtualDiskSn))
+                var objectId = (string)physicalDisk["ObjectId"];
+                var deviceId = (string)physicalDisk["DeviceId"];
+                var size = (ulong)physicalDisk["Size"];
+                if (objectId != null && deviceId != null)
                 {
-                    virtualDiskMap[virtualDiskSn] = new List<PhysicalDisk>();
+                    physicalDiskMap.Add(objectId.ToLower(), (deviceId, size));
                 }
-                virtualDiskMap[virtualDiskSn].Add(physicalDiskMap[physicalDiskSn]);
             }
+
+            var virtualDiskMap = new Dictionary<string, List<(string, ulong)>>();
+            //https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-virtualdisktophysicaldisk
+            using var virtualToPhysicalDiskSearcher = new ManagementObjectSearcher(managementScope, new ObjectQuery("SELECT * FROM MSFT_VirtualDiskToPhysicalDisk"));
+            foreach (ManagementBaseObject virtualToPhysicalDisk in virtualToPhysicalDiskSearcher.Get())
+            {
+                var physicalDiskObjectId = ExtractReferenceObjectID((string)virtualToPhysicalDisk["PhysicalDisk"]);
+                var virtualDiskObjectId = ExtractReferenceObjectID((string)virtualToPhysicalDisk["VirtualDisk"]);
+                if (physicalDiskObjectId != null && virtualDiskObjectId != null && physicalDiskMap.ContainsKey(physicalDiskObjectId))
+                {
+                    if (!virtualDiskMap.ContainsKey(virtualDiskObjectId))
+                    {
+                        virtualDiskMap[virtualDiskObjectId] = new List<(string, ulong)>();
+                    }
+                    virtualDiskMap[virtualDiskObjectId].Add(physicalDiskMap[physicalDiskObjectId]);
+                }
+            }
+
+            var diskMap = new Dictionary<string, List<(string, ulong)>>();
+            //https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-virtualdisktodisk
+            using var diskToVirtualDiskSearcher = new ManagementObjectSearcher(managementScope, new ObjectQuery("SELECT * FROM MSFT_VirtualDiskToDisk"));
+            foreach (ManagementBaseObject diskToVirtualDisk in diskToVirtualDiskSearcher.Get())
+            {
+                var virtualDiskObjectId = ExtractReferenceObjectID((string)diskToVirtualDisk["VirtualDisk"]);
+                var diskObjectId = ExtractReferenceObjectID((string)diskToVirtualDisk["Disk"]);
+                if (virtualDiskObjectId != null && diskObjectId != null && virtualDiskMap.ContainsKey(virtualDiskObjectId))
+                {
+                    if (!diskMap.ContainsKey(diskObjectId))
+                    {
+                        diskMap[diskObjectId] = new List<(string, ulong)>();
+                    }
+                    diskMap[diskObjectId].AddRange(virtualDiskMap[virtualDiskObjectId]);
+                }
+            }
+
+            var indexToPhysicalDiskMap = new Dictionary<UInt32, List<(string, ulong)>>();
+            using var diskSearcher = new ManagementObjectSearcher(managementScope, new ObjectQuery("SELECT * FROM MSFT_Disk"));
+            foreach (ManagementBaseObject disk in diskSearcher.Get())
+            {
+                var objectId = (string)disk["ObjectId"];
+                var index = (UInt32)disk["Number"];
+                if (objectId != null && diskMap.ContainsKey(objectId.ToLower()))
+                {
+                    if (!indexToPhysicalDiskMap.ContainsKey(index))
+                    {
+                        indexToPhysicalDiskMap[index] = new List<(string, ulong)>();
+                    }
+                    indexToPhysicalDiskMap[index].AddRange(diskMap[objectId.ToLower()]);
+                }
+            }
+
+            return indexToPhysicalDiskMap;
         }
-
-        return virtualDiskMap;
-    }
-
-    private class PhysicalDisk
-    {
-        public readonly string deviceId;
-        public readonly ulong size;
-
-        public PhysicalDisk(string deviceId, ulong size)
+        catch (Exception)
         {
-            this.deviceId = deviceId;
-            this.size = size;
+            return new Dictionary<UInt32, List<(string, ulong)>>();
         }
     }
 
-    private static Regex serialNumberRegex = new Regex(@".*\{(?<id>[^}]+)\}[^}]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static Regex referenceObjectIDRegex = new Regex(".*ObjectId=\"(?<id>.+)\"$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     /// <summary>
-    /// Returns the serial number from a disk string id.
+    /// Returns the object id inside a reference string
     /// </summary>
-    /// <param name="objectId"></param>
+    /// <param name="referenceString"></param>
     /// <returns></returns>
-    private static String ExtractSerialNumber(string objectId)
+    private static String ExtractReferenceObjectID(string referenceString)
     {
-        MatchCollection matches = serialNumberRegex.Matches(objectId);
+        MatchCollection matches = referenceObjectIDRegex.Matches(referenceString);
         foreach (Match match in matches)
         {
             GroupCollection groups = match.Groups;
-            return groups["id"].Value.ToLower();
+            return Regex.Unescape(groups["id"].Value).ToLower();
         }
 
         return null;
