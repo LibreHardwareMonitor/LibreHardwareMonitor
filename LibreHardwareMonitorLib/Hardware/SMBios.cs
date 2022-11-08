@@ -648,6 +648,16 @@ public class BiosInformation : InformationBase
             int.TryParse(parts[1], out int day) &&
             int.TryParse(parts[2], out int year))
         {
+            if (day > 31)
+            {
+                (year, day) = (day, year);
+            }
+
+            if (month > 31)
+            {
+                (year, month) = (month, year);
+            }
+
             if (month > 12)
             {
                 (month, day) = (day, month);
