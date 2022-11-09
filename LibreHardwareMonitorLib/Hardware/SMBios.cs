@@ -653,17 +653,18 @@ public class BiosInformation : InformationBase
                 (year, day) = (day, year);
             }
 
-            if (month > 31)
-            {
-                (year, month) = (month, year);
-            }
-
             if (month > 12)
             {
                 (month, day) = (day, month);
             }
 
-            return new DateTime(year < 100 ? 1900 + year : year, month, day);
+            try {
+                return new DateTime(year < 100 ? 1900 + year : year, month, day);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         return null;
