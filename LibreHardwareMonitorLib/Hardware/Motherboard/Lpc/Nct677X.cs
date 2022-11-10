@@ -81,7 +81,7 @@ internal class Nct677X : ISuperIO
             VENDOR_ID_HIGH_REGISTER = 0x804F;
             VENDOR_ID_LOW_REGISTER = 0x004F;
 
-            FAN_PWM_OUT_REG = chip is Chip.NCT6797D or Chip.NCT6798D
+            FAN_PWM_OUT_REG = chip is Chip.NCT6797D or Chip.NCT6798D or Chip.NCT6799D
                 ? new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0xA09, 0xB09 }
                 : new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0x017, 0x029 };
 
@@ -150,6 +150,7 @@ internal class Nct677X : ISuperIO
             case Chip.NCT6796DR:
             case Chip.NCT6797D:
             case Chip.NCT6798D:
+            case Chip.NCT6799D:
                 switch (chip)
                 {
                     case Chip.NCT6779D:
@@ -160,6 +161,7 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6796DR:
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
+                    case Chip.NCT6799D:
                         Fans = new float?[7];
                         Controls = new float?[7];
                         break;
@@ -189,6 +191,7 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6796DR:
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
+                    case Chip.NCT6799D:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
                             new(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),
@@ -467,6 +470,7 @@ internal class Nct677X : ISuperIO
                 case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
+                case Chip.NCT6799D:
                     if (_temperaturesSource[i].Register == 0)
                     {
                         System.Diagnostics.Debug.WriteLine("Temperature register {0} skipped, address 0.", i);
@@ -901,7 +905,8 @@ internal class Nct677X : ISuperIO
             not Chip.NCT6796D and
             not Chip.NCT6796DR and
             not Chip.NCT6797D and
-            not Chip.NCT6798D)
+            not Chip.NCT6798D and
+            not Chip.NCT6799D)
         {
             return;
         }

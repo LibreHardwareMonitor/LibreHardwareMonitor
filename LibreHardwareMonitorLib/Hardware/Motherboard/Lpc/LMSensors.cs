@@ -118,6 +118,9 @@ internal class LMSensors
                     case "nct6798":
                         _superIOs.Add(new LMChip(Chip.NCT6798D, path));
                         break;
+                    case "nct6799":
+                        _superIOs.Add(new LMChip(Chip.NCT6799D, path));
+                        break;
 
                     case "w83627ehf":
                         _superIOs.Add(new LMChip(Chip.W83627EHF, path));
