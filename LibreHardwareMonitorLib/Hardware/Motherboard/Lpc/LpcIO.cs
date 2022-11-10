@@ -367,6 +367,10 @@ internal class LpcIO
                         chip = Chip.NCT6798D;
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
+                    case 0x41:
+                        chip = Chip.NCT6686D;
+                        logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                        break;
                 }
                 break;
 
@@ -472,6 +476,7 @@ internal class LpcIO
                 case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
+                case Chip.NCT6686D:
                 case Chip.NCT6687D:
                 case Chip.NCT6683D:
                     _superIOs.Add(new Nct677X(chip, revision, address, port));
