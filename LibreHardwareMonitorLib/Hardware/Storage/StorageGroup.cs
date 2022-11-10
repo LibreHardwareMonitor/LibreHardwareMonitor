@@ -41,9 +41,9 @@ internal class StorageGroup : IGroup
                 if (storageSpaceDiskToPhysicalDiskMap.ContainsKey(idx))
                 {
                     var physicalDisks = storageSpaceDiskToPhysicalDiskMap[idx];
-                    foreach ((UInt32, ulong) physicalDisk in physicalDisks)
+                    foreach ((uint, ulong) physicalDisk in physicalDisks)
                     {
-                        var physicalDiskInstance = AbstractStorage.CreateInstance($"\\\\.\\PHYSICALDRIVE{physicalDisk.Item1}", physicalDisk.Item1, physicalDisk.Item2, scsi, settings);
+                        var physicalDiskInstance = AbstractStorage.CreateInstance(@$"\\.\PHYSICALDRIVE{physicalDisk.Item1}", physicalDisk.Item1, physicalDisk.Item2, scsi, settings);
                         if (physicalDiskInstance != null)
                         {
                             _hardware.Add(physicalDiskInstance);
@@ -58,9 +58,9 @@ internal class StorageGroup : IGroup
     /// Maps each StorageSpace to the PhysicalDisks it is composed of.
     /// </summary>
     /// <returns></returns>
-    private static Dictionary<UInt32, List<(UInt32, ulong)>> StorageSpaceDiskToPhysicalDiskMapping()
+    private static Dictionary<uint, List<(uint, ulong)>> StorageSpaceDiskToPhysicalDiskMapping()
     {
-        var diskToPhysicalDisk = new Dictionary<UInt32, List<(UInt32, ulong)>>();
+        var diskToPhysicalDisk = new Dictionary<uint, List<(uint, ulong)>>();
         if (!Software.OperatingSystem.IsWindows8OrGreater)
         {
             return diskToPhysicalDisk;
@@ -74,8 +74,8 @@ internal class StorageGroup : IGroup
         using var diskSearcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM MSFT_Disk"));
         foreach (ManagementBaseObject disk in diskSearcher.Get())
         {
-            var diskIdx = (UInt32)disk["Number"];
-            diskToPhysicalDisk[diskIdx] = new List<(UInt32, ulong)>();
+            var diskIdx = (uint)disk["Number"];
+            diskToPhysicalDisk[diskIdx] = new List<(uint, ulong)>();
             // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-virtualdisk
             // Maps the current Disk to its corresponding VirtualDisk. If the current Disk is not a storage space, it does not have a corresponding VirtualDisk.
             // Each Disk maps to one or zero VirtualDisk.
@@ -91,8 +91,8 @@ internal class StorageGroup : IGroup
                         foreach (ManagementBaseObject physicalDisk in toPhysicalDisk.Get())
                         {
                             var physicalDiskSize = (ulong)physicalDisk["Size"];
-                            UInt32 physicalDiskIdx;
-                            if (UInt32.TryParse((string)physicalDisk["DeviceId"], out physicalDiskIdx))
+                            uint physicalDiskIdx;
+                            if (uint.TryParse((string)physicalDisk["DeviceId"], out physicalDiskIdx))
                             {
                                 diskToPhysicalDisk[diskIdx].Add((physicalDiskIdx, physicalDiskSize));
                             }
@@ -107,7 +107,7 @@ internal class StorageGroup : IGroup
 
     private static string FollowAssociationQuery(string source, string objectId, string associationClass)
     {
-        return $"ASSOCIATORS OF {{{source}.ObjectId=\"{objectId.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"}} WHERE AssocClass = {associationClass}";
+        return @$"ASSOCIATORS OF {{{source}.ObjectId=""{objectId.Replace(@"\", @"\\").Replace(@"""", @"\""")}""}} WHERE AssocClass = {associationClass}";
     }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
