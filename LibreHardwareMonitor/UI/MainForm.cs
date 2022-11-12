@@ -328,7 +328,7 @@ public sealed partial class MainForm : Form
         };
 
         _updateInterval = new UserRadioGroup("updateIntervalMenuItem",
-                                             1,
+                                             2,
                                              new[]
                                              {
                                                  updateInterval250msMenuItem,
