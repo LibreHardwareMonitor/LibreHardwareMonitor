@@ -26,6 +26,7 @@ public sealed partial class MainForm : Form
     private readonly SensorGadget _gadget;
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
+    private readonly UserRadioGroup _updateInterval;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -322,6 +323,44 @@ public sealed partial class MainForm : Form
                     break;
                 case 12:
                     _logger.LoggingInterval = new TimeSpan(6, 0, 0);
+                    break;
+            }
+        };
+
+        _updateInterval = new UserRadioGroup("updateIntervalMenuItem",
+                                             2,
+                                             new[]
+                                             {
+                                                 updateInterval250msMenuItem,
+                                                 updateInterval500msMenuItem,
+                                                 updateInterval1sMenuItem,
+                                                 updateInterval2sMenuItem,
+                                                 updateInterval5sMenuItem,
+                                                 updateInterval10sMenuItem
+                                             },
+                                             _settings);
+
+        _updateInterval.Changed += (sender, e) =>
+        {
+            switch (_updateInterval.Value)
+            {
+                case 0:
+                    timer.Interval = 250;
+                    break;
+                case 1:
+                    timer.Interval = 500;
+                    break;
+                case 2:
+                    timer.Interval = 1000;
+                    break;
+                case 3:
+                    timer.Interval = 2000;
+                    break;
+                case 4:
+                    timer.Interval = 5000;
+                    break;
+                case 5:
+                    timer.Interval = 10000;
                     break;
             }
         };
