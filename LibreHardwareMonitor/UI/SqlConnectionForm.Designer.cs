@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SqlConnectionForm));
             this.odBrowseDSN = new System.Windows.Forms.OpenFileDialog();
             this.tbSqlStatement = new System.Windows.Forms.TextBox();
             this.btnExecute = new System.Windows.Forms.Button();
@@ -317,10 +318,11 @@
             this.Controls.Add(this.btnEnableSqlLogging);
             this.Controls.Add(this.btnExecute);
             this.Controls.Add(this.tbSqlStatement);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(957, 449);
             this.Name = "SqlConnectionForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "SqlConnectionForm";
+            this.Text = "Connect to database...";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
