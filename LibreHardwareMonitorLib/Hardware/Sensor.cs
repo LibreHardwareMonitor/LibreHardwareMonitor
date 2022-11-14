@@ -58,14 +58,15 @@ internal class Sensor : ISensor
 
         Parameters = parameters;
 
-        _settings = settings;
-        _defaultName = name;
-        _name = settings.GetValue(new Identifier(Identifier, "name").ToString(), name);
-        _trackMinMax = !disableHistory;
-        if (disableHistory)
-        {
-            _valuesTimeWindow = TimeSpan.Zero;
-        }
+            _settings = settings;
+            _defaultName = name;
+            _name = settings.GetValue(new Identifier(Identifier, "name").ToString(), name);
+            _trackMinMax = !disableHistory;
+
+            if (disableHistory)
+            {
+                _valuesTimeWindow = TimeSpan.Zero;
+            }
 
         GetSensorValuesFromSettings();
 

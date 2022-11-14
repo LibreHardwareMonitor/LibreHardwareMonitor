@@ -18,7 +18,7 @@ public class UserOption
     private event EventHandler _changed;
     private readonly PersistentSettings _settings;
 
-    public UserOption(string name, bool value, ToolStripMenuItem menuItem, PersistentSettings settings)
+    public UserOption(string name, bool value, ToolStripMenuItem menuItem, PersistentSettings settings, bool syncCheckMark = true)
     {
         _settings = settings;
         _name = name;

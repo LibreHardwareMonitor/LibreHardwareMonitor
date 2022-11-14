@@ -11,26 +11,26 @@ using System.IO;
 using System.Linq;
 using LibreHardwareMonitor.Hardware;
 
-namespace LibreHardwareMonitor.Utilities;
-
-public class Logger
+namespace LibreHardwareMonitor.Utilities
 {
-    private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}.csv";
-
-    private readonly IComputer _computer;
-
-    private DateTime _day = DateTime.MinValue;
-    private string _fileName;
-    private string[] _identifiers;
-    private ISensor[] _sensors;
-    private DateTime _lastLoggedTime = DateTime.MinValue;
-
-    public Logger(IComputer computer)
+    public class Logger : ILogger
     {
-        _computer = computer;
-        _computer.HardwareAdded += HardwareAdded;
-        _computer.HardwareRemoved += HardwareRemoved;
-    }
+        private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}.csv";
+
+        public IComputer Computer { get; private set; }
+
+        private DateTime _day = DateTime.MinValue;
+        private string _fileName;
+        private string[] _identifiers;
+        private ISensor[] _sensors;
+        public DateTime LastLoggedTime { get; private set; }
+
+        public Logger(IComputer computer)
+        {
+            Computer = computer;
+            Computer.HardwareAdded += HardwareAdded;
+            Computer.HardwareRemoved += HardwareRemoved;
+        }
 
     private void HardwareRemoved(IHardware hardware)
     {
@@ -113,95 +113,137 @@ public class Logger
             return false;
         }
 
-        _sensors = new ISensor[_identifiers.Length];
-        SensorVisitor visitor = new SensorVisitor(sensor =>
-        {
-            for (int i = 0; i < _identifiers.Length; i++)
-                if (sensor.Identifier.ToString() == _identifiers[i])
-                    _sensors[i] = sensor;
-        });
-        visitor.VisitComputer(_computer);
-        return true;
-    }
-
-    private void CreateNewLogFile()
-    {
-        IList<ISensor> list = new List<ISensor>();
-        SensorVisitor visitor = new SensorVisitor(sensor =>
-        {
-            list.Add(sensor);
-        });
-        visitor.VisitComputer(_computer);
-        _sensors = list.ToArray();
-        _identifiers = _sensors.Select(s => s.Identifier.ToString()).ToArray();
-
-        using (StreamWriter writer = new StreamWriter(_fileName, false))
-        {
-            writer.Write(",");
-            for (int i = 0; i < _sensors.Length; i++)
+            _sensors = new ISensor[_identifiers.Length];
+            SensorVisitor visitor = new SensorVisitor(sensor =>
             {
-                writer.Write(_sensors[i].Identifier);
-                if (i < _sensors.Length - 1)
-                    writer.Write(",");
-                else
-                    writer.WriteLine();
-            }
+                for (int i = 0; i < _identifiers.Length; i++)
+                    if (sensor.Identifier.ToString() == _identifiers[i])
+                        _sensors[i] = sensor;
+            });
+            visitor.VisitComputer(Computer);
+            return true;
+        }
 
-            writer.Write("Time,");
-            for (int i = 0; i < _sensors.Length; i++)
+        private void CreateNewLogFile(bool selectiveLogging = false, List<string> Identifiers = null)
+        {
+            IList<ISensor> list = new List<ISensor>();
+            SensorVisitor visitor = new SensorVisitor(sensor =>
             {
-                writer.Write('"');
-                writer.Write(_sensors[i].Name);
-                writer.Write('"');
-                if (i < _sensors.Length - 1)
-                    writer.Write(",");
-                else
-                    writer.WriteLine();
+                list.Add(sensor);
+            });
+            visitor.VisitComputer(Computer);
+            _sensors = list.ToArray();
+            _identifiers = _sensors.Select(s => s.Identifier.ToString()).ToArray();
+
+            using (StreamWriter writer = new StreamWriter(_fileName, false))
+            {
+                string s = ",";
+
+                for (int i = 0; i < _sensors.Length; i++)
+                {
+                    if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
+                        s += _sensors[i].Identifier.ToString() + ",";
+                }
+                s = s.TrimEnd(new char[1] { ',' });
+                writer.WriteLine(s);
+
+                s  = "Time,";
+                for (int i = 0; i < _sensors.Length; i++)
+                {
+                    if (!selectiveLogging || Identifiers.Contains(_sensors[i].Identifier.ToString()))
+                        s += _sensors[i].Name + ",";
+                }
+
+                s = s.TrimEnd(new char[1] {','});
+                writer.WriteLine(s);
             }
         }
-    }
+
+        public void UpdateStructure(bool selectiveLogging = false, List<string> Identifiers = null)
+        {
+
+            DateTime now = DateTime.Now;
+            _day = now.Date;
+            _fileName = GetFileName(_day);
+
+            try
+            {
+                File.Move(_fileName, Path.ChangeExtension(_fileName, ".old_structure.csv"));
+            }
+            catch
+            {
+                
+            }
+
+            CreateNewLogFile(selectiveLogging, Identifiers);
+        }
 
     public TimeSpan LoggingInterval { get; set; }
 
-    public void Log()
-    {
-        DateTime now = DateTime.Now;
+        public void Log()
+        {
+            Log(false, null);
+        }
 
-        if (_lastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
-            return;
+        public void Log(bool selectiveLogging = false, List<string> Identifiers = null)
+        { 
+            DateTime now = DateTime.Now;
+
+            if (LastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
+                return;
 
         if (_day != now.Date || !File.Exists(_fileName))
         {
             _day = now.Date;
             _fileName = GetFileName(_day);
 
-            if (!OpenExistingLogFile())
-                CreateNewLogFile();
-        }
+                if (!OpenExistingLogFile())
+                    CreateNewLogFile(selectiveLogging, Identifiers);
+            }
 
-        try
-        {
-            using (StreamWriter writer = new StreamWriter(new FileStream(_fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))
+            try
             {
-                writer.Write(now.ToString("G", CultureInfo.InvariantCulture));
-                writer.Write(",");
-                for (int i = 0; i < _sensors.Length; i++)
+                using (StreamWriter writer = new StreamWriter(new FileStream(_fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))
                 {
-                    if (_sensors[i] != null)
+                    /*
+                    writer.Write(now.ToString("G", CultureInfo.InvariantCulture));
+                    writer.Write(",");
+                    for (int i = 0; i < _sensors.Length; i++)
                     {
-                        float? value = _sensors[i].Value;
-                        if (value.HasValue)
-                            writer.Write(value.Value.ToString("R", CultureInfo.InvariantCulture));
+                        if (_sensors[i] != null &&
+                            (!selectiveLogging || (Identifiers.Contains(_sensors[i].Identifier.ToString()))))
+                        {
+                            float? value = _sensors[i].Value;
+                            if (value.HasValue)
+                                writer.Write(value.Value.ToString("R", CultureInfo.InvariantCulture));
+
+                            if (i < _sensors.Length - 1)
+                                writer.Write(",");
+                            else
+                                writer.WriteLine();
+                        }
                     }
-                    if (i < _sensors.Length - 1)
-                        writer.Write(",");
-                    else
-                        writer.WriteLine();
+                    */
+
+                    string s = now.ToString("G", CultureInfo.InvariantCulture) + ",";
+
+                    for (int i = 0; i < _sensors.Length; i++)
+                    {
+                        if (_sensors[i] != null &&
+                            (!selectiveLogging || (Identifiers.Contains(_sensors[i].Identifier.ToString()))))
+                        {
+                            float? value = _sensors[i].Value;
+                            if (value.HasValue)
+                                s += value.Value.ToString("R", CultureInfo.InvariantCulture) + ",";
+                        }
+                    }
+                    s = s.TrimEnd(new char[1] { ',' });
+                    writer.WriteLine(s);
                 }
             }
-        }
-        catch (IOException) { }
+            catch (IOException) { }
 
-        _lastLoggedTime = now;
+            LastLoggedTime = now;
+        }
     }
 }
