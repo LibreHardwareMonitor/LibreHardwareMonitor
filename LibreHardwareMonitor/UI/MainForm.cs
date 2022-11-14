@@ -429,11 +429,6 @@ namespace LibreHardwareMonitor.UI
             Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
         }
 
-        private void SelectiveLoggingChanged(object sender, EventArgs e)
-        {
-            
-        }
-
         private void selectiveLoggingMenuItem_Click(object sender, EventArgs e)
         {
             if (_selectiveLogging != null)
