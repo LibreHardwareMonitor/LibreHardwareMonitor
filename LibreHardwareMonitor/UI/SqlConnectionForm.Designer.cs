@@ -65,6 +65,9 @@
             // 
             // tbSqlStatement
             // 
+            this.tbSqlStatement.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tbSqlStatement.Location = new System.Drawing.Point(477, 31);
             this.tbSqlStatement.Multiline = true;
             this.tbSqlStatement.Name = "tbSqlStatement";
@@ -73,6 +76,7 @@
             // 
             // btnExecute
             // 
+            this.btnExecute.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnExecute.Location = new System.Drawing.Point(778, 378);
             this.btnExecute.Name = "btnExecute";
             this.btnExecute.Size = new System.Drawing.Size(150, 23);
