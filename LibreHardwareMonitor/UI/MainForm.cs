@@ -60,9 +60,9 @@ namespace LibreHardwareMonitor.UI
         private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
         private UserOption _showPlot;
 
-        public MainForm()
-        {
-            InitializeComponent();
+    public MainForm()
+    {
+        InitializeComponent();
 
             _settings = new PersistentSettings();
             _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
@@ -113,28 +113,28 @@ namespace LibreHardwareMonitor.UI
             _systemTray.HideShowCommand += HideShowClick;
             _systemTray.ExitCommand += ExitClick;
 
-            if (Software.OperatingSystem.IsUnix)
-            {
-                // Unix
-                treeView.RowHeight = Math.Max(treeView.RowHeight, 18);
-                splitContainer.BorderStyle = BorderStyle.None;
-                splitContainer.Border3DStyle = Border3DStyle.Adjust;
-                splitContainer.SplitterWidth = 4;
-                treeView.BorderStyle = BorderStyle.Fixed3D;
-                _plotPanel.BorderStyle = BorderStyle.Fixed3D;
-                gadgetMenuItem.Visible = false;
-                minCloseMenuItem.Visible = false;
-                minTrayMenuItem.Visible = false;
-                startMinMenuItem.Visible = false;
-            }
-            else
-            {
-                // Windows
-                treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
-                _gadget = new SensorGadget(_computer, _settings, _unitManager);
-                _gadget.HideShowCommand += HideShowClick;
-                _wmiProvider = new WmiProvider(_computer);
-            }
+        if (Software.OperatingSystem.IsUnix)
+        {
+            // Unix
+            treeView.RowHeight = Math.Max(treeView.RowHeight, 18);
+            splitContainer.BorderStyle = BorderStyle.None;
+            splitContainer.Border3DStyle = Border3DStyle.Adjust;
+            splitContainer.SplitterWidth = 4;
+            treeView.BorderStyle = BorderStyle.Fixed3D;
+            _plotPanel.BorderStyle = BorderStyle.Fixed3D;
+            gadgetMenuItem.Visible = false;
+            minCloseMenuItem.Visible = false;
+            minTrayMenuItem.Visible = false;
+            startMinMenuItem.Visible = false;
+        }
+        else
+        {
+            // Windows
+            treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
+            _gadget = new SensorGadget(_computer, _settings, _unitManager);
+            _gadget.HideShowCommand += HideShowClick;
+            _wmiProvider = new WmiProvider(_computer);
+        }
 
             treeView.ShowNodeToolTips = true;
             NodeToolTipProvider tooltipProvider = new();
@@ -182,83 +182,83 @@ namespace LibreHardwareMonitor.UI
 
             _minimizeOnClose = new UserOption("minCloseMenuItem", false, minCloseMenuItem, _settings);
 
-            _autoStart = new UserOption(null, _startupManager.Startup, startupMenuItem, _settings);
-            _autoStart.Changed += delegate
+        _autoStart = new UserOption(null, _startupManager.Startup, startupMenuItem, _settings);
+        _autoStart.Changed += delegate
+        {
+            try
             {
-                try
-                {
-                    _startupManager.Startup = _autoStart.Value;
-                }
-                catch (InvalidOperationException)
-                {
-                    MessageBox.Show("Updating the auto-startup option failed.",
-                                    "Error",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error);
-
-                    _autoStart.Value = _startupManager.Startup;
-                }
-            };
-
-            _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
-            _readMainboardSensors.Changed += delegate { _computer.IsMotherboardEnabled = _readMainboardSensors.Value; };
-
-            _readCpuSensors = new UserOption("cpuMenuItem", true, cpuMenuItem, _settings);
-            _readCpuSensors.Changed += delegate { _computer.IsCpuEnabled = _readCpuSensors.Value; };
-
-            _readRamSensors = new UserOption("ramMenuItem", true, ramMenuItem, _settings);
-            _readRamSensors.Changed += delegate { _computer.IsMemoryEnabled = _readRamSensors.Value; };
-
-            _readGpuSensors = new UserOption("gpuMenuItem", true, gpuMenuItem, _settings);
-            _readGpuSensors.Changed += delegate { _computer.IsGpuEnabled = _readGpuSensors.Value; };
-
-            _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
-            _readFanControllersSensors.Changed += delegate { _computer.IsControllerEnabled = _readFanControllersSensors.Value; };
-
-            _readHddSensors = new UserOption("hddMenuItem", true, hddMenuItem, _settings);
-            _readHddSensors.Changed += delegate { _computer.IsStorageEnabled = _readHddSensors.Value; };
-
-            _readNicSensors = new UserOption("nicMenuItem", true, nicMenuItem, _settings);
-            _readNicSensors.Changed += delegate { _computer.IsNetworkEnabled = _readNicSensors.Value; };
-
-            _readPsuSensors = new UserOption("psuMenuItem", true, psuMenuItem, _settings);
-            _readPsuSensors.Changed += delegate { _computer.IsPsuEnabled = _readPsuSensors.Value; };
-
-            _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
-            _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
-
-            _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
-            _showGadget.Changed += delegate
-            {
-                if (_gadget != null)
-                    _gadget.Visible = _showGadget.Value;
-            };
-
-            celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
-            fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
-
-            Server = new HttpServer(_root,
-                                    _settings.GetValue("listenerPort", 8085),
-                                    _settings.GetValue("authenticationEnabled", false),
-                                    _settings.GetValue("authenticationUserName", ""),
-                                    _settings.GetValue("authenticationPassword", ""));
-
-            if (Server.PlatformNotSupported)
-            {
-                webMenuItemSeparator.Visible = false;
-                webMenuItem.Visible = false;
+                _startupManager.Startup = _autoStart.Value;
             }
-
-            _runWebServer = new UserOption("runWebServerMenuItem", false, runWebServerMenuItem, _settings);
-            _runWebServer.Changed += delegate
+            catch (InvalidOperationException)
             {
-                if (_runWebServer.Value)
-                    Server.StartHttpListener();
-                else
-                    Server.StopHttpListener();
-            };
+                MessageBox.Show("Updating the auto-startup option failed.",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
 
-            authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
+                _autoStart.Value = _startupManager.Startup;
+            }
+        };
+
+        _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
+        _readMainboardSensors.Changed += delegate { _computer.IsMotherboardEnabled = _readMainboardSensors.Value; };
+
+        _readCpuSensors = new UserOption("cpuMenuItem", true, cpuMenuItem, _settings);
+        _readCpuSensors.Changed += delegate { _computer.IsCpuEnabled = _readCpuSensors.Value; };
+
+        _readRamSensors = new UserOption("ramMenuItem", true, ramMenuItem, _settings);
+        _readRamSensors.Changed += delegate { _computer.IsMemoryEnabled = _readRamSensors.Value; };
+
+        _readGpuSensors = new UserOption("gpuMenuItem", true, gpuMenuItem, _settings);
+        _readGpuSensors.Changed += delegate { _computer.IsGpuEnabled = _readGpuSensors.Value; };
+
+        _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
+        _readFanControllersSensors.Changed += delegate { _computer.IsControllerEnabled = _readFanControllersSensors.Value; };
+
+        _readHddSensors = new UserOption("hddMenuItem", true, hddMenuItem, _settings);
+        _readHddSensors.Changed += delegate { _computer.IsStorageEnabled = _readHddSensors.Value; };
+
+        _readNicSensors = new UserOption("nicMenuItem", true, nicMenuItem, _settings);
+        _readNicSensors.Changed += delegate { _computer.IsNetworkEnabled = _readNicSensors.Value; };
+
+        _readPsuSensors = new UserOption("psuMenuItem", true, psuMenuItem, _settings);
+        _readPsuSensors.Changed += delegate { _computer.IsPsuEnabled = _readPsuSensors.Value; };
+
+        _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
+        _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
+
+        _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
+        _showGadget.Changed += delegate
+        {
+            if (_gadget != null)
+                _gadget.Visible = _showGadget.Value;
+        };
+
+        celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
+        fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
+
+        Server = new HttpServer(_root,
+                                _settings.GetValue("listenerPort", 8085),
+                                _settings.GetValue("authenticationEnabled", false),
+                                _settings.GetValue("authenticationUserName", ""),
+                                _settings.GetValue("authenticationPassword", ""));
+
+        if (Server.PlatformNotSupported)
+        {
+            webMenuItemSeparator.Visible = false;
+            webMenuItem.Visible = false;
+        }
+
+        _runWebServer = new UserOption("runWebServerMenuItem", false, runWebServerMenuItem, _settings);
+        _runWebServer.Changed += delegate
+        {
+            if (_runWebServer.Value)
+                Server.StartHttpListener();
+            else
+                Server.StopHttpListener();
+        };
+
+        authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
             _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
             _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, hiddenSelLogMenuItem, _settings, false);
@@ -267,10 +267,10 @@ namespace LibreHardwareMonitor.UI
             //
             _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
-            _loggingInterval = new UserRadioGroup("loggingInterval",
-                                                  0,
-                                                  new[]
-                                                  {
+        _loggingInterval = new UserRadioGroup("loggingInterval",
+                                              0,
+                                              new[]
+                                              {
                                                   log1sMenuItem,
                                                   log2sMenuItem,
                                                   log5sMenuItem,
@@ -284,92 +284,92 @@ namespace LibreHardwareMonitor.UI
                                                   log1hMenuItem,
                                                   log2hMenuItem,
                                                   log6hMenuItem
-                                                  },
-                                                  _settings);
+                                              },
+                                              _settings);
 
-            _loggingInterval.Changed += (sender, e) =>
+        _loggingInterval.Changed += (sender, e) =>
+        {
+            switch (_loggingInterval.Value)
             {
-                switch (_loggingInterval.Value)
-                {
-                    case 0:
-                        _logger.LoggingInterval = new TimeSpan(0, 0, 1);
-                        break;
-                    case 1:
-                        _logger.LoggingInterval = new TimeSpan(0, 0, 2);
-                        break;
-                    case 2:
-                        _logger.LoggingInterval = new TimeSpan(0, 0, 5);
-                        break;
-                    case 3:
-                        _logger.LoggingInterval = new TimeSpan(0, 0, 10);
-                        break;
-                    case 4:
-                        _logger.LoggingInterval = new TimeSpan(0, 0, 30);
-                        break;
-                    case 5:
-                        _logger.LoggingInterval = new TimeSpan(0, 1, 0);
-                        break;
-                    case 6:
-                        _logger.LoggingInterval = new TimeSpan(0, 2, 0);
-                        break;
-                    case 7:
-                        _logger.LoggingInterval = new TimeSpan(0, 5, 0);
-                        break;
-                    case 8:
-                        _logger.LoggingInterval = new TimeSpan(0, 10, 0);
-                        break;
-                    case 9:
-                        _logger.LoggingInterval = new TimeSpan(0, 30, 0);
-                        break;
-                    case 10:
-                        _logger.LoggingInterval = new TimeSpan(1, 0, 0);
-                        break;
-                    case 11:
-                        _logger.LoggingInterval = new TimeSpan(2, 0, 0);
-                        break;
-                    case 12:
-                        _logger.LoggingInterval = new TimeSpan(6, 0, 0);
-                        break;
-                }
-            };
+                case 0:
+                    _logger.LoggingInterval = new TimeSpan(0, 0, 1);
+                    break;
+                case 1:
+                    _logger.LoggingInterval = new TimeSpan(0, 0, 2);
+                    break;
+                case 2:
+                    _logger.LoggingInterval = new TimeSpan(0, 0, 5);
+                    break;
+                case 3:
+                    _logger.LoggingInterval = new TimeSpan(0, 0, 10);
+                    break;
+                case 4:
+                    _logger.LoggingInterval = new TimeSpan(0, 0, 30);
+                    break;
+                case 5:
+                    _logger.LoggingInterval = new TimeSpan(0, 1, 0);
+                    break;
+                case 6:
+                    _logger.LoggingInterval = new TimeSpan(0, 2, 0);
+                    break;
+                case 7:
+                    _logger.LoggingInterval = new TimeSpan(0, 5, 0);
+                    break;
+                case 8:
+                    _logger.LoggingInterval = new TimeSpan(0, 10, 0);
+                    break;
+                case 9:
+                    _logger.LoggingInterval = new TimeSpan(0, 30, 0);
+                    break;
+                case 10:
+                    _logger.LoggingInterval = new TimeSpan(1, 0, 0);
+                    break;
+                case 11:
+                    _logger.LoggingInterval = new TimeSpan(2, 0, 0);
+                    break;
+                case 12:
+                    _logger.LoggingInterval = new TimeSpan(6, 0, 0);
+                    break;
+            }
+        };
 
-            _updateInterval = new UserRadioGroup("updateIntervalMenuItem",
-                                                 2,
-                                                 new[]
-                                                 {
+        _updateInterval = new UserRadioGroup("updateIntervalMenuItem",
+                                             2,
+                                             new[]
+                                             {
                                                  updateInterval250msMenuItem,
                                                  updateInterval500msMenuItem,
                                                  updateInterval1sMenuItem,
                                                  updateInterval2sMenuItem,
                                                  updateInterval5sMenuItem,
                                                  updateInterval10sMenuItem
-                                                 },
-                                                 _settings);
+                                             },
+                                             _settings);
 
-            _updateInterval.Changed += (sender, e) =>
+        _updateInterval.Changed += (sender, e) =>
+        {
+            switch (_updateInterval.Value)
             {
-                switch (_updateInterval.Value)
-                {
-                    case 0:
-                        timer.Interval = 250;
-                        break;
-                    case 1:
-                        timer.Interval = 500;
-                        break;
-                    case 2:
-                        timer.Interval = 1000;
-                        break;
-                    case 3:
-                        timer.Interval = 2000;
-                        break;
-                    case 4:
-                        timer.Interval = 5000;
-                        break;
-                    case 5:
-                        timer.Interval = 10000;
-                        break;
-                }
-            };
+                case 0:
+                    timer.Interval = 250;
+                    break;
+                case 1:
+                    timer.Interval = 500;
+                    break;
+                case 2:
+                    timer.Interval = 1000;
+                    break;
+                case 3:
+                    timer.Interval = 2000;
+                    break;
+                case 4:
+                    timer.Interval = 5000;
+                    break;
+                case 5:
+                    timer.Interval = 10000;
+                    break;
+            }
+        };
 
             _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow",
                                                          10,
@@ -433,40 +433,40 @@ namespace LibreHardwareMonitor.UI
                         break;
                 }
 
-                _computer.Accept(new SensorVisitor(delegate (ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
-            };
+            _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
+        };
 
-            InitializePlotForm();
-            InitializeSplitter();
+        InitializePlotForm();
+        InitializeSplitter();
 
-            startupMenuItem.Visible = _startupManager.IsAvailable;
+        startupMenuItem.Visible = _startupManager.IsAvailable;
 
-            if (startMinMenuItem.Checked)
+        if (startMinMenuItem.Checked)
+        {
+            if (!minTrayMenuItem.Checked)
             {
-                if (!minTrayMenuItem.Checked)
-                {
-                    WindowState = FormWindowState.Minimized;
-                    Show();
-                }
-            }
-            else
-            {
+                WindowState = FormWindowState.Minimized;
                 Show();
             }
-
-            // Create a handle, otherwise calling Close() does not fire FormClosed
-
-            // Make sure the settings are saved when the user logs off
-            Microsoft.Win32.SystemEvents.SessionEnded += delegate
-            {
-                _computer.Close();
-                SaveConfiguration();
-                if (_runWebServer.Value)
-                    Server.Quit();
-            };
-
-            Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
         }
+        else
+        {
+            Show();
+        }
+
+        // Create a handle, otherwise calling Close() does not fire FormClosed
+
+        // Make sure the settings are saved when the user logs off
+        Microsoft.Win32.SystemEvents.SessionEnded += delegate
+        {
+            _computer.Close();
+            SaveConfiguration();
+            if (_runWebServer.Value)
+                Server.Quit();
+        };
+
+        Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+    }
 
         private void selectiveLoggingMenuItem_Click(object sender, EventArgs e)
         {
@@ -525,337 +525,337 @@ namespace LibreHardwareMonitor.UI
             set { authWebServerMenuItem.Checked = value; }
         }
 
-        public HttpServer Server { get; }
+    public HttpServer Server { get; }
 
-        private void BackgroundUpdater_DoWork(object sender, DoWorkEventArgs e)
-        {
-            _computer.Accept(_updateVisitor);
+    private void BackgroundUpdater_DoWork(object sender, DoWorkEventArgs e)
+    {
+        _computer.Accept(_updateVisitor);
 
             if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
                 _logger.Log(_selectiveLogging.Value, SensorsToLog());
 
-            if (_delayCount < 4)
-                _delayCount++;
+        if (_delayCount < 4)
+            _delayCount++;
 
-            _plotPanel.InvalidatePlot();
-        }
+        _plotPanel.InvalidatePlot();
+    }
 
-        private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
+    private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
+    {
+        if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
         {
-            if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
-            {
-                _computer.Reset();
-            }
+            _computer.Reset();
         }
+    }
 
-        private void InitializeSplitter()
+    private void InitializeSplitter()
+    {
+        splitContainer.SplitterDistance = _settings.GetValue("splitContainer.SplitterDistance", 400);
+        splitContainer.SplitterMoved += delegate { _settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance); };
+    }
+
+    private void InitializePlotForm()
+    {
+        _plotForm = new Form { FormBorderStyle = FormBorderStyle.SizableToolWindow, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual };
+        AddOwnedForm(_plotForm);
+        _plotForm.Bounds = new Rectangle
         {
-            splitContainer.SplitterDistance = _settings.GetValue("splitContainer.SplitterDistance", 400);
-            splitContainer.SplitterMoved += delegate { _settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance); };
-        }
+            X = _settings.GetValue("plotForm.Location.X", -100000),
+            Y = _settings.GetValue("plotForm.Location.Y", 100),
+            Width = _settings.GetValue("plotForm.Width", 600),
+            Height = _settings.GetValue("plotForm.Height", 400)
+        };
 
-        private void InitializePlotForm()
+        _showPlot = new UserOption("plotMenuItem", false, plotMenuItem, _settings);
+        _plotLocation = new UserRadioGroup("plotLocation", 0, new[] { plotWindowMenuItem, plotBottomMenuItem, plotRightMenuItem }, _settings);
+
+        _showPlot.Changed += delegate
         {
-            _plotForm = new Form { FormBorderStyle = FormBorderStyle.SizableToolWindow, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual };
-            AddOwnedForm(_plotForm);
-            _plotForm.Bounds = new Rectangle
+            if (_plotLocation.Value == 0)
             {
-                X = _settings.GetValue("plotForm.Location.X", -100000),
-                Y = _settings.GetValue("plotForm.Location.Y", 100),
-                Width = _settings.GetValue("plotForm.Width", 600),
-                Height = _settings.GetValue("plotForm.Height", 400)
-            };
-
-            _showPlot = new UserOption("plotMenuItem", false, plotMenuItem, _settings);
-            _plotLocation = new UserRadioGroup("plotLocation", 0, new[] { plotWindowMenuItem, plotBottomMenuItem, plotRightMenuItem }, _settings);
-
-            _showPlot.Changed += delegate
-            {
-                if (_plotLocation.Value == 0)
-                {
-                    if (_showPlot.Value && Visible)
-                        _plotForm.Show();
-                    else
-                        _plotForm.Hide();
-                }
-                else
-                {
-                    splitContainer.Panel2Collapsed = !_showPlot.Value;
-                }
-
-                treeView.Invalidate();
-            };
-
-            _plotLocation.Changed += delegate
-            {
-                switch (_plotLocation.Value)
-                {
-                    case 0:
-                        splitContainer.Panel2.Controls.Clear();
-                        splitContainer.Panel2Collapsed = true;
-                        _plotForm.Controls.Add(_plotPanel);
-                        if (_showPlot.Value && Visible)
-                            _plotForm.Show();
-
-                        break;
-                    case 1:
-                        _plotForm.Controls.Clear();
-                        _plotForm.Hide();
-                        splitContainer.Orientation = Orientation.Horizontal;
-                        splitContainer.Panel2.Controls.Add(_plotPanel);
-                        splitContainer.Panel2Collapsed = !_showPlot.Value;
-                        break;
-                    case 2:
-                        _plotForm.Controls.Clear();
-                        _plotForm.Hide();
-                        splitContainer.Orientation = Orientation.Vertical;
-                        splitContainer.Panel2.Controls.Add(_plotPanel);
-                        splitContainer.Panel2Collapsed = !_showPlot.Value;
-                        break;
-                }
-            };
-
-            _plotForm.FormClosing += delegate (object sender, FormClosingEventArgs e)
-            {
-                if (e.CloseReason == CloseReason.UserClosing)
-                {
-                    // just switch off the plotting when the user closes the form
-                    if (_plotLocation.Value == 0)
-                    {
-                        _showPlot.Value = false;
-                    }
-
-                    e.Cancel = true;
-                }
-            };
-
-            void MoveOrResizePlotForm(object sender, EventArgs e)
-            {
-                if (_plotForm.WindowState != FormWindowState.Minimized)
-                {
-                    _settings.SetValue("plotForm.Location.X", _plotForm.Bounds.X);
-                    _settings.SetValue("plotForm.Location.Y", _plotForm.Bounds.Y);
-                    _settings.SetValue("plotForm.Width", _plotForm.Bounds.Width);
-                    _settings.SetValue("plotForm.Height", _plotForm.Bounds.Height);
-                }
-            }
-
-            _plotForm.Move += MoveOrResizePlotForm;
-            _plotForm.Resize += MoveOrResizePlotForm;
-
-            _plotForm.VisibleChanged += delegate
-            {
-                Rectangle bounds = new(_plotForm.Location, _plotForm.Size);
-                Screen screen = Screen.FromRectangle(bounds);
-                Rectangle intersection = Rectangle.Intersect(screen.WorkingArea, bounds);
-                if (intersection.Width < Math.Min(16, bounds.Width) ||
-                    intersection.Height < Math.Min(16, bounds.Height))
-                {
-                    _plotForm.Location = new Point(screen.WorkingArea.Width / 2 - bounds.Width / 2,
-                                                   screen.WorkingArea.Height / 2 - bounds.Height / 2);
-                }
-            };
-
-            VisibleChanged += delegate
-            {
-                if (Visible && _showPlot.Value && _plotLocation.Value == 0)
+                if (_showPlot.Value && Visible)
                     _plotForm.Show();
                 else
                     _plotForm.Hide();
-            };
-        }
-
-        private void InsertSorted(IList<Node> nodes, HardwareNode node)
-        {
-            int i = 0;
-            while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType <= node.Hardware.HardwareType)
-                i++;
-
-            nodes.Insert(i, node);
-        }
-
-        private void SubHardwareAdded(IHardware hardware, Node node)
-        {
-            HardwareNode hardwareNode = new(hardware, _settings, _unitManager);
-            hardwareNode.PlotSelectionChanged += PlotSelectionChanged;
-            InsertSorted(node.Nodes, hardwareNode);
-            foreach (IHardware subHardware in hardware.SubHardware)
-                SubHardwareAdded(subHardware, hardwareNode);
-        }
-
-        private void HardwareAdded(IHardware hardware)
-        {
-            SubHardwareAdded(hardware, _root);
-            PlotSelectionChanged(this, null);
-        }
-
-        private void HardwareRemoved(IHardware hardware)
-        {
-            List<HardwareNode> nodesToRemove = new();
-            foreach (Node node in _root.Nodes)
+            }
+            else
             {
-                if (node is HardwareNode hardwareNode && hardwareNode.Hardware == hardware)
-                    nodesToRemove.Add(hardwareNode);
+                splitContainer.Panel2Collapsed = !_showPlot.Value;
             }
 
-            foreach (HardwareNode hardwareNode in nodesToRemove)
-            {
-                _root.Nodes.Remove(hardwareNode);
-                hardwareNode.PlotSelectionChanged -= PlotSelectionChanged;
-            }
-
-            PlotSelectionChanged(this, null);
-        }
-
-        private void NodeTextBoxText_DrawText(object sender, DrawEventArgs e)
-        {
-            if (e.Node.Tag is Node node)
-            {
-                if (node.IsVisible)
-                {
-                    if (plotMenuItem.Checked && node is SensorNode sensorNode && _sensorPlotColors.TryGetValue(sensorNode.Sensor, out Color color))
-                        e.TextColor = color;
-                }
-                else
-                    e.TextColor = Color.DarkGray;
-            }
-        }
-
-        private void PlotSelectionChanged(object sender, EventArgs e)
-        {
-            List<ISensor> selected = new();
-            IDictionary<ISensor, Color> colors = new Dictionary<ISensor, Color>();
-            int colorIndex = 0;
-
-            foreach (TreeNodeAdv node in treeView.AllNodes)
-            {
-                if (node.Tag is SensorNode sensorNode)
-                {
-                    if (sensorNode.Plot)
-                    {
-                        if (!sensorNode.PenColor.HasValue)
-                        {
-                            colors.Add(sensorNode.Sensor,
-                                       _plotColorPalette[colorIndex % _plotColorPalette.Length]);
-                        }
-
-                        selected.Add(sensorNode.Sensor);
-                    }
-
-                    colorIndex++;
-                }
-            }
-
-            // if a sensor is assigned a color that's already being used by another
-            // sensor, try to assign it a new color. This is done only after the
-            // previous loop sets an unchanging default color for all sensors, so that
-            // colors jump around as little as possible as sensors get added/removed
-            // from the plot
-            var usedColors = new List<Color>();
-            foreach (ISensor curSelectedSensor in selected)
-            {
-                if (!colors.ContainsKey(curSelectedSensor))
-                    continue;
-
-                Color curColor = colors[curSelectedSensor];
-                if (usedColors.Contains(curColor))
-                {
-                    foreach (Color potentialNewColor in _plotColorPalette)
-                    {
-                        if (!colors.Values.Contains(potentialNewColor))
-                        {
-                            colors[curSelectedSensor] = potentialNewColor;
-                            usedColors.Add(potentialNewColor);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    usedColors.Add(curColor);
-                }
-            }
-
-            foreach (TreeNodeAdv node in treeView.AllNodes)
-            {
-                if (node.Tag is SensorNode sensorNode && sensorNode.Plot && sensorNode.PenColor.HasValue)
-                    colors.Add(sensorNode.Sensor, sensorNode.PenColor.Value);
-            }
-
-            _sensorPlotColors = colors;
-            _plotPanel.SetSensors(selected, colors);
-        }
-
-        private void NodeTextBoxText_EditorShowing(object sender, CancelEventArgs e)
-        {
-            e.Cancel = !(treeView.CurrentNode != null && (treeView.CurrentNode.Tag is SensorNode || treeView.CurrentNode.Tag is HardwareNode));
-        }
-
-        private void NodeCheckBox_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
-        {
-            e.Value = e.Node.Tag is SensorNode && plotMenuItem.Checked;
-        }
-
-        private void ExitClick(object sender, EventArgs e)
-        {
-            CloseApplication();
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
             treeView.Invalidate();
-            _systemTray.Redraw();
-            _gadget?.Redraw();
-            _wmiProvider?.Update();
+        };
 
-            if (!backgroundUpdater.IsBusy)
-                backgroundUpdater.RunWorkerAsync();
-
-            RestoreCollapsedNodeState(treeView);
-        }
-
-        private void SaveConfiguration()
+        _plotLocation.Changed += delegate
         {
-            if (_plotPanel == null || _settings == null)
-                return;
-
-            _plotPanel.SetCurrentSettings();
-
-            foreach (TreeColumn column in treeView.Columns)
-                _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
-
-            _settings.SetValue("listenerPort", Server.ListenerPort);
-            _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
-            _settings.SetValue("authenticationUserName", Server.UserName);
-            _settings.SetValue("authenticationPassword", Server.Password);
-
-            string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
-
-            try
+            switch (_plotLocation.Value)
             {
-                _settings.Save(fileName);
+                case 0:
+                    splitContainer.Panel2.Controls.Clear();
+                    splitContainer.Panel2Collapsed = true;
+                    _plotForm.Controls.Add(_plotPanel);
+                    if (_showPlot.Value && Visible)
+                        _plotForm.Show();
+
+                    break;
+                case 1:
+                    _plotForm.Controls.Clear();
+                    _plotForm.Hide();
+                    splitContainer.Orientation = Orientation.Horizontal;
+                    splitContainer.Panel2.Controls.Add(_plotPanel);
+                    splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    break;
+                case 2:
+                    _plotForm.Controls.Clear();
+                    _plotForm.Hide();
+                    splitContainer.Orientation = Orientation.Vertical;
+                    splitContainer.Panel2.Controls.Add(_plotPanel);
+                    splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    break;
             }
-            catch (UnauthorizedAccessException)
+        };
+
+        _plotForm.FormClosing += delegate(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
             {
-                MessageBox.Show("Access to the path '" +
-                                fileName +
-                                "' is denied. " +
-                                "The current settings could not be saved.",
-                                "Error",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
+                // just switch off the plotting when the user closes the form
+                if (_plotLocation.Value == 0)
+                {
+                    _showPlot.Value = false;
+                }
+
+                e.Cancel = true;
             }
-            catch (IOException)
+        };
+
+        void MoveOrResizePlotForm(object sender, EventArgs e)
+        {
+            if (_plotForm.WindowState != FormWindowState.Minimized)
             {
-                MessageBox.Show("The path '" +
-                                fileName +
-                                "' is not writeable. " +
-                                "The current settings could not be saved.",
-                                "Error",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
+                _settings.SetValue("plotForm.Location.X", _plotForm.Bounds.X);
+                _settings.SetValue("plotForm.Location.Y", _plotForm.Bounds.Y);
+                _settings.SetValue("plotForm.Width", _plotForm.Bounds.Width);
+                _settings.SetValue("plotForm.Height", _plotForm.Bounds.Height);
             }
         }
+
+        _plotForm.Move += MoveOrResizePlotForm;
+        _plotForm.Resize += MoveOrResizePlotForm;
+
+        _plotForm.VisibleChanged += delegate
+        {
+            Rectangle bounds = new(_plotForm.Location, _plotForm.Size);
+            Screen screen = Screen.FromRectangle(bounds);
+            Rectangle intersection = Rectangle.Intersect(screen.WorkingArea, bounds);
+            if (intersection.Width < Math.Min(16, bounds.Width) ||
+                intersection.Height < Math.Min(16, bounds.Height))
+            {
+                _plotForm.Location = new Point(screen.WorkingArea.Width / 2 - bounds.Width / 2,
+                                               screen.WorkingArea.Height / 2 - bounds.Height / 2);
+            }
+        };
+
+        VisibleChanged += delegate
+        {
+            if (Visible && _showPlot.Value && _plotLocation.Value == 0)
+                _plotForm.Show();
+            else
+                _plotForm.Hide();
+        };
+    }
+
+    private void InsertSorted(IList<Node> nodes, HardwareNode node)
+    {
+        int i = 0;
+        while (i < nodes.Count && nodes[i] is HardwareNode && ((HardwareNode)nodes[i]).Hardware.HardwareType <= node.Hardware.HardwareType)
+            i++;
+
+        nodes.Insert(i, node);
+    }
+
+    private void SubHardwareAdded(IHardware hardware, Node node)
+    {
+        HardwareNode hardwareNode = new(hardware, _settings, _unitManager);
+        hardwareNode.PlotSelectionChanged += PlotSelectionChanged;
+        InsertSorted(node.Nodes, hardwareNode);
+        foreach (IHardware subHardware in hardware.SubHardware)
+            SubHardwareAdded(subHardware, hardwareNode);
+    }
+
+    private void HardwareAdded(IHardware hardware)
+    {
+        SubHardwareAdded(hardware, _root);
+        PlotSelectionChanged(this, null);
+    }
+
+    private void HardwareRemoved(IHardware hardware)
+    {
+        List<HardwareNode> nodesToRemove = new();
+        foreach (Node node in _root.Nodes)
+        {
+            if (node is HardwareNode hardwareNode && hardwareNode.Hardware == hardware)
+                nodesToRemove.Add(hardwareNode);
+        }
+
+        foreach (HardwareNode hardwareNode in nodesToRemove)
+        {
+            _root.Nodes.Remove(hardwareNode);
+            hardwareNode.PlotSelectionChanged -= PlotSelectionChanged;
+        }
+
+        PlotSelectionChanged(this, null);
+    }
+
+    private void NodeTextBoxText_DrawText(object sender, DrawEventArgs e)
+    {
+        if (e.Node.Tag is Node node)
+        {
+            if (node.IsVisible)
+            {
+                if (plotMenuItem.Checked && node is SensorNode sensorNode && _sensorPlotColors.TryGetValue(sensorNode.Sensor, out Color color))
+                    e.TextColor = color;
+            }
+            else
+                e.TextColor = Color.DarkGray;
+        }
+    }
+
+    private void PlotSelectionChanged(object sender, EventArgs e)
+    {
+        List<ISensor> selected = new();
+        IDictionary<ISensor, Color> colors = new Dictionary<ISensor, Color>();
+        int colorIndex = 0;
+
+        foreach (TreeNodeAdv node in treeView.AllNodes)
+        {
+            if (node.Tag is SensorNode sensorNode)
+            {
+                if (sensorNode.Plot)
+                {
+                    if (!sensorNode.PenColor.HasValue)
+                    {
+                        colors.Add(sensorNode.Sensor,
+                                   _plotColorPalette[colorIndex % _plotColorPalette.Length]);
+                    }
+
+                    selected.Add(sensorNode.Sensor);
+                }
+
+                colorIndex++;
+            }
+        }
+
+        // if a sensor is assigned a color that's already being used by another
+        // sensor, try to assign it a new color. This is done only after the
+        // previous loop sets an unchanging default color for all sensors, so that
+        // colors jump around as little as possible as sensors get added/removed
+        // from the plot
+        var usedColors = new List<Color>();
+        foreach (ISensor curSelectedSensor in selected)
+        {
+            if (!colors.ContainsKey(curSelectedSensor))
+                continue;
+
+            Color curColor = colors[curSelectedSensor];
+            if (usedColors.Contains(curColor))
+            {
+                foreach (Color potentialNewColor in _plotColorPalette)
+                {
+                    if (!colors.Values.Contains(potentialNewColor))
+                    {
+                        colors[curSelectedSensor] = potentialNewColor;
+                        usedColors.Add(potentialNewColor);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                usedColors.Add(curColor);
+            }
+        }
+
+        foreach (TreeNodeAdv node in treeView.AllNodes)
+        {
+            if (node.Tag is SensorNode sensorNode && sensorNode.Plot && sensorNode.PenColor.HasValue)
+                colors.Add(sensorNode.Sensor, sensorNode.PenColor.Value);
+        }
+
+        _sensorPlotColors = colors;
+        _plotPanel.SetSensors(selected, colors);
+    }
+
+    private void NodeTextBoxText_EditorShowing(object sender, CancelEventArgs e)
+    {
+        e.Cancel = !(treeView.CurrentNode != null && (treeView.CurrentNode.Tag is SensorNode || treeView.CurrentNode.Tag is HardwareNode));
+    }
+
+    private void NodeCheckBox_IsVisibleValueNeeded(object sender, NodeControlValueEventArgs e)
+    {
+        e.Value = e.Node.Tag is SensorNode && plotMenuItem.Checked;
+    }
+
+    private void ExitClick(object sender, EventArgs e)
+    {
+        CloseApplication();
+    }
+
+    private void Timer_Tick(object sender, EventArgs e)
+    {
+        treeView.Invalidate();
+        _systemTray.Redraw();
+        _gadget?.Redraw();
+        _wmiProvider?.Update();
+
+        if (!backgroundUpdater.IsBusy)
+            backgroundUpdater.RunWorkerAsync();
+
+        RestoreCollapsedNodeState(treeView);
+    }
+
+    private void SaveConfiguration()
+    {
+        if (_plotPanel == null || _settings == null)
+            return;
+
+        _plotPanel.SetCurrentSettings();
+
+        foreach (TreeColumn column in treeView.Columns)
+            _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
+
+        _settings.SetValue("listenerPort", Server.ListenerPort);
+        _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
+        _settings.SetValue("authenticationUserName", Server.UserName);
+        _settings.SetValue("authenticationPassword", Server.Password);
+
+        string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
+
+        try
+        {
+            _settings.Save(fileName);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show("Access to the path '" +
+                            fileName +
+                            "' is denied. " +
+                            "The current settings could not be saved.",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+        }
+        catch (IOException)
+        {
+            MessageBox.Show("The path '" +
+                            fileName +
+                            "' is not writeable. " +
+                            "The current settings could not be saved.",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+        }
+    }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
