@@ -11,14 +11,16 @@ using System.Text;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 
-namespace LibreHardwareMonitor.UI;
-
-public class SensorNode : Node
+namespace LibreHardwareMonitor.UI
 {
-    private readonly PersistentSettings _settings;
-    private readonly UnitManager _unitManager;
-    private Color? _penColor;
-    private bool _plot;
+    public class SensorNode : Node
+    {
+        private readonly PersistentSettings _settings;
+        private readonly UnitManager _unitManager;
+        private Color? _penColor;
+        private bool _plot;
+        private bool _logOutput;
+        private bool _logOutputTemp;
 
     public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
     {
@@ -84,10 +86,20 @@ public class SensorNode : Node
                 break;
         }
 
-        bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
-        base.IsVisible = !hidden;
-        Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
-        string id = new Identifier(sensor.Identifier, "penColor").ToString();
+            // Initial setting for .config without "logoutput" property
+            if (settings.Contains(new Identifier(sensor.Identifier, "logoutput").ToString()))
+            {
+                LogOutput = settings.GetValue(new Identifier(sensor.Identifier, "logoutput").ToString(), true);
+            }
+            else
+            {
+                settings.SetValue(new Identifier(sensor.Identifier, "logoutput").ToString(), true);
+            }
+
+            bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
+            base.IsVisible = !hidden;
+            Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
+            string id = new Identifier(sensor.Identifier, "penColor").ToString();
 
         if (settings.Contains(id))
             PenColor = settings.GetValue(id, Color.Black);
@@ -134,16 +146,33 @@ public class SensorNode : Node
         }
     }
 
-    public bool Plot
-    {
-        get { return _plot; }
-        set
+        public bool Plot
         {
-            _plot = value;
-            _settings.SetValue(new Identifier(Sensor.Identifier, "plot").ToString(), value);
-            PlotSelectionChanged?.Invoke(this, null);
+            get { return _plot; }
+            set
+            {
+                _plot = value;
+                _settings.SetValue(new Identifier(Sensor.Identifier, "plot").ToString(), value);
+                PlotSelectionChanged?.Invoke(this, null);
+            }
         }
-    }
+
+        public bool LogOutput
+        {
+            get { return _logOutput; }
+            set
+            {
+                _logOutput = value;
+                LogOutputTemp = value;
+                _settings.SetValue(new Identifier(Sensor.Identifier, "logoutput").ToString(), value);
+            }
+        }
+
+        public bool LogOutputTemp
+        {
+            get { return _logOutputTemp; }
+            set { _logOutputTemp = value; }
+        }
 
     public ISensor Sensor { get; }
 

@@ -680,12 +680,21 @@ public class Computer : IComputer
         public void SetValue(string name, string value)
         { }
 
-        public string GetValue(string name, string value)
-        {
-            return value;
-        }
+            public void SetValue(string name, bool value)
+            { }
 
-        public void Remove(string name)
-        { }
+            public string GetValue(string name, string value)
+            {
+                return value;
+            }
+
+            public bool GetValue(string name, bool value)
+            {
+                return value;
+            }
+
+            public void Remove(string name)
+            { }
+        }
     }
 }

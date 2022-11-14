@@ -17,40 +17,40 @@ using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
 
-namespace LibreHardwareMonitor.UI;
-
-public sealed partial class MainForm : Form
+namespace LibreHardwareMonitor.UI
 {
-    private readonly UserOption _autoStart;
-    private readonly Computer _computer;
-    private readonly SensorGadget _gadget;
-    private readonly Logger _logger;
-    private readonly UserRadioGroup _loggingInterval;
-    private readonly UserRadioGroup _updateInterval;
-    private readonly UserOption _logSensors;
-    private readonly UserOption _minimizeOnClose;
-    private readonly UserOption _minimizeToTray;
-    private readonly Color[] _plotColorPalette;
-    private readonly PlotPanel _plotPanel;
-    private readonly UserOption _readBatterySensors;
-    private readonly UserOption _readCpuSensors;
-    private readonly UserOption _readFanControllersSensors;
-    private readonly UserOption _readGpuSensors;
-    private readonly UserOption _readHddSensors;
-    private readonly UserOption _readMainboardSensors;
-    private readonly UserOption _readNicSensors;
-    private readonly UserOption _readPsuSensors;
-    private readonly UserOption _readRamSensors;
-    private readonly Node _root;
-    private readonly UserOption _runWebServer;
-    private readonly UserRadioGroup _sensorValuesTimeWindow;
-    private readonly PersistentSettings _settings;
-    private readonly UserOption _showGadget;
-    private readonly StartupManager _startupManager = new();
-    private readonly SystemTray _systemTray;
-    private readonly UnitManager _unitManager;
-    private readonly UpdateVisitor _updateVisitor = new();
-    private readonly WmiProvider _wmiProvider;
+    public sealed partial class MainForm : Form
+    {
+        private readonly UserOption _autoStart;
+        private readonly Computer _computer;
+        private readonly SensorGadget _gadget;
+        private readonly Logger _logger;
+        private readonly UserRadioGroup _loggingInterval;
+        private readonly UserOption _logSensors;
+        private readonly UserOption _selectiveLogging;
+        private readonly UserOption _minimizeOnClose;
+        private readonly UserOption _minimizeToTray;
+        private readonly Color[] _plotColorPalette;
+        private readonly PlotPanel _plotPanel;
+        private readonly UserOption _readBatterySensors;
+        private readonly UserOption _readCpuSensors;
+        private readonly UserOption _readFanControllersSensors;
+        private readonly UserOption _readGpuSensors;
+        private readonly UserOption _readHddSensors;
+        private readonly UserOption _readMainboardSensors;
+        private readonly UserOption _readNicSensors;
+        private readonly UserOption _readPsuSensors;
+        private readonly UserOption _readRamSensors;
+        private readonly Node _root;
+        private readonly UserOption _runWebServer;
+        private readonly UserRadioGroup _sensorValuesTimeWindow;
+        private readonly PersistentSettings _settings;
+        private readonly UserOption _showGadget;
+        private readonly StartupManager _startupManager = new();
+        private readonly SystemTray _systemTray;
+        private readonly UnitManager _unitManager;
+        private readonly UpdateVisitor _updateVisitor = new();
+        private readonly WmiProvider _wmiProvider;
 
     private int _delayCount;
     private Form _plotForm;
@@ -259,7 +259,12 @@ public sealed partial class MainForm : Form
 
         authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
-        _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
+            _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
+            _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, hiddenSelLogMenuItem, _settings, false);
+            //to remove, only for testing
+            //_selectiveLogging.Value = true;
+            //
+            _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
         _loggingInterval = new UserRadioGroup("loggingInterval",
                                               0,
@@ -365,63 +370,67 @@ public sealed partial class MainForm : Form
             }
         };
 
-        _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow",
-                                                     10,
-                                                     new[]
-                                                     {
-                                                         timeWindow30sMenuItem,
-                                                         timeWindow1minMenuItem,
-                                                         timeWindow2minMenuItem,
-                                                         timeWindow5minMenuItem,
-                                                         timeWindow10minMenuItem,
-                                                         timeWindow30minMenuItem,
-                                                         timeWindow1hMenuItem,
-                                                         timeWindow2hMenuItem,
-                                                         timeWindow6hMenuItem,
-                                                         timeWindow12hMenuItem,
-                                                         timeWindow24hMenuItem
-                                                     },
-                                                     _settings);
+            _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow",
+                                                         10,
+                                                         new[]
+                                                         {
+                                                             timeWindow30sMenuItem,
+                                                             timeWindow1minMenuItem,
+                                                             timeWindow2minMenuItem,
+                                                             timeWindow5minMenuItem,
+                                                             timeWindow10minMenuItem,
+                                                             timeWindow30minMenuItem,
+                                                             timeWindow1hMenuItem,
+                                                             timeWindow2hMenuItem,
+                                                             timeWindow6hMenuItem,
+                                                             timeWindow12hMenuItem,
+                                                             timeWindow24hMenuItem,
+                                                             timeWindow7dMenuItem
+                                                         },
+                                                         _settings);
 
-        _sensorValuesTimeWindow.Changed += (sender, e) =>
-        {
-            TimeSpan timeWindow = TimeSpan.Zero;
-            switch (_sensorValuesTimeWindow.Value)
+            _sensorValuesTimeWindow.Changed += (sender, e) =>
             {
-                case 0:
-                    timeWindow = new TimeSpan(0, 0, 30);
-                    break;
-                case 1:
-                    timeWindow = new TimeSpan(0, 1, 0);
-                    break;
-                case 2:
-                    timeWindow = new TimeSpan(0, 2, 0);
-                    break;
-                case 3:
-                    timeWindow = new TimeSpan(0, 5, 0);
-                    break;
-                case 4:
-                    timeWindow = new TimeSpan(0, 10, 0);
-                    break;
-                case 5:
-                    timeWindow = new TimeSpan(0, 30, 0);
-                    break;
-                case 6:
-                    timeWindow = new TimeSpan(1, 0, 0);
-                    break;
-                case 7:
-                    timeWindow = new TimeSpan(2, 0, 0);
-                    break;
-                case 8:
-                    timeWindow = new TimeSpan(6, 0, 0);
-                    break;
-                case 9:
-                    timeWindow = new TimeSpan(12, 0, 0);
-                    break;
-                case 10:
-                    timeWindow = new TimeSpan(24, 0, 0);
-                    break;
-            }
+                TimeSpan timeWindow = TimeSpan.Zero;
+                switch (_sensorValuesTimeWindow.Value)
+                {
+                    case 0:
+                        timeWindow = new TimeSpan(0, 0, 30);
+                        break;
+                    case 1:
+                        timeWindow = new TimeSpan(0, 1, 0);
+                        break;
+                    case 2:
+                        timeWindow = new TimeSpan(0, 2, 0);
+                        break;
+                    case 3:
+                        timeWindow = new TimeSpan(0, 5, 0);
+                        break;
+                    case 4:
+                        timeWindow = new TimeSpan(0, 10, 0);
+                        break;
+                    case 5:
+                        timeWindow = new TimeSpan(0, 30, 0);
+                        break;
+                    case 6:
+                        timeWindow = new TimeSpan(1, 0, 0);
+                        break;
+                    case 7:
+                        timeWindow = new TimeSpan(2, 0, 0);
+                        break;
+                    case 8:
+                        timeWindow = new TimeSpan(6, 0, 0);
+                        break;
+                    case 9:
+                        timeWindow = new TimeSpan(12, 0, 0);
+                        break;
+                    case 10:
+                        timeWindow = new TimeSpan(24, 0, 0);
+                        break;
+                    case 11:
+                        timeWindow = new TimeSpan(24*7, 0, 0);
+                        break;
+                }
 
             _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
         };
@@ -458,11 +467,62 @@ public sealed partial class MainForm : Form
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
     }
 
-    public bool AuthWebServerMenuItemChecked
-    {
-        get { return authWebServerMenuItem.Checked; }
-        set { authWebServerMenuItem.Checked = value; }
-    }
+        private void selectiveLoggingMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_selectiveLogging != null)
+            {
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                    {
+                        sensorNode.LogOutputTemp = sensorNode.LogOutput;
+                    }
+                }
+
+                SelectiveLoggingForm sl = new SelectiveLoggingForm(treeView.Model, _selectiveLogging);
+
+                if (sl.ShowDialog() != DialogResult.Yes)
+                    return;
+
+                selectiveLoggingMenuItem.Checked = sl.SelectiveLogging;
+                _selectiveLogging.Value = sl.SelectiveLogging;
+                bool _previousLogState = _logSensors.Value;
+                _logSensors.Value = false;
+
+                foreach (TreeNodeAdv node in treeView.AllNodes)
+                {
+                    if (node.Tag is SensorNode sensorNode)
+                        sensorNode.LogOutput = sensorNode.LogOutputTemp;
+                }
+
+                _logger.UpdateStructure(_selectiveLogging.Value, SensorsToLog());
+
+                _logSensors.Value = _previousLogState;
+            }
+        }
+
+        private List<string> SensorsToLog()
+        {
+            List<string> sensorSelection = new List<string>();
+            foreach (TreeNodeAdv node in treeView.AllNodes)
+            {
+                if (node.Tag is SensorNode sensorNode)
+                {
+                    if (!_selectiveLogging.Value)
+                        sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
+                    else if  (sensorNode.LogOutput)
+                        sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
+                }
+            }
+
+            return sensorSelection;
+        }
+
+        public bool AuthWebServerMenuItemChecked
+        {
+            get { return authWebServerMenuItem.Checked; }
+            set { authWebServerMenuItem.Checked = value; }
+        }
 
     public HttpServer Server { get; }
 
@@ -470,8 +530,8 @@ public sealed partial class MainForm : Form
     {
         _computer.Accept(_updateVisitor);
 
-        if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
-            _logger.Log();
+            if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
+                _logger.Log(_selectiveLogging.Value, SensorsToLog());
 
         if (_delayCount < 4)
             _delayCount++;

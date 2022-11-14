@@ -18,15 +18,15 @@ public class UserOption
     private event EventHandler _changed;
     private readonly PersistentSettings _settings;
 
-    public UserOption(string name, bool value, ToolStripMenuItem menuItem, PersistentSettings settings)
-    {
-        _settings = settings;
-        _name = name;
-        _value = name != null ? settings.GetValue(name, value) : value;
-        _menuItem = menuItem;
-        _menuItem.Checked = _value;
-        _menuItem.Click += MenuItem_Click;
-    }
+        public UserOption(string name, bool value, ToolStripMenuItem menuItem, PersistentSettings settings, bool syncCheckMark = true)
+        {
+            _settings = settings;
+            _name = name;
+            _value = name != null ? settings.GetValue(name, value) : value;
+            _menuItem = menuItem;
+            _menuItem.Checked = _value;
+            _menuItem.Click += MenuItem_Click;
+        }
 
     private void MenuItem_Click(object sender, EventArgs e)
     {
