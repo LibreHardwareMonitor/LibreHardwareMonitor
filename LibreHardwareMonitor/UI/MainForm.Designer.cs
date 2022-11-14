@@ -89,6 +89,8 @@ namespace LibreHardwareMonitor.UI
             this.plotRightMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.logToFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.logToDbMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectiveLoggingMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hiddenSelLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -123,7 +125,6 @@ namespace LibreHardwareMonitor.UI
             this.runWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serverPortMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.authWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
             this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -437,8 +438,7 @@ namespace LibreHardwareMonitor.UI
             this.loggingIntervalMenuItem,
             this.sensorValuesTimeWindowMenuItem,
             this.webMenuItemSeparator,
-            this.webMenuItem,
-            this.toolStripComboBox1});
+            this.webMenuItem});
             this.optionsMenuItem.Name = "optionsMenuItem";
             this.optionsMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsMenuItem.Text = "Options";
@@ -535,16 +535,32 @@ namespace LibreHardwareMonitor.UI
             // 
             // logSensorsMenuItem
             // 
+            this.logSensorsMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.logToFileMenuItem,
+            this.logToDbMenuItem});
             this.logSensorsMenuItem.Name = "logSensorsMenuItem";
             this.logSensorsMenuItem.Size = new System.Drawing.Size(221, 22);
             this.logSensorsMenuItem.Text = "Log Sensors";
+            // 
+            // logToFileMenuItem
+            // 
+            this.logToFileMenuItem.Name = "logToFileMenuItem";
+            this.logToFileMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.logToFileMenuItem.Text = "Log to file (CSV)";
+            this.logToFileMenuItem.Click += new System.EventHandler(this.logToFileMenuItem_Click);
+            // 
+            // logToDbMenuItem
+            // 
+            this.logToDbMenuItem.Name = "logToDbMenuItem";
+            this.logToDbMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.logToDbMenuItem.Text = "Log to database (SQL)";
+            this.logToDbMenuItem.Click += new System.EventHandler(this.logToDbMenuItem_Click);
             // 
             // selectiveLoggingMenuItem
             // 
             this.selectiveLoggingMenuItem.Name = "selectiveLoggingMenuItem";
             this.selectiveLoggingMenuItem.Size = new System.Drawing.Size(221, 22);
             this.selectiveLoggingMenuItem.Text = "Selective Logging";
-            this.selectiveLoggingMenuItem.CheckedChanged += new System.EventHandler(this.SelectiveLoggingChanged);
             this.selectiveLoggingMenuItem.Click += new System.EventHandler(this.selectiveLoggingMenuItem_Click);
             // 
             // hiddenSelLogMenuItem
@@ -803,17 +819,6 @@ namespace LibreHardwareMonitor.UI
             this.authWebServerMenuItem.Text = "Authentication";
             this.authWebServerMenuItem.Click += new System.EventHandler(this.AuthWebServerMenuItem_Click);
             // 
-            // toolStripComboBox1
-            // 
-            this.toolStripComboBox1.Items.AddRange(new object[] {
-            "re",
-            "ere",
-            "re",
-            "re",
-            "rer"});
-            this.toolStripComboBox1.Name = "toolStripComboBox1";
-            this.toolStripComboBox1.Size = new System.Drawing.Size(121, 23);
-            // 
             // helpMenuItem
             // 
             this.helpMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1024,7 +1029,8 @@ namespace LibreHardwareMonitor.UI
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem selectiveLoggingMenuItem;
         private System.Windows.Forms.ToolStripMenuItem hiddenSelLogMenuItem;
-        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
+        private System.Windows.Forms.ToolStripMenuItem logToFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem logToDbMenuItem;
     }
 }
 

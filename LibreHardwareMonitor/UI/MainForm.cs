@@ -24,9 +24,11 @@ namespace LibreHardwareMonitor.UI
         private readonly UserOption _autoStart;
         private readonly Computer _computer;
         private readonly SensorGadget _gadget;
-        private readonly Logger _logger;
+        private /*readonly*/ ILogger _logger;
         private readonly UserRadioGroup _loggingInterval;
-        private readonly UserOption _logSensors;
+        private readonly UserOption _logSensorsToFile;
+        private readonly UserOption _logSensorsToDb;
+        private string _logConnectionString;
         private readonly UserOption _selectiveLogging;
         private readonly UserOption _minimizeOnClose;
         private readonly UserOption _minimizeToTray;
@@ -139,7 +141,6 @@ namespace LibreHardwareMonitor.UI
             NodeToolTipProvider tooltipProvider = new();
             nodeTextBoxText.ToolTipProvider = tooltipProvider;
             nodeTextBoxValue.ToolTipProvider = tooltipProvider;
-            _logger = new Logger(_computer);
 
             _plotColorPalette = new Color[13];
             _plotColorPalette[0] = Color.Blue;
@@ -259,10 +260,33 @@ namespace LibreHardwareMonitor.UI
 
             authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
-            _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
+            //handle old config file version without various logging types
+            if (_settings.Contains("logSensorsMenuItem"))
+            {
+                bool log = _settings.GetValue("logSensorsMenuItem", false);
+                _settings.Remove("logSensorsMenuItem");
+                _settings.SetValue("logToFileMenuItem", log);
+                _settings.SetValue("logToDbMenuItem", false);
+            }
+
+            _logSensorsToFile = new UserOption("logToFileMenuItem", false, logToFileMenuItem, _settings);
+            _logSensorsToDb = new UserOption("logToDbMenuItem", false, logToDbMenuItem, _settings);
+            _logConnectionString = _settings.GetValue("logConnectionString", "");
+
+            if (_logSensorsToFile.Value)
+            {
+                _logger = new Logger(_computer);
+                _logSensorsToDb.Value = false;
+            }
+            else if (_logSensorsToDb.Value)
+            {
+                _logger = new SqlLogger(_computer, _logConnectionString);
+                _logSensorsToFile.Value = false;
+            }
+
             _selectiveLogging = new UserOption("selectiveLoggingMenuItem", false, hiddenSelLogMenuItem, _settings, false);
             //to remove, only for testing
-            _selectiveLogging.Value = true;
+            //_selectiveLogging.Value = true;
             //
             _selectiveLogging.Changed += delegate { selectiveLoggingMenuItem.Checked = _selectiveLogging.Value; };
 
@@ -286,8 +310,12 @@ namespace LibreHardwareMonitor.UI
                                                   },
                                                   _settings);
 
-            _loggingInterval.Changed += (sender, e) =>
+            InitLogger();
+          /*  _loggingInterval.Changed += (sender, e) =>
             {
+                if (_logger is null)
+                    return;
+
                 switch (_loggingInterval.Value)
                 {
                     case 0:
@@ -330,7 +358,7 @@ namespace LibreHardwareMonitor.UI
                         _logger.LoggingInterval = new TimeSpan(6, 0, 0);
                         break;
                 }
-            };
+            };*/
 
             _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow",
                                                          10,
@@ -390,11 +418,11 @@ namespace LibreHardwareMonitor.UI
                         timeWindow = new TimeSpan(24, 0, 0);
                         break;
                     case 11:
-                        timeWindow = new TimeSpan(24*7, 0, 0);
+                        timeWindow = new TimeSpan(24 * 7, 0, 0);
                         break;
                 }
 
-                _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
+                _computer.Accept(new SensorVisitor(delegate (ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
             };
 
             InitializePlotForm();
@@ -429,10 +457,57 @@ namespace LibreHardwareMonitor.UI
             Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
         }
 
-        private void SelectiveLoggingChanged(object sender, EventArgs e)
+        private void InitLogger()
         {
-            
-        }
+            _loggingInterval.Changed += (sender, e) =>
+                {
+                    if (_logger is null)
+                        return;
+
+                    switch (_loggingInterval.Value)
+                    {
+                        case 0:
+                            _logger.LoggingInterval = new TimeSpan(0, 0, 1);
+                            break;
+                        case 1:
+                            _logger.LoggingInterval = new TimeSpan(0, 0, 2);
+                            break;
+                        case 2:
+                            _logger.LoggingInterval = new TimeSpan(0, 0, 5);
+                            break;
+                        case 3:
+                            _logger.LoggingInterval = new TimeSpan(0, 0, 10);
+                            break;
+                        case 4:
+                            _logger.LoggingInterval = new TimeSpan(0, 0, 30);
+                            break;
+                        case 5:
+                            _logger.LoggingInterval = new TimeSpan(0, 1, 0);
+                            break;
+                        case 6:
+                            _logger.LoggingInterval = new TimeSpan(0, 2, 0);
+                            break;
+                        case 7:
+                            _logger.LoggingInterval = new TimeSpan(0, 5, 0);
+                            break;
+                        case 8:
+                            _logger.LoggingInterval = new TimeSpan(0, 10, 0);
+                            break;
+                        case 9:
+                            _logger.LoggingInterval = new TimeSpan(0, 30, 0);
+                            break;
+                        case 10:
+                            _logger.LoggingInterval = new TimeSpan(1, 0, 0);
+                            break;
+                        case 11:
+                            _logger.LoggingInterval = new TimeSpan(2, 0, 0);
+                            break;
+                        case 12:
+                            _logger.LoggingInterval = new TimeSpan(6, 0, 0);
+                            break;
+                    }
+                };
+            }
 
         private void selectiveLoggingMenuItem_Click(object sender, EventArgs e)
         {
@@ -446,31 +521,26 @@ namespace LibreHardwareMonitor.UI
                     }
                 }
 
-                SelectiveLoggingForm sl = new SelectiveLoggingForm(treeView.Model, _selectiveLogging);
+                bool _previousLogState = _logSensorsToFile.Value;
+                using (SelectiveLoggingForm sl = new SelectiveLoggingForm(treeView.Model, _selectiveLogging))
+                {
+                    if (sl.ShowDialog() != DialogResult.Yes)
+                        return;
 
-                if (sl.ShowDialog() != DialogResult.Yes)
-                    return;
+                    selectiveLoggingMenuItem.Checked = sl.SelectiveLogging;
+                    _selectiveLogging.Value = sl.SelectiveLogging;
+                    _logSensorsToFile.Value = false;
+                }
 
-                selectiveLoggingMenuItem.Checked = sl.SelectiveLogging;
-                _selectiveLogging.Value = sl.SelectiveLogging;
-                bool _previousLogState = _logSensors.Value;
-                _logSensors.Value = false;
-
-                List<string> sensorSelection = new List<string>();
                 foreach (TreeNodeAdv node in treeView.AllNodes)
                 {
                     if (node.Tag is SensorNode sensorNode)
-                    {
                         sensorNode.LogOutput = sensorNode.LogOutputTemp;
-
-                        if (sensorNode.LogOutput)
-                            sensorSelection.Add(sensorNode.Sensor.Identifier.ToString());
-                    }
                 }
 
                 _logger.UpdateStructure(_selectiveLogging.Value, SensorsToLog());
 
-                _logSensors.Value = _previousLogState;
+                _logSensorsToFile.Value = _previousLogState;
             }
         }
 
@@ -503,7 +573,9 @@ namespace LibreHardwareMonitor.UI
         {
             _computer.Accept(_updateVisitor);
 
-            if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
+            if (((_logSensorsToFile != null && _logSensorsToFile.Value) ||
+                    (_logSensorsToDb != null && _logSensorsToDb.Value))
+                    && _delayCount >= 4 && _logger != null)
                 _logger.Log(_selectiveLogging.Value, SensorsToLog());
 
             if (_delayCount < 4)
@@ -1179,6 +1251,36 @@ namespace LibreHardwareMonitor.UI
         private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
         {
             new AuthForm(this).ShowDialog();
+        }
+
+        private void logToDbMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_logSensorsToDb.Value)
+                return;
+
+            using (SqlConnectionForm sqlConnectionForm = new SqlConnectionForm(treeView, _selectiveLogging))
+            {
+                if (sqlConnectionForm.ShowDialog() != DialogResult.OK)
+                {
+                    _logSensorsToDb.Value = !_logSensorsToDb.Value;
+                    return;
+                }
+
+                _logSensorsToFile.Value = false;
+                _logger = new SqlLogger(_computer, sqlConnectionForm.ConnectionString);
+                InitLogger();
+                _settings.SetValue("logConnectionString", sqlConnectionForm.ConnectionString);
+            }
+        }
+
+        private void logToFileMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_logSensorsToFile.Value)
+                return;
+
+            _logSensorsToDb.Value = false;
+            _logger = new Logger(_computer);
+            InitLogger();
         }
     }
 }
