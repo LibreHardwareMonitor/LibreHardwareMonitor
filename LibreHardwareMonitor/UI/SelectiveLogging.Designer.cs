@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SelectiveLoggingForm));
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.sensor = new Aga.Controls.Tree.TreeColumn();
             this.logOutput = new Aga.Controls.Tree.TreeColumn();
@@ -169,6 +170,7 @@
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnChangeStructure);
             this.Controls.Add(this.treeView);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(550, 550);
             this.Name = "SelectiveLoggingForm";
             this.Padding = new System.Windows.Forms.Padding(0, 0, 15, 0);
