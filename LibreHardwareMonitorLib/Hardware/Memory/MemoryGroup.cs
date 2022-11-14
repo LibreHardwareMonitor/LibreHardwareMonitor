@@ -6,35 +6,27 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Memory
+namespace LibreHardwareMonitor.Hardware.Memory;
+
+internal class MemoryGroup : IGroup
 {
-    internal class MemoryGroup : IGroup
+    private readonly Hardware[] _hardware;
+
+    public MemoryGroup(ISettings settings)
     {
-        private readonly Hardware[] _hardware;
+        _hardware = new Hardware[] { Software.OperatingSystem.IsUnix ? new GenericLinuxMemory("Generic Memory", settings) : new GenericWindowsMemory("Generic Memory", settings) };
+    }
 
-        public MemoryGroup(ISettings settings)
-        {
-            if (Software.OperatingSystem.IsUnix)
-            {
-                _hardware = new Hardware[] { new GenericLinuxMemory("Generic Memory", settings) };
-            }
-            else
-            {
-                _hardware = new Hardware[] { new GenericWindowsMemory("Generic Memory", settings) };
-            }
-        }
+    public string GetReport()
+    {
+        return null;
+    }
 
-        public string GetReport()
-        {
-            return null;
-        }
+    public IReadOnlyList<IHardware> Hardware => _hardware;
 
-        public IReadOnlyList<IHardware> Hardware => _hardware;
-
-        public void Close()
-        {
-            foreach (Hardware ram in _hardware)
-                ram.Close();
-        }
+    public void Close()
+    {
+        foreach (Hardware ram in _hardware)
+            ram.Close();
     }
 }

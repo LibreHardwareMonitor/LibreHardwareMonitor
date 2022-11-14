@@ -1,7 +1,6 @@
-﻿namespace LibreHardwareMonitor.UI
+﻿namespace LibreHardwareMonitor.UI;
+
+public interface IExpandPersistNode
 {
-    public interface IExpandPersistNode
-    {
-        bool Expanded { get; set; }
-    }
+    bool Expanded { get; set; }
 }

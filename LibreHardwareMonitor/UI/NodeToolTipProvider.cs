@@ -6,10 +6,9 @@
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 
-namespace LibreHardwareMonitor.UI
+namespace LibreHardwareMonitor.UI;
+
+internal class NodeToolTipProvider : IToolTipProvider
 {
-    internal class NodeToolTipProvider : IToolTipProvider
-    {
-        public string GetToolTip(TreeNodeAdv node, NodeControl nodeControl) => (node.Tag as Node)?.ToolTip;
-    }
+    public string GetToolTip(TreeNodeAdv node, NodeControl nodeControl) => (node.Tag as Node)?.ToolTip;
 }
