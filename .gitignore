@@ -6,4 +6,4 @@
 .vs/
 packages/
 /koombaal.dsn
-/lhm test.dsn
+*.dsn

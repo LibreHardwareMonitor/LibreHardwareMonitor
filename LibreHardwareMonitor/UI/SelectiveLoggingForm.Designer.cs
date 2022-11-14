@@ -28,17 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SelectiveLoggingForm));
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.sensor = new Aga.Controls.Tree.TreeColumn();
             this.logOutput = new Aga.Controls.Tree.TreeColumn();
+            this.value = new Aga.Controls.Tree.TreeColumn();
             this.nodeImage = new Aga.Controls.Tree.NodeControls.NodeIcon();
             this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.nodeCheckBox = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
+            this.nodeValue = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.btnChangeStructure = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnSelectiveLogging = new System.Windows.Forms.Button();
-            this.value = new Aga.Controls.Tree.TreeColumn();
-            this.nodeValue = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.SuspendLayout();
             // 
             // treeView
@@ -66,7 +67,7 @@
             this.treeView.NodeControls.Add(this.nodeValue);
             this.treeView.SelectedNode = null;
             this.treeView.ShowLines = false;
-            this.treeView.Size = new System.Drawing.Size(710, 466);
+            this.treeView.Size = new System.Drawing.Size(515, 435);
             this.treeView.TabIndex = 0;
             this.treeView.Text = "treeView";
             this.treeView.UseColumns = true;
@@ -86,6 +87,12 @@
             this.logOutput.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.logOutput.TooltipText = null;
             this.logOutput.Width = 100;
+            // 
+            // value
+            // 
+            this.value.Header = "Value";
+            this.value.SortOrder = System.Windows.Forms.SortOrder.None;
+            this.value.TooltipText = null;
             // 
             // nodeImage
             // 
@@ -110,46 +117,6 @@
             this.nodeCheckBox.LeftMargin = 3;
             this.nodeCheckBox.ParentColumn = this.logOutput;
             // 
-            // btnChangeStructure
-            // 
-            this.btnChangeStructure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChangeStructure.ForeColor = System.Drawing.Color.Red;
-            this.btnChangeStructure.Location = new System.Drawing.Point(10, 506);
-            this.btnChangeStructure.Name = "btnChangeStructure";
-            this.btnChangeStructure.Size = new System.Drawing.Size(121, 23);
-            this.btnChangeStructure.TabIndex = 1;
-            this.btnChangeStructure.Text = "Change log structure";
-            this.btnChangeStructure.UseVisualStyleBackColor = true;
-            this.btnChangeStructure.Click += new System.EventHandler(this.btnChangeStructure_Click);
-            // 
-            // btnClose
-            // 
-            this.btnClose.Location = new System.Drawing.Point(645, 506);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(75, 23);
-            this.btnClose.TabIndex = 3;
-            this.btnClose.Text = "Close";
-            this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-            // 
-            // btnSelectiveLogging
-            // 
-            this.btnSelectiveLogging.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSelectiveLogging.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnSelectiveLogging.Location = new System.Drawing.Point(137, 506);
-            this.btnSelectiveLogging.Name = "btnSelectiveLogging";
-            this.btnSelectiveLogging.Size = new System.Drawing.Size(145, 23);
-            this.btnSelectiveLogging.TabIndex = 4;
-            this.btnSelectiveLogging.Text = "Enable selective logging";
-            this.btnSelectiveLogging.UseVisualStyleBackColor = true;
-            this.btnSelectiveLogging.Click += new System.EventHandler(this.btnSelectiveLogging_Click);
-            // 
-            // value
-            // 
-            this.value.Header = "Value";
-            this.value.SortOrder = System.Windows.Forms.SortOrder.None;
-            this.value.TooltipText = null;
-            // 
             // nodeValue
             // 
             this.nodeValue.DataPropertyName = "Value";
@@ -159,16 +126,52 @@
             this.nodeValue.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeValue.UseCompatibleTextRendering = true;
             // 
+            // btnChangeStructure
+            // 
+            this.btnChangeStructure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnChangeStructure.ForeColor = System.Drawing.Color.Red;
+            this.btnChangeStructure.Location = new System.Drawing.Point(10, 475);
+            this.btnChangeStructure.Name = "btnChangeStructure";
+            this.btnChangeStructure.Size = new System.Drawing.Size(121, 23);
+            this.btnChangeStructure.TabIndex = 1;
+            this.btnChangeStructure.Text = "Change log structure";
+            this.btnChangeStructure.UseVisualStyleBackColor = true;
+            this.btnChangeStructure.Click += new System.EventHandler(this.btnChangeStructure_Click);
+            // 
+            // btnClose
+            // 
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.Location = new System.Drawing.Point(450, 475);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(75, 23);
+            this.btnClose.TabIndex = 3;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
+            // btnSelectiveLogging
+            // 
+            this.btnSelectiveLogging.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSelectiveLogging.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnSelectiveLogging.Location = new System.Drawing.Point(137, 475);
+            this.btnSelectiveLogging.Name = "btnSelectiveLogging";
+            this.btnSelectiveLogging.Size = new System.Drawing.Size(145, 23);
+            this.btnSelectiveLogging.TabIndex = 4;
+            this.btnSelectiveLogging.Text = "Enable selective logging";
+            this.btnSelectiveLogging.UseVisualStyleBackColor = true;
+            this.btnSelectiveLogging.Click += new System.EventHandler(this.btnSelectiveLogging_Click);
+            // 
             // SelectiveLoggingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(729, 542);
+            this.ClientSize = new System.Drawing.Size(534, 511);
             this.Controls.Add(this.btnSelectiveLogging);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnChangeStructure);
             this.Controls.Add(this.treeView);
-            this.MinimumSize = new System.Drawing.Size(16, 39);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(550, 550);
             this.Name = "SelectiveLoggingForm";
             this.Padding = new System.Windows.Forms.Padding(0, 0, 15, 0);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
