@@ -62,7 +62,7 @@ internal enum Chip : ushort
     NCT6796DR = 0xD42A,
     NCT6797D = 0xD451,
     NCT6798D = 0xD42B,
-    NCT6686D = 0xD441,
+    NCT6686D = 0xD440,
     NCT6687D = 0xD592,
     NCT6683D = 0xC732,
     NCT6799D = 0xD802,
