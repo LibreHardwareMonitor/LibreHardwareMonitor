@@ -6,16 +6,15 @@
 
 using System;
 
-namespace LibreHardwareMonitor.Hardware.Storage
-{
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    internal class RequireSmartAttribute : Attribute
-    {
-        public RequireSmartAttribute(byte attributeId)
-        {
-            AttributeId = attributeId;
-        }
+namespace LibreHardwareMonitor.Hardware.Storage;
 
-        public byte AttributeId { get; }
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+internal class RequireSmartAttribute : Attribute
+{
+    public RequireSmartAttribute(byte attributeId)
+    {
+        AttributeId = attributeId;
     }
+
+    public byte AttributeId { get; }
 }

@@ -8,53 +8,52 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 
-namespace LibreHardwareMonitor.Utilities
+namespace LibreHardwareMonitor.Utilities;
+
+public class EmbeddedResources
 {
-    public class EmbeddedResources
+    public static Image GetImage(string name)
     {
-        public static Image GetImage(string name)
+        name = "LibreHardwareMonitor.Resources." + name;
+        string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+        for (int i = 0; i < names.Length; i++)
         {
-            name = "LibreHardwareMonitor.Resources." + name;
-            string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-            for (int i = 0; i < names.Length; i++)
+            if (names[i].Replace('\\', '.') == name)
             {
-                if (names[i].Replace('\\', '.') == name)
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
                 {
-                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
-                    {
-                        // "You must keep the stream open for the lifetime of the Image."
-                        Image image = Image.FromStream(stream);
+                    // "You must keep the stream open for the lifetime of the Image."
+                    Image image = Image.FromStream(stream);
 
-                        // so we just create a copy of the image
-                        Bitmap bitmap = new Bitmap(image);
+                    // so we just create a copy of the image
+                    Bitmap bitmap = new Bitmap(image);
 
-                        // and dispose it right here
-                        image.Dispose();
+                    // and dispose it right here
+                    image.Dispose();
 
-                        return bitmap;
-                    }
+                    return bitmap;
                 }
             }
-            return new Bitmap(1, 1);
         }
-
-        public static Icon GetIcon(string name)
-        {
-            name = "LibreHardwareMonitor.Resources." + name;
-            string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            for (int i = 0; i < names.Length; i++)
-            {
-                if (names[i].Replace('\\', '.') == name)
-                {
-                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
-                    {
-                        return new Icon(stream);
-                    }
-                }
-            }
-            return null;
-        }
-
+        return new Bitmap(1, 1);
     }
+
+    public static Icon GetIcon(string name)
+    {
+        name = "LibreHardwareMonitor.Resources." + name;
+        string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+        for (int i = 0; i < names.Length; i++)
+        {
+            if (names[i].Replace('\\', '.') == name)
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
+                {
+                    return new Icon(stream);
+                }
+            }
+        }
+        return null;
+    }
+
 }

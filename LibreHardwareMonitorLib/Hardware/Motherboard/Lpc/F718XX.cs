@@ -10,127 +10,127 @@ using System.Text;
 
 // ReSharper disable once InconsistentNaming
 
-namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
+namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
+
+internal class F718XX : ISuperIO
 {
-    internal class F718XX : ISuperIO
+    private readonly ushort _address;
+    private readonly byte[] _initialFanPwmControl = new byte[4];
+    private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[4];
+
+    public F718XX(Chip chip, ushort address)
     {
-        private readonly ushort _address;
-        private readonly byte[] _initialFanPwmControl = new byte[4];
-        private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[4];
+        _address = address;
+        Chip = chip;
 
-        public F718XX(Chip chip, ushort address)
+        Voltages = new float?[chip == Chip.F71858 ? 3 : 9];
+        Temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
+        Fans = new float?[chip is Chip.F71882 or Chip.F71858 ? 4 : 3];
+        Controls = new float?[chip == Chip.F71878AD ? 3 : 0];
+    }
+
+    public Chip Chip { get; }
+
+    public float?[] Controls { get; }
+
+    public float?[] Fans { get; }
+
+    public float?[] Temperatures { get; }
+
+    public float?[] Voltages { get; }
+
+    public byte? ReadGpio(int index)
+    {
+        return null;
+    }
+
+    public void WriteGpio(int index, byte value)
+    { }
+
+    public void SetControl(int index, byte? value)
+    {
+        if (index < 0 || index >= Controls.Length)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        if (!Ring0.WaitIsaBusMutex(10))
+            return;
+
+        if (value.HasValue)
         {
-            _address = address;
-            Chip = chip;
+            SaveDefaultFanPwmControl(index);
 
-            Voltages = new float?[chip == Chip.F71858 ? 3 : 9];
-            Temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
-            Fans = new float?[chip is Chip.F71882 or Chip.F71858 ? 4 : 3];
-            Controls = new float?[chip == Chip.F71878AD ? 3 : 0];
+            WriteByte(FAN_PWM_REG[index], value.Value);
+        }
+        else
+        {
+            RestoreDefaultFanPwmControl(index);
         }
 
-        public Chip Chip { get; }
+        Ring0.ReleaseIsaBusMutex();
+    }
 
-        public float?[] Controls { get; }
+    public string GetReport()
+    {
+        StringBuilder r = new();
 
-        public float?[] Fans { get; }
+        r.AppendLine("LPC " + GetType().Name);
+        r.AppendLine();
+        r.Append("Base Address: 0x");
+        r.AppendLine(_address.ToString("X4", CultureInfo.InvariantCulture));
+        r.AppendLine();
 
-        public float?[] Temperatures { get; }
+        if (!Ring0.WaitIsaBusMutex(100))
+            return r.ToString();
 
-        public float?[] Voltages { get; }
-
-        public byte? ReadGpio(int index)
+        r.AppendLine("Hardware Monitor Registers");
+        r.AppendLine();
+        r.AppendLine("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
+        r.AppendLine();
+        for (int i = 0; i <= 0xF; i++)
         {
-            return null;
-        }
-
-        public void WriteGpio(int index, byte value)
-        { }
-
-        public void SetControl(int index, byte? value)
-        {
-            if (index < 0 || index >= Controls.Length)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            if (!Ring0.WaitIsaBusMutex(10))
-                return;
-
-            if (value.HasValue)
+            r.Append(" ");
+            r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
+            r.Append("  ");
+            for (int j = 0; j <= 0xF; j++)
             {
-                SaveDefaultFanPwmControl(index);
+                r.Append(" ");
+                r.Append(ReadByte((byte)((i << 4) | j)).ToString("X2",
+                                                                 CultureInfo.InvariantCulture));
+            }
 
-                WriteByte(FAN_PWM_REG[index], value.Value);
+            r.AppendLine();
+        }
+
+        r.AppendLine();
+
+        Ring0.ReleaseIsaBusMutex();
+        return r.ToString();
+    }
+
+    public void Update()
+    {
+        if (!Ring0.WaitIsaBusMutex(10))
+            return;
+
+        for (int i = 0; i < Voltages.Length; i++)
+        {
+            if (Chip == Chip.F71808E && i == 6)
+            {
+                // 0x26 is reserved on F71808E
+                Voltages[i] = 0;
             }
             else
             {
-                RestoreDefaultFanPwmControl(index);
+                int value = ReadByte((byte)(VOLTAGE_BASE_REG + i));
+                Voltages[i] = 0.008f * value;
             }
-
-            Ring0.ReleaseIsaBusMutex();
         }
 
-        public string GetReport()
+        for (int i = 0; i < Temperatures.Length; i++)
         {
-            StringBuilder r = new();
-
-            r.AppendLine("LPC " + GetType().Name);
-            r.AppendLine();
-            r.Append("Base Address: 0x");
-            r.AppendLine(_address.ToString("X4", CultureInfo.InvariantCulture));
-            r.AppendLine();
-
-            if (!Ring0.WaitIsaBusMutex(100))
-                return r.ToString();
-
-            r.AppendLine("Hardware Monitor Registers");
-            r.AppendLine();
-            r.AppendLine("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
-            r.AppendLine();
-            for (int i = 0; i <= 0xF; i++)
+            switch (Chip)
             {
-                r.Append(" ");
-                r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
-                r.Append("  ");
-                for (int j = 0; j <= 0xF; j++)
-                {
-                    r.Append(" ");
-                    r.Append(ReadByte((byte)((i << 4) | j)).ToString("X2",
-                                                                     CultureInfo.InvariantCulture));
-                }
-
-                r.AppendLine();
-            }
-
-            r.AppendLine();
-
-            Ring0.ReleaseIsaBusMutex();
-            return r.ToString();
-        }
-
-        public void Update()
-        {
-            if (!Ring0.WaitIsaBusMutex(10))
-                return;
-
-            for (int i = 0; i < Voltages.Length; i++)
-            {
-                if (Chip == Chip.F71808E && i == 6)
-                {
-                    // 0x26 is reserved on F71808E
-                    Voltages[i] = 0;
-                }
-                else
-                {
-                    int value = ReadByte((byte)(VOLTAGE_BASE_REG + i));
-                    Voltages[i] = 0.008f * value;
-                }
-            }
-
-            for (int i = 0; i < Temperatures.Length; i++)
-            {
-                switch (Chip)
-                {
-                    case Chip.F71858:
+                case Chip.F71858:
                     {
                         int tableMode = 0x3 & ReadByte(TEMPERATURE_CONFIG_REG);
                         int high = ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * i)));
@@ -164,8 +164,8 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                         }
                     }
 
-                        break;
-                    default:
+                    break;
+                default:
                     {
                         sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * (i + 1))));
                         if (value is < sbyte.MaxValue and > 0)
@@ -174,73 +174,72 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                             Temperatures[i] = null;
                     }
 
-                        break;
-                }
+                    break;
             }
-
-            for (int i = 0; i < Fans.Length; i++)
-            {
-                int value = ReadByte(FAN_TACHOMETER_REG[i]) << 8;
-                value |= ReadByte((byte)(FAN_TACHOMETER_REG[i] + 1));
-
-                if (value > 0)
-                    Fans[i] = value < 0x0fff ? 1.5e6f / value : 0;
-                else
-                    Fans[i] = null;
-            }
-
-            for (int i = 0; i < Controls.Length; i++)
-            {
-                Controls[i] = ReadByte((byte)(PWM_VALUES_OFFSET + i)) * 100.0f / 0xFF;
-            }
-
-            Ring0.ReleaseIsaBusMutex();
         }
 
-        private void SaveDefaultFanPwmControl(int index)
+        for (int i = 0; i < Fans.Length; i++)
         {
-            if (!_restoreDefaultFanPwmControlRequired[index])
-            {
-                _initialFanPwmControl[index] = ReadByte(FAN_PWM_REG[index]);
-                _restoreDefaultFanPwmControlRequired[index] = true;
-            }
+            int value = ReadByte(FAN_TACHOMETER_REG[i]) << 8;
+            value |= ReadByte((byte)(FAN_TACHOMETER_REG[i] + 1));
+
+            if (value > 0)
+                Fans[i] = value < 0x0fff ? 1.5e6f / value : 0;
+            else
+                Fans[i] = null;
         }
 
-        private void RestoreDefaultFanPwmControl(int index)
+        for (int i = 0; i < Controls.Length; i++)
         {
-            if (_restoreDefaultFanPwmControlRequired[index])
-            {
-                WriteByte(FAN_PWM_REG[index], _initialFanPwmControl[index]);
-                _restoreDefaultFanPwmControlRequired[index] = false;
-            }
+            Controls[i] = ReadByte((byte)(PWM_VALUES_OFFSET + i)) * 100.0f / 0xFF;
         }
 
-        private byte ReadByte(byte register)
+        Ring0.ReleaseIsaBusMutex();
+    }
+
+    private void SaveDefaultFanPwmControl(int index)
+    {
+        if (!_restoreDefaultFanPwmControlRequired[index])
         {
-            Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-            return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+            _initialFanPwmControl[index] = ReadByte(FAN_PWM_REG[index]);
+            _restoreDefaultFanPwmControlRequired[index] = true;
         }
+    }
 
-        private void WriteByte(byte register, byte value)
+    private void RestoreDefaultFanPwmControl(int index)
+    {
+        if (_restoreDefaultFanPwmControlRequired[index])
         {
-            Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-            Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+            WriteByte(FAN_PWM_REG[index], _initialFanPwmControl[index]);
+            _restoreDefaultFanPwmControlRequired[index] = false;
         }
+    }
 
-        // ReSharper disable InconsistentNaming
+    private byte ReadByte(byte register)
+    {
+        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+    }
+
+    private void WriteByte(byte register, byte value)
+    {
+        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+    }
+
+    // ReSharper disable InconsistentNaming
 #pragma warning disable IDE1006 // Naming Styles
 
-        private const byte ADDRESS_REGISTER_OFFSET = 0x05;
-        private const byte DATA_REGISTER_OFFSET = 0x06;
-        private const byte PWM_VALUES_OFFSET = 0x2D;
-        private const byte TEMPERATURE_BASE_REG = 0x70;
-        private const byte TEMPERATURE_CONFIG_REG = 0x69;
+    private const byte ADDRESS_REGISTER_OFFSET = 0x05;
+    private const byte DATA_REGISTER_OFFSET = 0x06;
+    private const byte PWM_VALUES_OFFSET = 0x2D;
+    private const byte TEMPERATURE_BASE_REG = 0x70;
+    private const byte TEMPERATURE_CONFIG_REG = 0x69;
 
-        private const byte VOLTAGE_BASE_REG = 0x20;
-        private readonly byte[] FAN_PWM_REG = { 0xA3, 0xB3, 0xC3, 0xD3 };
-        private readonly byte[] FAN_TACHOMETER_REG = { 0xA0, 0xB0, 0xC0, 0xD0 };
+    private const byte VOLTAGE_BASE_REG = 0x20;
+    private readonly byte[] FAN_PWM_REG = { 0xA3, 0xB3, 0xC3, 0xD3 };
+    private readonly byte[] FAN_TACHOMETER_REG = { 0xA0, 0xB0, 0xC0, 0xD0 };
 
-        // ReSharper restore InconsistentNaming
+    // ReSharper restore InconsistentNaming
 #pragma warning restore IDE1006 // Naming Styles
-    }
 }

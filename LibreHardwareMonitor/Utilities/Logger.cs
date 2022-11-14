@@ -32,86 +32,86 @@ namespace LibreHardwareMonitor.Utilities
             Computer.HardwareRemoved += HardwareRemoved;
         }
 
-        private void HardwareRemoved(IHardware hardware)
+    private void HardwareRemoved(IHardware hardware)
+    {
+        hardware.SensorAdded -= SensorAdded;
+        hardware.SensorRemoved -= SensorRemoved;
+
+        foreach (ISensor sensor in hardware.Sensors)
+            SensorRemoved(sensor);
+
+        foreach (IHardware subHardware in hardware.SubHardware)
+            HardwareRemoved(subHardware);
+    }
+
+    private void HardwareAdded(IHardware hardware)
+    {
+        foreach (ISensor sensor in hardware.Sensors)
+            SensorAdded(sensor);
+
+        hardware.SensorAdded += SensorAdded;
+        hardware.SensorRemoved += SensorRemoved;
+
+        foreach (IHardware subHardware in hardware.SubHardware)
+            HardwareAdded(subHardware);
+    }
+
+    private void SensorAdded(ISensor sensor)
+    {
+        if (_sensors == null)
+            return;
+
+        for (int i = 0; i < _sensors.Length; i++)
         {
-            hardware.SensorAdded -= SensorAdded;
-            hardware.SensorRemoved -= SensorRemoved;
-
-            foreach (ISensor sensor in hardware.Sensors)
-                SensorRemoved(sensor);
-
-            foreach (IHardware subHardware in hardware.SubHardware)
-                HardwareRemoved(subHardware);
+            if (sensor.Identifier.ToString() == _identifiers[i])
+                _sensors[i] = sensor;
         }
+    }
 
-        private void HardwareAdded(IHardware hardware)
+    private void SensorRemoved(ISensor sensor)
+    {
+        if (_sensors == null)
+            return;
+
+        for (int i = 0; i < _sensors.Length; i++)
         {
-            foreach (ISensor sensor in hardware.Sensors)
-                SensorAdded(sensor);
-
-            hardware.SensorAdded += SensorAdded;
-            hardware.SensorRemoved += SensorRemoved;
-
-            foreach (IHardware subHardware in hardware.SubHardware)
-                HardwareAdded(subHardware);
+            if (sensor == _sensors[i])
+                _sensors[i] = null;
         }
+    }
 
-        private void SensorAdded(ISensor sensor)
+    private static string GetFileName(DateTime date)
+    {
+        return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + string.Format(FileNameFormat, date);
+    }
+
+    private bool OpenExistingLogFile()
+    {
+        if (!File.Exists(_fileName))
+            return false;
+
+        try
         {
-            if (_sensors == null)
-                return;
+            string line;
+            using (StreamReader reader = new StreamReader(_fileName))
+                line = reader.ReadLine();
 
-            for (int i = 0; i < _sensors.Length; i++)
-            {
-                if (sensor.Identifier.ToString() == _identifiers[i])
-                    _sensors[i] = sensor;
-            }
-        }
-
-        private void SensorRemoved(ISensor sensor)
-        {
-            if (_sensors == null)
-                return;
-
-            for (int i = 0; i < _sensors.Length; i++)
-            {
-                if (sensor == _sensors[i])
-                    _sensors[i] = null;
-            }
-        }
-
-        private static string GetFileName(DateTime date)
-        {
-            return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + string.Format(FileNameFormat, date);
-        }
-
-        private bool OpenExistingLogFile()
-        {
-            if (!File.Exists(_fileName))
+            if (string.IsNullOrEmpty(line))
                 return false;
 
-            try
-            {
-                string line;
-                using (StreamReader reader = new StreamReader(_fileName))
-                    line = reader.ReadLine();
+            _identifiers = line.Split(',').Skip(1).ToArray();
+        }
+        catch
+        {
+            _identifiers = null;
+            return false;
+        }
 
-                if (string.IsNullOrEmpty(line))
-                    return false;
-
-                _identifiers = line.Split(',').Skip(1).ToArray();
-            }
-            catch
-            {
-                _identifiers = null;
-                return false;
-            }
-
-            if (_identifiers.Length == 0)
-            {
-                _identifiers = null;
-                return false;
-            }
+        if (_identifiers.Length == 0)
+        {
+            _identifiers = null;
+            return false;
+        }
 
             _sensors = new ISensor[_identifiers.Length];
             SensorVisitor visitor = new SensorVisitor(sensor =>
@@ -178,7 +178,7 @@ namespace LibreHardwareMonitor.Utilities
             CreateNewLogFile(selectiveLogging, Identifiers);
         }
 
-        public TimeSpan LoggingInterval { get; set; }
+    public TimeSpan LoggingInterval { get; set; }
 
         public void Log()
         {
@@ -192,10 +192,10 @@ namespace LibreHardwareMonitor.Utilities
             if (LastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
                 return;
 
-            if (_day != now.Date || !File.Exists(_fileName))
-            {
-                _day = now.Date;
-                _fileName = GetFileName(_day);
+        if (_day != now.Date || !File.Exists(_fileName))
+        {
+            _day = now.Date;
+            _fileName = GetFileName(_day);
 
                 if (!OpenExistingLogFile())
                     CreateNewLogFile(selectiveLogging, Identifiers);

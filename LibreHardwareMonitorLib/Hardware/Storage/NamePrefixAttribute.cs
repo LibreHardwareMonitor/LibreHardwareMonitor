@@ -6,16 +6,15 @@
 
 using System;
 
-namespace LibreHardwareMonitor.Hardware.Storage
-{
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    internal class NamePrefixAttribute : Attribute
-    {
-        public NamePrefixAttribute(string namePrefix)
-        {
-            Prefix = namePrefix;
-        }
+namespace LibreHardwareMonitor.Hardware.Storage;
 
-        public string Prefix { get; }
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+internal class NamePrefixAttribute : Attribute
+{
+    public NamePrefixAttribute(string namePrefix)
+    {
+        Prefix = namePrefix;
     }
+
+    public string Prefix { get; }
 }
