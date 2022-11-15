@@ -2591,6 +2591,35 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_MAXIMUS_Z790_HERO: //NCT6798D
+                        var knownIndices = new Dictionary<int, string>
+                        {
+                            { 0, "CPU package" },
+                            { 1, "VRM" },
+                            { 2, "Motherboard" },
+                            { 12, "Chipset" },
+                            { 21, "CPU" }
+                        };
+                        var ignoreIndices = new HashSet<int> { 3, 4, 5, 6, 7 };
+
+                        for (int i = 0; i < superIO.Temperatures.Length; i++)
+                        {
+                            if (ignoreIndices.Contains(i))
+                            {
+                                continue;
+                            }
+
+                            t.Add(new Temperature(knownIndices.ContainsKey(i) ? knownIndices[i] : $"Temperature {i}", i));
+                        }
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Ctrl("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.ROG_STRIX_B550_I_GAMING: //NCT6798D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly
