@@ -2592,25 +2592,28 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.ROG_MAXIMUS_Z790_HERO: //NCT6798D
-                        var knownIndices = new Dictionary<int, string>
-                        {
-                            { 0, "CPU package" },
-                            { 1, "VRM" },
-                            { 2, "Motherboard" },
-                            { 12, "Chipset" },
-                            { 21, "CPU" }
-                        };
-                        var ignoreIndices = new HashSet<int> { 3, 4, 5, 6, 7 };
-
-                        for (int i = 0; i < superIO.Temperatures.Length; i++)
-                        {
-                            if (ignoreIndices.Contains(i))
-                            {
-                                continue;
-                            }
-
-                            t.Add(new Temperature(knownIndices.ContainsKey(i) ? knownIndices[i] : $"Temperature {i}", i));
-                        }
+                        t.Add(new Temperature("CPU package", 0));
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        //t.Add(new Temperature("Temperature 3", 3));
+                        //t.Add(new Temperature("Temperature 4", 4));
+                        //t.Add(new Temperature("Temperature 5", 5));
+                        //t.Add(new Temperature("Temperature 6", 6));
+                        //t.Add(new Temperature("Temperature 7", 7));
+                        t.Add(new Temperature("Temperature 8", 8));
+                        t.Add(new Temperature("Temperature 9", 9));
+                        t.Add(new Temperature("Temperature 10", 10));
+                        t.Add(new Temperature("Temperature 11", 11));
+                        t.Add(new Temperature("Chipset", 12));
+                        t.Add(new Temperature("Temperature 13", 13));
+                        t.Add(new Temperature("Temperature 14", 14));
+                        t.Add(new Temperature("Temperature 15", 15));
+                        t.Add(new Temperature("Temperature 16", 16));
+                        t.Add(new Temperature("Temperature 17", 17));
+                        t.Add(new Temperature("Temperature 18", 18));
+                        t.Add(new Temperature("Temperature 19", 19));
+                        t.Add(new Temperature("Temperature 20", 20));
+                        t.Add(new Temperature("CPU", 21));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
