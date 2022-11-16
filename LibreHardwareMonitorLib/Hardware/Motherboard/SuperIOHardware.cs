@@ -2592,7 +2592,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.ROG_MAXIMUS_Z790_HERO: //NCT6798D
-                        t.Add(new Temperature("CPU package", 0));
+                        t.Add(new Temperature("CPU Package", 0));
                         t.Add(new Temperature("VRM", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         //t.Add(new Temperature("Temperature #3", 3));
