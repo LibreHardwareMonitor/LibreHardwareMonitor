@@ -2591,6 +2591,38 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_MAXIMUS_Z790_HERO: //NCT6798D
+                        t.Add(new Temperature("CPU Package", 0));
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        //t.Add(new Temperature("Temperature #3", 3));
+                        //t.Add(new Temperature("Temperature #4", 4));
+                        //t.Add(new Temperature("Temperature #5", 5));
+                        //t.Add(new Temperature("Temperature #6", 6));
+                        //t.Add(new Temperature("Temperature #7", 7));
+                        t.Add(new Temperature("Temperature #8", 8));
+                        t.Add(new Temperature("Temperature #9", 9));
+                        t.Add(new Temperature("Temperature #10", 10));
+                        t.Add(new Temperature("Temperature #11", 11));
+                        t.Add(new Temperature("Chipset", 12));
+                        t.Add(new Temperature("Temperature #13", 13));
+                        t.Add(new Temperature("Temperature #14", 14));
+                        t.Add(new Temperature("Temperature #15", 15));
+                        t.Add(new Temperature("Temperature #16", 16));
+                        t.Add(new Temperature("Temperature #17", 17));
+                        t.Add(new Temperature("Temperature #18", 18));
+                        t.Add(new Temperature("Temperature #19", 19));
+                        t.Add(new Temperature("Temperature #20", 20));
+                        t.Add(new Temperature("CPU", 21));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Ctrl("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.ROG_STRIX_B550_I_GAMING: //NCT6798D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly

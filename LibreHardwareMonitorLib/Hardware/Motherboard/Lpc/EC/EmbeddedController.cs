@@ -148,6 +148,11 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempWaterBlockIn,
             ECSensor.FanWaterFlow),
+        new(Model.ROG_MAXIMUS_Z790_HERO,
+            BoardFamily.Intel700,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.Z170_A,
             BoardFamily.Intel100,
             ECSensor.TempTSensor,
@@ -213,6 +218,14 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                 { ECSensor.TempWaterBlockIn, new EmbeddedControllerSource("Water Block In", SensorType.Temperature, 0x0102, blank: -40) },
+                { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
+            }
+        },
+        {
+            BoardFamily.Intel700, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
+                { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                 { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
             }
         }
@@ -416,7 +429,8 @@ public abstract class EmbeddedController : Hardware
         Amd400,
         Amd500,
         Intel100,
-        Intel600
+        Intel600,
+        Intel700
     }
 
     private struct BoardInfo
