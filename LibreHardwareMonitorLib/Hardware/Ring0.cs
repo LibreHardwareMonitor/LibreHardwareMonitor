@@ -7,10 +7,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 
@@ -47,7 +46,7 @@ internal static class Ring0
         {
             // driver is not loaded, try to install and open
             _filePath = GetFilePath();
-            if (_filePath != null && ExtractDriver(_filePath))
+            if (_filePath != null && Extract(_filePath))
             {
                 if (_driver.Install(_filePath, out string installError))
                 {
@@ -82,7 +81,7 @@ internal static class Ring0
                 if (!_driver.IsOpen)
                 {
                     _driver.Delete();
-                    DeleteDriver();
+                    Delete();
                 }
             }
             else
@@ -113,90 +112,67 @@ internal static class Ring0
         }
     }
 
-    private static bool ExtractDriver(string filePath)
+    private static bool Extract(string filePath)
     {
-        string resourceName = $"{nameof(LibreHardwareMonitor)}.Resources.{(Software.OperatingSystem.Is64Bit ? "WinRing0x64.sys" : "WinRing0.sys")}";
+        string resourceName = $"{nameof(LibreHardwareMonitor)}.Resources.{(Software.OperatingSystem.Is64Bit ? "WinRing0x64.gz" : "WinRing0.gz")}";
+
         Assembly assembly = typeof(Ring0).Assembly;
-
-        string[] names = assembly.GetManifestResourceNames();
-        byte[] buffer = null;
-
-        for (int i = 0; i < names.Length; i++)
-        {
-            if (names[i].Replace('\\', '.') == resourceName)
-            {
-                using Stream stream = assembly.GetManifestResourceStream(names[i]);
-
-                if (stream != null)
-                {
-                    buffer = new byte[stream.Length];
-                    stream.Read(buffer, 0, buffer.Length);
-                }
-            }
-        }
-
-        if (buffer == null)
-            return false;
+        long requiredLength = 0;
 
         try
         {
-            using FileStream target = new(filePath, FileMode.Create);
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
 
-            target.Write(buffer, 0, buffer.Length);
-            target.Flush();
+            if (stream != null)
+            {
+                using FileStream target = new(filePath, FileMode.Create);
+
+                stream.Position = 1; // Skip first byte.
+
+                using var gzipStream = new GZipStream(stream, CompressionMode.Decompress);
+
+                gzipStream.CopyTo(target);
+
+                requiredLength = target.Length;
+            }
         }
-        catch (IOException)
+        catch
         {
-            // for example there is not enough space on the disk
             return false;
         }
 
-        // make sure the file is actually written to the file system
+        if (HasValidFile())
+            return true;
+
+        // Ensure the file is actually written to the file system.
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
         while (stopwatch.ElapsedMilliseconds < 2000)
         {
-            try
-            {
-                if (File.Exists(filePath) && new FileInfo(filePath).Length == buffer.Length)
-                    return true;
-            }
-            catch
-            { }
+            if (HasValidFile())
+                return true;
 
-            Thread.Sleep(1);
+            Thread.Yield();
         }
 
-        // file still has not the right size, something is wrong
         return false;
+
+        bool HasValidFile()
+        {
+            try
+            {
+                return File.Exists(filePath) && new FileInfo(filePath).Length == requiredLength;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
     private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
     {
-#if NETFRAMEWORK
-            MutexSecurity mutexSecurity = new();
-            SecurityIdentifier identity = new(WellKnownSidType.WorldSid, null);
-            mutexSecurity.AddAccessRule(new MutexAccessRule(identity, MutexRights.Synchronize | MutexRights.Modify, AccessControlType.Allow));
-
-            try
-            {
-                // If the CreateMutex call fails, the framework will attempt to use OpenMutex
-                // to open the named mutex requesting SYNCHRONIZE and MUTEX_MODIFY rights.
-                mutex = new Mutex(false, name, out _, mutexSecurity);
-                return true;
-            }
-            catch
-            {
-                // WaitHandleCannotBeOpenedException:
-                // The mutex cannot be opened, probably because a Win32 object of a different type with the same name already exists.
-
-                // UnauthorizedAccessException:
-                // The mutex exists, but the current process or thread token does not have permission to open the mutex with SYNCHRONIZE | MUTEX_MODIFY rights.
-                mutex = null;
-                return false;
-            }
-#else
         try
         {
             mutex = new Mutex(false, name);
@@ -209,15 +185,16 @@ internal static class Ring0
                 mutex = Mutex.OpenExisting(name);
                 return true;
             }
-            catch { }
-
-            mutex = null;
+            catch
+            {
+                mutex = null;
+            }
         }
+
         return false;
-#endif
     }
 
-    private static void DeleteDriver()
+    private static void Delete()
     {
         try
         {
@@ -228,9 +205,7 @@ internal static class Ring0
             _filePath = null;
         }
         catch
-        {
-            // Mutex could not be created or opened
-        }
+        { }
     }
 
     private static string GetServiceName()
@@ -378,7 +353,7 @@ internal static class Ring0
         }
 
         // try to delete temporary driver file again if failed during open
-        DeleteDriver();
+        Delete();
     }
 
     public static string GetReport()
