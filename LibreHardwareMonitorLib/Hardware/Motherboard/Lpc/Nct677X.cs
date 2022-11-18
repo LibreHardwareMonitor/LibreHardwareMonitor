@@ -847,7 +847,7 @@ internal class Nct677X : ISuperIO
 
     private bool IsNuvotonVendor()
     {
-        return Chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D  || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
+        return Chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
     private void SaveDefaultFanControl(int index)
@@ -874,7 +874,7 @@ internal class Nct677X : ISuperIO
     {
         if (_restoreDefaultFanControlRequired[index])
         {
-            if (Chip is not Chip.NCT6687D and not Chip.NCT6686D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
             {
                 WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
                 WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
