@@ -107,8 +107,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x06:
                 switch (revision)
                 {
@@ -117,8 +117,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x07:
                 switch (revision)
                 {
@@ -127,8 +127,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x08:
                 switch (revision)
                 {
@@ -137,8 +137,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x09:
                 switch (revision)
                 {
@@ -151,8 +151,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x10:
                 switch (revision)
                 {
@@ -165,8 +165,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x11:
                 switch (revision)
                 {
@@ -179,8 +179,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x52:
                 switch (revision)
                 {
@@ -191,8 +191,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x82:
                 switch (revision & 0xF0)
                 {
@@ -201,8 +201,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x85:
                 switch (revision)
                 {
@@ -211,8 +211,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x88:
                 switch (revision & 0xF0)
                 {
@@ -222,8 +222,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xA0:
                 switch (revision & 0xF0)
                 {
@@ -232,8 +232,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xA5:
                 switch (revision & 0xF0)
                 {
@@ -242,8 +242,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xB0:
                 switch (revision & 0xF0)
                 {
@@ -252,8 +252,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xB3:
                 switch (revision & 0xF0)
                 {
@@ -262,8 +262,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xB4:
                 switch (revision & 0xF0)
                 {
@@ -272,8 +272,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC3:
                 switch (revision & 0xF0)
                 {
@@ -282,8 +282,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC4:
                 switch (revision & 0xF0)
                 {
@@ -292,8 +292,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC5:
                 switch (revision & 0xF0)
                 {
@@ -302,8 +302,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC7:
                 switch (revision)
                 {
@@ -312,8 +312,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC8:
                 switch (revision)
                 {
@@ -322,8 +322,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC9:
                 switch (revision)
                 {
@@ -336,8 +336,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD1:
                 switch (revision)
                 {
@@ -346,8 +346,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD3:
                 switch (revision)
                 {
@@ -356,8 +356,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD4:
                 switch (revision)
                 {
@@ -377,9 +377,13 @@ internal class LpcIO
                         chip = Chip.NCT6798D;
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
+                    case 0x40:
+                        chip = Chip.NCT6686D;
+                        logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                        break;
                 }
-                break;
 
+                break;
             case 0xD5:
                 switch (revision)
                 {
@@ -388,8 +392,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD8:
                 switch (revision)
                 {
@@ -398,6 +402,7 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
+
                 break;
         }
 
@@ -483,6 +488,7 @@ internal class LpcIO
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
                 case Chip.NCT6799D:
+                case Chip.NCT6686D:
                 case Chip.NCT6687D:
                 case Chip.NCT6683D:
                     _superIOs.Add(new Nct677X(chip, revision, address, port));

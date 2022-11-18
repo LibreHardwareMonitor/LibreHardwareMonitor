@@ -62,6 +62,7 @@ internal enum Chip : ushort
     NCT6796DR = 0xD42A,
     NCT6797D = 0xD451,
     NCT6798D = 0xD42B,
+    NCT6686D = 0xD440,
     NCT6687D = 0xD592,
     NCT6683D = 0xC732,
     NCT6799D = 0xD802,
@@ -130,6 +131,7 @@ internal class ChipName
             case Chip.NCT6797D: return "Nuvoton NCT6797D";
             case Chip.NCT6798D: return "Nuvoton NCT6798D";
             case Chip.NCT6799D: return "Nuvoton NCT6799D";
+            case Chip.NCT6686D: return "Nuvoton NCT6686D";
             case Chip.NCT6687D: return "Nuvoton NCT6687D";
             case Chip.NCT6683D: return "Nuvoton NCT6683D";
 
