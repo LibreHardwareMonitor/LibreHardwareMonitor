@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
@@ -28,10 +28,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\inpout32.dll" />
-    <EmbeddedResource Include="Resources\inpoutx64.dll" />
-    <EmbeddedResource Include="Resources\WinRing0.sys" />
-    <EmbeddedResource Include="Resources\WinRing0x64.sys" />
+    <EmbeddedResource Include="Resources\inpout32.gz" />
+    <EmbeddedResource Include="Resources\inpoutx64.gz" />
+    <EmbeddedResource Include="Resources\WinRing0.gz" />
+    <EmbeddedResource Include="Resources\WinRing0x64.gz" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
