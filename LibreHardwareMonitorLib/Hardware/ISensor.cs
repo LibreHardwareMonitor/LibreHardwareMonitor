@@ -123,4 +123,9 @@ public interface ISensor : IElement
     /// Resets a value stored in <see cref="Max"/>.
     /// </summary>
     void ResetMax();
+
+    /// <summary>
+    /// Resets the plot graph.
+    /// </summary>
+    void ResetPlot();
 }

@@ -64,6 +64,7 @@ namespace LibreHardwareMonitor.UI
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetMinMaxMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetPlotMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.hiddenMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plotMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -345,6 +346,7 @@ namespace LibreHardwareMonitor.UI
             // 
             this.viewMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.resetMinMaxMenuItem,
+            this.resetPlotMenuItem,
             this.MenuItem3,
             this.hiddenMenuItem,
             this.plotMenuItem,
@@ -361,6 +363,13 @@ namespace LibreHardwareMonitor.UI
             this.resetMinMaxMenuItem.Size = new System.Drawing.Size(188, 22);
             this.resetMinMaxMenuItem.Text = "Reset Min/Max";
             this.resetMinMaxMenuItem.Click += new System.EventHandler(this.ResetMinMaxMenuItem_Click);
+            // 
+            // resetPlotMenuItem
+            // 
+            this.resetPlotMenuItem.Name = "resetPlotMenuItem";
+            this.resetPlotMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.resetPlotMenuItem.Text = "Reset Plot";
+            this.resetPlotMenuItem.Click += new System.EventHandler(this.resetPlotMenuItem_Click);
             // 
             // MenuItem3
             // 
@@ -993,6 +1002,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem fahrenheitMenuItem;
         private System.Windows.Forms.ToolStripSeparator MenuItem2;
         private System.Windows.Forms.ToolStripMenuItem resetMinMaxMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetPlotMenuItem;
         private System.Windows.Forms.ToolStripSeparator MenuItem3;
         private System.Windows.Forms.ToolStripMenuItem gadgetMenuItem;
         private System.Windows.Forms.ToolStripMenuItem minCloseMenuItem;
