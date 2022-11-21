@@ -1104,7 +1104,7 @@ public sealed partial class MainForm : Form
     {
         _computer.Accept(new SensorVisitor(delegate (ISensor sensorClick)
         {
-            sensorClick.ResetPlot();
+            sensorClick.ClearValues();
         }));
     }
 

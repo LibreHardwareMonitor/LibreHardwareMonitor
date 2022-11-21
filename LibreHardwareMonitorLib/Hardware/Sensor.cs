@@ -169,7 +169,7 @@ internal class Sensor : ISensor
         Max = null;
     }
 
-    public void ResetPlot()
+    public void ClearValues()
     {
         _values.Clear();
     }
