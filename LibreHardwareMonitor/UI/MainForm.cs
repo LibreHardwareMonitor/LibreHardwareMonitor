@@ -1100,6 +1100,14 @@ public sealed partial class MainForm : Form
         }));
     }
 
+    private void resetPlotMenuItem_Click(object sender, EventArgs e)
+    {
+        _computer.Accept(new SensorVisitor(delegate (ISensor sensorClick)
+        {
+            sensorClick.ClearValues();
+        }));
+    }
+
     private void MainForm_MoveOrResize(object sender, EventArgs e)
     {
         if (WindowState != FormWindowState.Minimized)
