@@ -3,4 +3,9 @@
     <Version>0.9.1</Version>
     <Copyright>LibreHardwareMonitor</Copyright>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
 </Project>
