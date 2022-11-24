@@ -59,24 +59,25 @@
             this.httpAuthUsernameTextBox.MaxLength = 255;
             this.httpAuthUsernameTextBox.Name = "httpAuthUsernameTextBox";
             this.httpAuthUsernameTextBox.Size = new System.Drawing.Size(171, 20);
-            this.httpAuthUsernameTextBox.TabIndex = 1;
+            this.httpAuthUsernameTextBox.TabIndex = 2;
+            this.httpAuthUsernameTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.httpAuthUsernameTextBox_KeyDown);
             // 
             // httpAuthPasswordTextBox
             // 
             this.httpAuthPasswordTextBox.Location = new System.Drawing.Point(102, 60);
             this.httpAuthPasswordTextBox.MaxLength = 255;
             this.httpAuthPasswordTextBox.Name = "httpAuthPasswordTextBox";
-            this.httpAuthPasswordTextBox.PasswordChar = '*';
             this.httpAuthPasswordTextBox.Size = new System.Drawing.Size(171, 20);
-            this.httpAuthPasswordTextBox.TabIndex = 2;
+            this.httpAuthPasswordTextBox.TabIndex = 3;
             this.httpAuthPasswordTextBox.UseSystemPasswordChar = true;
+            this.httpAuthPasswordTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.httpAuthPasswordTextBox_KeyDown);
             // 
             // httpUsernameLabel
             // 
             this.httpUsernameLabel.AutoSize = true;
             this.httpUsernameLabel.Location = new System.Drawing.Point(6, 26);
             this.httpUsernameLabel.Name = "httpUsernameLabel";
-            this.httpUsernameLabel.Size = new System.Drawing.Size(90, 13);
+            this.httpUsernameLabel.Size = new System.Drawing.Size(92, 13);
             this.httpUsernameLabel.TabIndex = 6;
             this.httpUsernameLabel.Text = "HTTP UserName:";
             // 
@@ -98,7 +99,7 @@
             this.credentialsGroupBox.Location = new System.Drawing.Point(12, 35);
             this.credentialsGroupBox.Name = "credentialsGroupBox";
             this.credentialsGroupBox.Size = new System.Drawing.Size(279, 100);
-            this.credentialsGroupBox.TabIndex = 5;
+            this.credentialsGroupBox.TabIndex = 1;
             this.credentialsGroupBox.TabStop = false;
             this.credentialsGroupBox.Text = "Credentials";
             // 
@@ -108,7 +109,7 @@
             this.httpAuthCancelButton.Location = new System.Drawing.Point(76, 206);
             this.httpAuthCancelButton.Name = "httpAuthCancelButton";
             this.httpAuthCancelButton.Size = new System.Drawing.Size(75, 23);
-            this.httpAuthCancelButton.TabIndex = 3;
+            this.httpAuthCancelButton.TabIndex = 5;
             this.httpAuthCancelButton.Text = "Cancel";
             this.httpAuthCancelButton.UseVisualStyleBackColor = true;
             this.httpAuthCancelButton.Click += new System.EventHandler(this.HttpAuthCancelButton_Click);
@@ -137,10 +138,10 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(12, 174);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(284, 26);
+            this.label2.Size = new System.Drawing.Size(265, 26);
             this.label2.TabIndex = 9;
-            this.label2.Text = "If the web server is running then it will need to be restarted \r\nfor the change t" +
-    "o take effect.";
+            this.label2.Text = "If the web server is running then it must to be restarted \r\nfor the change to tak" +
+    "e effect.";
             // 
             // AuthForm
             // 

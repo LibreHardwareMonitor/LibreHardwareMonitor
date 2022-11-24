@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace LibreHardwareMonitor.UI;
 
@@ -52,6 +53,14 @@ public partial class PortForm : Form
     private void PortOKButton_Click(object sender, EventArgs e)
     {
         _parent.Server.ListenerPort = (int)portNumericUpDn.Value;
+        if(_parent.Server.RestartRequired && _parent.Server.PendingRestarts.Contains(Utilities.HttpServer.PendingRestartReason.ListenerPortChanged))
+        {
+            DialogResult result = MessageBox.Show("Server restart required for port change to take effect.\nDo you want to restart it now?", "Pending server restart", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+            if (result == DialogResult.Yes)
+            {
+                _parent.Server.Restart();
+            }
+        }
         Close();
     }
 

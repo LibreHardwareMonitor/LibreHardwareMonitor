@@ -30,14 +30,35 @@ public class HttpServer
     private readonly HttpListener _listener;
     private readonly Node _root;
     private Thread _listenerThread;
+    private string _username;
+    private bool _authEnabled;
+    private int _listenerPort;
+    private bool _restartRequired;
 
-    public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string password = "")
+    private readonly HashSet<PendingRestartReason> _pendingRestarts;
+
+    public event EventHandler<HashSet<PendingRestartReason>> RestartRequiredChanged;
+    public event EventHandler<bool> RunningStateUpdated;
+
+    public enum PendingRestartReason
     {
+        UserNameChanged,
+        PasswordChanged,
+        ListenerPortChanged,
+        AuthEnabledChanged,
+        Other
+    }
+
+    public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string passwordSHA256 = "")
+    {
+        _root = null;
+        _pendingRestarts = new();
+        RestartRequired = false;
         _root = node;
-        ListenerPort = port;
-        AuthEnabled = authEnabled;
-        UserName = userName;
-        Password = password;
+        _listenerPort = port;
+        _authEnabled = authEnabled;
+        _username = userName;
+        PasswordSHA256 = passwordSHA256;
 
         try
         {
@@ -59,14 +80,92 @@ public class HttpServer
         _listener.Abort();
     }
 
-    public bool AuthEnabled { get; set; }
+    public HashSet<PendingRestartReason> PendingRestarts { get { return _pendingRestarts; } }
 
-    public int ListenerPort { get; set; }
+    public bool IsRunning
+    {
+        get { return _listener.IsListening && _listenerThread != null; }
+    }
+
+    public void Restart()
+    {
+        if (IsRunning) StopHttpListener();
+        StartHttpListener();
+    }
+
+    public bool RestartRequired
+    {
+        get
+        {
+            return _restartRequired;
+        }
+        private set
+        {
+            if(_restartRequired != value)
+            {
+                _restartRequired = value;
+                if(_root != null && IsRunning)
+                    RestartRequiredChanged?.Invoke(this, _pendingRestarts);
+            }
+        }
+    }
+
+    public bool AuthEnabled
+    {
+        get
+        {
+            return _authEnabled;
+        }
+        set
+        {
+            if (_authEnabled != value)
+            {
+                _authEnabled = value;
+
+                _pendingRestarts.Add(PendingRestartReason.AuthEnabledChanged);
+
+                RestartRequired |= IsRunning;
+            }
+        }
+    }
+
+    public int ListenerPort
+    {
+        get
+        {
+            return _listenerPort;
+        }
+        set
+        {
+            if (_listenerPort != value)
+            {
+                _listenerPort = value;
+
+                _pendingRestarts.Add(PendingRestartReason.ListenerPortChanged);
+
+                RestartRequired |= IsRunning;
+            }
+        }
+    }
 
     public string Password
     {
-        get { return PasswordSHA256; }
-        set { PasswordSHA256 = ComputeSHA256(value); }
+        get
+        {
+            return PasswordSHA256;
+        }
+        set
+        {
+            string NewPassHash = ComputeSHA256(value);
+            if (PasswordSHA256 != NewPassHash)
+            {
+                PasswordSHA256 = NewPassHash;
+
+                _pendingRestarts.Add(PendingRestartReason.PasswordChanged);
+
+                RestartRequired |= IsRunning && AuthEnabled;
+            }
+        }
     }
 
     public bool PlatformNotSupported
@@ -74,7 +173,24 @@ public class HttpServer
         get { return _listener == null; }
     }
 
-    public string UserName { get; set; }
+    public string UserName
+    {
+        get
+        {
+            return _username;
+        }
+        set
+        {
+            if (_username != value)
+            {
+                _username = value;
+
+                _pendingRestarts.Add(PendingRestartReason.UserNameChanged);
+
+                RestartRequired |= IsRunning && AuthEnabled;
+            }
+        }
+    }
 
     private string PasswordSHA256 { get; set; }
 
@@ -83,6 +199,7 @@ public class HttpServer
         if (PlatformNotSupported)
             return false;
 
+        bool startFailed = false;
 
         try
         {
@@ -105,10 +222,12 @@ public class HttpServer
         }
         catch (Exception)
         {
-            return false;
+            startFailed = true;
         }
 
-        return true;
+        RunningStateUpdated?.Invoke(this, IsRunning);
+
+        return !startFailed;
     }
 
     public bool StopHttpListener()
@@ -131,6 +250,9 @@ public class HttpServer
         { }
         catch (Exception)
         { }
+
+        _pendingRestarts.Clear();
+        RestartRequired = false;
 
         return true;
     }
@@ -390,7 +512,10 @@ public class HttpServer
 
             byte[] buffer = Encoding.UTF8.GetBytes(responseString);
             context.Response.ContentLength64 = buffer.Length;
+            context.Response.AddHeader("Cache-Control", "no-cache");
             context.Response.StatusCode = 401;
+            context.Response.ContentType = "text/html";
+            context.Response.StatusDescription = "401 Authorization required.";
             Stream output = context.Response.OutputStream;
             output.Write(buffer, 0, buffer.Length);
             output.Close();

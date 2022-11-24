@@ -239,14 +239,19 @@ public sealed partial class MainForm : Form
         Server = new HttpServer(_root,
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
-                                _settings.GetValue("authenticationUserName", ""),
-                                _settings.GetValue("authenticationPassword", ""));
+                                _settings.GetValue("authenticationUserName", "librehm"),
+                                _settings.GetValue("authenticationPassword", "librehm"));
 
         if (Server.PlatformNotSupported)
         {
             webMenuItemSeparator.Visible = false;
             webMenuItem.Visible = false;
         }
+
+        Server.RunningStateUpdated += delegate
+        {
+            runWebServerMenuItem.Checked = Server.IsRunning;
+        };
 
         _runWebServer = new UserOption("runWebServerMenuItem", false, runWebServerMenuItem, _settings);
         _runWebServer.Changed += delegate
@@ -257,7 +262,8 @@ public sealed partial class MainForm : Form
                 Server.StopHttpListener();
         };
 
-        authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
+        authWebServerMenuItem.Checked = Server.AuthEnabled;
+
 
         _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
 
