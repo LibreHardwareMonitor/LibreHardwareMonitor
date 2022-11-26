@@ -36,6 +36,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _memoryJunctionTemperature;
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
+    private readonly Sensor _memoryLoad;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
@@ -420,6 +421,7 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
         _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
         Update();
     }
@@ -611,6 +613,9 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 _memoryUsed.Value = (total - free) / 1024;
                 ActivateSensor(_memoryUsed);
+
+                _memoryLoad.Value = ((float)(total - free) / total) * 100;
+                ActivateSensor(_memoryLoad);
             }
         }
 
