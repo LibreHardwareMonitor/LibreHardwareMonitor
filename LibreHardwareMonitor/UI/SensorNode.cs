@@ -22,69 +22,69 @@ namespace LibreHardwareMonitor.UI
         private bool _logOutput;
         private bool _logOutputTemp;
 
-    public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
-    {
-        Sensor = sensor;
-        _settings = settings;
-        _unitManager = unitManager;
-
-        switch (sensor.SensorType)
+        public SensorNode(ISensor sensor, PersistentSettings settings, UnitManager unitManager)
         {
-            case SensorType.Voltage:
-                Format = "{0:F3} V";
-                break;
-            case SensorType.Current:
-                Format = "{0:F3} A";
-                break;
-            case SensorType.Clock:
-                Format = "{0:F1} MHz";
-                break;
-            case SensorType.Load:
-                Format = "{0:F1} %";
-                break;
-            case SensorType.Temperature:
-                Format = "{0:F1} °C";
-                break;
-            case SensorType.Fan:
-                Format = "{0:F0} RPM";
-                break;
-            case SensorType.Flow:
-                Format = "{0:F1} L/h";
-                break;
-            case SensorType.Control:
-                Format = "{0:F1} %";
-                break;
-            case SensorType.Level:
-                Format = "{0:F1} %";
-                break;
-            case SensorType.Power:
-                Format = "{0:F1} W";
-                break;
-            case SensorType.Data:
-                Format = "{0:F1} GB";
-                break;
-            case SensorType.SmallData:
-                Format = "{0:F1} MB";
-                break;
-            case SensorType.Factor:
-                Format = "{0:F3}";
-                break;
-            case SensorType.Frequency:
-                Format = "{0:F1} Hz";
-                break;
-            case SensorType.Throughput:
-                Format = "{0:F1} B/s";
-                break;
-            case SensorType.TimeSpan:
-                Format = "{0:g}";
-                break;
-            case SensorType.Energy:
-                Format = "{0:F0} mWh";
-                break;
-            case SensorType.Noise:
-                Format = "{0:F0} dBA";
-                break;
-        }
+            Sensor = sensor;
+            _settings = settings;
+            _unitManager = unitManager;
+
+            switch (sensor.SensorType)
+            {
+                case SensorType.Voltage:
+                    Format = "{0:F3} V";
+                    break;
+                case SensorType.Current:
+                    Format = "{0:F3} A";
+                    break;
+                case SensorType.Clock:
+                    Format = "{0:F1} MHz";
+                    break;
+                case SensorType.Load:
+                    Format = "{0:F1} %";
+                    break;
+                case SensorType.Temperature:
+                    Format = "{0:F1} °C";
+                    break;
+                case SensorType.Fan:
+                    Format = "{0:F0} RPM";
+                    break;
+                case SensorType.Flow:
+                    Format = "{0:F1} L/h";
+                    break;
+                case SensorType.Control:
+                    Format = "{0:F1} %";
+                    break;
+                case SensorType.Level:
+                    Format = "{0:F1} %";
+                    break;
+                case SensorType.Power:
+                    Format = "{0:F1} W";
+                    break;
+                case SensorType.Data:
+                    Format = "{0:F1} GB";
+                    break;
+                case SensorType.SmallData:
+                    Format = "{0:F1} MB";
+                    break;
+                case SensorType.Factor:
+                    Format = "{0:F3}";
+                    break;
+                case SensorType.Frequency:
+                    Format = "{0:F1} Hz";
+                    break;
+                case SensorType.Throughput:
+                    Format = "{0:F1} B/s";
+                    break;
+                case SensorType.TimeSpan:
+                    Format = "{0:g}";
+                    break;
+                case SensorType.Energy:
+                    Format = "{0:F0} mWh";
+                    break;
+                case SensorType.Noise:
+                    Format = "{0:F0} dBA";
+                    break;
+            }
 
             // Initial setting for .config without "logoutput" property
             if (settings.Contains(new Identifier(sensor.Identifier, "logoutput").ToString()))
@@ -101,11 +101,11 @@ namespace LibreHardwareMonitor.UI
             Plot = settings.GetValue(new Identifier(sensor.Identifier, "plot").ToString(), false);
             string id = new Identifier(sensor.Identifier, "penColor").ToString();
 
-        if (settings.Contains(id))
-            PenColor = settings.GetValue(id, Color.Black);
-    }
+            if (settings.Contains(id))
+                PenColor = settings.GetValue(id, Color.Black);
+        }
 
-    public event EventHandler PlotSelectionChanged;
+        public event EventHandler PlotSelectionChanged;
 
         public string Format { get; set; } = "";
 
@@ -124,27 +124,27 @@ namespace LibreHardwareMonitor.UI
             get { return ValueToString(Sensor.Max); }
         }
 
-    public string Min
-    {
-        get { return ValueToString(Sensor.Min); }
-    }
-
-    public Color? PenColor
-    {
-        get { return _penColor; }
-        set
+        public string Min
         {
-            _penColor = value;
-
-            string id = new Identifier(Sensor.Identifier, "penColor").ToString();
-            if (value.HasValue)
-                _settings.SetValue(id, value.Value);
-            else
-                _settings.Remove(id);
-
-            PlotSelectionChanged?.Invoke(this, null);
+            get { return ValueToString(Sensor.Min); }
         }
-    }
+
+        public Color? PenColor
+        {
+            get { return _penColor; }
+            set
+            {
+                _penColor = value;
+
+                string id = new Identifier(Sensor.Identifier, "penColor").ToString();
+                if (value.HasValue)
+                    _settings.SetValue(id, value.Value);
+                else
+                    _settings.Remove(id);
+
+                PlotSelectionChanged?.Invoke(this, null);
+            }
+        }
 
         public bool Plot
         {
@@ -174,75 +174,80 @@ namespace LibreHardwareMonitor.UI
             set { _logOutputTemp = value; }
         }
 
-    public ISensor Sensor { get; }
+        public ISensor Sensor { get; }
 
-    public override string Text
-    {
-        get { return Sensor.Name; }
-        set { Sensor.Name = value; }
-    }
-
-    public override string ToolTip
-    {
-        get
+        public override string Text
         {
-            StringBuilder stringBuilder = new();
-
-            if (Sensor is ICriticalSensorLimits criticalSensorLimits)
-                OptionallyAppendCriticalRange(stringBuilder, criticalSensorLimits.CriticalLowLimit, criticalSensorLimits.CriticalHighLimit, "critical");
-
-            if (Sensor is ISensorLimits sensorLimits)
-                OptionallyAppendCriticalRange(stringBuilder, sensorLimits.LowLimit, sensorLimits.HighLimit, "normal");
-
-            return stringBuilder.ToString();
+            get { return Sensor.Name; }
+            set { Sensor.Name = value; }
         }
-    }
 
-    public string Value
-    {
-        get { return ValueToString(Sensor.Value); }
-    }
-
-    public string ValueToString(float? value)
-    {
-        if (value.HasValue)
+        public override string ToolTip
         {
-            switch (Sensor.SensorType)
+            get
             {
-                case SensorType.Temperature when _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit:
-                    {
-                        return $"{value * 1.8 + 32:F1} °F";
-                    }
-                case SensorType.Throughput:
-                    {
-                        string result;
-                        switch (Sensor.Name)
+                StringBuilder stringBuilder = new();
+
+                if (Sensor is ICriticalSensorLimits criticalSensorLimits)
+                    OptionallyAppendCriticalRange(stringBuilder, criticalSensorLimits.CriticalLowLimit, criticalSensorLimits.CriticalHighLimit, "critical");
+
+                if (Sensor is ISensorLimits sensorLimits)
+                    OptionallyAppendCriticalRange(stringBuilder, sensorLimits.LowLimit, sensorLimits.HighLimit, "normal");
+
+                return stringBuilder.ToString();
+            }
+        }
+
+        public string Value
+        {
+            get { return ValueToString(Sensor.Value); }
+        }
+
+        public string ID
+        {
+            get { return Sensor.Identifier.ToString(); }
+        }
+
+        public string ValueToString(float? value)
+        {
+            if (value.HasValue)
+            {
+                switch (Sensor.SensorType)
+                {
+                    case SensorType.Temperature when _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit:
                         {
-                            case "Connection Speed":
-                                {
-                                    switch (value)
+                            return $"{value * 1.8 + 32:F1} °F";
+                        }
+                    case SensorType.Throughput:
+                        {
+                            string result;
+                            switch (Sensor.Name)
+                            {
+                                case "Connection Speed":
                                     {
-                                        case 100000000:
-                                            {
-                                                result = "100Mbps";
-                                                break;
-                                            }
-                                        case 1000000000:
-                                            {
-                                                result = "1Gbps";
-                                                break;
-                                            }
-                                        default:
-                                            {
-                                                if (value < 1024)
-                                                    result = $"{value:F0} bps";
-                                                else if (value < 1048576)
-                                                    result = $"{value / 1024:F1} Kbps";
-                                                else if (value < 1073741824)
-                                                    result = $"{value / 1048576:F1} Mbps";
-                                                else
-                                                    result = $"{value / 1073741824:F1} Gbps";
-                                            }
+                                        switch (value)
+                                        {
+                                            case 100000000:
+                                                {
+                                                    result = "100Mbps";
+                                                    break;
+                                                }
+                                            case 1000000000:
+                                                {
+                                                    result = "1Gbps";
+                                                    break;
+                                                }
+                                            default:
+                                                {
+                                                    if (value < 1024)
+                                                        result = $"{value:F0} bps";
+                                                    else if (value < 1048576)
+                                                        result = $"{value / 1024:F1} Kbps";
+                                                    else if (value < 1073741824)
+                                                        result = $"{value / 1048576:F1} Mbps";
+                                                    else
+                                                        result = $"{value / 1073741824:F1} Gbps";
+                                                }
 
                                                 break;
                                         }

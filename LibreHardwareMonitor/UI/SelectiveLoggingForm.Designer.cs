@@ -33,10 +33,12 @@
             this.sensor = new Aga.Controls.Tree.TreeColumn();
             this.logOutput = new Aga.Controls.Tree.TreeColumn();
             this.value = new Aga.Controls.Tree.TreeColumn();
+            this.ID = new Aga.Controls.Tree.TreeColumn();
             this.nodeImage = new Aga.Controls.Tree.NodeControls.NodeIcon();
             this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.nodeCheckBox = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
             this.nodeValue = new Aga.Controls.Tree.NodeControls.NodeTextBox();
+            this.nodeID = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.btnChangeStructure = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnSelectiveLogging = new System.Windows.Forms.Button();
@@ -52,6 +54,7 @@
             this.treeView.Columns.Add(this.sensor);
             this.treeView.Columns.Add(this.logOutput);
             this.treeView.Columns.Add(this.value);
+            this.treeView.Columns.Add(this.ID);
             this.treeView.DefaultToolTipProvider = null;
             this.treeView.DragDropMarkColor = System.Drawing.Color.Black;
             this.treeView.FullRowSelect = true;
@@ -65,9 +68,10 @@
             this.treeView.NodeControls.Add(this.nodeName);
             this.treeView.NodeControls.Add(this.nodeCheckBox);
             this.treeView.NodeControls.Add(this.nodeValue);
+            this.treeView.NodeControls.Add(this.nodeID);
             this.treeView.SelectedNode = null;
             this.treeView.ShowLines = false;
-            this.treeView.Size = new System.Drawing.Size(515, 435);
+            this.treeView.Size = new System.Drawing.Size(615, 435);
             this.treeView.TabIndex = 0;
             this.treeView.Text = "treeView";
             this.treeView.UseColumns = true;
@@ -93,6 +97,13 @@
             this.value.Header = "Value";
             this.value.SortOrder = System.Windows.Forms.SortOrder.None;
             this.value.TooltipText = null;
+            // 
+            // ID
+            // 
+            this.ID.Header = "ID";
+            this.ID.SortOrder = System.Windows.Forms.SortOrder.None;
+            this.ID.TooltipText = null;
+            this.ID.Width = 200;
             // 
             // nodeImage
             // 
@@ -126,6 +137,15 @@
             this.nodeValue.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeValue.UseCompatibleTextRendering = true;
             // 
+            // nodeID
+            // 
+            this.nodeID.DataPropertyName = "ID";
+            this.nodeID.IncrementalSearchEnabled = true;
+            this.nodeID.LeftMargin = 3;
+            this.nodeID.ParentColumn = this.ID;
+            this.nodeID.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
+            this.nodeID.UseCompatibleTextRendering = true;
+            // 
             // btnChangeStructure
             // 
             this.btnChangeStructure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -141,7 +161,7 @@
             // btnClose
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClose.Location = new System.Drawing.Point(450, 475);
+            this.btnClose.Location = new System.Drawing.Point(550, 475);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 3;
@@ -165,13 +185,13 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(534, 511);
+            this.ClientSize = new System.Drawing.Size(634, 511);
             this.Controls.Add(this.btnSelectiveLogging);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnChangeStructure);
             this.Controls.Add(this.treeView);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MinimumSize = new System.Drawing.Size(550, 550);
+            this.MinimumSize = new System.Drawing.Size(650, 550);
             this.Name = "SelectiveLoggingForm";
             this.Padding = new System.Windows.Forms.Padding(0, 0, 15, 0);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -190,8 +210,7 @@
         private Aga.Controls.Tree.TreeColumn max;*/
         private Aga.Controls.Tree.NodeControls.NodeIcon nodeImage;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeName;
-        /*private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxValue;
-        private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxMin;
+        /*private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxMin;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxMax;
         */
         private Aga.Controls.Tree.NodeControls.NodeCheckBox nodeCheckBox;
@@ -199,6 +218,8 @@
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Button btnSelectiveLogging;
         private Aga.Controls.Tree.TreeColumn value;
+        private Aga.Controls.Tree.TreeColumn ID;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeValue;
+        private Aga.Controls.Tree.NodeControls.NodeTextBox nodeID;
     }
 }
