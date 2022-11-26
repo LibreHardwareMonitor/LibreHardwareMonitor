@@ -89,6 +89,8 @@ namespace LibreHardwareMonitor.UI
             this.plotRightMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.logToFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.logToDbMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectiveLoggingMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hiddenSelLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -541,9 +543,26 @@ namespace LibreHardwareMonitor.UI
             // 
             // logSensorsMenuItem
             // 
+            this.logSensorsMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.logToFileMenuItem,
+            this.logToDbMenuItem});
             this.logSensorsMenuItem.Name = "logSensorsMenuItem";
             this.logSensorsMenuItem.Size = new System.Drawing.Size(221, 22);
             this.logSensorsMenuItem.Text = "Log Sensors";
+            // 
+            // logToFileMenuItem
+            // 
+            this.logToFileMenuItem.Name = "logToFileMenuItem";
+            this.logToFileMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.logToFileMenuItem.Text = "Log to file (CSV)";
+            this.logToFileMenuItem.Click += new System.EventHandler(this.logToFileMenuItem_Click);
+            // 
+            // logToDbMenuItem
+            // 
+            this.logToDbMenuItem.Name = "logToDbMenuItem";
+            this.logToDbMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.logToDbMenuItem.Text = "Log to database (SQL)";
+            this.logToDbMenuItem.Click += new System.EventHandler(this.logToDbMenuItem_Click);
             // 
             // selectiveLoggingMenuItem
             // 
@@ -1080,6 +1099,8 @@ namespace LibreHardwareMonitor.UI
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem selectiveLoggingMenuItem;
         private System.Windows.Forms.ToolStripMenuItem hiddenSelLogMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem logToFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem logToDbMenuItem;
     }
 }
 
