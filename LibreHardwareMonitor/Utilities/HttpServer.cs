@@ -21,6 +21,8 @@ using System.Threading;
 using System.Web;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
+using Makaretu.Dns;
+
 using Newtonsoft.Json.Linq;
 
 namespace LibreHardwareMonitor.Utilities;
@@ -30,10 +32,19 @@ public class HttpServer
     private readonly HttpListener _listener;
     private readonly Node _root;
     private Thread _listenerThread;
+    private Thread _networkDiscoveryThread;
+    private readonly EventWaitHandle _networkDiscoveryExitEventWaitHandle;
     private string _username;
     private bool _authEnabled;
     private int _listenerPort;
+    private int _currentListenerPort;
     private bool _restartRequired;
+    private bool _advertiseServer;
+    private bool _networkDiscoveryEnabled;
+
+
+    private ServiceDiscovery _serviceDiscovery;
+    private ServiceProfile _serviceProfile;
 
     private readonly HashSet<PendingRestartReason> _pendingRestarts;
 
@@ -49,7 +60,7 @@ public class HttpServer
         Other
     }
 
-    public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string passwordSHA256 = "")
+    public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string passwordSHA256 = "", bool networkDiscoveryEnabled = false)
     {
         _root = null;
         _pendingRestarts = new();
@@ -58,7 +69,10 @@ public class HttpServer
         _listenerPort = port;
         _authEnabled = authEnabled;
         _username = userName;
+        _networkDiscoveryEnabled = networkDiscoveryEnabled;
         PasswordSHA256 = passwordSHA256;
+        _currentListenerPort = -1;
+        _networkDiscoveryExitEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
         try
         {
@@ -80,7 +94,13 @@ public class HttpServer
         _listener.Abort();
     }
 
-    public HashSet<PendingRestartReason> PendingRestarts { get { return _pendingRestarts; } }
+    public HashSet<PendingRestartReason> PendingRestarts
+    {
+        get
+        {
+            return _pendingRestarts;
+        }
+    }
 
     public bool IsRunning
     {
@@ -163,7 +183,7 @@ public class HttpServer
 
                 _pendingRestarts.Add(PendingRestartReason.PasswordChanged);
 
-                RestartRequired |= IsRunning && AuthEnabled;
+                RestartRequired |= IsRunning && _authEnabled;
             }
         }
     }
@@ -187,32 +207,62 @@ public class HttpServer
 
                 _pendingRestarts.Add(PendingRestartReason.UserNameChanged);
 
-                RestartRequired |= IsRunning && AuthEnabled;
+                RestartRequired |= IsRunning && _authEnabled;
             }
         }
     }
 
     private string PasswordSHA256 { get; set; }
 
+    public bool IsNetworkDiscoveryRunning
+    {
+        get
+        {
+            return _advertiseServer;
+        }
+    }
+
+
+    /// <summary>
+    /// Sets network discovery setting to enabled if true or disabled if false.
+    /// </summary>
+    public bool NetworkDiscoveryEnabled
+    {
+        get
+        {
+            return _networkDiscoveryEnabled;
+        }
+        set
+        {
+            if (_networkDiscoveryEnabled != value)
+            {
+                // maybe implement event handler for this?
+                _networkDiscoveryEnabled = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Starts http listener and network discovery handler if NetworkDiscoveryEnabled is set to true.
+    /// </summary>
+    /// <returns>True if http listener was started successfully, otherwise false</returns>
     public bool StartHttpListener()
     {
         if (PlatformNotSupported)
             return false;
-
-        bool startFailed = false;
 
         try
         {
             if (_listener.IsListening)
                 return true;
 
-
-            string prefix = "http://+:" + ListenerPort + "/";
+            string prefix = "http://+:" + _listenerPort + "/";
             _listener.Prefixes.Clear();
             _listener.Prefixes.Add(prefix);
             _listener.Realm = "Libre Hardware Monitor";
-            _listener.AuthenticationSchemes = AuthEnabled ? AuthenticationSchemes.Basic : AuthenticationSchemes.Anonymous;
+            _listener.AuthenticationSchemes = _authEnabled ? AuthenticationSchemes.Basic : AuthenticationSchemes.Anonymous;
             _listener.Start();
+            _currentListenerPort = _listenerPort;
 
             if (_listenerThread == null)
             {
@@ -222,19 +272,24 @@ public class HttpServer
         }
         catch (Exception)
         {
-            startFailed = true;
+            _currentListenerPort = -1;
+            return false;
         }
+
+        if (_networkDiscoveryEnabled)
+            StartNetworkDiscovery();
+        else if (_advertiseServer)
+            StopNetworkDiscovery();
 
         RunningStateUpdated?.Invoke(this, IsRunning);
 
-        return !startFailed;
+        return true;
     }
 
     public bool StopHttpListener()
     {
         if (PlatformNotSupported)
             return false;
-
 
         try
         {
@@ -251,10 +306,98 @@ public class HttpServer
         catch (Exception)
         { }
 
+        StopNetworkDiscovery();
+
         _pendingRestarts.Clear();
         RestartRequired = false;
 
         return true;
+    }
+
+    /// <summary>
+    /// Starts network discovery handler based on current http listener settings.
+    /// </summary>
+    /// <returns>True if network discovery handler started successfully, otherwise false.</returns>
+    public bool StartNetworkDiscovery()
+    {
+        if (PlatformNotSupported || !IsRunning || _networkDiscoveryThread != null || _currentListenerPort == -1)
+            return _advertiseServer = false;
+
+        try
+        {
+            if (_advertiseServer)
+                return true;
+
+            _serviceProfile = new ServiceProfile("LibreHardwareMonitor-" + string.Format("{0:X}", _root.Text.GetHashCode()), "_http._tcp", (ushort)_currentListenerPort);
+            _serviceProfile.Subtypes.Add("lhmjson");
+            _serviceProfile.AddProperty("BasicAuthEnabled", (_listener.AuthenticationSchemes == AuthenticationSchemes.Basic).ToString());
+            _serviceProfile.AddProperty("Version", System.Windows.Forms.Application.ProductVersion);
+            _serviceProfile.AddProperty("RootNode", _root.Text);
+
+            _networkDiscoveryThread = new Thread(() => HandleNetworkDiscovery(_serviceProfile, _networkDiscoveryExitEventWaitHandle));
+            _networkDiscoveryThread.Start();
+        }
+        catch (Exception)
+        {
+            return _advertiseServer = false;
+        }
+
+        return _advertiseServer = true;
+    }
+
+
+    /// <summary>
+    /// Stops network discovery handler.
+    /// </summary>
+    /// <returns>True if platform is supported, otherwise false.</returns>
+    public bool StopNetworkDiscovery()
+    {
+        if (PlatformNotSupported)
+            return _advertiseServer = false;
+
+        try
+        {
+            _networkDiscoveryThread?.Abort();
+        }
+        catch (Exception)
+        { }
+        finally
+        {
+            _networkDiscoveryThread = null;
+            _serviceDiscovery?.Unadvertise();
+            _serviceDiscovery?.Dispose();
+            _serviceDiscovery = null;
+        }
+
+        _advertiseServer = false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Adverties provided profile and blocks until wait handle is received then unadvertises the profile.
+    /// </summary>
+    /// <param name="profile">Service profile that will be advertised.</param>
+    /// <param name="waitHandle">EventWaitHandle used to stop unblock the method.</param>
+    private void HandleNetworkDiscovery(ServiceProfile profile, EventWaitHandle waitHandle)
+    {
+        _serviceDiscovery = new ServiceDiscovery();
+        HandleNetworkDiscovery(_serviceDiscovery, profile, waitHandle);
+    }
+
+    /// <summary>
+    /// Adverties provided profile and blocks until wait handle is received then unadvertises the profile.
+    /// </summary>
+    /// <param name="serviceDiscovery">ServiceDiscovery instane used for advertising.</param>
+    /// <param name="profile">Service profile that will be advertised.</param>
+    /// <param name="waitHandle">EventWaitHandle used to stop unblock the method.</param>
+    private void HandleNetworkDiscovery(ServiceDiscovery serviceDiscovery, ServiceProfile profile, EventWaitHandle waitHandle)
+    {
+        serviceDiscovery.Advertise(profile);
+
+        waitHandle.WaitOne();
+
+        serviceDiscovery.Unadvertise(profile);
     }
 
     private void HandleRequests()
@@ -264,6 +407,7 @@ public class HttpServer
             IAsyncResult context = _listener.BeginGetContext(ListenerCallback, _listener);
             context.AsyncWaitHandle.WaitOne();
         }
+        _networkDiscoveryExitEventWaitHandle.Set();
     }
 
     public static IDictionary<string, string> ToDictionary(NameValueCollection col)
@@ -427,7 +571,7 @@ public class HttpServer
 
         bool authenticated;
 
-        if (AuthEnabled)
+        if (_authEnabled)
         {
             try
             {

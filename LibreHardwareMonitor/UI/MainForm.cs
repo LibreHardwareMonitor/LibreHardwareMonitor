@@ -43,6 +43,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _readRamSensors;
     private readonly Node _root;
     private readonly UserOption _runWebServer;
+    private readonly UserOption _advertiseWebServer;
     private readonly UserRadioGroup _sensorValuesTimeWindow;
     private readonly PersistentSettings _settings;
     private readonly UserOption _showGadget;
@@ -240,7 +241,8 @@ public sealed partial class MainForm : Form
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
                                 _settings.GetValue("authenticationUserName", "librehm"),
-                                _settings.GetValue("authenticationPassword", "librehm"));
+                                _settings.GetValue("authenticationPassword", "librehm"),
+                                _settings.GetValue("networkDiscoveryToolStripMenuItem", false));
 
         if (Server.PlatformNotSupported)
         {
@@ -262,8 +264,17 @@ public sealed partial class MainForm : Form
                 Server.StopHttpListener();
         };
 
-        authWebServerMenuItem.Checked = Server.AuthEnabled;
+        _advertiseWebServer = new UserOption("networkDiscoveryToolStripMenuItem", false, networkDiscoveryToolStripMenuItem, _settings);
+        _advertiseWebServer.Changed += delegate
+        {
+            if (_advertiseWebServer.Value)
+                Server.StartNetworkDiscovery();
+            else
+                Server.StopNetworkDiscovery();
+            Server.NetworkDiscoveryEnabled = _advertiseWebServer.Value;
+        };
 
+        authWebServerMenuItem.Checked = Server.AuthEnabled;
 
         _logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem, _settings);
 
