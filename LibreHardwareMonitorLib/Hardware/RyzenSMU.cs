@@ -101,12 +101,57 @@ internal class RyzenSMU
                 { 282, new SmuSensorType { Name = "Core #15 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
                 { 283, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
             }
+        },
+
+        {
+            // Zen 4
+            0x00540004, new Dictionary<uint, SmuSensorType>
+            {
+                { 3, new SmuSensorType { Name = "CPU PPT", Type = SensorType.Power, Scale = 1 } },
+                { 11, new SmuSensorType { Name = "Package", Type = SensorType.Temperature, Scale = 1 } },
+                { 20, new SmuSensorType { Name = "Core Power", Type = SensorType.Power, Scale = 1 } },
+                { 21, new SmuSensorType { Name = "SOC Power", Type = SensorType.Power, Scale = 1 } },
+                { 22, new SmuSensorType { Name = "Misc Power", Type = SensorType.Power, Scale = 1 } },
+                { 26, new SmuSensorType { Name = "Total Power", Type = SensorType.Power, Scale = 1 } },
+                { 47, new SmuSensorType { Name = "VDDCR", Type = SensorType.Voltage, Scale = 1 } },
+                { 48, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                { 49, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                { 52, new SmuSensorType { Name = "VDDCR SOC", Type = SensorType.Voltage, Scale = 1 } },
+                { 57, new SmuSensorType { Name = "VDD MISC", Type = SensorType.Voltage, Scale = 1 } },
+                { 70, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                { 74, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                { 78, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                { 211, new SmuSensorType { Name = "IOD Hotspot", Type = SensorType.Temperature, Scale = 1 } },
+                { 539, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
+                { 540, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
+                { 268, new SmuSensorType { Name = "LDO VDD", Type = SensorType.Voltage, Scale = 1 } },
+
+                //this is not working, some cores can be deactivated in with the core disabled map
+                //When Core 2 is disabled and Core 3 is Enabled, THe name of Core 3 == "Core 2"
+                //{ 357, new SmuSensorType { Name = "Core #1 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 358, new SmuSensorType { Name = "Core #2 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 359, new SmuSensorType { Name = "Core #3 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 360, new SmuSensorType { Name = "Core #4 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 361, new SmuSensorType { Name = "Core #5 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 362, new SmuSensorType { Name = "Core #6 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 363, new SmuSensorType { Name = "Core #7 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 364, new SmuSensorType { Name = "Core #8 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 365, new SmuSensorType { Name = "Core #9 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 366, new SmuSensorType { Name = "Core #10 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 367, new SmuSensorType { Name = "Core #11 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 368, new SmuSensorType { Name = "Core #12 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 369, new SmuSensorType { Name = "Core #13 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 370, new SmuSensorType { Name = "Core #14 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 371, new SmuSensorType { Name = "Core #15 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 372, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
+            }
         }
     };
 
     private uint _argsAddr;
     private uint _cmdAddr;
     private uint _dramBaseAddr;
+    private uint _dramAddrHi;
     private uint _pmTableSize;
     private uint _pmTableSizeAlt;
     private uint _pmTableVersion;
@@ -153,6 +198,7 @@ internal class RyzenSMU
                 0x20 or 0x21 => CpuCodeName.Vermeer,
                 0x40 => CpuCodeName.Rembrandt,
                 0x50 => CpuCodeName.Cezanne,
+                0x61 => CpuCodeName.Raphael,
                 _ => CpuCodeName.Undefined
             };
         }
@@ -196,6 +242,7 @@ internal class RyzenSMU
             case CpuCodeName.CastlePeak:
             case CpuCodeName.Matisse:
             case CpuCodeName.Vermeer:
+            case CpuCodeName.Raphael:
                 _cmdAddr = 0x3B10524;
                 _rspAddr = 0x3B10570;
                 _argsAddr = 0x3B10A40;
@@ -270,7 +317,15 @@ internal class RyzenSMU
     {
         float[] table = new float[_pmTableSize / 4];
 
-        byte[] bytes = InpOut.ReadMemory(new IntPtr(_dramBaseAddr), _pmTableSize);
+        IntPtr pMemory; 
+        if (Environment.Is64BitProcess)
+        {
+            pMemory = new IntPtr(_dramBaseAddr | (long)_dramAddrHi << 32);
+        }
+        else
+            pMemory = new IntPtr(_dramBaseAddr);
+
+        byte[] bytes = InpOut.ReadMemory(pMemory, _pmTableSize);
         if (bytes != null)
             Buffer.BlockCopy(bytes, 0, table, 0, bytes.Length);
 
@@ -384,6 +439,18 @@ internal class RyzenSMU
                 _pmTableSize = 0x608 + _pmTableSizeAlt;
                 break;
 
+            case CpuCodeName.Raphael:
+                switch (_pmTableVersion)
+                {
+                    case 0x00540004:
+                        _pmTableSize = 0x948;
+                        break;
+
+                    default:
+                        return;
+                }
+                break;
+
             default:
                 return;
         }
@@ -407,6 +474,11 @@ internal class RyzenSMU
             case CpuCodeName.Renoir:
                 fn = 0x06;
                 break;
+            case CpuCodeName.Raphael:
+                fn = 0x05;
+                break;
+
+
             default:
                 return false;
         }
@@ -425,7 +497,8 @@ internal class RyzenSMU
         if (!command)
             return;
 
-        _dramBaseAddr = args[0] | (args[1] << 32);
+        _dramBaseAddr = args[0];
+        _dramAddrHi = args[1];
     }
 
     private void SetupAddrClass2(uint[] fn)
@@ -492,6 +565,10 @@ internal class RyzenSMU
 
         switch (_cpuCodeName)
         {
+            case CpuCodeName.Raphael:
+                fn[0] = 0x04;
+                SetupAddrClass1(fn);
+                break;
             case CpuCodeName.Vermeer:
             case CpuCodeName.Matisse:
             case CpuCodeName.CastlePeak:
@@ -533,6 +610,9 @@ internal class RyzenSMU
 
         switch (_cpuCodeName)
         {
+            case CpuCodeName.Raphael:
+                fn = 0x03;
+                break;
             case CpuCodeName.Matisse:
             case CpuCodeName.Vermeer:
                 fn = 0x05;
@@ -702,6 +782,7 @@ internal class RyzenSMU
         Vangogh,
         Cezanne,
         Milan,
-        Dali
+        Dali,
+        Raphael
     }
 }
