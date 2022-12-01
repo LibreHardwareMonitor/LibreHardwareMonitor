@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 using System.Runtime.InteropServices;
-using System.Text;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -21,11 +20,7 @@ internal static class WindowsStorage
         if (handle?.IsInvalid != false)
             return null;
 
-        var query = new Kernel32.STORAGE_PROPERTY_QUERY
-        {
-            PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty,
-            QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery
-        };
+        var query = new Kernel32.STORAGE_PROPERTY_QUERY { PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty, QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery };
 
         if (!Kernel32.DeviceIoControl(handle,
                                       Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY,
@@ -66,9 +61,7 @@ internal static class WindowsStorage
                 if (o is ManagementObject dp)
                 {
                     foreach (ManagementBaseObject ld in dp.GetRelated("Win32_LogicalDisk"))
-                    {
                         list.Add(((string)ld["Name"]).TrimEnd(':'));
-                    }
                 }
             }
         }
