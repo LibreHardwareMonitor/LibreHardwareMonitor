@@ -348,8 +348,8 @@ internal sealed class Amd17Cpu : AmdCpu
             double vcc;
             uint svi0PlaneXVddCor;
 
-            if (cpuId.Model is 0x61) //readout not working for Ryzen 7000
-                smuSvi0Tfn |= (0x01 | 0x02);
+            if (cpuId.Model is 0x61) // Readout not working for Ryzen 7000.
+                smuSvi0Tfn |= 0x01 | 0x02;
 
             // Core (0x01).
             if ((smuSvi0Tfn & 0x01) == 0)

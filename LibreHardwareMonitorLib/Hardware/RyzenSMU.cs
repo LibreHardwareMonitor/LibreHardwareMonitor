@@ -102,9 +102,8 @@ internal class RyzenSMU
                 { 283, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
             }
         },
-
         {
-            // Zen 4
+            // Zen 4.
             0x00540004, new Dictionary<uint, SmuSensorType>
             {
                 { 3, new SmuSensorType { Name = "CPU PPT", Type = SensorType.Power, Scale = 1 } },
@@ -116,8 +115,8 @@ internal class RyzenSMU
                 { 47, new SmuSensorType { Name = "VDDCR", Type = SensorType.Voltage, Scale = 1 } },
                 { 48, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
                 { 49, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
-                { 52, new SmuSensorType { Name = "VDDCR SOC", Type = SensorType.Voltage, Scale = 1 } },
-                { 57, new SmuSensorType { Name = "VDD MISC", Type = SensorType.Voltage, Scale = 1 } },
+                { 52, new SmuSensorType { Name = "VDDCR SoC", Type = SensorType.Voltage, Scale = 1 } },
+                { 57, new SmuSensorType { Name = "VDD Misc", Type = SensorType.Voltage, Scale = 1 } },
                 { 70, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
                 { 74, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                 { 78, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
@@ -126,8 +125,8 @@ internal class RyzenSMU
                 { 540, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
                 { 268, new SmuSensorType { Name = "LDO VDD", Type = SensorType.Voltage, Scale = 1 } },
 
-                //this is not working, some cores can be deactivated in with the core disabled map
-                //When Core 2 is disabled and Core 3 is Enabled, THe name of Core 3 == "Core 2"
+                // This is not working, some cores can be deactivated with the core disabled map.
+                // When Core 2 is disabled and Core 3 is enabled, the name of Core 3 == "Core 2".
                 //{ 357, new SmuSensorType { Name = "Core #1 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
                 //{ 358, new SmuSensorType { Name = "Core #2 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
                 //{ 359, new SmuSensorType { Name = "Core #3 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
@@ -150,8 +149,8 @@ internal class RyzenSMU
 
     private uint _argsAddr;
     private uint _cmdAddr;
-    private uint _dramBaseAddr;
     private uint _dramAddrHi;
+    private uint _dramBaseAddr;
     private uint _pmTableSize;
     private uint _pmTableSizeAlt;
     private uint _pmTableVersion;
@@ -166,16 +165,15 @@ internal class RyzenSMU
         if (_supportedCPU)
         {
             InpOut.Open();
-
             SetupPmTableAddrAndSize();
         }
     }
 
     private static CpuCodeName GetCpuCodeName(uint family, uint model, uint packageType)
     {
-        if (family == 0x17)
+        return family switch
         {
-            return model switch
+            0x17 => model switch
             {
                 0x01 => packageType == 7 ? CpuCodeName.Threadripper : CpuCodeName.SummitRidge,
                 0x08 => packageType == 7 ? CpuCodeName.Colfax : CpuCodeName.PinnacleRidge,
@@ -187,12 +185,8 @@ internal class RyzenSMU
                 0x71 => CpuCodeName.Matisse,
                 0x90 => CpuCodeName.Vangogh,
                 _ => CpuCodeName.Undefined
-            };
-        }
-
-        if (family == 0x19)
-        {
-            return model switch
+            },
+            0x19 => model switch
             {
                 0x00 => CpuCodeName.Milan,
                 0x20 or 0x21 => CpuCodeName.Vermeer,
@@ -200,10 +194,9 @@ internal class RyzenSMU
                 0x50 => CpuCodeName.Cezanne,
                 0x61 => CpuCodeName.Raphael,
                 _ => CpuCodeName.Undefined
-            };
-        }
-
-        return CpuCodeName.Undefined;
+            },
+            _ => CpuCodeName.Undefined
+        };
     }
 
     public string GetReport()
@@ -317,13 +310,7 @@ internal class RyzenSMU
     {
         float[] table = new float[_pmTableSize / 4];
 
-        IntPtr pMemory; 
-        if (Environment.Is64BitProcess)
-        {
-            pMemory = new IntPtr(_dramBaseAddr | (long)_dramAddrHi << 32);
-        }
-        else
-            pMemory = new IntPtr(_dramBaseAddr);
+        IntPtr pMemory = Environment.Is64BitProcess ? new IntPtr(_dramBaseAddr | (long)_dramAddrHi << 32) : new IntPtr(_dramBaseAddr);
 
         byte[] bytes = InpOut.ReadMemory(pMemory, _pmTableSize);
         if (bytes != null)
@@ -368,6 +355,7 @@ internal class RyzenSMU
                     default:
                         return;
                 }
+
                 break;
 
             case CpuCodeName.Vermeer:
@@ -394,6 +382,7 @@ internal class RyzenSMU
                     default:
                         return;
                 }
+
                 break;
 
             case CpuCodeName.Renoir:
@@ -418,6 +407,7 @@ internal class RyzenSMU
                     default:
                         return;
                 }
+
                 break;
 
             case CpuCodeName.Cezanne:
@@ -430,6 +420,7 @@ internal class RyzenSMU
                     default:
                         return;
                 }
+
                 break;
 
             case CpuCodeName.Picasso:
@@ -449,6 +440,7 @@ internal class RyzenSMU
                     default:
                         return;
                 }
+
                 break;
 
             default:
@@ -477,8 +469,6 @@ internal class RyzenSMU
             case CpuCodeName.Raphael:
                 fn = 0x05;
                 break;
-
-
             default:
                 return false;
         }
@@ -568,26 +558,23 @@ internal class RyzenSMU
             case CpuCodeName.Raphael:
                 fn[0] = 0x04;
                 SetupAddrClass1(fn);
-                break;
+                return;
             case CpuCodeName.Vermeer:
             case CpuCodeName.Matisse:
             case CpuCodeName.CastlePeak:
                 fn[0] = 0x06;
                 SetupAddrClass1(fn);
                 return;
-
             case CpuCodeName.Renoir:
                 fn[0] = 0x66;
                 SetupAddrClass1(fn);
                 return;
-
             case CpuCodeName.Colfax:
             case CpuCodeName.PinnacleRidge:
                 fn[0] = 0x0b;
                 fn[1] = 0x0c;
                 SetupAddrClass2(fn);
                 return;
-
             case CpuCodeName.Dali:
             case CpuCodeName.Picasso:
             case CpuCodeName.RavenRidge:
@@ -597,7 +584,6 @@ internal class RyzenSMU
                 fn[2] = 0x0b;
                 SetupAddrClass3(fn);
                 return;
-
             default:
                 return;
         }
@@ -617,19 +603,16 @@ internal class RyzenSMU
             case CpuCodeName.Vermeer:
                 fn = 0x05;
                 break;
-
             case CpuCodeName.Renoir:
                 args[0] = 3;
                 fn = 0x65;
                 break;
-
             case CpuCodeName.Picasso:
             case CpuCodeName.RavenRidge:
             case CpuCodeName.RavenRidge2:
                 args[0] = 3;
                 fn = 0x3d;
                 break;
-
             default:
                 return false;
         }
@@ -758,10 +741,10 @@ internal class RyzenSMU
     private enum Status : uint
     {
         OK = 0x01,
-        Failed = 0xFF,
-        UnknownCmd = 0xFE,
+        CmdRejectedBusy = 0xFC,
         CmdRejectedPrereq = 0xFD,
-        CmdRejectedBusy = 0xFC
+        UnknownCmd = 0xFE,
+        Failed = 0xFF
     }
 
     private enum CpuCodeName
