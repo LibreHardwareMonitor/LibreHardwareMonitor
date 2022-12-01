@@ -197,6 +197,12 @@ internal sealed class Amd17Cpu : AmdCpu
                         supportsPerCcdTemperatures = true;
                         break;
 
+                    case 0x61:
+                        sviPlane0Offset = F17H_M01H_SVI + 0x10;
+                        sviPlane1Offset = F17H_M01H_SVI + 0xC;
+                        supportsPerCcdTemperatures = true;
+                        break;
+
                     default: // Zen and Zen+.
                         sviPlane0Offset = F17H_M01H_SVI + 0xC;
                         sviPlane1Offset = F17H_M01H_SVI + 0x10;
@@ -278,12 +284,15 @@ internal sealed class Amd17Cpu : AmdCpu
                     _cpu.ActivateSensor(_coreTemperatureTctlTdie);
                 }
 
-                // Tested only on R5 3600 & Threadripper 3960X.
+                // Tested only on R5 3600 & Threadripper 3960X, 5900X, 7900X
                 if (supportsPerCcdTemperatures)
                 {
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
-                        Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
+                        if (cpuId.Model == 0x61)
+                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
+                        else
+                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
                         Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
 
                         ccdRawTemp &= 0xFFF;
@@ -338,6 +347,9 @@ internal sealed class Amd17Cpu : AmdCpu
             const double vidStep = 0.00625;
             double vcc;
             uint svi0PlaneXVddCor;
+
+            if (cpuId.Model is 0x61) // Readout not working for Ryzen 7000.
+                smuSvi0Tfn |= 0x01 | 0x02;
 
             // Core (0x01).
             if ((smuSvi0Tfn & 0x01) == 0)
@@ -576,6 +588,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint F17H_M01H_SVI = 0x0005A000;
     private const uint F17H_M01H_THM_TCON_CUR_TMP = 0x00059800;
     private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
+    private const uint F17H_M61H_CCD1_TEMP = 0x00059b08;
     private const uint F17H_TEMP_OFFSET_FLAG = 0x80000;
     private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
     private const uint HWCR = 0xC0010015;
