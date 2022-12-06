@@ -29,6 +29,7 @@ internal enum Chip : ushort
 
     IT8613E = 0x8613,
     IT8620E = 0x8620,
+    IT8625E = 0x8625,
     IT8628E = 0x8628,
     IT8631E = 0x8631,
     IT8655E = 0x8655,
@@ -97,6 +98,7 @@ internal class ChipName
             case Chip.F71808E: return "Fintek F71808E";
             case Chip.IT8613E: return "ITE IT8613E";
             case Chip.IT8620E: return "ITE IT8620E";
+            case Chip.IT8625E: return "ITE IT8625E";
             case Chip.IT8628E: return "ITE IT8628E";
             case Chip.IT8631E: return "ITE IT8631E";
             case Chip.IT8655E: return "ITE IT8655E";

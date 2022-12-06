@@ -542,6 +542,7 @@ internal class LpcIO
         {
             0x8613 => Chip.IT8613E,
             0x8620 => Chip.IT8620E,
+            0x8625 => Chip.IT8625E,
             0x8628 => Chip.IT8628E,
             0x8631 => Chip.IT8631E,
             0x8665 => Chip.IT8665E,

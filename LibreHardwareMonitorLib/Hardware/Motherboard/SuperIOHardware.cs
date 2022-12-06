@@ -218,6 +218,7 @@ internal sealed class SuperIOHardware : Hardware
 
             case Chip.IT8613E:
             case Chip.IT8620E:
+            case Chip.IT8625E:
             case Chip.IT8628E:
             case Chip.IT8631E:
             case Chip.IT8655E:
@@ -1598,6 +1599,25 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Ctrl("CPU Optional Fan", 2));
                         c.Add(new Ctrl("System Fan", 4));
 
+                        break;
+
+                    case Model.X670E_Valkyrie: //IT8625E
+                        v.Add(new Voltage("CPU Core Voltage", 0));
+                        v.Add(new Voltage("CPU DDR IMC Voltage", 1));
+                        v.Add(new Voltage("+12.0V", 2, 5, 1));
+                        v.Add(new Voltage("CPU_SOC Voltage", 3));
+                        v.Add(new Voltage("CPU_MISC Voltage", 4));
+                        v.Add(new Voltage("CPU_VDD Voltage", 5));
+
+                        t.Add(new Temperature("CPU Temperature", 0));
+                        t.Add(new Temperature("MOS Temperature", 1));
+                        t.Add(new Temperature("System Temperature", 2));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Ctrl("Fan #" + (i + 1), i));
                         break;
 
                     default:

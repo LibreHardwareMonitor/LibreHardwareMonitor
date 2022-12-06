@@ -79,6 +79,7 @@ internal enum Model
 
     //BIOSTAR
     B660GTN,
+    X670E_Valkyrie,
 
     // DFI
     LP_BI_P45_T2RS_Elite,

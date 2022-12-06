@@ -84,6 +84,7 @@ internal class IT87XX : ISuperIO
             Chip.IT8689E or
             Chip.IT8695E or
             Chip.IT8628E or
+            Chip.IT8625E or
             Chip.IT8620E or
             Chip.IT8613E or
             Chip.IT879XE or
@@ -99,6 +100,12 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[4];
                 break;
 
+            case Chip.IT8625E:
+                Voltages = new float?[6];
+                Temperatures = new float?[3];
+                Fans = new float?[6];
+                Controls = new float?[6];
+                break;
             case Chip.IT8628E:
                 Voltages = new float?[10];
                 Temperatures = new float?[6];
@@ -178,7 +185,7 @@ internal class IT87XX : ISuperIO
         _voltageGain = chip switch
         {
             Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
-            Chip.IT8695E => 11f / 1000f,
+            Chip.IT8625E or Chip.IT8695E => 0.011f,
             Chip.IT8655E or Chip.IT8665E or Chip.IT879XE => 0.0109f,
             _ => 0.016f
         };
