@@ -1604,20 +1604,27 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.X670E_Valkyrie: //IT8625E
                         v.Add(new Voltage("CPU Core Voltage", 0));
                         v.Add(new Voltage("CPU DDR IMC Voltage", 1));
-                        v.Add(new Voltage("+12.0V", 2, 5, 1));
-                        v.Add(new Voltage("CPU_SOC Voltage", 3));
+                        v.Add(new Voltage("+12.0V", 2, 10, 2));
+                        // Voltage of unknown use
+                        v.Add(new Voltage("Voltage #4", 3, true));
                         v.Add(new Voltage("CPU_MISC Voltage", 4));
                         v.Add(new Voltage("CPU_VDD Voltage", 5));
+                        v.Add(new Voltage("CPU_SOC Voltage", 6));
 
                         t.Add(new Temperature("CPU Temperature", 0));
                         t.Add(new Temperature("MOS Temperature", 1));
                         t.Add(new Temperature("System Temperature", 2));
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
-                            f.Add(new Fan("Fan #" + (i + 1), i));
+                        f.Add(new Fan("CPU Fan Speed", 0));
+                        f.Add(new Fan("CPU OPT Speed", 1));
+                        for (int i = 2; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan($"System Fan{i - 1} Speed ", i));
 
-                        for (int i = 0; i < superIO.Controls.Length; i++)
-                            c.Add(new Ctrl("Fan #" + (i + 1), i));
+                        c.Add(new Ctrl("CPU Fan", 0));
+                        c.Add(new Ctrl("CPU OPT", 1));
+                        for (int i = 2; i < superIO.Controls.Length; i++)
+                            c.Add(new Ctrl($"System Fan{i - 1}", i));
+
                         break;
 
                     default:
