@@ -159,7 +159,11 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempChipset,
             ECSensor.FanWaterPump,
             ECSensor.CurrCPU,
-            ECSensor.VoltageCPU)
+            ECSensor.VoltageCPU),
+        new(Model.PRIME_Z690_A,
+            BoardFamily.Intel600,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm)
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
