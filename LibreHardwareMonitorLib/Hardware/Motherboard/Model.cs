@@ -76,6 +76,7 @@ internal enum Model
     Z170_A,
     TUF_GAMING_B550M_PLUS_WIFI,
     ROG_MAXIMUS_Z790_HERO,
+    PRIME_Z690_A,
 
     //BIOSTAR
     B660GTN,
