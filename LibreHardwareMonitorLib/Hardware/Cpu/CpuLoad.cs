@@ -12,7 +12,6 @@ namespace LibreHardwareMonitor.Hardware.CPU;
 
 internal class CpuLoad
 {
-    private readonly CpuId[][] _cpuid;
     private long[] _idleTimes;
     private readonly float[] _threadLoads;
     private float _totalLoad;
@@ -20,7 +19,6 @@ internal class CpuLoad
 
     public CpuLoad(CpuId[][] cpuid)
     {
-        _cpuid = cpuid;
         _threadLoads = new float[cpuid.Sum(x => x.Length)];
         _totalLoad = 0;
         try
