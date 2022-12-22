@@ -4,7 +4,6 @@
 // All Rights Reserved.
 
 using System;
-using System.Linq;
 using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer;
@@ -26,7 +25,7 @@ internal sealed class Farbwerk : Hardware
     private readonly byte[] _rawData = new byte[140];
     private readonly HidStream _stream;
     private readonly Sensor[] _temperatures = new Sensor[TemperatureCount];
-    private readonly Sensor[] _colorSensors = new Sensor[ColorValueCount];
+    private readonly Sensor[] _colors = new Sensor[ColorValueCount];
 
     public Farbwerk(HidDevice dev, ISettings settings) : base("Farbwerk", new Identifier(dev.DevicePath), settings)
     {
@@ -37,7 +36,7 @@ internal sealed class Farbwerk : Hardware
                 ActivateSensor(_temperatures[i]);
             }
 
-            for (int i = 0; i < _colorSensors.Length; i++) {
+            for (int i = 0; i < _colors.Length; i++) {
                 int control = (i / 3) + 1;
                 string color = (i % 3) switch {
                     0 => "Red",
@@ -45,8 +44,8 @@ internal sealed class Farbwerk : Hardware
                     2 => "Blue",
                     _ => "Invalid"
                 };
-                _colorSensors[i] = new Sensor($"Controller {control} {color}", ColorCount + i, SensorType.Level, this, settings);
-                ActivateSensor(_colorSensors[i]);
+                _colors[i] = new Sensor($"Controller {control} {color}", ColorCount + i, SensorType.Level, this, settings);
+                ActivateSensor(_colors[i]);
             }
 
             Update();
@@ -93,20 +92,19 @@ internal sealed class Farbwerk : Hardware
             return;
         }
 
-        byte[] firmwareBytes = new byte[2] { _rawData[22], _rawData[21] };
-        FirmwareVersion = BitConverter.ToUInt16(firmwareBytes, 0);
+        FirmwareVersion = Convert.ToUInt16(_rawData[21] << 8 | _rawData[22]);
 
-        byte[] sensorsBytes = _rawData.Skip(HeaderSize + SensorOffset).Take(2 * _temperatures.Length).ToArray();
+        int offset = HeaderSize + SensorOffset;
         for (int i = 0; i < _temperatures.Length; i++) {
-            Array.Reverse(sensorsBytes, i * 2, 2);
-            _temperatures[i].Value = BitConverter.ToUInt16(sensorsBytes, i * 2) / 100.0f;
+            _temperatures[i].Value = (_rawData[offset] << 8 | _rawData[offset + 1]) / 100.0f;
+            offset += 2;
         }
 
-        byte[] colorsBytes = _rawData.Skip(HeaderSize + ColorsOffset).Take(2 * _colorSensors.Length).ToArray();
-        for (int i = 0; i < _colorSensors.Length; i++)
+        offset = HeaderSize + ColorsOffset;
+        for (int i = 0; i < _colors.Length; i++)
         {
-            Array.Reverse(colorsBytes, i * 2, 2);
-            _colorSensors[i].Value = BitConverter.ToUInt16(colorsBytes, i * 2) / 81.90f;
+            _colors[i].Value = (_rawData[offset] << 8 | _rawData[offset + 1]) / 81.90f;
+            offset += 2;
         }
     }
 }
