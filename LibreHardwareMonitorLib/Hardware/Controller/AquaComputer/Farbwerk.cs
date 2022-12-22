@@ -31,14 +31,17 @@ internal sealed class Farbwerk : Hardware
     {
         if (dev.TryOpen(out _stream))
         {
-            for (int i = 0; i < _temperatures.Length; i++) {
-                _temperatures[i] = new Sensor($"Sensor {i+1}", i, SensorType.Temperature, this, settings);
+            for (int i = 0; i < _temperatures.Length; i++)
+            {
+                _temperatures[i] = new Sensor($"Sensor {i + 1}", i, SensorType.Temperature, this, settings);
                 ActivateSensor(_temperatures[i]);
             }
 
-            for (int i = 0; i < _colors.Length; i++) {
+            for (int i = 0; i < _colors.Length; i++)
+            {
                 int control = (i / 3) + 1;
-                string color = (i % 3) switch {
+                string color = (i % 3) switch
+                {
                     0 => "Red",
                     1 => "Green",
                     2 => "Blue",
@@ -95,7 +98,8 @@ internal sealed class Farbwerk : Hardware
         FirmwareVersion = Convert.ToUInt16(_rawData[21] << 8 | _rawData[22]);
 
         int offset = HeaderSize + SensorOffset;
-        for (int i = 0; i < _temperatures.Length; i++) {
+        for (int i = 0; i < _temperatures.Length; i++)
+        {
             _temperatures[i].Value = (_rawData[offset] << 8 | _rawData[offset + 1]) / 100.0f;
             offset += 2;
         }
