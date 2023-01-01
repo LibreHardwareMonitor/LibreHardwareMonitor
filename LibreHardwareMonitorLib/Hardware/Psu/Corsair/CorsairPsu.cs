@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using HidSharp;
 
@@ -343,15 +344,7 @@ internal static class UsbApi
 
         string ArrayToString(byte[] ar)
         {
-            int i = 0;
-            while (ar[i] != 0)
-                i++;
-
-            byte[] trimmed = new byte[i];
-            for (int j = 0; j < i; j++)
-                trimmed[j] = ar[j];
-
-            return Encoding.ASCII.GetString(trimmed);
+            return Encoding.ASCII.GetString(ar.TakeWhile(x => x != 0).ToArray());
         }
 
         return new FirmwareInfo { Vendor = ArrayToString(vendorArr), Product = ArrayToString(productArr) };
