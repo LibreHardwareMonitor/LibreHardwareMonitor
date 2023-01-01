@@ -69,6 +69,7 @@ public sealed partial class MainForm : Form
         _settings = new PersistentSettings();
         _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
 
+
         _unitManager = new UnitManager(_settings);
 
         // make sure the buffers used for double buffering are not disposed
@@ -90,6 +91,8 @@ public sealed partial class MainForm : Form
             Width = _settings.GetValue("mainForm.Width", 470),
             Height = _settings.GetValue("mainForm.Height", 640)
         };
+
+        Theme.Current = Theme.All.First(theme => _settings.GetValue("theme", "auto") == theme.Id);
 
         _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
 
@@ -439,7 +442,6 @@ public sealed partial class MainForm : Form
 
     private void InitializeTheme()
     {
-
         mainMenu.Renderer = new ThemedToolStripRenderer();
         treeContextMenu.Renderer = new ThemedToolStripRenderer();
         ThemedVScrollIndicator.AddToControl(treeView);
