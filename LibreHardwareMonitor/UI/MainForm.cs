@@ -92,7 +92,11 @@ public sealed partial class MainForm : Form
             Height = _settings.GetValue("mainForm.Height", 640)
         };
 
-        Theme.Current = Theme.All.First(theme => _settings.GetValue("theme", "auto") == theme.Id);
+        Theme setTheme = Theme.All.FirstOrDefault(theme => _settings.GetValue("theme", "auto") == theme.Id);
+        if (setTheme != null)
+            Theme.Current = setTheme;
+        else
+            Theme.SetAutoTheme();
 
         _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
 
