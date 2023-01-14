@@ -316,7 +316,7 @@ namespace LibreHardwareMonitor.UI
             // 
             this.hddMenuItem.Name = "hddMenuItem";
             this.hddMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.hddMenuItem.Text = "Hard Disk Drives";
+            this.hddMenuItem.Text = "Storage Devices";
             // 
             // nicMenuItem
             // 
