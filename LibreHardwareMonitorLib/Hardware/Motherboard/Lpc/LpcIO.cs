@@ -28,6 +28,11 @@ internal class LpcIO
         Detect();
 
         Ring0.ReleaseIsaBusMutex();
+
+        if (Ipmi.IsBmcPresent())
+        {
+            _superIOs.Add(new Ipmi());
+        }
     }
 
     public ISuperIO[] SuperIO => _superIOs.ToArray();

@@ -74,7 +74,9 @@ internal enum Chip : ushort
     W83627THF = 0x8280,
     W83667HG = 0xA510,
     W83667HGB = 0xB350,
-    W83687THF = 0x8541
+    W83687THF = 0x8541,
+
+    IPMI = 0x4764,
 }
 
 internal class ChipName
@@ -143,6 +145,8 @@ internal class ChipName
             case Chip.W83667HG: return "Winbond W83667HG";
             case Chip.W83667HGB: return "Winbond W83667HG-B";
             case Chip.W83687THF: return "Winbond W83687THF";
+
+            case Chip.IPMI: return "IPMI";
 
             default: return "Unknown";
         }
