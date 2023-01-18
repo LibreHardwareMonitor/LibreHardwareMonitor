@@ -4,7 +4,9 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Management;
+using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 internal class Ipmi : ISuperIO
@@ -18,6 +20,15 @@ internal class Ipmi : ISuperIO
     public float?[] Temperatures { get; } = Array.Empty<float?>();
 
     public float?[] Voltages { get; } = Array.Empty<float?>();
+
+    public readonly List<string> FanNames = new();
+    public readonly List<string> TemperatureNames = new();
+    public readonly List<string> VoltageNames = new();
+
+    private List<float> _controls = new();
+    private List<float> _fans = new();
+    private List<float> _temperatures = new();
+    private List<float> _voltages = new();
 
     private ManagementObject _ipmi;
 
@@ -34,28 +45,63 @@ internal class Ipmi : ISuperIO
         {
             _ipmi = ipmi;
         }
+
+        // Have to perform an early update to count the number of sensors and get their names
+        Update();
+
+        Controls = new float?[_controls.Count];
+        Fans = new float?[_fans.Count];
+        Temperatures = new float?[_temperatures.Count];
+        Voltages = new float?[_voltages.Count];
     }
 
     public string GetReport() => throw new NotImplementedException();
     public void SetControl(int index, byte? value) => throw new NotImplementedException();
     public void Update()
     {
-        byte[] getSDRInfoResult = RunIPMICommand(COMMAND_GET_SDR_REPOSITORY_INFO, new byte[] { });
-        int recordCount = getSDRInfoResult[3] * 256 + getSDRInfoResult[2];
+        _controls.Clear();
+        _fans.Clear();
+        _temperatures.Clear();
+        _voltages.Clear();
 
-      /*  // Reserve SDR Repository
-        byte[] reserveSDRResult = IPMICommand(0x22, new byte[] { });
-        byte reserveLower = reserveSDRResult[1];
-        byte reserveUpper = reserveSDRResult[2];*/
+        byte[] sdrInfo = RunIPMICommand(COMMAND_GET_SDR_REPOSITORY_INFO, new byte[] { });
+        int recordCount = sdrInfo[3] * 256 + sdrInfo[2];
 
         byte recordLower = 0;
         byte recordUpper = 0;
         for (int i = 0; i < recordCount; ++i)
         {
-            byte[] getSDRResult = RunIPMICommand(COMMAND_GET_SDR, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
-            recordLower = getSDRResult[1];
-            recordUpper = getSDRResult[2];
-            System.Diagnostics.Debug.WriteLine(BitConverter.ToString(getSDRResult).Replace("-", ""));
+            byte[] sdr = RunIPMICommand(COMMAND_GET_SDR, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
+            recordLower = sdr[1];
+            recordUpper = sdr[2];
+
+            if (sdr[6] == 1)
+            {
+                byte sensorType = sdr[15];
+                string sensorName = Encoding.UTF8.GetString(sdr, 51, sdr.Length - 51);
+                if (sensorName.IndexOf((char)0) >= 0)
+                {
+                    sensorName = sensorName.Remove(sensorName.IndexOf((char)0));
+                }
+
+                switch (sensorType)
+                {
+                    case 1:
+                        _temperatures.Add(1.0f);
+                        if (Temperatures.Length == 0)
+                        {
+                            TemperatureNames.Add(sensorName);
+                        }
+                        break;
+                }
+            }
+
+            //System.Diagnostics.Debug.WriteLine(BitConverter.ToString(getSDRResult).Replace("-", ""));
+        }
+
+        for (int i = 0; i < Math.Min(_temperatures.Count, Temperatures.Length); ++i)
+        {
+            Temperatures[i] = _temperatures[i];
         }
     }
     public static bool IsBmcPresent()
