@@ -29,7 +29,7 @@ internal class LpcIO
 
         if (Ipmi.IsBmcPresent())
         {
-            _superIOs.Add(new Ipmi());
+            _superIOs.Add(new Ipmi(motherboard.Manufacturer));
         }
     }
 
