@@ -17,7 +17,7 @@ internal class LpcIO
     private readonly StringBuilder _report = new();
     private readonly List<ISuperIO> _superIOs = new();
 
-    public LpcIO()
+    public LpcIO(Manufacturer motherboardManufacturer)
     {
         if (!Ring0.IsOpen)
             return;
@@ -31,7 +31,7 @@ internal class LpcIO
 
         if (Ipmi.IsBmcPresent())
         {
-            _superIOs.Add(new Ipmi());
+            _superIOs.Add(new Ipmi(motherboardManufacturer));
         }
     }
 

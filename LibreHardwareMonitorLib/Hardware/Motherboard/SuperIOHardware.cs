@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Xml.Linq;
 using LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard;
@@ -413,12 +412,9 @@ internal sealed class SuperIOHardware : Hardware
                 {
                     v.Add(new Voltage(ipmi.VoltageNames[i], i));
                 }
-
-                // Fan control is exposed for Supermicro only as it differs between IPMI implementations
-                // Requires fans to be set to full speed in IPMI settings
-                if (manufacturer == Manufacturer.Supermicro)
+                for (int i = 0; i < ipmi.ControlNames.Count; ++i)
                 {
-                    c.Add(new Ctrl("Fan PWM Override", 0));
+                    c.Add(new Ctrl(ipmi.ControlNames[i], i));
                 }
 
                 break;

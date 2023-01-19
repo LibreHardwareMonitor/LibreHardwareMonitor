@@ -66,7 +66,7 @@ public class Motherboard : IHardware
         }
         else
         {
-            _lpcIO = new LpcIO();
+            _lpcIO = new LpcIO(manufacturer);
             superIO = _lpcIO.SuperIO;
         }
 
