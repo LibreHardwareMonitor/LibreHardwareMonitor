@@ -121,6 +121,8 @@ internal class Ipmi : ISuperIO
     private List<float> _temperatures = new();
     private List<float> _voltages = new();
 
+    private List<IpmiSdr> _sdr = new();
+
     private Manufacturer _motherboardManufacturer;
 
     private ManagementObject _ipmi;
@@ -216,76 +218,88 @@ internal class Ipmi : ISuperIO
         _voltages.Clear();
         _controls.Clear();
 
-        byte[] sdrInfo = RunIPMICommand(COMMAND_GET_SDR_REPOSITORY_INFO, NETWORK_FUNCTION_STORAGE, new byte[] { });
-        if (sdrInfo[0] == 0)
+        if (_sdr.Count == 0 || debugSB != null)
         {
-            int recordCount = sdrInfo[3] * 256 + sdrInfo[2];
-
-            byte recordLower = 0;
-            byte recordUpper = 0;
-            for (int i = 0; i < recordCount; ++i)
+            byte[] sdrInfo = RunIPMICommand(COMMAND_GET_SDR_REPOSITORY_INFO, NETWORK_FUNCTION_STORAGE, new byte[] { });
+            if (sdrInfo[0] == 0)
             {
-                byte[] sdrRaw = RunIPMICommand(COMMAND_GET_SDR, NETWORK_FUNCTION_STORAGE, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
-                if (sdrRaw[0] == 0 && sdrRaw.Length >= 3)
+                int recordCount = sdrInfo[3] * 256 + sdrInfo[2];
+
+                byte recordLower = 0;
+                byte recordUpper = 0;
+                for (int i = 0; i < recordCount; ++i)
                 {
-                    recordLower = sdrRaw[1];
-                    recordUpper = sdrRaw[2];
-
-                    IpmiSdr sdr;
-                    unsafe
+                    byte[] sdrRaw = RunIPMICommand(COMMAND_GET_SDR, NETWORK_FUNCTION_STORAGE, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
+                    if (sdrRaw[0] == 0 && sdrRaw.Length >= 3)
                     {
-                        fixed (byte* pSdr = sdrRaw)
-                        {
-                            sdr = (IpmiSdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(IpmiSdr));
-                        }
-                    }
+                        recordLower = sdrRaw[1];
+                        recordUpper = sdrRaw[2];
 
-                    if (sdr.rectype == 1)
-                    {
-                        byte[] reading = RunIPMICommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, new byte[] { sdr.sens_num });
-
-                        if (reading[0] == 0)
+                        IpmiSdr sdr;
+                        unsafe
                         {
-                            switch (sdr.sens_type)
+                            fixed (byte* pSdr = sdrRaw)
                             {
-                                case 1:
-                                    _temperatures.Add(RawToFloat(reading[1], sdr));
-                                    if (Temperatures.Length == 0)
-                                    {
-                                        TemperatureNames.Add(sdr.id_string.Replace(" Temp", ""));
-                                    }
-                                    break;
-
-                                case 2:
-                                    _voltages.Add(RawToFloat(reading[1], sdr));
-                                    if (Voltages.Length == 0)
-                                    {
-                                        VoltageNames.Add(sdr.id_string);
-                                    }
-                                    break;
-
-                                case 4:
-                                    _fans.Add(RawToFloat(reading[1], sdr));
-                                    if (Fans.Length == 0)
-                                    {
-                                        FanNames.Add(sdr.id_string);
-                                    }
-                                    break;
-
-                                default:
-                                    break;
+                                sdr = (IpmiSdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(IpmiSdr));
                             }
                         }
+                        _sdr.Add(sdr);
 
                         if (debugSB != null)
                         {
-                            debugSB.AppendLine("IPMI sensor " + i + " reading: " + BitConverter.ToString(reading).Replace("-", "") + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
+                            debugSB.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
                         }
                     }
+                    else
+                    {
+                        break;
+                    }
                 }
-                else
+            }
+        }
+
+        foreach (IpmiSdr sdr in _sdr)
+        {
+            if (sdr.rectype == 1)
+            {
+                byte[] reading = RunIPMICommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, new byte[] { sdr.sens_num });
+
+                if (reading[0] == 0)
                 {
-                    break;
+                    switch (sdr.sens_type)
+                    {
+                        case 1:
+                            _temperatures.Add(RawToFloat(reading[1], sdr));
+                            if (Temperatures.Length == 0)
+                            {
+                                TemperatureNames.Add(sdr.id_string.Replace(" Temp", ""));
+                            }
+                            break;
+
+                        case 2:
+                            _voltages.Add(RawToFloat(reading[1], sdr));
+                            if (Voltages.Length == 0)
+                            {
+                                VoltageNames.Add(sdr.id_string);
+                            }
+                            break;
+
+                        case 4:
+                            _fans.Add(RawToFloat(reading[1], sdr));
+                            if (Fans.Length == 0)
+                            {
+                                FanNames.Add(sdr.id_string);
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                if (debugSB != null)
+                {
+                    debugSB.AppendLine("IPMI sensor num: " + sdr.sens_num + " reading: " + BitConverter.ToString(reading).Replace("-", ""));
                 }
             }
         }
