@@ -194,7 +194,7 @@ internal class Ipmi : ISuperIO
                 else
                 {
                     byte[] fanMode = RunIPMICommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x00 });
-                    if (fanMode[0] != 0 || fanMode[1] != FAN_MODE_FULL)
+                    if (fanMode.Length < 2 || fanMode[0] != 0 || fanMode[1] != FAN_MODE_FULL)
                     {
                         RunIPMICommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x01 /* Set */, FAN_MODE_FULL });
                     }
