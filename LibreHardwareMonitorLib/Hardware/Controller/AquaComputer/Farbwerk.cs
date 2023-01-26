@@ -12,20 +12,20 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 
 internal sealed class Farbwerk : Hardware
 {
-    private const int FeatureID = 3;
+    private const int FEATURE_ID = 3;
 
-    private const int HeaderSize = 27;
-    private const int SensorOffset = 20;
-    private const int ColorsOffset = 40;
+    private const int HEADER_SIZE = 27;
+    private const int SENSOR_OFFSET = 20;
+    private const int COLORS_OFFSET = 40;
 
-    private const int TemperatureCount = 4;
-    private const int ColorCount = 4;
-    private const int ColorValueCount = ColorCount * 3;
+    private const int TEMPERATURE_COUNT = 4;
+    private const int COLOR_COUNT = 4;
+    private const int COLOR_VALUE_COUNT = COLOR_COUNT * 3;
 
     private readonly byte[] _rawData = new byte[140];
     private readonly HidStream _stream;
-    private readonly Sensor[] _temperatures = new Sensor[TemperatureCount];
-    private readonly Sensor[] _colors = new Sensor[ColorValueCount];
+    private readonly Sensor[] _temperatures = new Sensor[TEMPERATURE_COUNT];
+    private readonly Sensor[] _colors = new Sensor[COLOR_VALUE_COUNT];
 
     public Farbwerk(HidDevice dev, ISettings settings) : base("Farbwerk", new Identifier(dev.DevicePath), settings)
     {
@@ -47,7 +47,7 @@ internal sealed class Farbwerk : Hardware
                     2 => "Blue",
                     _ => "Invalid"
                 };
-                _colors[i] = new Sensor($"Controller {control} {color}", ColorCount + i, SensorType.Level, this, settings);
+                _colors[i] = new Sensor($"Controller {control} {color}", COLOR_COUNT + i, SensorType.Level, this, settings);
                 ActivateSensor(_colors[i]);
             }
 
@@ -66,7 +66,8 @@ internal sealed class Farbwerk : Hardware
     {
         get
         {
-            if (_rawData[0] != 0x1) {
+            if (_rawData[0] != 0x1)
+            {
                 return $"Status: Invalid header {_rawData[0]}";
             }
 
@@ -97,14 +98,14 @@ internal sealed class Farbwerk : Hardware
 
         FirmwareVersion = Convert.ToUInt16(_rawData[21] << 8 | _rawData[22]);
 
-        int offset = HeaderSize + SensorOffset;
+        int offset = HEADER_SIZE + SENSOR_OFFSET;
         for (int i = 0; i < _temperatures.Length; i++)
         {
             _temperatures[i].Value = (_rawData[offset] << 8 | _rawData[offset + 1]) / 100.0f;
             offset += 2;
         }
 
-        offset = HeaderSize + ColorsOffset;
+        offset = HEADER_SIZE + COLORS_OFFSET;
         for (int i = 0; i < _colors.Length; i++)
         {
             _colors[i].Value = (_rawData[offset] << 8 | _rawData[offset + 1]) / 81.90f;
