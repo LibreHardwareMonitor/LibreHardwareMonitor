@@ -52,7 +52,15 @@ public class AquaComputerGroup : IGroup
                     _report.AppendLine();
                     _hardware.Add(mps);
                     break;
-
+                    
+                case 0xF00D:
+                    var quadro = new Quadro(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {quadro.FirmwareVersion}");
+                    _report.AppendLine();
+                    _hardware.Add(quadro);
+                    break;
+                    
                 case 0xF011:
                     var octo = new Octo(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
