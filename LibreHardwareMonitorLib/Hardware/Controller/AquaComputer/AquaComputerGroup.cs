@@ -69,6 +69,15 @@ public class AquaComputerGroup : IGroup
                     _hardware.Add(octo);
                     break;
 
+                case 0xF00A:
+                    var farbwerk = new Farbwerk(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {farbwerk.FirmwareVersion}");
+                    _report.AppendLine($"{farbwerk.Status}");
+                    _report.AppendLine();
+                    _hardware.Add(farbwerk);
+                    break;
+
                 default:
                     _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
                     _report.AppendLine();
