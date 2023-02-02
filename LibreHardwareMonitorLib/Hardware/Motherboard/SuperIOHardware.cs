@@ -355,47 +355,91 @@ internal sealed class SuperIOHardware : Hardware
 
             case Chip.NCT6686D:
             case Chip.NCT6687D:
-                v.Add(new Voltage("+12V", 0));
-                v.Add(new Voltage("+5V", 1));
-                v.Add(new Voltage("Vcore", 2));
-                v.Add(new Voltage("Voltage #1", 3));
-                v.Add(new Voltage("DIMM", 4));
-                v.Add(new Voltage("CPU I/O", 5));
-                v.Add(new Voltage("CPU SA", 6));
-                v.Add(new Voltage("Voltage #2", 7));
-                v.Add(new Voltage("AVCC3", 8));
-                v.Add(new Voltage("VTT", 9));
-                v.Add(new Voltage("VRef", 10));
-                v.Add(new Voltage("VSB", 11));
-                v.Add(new Voltage("AVSB", 12));
-                v.Add(new Voltage("VBat", 13));
+                switch (manufacturer)
+                {
+                    case Manufacturer.ASRock:
+                        switch (model)
+                        {
+                            case Model.Z790_Taichi:
+                                // v.Add(new Voltage("GT Voltage", 0));
+                                // v.Add(new Voltage("Vcore", 1));
+                                // v.Add(new Voltage("+5V", 2, 402, 100));
+                                // v.Add(new Voltage("+12V", 3, 110, 10));
+                                // v.Add(new Voltage("Voltage #4", 4, true));
+                                // v.Add(new Voltage("VCCSA Voltage", 5));
+                                // v.Add(new Voltage("VCCIN_AUX Voltage", 6));
+                                // v.Add(new Voltage("VDD_CPU Voltage", 7));
+                                // v.Add(new Voltage("Voltage #8", 8, true));
+                                // v.Add(new Voltage("Voltage #9", 9, true));
+                                // v.Add(new Voltage("Voltage #10", 10, true));
+                                // v.Add(new Voltage("Voltage #11", 11, true));
+                                // v.Add(new Voltage("Voltage #12", 12, true));
+                                // v.Add(new Voltage("Voltage #13", 13, true));
 
-                t.Add(new Temperature("CPU", 0));
-                t.Add(new Temperature("System", 1));
-                t.Add(new Temperature("VRM MOS", 2));
-                t.Add(new Temperature("PCH", 3));
-                t.Add(new Temperature("CPU Socket", 4));
-                t.Add(new Temperature("PCIe x1", 5));
-                t.Add(new Temperature("M2_1", 6));
+                                t.Add(new Temperature("CPU", 0));
+                                t.Add(new Temperature("Motherboard", 1));
+                                t.Add(new Temperature("MOS", 2));
 
-                f.Add(new Fan("CPU Fan", 0));
-                f.Add(new Fan("Pump Fan", 1));
-                f.Add(new Fan("System Fan #1", 2));
-                f.Add(new Fan("System Fan #2", 3));
-                f.Add(new Fan("System Fan #3", 4));
-                f.Add(new Fan("System Fan #4", 5));
-                f.Add(new Fan("System Fan #5", 6));
-                f.Add(new Fan("System Fan #6", 7));
+                                f.Add(new Fan("CPU Fan #1", 0));
+                                f.Add(new Fan("Chassis Fan #4", 1));
+                                f.Add(new Fan("CPU Fan #2", 2));
+                                f.Add(new Fan("Chassis Fan #2", 3));
+                                f.Add(new Fan("Chassis Fan #1", 4));
+                                f.Add(new Fan("MOS Fan #1", 5));
 
-                c.Add(new Ctrl("CPU Fan", 0));
-                c.Add(new Ctrl("Pump Fan", 1));
-                c.Add(new Ctrl("System Fan #1", 2));
-                c.Add(new Ctrl("System Fan #2", 3));
-                c.Add(new Ctrl("System Fan #3", 4));
-                c.Add(new Ctrl("System Fan #4", 5));
-                c.Add(new Ctrl("System Fan #5", 6));
-                c.Add(new Ctrl("System Fan #6", 7));
+                                c.Add(new Ctrl("CPU Fan #1", 0));
+                                c.Add(new Ctrl("Chassis Fan #4", 1));
+                                c.Add(new Ctrl("CPU Fan #2", 2));
+                                c.Add(new Ctrl("Chassis Fan #2", 3));
+                                c.Add(new Ctrl("Chassis Fan #1", 4));
+                                c.Add(new Ctrl("MOS Fan #1", 5));
+                                break;
+                        }
+                        break;
+                    default:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("Vcore", 2));
+                        v.Add(new Voltage("Voltage #1", 3));
+                        v.Add(new Voltage("DIMM", 4));
+                        v.Add(new Voltage("CPU I/O", 5));
+                        v.Add(new Voltage("CPU SA", 6));
+                        v.Add(new Voltage("Voltage #2", 7));
+                        v.Add(new Voltage("AVCC3", 8));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("VRef", 10));
+                        v.Add(new Voltage("VSB", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("VBat", 13));
 
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("VRM MOS", 2));
+                        t.Add(new Temperature("PCH", 3));
+                        t.Add(new Temperature("CPU Socket", 4));
+                        t.Add(new Temperature("PCIe x1", 5));
+                        t.Add(new Temperature("M2_1", 6));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Pump Fan", 1));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+                        f.Add(new Fan("System Fan #4", 5));
+                        f.Add(new Fan("System Fan #5", 6));
+                        f.Add(new Fan("System Fan #6", 7));
+
+                        c.Add(new Ctrl("CPU Fan", 0));
+                        c.Add(new Ctrl("Pump Fan", 1));
+                        c.Add(new Ctrl("System Fan #1", 2));
+                        c.Add(new Ctrl("System Fan #2", 3));
+                        c.Add(new Ctrl("System Fan #3", 4));
+                        c.Add(new Ctrl("System Fan #4", 5));
+                        c.Add(new Ctrl("System Fan #5", 6));
+                        c.Add(new Ctrl("System Fan #6", 7));
+
+                        break;
+                }
                 break;
 
             default:
@@ -2287,6 +2331,22 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Ctrl("Chassis Fan", 1));
                         c.Add(new Ctrl("CPU Fan #2", 2));
                         c.Add(new Ctrl("Chipset Fan", 3));
+                        break;
+
+                    case Model.Z790_Taichi:
+                        v.Add(new Voltage("+1.8V PROC Voltage", 0));
+                        v.Add(new Voltage("+0.82V PCH Voltage", 1));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+1.05V PROC Voltage", 4));
+                        v.Add(new Voltage("+1.05V PCH Voltage", 12, 5, 100));
+
+                        f.Add(new Fan("Chassis Fan #5", 0));
+                        f.Add(new Fan("Chassis Fan #6", 1));
+                        f.Add(new Fan("Chassis Fan #3", 6));
+
+                        c.Add(new Ctrl("Chassis Fan #5", 0));
+                        c.Add(new Ctrl("Chassis Fan #6", 1));
+                        c.Add(new Ctrl("Chassis Fan #3", 6));
                         break;
 
                     default:

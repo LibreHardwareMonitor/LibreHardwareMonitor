@@ -34,6 +34,7 @@ internal enum Model
     X570_Pro4,
     X570_Taichi,
     X570_Phantom_Gaming_ITX,
+    Z790_Taichi,
 
     // ASUS
     CROSSHAIR_III_FORMULA,
