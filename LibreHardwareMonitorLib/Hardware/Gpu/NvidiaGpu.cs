@@ -421,7 +421,7 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
         _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
-        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
+        _memoryLoad = new Sensor("GPU Memory", -1, SensorType.Load, this, settings);
 
         Update();
     }
