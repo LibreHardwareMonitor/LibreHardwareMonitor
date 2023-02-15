@@ -2601,7 +2601,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU Weighted", 1));      // Unsure about this one. HWinfo & Armoury Crate doesn't have anything that match my values. Varies from 34 (idle) to 42C (under load). Hwinfo is 31-32C for same.
                         t.Add(new Temperature("Motherboard", 2));       // Matches MB in HWinfo & Armoury Crate.
                         //t.Add(new Temperature("Temperature #4", 4));  // Constant at 15C
-                        //t.Add(new Temperature("Temperature #5", 5));  // Varries from 15C to 123C. Probably bogus
+                        //t.Add(new Temperature("Temperature #5", 5));  // Varies from 15C to 123C. Probably bogus
                         //t.Add(new Temperature("Temperature #6", 6));  // Constant at 32C
                         //t.Add(new Temperature("Temperature #7", 7));  // Varies from 14C to 124C. Probably bogus
                         t.Add(new Temperature("PCH", 12));              // Chipset. Match HWinfo & Armoury Crate
