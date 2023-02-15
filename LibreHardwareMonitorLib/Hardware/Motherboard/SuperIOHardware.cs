@@ -2579,8 +2579,7 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Ctrl(fanControlNames[i], i));
 
                         break;
-
-                    // Z690 Hero should probably be same as Z690 Formula. However sins I found difference in Temperatures, I had to make a seperate list.
+                    
                     case Model.ROG_MAXIMUS_Z690_HERO:    //NCT6798D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -2598,15 +2597,15 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #14 ", 13));
                         v.Add(new Voltage("Voltage #15", 14));
 
-                        t.Add(new Temperature("CPU Package", 0));       //Matches CPU Package in HWinfo & Armoury Crate.
-                        t.Add(new Temperature("CPU (Weighted)", 1));    // Unsure about this one. HWinfo & Armoury Crate doesn't have anything that match my values. Varies from 34 (idle) to 42C (under load). Hwinfo is 31-32C for same.
-                        t.Add(new Temperature("Motherboard", 2));       //Matches MB in HWinfo & Armoury Crate.
-                        //t.Add(new Temperature("Temperature #4", 4));  //Constant at 15C
-                        //t.Add(new Temperature("Temperature #5", 5));  //Varries from 15C to 123C. Probably bogus
-                        //t.Add(new Temperature("Temperature #6", 6));  //Constant at 32C
-                        //t.Add(new Temperature("Temperature #7", 7));  //Varries from 14C to 124C. Probably bogus
-                        t.Add(new Temperature("PCH", 12));              //Chipset. Match HWinfo & Armoury Crate
-                        t.Add(new Temperature("CPU", 21));              //Matches CPU in HWinfo & Armoury Crate.
+                        t.Add(new Temperature("CPU Package", 0));       // Matches CPU Package in HWinfo & Armoury Crate.
+                        t.Add(new Temperature("CPU Weighted", 1));      // Unsure about this one. HWinfo & Armoury Crate doesn't have anything that match my values. Varies from 34 (idle) to 42C (under load). Hwinfo is 31-32C for same.
+                        t.Add(new Temperature("Motherboard", 2));       // Matches MB in HWinfo & Armoury Crate.
+                        //t.Add(new Temperature("Temperature #4", 4));  // Constant at 15C
+                        //t.Add(new Temperature("Temperature #5", 5));  // Varries from 15C to 123C. Probably bogus
+                        //t.Add(new Temperature("Temperature #6", 6));  // Constant at 32C
+                        //t.Add(new Temperature("Temperature #7", 7));  // Varies from 14C to 124C. Probably bogus
+                        t.Add(new Temperature("PCH", 12));              // Chipset. Match HWinfo & Armoury Crate
+                        t.Add(new Temperature("CPU", 21));              // Matches CPU in HWinfo & Armoury Crate.
 
                         // note that CPU Opt Fan is on the ASUS EC controller. Together with VRM, T_Sensor, WaterIn, WaterOut and WaterFlow + additional sensors.
                         fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Waterpump", "AIO Pump" };
