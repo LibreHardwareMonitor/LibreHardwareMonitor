@@ -1004,9 +1004,8 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("Chassis Fan #1", 1));
                         f.Add(new Fan("Chassis Fan #2", 2));
 
-                        //offset: 2, because the first two always show zero
-                        for (int i = 2; i < superIO.Controls.Length; i++)
-                            c.Add(new Ctrl("Fan #" + (i - 1), i));
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Ctrl("Fan #" + i, i));
 
                         break;
 
