@@ -1185,6 +1185,7 @@ public class SMBios
             Bios = new BiosInformation(biosVendor, biosVersion, biosDate);
 
             MemoryDevices = Array.Empty<MemoryDevice>();
+            ProcessorCaches = Array.Empty<CacheInformation>();
         }
         else
         {
@@ -1474,13 +1475,16 @@ public class SMBios
             }
         }
 
-        for (int i = 0; i < ProcessorCaches.Length; i++)
+        if (ProcessorCaches != null)
         {
-            r.Append("Cache [" + ProcessorCaches[i].Designation + "] Size: ");
-            r.AppendLine(ProcessorCaches[i].Size.ToString());
-            r.Append("Cache [" + ProcessorCaches[i].Designation + "] Associativity: ");
-            r.AppendLine(ProcessorCaches[i].Associativity.ToString().Replace("_", string.Empty));
-            r.AppendLine();
+            foreach (CacheInformation processorCaches in ProcessorCaches)
+            {
+                r.Append("Cache [" + processorCaches.Designation + "] Size: ");
+                r.AppendLine(processorCaches.Size.ToString());
+                r.Append("Cache [" + processorCaches.Designation + "] Associativity: ");
+                r.AppendLine(processorCaches.Associativity.ToString().Replace("_", string.Empty));
+                r.AppendLine();
+            }
         }
 
         for (int i = 0; i < MemoryDevices.Length; i++)
