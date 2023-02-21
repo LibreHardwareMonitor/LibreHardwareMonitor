@@ -389,16 +389,17 @@ internal sealed class NvidiaGpu : GenericGpu
                                         }
                                     }
 
+                                    _memoryLoad = new Sensor("GPU Memory", (_loads?.Length ?? 0) + (_powers?.Length ?? 0), SensorType.Load, this, settings);
+
                                     if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                     {
-                                        int nodeSensorIndex = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
+                                        int nodeSensorIndex = (_loads?.Length ?? 0) + (_powers?.Length ?? 0) + 1;
                                         int memorySensorIndex = 3; // There are three normal GPU memory sensors.
 
                                         _d3dDeviceId = deviceId;
 
                                         _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
                                         _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex, SensorType.SmallData, this, settings);
-                                        _memoryLoad = new Sensor("GPU Memory", nodeSensorIndex++, SensorType.Load, this, settings);
 
                                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
