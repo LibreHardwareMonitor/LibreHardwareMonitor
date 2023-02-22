@@ -5,6 +5,8 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -42,33 +44,97 @@ internal class CpuLoad
         idle = null;
         total = null;
 
-        //Query processor idle information
-        Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
-        int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
+        #region Windows
+        if (!Software.OperatingSystem.IsUnix)
         {
-            return false;
-        }
+            //Query processor idle information
+            Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
+            int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
+            if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
+            {
+                return false;
+            }
 
-        //Query processor performance information
-        Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
-        int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation, perfInformation, perfInformation.Length * perfSize, out int perfReturn) != 0)
-        {
-            return false;
-        }
+            //Query processor performance information
+            Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
+            int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
+            if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation, perfInformation, perfInformation.Length * perfSize, out int perfReturn) != 0)
+            {
+                return false;
+            }
 
-        idle = new long[idleReturn / idleSize];
-        for (int i = 0; i < idle.Length; i++)
-        {
-            idle[i] = idleInformation[i].IdleTime;
-        }
+            idle = new long[idleReturn / idleSize];
+            for (int i = 0; i < idle.Length; i++)
+            {
+                idle[i] = idleInformation[i].IdleTime;
+            }
 
-        total = new long[perfReturn / perfSize];
-        for (int i = 0; i < total.Length; i++)
-        {
-            total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
+            total = new long[perfReturn / perfSize];
+            for (int i = 0; i < total.Length; i++)
+            {
+                total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
+            }
         }
+        #endregion
+        #region Linux CPU Load
+        if (Software.OperatingSystem.IsUnix)
+        {
+            List<long> idleList = new();
+            List<long> totalList = new();
+            // Get the information
+            string[] cpuInfo = File.ReadAllLines("/proc/stat");
+            // currently parse the OverAll CPU info
+            // cpu   1583083 737    452845   36226266 723316   63685 31896     0       0       0
+            // cpu0  397468  189    109728   9040007  191429   16939 14954     0       0       0
+            // 0=cpu 1=user  2=nice 3=system 4=idle   5=iowait 6=irq 7=softirq 8=steal 9=guest 10=guest_nice
+            foreach (var cpuinfo in cpuInfo.Where(s => s.StartsWith("cpu")).Where(s => s[3] != ' '))
+            {
+                string[] overall = cpuinfo.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                int cpuid;
+                long _idle = 0;
+                long user = 0, nice = 0, system = 0, iowait = 0;
+                long irq = 0, softirq = 0;
+                long steal = 0, guest = 0, guest_nice = 0;
+                try
+                {
+                    cpuid = Convert.ToInt32(overall[0][3]);
+                }
+                catch (System.Exception)
+                {
+                    // ignore
+                }
+                // Parse idle information
+                try
+                {
+                    _idle = Convert.ToInt64(overall[4]);
+                }
+                catch (Exception)
+                {
+                    _idle = 0;
+                }
+                idleList.Add(_idle);
+                // Parse total information
+                try
+                {
+                    user = Convert.ToInt64(overall[1]);
+                    nice = Convert.ToInt64(overall[2]);
+                    system = Convert.ToInt64(overall[3]);
+                    iowait = Convert.ToInt64(overall[5]);
+                    irq = Convert.ToInt64(overall[6]);
+                    softirq = Convert.ToInt64(overall[7]);
+                    steal = Convert.ToInt64(overall[8]);
+                    guest = Convert.ToInt64(overall[9]);
+                    guest_nice = Convert.ToInt64(overall[10]);
+                }
+                catch (Exception)
+                {
+                }
+                totalList.Add(_idle + user + nice + system + iowait + irq + softirq + steal + guest + guest_nice);
+            }
+            idle = idleList.ToArray();
+            total = totalList.ToArray();
+        }
+        #endregion
 
         return true;
     }
@@ -91,9 +157,10 @@ internal class CpuLoad
         if (!GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
             return;
 
+        int minDiff = Software.OperatingSystem.IsUnix ? 100 : 100000 ;
         for (int i = 0; i < Math.Min(newTotalTimes.Length, _totalTimes.Length); i++)
         {
-            if (newTotalTimes[i] - _totalTimes[i] < 100000)
+            if (newTotalTimes[i] - _totalTimes[i] < minDiff)
                 return;
         }
 
