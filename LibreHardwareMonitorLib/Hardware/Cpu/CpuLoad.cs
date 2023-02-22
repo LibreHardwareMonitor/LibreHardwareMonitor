@@ -87,9 +87,9 @@ internal class CpuLoad
             // cpu   1583083 737    452845   36226266 723316   63685 31896     0       0       0
             // cpu0  397468  189    109728   9040007  191429   16939 14954     0       0       0
             // 0=cpu 1=user  2=nice 3=system 4=idle   5=iowait 6=irq 7=softirq 8=steal 9=guest 10=guest_nice
-            foreach (var cpuinfo in cpuInfo.Where(s => s.StartsWith("cpu")).Where(s => s[3] != ' '))
+            foreach (string cpuinfo in cpuInfo.Where(s => s.StartsWith("cpu")).Where(s => s[3] != ' '))
             {
-                string[] overall = cpuinfo.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string[] overall = cpuinfo.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 int cpuid;
                 long _idle = 0;
                 long user = 0, nice = 0, system = 0, iowait = 0;
