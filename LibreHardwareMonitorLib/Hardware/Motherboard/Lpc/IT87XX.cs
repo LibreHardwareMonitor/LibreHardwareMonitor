@@ -68,8 +68,6 @@ internal class IT87XX : ISuperIO
 
         FAN_PWM_CTRL_REG = chip switch
         {
-            // IT8625E Register is estimated from Biostar's Valkyrie Aurora Config file
-            Chip.IT8625E =>new byte[] { 0x81, 0x83, 0x85, 0x87, 0x96, 0x94 },
             Chip.IT8665E =>new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f },
             _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
         };
