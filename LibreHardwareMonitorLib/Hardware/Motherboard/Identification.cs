@@ -367,6 +367,8 @@ internal class Identification
                 return Model.ROG_MAXIMUS_Z690_EXTREME_GLACIAL;
             case var _ when name.Equals("B660GTN", StringComparison.OrdinalIgnoreCase):
                 return Model.B660GTN;
+            case var _ when name.Equals("X670E VALKYRIE", StringComparison.OrdinalIgnoreCase):
+                return Model.X670E_Valkyrie;
             case var _ when name.Equals("ROG MAXIMUS Z790 HERO", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z790_HERO;
             case var _ when name.Equals("PRIME Z690-A", StringComparison.OrdinalIgnoreCase):

@@ -66,9 +66,11 @@ internal class IT87XX : ISuperIO
         if (!valid || ((configuration & 0x10) == 0 && chip != Chip.IT8655E && chip != Chip.IT8665E))
             return;
 
-        FAN_PWM_CTRL_REG = chip == Chip.IT8665E
-            ? new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f }
-            : new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf };
+        FAN_PWM_CTRL_REG = chip switch
+        {
+            Chip.IT8665E or Chip.IT8625E =>new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
+            _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
+        };
 
         _bankCount = chip switch
         {
@@ -84,6 +86,7 @@ internal class IT87XX : ISuperIO
             Chip.IT8689E or
             Chip.IT8695E or
             Chip.IT8628E or
+            Chip.IT8625E or
             Chip.IT8620E or
             Chip.IT8613E or
             Chip.IT879XE or
@@ -99,6 +102,12 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[4];
                 break;
 
+            case Chip.IT8625E:
+                Voltages = new float?[7];
+                Temperatures = new float?[3];
+                Fans = new float?[6];
+                Controls = new float?[6];
+                break;
             case Chip.IT8628E:
                 Voltages = new float?[10];
                 Temperatures = new float?[6];
@@ -178,7 +187,7 @@ internal class IT87XX : ISuperIO
         _voltageGain = chip switch
         {
             Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
-            Chip.IT8695E => 11f / 1000f,
+            Chip.IT8625E or Chip.IT8695E => 0.011f,
             Chip.IT8655E or Chip.IT8665E or Chip.IT879XE => 0.0109f,
             _ => 0.016f
         };
