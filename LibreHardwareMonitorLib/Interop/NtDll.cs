@@ -3,7 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Runtime.InteropServices;
 
 // ReSharper disable InconsistentNaming
@@ -12,7 +11,7 @@ namespace LibreHardwareMonitor.Interop;
 
 internal class NtDll
 {
-    private const string DllName = "ntdll";
+    private const string DllName = "ntdll.dll";
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION
@@ -20,62 +19,35 @@ internal class NtDll
         public long IdleTime;
         public long KernelTime;
         public long UserTime;
-        public long Reserved0;
-        public long Reserved1;
-        public ulong Reserved2;
+        public long DpcTime;
+        public long InterruptTime;
+        public uint InterruptCount;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SYSTEM_PROCESSOR_IDLE_INFORMATION
+    {
+        public long IdleTime;
+        public long C1Time;
+        public long C2Time;
+        public long C3Time;
+        public uint C1Transitions;
+        public uint C2Transitions;
+        public uint C3Transitions;
+        public uint Padding;
     }
 
     internal enum SYSTEM_INFORMATION_CLASS
     {
-        SystemBasicInformation,
-        SystemProcessorInformation,
-        SystemPerformanceInformation,
-        SystemTimeOfDayInformation,
-        SystemPathInformation,
-        SystemProcessInformation,
-        SystemCallCountInformation,
-        SystemDeviceInformation,
-        SystemProcessorPerformanceInformation,
-        SystemFlagsInformation,
-        SystemCallTimeInformation,
-        SystemModuleInformation,
-        SystemLocksInformation,
-        SystemStackTraceInformation,
-        SystemPagedPoolInformation,
-        SystemNonPagedPoolInformation,
-        SystemHandleInformation,
-        SystemObjectInformation,
-        SystemPageFileInformation,
-        SystemVdmInstemulInformation,
-        SystemVdmBopInformation,
-        SystemFileCacheInformation,
-        SystemPoolTagInformation,
-        SystemInterruptInformation,
-        SystemDpcBehaviorInformation,
-        SystemFullMemoryInformation,
-        SystemLoadGdiDriverInformation,
-        SystemUnloadGdiDriverInformation,
-        SystemTimeAdjustmentInformation,
-        SystemSummaryMemoryInformation,
-        SystemNextEventIdInformation,
-        SystemEventIdsInformation,
-        SystemCrashDumpInformation,
-        SystemExceptionInformation,
-        SystemCrashDumpStateInformation,
-        SystemKernelDebuggerInformation,
-        SystemContextSwitchInformation,
-        SystemRegistryQuotaInformation,
-        SystemExtendServiceTableInformation,
-        SystemPrioritySeperation,
-        SystemPlugPlayBusInformation,
-        SystemDockInformation,
-        SystemPowerInformation,
-        SystemProcessorSpeedInformation,
-        SystemCurrentTimeZoneInformation,
-        SystemLookasideInformation
+        SystemProcessorPerformanceInformation = 8,
+        SystemProcessorIdleInformation = 42
     }
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern int NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, [Out] SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] SystemInformation, int SystemInformationLength, out IntPtr ReturnLength);
+    internal static extern int NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, [Out] SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] SystemInformation, int SystemInformationLength, out int ReturnLength);
+
+    [DllImport(DllName)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern int NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, [Out] SYSTEM_PROCESSOR_IDLE_INFORMATION[] SystemInformation, int SystemInformationLength, out int ReturnLength);
 }

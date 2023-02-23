@@ -141,6 +141,14 @@ public abstract class EmbeddedController : Hardware
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
             ECSensor.TempVrm),
+        new(Model.ROG_MAXIMUS_Z690_FORMULA,
+            BoardFamily.Intel600,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.TempWaterBlockIn,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z690_EXTREME_GLACIAL,
             BoardFamily.Intel600,
             ECSensor.TempVrm,
@@ -159,7 +167,11 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempChipset,
             ECSensor.FanWaterPump,
             ECSensor.CurrCPU,
-            ECSensor.VoltageCPU)
+            ECSensor.VoltageCPU),
+        new(Model.PRIME_Z690_A,
+            BoardFamily.Intel600,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm)
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()

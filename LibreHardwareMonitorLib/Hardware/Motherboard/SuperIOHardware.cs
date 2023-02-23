@@ -1005,9 +1005,8 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("Chassis Fan #1", 1));
                         f.Add(new Fan("Chassis Fan #2", 2));
 
-                        //offset: 2, because the first two always show zero
-                        for (int i = 2; i < superIO.Controls.Length; i++)
-                            c.Add(new Ctrl("Fan #" + (i - 1), i));
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Ctrl("Fan #" + i, i));
 
                         break;
 
@@ -2551,7 +2550,92 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Virtual", 23));
 
                         fanControlNames = new[] {"Chassis Fan 1", "CPU Fan", "Chassis Fan 2",
-                            "Chassis Fan 3", "High Amp Fan", "W_PUMP+", "AIO Pump"};
+                            "Chassis Fan 3", "High Amp Fan", "Waterpump", "AIO Pump"};
+                        System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
+                                                        $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+                        System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
+                                                        "Expected counts of cans controls and fan speed registers to be equal");
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Ctrl(fanControlNames[i], i));
+
+                        break;
+
+                    case Model.ROG_MAXIMUS_Z690_FORMULA: //NCT6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("3VCC", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
+                        v.Add(new Voltage("Voltage #7", 6));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
+                        v.Add(new Voltage("PCH", 12));
+                        v.Add(new Voltage("Voltage #14", 13));
+                        v.Add(new Voltage("Voltage #15", 14));
+
+                        t.Add(new Temperature("Temperature #1", 0));
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Temperature #4", 4));
+                        t.Add(new Temperature("Temperature #5", 5));
+                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("Temperature #7", 7));
+                        t.Add(new Temperature("PCH", 12));
+                        t.Add(new Temperature("Temperature #9", 21));
+
+                        fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Waterpump", "AIO Pump" };
+
+                        System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
+                                                        $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+                        System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
+                                                        "Expected counts of cans controls and fan speed registers to be equal");
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Ctrl(fanControlNames[i], i));
+
+                        break;
+                    
+                    case Model.ROG_MAXIMUS_Z690_HERO:    //NCT6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("3VCC", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
+                        v.Add(new Voltage("Voltage #7", 6));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
+                        v.Add(new Voltage("PCH", 12));
+                        v.Add(new Voltage("Voltage #14 ", 13));
+                        v.Add(new Voltage("Voltage #15", 14));
+
+                        t.Add(new Temperature("CPU Package", 0));       // Matches CPU Package in HWinfo & Armoury Crate.
+                        t.Add(new Temperature("CPU Weighted", 1));      // Unsure about this one. HWinfo & Armoury Crate doesn't have anything that match my values. Varies from 34 (idle) to 42C (under load). Hwinfo is 31-32C for same.
+                        t.Add(new Temperature("Motherboard", 2));       // Matches MB in HWinfo & Armoury Crate.
+                        //t.Add(new Temperature("Temperature #4", 4));  // Constant at 15C
+                        //t.Add(new Temperature("Temperature #5", 5));  // Varies from 15C to 123C. Probably bogus
+                        //t.Add(new Temperature("Temperature #6", 6));  // Constant at 32C
+                        //t.Add(new Temperature("Temperature #7", 7));  // Varies from 14C to 124C. Probably bogus
+                        t.Add(new Temperature("PCH", 12));              // Chipset. Match HWinfo & Armoury Crate
+                        t.Add(new Temperature("CPU", 21));              // Matches CPU in HWinfo & Armoury Crate.
+
+                        // note that CPU Opt Fan is on the ASUS EC controller. Together with VRM, T_Sensor, WaterIn, WaterOut and WaterFlow + additional sensors.
+                        fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Waterpump", "AIO Pump" };
+                       
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
                                                         $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
