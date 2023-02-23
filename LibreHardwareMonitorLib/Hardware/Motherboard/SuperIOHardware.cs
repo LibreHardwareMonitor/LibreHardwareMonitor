@@ -1601,28 +1601,29 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.X670E_Valkyrie: //IT8625E
-                        v.Add(new Voltage("CPU Core Voltage", 0));
-                        v.Add(new Voltage("CPU DDR IMC Voltage", 1));
-                        v.Add(new Voltage("+12.0V", 2, 10, 2));
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("DIMM", 1));
+                        v.Add(new Voltage("+12V", 2, 10, 2));
                         // Voltage of unknown use
                         v.Add(new Voltage("Voltage #4", 3, true));
-                        v.Add(new Voltage("CPU_MISC Voltage", 4));
-                        v.Add(new Voltage("CPU_VDD Voltage", 5));
-                        v.Add(new Voltage("CPU_SOC Voltage", 6));
+                        // The biostar utility shows CPU MISC Voltage.
+                        v.Add(new Voltage("Voltage #5", 4));
+                        v.Add(new Voltage("VDDP", 5));
+                        v.Add(new Voltage("VSOC", 6));
 
-                        t.Add(new Temperature("CPU Temperature", 0));
-                        t.Add(new Temperature("MOS Temperature", 1));
-                        t.Add(new Temperature("System Temperature", 2));
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("System", 2));
 
-                        f.Add(new Fan("CPU Fan Speed", 0));
-                        f.Add(new Fan("CPU OPT Speed", 1));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("CPU Optional Fan", 1));
                         for (int i = 2; i < superIO.Fans.Length; i++)
-                            f.Add(new Fan($"System Fan{i - 1} Speed ", i));
+                            f.Add(new Fan($"System Fan #{i - 1}", i));
 
                         c.Add(new Ctrl("CPU Fan", 0));
-                        c.Add(new Ctrl("CPU OPT", 1));
+                        c.Add(new Ctrl("CPU Optional Fan", 1));
                         for (int i = 2; i < superIO.Controls.Length; i++)
-                            c.Add(new Ctrl($"System Fan{i - 1}", i));
+                            c.Add(new Ctrl($"System Fan #{i - 1}", i));
 
                         break;
 
@@ -2605,7 +2606,7 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Ctrl(fanControlNames[i], i));
 
                         break;
-                    
+
                     case Model.ROG_MAXIMUS_Z690_HERO:    //NCT6798D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -2635,7 +2636,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         // note that CPU Opt Fan is on the ASUS EC controller. Together with VRM, T_Sensor, WaterIn, WaterOut and WaterFlow + additional sensors.
                         fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Waterpump", "AIO Pump" };
-                       
+
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
                                                         $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
