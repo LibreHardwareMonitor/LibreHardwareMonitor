@@ -361,21 +361,6 @@ internal sealed class SuperIOHardware : Hardware
                         switch (model)
                         {
                             case Model.Z790_Taichi:
-                                // v.Add(new Voltage("GT Voltage", 0));
-                                // v.Add(new Voltage("Vcore", 1));
-                                // v.Add(new Voltage("+5V", 2, 402, 100));
-                                // v.Add(new Voltage("+12V", 3, 110, 10));
-                                // v.Add(new Voltage("Voltage #4", 4, true));
-                                // v.Add(new Voltage("VCCSA Voltage", 5));
-                                // v.Add(new Voltage("VCCIN_AUX Voltage", 6));
-                                // v.Add(new Voltage("VDD_CPU Voltage", 7));
-                                // v.Add(new Voltage("Voltage #8", 8, true));
-                                // v.Add(new Voltage("Voltage #9", 9, true));
-                                // v.Add(new Voltage("Voltage #10", 10, true));
-                                // v.Add(new Voltage("Voltage #11", 11, true));
-                                // v.Add(new Voltage("Voltage #12", 12, true));
-                                // v.Add(new Voltage("Voltage #13", 13, true));
-
                                 t.Add(new Temperature("CPU", 0));
                                 t.Add(new Temperature("Motherboard", 1));
                                 t.Add(new Temperature("MOS", 2));
@@ -2334,11 +2319,11 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z790_Taichi:
-                        v.Add(new Voltage("+1.8V PROC Voltage", 0));
-                        v.Add(new Voltage("+0.82V PCH Voltage", 1));
+                        v.Add(new Voltage("1.8V CPU Voltage", 0));
+                        v.Add(new Voltage("0.82V Chipset Voltage", 1));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
-                        v.Add(new Voltage("+1.05V PROC Voltage", 4));
-                        v.Add(new Voltage("+1.05V PCH Voltage", 12, 5, 100));
+                        v.Add(new Voltage("1.05V CPU Voltage", 4));
+                        v.Add(new Voltage("1.05V Chipset Voltage", 12, 5, 100));
 
                         f.Add(new Fan("Chassis Fan #5", 0));
                         f.Add(new Fan("Chassis Fan #6", 1));

@@ -370,7 +370,6 @@ internal class Identification
             case var _ when name.Equals("PRIME Z690-A", StringComparison.OrdinalIgnoreCase):
                 return Model.PRIME_Z690_A;
             case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
-                return Model.Z790_Taichi;
             case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_Taichi;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
