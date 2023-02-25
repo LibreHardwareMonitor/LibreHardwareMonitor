@@ -373,6 +373,9 @@ internal class Identification
                 return Model.ROG_MAXIMUS_Z790_HERO;
             case var _ when name.Equals("PRIME Z690-A", StringComparison.OrdinalIgnoreCase):
                 return Model.PRIME_Z690_A;
+            case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_Taichi;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
