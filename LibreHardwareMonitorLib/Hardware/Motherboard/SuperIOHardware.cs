@@ -358,29 +358,24 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.NCT6687D:
                 switch (manufacturer)
                 {
-                    case Manufacturer.ASRock:
-                        switch (model)
-                        {
-                            case Model.Z790_Taichi:
-                                t.Add(new Temperature("CPU", 0));
-                                t.Add(new Temperature("Motherboard", 1));
-                                t.Add(new Temperature("MOS", 2));
+                    case Manufacturer.ASRock when model == Model.Z790_Taichi:
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("Motherboard", 1));
+                        t.Add(new Temperature("MOS", 2));
 
-                                f.Add(new Fan("CPU Fan #1", 0));
-                                f.Add(new Fan("Chassis Fan #4", 1));
-                                f.Add(new Fan("CPU Fan #2", 2));
-                                f.Add(new Fan("Chassis Fan #2", 3));
-                                f.Add(new Fan("Chassis Fan #1", 4));
-                                f.Add(new Fan("MOS Fan #1", 5));
+                        f.Add(new Fan("CPU Fan #1", 0));
+                        f.Add(new Fan("Chassis Fan #4", 1));
+                        f.Add(new Fan("CPU Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #2", 3));
+                        f.Add(new Fan("Chassis Fan #1", 4));
+                        f.Add(new Fan("MOS Fan #1", 5));
 
-                                c.Add(new Ctrl("CPU Fan #1", 0));
-                                c.Add(new Ctrl("Chassis Fan #4", 1));
-                                c.Add(new Ctrl("CPU Fan #2", 2));
-                                c.Add(new Ctrl("Chassis Fan #2", 3));
-                                c.Add(new Ctrl("Chassis Fan #1", 4));
-                                c.Add(new Ctrl("MOS Fan #1", 5));
-                                break;
-                        }
+                        c.Add(new Ctrl("CPU Fan #1", 0));
+                        c.Add(new Ctrl("Chassis Fan #4", 1));
+                        c.Add(new Ctrl("CPU Fan #2", 2));
+                        c.Add(new Ctrl("Chassis Fan #2", 3));
+                        c.Add(new Ctrl("Chassis Fan #1", 4));
+                        c.Add(new Ctrl("MOS Fan #1", 5));
                         break;
                     default:
                         v.Add(new Voltage("+12V", 0));
