@@ -208,7 +208,6 @@ namespace LibreHardwareMonitor.UI.Themes
         public abstract bool WindowTitlebarFallbackToImmersiveDarkMode { get; }
         public virtual Color WindowTitlebarForegroundColor => ForegroundColor;
 
-
         public void Apply(Form form)
         {
             if (IsWindows10OrGreater(22000))
@@ -250,7 +249,6 @@ namespace LibreHardwareMonitor.UI.Themes
                 button.FlatAppearance.BorderColor = ButtonBorderColor;
                 button.FlatAppearance.MouseOverBackColor = ButtonHoverBackgroundColor;
                 button.FlatAppearance.MouseDownBackColor = ButtonPressedBackgroundColor;
-
             }
             else if (control is LinkLabel linkLabel)
             {

@@ -923,6 +923,10 @@ public sealed partial class MainForm : Form
                 expandPersistNode.Expanded = info.Node.IsExpanded;
             }
 
+            Form form = ((IEnumerable<Form>)Application.OpenForms).Last();
+                // where Form.ActiveControl is a LibreHardwareMonitor.UI.PlotPanel
+            Theme.Current.Apply(form);
+
             return;
         }
 
