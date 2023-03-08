@@ -2431,7 +2431,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("CPU GFX", 6, 2, 2));
+                        v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("3VSB", 7, 34, 34));
                         v.Add(new Voltage("VBat", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9));
@@ -2467,7 +2467,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
-                        v.Add(new Voltage("CPU GFX", 6, 2, 2));
+                        v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
                         v.Add(new Voltage("VBat", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9));
@@ -2596,6 +2596,40 @@ internal sealed class SuperIOHardware : Hardware
                                                         $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
                                                         "Expected counts of cans controls and fan speed registers to be equal");
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Ctrl(fanControlNames[i], i));
+
+                        break;
+
+                    case Model.ROG_MAXIMUS_X_HERO_WIFI_AC:      //NCT6793D
+                        v.Add(new Voltage("Vcore", 0, 2, 2));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("CPU Graphics", 6, 2, 2));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("DIMM", 10, 1, 1));
+                        v.Add(new Voltage("VCCSA", 11));
+                        v.Add(new Voltage("PCH Core", 12));
+                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("CPU VCCIO/IMC", 14));
+                        t.Add(new Temperature("CPU (PECI)", 0));
+                        t.Add(new Temperature("T2", 1));
+                        t.Add(new Temperature("Motherboard", 2));       //Verified via BIOS and HWinfo. HWinfo had T1 and Motherboard, but thye were the same.
+                        t.Add(new Temperature("Temperature #3", 4));
+                        t.Add(new Temperature("Temperature #4", 5));
+                        t.Add(new Temperature("Temperature #5", 6));
+
+                        // note: CPU_Opt, W_Pump+, EXT_FAN 1 & 2 are on the ASUS EC controller. Together with VRM og PCH temperatures. And additional voltages and power
+                        fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "AIO Pump", "HAMP" };
 
                         for (int i = 0; i < fanControlNames.Length; i++)
                             f.Add(new Fan(fanControlNames[i], i));
