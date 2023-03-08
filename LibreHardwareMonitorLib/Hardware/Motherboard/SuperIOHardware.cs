@@ -2617,7 +2617,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("CPU GFX", 6, 2, 2));
+                        v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("3VSB", 7, 34, 34));
                         v.Add(new Voltage("VBat", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9));
