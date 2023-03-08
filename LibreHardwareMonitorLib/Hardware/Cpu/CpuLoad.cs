@@ -39,27 +39,35 @@ internal class CpuLoad
 
     private static bool GetTimes(out long[] idle, out long[] total)
     {
-        Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] information = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
-        int size = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
-
         idle = null;
         total = null;
 
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation,
-                                                   information,
-                                                   information.Length * size,
-                                                   out IntPtr returnLength) != 0)
+        //Query processor idle information
+        Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
+        int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
+        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
         {
             return false;
         }
 
-        idle = new long[(int)returnLength / size];
-        total = new long[(int)returnLength / size];
+        //Query processor performance information
+        Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
+        int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
+        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation, perfInformation, perfInformation.Length * perfSize, out int perfReturn) != 0)
+        {
+            return false;
+        }
 
+        idle = new long[idleReturn / idleSize];
         for (int i = 0; i < idle.Length; i++)
         {
-            idle[i] = information[i].IdleTime;
-            total[i] = information[i].KernelTime + information[i].UserTime;
+            idle[i] = idleInformation[i].IdleTime;
+        }
+
+        total = new long[perfReturn / perfSize];
+        for (int i = 0; i < total.Length; i++)
+        {
+            total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
         }
 
         return true;

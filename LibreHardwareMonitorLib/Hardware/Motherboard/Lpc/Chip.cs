@@ -29,6 +29,7 @@ internal enum Chip : ushort
 
     IT8613E = 0x8613,
     IT8620E = 0x8620,
+    IT8625E = 0x8625,
     IT8628E = 0x8628,
     IT8631E = 0x8631,
     IT8655E = 0x8655,
@@ -62,8 +63,10 @@ internal enum Chip : ushort
     NCT6796DR = 0xD42A,
     NCT6797D = 0xD451,
     NCT6798D = 0xD42B,
+    NCT6686D = 0xD440,
     NCT6687D = 0xD592,
-    NCT6683D = 0xc732,
+    NCT6683D = 0xC732,
+    NCT6799D = 0xD802,
 
     W83627DHG = 0xA020,
     W83627DHGP = 0xB070,
@@ -95,6 +98,7 @@ internal class ChipName
             case Chip.F71808E: return "Fintek F71808E";
             case Chip.IT8613E: return "ITE IT8613E";
             case Chip.IT8620E: return "ITE IT8620E";
+            case Chip.IT8625E: return "ITE IT8625E";
             case Chip.IT8628E: return "ITE IT8628E";
             case Chip.IT8631E: return "ITE IT8631E";
             case Chip.IT8655E: return "ITE IT8655E";
@@ -128,6 +132,8 @@ internal class ChipName
             case Chip.NCT6796DR: return "Nuvoton NCT6796D-R";
             case Chip.NCT6797D: return "Nuvoton NCT6797D";
             case Chip.NCT6798D: return "Nuvoton NCT6798D";
+            case Chip.NCT6799D: return "Nuvoton NCT6799D";
+            case Chip.NCT6686D: return "Nuvoton NCT6686D";
             case Chip.NCT6687D: return "Nuvoton NCT6687D";
             case Chip.NCT6683D: return "Nuvoton NCT6683D";
 

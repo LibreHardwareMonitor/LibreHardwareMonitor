@@ -169,6 +169,11 @@ internal class Sensor : ISensor
         Max = null;
     }
 
+    public void ClearValues()
+    {
+        _values.Clear();
+    }
+
     public void Accept(IVisitor visitor)
     {
         if (visitor == null)

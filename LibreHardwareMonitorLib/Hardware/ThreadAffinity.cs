@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael MÃ¶ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -34,24 +34,25 @@ internal static class ThreadAffinity
     /// <returns><c>true</c> if the specified affinity is valid; otherwise, <c>false</c>.</returns>
     public static bool IsValid(GroupAffinity affinity)
     {
-        if (Software.OperatingSystem.IsUnix && affinity.Group > 0)
+        if (Software.OperatingSystem.IsUnix)
         {
-            return false;
-        }
-
-        try
-        {
-            GroupAffinity previousAffinity = Set(affinity);
-            if (previousAffinity == GroupAffinity.Undefined)
+            if (affinity.Group > 0)
                 return false;
 
-            Set(previousAffinity);
             return true;
         }
-        catch
+
+        UIntPtr uIntPtrMask;
+        try
+        {
+            uIntPtrMask = (UIntPtr)affinity.Mask;
+        }
+        catch (OverflowException)
         {
             return false;
         }
+
+        return true;
     }
 
     /// <summary>
@@ -94,25 +95,13 @@ internal static class ThreadAffinity
 
         IntPtr currentThread = Kernel32.GetCurrentThread();
 
-        try
+        if (Kernel32.SetThreadGroupAffinity(currentThread,
+                                            ref groupAffinity,
+                                            out Kernel32.GROUP_AFFINITY previousGroupAffinity))
         {
-            if (Kernel32.SetThreadGroupAffinity(currentThread,
-                                                ref groupAffinity,
-                                                out Kernel32.GROUP_AFFINITY previousGroupAffinity))
-            {
-                return new GroupAffinity(previousGroupAffinity.Group, (ulong)previousGroupAffinity.Mask);
-            }
-
-            return GroupAffinity.Undefined;
+            return new GroupAffinity(previousGroupAffinity.Group, (ulong)previousGroupAffinity.Mask);
         }
-        catch (EntryPointNotFoundException)
-        {
-            if (affinity.Group > 0)
-                throw new ArgumentOutOfRangeException(nameof(affinity));
 
-            ulong previous = (ulong)Kernel32.SetThreadAffinityMask(currentThread, uIntPtrMask);
-
-            return new GroupAffinity(0, previous);
-        }
+        return GroupAffinity.Undefined;
     }
 }
