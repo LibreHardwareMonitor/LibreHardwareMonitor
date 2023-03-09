@@ -6,7 +6,9 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
+using System.Threading;
 
 // ReSharper disable once InconsistentNaming
 
@@ -30,16 +32,18 @@ internal class IT87XX : ISuperIO
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[MaxFanHeaders];
     private readonly byte _version;
     private readonly float _voltageGain;
+    private GigabyteController _gigabyteController;
 
     private bool SupportsMultipleBanks => _bankCount > 1;
 
-    public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version)
+    public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, GigabyteController gigabyteController)
     {
         _address = address;
         _version = version;
         _addressReg = (ushort)(address + ADDRESS_REGISTER_OFFSET);
         _dataReg = (ushort)(address + DATA_REGISTER_OFFSET);
         _gpioAddress = gpioAddress;
+        _gigabyteController = gigabyteController;
 
         Chip = chip;
 
@@ -84,12 +88,12 @@ internal class IT87XX : ISuperIO
             Chip.IT8686E or
             Chip.IT8688E or
             Chip.IT8689E or
-            Chip.IT8695E or
+            Chip.IT8795E or
             Chip.IT8628E or
             Chip.IT8625E or
             Chip.IT8620E or
             Chip.IT8613E or
-            Chip.IT879XE or
+            Chip.IT8792E or
             Chip.IT8655E or
             Chip.IT8631E;
 
@@ -144,7 +148,7 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[6];
                 break;
 
-            case Chip.IT8695E:
+            case Chip.IT8795E:
                 Voltages = new float?[6];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
@@ -158,7 +162,7 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[3];
                 break;
 
-            case Chip.IT879XE:
+            case Chip.IT8792E:
                 Voltages = new float?[9];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
@@ -187,8 +191,8 @@ internal class IT87XX : ISuperIO
         _voltageGain = chip switch
         {
             Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
-            Chip.IT8625E or Chip.IT8695E => 0.011f,
-            Chip.IT8655E or Chip.IT8665E or Chip.IT879XE => 0.0109f,
+            Chip.IT8625E or Chip.IT8795E => 0.011f,
+            Chip.IT8655E or Chip.IT8665E or Chip.IT8792E => 0.0109f,
             _ => 0.016f
         };
 
@@ -259,6 +263,10 @@ internal class IT87XX : ISuperIO
         if (value.HasValue)
         {
             SaveDefaultFanPwmControl(index);
+
+            // Disable the controller when setting values to prevent it from overriding them
+            if (_gigabyteController != null)
+                _gigabyteController.Enable(false);
 
             if (index < 3 && !_initialFanOutputModeEnabled[index])
                 WriteByte(FAN_MAIN_CTRL_REG, (byte)(ReadByte(FAN_MAIN_CTRL_REG, out _) | (1 << index)));
@@ -539,6 +547,10 @@ internal class IT87XX : ISuperIO
                 WriteByte(FAN_PWM_CTRL_EXT_REG[index], _initialFanPwmControlExt[index]);
 
             _restoreDefaultFanPwmControlRequired[index] = false;
+
+            // restore the GB controller when all fans become restored
+            if (_gigabyteController != null && _restoreDefaultFanPwmControlRequired.All(e => e == false))
+                _gigabyteController.Restore();
         }
     }
 

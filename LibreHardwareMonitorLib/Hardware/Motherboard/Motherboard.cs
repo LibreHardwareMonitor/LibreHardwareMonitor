@@ -35,21 +35,21 @@ public class Motherboard : IHardware
         _settings = settings;
         SMBios = smBios;
 
-        Manufacturer manufacturer = smBios.Board == null ? Manufacturer.Unknown : Identification.GetManufacturer(smBios.Board.ManufacturerName);
-        Model model = smBios.Board == null ? Model.Unknown : Identification.GetModel(smBios.Board.ProductName);
+        Manufacturer = smBios.Board == null ? Manufacturer.Unknown : Identification.GetManufacturer(smBios.Board.ManufacturerName);
+        Model = smBios.Board == null ? Model.Unknown : Identification.GetModel(smBios.Board.ProductName);
 
         if (smBios.Board != null)
         {
             if (!string.IsNullOrEmpty(smBios.Board.ProductName))
             {
-                if (manufacturer == Manufacturer.Unknown)
+                if (Manufacturer == Manufacturer.Unknown)
                     _name = smBios.Board.ProductName;
                 else
-                    _name = manufacturer + " " + smBios.Board.ProductName;
+                    _name = Manufacturer + " " + smBios.Board.ProductName;
             }
             else
             {
-                _name = manufacturer.ToString();
+                _name = Manufacturer.ToString();
             }
         }
         else
@@ -66,15 +66,15 @@ public class Motherboard : IHardware
         }
         else
         {
-            _lpcIO = new LpcIO();
+            _lpcIO = new LpcIO(this);
             superIO = _lpcIO.SuperIO;
         }
 
-        EmbeddedController embeddedController = EmbeddedController.Create(model, settings);
+        EmbeddedController embeddedController = EmbeddedController.Create(Model, settings);
 
         SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
         for (int i = 0; i < superIO.Count; i++)
-            SubHardware[i] = new SuperIOHardware(this, superIO[i], manufacturer, model, settings);
+            SubHardware[i] = new SuperIOHardware(this, superIO[i], Manufacturer, Model, settings);
 
         if (embeddedController != null)
             SubHardware[superIO.Count] = embeddedController;
@@ -135,6 +135,16 @@ public class Motherboard : IHardware
 
     /// <inheritdoc/>
     public IHardware[] SubHardware { get; }
+
+    /// <summary>
+    /// Gets the <see cref="LibreHardwareMonitor.Hardware.Motherboard.Manufacturer"/>.
+    /// </summary>
+    public Manufacturer Manufacturer { get; private set; }
+
+    /// <summary>
+    /// Gets the <see cref="LibreHardwareMonitor.Hardware.Motherboard.Model"/>.
+    /// </summary>
+    public Model Model { get; private set; }
 
     /// <inheritdoc/>
     public string GetReport()

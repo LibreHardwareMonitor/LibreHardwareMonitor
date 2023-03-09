@@ -82,6 +82,40 @@ internal static class InpOut
         return null;
     }
 
+    public static bool WriteMemory(IntPtr baseAddress, byte value)
+    {
+        if (_mapPhysToLin == null || _unmapPhysicalMemory == null)
+            return false;
+
+        IntPtr pdwLinAddr = _mapPhysToLin(baseAddress, 1, out IntPtr pPhysicalMemoryHandle);
+        if (pdwLinAddr == IntPtr.Zero)
+            return false;
+
+        Marshal.WriteByte(pdwLinAddr, value);
+        _unmapPhysicalMemory(pPhysicalMemoryHandle, pdwLinAddr);
+
+        return true;
+    }
+
+    public static IntPtr MapMemory(IntPtr baseAddress, uint size, out IntPtr handle)
+    {
+        if (_mapPhysToLin == null)
+        {
+            handle = IntPtr.Zero;
+            return IntPtr.Zero;
+        }
+
+        return _mapPhysToLin(baseAddress, size, out handle);
+    }
+
+    public static bool UnmapMemory(IntPtr handle, IntPtr address)
+    {
+        if (_unmapPhysicalMemory == null)
+            return false;
+
+        return _unmapPhysicalMemory(handle, address);
+    }
+
     private static void Delete()
     {
         try

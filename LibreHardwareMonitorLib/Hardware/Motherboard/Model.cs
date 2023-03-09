@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard;
 
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
-internal enum Model
+public enum Model
 {
     // ASRock
     _880GMH_USB3,
@@ -109,6 +109,7 @@ internal enum Model
     AX370_Gaming_5,
     AX370_Gaming_K7,
     B360_AORUS_GAMING_3_WIFI_CF,
+    B550_AORUS_PRO,
     B560M_AORUS_ELITE,
     B560M_AORUS_PRO,
     B560M_AORUS_PRO_AX,
