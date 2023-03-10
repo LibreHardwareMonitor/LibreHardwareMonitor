@@ -45,6 +45,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _runWebServer;
     private readonly UserRadioGroup _sensorValuesTimeWindow;
     private readonly PersistentSettings _settings;
+    private readonly string _settingsFilePath;
     private readonly UserOption _showGadget;
     private readonly StartupManager _startupManager = new();
     private readonly SystemTray _systemTray;
@@ -63,8 +64,31 @@ public sealed partial class MainForm : Form
     {
         InitializeComponent();
 
+        string filePath = Path.ChangeExtension(Application.ExecutablePath, ".config");
+        DirectoryInfo di1 = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        DirectoryInfo di2 = new DirectoryInfo(Application.ExecutablePath);
+        bool isParent = false;
+        while (di2.Parent != null)
+        {
+            if (di2.Parent.FullName == di1.FullName)
+            {
+                isParent = true;
+                break;
+            }
+            else di2 = di2.Parent;
+        }
+        if(isParent)
+        {
+            _settingsFilePath = filePath;
+        }
+        else
+        {
+            _settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                            typeof(Program).Assembly.GetName().Name, Path.GetFileName(filePath));
+        }
+        
         _settings = new PersistentSettings();
-        _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
+        _settings.Load((File.Exists(_settingsFilePath) && !isParent) ? _settingsFilePath : filePath);
 
         _unitManager = new UnitManager(_settings);
 
@@ -768,16 +792,15 @@ public sealed partial class MainForm : Form
         _settings.SetValue("authenticationUserName", Server.UserName);
         _settings.SetValue("authenticationPassword", Server.Password);
 
-        string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
-
         try
         {
-            _settings.Save(fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(_settingsFilePath));
+            _settings.Save(_settingsFilePath);
         }
         catch (UnauthorizedAccessException)
         {
             MessageBox.Show("Access to the path '" +
-                            fileName +
+                            _settingsFilePath +
                             "' is denied. " +
                             "The current settings could not be saved.",
                             "Error",
@@ -787,7 +810,7 @@ public sealed partial class MainForm : Form
         catch (IOException)
         {
             MessageBox.Show("The path '" +
-                            fileName +
+                            _settingsFilePath +
                             "' is not writeable. " +
                             "The current settings could not be saved.",
                             "Error",
