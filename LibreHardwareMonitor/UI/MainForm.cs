@@ -68,6 +68,7 @@ public sealed partial class MainForm : Form
         DirectoryInfo di1 = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
         DirectoryInfo di2 = new DirectoryInfo(Application.ExecutablePath);
         bool isParent = false;
+
         while (di2.Parent != null)
         {
             if (di2.Parent.FullName == di1.FullName)
@@ -77,19 +78,22 @@ public sealed partial class MainForm : Form
             }
             else di2 = di2.Parent;
         }
-        if(isParent)
+
+        _settings = new PersistentSettings();
+
+        if (isParent || File.Exists(filePath))
         {
             _settingsFilePath = filePath;
+            _settings.Load(filePath);
         }
         else
         {
             _settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                                             typeof(Program).Assembly.GetName().Name, Path.GetFileName(filePath));
+
+            _settings.Load(File.Exists(_settingsFilePath) ? _settingsFilePath : filePath);
         }
         
-        _settings = new PersistentSettings();
-        _settings.Load((File.Exists(_settingsFilePath) && !isParent) ? _settingsFilePath : filePath);
-
         _unitManager = new UnitManager(_settings);
 
         // make sure the buffers used for double buffering are not disposed
