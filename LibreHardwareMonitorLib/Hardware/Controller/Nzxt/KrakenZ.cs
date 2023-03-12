@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+using System;
 using System.Threading;
 using HidSharp;
 
@@ -14,7 +13,6 @@ internal sealed class KrakenZ : Hardware
     private static readonly byte[] _setPumpSpeedHeader = { 0x72, 0x01, 0x00, 0x00 };
     private static readonly byte[] _setFanSpeedHeader = { 0x72, 0x02, 0x00, 0x00 };
     private static readonly byte[] _status_req = { 0x74, 0x01 };
-
     private static readonly byte[] _setPumpTarget = new byte[64];
     private static readonly byte[] _setFanTarget = new byte[64];
 
@@ -37,13 +35,11 @@ internal sealed class KrakenZ : Hardware
     static KrakenZ()
     {
         // Init pump control target array
-        Array.Clear(_setPumpTarget, 0, _setPumpTarget.Length);
         Array.Copy(_setPumpSpeedHeader, 0, _setPumpTarget, 0, 4);
         // Fill target array with a pump duty of 60%
         FillTargetArray(_setPumpTarget, 60);
 
         // Init fan control target array
-        Array.Clear(_setFanTarget, 0, _setFanTarget.Length);
         Array.Copy(_setFanSpeedHeader, 0, _setFanTarget, 0, 4);
         // Fill target array with a fan duty of 40%
         FillTargetArray(_setFanTarget, 40);
@@ -220,4 +216,3 @@ internal sealed class KrakenZ : Hardware
         }
     }
 }
-
