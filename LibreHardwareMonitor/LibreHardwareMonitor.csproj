@@ -74,4 +74,9 @@
     <None Include="Resources\app.manifest" />
     <None Include="Resources\icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="LibreHardwareMonitor.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
