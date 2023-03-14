@@ -140,7 +140,8 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_fullscreenFps);
         }
 
-        if (AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive_Caps)) &&
+            AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             _overdriveApiSupported = supported == AtiAdlxx.ADL_TRUE;
             _currentOverdriveApiLevel = version;
