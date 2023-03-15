@@ -44,7 +44,6 @@ internal class CpuLoad
         idle = null;
         total = null;
 
-        #region Windows
         if (!Software.OperatingSystem.IsUnix)
         {
             //Query processor idle information
@@ -75,8 +74,6 @@ internal class CpuLoad
                 total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
             }
         }
-        #endregion
-        #region Linux CPU Load
         if (Software.OperatingSystem.IsUnix)
         {
             List<long> idleList = new();
@@ -134,7 +131,6 @@ internal class CpuLoad
             idle = idleList.ToArray();
             total = totalList.ToArray();
         }
-        #endregion
 
         return true;
     }
