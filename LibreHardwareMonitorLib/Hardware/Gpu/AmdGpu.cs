@@ -442,6 +442,7 @@ internal sealed class AmdGpu : GenericGpu
     /// <param name="sensorType">Type of the sensor.</param>
     /// <param name="sensor">The sensor.</param>
     /// <param name="factor">The factor.</param>
+    /// <param name="reset">If set to <c>true</c>, resets the sensor value to <c>null</c>.</param>
     private void GetPMLog(AtiAdlxx.ADLPMLogDataOutput data, AtiAdlxx.ADLSensorType sensorType, Sensor sensor, float factor = 1.0f, bool reset = true)
     {
         int i = (int)sensorType;

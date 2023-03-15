@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Management;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
+using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -15,7 +16,7 @@ internal static class WindowsStorage
 {
     public static Storage.StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
     {
-        using SafeHandle handle = Kernel32.OpenDevice(deviceId);
+        using SafeFileHandle handle = Kernel32.OpenDevice(deviceId);
 
         if (handle?.IsInvalid != false)
             return null;
