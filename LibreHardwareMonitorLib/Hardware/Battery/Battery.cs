@@ -169,7 +169,7 @@ internal sealed class Battery : Hardware
                     break;
                 case < 0:
                     _chargeDischargeRate.Name = "Discharge Rate";
-                    _chargeDischargeRate.Value = Math.Abs(batteryStatus.Rate) / 1000f;
+                    _chargeDischargeRate.Value = Math.Abs(batteryStatus.Rate / 1000f);
 
                     _chargeDischargeCurrent.Name = "Discharge Current";
                     _chargeDischargeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
