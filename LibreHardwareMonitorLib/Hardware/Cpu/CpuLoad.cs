@@ -96,7 +96,7 @@ internal class CpuLoad
                 {
                     cpuid = Convert.ToInt32(overall[0][3]);
                 }
-                catch (System.Exception)
+                catch
                 {
                     // ignore
                 }
@@ -105,7 +105,7 @@ internal class CpuLoad
                 {
                     _idle = Convert.ToInt64(overall[4]);
                 }
-                catch (Exception)
+                catch
                 {
                     _idle = 0;
                 }
@@ -153,7 +153,7 @@ internal class CpuLoad
         if (!GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
             return;
 
-        int minDiff = Software.OperatingSystem.IsUnix ? 100 : 100000 ;
+        int minDiff = Software.OperatingSystem.IsUnix ? 100 : 100000;
         for (int i = 0; i < Math.Min(newTotalTimes.Length, _totalTimes.Length); i++)
         {
             if (newTotalTimes[i] - _totalTimes[i] < minDiff)
