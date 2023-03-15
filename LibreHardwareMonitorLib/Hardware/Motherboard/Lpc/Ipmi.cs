@@ -11,94 +11,6 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
-// Ported from ipmiutil
-[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-unsafe struct IpmiSdr
-{
-    [MarshalAs(UnmanagedType.U2)]
-    public ushort recid;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sdrver;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte rectype;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte reclen;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_ownid;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_ownlun;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_num;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte entity_id;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte entity_inst;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_init;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_capab;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_type;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte ev_type;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 6)]
-    public string data1;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_units;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_base;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_mod;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte linear;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte m;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte m_t;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte b;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte b_a;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte a_ax;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte rx_bx;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte flags;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte nom_reading;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte norm_max;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte norm_min;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_max_reading;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte sens_min_reading;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte unr_threshold;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte ucr_threshold;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte unc_threshold;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte lnr_threshold;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte lcr_threshold;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte lnc_threshold;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte pos_hysteresis;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte neg_hysteresis;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 3)]
-    public string data3;
-    [MarshalAs(UnmanagedType.U1)]
-    public byte id_strlen;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
-    public string id_string;
-}
-
 internal class Ipmi : ISuperIO
 {
     public Chip Chip { get; }
@@ -121,7 +33,7 @@ internal class Ipmi : ISuperIO
     private List<float> _temperatures = new();
     private List<float> _voltages = new();
 
-    private List<IpmiSdr> _sdr = new();
+    private List<Interop.Ipmi.Sdr> _sdr = new();
 
     private Manufacturer _motherboardManufacturer;
 
@@ -210,7 +122,11 @@ internal class Ipmi : ISuperIO
         }
     }
 
-    public void Update() { Update(null); }
+    public void Update()
+    {
+        Update(null);
+    }
+
     private void Update(StringBuilder? debugSB = null)
     {
         _fans.Clear();
@@ -235,12 +151,12 @@ internal class Ipmi : ISuperIO
                         recordLower = sdrRaw[1];
                         recordUpper = sdrRaw[2];
 
-                        IpmiSdr sdr;
+                        Interop.Ipmi.Sdr sdr;
                         unsafe
                         {
                             fixed (byte* pSdr = sdrRaw)
                             {
-                                sdr = (IpmiSdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(IpmiSdr));
+                                sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
                             }
                         }
                         _sdr.Add(sdr);
@@ -258,7 +174,7 @@ internal class Ipmi : ISuperIO
             }
         }
 
-        foreach (IpmiSdr sdr in _sdr)
+        foreach (Interop.Ipmi.Sdr sdr in _sdr)
         {
             if (sdr.rectype == 1)
             {
@@ -369,29 +285,40 @@ internal class Ipmi : ISuperIO
 
     // Ported from ipmiutil
     // Bare minimum to read Supermicro X13 IPMI sensors, may need expanding for other boards
-    float RawToFloat(byte sensorReading, IpmiSdr sdr)
+    float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
     {
         double floatval = (double)sensorReading;
         int m, b, a;
         int ax;
         int rx, b_exp;
-        int signval;
 
         m = sdr.m + ((sdr.m_t & 0xc0) << 2);
+        if (Convert.ToBoolean(m & 0x0200))
+        {
+            m = (m - 0x0400);
+        }
+
         b = sdr.b + ((sdr.b_a & 0xc0) << 2);
-        if (Convert.ToBoolean(b & 0x0200)) b = (b - 0x0400);  /*negative*/
-        if (Convert.ToBoolean(m & 0x0200)) m = (m - 0x0400);  /*negative*/
+        if (Convert.ToBoolean(b & 0x0200))
+        {
+            b = (b - 0x0400);
+        }
+
         rx = (sdr.rx_bx & 0xf0) >> 4;
-        if (Convert.ToBoolean(rx & 0x08)) rx = (rx - 0x10); /*negative*/
-        a = (sdr.b_a & 0x3f) + ((sdr.a_ax & 0xf0) << 2);
-        ax = (sdr.a_ax & 0x0c) >> 2;
+        if (Convert.ToBoolean(rx & 0x08))
+        {
+            rx = (rx - 0x10);
+        }
+
         b_exp = (sdr.rx_bx & 0x0f);
-        if (Convert.ToBoolean(b_exp & 0x08)) b_exp = (b_exp - 0x10);  /*negative*/
+        if (Convert.ToBoolean(b_exp & 0x08))
+        {
+            b_exp = (b_exp - 0x10);
+        }
 
         if ((sdr.sens_units & 0xc0) != 0)
         {
-            if (Convert.ToBoolean(sensorReading & 0x80)) signval = (sensorReading - 0x100);
-            else signval = sensorReading;
+            int signval = Convert.ToBoolean(sensorReading & 0x80) ? (sensorReading - 0x100) : sensorReading;
             floatval = (double)signval;
         }
         floatval *= (double)m;
