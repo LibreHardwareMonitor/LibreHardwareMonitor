@@ -40,6 +40,14 @@ internal class NzxtGroup : IGroup
                     _report.AppendLine();
                     _hardware.Add(gridv3);
                     break;
+                case 0x3008: // NZXT KrakenZ Device
+                    var krakenZ = new KrakenZ(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {krakenZ.FirmwareVersion}");
+                    _report.AppendLine($"{krakenZ.Status}");
+                    _report.AppendLine();
+                    _hardware.Add(krakenZ);
+                    break;
 
                 default:
                     _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");

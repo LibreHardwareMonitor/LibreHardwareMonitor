@@ -782,7 +782,7 @@ namespace LibreHardwareMonitor.UI
             this.timeWindow2hMenuItem.CheckOnClick = true;
             this.timeWindow2hMenuItem.Name = "timeWindow2hMenuItem";
             this.timeWindow2hMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.timeWindow2hMenuItem.Text = "2n";
+            this.timeWindow2hMenuItem.Text = "2h";
             // 
             // timeWindow6hMenuItem
             // 

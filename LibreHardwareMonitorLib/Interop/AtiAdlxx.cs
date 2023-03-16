@@ -125,6 +125,10 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Overdrive6_Capabilities_Get(IntPtr context, int adapterIndex, ref ADLOD6Capabilities lpODCapabilities);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Overdrive6_CurrentPower_Get(IntPtr context, int adapterIndex, ADLODNCurrentPowerType powerType, ref int currentValue);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -362,64 +366,76 @@ internal static class AtiAdlxx
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLODParameterRange
     {
-        public int Min;
-        public int Max;
-        public int Step;
+        public int iMin;
+        public int iMax;
+        public int iStep;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLODParameters
     {
-        public int Size;
-        public int NumberOfPerformanceLevels;
-        public int ActivityReportingSupported;
-        public int DiscretePerformanceLevels;
-        public int Reserved;
-        public ADLODParameterRange EngineClock;
-        public ADLODParameterRange MemoryClock;
-        public ADLODParameterRange Vddc;
+        public int iSize;
+        public int iNumberOfPerformanceLevels;
+        public int iActivityReportingSupported;
+        public int iDiscretePerformanceLevels;
+        public int iReserved;
+        public ADLODParameterRange sEngineClock;
+        public ADLODParameterRange sMemoryClock;
+        public ADLODParameterRange sVddc;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLOD6Capabilities
+    {
+        public int iCapabilities;
+        public int iSupportedStates;
+        public int iNumberOfPerformanceLevels;
+        public ADLODParameterRange sEngineClockRange;
+        public ADLODParameterRange sMemoryClockRange;
+        public int iExtValue;
+        public int iExtMask;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLPMActivity
     {
-        public int Size;
-        public int EngineClock;
-        public int MemoryClock;
-        public int Vddc;
-        public int ActivityPercent;
-        public int CurrentPerformanceLevel;
-        public int CurrentBusSpeed;
-        public int CurrentBusLanes;
-        public int MaximumBusLanes;
-        public int Reserved;
+        public int iSize;
+        public int iEngineClock;
+        public int iMemoryClock;
+        public int iVddc;
+        public int iActivityPercent;
+        public int iCurrentPerformanceLevel;
+        public int iCurrentBusSpeed;
+        public int iCurrentBusLanes;
+        public int iMaximumBusLanes;
+        public int iReserved;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLTemperature
     {
-        public int Size;
-        public int Temperature;
+        public int iSize;
+        public int iTemperature;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLFanSpeedValue
     {
-        public int Size;
-        public int SpeedType;
-        public int FanSpeed;
-        public int Flags;
+        public int iSize;
+        public int iSpeedType;
+        public int iFanSpeed;
+        public int iFlags;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLFanSpeedInfo
     {
-        public int Size;
-        public int Flags;
-        public int MinPercent;
-        public int MaxPercent;
-        public int MinRPM;
-        public int MaxRPM;
+        public int iSize;
+        public int iFlags;
+        public int iMinPercent;
+        public int iMaxPercent;
+        public int iMinRPM;
+        public int iMaxRPM;
     }
 
     internal enum ADLODNCurrentPowerType
@@ -446,24 +462,24 @@ internal static class AtiAdlxx
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLODNPerformanceStatus
     {
-        public int CoreClock;
-        public int MemoryClock;
-        public int DCEFClock;
-        public int GFXClock;
-        public int UVDClock;
-        public int VCEClock;
-        public int GPUActivityPercent;
-        public int CurrentCorePerformanceLevel;
-        public int CurrentMemoryPerformanceLevel;
-        public int CurrentDCEFPerformanceLevel;
-        public int CurrentGFXPerformanceLevel;
-        public int UVDPerformanceLevel;
-        public int VCEPerformanceLevel;
-        public int CurrentBusSpeed;
-        public int CurrentBusLanes;
-        public int MaximumBusLanes;
-        public int VDDC;
-        public int VDDCI;
+        public int iCoreClock;
+        public int iMemoryClock;
+        public int iDCEFClock;
+        public int iGFXClock;
+        public int iUVDClock;
+        public int iVCEClock;
+        public int iGPUActivityPercent;
+        public int iCurrentCorePerformanceLevel;
+        public int iCurrentMemoryPerformanceLevel;
+        public int iCurrentDCEFPerformanceLevel;
+        public int iCurrentGFXPerformanceLevel;
+        public int iUVDPerformanceLevel;
+        public int iVCEPerformanceLevel;
+        public int iCurrentBusSpeed;
+        public int iCurrentBusLanes;
+        public int iMaximumBusLanes;
+        public int iVDDC;
+        public int iVDDCI;
     }
 
     internal enum ADLODNTemperatureType
