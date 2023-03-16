@@ -80,9 +80,9 @@ public class Kernel32
         return result;
     }
 
-    internal static SafeHandle OpenDevice(string devicePath)
+    internal static SafeFileHandle OpenDevice(string devicePath)
     {
-        SafeHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+        SafeFileHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
         if (hDevice.IsInvalid || hDevice.IsClosed)
             hDevice = null;
 
@@ -214,6 +214,20 @@ public class Kernel32
         IntPtr lpInBuffer,
         int nInBufferSize,
         IntPtr lpOutBuffer,
+        int nOutBufferSize,
+        out uint lpBytesReturned,
+        IntPtr lpOverlapped);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DeviceIoControl
+    (
+        SafeHandle hDevice,
+        IOCTL dwIoControlCode,
+        IntPtr lpInBuffer,
+        int nInBufferSize,
+        out DISK_PERFORMANCE lpOutBuffer,
         int nOutBufferSize,
         out uint lpBytesReturned,
         IntPtr lpOverlapped);
@@ -395,6 +409,7 @@ public class Kernel32
         IOCTL_SCSI_MINIPORT = 0x04d008,
         IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014,
         IOCTL_SCSI_GET_ADDRESS = 0x41018,
+        IOCTL_DISK_PERFORMANCE = 0x70020,
         IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400,
         IOCTL_BATTERY_QUERY_TAG = 0x294040,
         IOCTL_BATTERY_QUERY_INFORMATION = 0x294044,
@@ -880,6 +895,49 @@ public class Kernel32
         public uint SerialNumberOffset;
         public STORAGE_BUS_TYPE BusType;
         public uint RawPropertiesLength;
+    }
+    
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct DISK_PERFORMANCE
+    {
+        /// <nodoc />
+        public ulong BytesRead;
+
+        /// <nodoc />
+        public ulong BytesWritten;
+
+        /// <nodoc />
+        public ulong ReadTime;
+
+        /// <nodoc />
+        public ulong WriteTime;
+
+        /// <nodoc />
+        public ulong IdleTime;
+
+        /// <nodoc />
+        public uint ReadCount;
+
+        /// <nodoc />
+        public uint WriteCount;
+
+        /// <nodoc />
+        public uint QueueDepth;
+
+        /// <nodoc />
+        public uint SplitCount;
+
+        /// <nodoc />
+        public ulong QueryTime;
+
+        /// <nodoc />
+        public int StorageDeviceNumber;
+
+        /// <nodoc />
+        public long StorageManagerName0;
+
+        /// <nodoc />
+        public long StorageManagerName1;
     }
 
     [StructLayout(LayoutKind.Sequential)]

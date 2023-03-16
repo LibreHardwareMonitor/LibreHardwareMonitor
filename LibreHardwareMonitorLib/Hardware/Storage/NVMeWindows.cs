@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
+using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -94,7 +95,7 @@ internal class NVMeWindows : INVMeDrive
 
     public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
     {
-        SafeHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
+        SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
         if (handle?.IsInvalid != false)
             return null;
 

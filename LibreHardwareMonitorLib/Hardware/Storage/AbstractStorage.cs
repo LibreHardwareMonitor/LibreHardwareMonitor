@@ -5,10 +5,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Management;
+using System.Runtime.InteropServices;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 
@@ -21,16 +21,15 @@ public abstract class AbstractStorage : Hardware
     private readonly StorageInfo _storageInfo;
     private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
 
-    private ulong _lastReadRateCounter;
-    private double _lastTime;
+    private ulong _lastReadCount;
+    private long _lastTime;
     private DateTime _lastUpdate = DateTime.MinValue;
-    private ulong _lastWriteRateCounter;
+    private ulong _lastWriteCount;
     private Sensor _sensorDiskReadRate;
     private Sensor _sensorDiskTotalActivity;
     private Sensor _sensorDiskWriteActivity;
     private Sensor _sensorDiskWriteRate;
     private Sensor _usageSensor;
-    private int _wmiFailureCount;
 
     internal AbstractStorage(StorageInfo storageInfo, string name, string firmwareRevision, string id, int index, ISettings settings)
         : base(name, new Identifier(id, index.ToString(CultureInfo.InvariantCulture)), settings)
@@ -69,19 +68,24 @@ public abstract class AbstractStorage : Hardware
 
     public int Index { get; }
 
+    /// <inheritdoc />
+    public override void Close()
+    {
+        _storageInfo.Handle?.Close();
+        base.Close();
+    }
+
     public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
     {
         StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
-        if (info == null)
+        if (info == null || info.Removable || info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
             return null;
 
         info.DiskSize = diskSize;
         info.DeviceId = deviceId;
+        info.Handle = Kernel32.OpenDevice(deviceId);
         info.Scsi = $@"\\.\SCSI{scsiPort}:";
-
-        if (info.Removable || info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
-            return null;
-
+        
         //fallback, when it is not possible to read out with the nvme implementation,
         //try it with the sata smart implementation
         if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
@@ -119,78 +123,22 @@ public abstract class AbstractStorage : Hardware
 
     protected abstract void UpdateSensors();
 
-    private void UpdateStatisticsFromWmi(int driveIndex)
-    {
-        string query = $"SELECT * FROM Win32_PerfRawData_PerfDisk_PhysicalDisk Where Name LIKE \"{driveIndex}%\"";
-
-        using var perfData = new ManagementObjectSearcher(query) { Options = { Timeout = TimeSpan.FromSeconds(7.5) } };
-        using ManagementObjectCollection collection = perfData.Get();
-        using ManagementObject data = collection.OfType<ManagementObject>().FirstOrDefault();
-
-        if (data == null)
-            return;
-
-        ulong value = (ulong)data.Properties["PercentDiskWriteTime"].Value;
-        ulong valueBase = (ulong)data.Properties["PercentDiskWriteTime_Base"].Value;
-        _perfWrite.Update(value, valueBase);
-        _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
-
-        value = (ulong)data.Properties["PercentIdleTime"].Value;
-        valueBase = (ulong)data.Properties["PercentIdleTime_Base"].Value;
-        _perfTotal.Update(value, valueBase);
-        _sensorDiskTotalActivity.Value = (float)(100.0 - _perfTotal.Result);
-
-        ulong readRateCounter = (ulong)data.Properties["DiskReadBytesPerSec"].Value;
-        ulong readRate = readRateCounter - _lastReadRateCounter;
-        _lastReadRateCounter = readRateCounter;
-
-        ulong writeRateCounter = (ulong)data.Properties["DiskWriteBytesPerSec"].Value;
-        ulong writeRate = writeRateCounter - _lastWriteRateCounter;
-        _lastWriteRateCounter = writeRateCounter;
-
-        ulong timestampPerfTime = (ulong)data.Properties["Timestamp_PerfTime"].Value;
-        ulong frequencyPerfTime = (ulong)data.Properties["Frequency_Perftime"].Value;
-        double currentTime = (double)timestampPerfTime / frequencyPerfTime;
-
-        double timeDeltaSeconds = currentTime - _lastTime;
-        if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-        {
-            double writeSpeed = writeRate * (1 / timeDeltaSeconds);
-            _sensorDiskWriteRate.Value = (float)writeSpeed;
-
-            double readSpeed = readRate * (1 / timeDeltaSeconds);
-            _sensorDiskReadRate.Value = (float)readSpeed;
-        }
-
-        if (_lastTime == 0 || timeDeltaSeconds > 0.2)
-            _lastTime = currentTime;
-    }
-
     public override void Update()
     {
-        const int wmiRetries = 10;
-
-        //update statistics from WMI on every update
-        if (_storageInfo != null && _wmiFailureCount <= wmiRetries)
+        // Update statistics.
+        if (_storageInfo != null)
         {
             try
             {
-                UpdateStatisticsFromWmi(_storageInfo.Index);
-                _wmiFailureCount = 0;
+                UpdatePerformanceSensors();
             }
             catch
             {
-                if (++_wmiFailureCount == wmiRetries)
-                {
-                    DeactivateSensor(_sensorDiskTotalActivity);
-                    DeactivateSensor(_sensorDiskWriteActivity);
-                    DeactivateSensor(_sensorDiskReadRate);
-                    DeactivateSensor(_sensorDiskWriteRate);
-                }
+                // Ignored.
             }
         }
 
-        //read out with updateInterval
+        // Read out at update interval.
         TimeSpan tDiff = DateTime.UtcNow - _lastUpdate;
         if (tDiff > _updateInterval)
         {
@@ -220,11 +168,54 @@ public abstract class AbstractStorage : Hardware
                 }
 
                 if (totalSize > 0)
-                    _usageSensor.Value = 100.0f - ((100.0f * totalFreeSpace) / totalSize);
+                    _usageSensor.Value = 100.0f - (100.0f * totalFreeSpace / totalSize);
                 else
                     _usageSensor.Value = null;
             }
         }
+    }
+
+    private void UpdatePerformanceSensors()
+    {
+        if (!Kernel32.DeviceIoControl(_storageInfo.Handle,
+                                      Kernel32.IOCTL.IOCTL_DISK_PERFORMANCE,
+                                      IntPtr.Zero,
+                                      0,
+                                      out Kernel32.DISK_PERFORMANCE diskPerformance,
+                                      Marshal.SizeOf<Kernel32.DISK_PERFORMANCE>(),
+                                      out _,
+                                      IntPtr.Zero))
+        {
+            return;
+        }
+
+        _perfWrite.Update(diskPerformance.WriteTime, diskPerformance.QueryTime);
+        _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
+
+        _perfTotal.Update(diskPerformance.IdleTime, diskPerformance.QueryTime);
+        _sensorDiskTotalActivity.Value = (float)(100 - _perfTotal.Result);
+
+        ulong readCount = diskPerformance.BytesRead;
+        ulong readDiff = readCount - _lastReadCount;
+        _lastReadCount = readCount;
+
+        ulong writeCount = diskPerformance.BytesWritten;
+        ulong writeDiff = writeCount - _lastWriteCount;
+        _lastWriteCount = writeCount;
+
+        long currentTime = Stopwatch.GetTimestamp();
+        if (_lastTime != 0)
+        {
+            double timeDeltaSeconds = TimeSpan.FromTicks(currentTime - _lastTime).TotalSeconds;
+
+            double writeSpeed = writeDiff * (1 / timeDeltaSeconds);
+            _sensorDiskWriteRate.Value = (float)writeSpeed;
+
+            double readSpeed = readDiff * (1 / timeDeltaSeconds);
+            _sensorDiskReadRate.Value = (float)readSpeed;
+        }
+
+        _lastTime = currentTime;
     }
 
     protected abstract void GetReport(StringBuilder r);

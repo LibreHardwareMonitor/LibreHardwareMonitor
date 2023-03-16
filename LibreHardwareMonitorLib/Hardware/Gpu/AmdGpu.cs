@@ -132,6 +132,12 @@ internal sealed class AmdGpu : GenericGpu
         int enabled = 0;
         int version = 0;
 
+        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Main_Control_Create)) &&
+            AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterInfo.AdapterIndex, ref _context) != AtiAdlxx.ADLStatus.ADL_OK)
+        {
+            _context = IntPtr.Zero;
+        }
+
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) &&
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK && supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
         {
@@ -140,31 +146,47 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_fullscreenFps);
         }
 
-        if (AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive_Caps)) &&
+            AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             _overdriveApiSupported = supported == AtiAdlxx.ADL_TRUE;
             _currentOverdriveApiLevel = version;
         }
         else
         {
-            _currentOverdriveApiLevel = -1;
-        }
-
-        if (_currentOverdriveApiLevel >= 5 &&
-            AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Main_Control_Create)) &&
-            AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterInfo.AdapterIndex, ref _context) != AtiAdlxx.ADLStatus.ADL_OK)
-        {
-            _context = IntPtr.Zero;
+            if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Overdrive6_Capabilities_Get)))
+            {
+                AtiAdlxx.ADLOD6Capabilities capabilities = new();
+                if (AtiAdlxx.ADL2_Overdrive6_Capabilities_Get(_context, _adapterInfo.AdapterIndex, ref capabilities) == AtiAdlxx.ADLStatus.ADL_OK && capabilities.iCapabilities > 0)
+                {
+                    _overdriveApiSupported = true;
+                    _currentOverdriveApiLevel = 6;
+                }
+            }
+            
+            if (!_overdriveApiSupported)
+            {
+                if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive5_ODParameters_Get)) &&
+                    AtiAdlxx.ADL_Overdrive5_ODParameters_Get(_adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p) == AtiAdlxx.ADLStatus.ADL_OK && p.iActivityReportingSupported > 0)
+                {
+                    _overdriveApiSupported = true;
+                    _currentOverdriveApiLevel = 5;
+                }
+                else
+                {
+                    _currentOverdriveApiLevel = -1;
+                }
+            }
         }
 
         AtiAdlxx.ADLFanSpeedInfo fanSpeedInfo = new();
         if (AtiAdlxx.ADL_Overdrive5_FanSpeedInfo_Get(_adapterInfo.AdapterIndex, 0, ref fanSpeedInfo) != AtiAdlxx.ADLStatus.ADL_OK)
         {
-            fanSpeedInfo.MaxPercent = 100;
-            fanSpeedInfo.MinPercent = 0;
+            fanSpeedInfo.iMaxPercent = 100;
+            fanSpeedInfo.iMinPercent = 0;
         }
 
-        _fanControl = new Control(_controlSensor, settings, fanSpeedInfo.MinPercent, fanSpeedInfo.MaxPercent);
+        _fanControl = new Control(_controlSensor, settings, fanSpeedInfo.iMinPercent, fanSpeedInfo.iMaxPercent);
         _fanControl.ControlModeChanged += ControlModeChanged;
         _fanControl.SoftwareControlValueChanged += SoftwareControlValueChanged;
         ControlModeChanged(_fanControl);
@@ -191,7 +213,9 @@ internal sealed class AmdGpu : GenericGpu
         {
             AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new()
             {
-                SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT, Flags = AtiAdlxx.ADL_DL_FANCTRL_FLAG_USER_DEFINED_SPEED, FanSpeed = (int)control.SoftwareValue
+                iSpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT,
+                iFlags = AtiAdlxx.ADL_DL_FANCTRL_FLAG_USER_DEFINED_SPEED,
+                iFanSpeed = (int)control.SoftwareValue
             };
 
             AtiAdlxx.ADL_Overdrive5_FanSpeed_Set(_adapterInfo.AdapterIndex, 0, ref fanSpeedValue);
@@ -334,9 +358,9 @@ internal sealed class AmdGpu : GenericGpu
         AtiAdlxx.ADLPMActivity adlpmActivity = new();
         if (AtiAdlxx.ADL_Overdrive5_CurrentActivity_Get(_adapterInfo.AdapterIndex, ref adlpmActivity) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            if (adlpmActivity.EngineClock > 0)
+            if (adlpmActivity.iEngineClock > 0)
             {
-                _coreClock.Value = 0.01f * adlpmActivity.EngineClock;
+                _coreClock.Value = 0.01f * adlpmActivity.iEngineClock;
                 ActivateSensor(_coreClock);
             }
             else
@@ -344,9 +368,9 @@ internal sealed class AmdGpu : GenericGpu
                 _coreClock.Value = null;
             }
 
-            if (adlpmActivity.MemoryClock > 0)
+            if (adlpmActivity.iMemoryClock > 0)
             {
-                _memoryClock.Value = 0.01f * adlpmActivity.MemoryClock;
+                _memoryClock.Value = 0.01f * adlpmActivity.iMemoryClock;
                 ActivateSensor(_memoryClock);
             }
             else
@@ -354,9 +378,9 @@ internal sealed class AmdGpu : GenericGpu
                 _memoryClock.Value = null;
             }
 
-            if (adlpmActivity.Vddc > 0)
+            if (adlpmActivity.iVddc > 0)
             {
-                _coreVoltage.Value = 0.001f * adlpmActivity.Vddc;
+                _coreVoltage.Value = 0.001f * adlpmActivity.iVddc;
                 ActivateSensor(_coreVoltage);
             }
             else
@@ -364,7 +388,7 @@ internal sealed class AmdGpu : GenericGpu
                 _coreVoltage.Value = null;
             }
 
-            _coreLoad.Value = Math.Min(adlpmActivity.ActivityPercent, 100);
+            _coreLoad.Value = Math.Min(adlpmActivity.iActivityPercent, 100);
             ActivateSensor(_coreLoad);
         }
         else
@@ -378,10 +402,10 @@ internal sealed class AmdGpu : GenericGpu
 
     private void GetOD5FanSpeed(int speedType, Sensor sensor)
     {
-        AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new() { SpeedType = speedType };
+        AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new() { iSpeedType = speedType };
         if (AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref fanSpeedValue) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            sensor.Value = fanSpeedValue.FanSpeed;
+            sensor.Value = fanSpeedValue.iFanSpeed;
             ActivateSensor(sensor);
         }
         else
@@ -395,7 +419,7 @@ internal sealed class AmdGpu : GenericGpu
         AtiAdlxx.ADLTemperature temperature = new();
         if (AtiAdlxx.ADL_Overdrive5_Temperature_Get(_adapterInfo.AdapterIndex, 0, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            temperatureCore.Value = 0.001f * temperature.Temperature;
+            temperatureCore.Value = 0.001f * temperature.iTemperature;
             ActivateSensor(temperatureCore);
         }
         else
@@ -441,6 +465,7 @@ internal sealed class AmdGpu : GenericGpu
     /// <param name="sensorType">Type of the sensor.</param>
     /// <param name="sensor">The sensor.</param>
     /// <param name="factor">The factor.</param>
+    /// <param name="reset">If set to <c>true</c>, resets the sensor value to <c>null</c>.</param>
     private void GetPMLog(AtiAdlxx.ADLPMLogDataOutput data, AtiAdlxx.ADLSensorType sensorType, Sensor sensor, float factor = 1.0f, bool reset = true)
     {
         int i = (int)sensorType;
@@ -536,18 +561,18 @@ internal sealed class AmdGpu : GenericGpu
 
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
-            r.AppendFormat(" NumberOfPerformanceLevels: {0}{1}", p.NumberOfPerformanceLevels, Environment.NewLine);
-            r.AppendFormat(" ActivityReportingSupported: {0}{1}", p.ActivityReportingSupported, Environment.NewLine);
-            r.AppendFormat(" DiscretePerformanceLevels: {0}{1}", p.DiscretePerformanceLevels, Environment.NewLine);
-            r.AppendFormat(" EngineClock.Min: {0}{1}", p.EngineClock.Min, Environment.NewLine);
-            r.AppendFormat(" EngineClock.Max: {0}{1}", p.EngineClock.Max, Environment.NewLine);
-            r.AppendFormat(" EngineClock.Step: {0}{1}", p.EngineClock.Step, Environment.NewLine);
-            r.AppendFormat(" MemoryClock.Min: {0}{1}", p.MemoryClock.Min, Environment.NewLine);
-            r.AppendFormat(" MemoryClock.Max: {0}{1}", p.MemoryClock.Max, Environment.NewLine);
-            r.AppendFormat(" MemoryClock.Step: {0}{1}", p.MemoryClock.Step, Environment.NewLine);
-            r.AppendFormat(" Vddc.Min: {0}{1}", p.Vddc.Min, Environment.NewLine);
-            r.AppendFormat(" Vddc.Max: {0}{1}", p.Vddc.Max, Environment.NewLine);
-            r.AppendFormat(" Vddc.Step: {0}{1}", p.Vddc.Step, Environment.NewLine);
+            r.AppendFormat(" NumberOfPerformanceLevels: {0}{1}", p.iNumberOfPerformanceLevels, Environment.NewLine);
+            r.AppendFormat(" ActivityReportingSupported: {0}{1}", p.iActivityReportingSupported, Environment.NewLine);
+            r.AppendFormat(" DiscretePerformanceLevels: {0}{1}", p.iDiscretePerformanceLevels, Environment.NewLine);
+            r.AppendFormat(" EngineClock.Min: {0}{1}", p.sEngineClock.iMin, Environment.NewLine);
+            r.AppendFormat(" EngineClock.Max: {0}{1}", p.sEngineClock.iMax, Environment.NewLine);
+            r.AppendFormat(" EngineClock.Step: {0}{1}", p.sEngineClock.iStep, Environment.NewLine);
+            r.AppendFormat(" MemoryClock.Min: {0}{1}", p.sMemoryClock.iMin, Environment.NewLine);
+            r.AppendFormat(" MemoryClock.Max: {0}{1}", p.sMemoryClock.iMax, Environment.NewLine);
+            r.AppendFormat(" MemoryClock.Step: {0}{1}", p.sMemoryClock.iStep, Environment.NewLine);
+            r.AppendFormat(" Vddc.Min: {0}{1}", p.sVddc.iMin, Environment.NewLine);
+            r.AppendFormat(" Vddc.Max: {0}{1}", p.sVddc.iMax, Environment.NewLine);
+            r.AppendFormat(" Vddc.Step: {0}{1}", p.sVddc.iStep, Environment.NewLine);
         }
         catch (Exception e)
         {
@@ -564,7 +589,7 @@ internal sealed class AmdGpu : GenericGpu
             AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_Temperature_Get(_adapterInfo.AdapterIndex, 0, ref adlt);
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
-            r.AppendFormat(" Value: {0}{1}", 0.001f * adlt.Temperature, Environment.NewLine);
+            r.AppendFormat(" Value: {0}{1}", 0.001f * adlt.iTemperature, Environment.NewLine);
         }
         catch (Exception e)
         {
@@ -577,17 +602,17 @@ internal sealed class AmdGpu : GenericGpu
         r.AppendLine();
         try
         {
-            var adlf = new AtiAdlxx.ADLFanSpeedValue { SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM };
+            var adlf = new AtiAdlxx.ADLFanSpeedValue { iSpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM };
             AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref adlf);
             r.Append(" Status RPM: ");
             r.AppendLine(status.ToString());
-            r.AppendFormat(" Value RPM: {0}{1}", adlf.FanSpeed, Environment.NewLine);
+            r.AppendFormat(" Value RPM: {0}{1}", adlf.iFanSpeed, Environment.NewLine);
 
-            adlf.SpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT;
+            adlf.iSpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT;
             status = AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref adlf);
             r.Append(" Status Percent: ");
             r.AppendLine(status.ToString());
-            r.AppendFormat(" Value Percent: {0}{1}", adlf.FanSpeed, Environment.NewLine);
+            r.AppendFormat(" Value Percent: {0}{1}", adlf.iFanSpeed, Environment.NewLine);
         }
         catch (Exception e)
         {
@@ -605,14 +630,14 @@ internal sealed class AmdGpu : GenericGpu
 
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
-            r.AppendFormat(" EngineClock: {0}{1}", 0.01f * adlp.EngineClock, Environment.NewLine);
-            r.AppendFormat(" MemoryClock: {0}{1}", 0.01f * adlp.MemoryClock, Environment.NewLine);
-            r.AppendFormat(" Vddc: {0}{1}", 0.001f * adlp.Vddc, Environment.NewLine);
-            r.AppendFormat(" ActivityPercent: {0}{1}", adlp.ActivityPercent, Environment.NewLine);
-            r.AppendFormat(" CurrentPerformanceLevel: {0}{1}", adlp.CurrentPerformanceLevel, Environment.NewLine);
-            r.AppendFormat(" CurrentBusSpeed: {0}{1}", adlp.CurrentBusSpeed, Environment.NewLine);
-            r.AppendFormat(" CurrentBusLanes: {0}{1}", adlp.CurrentBusLanes, Environment.NewLine);
-            r.AppendFormat(" MaximumBusLanes: {0}{1}", adlp.MaximumBusLanes, Environment.NewLine);
+            r.AppendFormat(" EngineClock: {0}{1}", 0.01f * adlp.iEngineClock, Environment.NewLine);
+            r.AppendFormat(" MemoryClock: {0}{1}", 0.01f * adlp.iMemoryClock, Environment.NewLine);
+            r.AppendFormat(" Vddc: {0}{1}", 0.001f * adlp.iVddc, Environment.NewLine);
+            r.AppendFormat(" ActivityPercent: {0}{1}", adlp.iActivityPercent, Environment.NewLine);
+            r.AppendFormat(" CurrentPerformanceLevel: {0}{1}", adlp.iCurrentPerformanceLevel, Environment.NewLine);
+            r.AppendFormat(" CurrentBusSpeed: {0}{1}", adlp.iCurrentBusSpeed, Environment.NewLine);
+            r.AppendFormat(" CurrentBusLanes: {0}{1}", adlp.iCurrentBusLanes, Environment.NewLine);
+            r.AppendFormat(" MaximumBusLanes: {0}{1}", adlp.iMaximumBusLanes, Environment.NewLine);
         }
         catch (Exception e)
         {
@@ -625,6 +650,7 @@ internal sealed class AmdGpu : GenericGpu
         {
             r.AppendLine("Overdrive6 CurrentPower");
             r.AppendLine();
+
             try
             {
                 int power = 0;
@@ -687,24 +713,24 @@ internal sealed class AmdGpu : GenericGpu
 
                 r.Append(" Status: ");
                 r.AppendLine(status.ToString());
-                r.AppendFormat(" CoreClock: {0}{1}", ps.CoreClock, Environment.NewLine);
-                r.AppendFormat(" MemoryClock: {0}{1}", ps.MemoryClock, Environment.NewLine);
-                r.AppendFormat(" DCEFClock: {0}{1}", ps.DCEFClock, Environment.NewLine);
-                r.AppendFormat(" GFXClock: {0}{1}", ps.GFXClock, Environment.NewLine);
-                r.AppendFormat(" UVDClock: {0}{1}", ps.UVDClock, Environment.NewLine);
-                r.AppendFormat(" VCEClock: {0}{1}", ps.VCEClock, Environment.NewLine);
-                r.AppendFormat(" GPUActivityPercent: {0}{1}", ps.GPUActivityPercent, Environment.NewLine);
-                r.AppendFormat(" CurrentCorePerformanceLevel: {0}{1}", ps.CurrentCorePerformanceLevel, Environment.NewLine);
-                r.AppendFormat(" CurrentMemoryPerformanceLevel: {0}{1}", ps.CurrentMemoryPerformanceLevel, Environment.NewLine);
-                r.AppendFormat(" CurrentDCEFPerformanceLevel: {0}{1}", ps.CurrentDCEFPerformanceLevel, Environment.NewLine);
-                r.AppendFormat(" CurrentGFXPerformanceLevel: {0}{1}", ps.CurrentGFXPerformanceLevel, Environment.NewLine);
-                r.AppendFormat(" UVDPerformanceLevel: {0}{1}", ps.UVDPerformanceLevel, Environment.NewLine);
-                r.AppendFormat(" VCEPerformanceLevel: {0}{1}", ps.VCEPerformanceLevel, Environment.NewLine);
-                r.AppendFormat(" CurrentBusSpeed: {0}{1}", ps.CurrentBusSpeed, Environment.NewLine);
-                r.AppendFormat(" CurrentBusLanes: {0}{1}", ps.CurrentBusLanes, Environment.NewLine);
-                r.AppendFormat(" MaximumBusLanes: {0}{1}", ps.MaximumBusLanes, Environment.NewLine);
-                r.AppendFormat(" VDDC: {0}{1}", ps.VDDC, Environment.NewLine);
-                r.AppendFormat(" VDDCI: {0}{1}", ps.VDDCI, Environment.NewLine);
+                r.AppendFormat(" CoreClock: {0}{1}", ps.iCoreClock, Environment.NewLine);
+                r.AppendFormat(" MemoryClock: {0}{1}", ps.iMemoryClock, Environment.NewLine);
+                r.AppendFormat(" DCEFClock: {0}{1}", ps.iDCEFClock, Environment.NewLine);
+                r.AppendFormat(" GFXClock: {0}{1}", ps.iGFXClock, Environment.NewLine);
+                r.AppendFormat(" UVDClock: {0}{1}", ps.iUVDClock, Environment.NewLine);
+                r.AppendFormat(" VCEClock: {0}{1}", ps.iVCEClock, Environment.NewLine);
+                r.AppendFormat(" GPUActivityPercent: {0}{1}", ps.iGPUActivityPercent, Environment.NewLine);
+                r.AppendFormat(" CurrentCorePerformanceLevel: {0}{1}", ps.iCurrentCorePerformanceLevel, Environment.NewLine);
+                r.AppendFormat(" CurrentMemoryPerformanceLevel: {0}{1}", ps.iCurrentMemoryPerformanceLevel, Environment.NewLine);
+                r.AppendFormat(" CurrentDCEFPerformanceLevel: {0}{1}", ps.iCurrentDCEFPerformanceLevel, Environment.NewLine);
+                r.AppendFormat(" CurrentGFXPerformanceLevel: {0}{1}", ps.iCurrentGFXPerformanceLevel, Environment.NewLine);
+                r.AppendFormat(" UVDPerformanceLevel: {0}{1}", ps.iUVDPerformanceLevel, Environment.NewLine);
+                r.AppendFormat(" VCEPerformanceLevel: {0}{1}", ps.iVCEPerformanceLevel, Environment.NewLine);
+                r.AppendFormat(" CurrentBusSpeed: {0}{1}", ps.iCurrentBusSpeed, Environment.NewLine);
+                r.AppendFormat(" CurrentBusLanes: {0}{1}", ps.iCurrentBusLanes, Environment.NewLine);
+                r.AppendFormat(" MaximumBusLanes: {0}{1}", ps.iMaximumBusLanes, Environment.NewLine);
+                r.AppendFormat(" VDDC: {0}{1}", ps.iVDDC, Environment.NewLine);
+                r.AppendFormat(" VDDCI: {0}{1}", ps.iVDDCI, Environment.NewLine);
             }
             catch (EntryPointNotFoundException)
             {

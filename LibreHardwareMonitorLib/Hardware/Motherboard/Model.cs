@@ -34,6 +34,7 @@ internal enum Model
     X570_Pro4,
     X570_Taichi,
     X570_Phantom_Gaming_ITX,
+    Z790_Taichi,
 
     // ASUS
     CROSSHAIR_III_FORMULA,
@@ -50,6 +51,7 @@ internal enum Model
     ROG_STRIX_B550_F_GAMING_WIFI,
     ROG_STRIX_B550_I_GAMING,
     ROG_STRIX_Z690_A_GAMING_WIFI_D4,
+    ROG_MAXIMUS_X_HERO_WIFI_AC,
     ROG_MAXIMUS_Z690_FORMULA,
     ROG_MAXIMUS_Z690_HERO,
     ROG_MAXIMUS_Z690_EXTREME_GLACIAL,
@@ -82,6 +84,7 @@ internal enum Model
 
     //BIOSTAR
     B660GTN,
+    X670E_Valkyrie,
 
     // DFI
     LP_BI_P45_T2RS_Elite,
