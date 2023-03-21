@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal class CpuLoad
 {

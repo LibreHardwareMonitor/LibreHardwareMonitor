@@ -7,7 +7,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using LibreHardwareMonitor.Hardware.CPU;
+using LibreHardwareMonitor.Hardware.Cpu;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 

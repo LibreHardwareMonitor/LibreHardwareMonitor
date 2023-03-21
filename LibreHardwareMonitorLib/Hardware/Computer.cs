@@ -15,7 +15,7 @@ using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
 using LibreHardwareMonitor.Hardware.Controller.Nzxt;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
-using LibreHardwareMonitor.Hardware.CPU;
+using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal sealed class Amd17Cpu : AmdCpu
 {
