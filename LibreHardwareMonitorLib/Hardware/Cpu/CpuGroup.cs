@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal class CpuGroup : IGroup
 {

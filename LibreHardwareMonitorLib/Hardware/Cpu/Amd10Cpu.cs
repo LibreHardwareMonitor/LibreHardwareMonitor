@@ -12,7 +12,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal sealed class Amd10Cpu : AmdCpu
 {

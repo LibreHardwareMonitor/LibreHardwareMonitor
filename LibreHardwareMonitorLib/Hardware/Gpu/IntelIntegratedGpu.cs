@@ -22,7 +22,7 @@ internal class IntelIntegratedGpu : GenericGpu
     private uint _lastEnergyConsumed;
     private DateTime _lastEnergyTime;
 
-    public IntelIntegratedGpu(CPU.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
+    public IntelIntegratedGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
                new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
                settings)

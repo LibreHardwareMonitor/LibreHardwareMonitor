@@ -7,7 +7,7 @@
 using System;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 public enum Vendor
 {
