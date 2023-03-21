@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.Hardware.CPU;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -19,10 +20,7 @@ internal class LpcIO
 
     public LpcIO(Motherboard motherboard)
     {
-        if (!Ring0.IsOpen)
-            return;
-
-        if (!Ring0.WaitIsaBusMutex(100))
+        if (!Ring0.IsOpen || !Ring0.WaitIsaBusMutex(100))
             return;
 
         Detect(motherboard);
@@ -641,17 +639,15 @@ internal class LpcIO
         // The controller only affects the 2nd ITE chip if present, and only a few
         // models are known to use this controller.
         // IT8795E likely to need this too, but may use different registers.
-        if (motherboard.Manufacturer != Manufacturer.Gigabyte
-            || port.RegisterPort != 0x4E
-            || !(chip == Chip.IT8790E || chip == Chip.IT8792E /* || chip == Chip.IT8795E */))
+        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E))
             return null;
-        
+
         port.Select(IT87XX_SMFI_LDN);
 
         // Check if the SMFI logical device is enabled
-        var enabled = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+        byte enabled = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
         Thread.Sleep(1);
-        var enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+        byte enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
 
         // The EC has no SMFI or it's RAM access is not enabled, assume the controller is not present
         if (enabled != enabledVerify || enabled == 0)
@@ -666,23 +662,34 @@ internal class LpcIO
             return null;
 
         // Address is xryy, Host Address is FFyyx000
-        uint hostAddress = 0xFF000000
-            | (address & 0xF000)
-            | (address & 0xFF) << 0x10;
+        uint hostAddress = 0xFF000000 | (address & 0xF000) | (address & 0xFF) << 0x10;
 
-        return new GigabyteController(hostAddress, motherboard.SMBios.Processors[0].Family);
+        return new GigabyteController(hostAddress, DetectVendor());
+
+        Vendor DetectVendor()
+        {
+            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
+            if (manufacturer.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+                return Vendor.Intel;
+
+            if (manufacturer.Contains("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+                return Vendor.AMD;
+
+            return Vendor.Unknown;
+        }
     }
 
     // ReSharper disable InconsistentNaming
     private const byte BASE_ADDRESS_REGISTER = 0x60;
     private const byte CHIP_ID_REGISTER = 0x20;
     private const byte CHIP_REVISION_REGISTER = 0x21;
-    
+
     private const byte F71858_HARDWARE_MONITOR_LDN = 0x02;
     private const byte FINTEK_HARDWARE_MONITOR_LDN = 0x04;
     private const byte IT87_ENVIRONMENT_CONTROLLER_LDN = 0x04;
     private const byte IT8705_GPIO_LDN = 0x05;
     private const byte IT87XX_GPIO_LDN = 0x07;
+
     // Shared Memory/Flash Interface
     private const byte IT87XX_SMFI_LDN = 0x0F;
     private const byte WINBOND_NUVOTON_HARDWARE_MONITOR_LDN = 0x0B;
