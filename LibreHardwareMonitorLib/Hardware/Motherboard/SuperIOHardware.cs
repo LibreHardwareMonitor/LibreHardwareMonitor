@@ -442,6 +442,27 @@ internal sealed class SuperIOHardware : Hardware
 
                 break;
 
+            case Chip.IPMI:
+                Ipmi ipmi = (Ipmi)superIO;
+                for (int i = 0; i < ipmi.TemperatureNames.Count; ++i)
+                {
+                    t.Add(new Temperature(ipmi.TemperatureNames[i], i));
+                }
+                for (int i = 0; i < ipmi.FanNames.Count; ++i)
+                {
+                    f.Add(new Fan(ipmi.FanNames[i], i));
+                }
+                for (int i = 0; i < ipmi.VoltageNames.Count; ++i)
+                {
+                    v.Add(new Voltage(ipmi.VoltageNames[i], i));
+                }
+                for (int i = 0; i < ipmi.ControlNames.Count; ++i)
+                {
+                    c.Add(new Ctrl(ipmi.ControlNames[i], i));
+                }
+
+                break;
+
             default:
                 GetDefaultConfiguration(superIO, v, t, f, c);
                 break;
