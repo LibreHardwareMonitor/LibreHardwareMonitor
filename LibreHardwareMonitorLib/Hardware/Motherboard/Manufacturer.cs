@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-internal enum Manufacturer
+public enum Manufacturer
 {
     Abit,
     Acer,
