@@ -669,10 +669,10 @@ internal class LpcIO
         Vendor DetectVendor()
         {
             string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
-            if (manufacturer.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
                 return Vendor.Intel;
 
-            if (manufacturer.Contains("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
                 return Vendor.AMD;
 
             return Vendor.Unknown;
