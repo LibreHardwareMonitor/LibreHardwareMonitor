@@ -13,66 +13,55 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class Ipmi : ISuperIO
 {
-    public Chip Chip { get; }
+    // ReSharper disable InconsistentNaming
+    private const byte COMMAND_FAN_LEVEL = 0x70;
+    private const byte COMMAND_FAN_MODE = 0x45;
+    private const byte COMMAND_GET_SDR = 0x23;
+    private const byte COMMAND_GET_SDR_REPOSITORY_INFO = 0x20;
+    private const byte COMMAND_GET_SENSOR_READING = 0x2d;
 
-    public float?[] Controls { get; } = Array.Empty<float?>();
+    private const byte FAN_MODE_FULL = 0x01;
+    private const byte FAN_MODE_OPTIMAL = 0x02;
 
-    public float?[] Fans { get; } = Array.Empty<float?>();
+    private const byte NETWORK_FUNCTION_SENSOR_EVENT = 0x04;
+    private const byte NETWORK_FUNCTION_STORAGE = 0x0a;
+    private const byte NETWORK_FUNCTION_SUPERMICRO = 0x30;
+    // ReSharper restore InconsistentNaming
 
-    public float?[] Temperatures { get; } = Array.Empty<float?>();
+    private readonly List<string> _controlNames = new();
+    private readonly List<float> _controls = new();
+    private readonly List<string> _fanNames = new();
+    private readonly List<float> _fans = new();
 
-    public float?[] Voltages { get; } = Array.Empty<float?>();
+    private readonly ManagementObject _ipmi;
+    private readonly Manufacturer _manufacturer;
 
-    public readonly List<string> FanNames = new();
-    public readonly List<string> TemperatureNames = new();
-    public readonly List<string> VoltageNames = new();
-    public readonly List<string> ControlNames = new();
+    private readonly List<Interop.Ipmi.Sdr> _sdr = new();
+    private readonly List<string> _temperatureNames = new();
+    private readonly List<float> _temperatures = new();
+    private readonly List<string> _voltageNames = new();
+    private readonly List<float> _voltages = new();
 
-    private List<float> _controls = new();
-    private List<float> _fans = new();
-    private List<float> _temperatures = new();
-    private List<float> _voltages = new();
+    private bool _touchedFans;
 
-    private List<Interop.Ipmi.Sdr> _sdr = new();
-
-    private Manufacturer _motherboardManufacturer;
-
-    private ManagementObject _ipmi;
-
-    const byte COMMAND_GET_SDR_REPOSITORY_INFO = 0x20;
-    const byte COMMAND_RESERVE_SDR_REPOSITORY = 0x22;
-    const byte COMMAND_GET_SDR = 0x23;
-    const byte COMMAND_GET_SENSOR_READING = 0x2d;
-
-    const byte COMMAND_FAN_MODE = 0x45;
-    const byte COMMAND_FAN_LEVEL = 0x70;
-
-    const byte FAN_MODE_FULL = 0x01;
-    const byte FAN_MODE_OPTIMAL = 0x02;
-
-    const byte NETWORK_FUNCTION_SENSOR_EVENT = 0x04;
-    const byte NETWORK_FUNCTION_STORAGE = 0x0a;
-    const byte NETWORK_FUNCTION_SUPERMICRO = 0x30;
-
-    private bool _touchedFans = false;
-
-    public Ipmi(Manufacturer motherboardManufacturer)
+    public Ipmi(Manufacturer manufacturer)
     {
         Chip = Chip.IPMI;
-        _motherboardManufacturer = motherboardManufacturer;
+        _manufacturer = manufacturer;
 
-        ManagementClass ipmiClass = new ManagementClass("root\\WMI", "Microsoft_IPMI", null);
+        using ManagementClass ipmiClass = new("root\\WMI", "Microsoft_IPMI", null);
 
-        foreach (ManagementObject ipmi in ipmiClass.GetInstances())
+        foreach (ManagementBaseObject ipmi in ipmiClass.GetInstances())
         {
-            _ipmi = ipmi;
+            if (ipmi is ManagementObject managementObject)
+                _ipmi = managementObject;
         }
 
         // Fan control is exposed for Supermicro only as it differs between IPMI implementations
-        if (_motherboardManufacturer == Manufacturer.Supermicro)
+        if (_manufacturer == Manufacturer.Supermicro)
         {
-            ControlNames.Add("CPU Fan");
-            ControlNames.Add("System Fan");
+            _controlNames.Add("CPU Fan");
+            _controlNames.Add("System Fan");
         }
 
         // Perform an early update to count the number of sensors and get their names
@@ -84,6 +73,16 @@ internal class Ipmi : ISuperIO
         Voltages = new float?[_voltages.Count];
     }
 
+    public Chip Chip { get; }
+
+    public float?[] Controls { get; }
+
+    public float?[] Fans { get; }
+
+    public float?[] Temperatures { get; }
+
+    public float?[] Voltages { get; }
+
     public string GetReport()
     {
         StringBuilder sb = new();
@@ -93,7 +92,7 @@ internal class Ipmi : ISuperIO
 
     public void SetControl(int index, byte? value)
     {
-        if (_motherboardManufacturer == Manufacturer.Supermicro)
+        if (_manufacturer == Manufacturer.Supermicro)
         {
             if (value != null || _touchedFans)
             {
@@ -127,14 +126,14 @@ internal class Ipmi : ISuperIO
         Update(null);
     }
 
-    private void Update(StringBuilder? debugSB = null)
+    private unsafe void Update(StringBuilder stringBuilder)
     {
         _fans.Clear();
         _temperatures.Clear();
         _voltages.Clear();
         _controls.Clear();
 
-        if (_sdr.Count == 0 || debugSB != null)
+        if (_sdr.Count == 0 || stringBuilder != null)
         {
             byte[] sdrInfo = RunIPMICommand(COMMAND_GET_SDR_REPOSITORY_INFO, NETWORK_FUNCTION_STORAGE, new byte[] { });
             if (sdrInfo[0] == 0)
@@ -152,19 +151,15 @@ internal class Ipmi : ISuperIO
                         recordUpper = sdrRaw[2];
 
                         Interop.Ipmi.Sdr sdr;
-                        unsafe
+
+                        fixed (byte* pSdr = sdrRaw)
                         {
-                            fixed (byte* pSdr = sdrRaw)
-                            {
-                                sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
-                            }
+                            sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
                         }
+
                         _sdr.Add(sdr);
 
-                        if (debugSB != null)
-                        {
-                            debugSB.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
-                        }
+                        stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
                     }
                     else
                     {
@@ -178,7 +173,7 @@ internal class Ipmi : ISuperIO
         {
             if (sdr.rectype == 1)
             {
-                byte[] reading = RunIPMICommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, new byte[] { sdr.sens_num });
+                byte[] reading = RunIPMICommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, new[] { sdr.sens_num });
 
                 if (reading[0] == 0)
                 {
@@ -187,78 +182,90 @@ internal class Ipmi : ISuperIO
                         case 1:
                             _temperatures.Add(RawToFloat(reading[1], sdr));
                             if (Temperatures.Length == 0)
-                            {
-                                TemperatureNames.Add(sdr.id_string.Replace(" Temp", ""));
-                            }
+                                _temperatureNames.Add(sdr.id_string.Replace(" Temp", ""));
+
                             break;
 
                         case 2:
                             _voltages.Add(RawToFloat(reading[1], sdr));
                             if (Voltages.Length == 0)
-                            {
-                                VoltageNames.Add(sdr.id_string);
-                            }
+                                _voltageNames.Add(sdr.id_string);
+
                             break;
 
                         case 4:
                             _fans.Add(RawToFloat(reading[1], sdr));
                             if (Fans.Length == 0)
-                            {
-                                FanNames.Add(sdr.id_string);
-                            }
-                            break;
+                                _fanNames.Add(sdr.id_string);
 
-                        default:
                             break;
                     }
                 }
 
-                if (debugSB != null)
-                {
-                    debugSB.AppendLine("IPMI sensor num: " + sdr.sens_num + " reading: " + BitConverter.ToString(reading).Replace("-", ""));
-                }
+                stringBuilder?.AppendLine("IPMI sensor num: " + sdr.sens_num + " reading: " + BitConverter.ToString(reading).Replace("-", ""));
             }
         }
 
-        if (_motherboardManufacturer == Manufacturer.Supermicro)
+        if (_manufacturer == Manufacturer.Supermicro)
         {
-            for (int i = 0; i < ControlNames.Count; ++i)
+            for (int i = 0; i < _controlNames.Count; ++i)
             {
                 byte[] fanLevel = RunIPMICommand(COMMAND_FAN_LEVEL, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x66, 0x00 /* Get */, (byte)i });
                 if (fanLevel[0] == 0 && fanLevel.Length >= 2)
-                {
-                    _controls.Add((float)fanLevel[1]);
-                }
+                    _controls.Add(fanLevel[1]);
 
-                if (debugSB != null)
-                {
-                    debugSB.AppendLine("IPMI fan " + i + ": " + BitConverter.ToString(fanLevel).Replace("-", ""));
-                }
+                stringBuilder?.AppendLine("IPMI fan " + i + ": " + BitConverter.ToString(fanLevel).Replace("-", ""));
             }
         }
 
         for (int i = 0; i < Math.Min(_temperatures.Count, Temperatures.Length); ++i)
-        {
             Temperatures[i] = _temperatures[i];
-        }
+
         for (int i = 0; i < Math.Min(_voltages.Count, Voltages.Length); ++i)
-        {
             Voltages[i] = _voltages[i];
-        }
+
         for (int i = 0; i < Math.Min(_fans.Count, Fans.Length); ++i)
-        {
             Fans[i] = _fans[i];
-        }
+
         for (int i = 0; i < Math.Min(_controls.Count, Controls.Length); ++i)
-        {
             Controls[i] = _controls[i];
-        }
+    }
+
+    public IEnumerable<Temperature> GetTemperatures()
+    {
+        for (int i = 0; i < _temperatureNames.Count; i++)
+            yield return new Temperature(_temperatureNames[i], i);
+    }
+
+    public IEnumerable<Fan> GetFans()
+    {
+        for (int i = 0; i < _fanNames.Count; i++)
+            yield return new Fan(_fanNames[i], i);
+    }
+
+    public IEnumerable<Voltage> GetVoltages()
+    {
+        for (int i = 0; i < _voltageNames.Count; i++)
+            yield return new Voltage(_voltageNames[i], i);
+    }
+
+    public IEnumerable<Control> GetControls()
+    {
+        for (int i = 0; i < _controlNames.Count; i++)
+            yield return new Control(_controlNames[i], i);
     }
 
     public static bool IsBmcPresent()
     {
-        ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\WMI", "select * from Microsoft_IPMI where Active='True'");
-        return searcher.Get().Count > 0;
+        try
+        {
+            using ManagementObjectSearcher searcher = new("root\\WMI", "SELECT * FROM Microsoft_IPMI WHERE Active='True'");
+            return searcher.Get().Count > 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public byte? ReadGpio(int index)
@@ -267,71 +274,55 @@ internal class Ipmi : ISuperIO
     }
 
     public void WriteGpio(int index, byte value)
-    {
-    }
+    { }
 
     private byte[] RunIPMICommand(byte command, byte networkFunction, byte[] requestData)
     {
-        ManagementBaseObject inParams = _ipmi.GetMethodParameters("RequestResponse");
+        using ManagementBaseObject inParams = _ipmi.GetMethodParameters("RequestResponse");
+
         inParams["NetworkFunction"] = networkFunction;
         inParams["Lun"] = 0;
         inParams["ResponderAddress"] = 0x20;
         inParams["Command"] = command;
         inParams["RequestDataSize"] = requestData.Length;
         inParams["RequestData"] = requestData;
-        ManagementBaseObject outParams = _ipmi.InvokeMethod("RequestResponse", inParams, null);
+
+        using ManagementBaseObject outParams = _ipmi.InvokeMethod("RequestResponse", inParams, null);
         return (byte[])outParams["ResponseData"];
     }
-
+    
     // Ported from ipmiutil
     // Bare minimum to read Supermicro X13 IPMI sensors, may need expanding for other boards
-    float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
+    private static float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
     {
-        double floatval = (double)sensorReading;
-        int m, b, a;
-        int ax;
-        int rx, b_exp;
+        double reading = sensorReading;
 
-        m = sdr.m + ((sdr.m_t & 0xc0) << 2);
+        int m = sdr.m + ((sdr.m_t & 0xc0) << 2);
         if (Convert.ToBoolean(m & 0x0200))
-        {
-            m = (m - 0x0400);
-        }
+            m -= 0x0400;
 
-        b = sdr.b + ((sdr.b_a & 0xc0) << 2);
+        int b = sdr.b + ((sdr.b_a & 0xc0) << 2);
         if (Convert.ToBoolean(b & 0x0200))
-        {
-            b = (b - 0x0400);
-        }
+            b -= 0x0400;
 
-        rx = (sdr.rx_bx & 0xf0) >> 4;
+        int rx = (sdr.rx_bx & 0xf0) >> 4;
         if (Convert.ToBoolean(rx & 0x08))
-        {
-            rx = (rx - 0x10);
-        }
+            rx -= 0x10;
 
-        b_exp = (sdr.rx_bx & 0x0f);
-        if (Convert.ToBoolean(b_exp & 0x08))
-        {
-            b_exp = (b_exp - 0x10);
-        }
+        int bExp = sdr.rx_bx & 0x0f;
+        if (Convert.ToBoolean(bExp & 0x08))
+            bExp -= 0x10;
 
         if ((sdr.sens_units & 0xc0) != 0)
-        {
-            int signval = Convert.ToBoolean(sensorReading & 0x80) ? (sensorReading - 0x100) : sensorReading;
-            floatval = (double)signval;
-        }
-        floatval *= (double)m;
+            reading = Convert.ToBoolean(sensorReading & 0x80) ? sensorReading - 0x100 : sensorReading;
 
-        floatval += (b * Math.Pow(10, b_exp));
-        floatval *= Math.Pow(10, rx);
+        reading *= m;
+        reading += b * Math.Pow(10, bExp);
+        reading *= Math.Pow(10, rx);
 
         if (sdr.linear != 0)
-        {
             throw new NotImplementedException();
-        }
 
-        return (float)floatval;
+        return (float)reading;
     }
-
 }

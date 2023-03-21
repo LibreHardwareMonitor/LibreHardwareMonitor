@@ -28,9 +28,7 @@ internal class LpcIO
         Ring0.ReleaseIsaBusMutex();
 
         if (Ipmi.IsBmcPresent())
-        {
             _superIOs.Add(new Ipmi(motherboard.Manufacturer));
-        }
     }
 
     public ISuperIO[] SuperIO => _superIOs.ToArray();
