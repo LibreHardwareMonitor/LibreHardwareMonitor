@@ -14,7 +14,7 @@ internal class AdvApi32
 {
     private const string DllName = "advapi32.dll";
 
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
+    [DllImport(DllName, SetLastError = true, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern IntPtr OpenSCManager(string lpMachineName, string lpDatabaseName, SC_MANAGER_ACCESS_MASK dwDesiredAccess);
 

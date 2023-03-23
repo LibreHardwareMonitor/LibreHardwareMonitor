@@ -25,17 +25,15 @@ internal class KernelDriver
         _driverId = driverId;
     }
 
-    public bool IsOpen
-    {
-        get { return _device != null; }
-    }
+    public bool IsOpen => _device != null;
 
     public bool Install(string path, out string errorMessage)
     {
-        IntPtr manager = AdvApi32.OpenSCManager(null, null, AdvApi32.SC_MANAGER_ACCESS_MASK.SC_MANAGER_ALL_ACCESS);
+        IntPtr manager = AdvApi32.OpenSCManager(null, null, AdvApi32.SC_MANAGER_ACCESS_MASK.SC_MANAGER_CREATE_SERVICE);
         if (manager == IntPtr.Zero)
         {
-            errorMessage = "OpenSCManager returned zero.";
+            int errorCode = Marshal.GetLastWin32Error();
+            errorMessage = $"OpenSCManager returned the error code: {errorCode:X8}.";
             return false;
         }
 
@@ -55,24 +53,24 @@ internal class KernelDriver
 
         if (service == IntPtr.Zero)
         {
-            int error = Marshal.GetHRForLastWin32Error();
-            if (error == Kernel32.ERROR_SERVICE_EXISTS)
+            int errorCode = Marshal.GetLastWin32Error();
+            if (errorCode == Kernel32.ERROR_SERVICE_EXISTS)
             {
                 errorMessage = "Service already exists";
                 return false;
             }
 
-            errorMessage = "CreateService returned the error: " + Marshal.GetExceptionForHR(error).Message;
+            errorMessage = $"CreateService returned the error code: {errorCode:X8}.";
             AdvApi32.CloseServiceHandle(manager);
             return false;
         }
 
         if (!AdvApi32.StartService(service, 0, null))
         {
-            int error = Marshal.GetHRForLastWin32Error();
-            if (error != Kernel32.ERROR_SERVICE_ALREADY_RUNNING)
+            int errorCode = Marshal.GetLastWin32Error();
+            if (errorCode != Kernel32.ERROR_SERVICE_ALREADY_RUNNING)
             {
-                errorMessage = "StartService returned the error: " + Marshal.GetExceptionForHR(error).Message;
+                errorMessage = $"StartService returned the error code: {errorCode:X8}.";
                 AdvApi32.CloseServiceHandle(service);
                 AdvApi32.CloseServiceHandle(manager);
                 return false;
@@ -101,23 +99,17 @@ internal class KernelDriver
     public bool Open()
     {
         IntPtr fileHandle = Kernel32.CreateFile(@"\\.\" + _driverId, 0xC0000000, FileShare.None, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+
         _device = new SafeFileHandle(fileHandle, true);
         if (_device.IsInvalid)
-        {
-            _device.Close();
-            _device.Dispose();
-            _device = null;
-        }
+            Close();
 
         return _device != null;
     }
 
     public bool DeviceIOControl(Kernel32.IOControlCode ioControlCode, object inBuffer)
     {
-        if (_device == null)
-            return false;
-
-        return Kernel32.DeviceIoControl(_device, ioControlCode, inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer), null, 0, out uint _, IntPtr.Zero);
+        return _device != null && Kernel32.DeviceIoControl(_device, ioControlCode, inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer), null, 0, out uint _, IntPtr.Zero);
     }
 
     public bool DeviceIOControl<T>(Kernel32.IOControlCode ioControlCode, object inBuffer, ref T outBuffer)
@@ -170,7 +162,7 @@ internal class KernelDriver
 
     public bool Delete()
     {
-        IntPtr manager = AdvApi32.OpenSCManager(null, null, AdvApi32.SC_MANAGER_ACCESS_MASK.SC_MANAGER_ALL_ACCESS);
+        IntPtr manager = AdvApi32.OpenSCManager(null, null, AdvApi32.SC_MANAGER_ACCESS_MASK.SC_MANAGER_CONNECT);
         if (manager == IntPtr.Zero)
             return false;
 

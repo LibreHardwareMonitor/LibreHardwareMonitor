@@ -72,7 +72,7 @@ internal static class Ring0
                     }
                     else
                     {
-                        _report.Append("Status: Installing driver \"").Append(_filePath).Append("\" failed").AppendLine(File.Exists(_filePath) ? " and file exists" : string.Empty);
+                        _report.Append($"Status: Installing driver \"{_filePath}\" failed").AppendLine(File.Exists(_filePath) ? " and file exists" : string.Empty);
                         _report.Append("First Exception: ").AppendLine(installError);
                         _report.Append("Second Exception: ").AppendLine(secondError);
                     }
@@ -205,7 +205,9 @@ internal static class Ring0
             _filePath = null;
         }
         catch
-        { }
+        {
+            // Ignored.
+        }
     }
 
     private static string GetServiceName()
@@ -251,7 +253,7 @@ internal static class Ring0
 
     private static string GetFilePath()
     {
-        string filePath;
+        string filePath = null;
 
         try
         {
@@ -259,7 +261,7 @@ internal static class Ring0
             if (!string.IsNullOrEmpty(processModule?.FileName))
             {
                 filePath = Path.ChangeExtension(processModule.FileName, ".sys");
-                if (TryCreate(filePath))
+                if (CanCreate(filePath))
                     return filePath;
             }
         }
@@ -268,12 +270,14 @@ internal static class Ring0
             // Continue with the other options.
         }
 
+        string previousFilePath = filePath;
         filePath = GetPathFromAssembly(Assembly.GetExecutingAssembly());
-        if (!string.IsNullOrEmpty(filePath) && TryCreate(filePath))
+        if (previousFilePath != filePath && !string.IsNullOrEmpty(filePath) && CanCreate(filePath))
             return filePath;
 
+        previousFilePath = filePath;
         filePath = GetPathFromAssembly(typeof(Ring0).Assembly);
-        if (!string.IsNullOrEmpty(filePath) && TryCreate(filePath))
+        if (previousFilePath != filePath && !string.IsNullOrEmpty(filePath) && CanCreate(filePath))
             return filePath;
 
         try
@@ -282,7 +286,7 @@ internal static class Ring0
             if (!string.IsNullOrEmpty(filePath))
             {
                 filePath = Path.ChangeExtension(filePath, ".sys");
-                if (TryCreate(filePath))
+                if (CanCreate(filePath))
                     return filePath;
             }
         }
@@ -306,11 +310,11 @@ internal static class Ring0
             }
         }
 
-        static bool TryCreate(string path)
+        static bool CanCreate(string path)
         {
             try
             {
-                using (File.Create(path))
+                using (File.Create(path, 1, FileOptions.DeleteOnClose))
                     return true;
             }
             catch
