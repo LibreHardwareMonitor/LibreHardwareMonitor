@@ -233,7 +233,8 @@ public abstract class EmbeddedController : Hardware
             {
                 { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
                 { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) }
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
             }
         },
         {
