@@ -359,6 +359,8 @@ internal class Identification
                 return Model.B560M_AORUS_PRO;
             case var _ when name.Equals("B560M AORUS PRO AX", StringComparison.OrdinalIgnoreCase):
                 return Model.B560M_AORUS_PRO_AX;
+            case var _ when name.Equals("ROG STRIX Z390-F GAMING", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_Z390_F_GAMING;
             case var _ when name.Equals("ROG STRIX Z690-A GAMING WIFI D4", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4;
             case var _ when name.Equals("ROG MAXIMUS X HERO (WI-FI AC)", StringComparison.OrdinalIgnoreCase):

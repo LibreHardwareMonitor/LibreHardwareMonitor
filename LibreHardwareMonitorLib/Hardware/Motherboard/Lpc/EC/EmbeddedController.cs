@@ -137,6 +137,12 @@ public abstract class EmbeddedController : Hardware
             ECSensor.VoltageCPU,
             ECSensor.TempChipset,
             ECSensor.TempVrm),
+        new(Model.ROG_STRIX_Z390_F_GAMING,
+            BoardFamily.Intel300,
+            ECSensor.TempVrm,
+            ECSensor.TempChipset,
+            ECSensor.TempTSensor,
+            ECSensor.FanCPUOpt),
         new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -220,6 +226,15 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.FanWaterPump, new EmbeddedControllerSource("Water Pump", SensorType.Fan, 0x00bc, 2) },
                 { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                 { ECSensor.VoltageCPU, new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f) }
+            }
+        },
+        {
+            BoardFamily.Intel300, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
             }
         },
         {
@@ -441,6 +456,7 @@ public abstract class EmbeddedController : Hardware
         Amd400,
         Amd500,
         Intel100,
+        Intel300,
         Intel600,
         Intel700
     }
