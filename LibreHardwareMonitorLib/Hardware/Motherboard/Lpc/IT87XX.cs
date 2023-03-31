@@ -186,13 +186,13 @@ internal class IT87XX : ISuperIO
 
         _fansDisabled = new bool[Fans.Length];
 
-        // IT8620E, IT8628E, IT8721F, IT8728F, IT8772E and IT8686E use a 12mV resolution.
-        // All others 16mV.
+        // Voltage gain varies by model.
+        // Conflicting reports on IT8792E: either 0.0109 in linux drivers or 0.011 comparing with Gigabyte board & SIV SW.
         _voltageGain = chip switch
         {
             Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
-            Chip.IT8625E or Chip.IT8795E => 0.011f,
-            Chip.IT8655E or Chip.IT8665E or Chip.IT8792E => 0.0109f,
+            Chip.IT8625E or Chip.IT8792E or Chip.IT8795E => 0.011f,
+            Chip.IT8655E or Chip.IT8665E => 0.0109f,
             _ => 0.016f
         };
 
