@@ -102,6 +102,7 @@ public enum Model
 
     // EVGA
     X58_SLI_Classified,
+    X58_3X_SLI,
 
     // Gigabyte
     _965P_S3,

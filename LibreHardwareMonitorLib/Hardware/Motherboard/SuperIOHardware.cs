@@ -1950,6 +1950,30 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X58_3X_SLI: // F71882
+                        v.Add(new Voltage("VCC3V", 0, 150, 150));
+                        v.Add(new Voltage("Vcore", 1, 47, 100));
+                        v.Add(new Voltage("DIMM", 2, 47, 100));
+                        v.Add(new Voltage("CPU VTT", 3, 24, 100));
+                        v.Add(new Voltage("IOH Vcore", 4, 24, 100));
+                        v.Add(new Voltage("+5V", 5, 51, 12));
+                        v.Add(new Voltage("+12V", 6, 56, 6.8f));
+                        v.Add(new Voltage("3VSB", 7, 150, 150));
+                        v.Add(new Voltage("VBat", 8, 150, 150));
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("VREG", 1));
+                        t.Add(new Temperature("System", 2));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Power Fan", 1));
+                        f.Add(new Fan("Chassis Fan", 2));
+                        f.Add(new Fan("Chipset Fan", 3));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("Power Fan", 1));
+                        c.Add(new Control("Chassis Fan", 2));
+                        c.Add(new Control("Chipset Fan", 3));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1));
