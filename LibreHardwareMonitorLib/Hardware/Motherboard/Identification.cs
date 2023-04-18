@@ -200,6 +200,8 @@ internal class Identification
                 return Model.A890GXM_A;
             case var _ when name.Equals("X58 SLI Classified", StringComparison.OrdinalIgnoreCase):
                 return Model.X58_SLI_Classified;
+            case var _ when name.Equals("132-BL-E758", StringComparison.OrdinalIgnoreCase):
+                return Model.X58_3X_SLI;
             case var _ when name.Equals("965P-S3", StringComparison.OrdinalIgnoreCase):
                 return Model._965P_S3;
             case var _ when name.Equals("EP45-DS3R", StringComparison.OrdinalIgnoreCase):
