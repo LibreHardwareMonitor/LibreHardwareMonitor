@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net472</TargetFramework>
@@ -25,7 +25,7 @@
     <PackageReference Include="TaskScheduler" Version="2.10.1" />
     <PackageReference Include="OxyPlot.Core" Version="2.1.2" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.2" />
-    <PackageReference Include="System.Management" Version="7.0.0" />
+    <PackageReference Include="System.Management" Version="7.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Web" />
