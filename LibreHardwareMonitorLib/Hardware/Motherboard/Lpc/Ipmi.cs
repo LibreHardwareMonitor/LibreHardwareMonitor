@@ -181,21 +181,21 @@ internal class Ipmi : ISuperIO
                     {
                         case 1:
                             _temperatures.Add(RawToFloat(reading[1], sdr));
-                            if (Temperatures.Length == 0)
+                            if (Temperatures == null || Temperatures.Length == 0)
                                 _temperatureNames.Add(sdr.id_string.Replace(" Temp", ""));
 
                             break;
 
                         case 2:
                             _voltages.Add(RawToFloat(reading[1], sdr));
-                            if (Voltages.Length == 0)
+                            if (Voltages == null || Voltages.Length == 0)
                                 _voltageNames.Add(sdr.id_string);
 
                             break;
 
                         case 4:
                             _fans.Add(RawToFloat(reading[1], sdr));
-                            if (Fans.Length == 0)
+                            if (Fans == null || Fans.Length == 0)
                                 _fanNames.Add(sdr.id_string);
 
                             break;
@@ -218,17 +218,21 @@ internal class Ipmi : ISuperIO
             }
         }
 
-        for (int i = 0; i < Math.Min(_temperatures.Count, Temperatures.Length); ++i)
-            Temperatures[i] = _temperatures[i];
+        if (Temperatures != null)
+            for (int i = 0; i < Math.Min(_temperatures.Count, Temperatures.Length); ++i)
+                Temperatures[i] = _temperatures[i];
 
-        for (int i = 0; i < Math.Min(_voltages.Count, Voltages.Length); ++i)
-            Voltages[i] = _voltages[i];
+        if (Voltages != null)
+            for (int i = 0; i < Math.Min(_voltages.Count, Voltages.Length); ++i)
+                Voltages[i] = _voltages[i];
 
-        for (int i = 0; i < Math.Min(_fans.Count, Fans.Length); ++i)
-            Fans[i] = _fans[i];
+        if (Fans != null)
+            for (int i = 0; i < Math.Min(_fans.Count, Fans.Length); ++i)
+                Fans[i] = _fans[i];
 
-        for (int i = 0; i < Math.Min(_controls.Count, Controls.Length); ++i)
-            Controls[i] = _controls[i];
+        if (Controls != null)
+            for (int i = 0; i < Math.Min(_controls.Count, Controls.Length); ++i)
+                Controls[i] = _controls[i];
     }
 
     public IEnumerable<Temperature> GetTemperatures()
@@ -290,7 +294,7 @@ internal class Ipmi : ISuperIO
         using ManagementBaseObject outParams = _ipmi.InvokeMethod("RequestResponse", inParams, null);
         return (byte[])outParams["ResponseData"];
     }
-    
+
     // Ported from ipmiutil
     // Bare minimum to read Supermicro X13 IPMI sensors, may need expanding for other boards
     private static float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
