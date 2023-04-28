@@ -219,20 +219,28 @@ internal class Ipmi : ISuperIO
         }
 
         if (Temperatures != null)
+        {
             for (int i = 0; i < Math.Min(_temperatures.Count, Temperatures.Length); ++i)
                 Temperatures[i] = _temperatures[i];
+        }
 
         if (Voltages != null)
+        {
             for (int i = 0; i < Math.Min(_voltages.Count, Voltages.Length); ++i)
                 Voltages[i] = _voltages[i];
+        }
 
         if (Fans != null)
+        {
             for (int i = 0; i < Math.Min(_fans.Count, Fans.Length); ++i)
                 Fans[i] = _fans[i];
+        }
 
         if (Controls != null)
+        {
             for (int i = 0; i < Math.Min(_controls.Count, Controls.Length); ++i)
                 Controls[i] = _controls[i];
+        }
     }
 
     public IEnumerable<Temperature> GetTemperatures()
