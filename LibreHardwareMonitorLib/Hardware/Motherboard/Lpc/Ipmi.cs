@@ -36,7 +36,7 @@ internal class Ipmi : ISuperIO
     private readonly ManagementObject _ipmi;
     private readonly Manufacturer _manufacturer;
 
-    private readonly List<Interop.Ipmi.Sdr> _sdr = new();
+    private readonly List<Interop.Ipmi.Sdr> _sdrs = new();
     private readonly List<string> _temperatureNames = new();
     private readonly List<float> _temperatures = new();
     private readonly List<string> _voltageNames = new();
@@ -105,10 +105,8 @@ internal class Ipmi : ISuperIO
                 else
                 {
                     byte[] fanMode = RunIPMICommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x00 });
-                    if (fanMode.Length < 2 || fanMode[0] != 0 || fanMode[1] != FAN_MODE_FULL)
-                    {
+                    if (fanMode == null || fanMode.Length < 2 || fanMode[0] != 0 || fanMode[1] != FAN_MODE_FULL)
                         RunIPMICommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x01 /* Set */, FAN_MODE_FULL });
-                    }
 
                     float speed = (float)value / 255.0f * 100.0f;
                     RunIPMICommand(COMMAND_FAN_LEVEL, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x66, 0x01 /* Set */, (byte)index, (byte)speed });
@@ -133,33 +131,29 @@ internal class Ipmi : ISuperIO
         _voltages.Clear();
         _controls.Clear();
 
-        if (_sdr.Count == 0 || stringBuilder != null)
+        if (_sdrs.Count == 0 || stringBuilder != null)
         {
             byte[] sdrInfo = RunIPMICommand(COMMAND_GET_SDR_REPOSITORY_INFO, NETWORK_FUNCTION_STORAGE, new byte[] { });
-            if (sdrInfo[0] == 0)
+            if (sdrInfo?[0] == 0)
             {
-                int recordCount = sdrInfo[3] * 256 + sdrInfo[2];
+                int recordCount = (sdrInfo[3] * 256) + sdrInfo[2];
 
                 byte recordLower = 0;
                 byte recordUpper = 0;
                 for (int i = 0; i < recordCount; ++i)
                 {
                     byte[] sdrRaw = RunIPMICommand(COMMAND_GET_SDR, NETWORK_FUNCTION_STORAGE, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
-                    if (sdrRaw[0] == 0 && sdrRaw.Length >= 3)
+                    if (sdrRaw?.Length >= 3 && sdrRaw[0] == 0)
                     {
                         recordLower = sdrRaw[1];
                         recordUpper = sdrRaw[2];
 
-                        Interop.Ipmi.Sdr sdr;
-
                         fixed (byte* pSdr = sdrRaw)
                         {
-                            sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
+                            Interop.Ipmi.Sdr sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
+                            _sdrs.Add(sdr);
+                            stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
                         }
-
-                        _sdr.Add(sdr);
-
-                        stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
                     }
                     else
                     {
@@ -169,13 +163,12 @@ internal class Ipmi : ISuperIO
             }
         }
 
-        foreach (Interop.Ipmi.Sdr sdr in _sdr)
+        foreach (Interop.Ipmi.Sdr sdr in _sdrs)
         {
             if (sdr.rectype == 1)
             {
                 byte[] reading = RunIPMICommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, new[] { sdr.sens_num });
-
-                if (reading[0] == 0)
+                if (reading?.Length > 1 && reading[0] == 0)
                 {
                     switch (sdr.sens_type)
                     {
@@ -200,9 +193,9 @@ internal class Ipmi : ISuperIO
 
                             break;
                     }
-                }
 
-                stringBuilder?.AppendLine("IPMI sensor num: " + sdr.sens_num + " reading: " + BitConverter.ToString(reading).Replace("-", ""));
+                    stringBuilder?.AppendLine("IPMI sensor num: " + sdr.sens_num + " reading: " + BitConverter.ToString(reading).Replace("-", ""));
+                }
             }
         }
 
@@ -211,10 +204,12 @@ internal class Ipmi : ISuperIO
             for (int i = 0; i < _controlNames.Count; ++i)
             {
                 byte[] fanLevel = RunIPMICommand(COMMAND_FAN_LEVEL, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x66, 0x00 /* Get */, (byte)i });
-                if (fanLevel[0] == 0 && fanLevel.Length >= 2)
+                if (fanLevel?.Length >= 2 && fanLevel[0] == 0)
+                {
                     _controls.Add(fanLevel[1]);
 
-                stringBuilder?.AppendLine("IPMI fan " + i + ": " + BitConverter.ToString(fanLevel).Replace("-", ""));
+                    stringBuilder?.AppendLine("IPMI fan " + i + ": " + BitConverter.ToString(fanLevel).Replace("-", ""));
+                }
             }
         }
 
@@ -290,7 +285,7 @@ internal class Ipmi : ISuperIO
         using ManagementBaseObject outParams = _ipmi.InvokeMethod("RequestResponse", inParams, null);
         return (byte[])outParams["ResponseData"];
     }
-    
+
     // Ported from ipmiutil
     // Bare minimum to read Supermicro X13 IPMI sensors, may need expanding for other boards
     private static float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
