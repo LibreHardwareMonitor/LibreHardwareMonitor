@@ -70,6 +70,11 @@ public abstract class EmbeddedController : Hardware
             ECSensor.FanWaterFlow,
             ECSensor.CurrCPU,
             ECSensor.VoltageCPU),
+        new(Model.ROG_CROSSHAIR_X670E_EXTREME,
+            BoardFamily.Amd600,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanCPUOpt),
         new(Model.ROG_CROSSHAIR_VIII_DARK_HERO,
             BoardFamily.Amd500,
             ECSensor.TempChipset,
@@ -225,6 +230,14 @@ public abstract class EmbeddedController : Hardware
                 // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
                 { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f) },
                 { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
+                { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) }
+            }
+        },
+        {
+            BoardFamily.Amd600, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) }
             }
@@ -466,6 +479,7 @@ public abstract class EmbeddedController : Hardware
     {
         Amd400,
         Amd500,
+        Amd600,
         Intel100,
         Intel300,
         Intel600,
