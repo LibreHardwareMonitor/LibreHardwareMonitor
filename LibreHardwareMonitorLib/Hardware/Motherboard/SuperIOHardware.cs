@@ -1618,6 +1618,31 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B660M_DS3H_AX_DDR4:
+                        v.Add(new Voltage("VCore",0));
+                        v.Add(new Voltage("VAXG",1));
+                        v.Add(new Voltage("VCCIN AUX",2));
+                        v.Add(new Voltage("DRAM CH(A/B)",3));
+                        v.Add(new Voltage("+12V",4));
+                        v.Add(new Voltage("+3.3V",5));
+                        v.Add(new Voltage("+5V",6));
+                        t.Add(new Temperature("CPU",0));
+                        t.Add(new Temperature("CPU",1));
+                        t.Add(new Temperature("CPU",2));
+                        t.Add(new Temperature("CPU",3));
+                        t.Add(new Temperature("CPU",4));
+                        t.Add(new Temperature("CPU",5));
+                        f.Add(new Fan("CPU"),0);
+                        f.Add(new Fan("System 1"),2);
+                        f.Add(new Fan("System 2"),3);
+                        f.Add(new Fan("System 3"),4);
+                        c.Add(new Control("CPU"),0);
+                        c.Add(new Control("System 1"),2);
+                        c.Add(new Control("System 2"),3);
+                        c.Add(new Control("System 3"),4);
+
+                        break;
+
                     default:
                         v.Add(new Voltage("Voltage #1", 0, true));
                         v.Add(new Voltage("Voltage #2", 1, true));
