@@ -10,11 +10,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
      */
 internal sealed class KrakenV3 : Hardware
 {
-    private enum KrakenV3Model
-    {
-        KrakenX,
-        KrakenZ
-    }
 
     private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
     private static readonly byte[] _setPumpSpeedHeader = { 0x72, 0x01, 0x00, 0x00 };
@@ -30,17 +25,11 @@ internal sealed class KrakenV3 : Hardware
     private readonly byte[] _rawData = new byte[64];
     private readonly HidStream _stream;
     private readonly Sensor _temperature;
-    private readonly KrakenV3Model _model;
-
+    private readonly bool _fanControl;
+    private readonly string _supportedFirmware;
     private volatile bool _controllingFans;
     private volatile bool _controllingPump;
 
-
-    private static Dictionary<KrakenV3Model, string> _supportedFirmwares = new Dictionary<KrakenV3Model, string>()
-    {
-        { KrakenV3Model.KrakenZ , "5.7.0" },
-        { KrakenV3Model.KrakenX , "2.1.0" },
-    };
 
     private static void FillTargetArray(byte[] targetArray, byte value)
     {
@@ -65,13 +54,21 @@ internal sealed class KrakenV3 : Hardware
     {
         if (dev.ProductID == 0x3008)
         {
-            _model = KrakenV3Model.KrakenZ;
             Name = "NZXT Kraken Z3";
+            _fanControl = true;
+            _supportedFirmware = "5.7.0";
+
+        } else if (dev.ProductID == 0x300C)
+        {
+            Name = "NZXT Kraken Elite";
+            _fanControl = true;
+            _supportedFirmware = "1.2.4";
         }
         else
         {
-            _model = KrakenV3Model.KrakenX;
             Name = "NZXT Kraken X3";
+            _fanControl = false;
+            _supportedFirmware = "2.1.0";
         }
 
         if (dev.TryOpen(out _stream))
@@ -106,7 +103,7 @@ internal sealed class KrakenV3 : Hardware
             _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
             ActivateSensor(_pumpRpm);
 
-            if (_model == KrakenV3Model.KrakenZ)
+            if (_fanControl)
             {
                 // Fan Control
                 _fan = new Sensor("Fans Control", 1, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
@@ -131,7 +128,7 @@ internal sealed class KrakenV3 : Hardware
 
     public override HardwareType HardwareType => HardwareType.Cooler;
 
-    public string Status => FirmwareVersion != _supportedFirmwares[_model] ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version {_supportedFirmwares[_model]}" : "Status: OK";
+    public string Status => FirmwareVersion != _supportedFirmware ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version {_supportedFirmware}" : "Status: OK";
 
     private void PumpSoftwareControlValueChanged(Control control)
     {
@@ -231,7 +228,7 @@ internal sealed class KrakenV3 : Hardware
                     _controllingPump = false;
                 }
 
-                if (_model == KrakenV3Model.KrakenZ)
+                if (_fanControl)
                 {
                     _fanRpm.Value = (_rawData[24] << 8) | _rawData[23];
                     if (!_controllingFans)
