@@ -1632,14 +1632,14 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("System #1",3));
                         t.Add(new Temperature("System #2",4));
                         t.Add(new Temperature("VRAM MOS",5));
-                        f.Add(new Fan("CPU Fan"),0);
-                        f.Add(new Fan("System Fan #1"),2);
-                        f.Add(new Fan("System Fan #2"),3);
-                        f.Add(new Fan("System Fan #3"),4);
-                        c.Add(new Control("CPU Fan"),0);
-                        c.Add(new Control("System Fan #1"),2);
-                        c.Add(new Control("System Fan #2"),3);
-                        c.Add(new Control("System Fan #3"),4);
+                        f.Add(new Fan("CPU Fan",0));
+                        f.Add(new Fan("System Fan #1",2));
+                        f.Add(new Fan("System Fan #2",3));
+                        f.Add(new Fan("System Fan #3",4));
+                        c.Add(new Control("CPU Fan",0));
+                        c.Add(new Control("System Fan #1",2));
+                        c.Add(new Control("System Fan #2",3));
+                        c.Add(new Control("System Fan #3",4));
                         break;
 
                     default:
