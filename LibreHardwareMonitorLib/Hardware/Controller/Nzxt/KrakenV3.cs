@@ -64,6 +64,12 @@ internal sealed class KrakenV3 : Hardware
             _fanControl = true;
             _supportedFirmware = "1.2.4";
         }
+        else if (dev.ProductID == 0x300E)
+        {
+            Name = "NZXT Kraken";
+            _fanControl = true;
+            _supportedFirmware = "1.2.4"; // Firmware version to be confirmed
+        }
         else
         {
             Name = "NZXT Kraken X3";

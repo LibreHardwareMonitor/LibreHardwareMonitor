@@ -29,6 +29,7 @@ internal class NzxtGroup : IGroup
                 case 0x2014:
                 case 0x3008:
                 case 0x300C:
+                case 0x300E:
                     // NZXT KrakenV3 Devices
                     var krakenV3 = new KrakenV3(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
