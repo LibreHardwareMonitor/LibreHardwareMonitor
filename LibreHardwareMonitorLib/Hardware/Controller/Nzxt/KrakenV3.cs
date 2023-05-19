@@ -125,8 +125,6 @@ internal sealed class KrakenV3 : Hardware
                 _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_fanRpm);
             }
-
-            ThreadPool.UnsafeQueueUserWorkItem(ContinuousRead, _rawData);
         }
     }
 
@@ -181,39 +179,11 @@ internal sealed class KrakenV3 : Hardware
         _stream?.Close();
     }
 
-    private void ContinuousRead(object state)
-    {
-        byte[] buffer = new byte[_rawData.Length];
-        while (_stream.CanRead)
-        {
-            try
-            {
-                _stream.Write(_status_req); // Request status
-                _stream.Read(buffer); // This is a blocking call, will wait for bytes to become available
-
-                lock (_rawData)
-                {
-                    Array.Copy(buffer, _rawData, buffer.Length);
-                }
-            }
-            catch (TimeoutException)
-            {
-                // Don't care, just make sure the stream is still open
-                Thread.Sleep(500);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Could be unplugged, or the app is stopping...
-                return;
-            }
-        }
-    }
-
     public override void Update()
     {
-        lock (_rawData)
-        {
-            if (_rawData[0] == 0x75 /*status response*/ && _rawData.Length >= 30)
+        _stream.Write(_status_req); // Request status
+        _stream.Read(_rawData); // This is a blocking call, will wait for bytes to become available
+        if (_rawData[0] == 0x75 /*status response*/ && _rawData.Length >= 30)
             {
                 _temperature.Value = _rawData[15] + (_rawData[16] / 10.0f);
                 _pumpRpm.Value = (_rawData[18] << 8) | _rawData[17];
@@ -252,10 +222,7 @@ internal sealed class KrakenV3 : Hardware
                         _controllingFans = false;
                     }
                 }
-
-                
-
-            }
+            
         }
     }
 }
