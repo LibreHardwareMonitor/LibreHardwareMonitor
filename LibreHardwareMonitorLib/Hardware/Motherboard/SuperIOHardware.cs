@@ -2026,12 +2026,12 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z77_MPower: // F71889AD
                             {
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
-                        v.Add(new Voltage("Vcore", 1));
-                        v.Add(new Voltage("Vgpu", 2));
+                        v.Add(new Voltage("CPU CORE", 1));
+                        v.Add(new Voltage("GPU", 2));
                         v.Add(new Voltage("+5V", 3, 51.06f, 12));
                         v.Add(new Voltage("+12V", 4, 68, 6.8f));
-                        v.Add(new Voltage("Vddr", 5, 150, 150));
-                        v.Add(new Voltage("Vccio", 6));
+                        v.Add(new Voltage("DRAM", 5, 150, 150));
+                        v.Add(new Voltage("CPU I/O", 6));
                         v.Add(new Voltage("+3.3V", 7, 150, 150));
                         v.Add(new Voltage("VBat", 8, 150, 150));
 
