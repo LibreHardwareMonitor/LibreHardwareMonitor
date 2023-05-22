@@ -21,6 +21,7 @@ internal static class Ring0
     private static Mutex _ecMutex;
     private static string _filePath;
     private static Mutex _isaBusMutex;
+    private static Mutex _SMBusMutex;
     private static Mutex _pciBusMutex;
 
     private static readonly StringBuilder _report = new();
@@ -95,6 +96,12 @@ internal static class Ring0
 
         const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
         if (!TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex))
+        {
+            // Mutex could not be created or opened.
+        }
+
+        const string smbusMutexName = "Global\\Access_SMBUS.HTP.Method";
+        if (!TryCreateOrOpenExistingMutex(smbusMutexName, out _SMBusMutex))
         {
             // Mutex could not be created or opened.
         }
@@ -344,6 +351,12 @@ internal static class Ring0
             _isaBusMutex = null;
         }
 
+        if (_SMBusMutex != null)
+        {
+            _SMBusMutex.Close();
+            _SMBusMutex = null;
+        }
+
         if (_pciBusMutex != null)
         {
             _pciBusMutex.Close();
@@ -397,6 +410,30 @@ internal static class Ring0
     public static void ReleaseIsaBusMutex()
     {
         _isaBusMutex?.ReleaseMutex();
+    }
+
+    public static bool WaitSMBusMutex(int millisecondsTimeout)
+    {
+        if (_SMBusMutex == null)
+            return true;
+
+        try
+        {
+            return _SMBusMutex.WaitOne(millisecondsTimeout, false);
+        }
+        catch (AbandonedMutexException)
+        {
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    public static void ReleaseSMBusMutex()
+    {
+        _SMBusMutex?.ReleaseMutex();
     }
 
     public static bool WaitPciBusMutex(int millisecondsTimeout)
