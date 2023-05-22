@@ -21,7 +21,7 @@ internal static class Ring0
     private static Mutex _ecMutex;
     private static string _filePath;
     private static Mutex _isaBusMutex;
-    private static Mutex _SMBusMutex;
+    private static Mutex _smBusMutex;
     private static Mutex _pciBusMutex;
 
     private static readonly StringBuilder _report = new();
@@ -101,7 +101,7 @@ internal static class Ring0
         }
 
         const string smbusMutexName = "Global\\Access_SMBUS.HTP.Method";
-        if (!TryCreateOrOpenExistingMutex(smbusMutexName, out _SMBusMutex))
+        if (!TryCreateOrOpenExistingMutex(smbusMutexName, out _smBusMutex))
         {
             // Mutex could not be created or opened.
         }
@@ -351,10 +351,10 @@ internal static class Ring0
             _isaBusMutex = null;
         }
 
-        if (_SMBusMutex != null)
+        if (_smBusMutex != null)
         {
-            _SMBusMutex.Close();
-            _SMBusMutex = null;
+            _smBusMutex.Close();
+            _smBusMutex = null;
         }
 
         if (_pciBusMutex != null)
@@ -412,14 +412,14 @@ internal static class Ring0
         _isaBusMutex?.ReleaseMutex();
     }
 
-    public static bool WaitSMBusMutex(int millisecondsTimeout)
+    public static bool WaitSmBusMutex(int millisecondsTimeout)
     {
-        if (_SMBusMutex == null)
+        if (_smBusMutex == null)
             return true;
 
         try
         {
-            return _SMBusMutex.WaitOne(millisecondsTimeout, false);
+            return _smBusMutex.WaitOne(millisecondsTimeout, false);
         }
         catch (AbandonedMutexException)
         {
@@ -431,9 +431,9 @@ internal static class Ring0
         }
     }
 
-    public static void ReleaseSMBusMutex()
+    public static void ReleaseSmBusMutex()
     {
-        _SMBusMutex?.ReleaseMutex();
+        _smBusMutex?.ReleaseMutex();
     }
 
     public static bool WaitPciBusMutex(int millisecondsTimeout)
@@ -528,6 +528,25 @@ internal static class Ring0
     }
 
     public static void WriteIoPort(uint port, byte value)
+    {
+        if (_driver == null)
+            return;
+
+        WriteIoPortInput input = new() { PortNumber = port, Value = value };
+        _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
+    }
+
+    public static byte ReadSmbus(ushort port)
+    {
+        if (_driver == null)
+            return 0;
+
+        uint value = 0;
+        _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
+        return (byte)(value & 0xFF);
+    }
+
+    public static void WriteSmbus(ushort port, byte value)
     {
         if (_driver == null)
             return;
