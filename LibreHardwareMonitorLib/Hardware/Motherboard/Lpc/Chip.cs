@@ -81,6 +81,17 @@ internal enum Chip : ushort
     IPMI = 0x4764,
 }
 
+internal enum ChipSmbus : ushort
+{
+    Unknown = 0,
+
+    // CHIPID reg at 0x5A (thats why another enum there)
+    // normal dev addr: 0x2D, 0x2E
+    F75373S = 0x0204,
+    F75375S = 0x0306,
+    F75387 = 0x0410,
+}
+
 internal class ChipName
 {
     public static string GetName(Chip chip)
@@ -99,6 +110,11 @@ internal class ChipName
             case Chip.F71889ED: return "Fintek F71889ED";
             case Chip.F71889F: return "Fintek F71889F";
             case Chip.F71808E: return "Fintek F71808E";
+
+            case (Chip)ChipSmbus.F75373S: return "Fintek F75373S/F75373SG";
+            case (Chip)ChipSmbus.F75375S: return "Fintek F75375S/F75375SG";
+            case (Chip)ChipSmbus.F75387: return "Fintek F75387SG/F75387RG";
+
             case Chip.IT8613E: return "ITE IT8613E";
             case Chip.IT8620E: return "ITE IT8620E";
             case Chip.IT8625E: return "ITE IT8625E";
