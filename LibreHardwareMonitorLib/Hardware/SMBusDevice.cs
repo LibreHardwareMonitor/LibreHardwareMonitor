@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Management;
 using System.Threading;
 using LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -24,6 +25,9 @@ internal class SmBusDevice
         SMBHSTDAT1 = (ushort)(6 + SMB_ADDRESS);
         SMBAUXCTL = (ushort)(13 + SMB_ADDRESS);
     }
+
+    private SmBusDevice()
+    { }
 
     public byte ChipAddr { get => CHIP_ADDRESS; }
 
@@ -140,6 +144,97 @@ internal class SmBusDevice
         Transaction(0x08);
 
         Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & ~(SMBAUXCTL_CRC | SMBAUXCTL_E32B)));
+    }
+
+    private bool checkDevice(byte addr, ushort smb_addr)
+    {
+        SMBHSTSTS = (ushort)(0 + smb_addr);
+        SMBHSTCNT = (ushort)(2 + smb_addr);
+        SMBHSTCMD = (ushort)(3 + smb_addr);
+        SMBHSTADD = (ushort)(4 + smb_addr);
+        SMBHSTDAT0 = (ushort)(5 + smb_addr);
+        SMBHSTDAT1 = (ushort)(6 + smb_addr);
+        SMBAUXCTL = (ushort)(13 + smb_addr);
+
+        Ring0.WriteSmbus(SMBHSTADD, (byte)(((addr & 0x7f) << 1) | SMB_WRITE));
+        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & (~SMBAUXCTL_CRC)));
+
+        int res = Transaction(0x00);
+
+        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & ~(SMBAUXCTL_CRC | SMBAUXCTL_E32B)));
+
+        return res >= 0;
+    }
+
+    // returns device address
+    public static byte DetectDevice(byte start_addr, ushort smb_addr)
+    {
+        if (smb_addr == 0)
+            return 0;
+
+        if (Ring0.WaitSmBusMutex(100))
+        {
+            int index = 0;
+            SmBusDevice tempDev = new SmBusDevice();
+            for (byte addr = start_addr; addr < 0x7E; addr++)
+            {
+                if (tempDev.checkDevice(addr, smb_addr))
+                {
+                    Ring0.ReleaseSmBusMutex();
+                    return addr;
+                }
+
+                Thread.Sleep(10);
+                index++;
+            }
+            Ring0.ReleaseSmBusMutex();
+        }
+        return 0;
+    }
+
+    // returns smbus address
+    public static ushort DetectSmBus()
+    {
+        try
+        {
+            string wmiQuery = "SELECT * FROM Win32_PnPSignedDriver WHERE Description LIKE '%%SMBUS%%' OR Description LIKE '%%SM BUS%%'";
+            var searcher = new ManagementObjectSearcher(wmiQuery);
+            var collection = searcher.Get();
+            string manufacturer = "";
+            foreach (var obj in collection)
+            {
+                manufacturer = obj["Manufacturer"].ToString().ToUpper();
+                if (manufacturer.Equals("INTEL") == true)
+                {
+                    wmiQuery = "SELECT * FROM Win32_PnPAllocatedResource";
+                    string deviceID = obj["DeviceID"].ToString().Substring(4, 33);
+
+                    var searcher2 = new ManagementObjectSearcher(wmiQuery);
+                    var collection2 = searcher2.Get();
+                    foreach (var obj2 in collection2)
+                    {
+                        string dependent = obj2["Dependent"].ToString();
+                        string antecedent = obj2["Antecedent"].ToString();
+
+                        if (dependent.IndexOf(deviceID) >= 0 && antecedent.IndexOf("Port") >= 0)
+                        {
+                            var antecedentArray = antecedent.Split('=');
+                            if (antecedentArray.Length >= 2)
+                            {
+                                string addressString = antecedentArray[1].Replace("\"", "");
+                                if (addressString.Length > 0)
+                                {
+                                    return ushort.Parse(addressString);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+
+        return 0;
     }
 
     private readonly ushort SMB_ADDRESS = 0;

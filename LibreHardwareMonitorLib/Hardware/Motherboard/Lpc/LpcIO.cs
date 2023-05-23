@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Management;
 using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.Hardware.Cpu;
@@ -73,9 +74,39 @@ internal class LpcIO
 
             if (DetectSmsc(port)) continue;
         }
+
+        ushort smb_addr = SmBusDevice.DetectSmBus();
+        for (byte addr = 0x09; addr != 0;)
+        {
+            addr = SmBusDevice.DetectDevice((byte)(addr + 1), smb_addr);
+            if (addr != 0)
+            {
+                if (DetectFintekF753XX(addr, smb_addr)) continue;
+            }
+        }
     }
 
-    public string GetReport()
+    private bool DetectFintekF753XX(byte addr, ushort smb_addr)
+    {
+        SmBusDevice tempDev = new SmBusDevice(addr, smb_addr);
+
+        ChipSmbus chip = (ChipSmbus)((tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER + 1));
+
+        switch (chip)
+        {
+            case ChipSmbus.F75373S:
+            case ChipSmbus.F75375S:
+            case ChipSmbus.F75387:
+                _superIOs.Add(new F753XX(chip, addr, smb_addr));
+                break;
+
+            default:
+                return false;
+        }
+        return true;
+    }
+
+        public string GetReport()
     {
         if (_report.Length > 0)
         {
@@ -706,5 +737,9 @@ internal class LpcIO
 
     private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };
     private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };
+
+    // SMBus
+    private const byte CHIP_ID_SMBUS_REGISTER = 0x5A;
+
     // ReSharper restore InconsistentNaming
 }

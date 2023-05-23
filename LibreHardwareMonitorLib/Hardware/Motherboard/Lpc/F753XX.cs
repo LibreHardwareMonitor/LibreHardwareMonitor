@@ -30,6 +30,18 @@ internal class F753XX : ISuperIO
         Fans = new float?[2];
         Controls = new float?[2];
     }
+
+    public F753XX(ChipSmbus chip, SmBusDevice dev)
+    {
+        Chip = (Chip)chip;
+        Dev = dev;
+
+        Voltages = new float?[4];
+        Temperatures = new float?[3];
+        Fans = new float?[2];
+        Controls = new float?[2];
+    }
+
     public Chip Chip { get; } // ChipSmbus
 
     public float?[] Controls { get; }
