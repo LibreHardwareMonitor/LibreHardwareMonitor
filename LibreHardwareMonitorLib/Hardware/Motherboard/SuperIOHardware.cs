@@ -2047,11 +2047,11 @@ internal sealed class SuperIOHardware : Hardware
 
                         f.Add(new Fan("CPU Fan", 0));
                         for (int i = 1; i < superIO.Fans.Length; i++)
-                            f.Add(new Fan("System Fan " + i, i));
+                            f.Add(new Fan("System Fan #" + i, i));
 
                         c.Add(new Control("CPU Fan", 0));
                         for (int i = 1; i < superIO.Controls.Length; i++)
-                            c.Add(new Control("System Fan " + i, i));
+                            c.Add(new Control("System Fan #" + i, i));
 
                         break;
                     }
@@ -2114,10 +2114,52 @@ internal sealed class SuperIOHardware : Hardware
     {
         switch (manufacturer)
         {
+            case Manufacturer.MSI:
+                switch (model)
+                {
+                    case Model.Z77_MPower: // F75387
+                        {
+                            v.Add(new Voltage("VCC", 0, 150, 150));
+                            for (int i = 1; i < superIO.Voltages.Length; i++)
+                                v.Add(new Voltage("Voltage #" + i, i, true));
+
+                            t.Add(new Temperature("Temperature #1", 0));
+                            t.Add(new Temperature("Temperature #2", 1));
+                            t.Add(new Temperature("Local", 2));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("System Fan #" + (i + 3), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Control("System Fan #" + (i + 3), i));
+
+                            break;
+                        }
+                    default:
+                        {
+                            v.Add(new Voltage("VCC", 0, 150, 150));
+                            for (int i = 1; i < superIO.Voltages.Length; i++)
+                                v.Add(new Voltage("Voltage #" + i, i, true));
+
+                            t.Add(new Temperature("Temperature #1", 0));
+                            t.Add(new Temperature("Temperature #2", 1));
+                            t.Add(new Temperature("Local", 2));
+
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Control("Fan #" + (i + 1), i));
+
+                            break;
+                        }
+                }
+                break;
+
             default:
                 v.Add(new Voltage("VCC", 0, 150, 150));
                 for (int i = 1; i < superIO.Voltages.Length; i++)
-                    v.Add(new Voltage("Voltage #" + i, i));
+                    v.Add(new Voltage("Voltage #" + i, i, true));
 
                 t.Add(new Temperature("Temperature #1", 0));
                 t.Add(new Temperature("Temperature #2", 1));
