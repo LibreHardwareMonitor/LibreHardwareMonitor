@@ -8,9 +8,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using static LibreHardwareMonitor.Hardware.Psu.Corsair.UsbApi;
-//using System.Collections.Generic;
-//using System.Runtime.InteropServices;
 
 // ReSharper disable once InconsistentNaming
 
@@ -19,6 +16,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 internal class F753XX : ISuperIO
 {
     private readonly byte[] _initialFanPwmControl = new byte[2];
+    private byte _initialFanPwmMode;
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[2];
     private readonly byte _chip_address;
 
@@ -33,13 +31,7 @@ internal class F753XX : ISuperIO
         SMBHSTADD = (ushort)(4 + SMB_ADDRESS);
         SMBHSTDAT0 = (ushort)(5 + SMB_ADDRESS);
         SMBHSTDAT1 = (ushort)(6 + SMB_ADDRESS);
-        //SMBBLKDAT = (ushort)(7 + SMB_ADDRESS);
-        //SMBPEC = (ushort)(8 + SMB_ADDRESS);
-        //SMBAUXSTS = (ushort)(12 + SMB_ADDRESS);
         SMBAUXCTL = (ushort)(13 + SMB_ADDRESS);
-        //SMBSLVSTS = (ushort)(16 + SMB_ADDRESS);
-        //SMBSLVCMD = (ushort)(17 + SMB_ADDRESS);
-        //SMBNTFDADD = (ushort)(20 + SMB_ADDRESS);
 
         Voltages = new float?[4];
         Temperatures = new float?[3];
@@ -76,10 +68,32 @@ internal class F753XX : ISuperIO
         {
             SaveDefaultFanPwmControl(index);
 
+            // force change fan mode to manual
+            byte fanmode = ReadByte(FAN_MODE_REG);
+            if (Chip == (Chip)ChipSmbus.F75387)
+            {
+                for (byte nr = 0; nr < Controls.Length; nr++)
+                {
+                    fanmode &= (byte)~(1 << (2 + (nr * 4)));
+                    fanmode &= (byte)~(1 << (nr * 4));
+                    fanmode |= (byte)(1 << (nr * 4));
+                    fanmode |= (byte)(1 << (2 + (nr * 4)));
+                }
+            }
+            else
+            {
+                for (byte nr = 0; nr < Controls.Length; nr++)
+                {
+                    fanmode &= (byte)~(3 << (4 + (nr * 2)));
+                    fanmode |= (byte)(3 << (4 + (nr * 2)));
+                }
+            }
+            WriteByte(FAN_MODE_REG, fanmode);
+
             if (Chip == (Chip)ChipSmbus.F75387)
                 WriteByte(FAN_PWM_EXP_LSB_REG[index], value.Value);
             else
-                WriteByte(FAN_PWM_REG[index], value.Value);
+                WriteByte(FAN_PWM_DUTY_REG[index], value.Value);
         }
         else
         {
@@ -155,7 +169,7 @@ internal class F753XX : ISuperIO
             value |= ReadByte(FAN_TACHOMETER_LSB_REG[i]);
 
             if (value > 0)
-                Fans[i] = value < 0xFFFF ? 1.5e6f / value : 0;
+                Fans[i] = value < 0x0FFE ? 1.5e6f / value : 0;
             else
                 Fans[i] = null;
         }
@@ -175,7 +189,13 @@ internal class F753XX : ISuperIO
     {
         if (!_restoreDefaultFanPwmControlRequired[index])
         {
-            _initialFanPwmControl[index] = ReadByte(FAN_PWM_REG[index]);
+            _initialFanPwmMode = ReadByte(FAN_MODE_REG);
+
+            if (Chip == (Chip)ChipSmbus.F75387)
+                _initialFanPwmControl[index] = ReadByte(FAN_PWM_EXP_LSB_REG[index]);
+            else
+                _initialFanPwmControl[index] = ReadByte(FAN_PWM_DUTY_REG[index]);
+
             _restoreDefaultFanPwmControlRequired[index] = true;
         }
     }
@@ -184,7 +204,13 @@ internal class F753XX : ISuperIO
     {
         if (_restoreDefaultFanPwmControlRequired[index])
         {
-            WriteByte(FAN_PWM_REG[index], _initialFanPwmControl[index]);
+            _initialFanPwmMode = ReadByte(FAN_MODE_REG);
+
+            if (Chip == (Chip)ChipSmbus.F75387)
+                WriteByte(FAN_PWM_EXP_LSB_REG[index], _initialFanPwmControl[index]);
+            else
+                WriteByte(FAN_PWM_DUTY_REG[index], _initialFanPwmControl[index]);
+
             _restoreDefaultFanPwmControlRequired[index] = false;
         }
     }
@@ -215,8 +241,8 @@ internal class F753XX : ISuperIO
         const int maxCount = 1000;
         int timeout = 0;
         ushort status;
-        bool val = false;
-        bool val2 = false;
+        bool val;
+        bool val2;
 
         do
         {
@@ -269,26 +295,10 @@ internal class F753XX : ISuperIO
         return CheckPost(status);
     }
 
-    private void WriteSerialAddrReg(byte value)
-    {
-        byte[] sequence = { 0xA9, 0xC3, value };
-
-        Ring0.WriteSmbus(SMBHSTADD, (byte)(((_chip_address & 0x7f) << 1) | (SMB_WRITE & 0x01)));
-        Ring0.WriteSmbus(SMBHSTCMD, SERIAL_ADDR_REG);
-        for (int i = 0; i < sequence.Length; i++)
-        {
-            Ring0.WriteSmbus(SMBHSTDAT0, sequence[i]);
-        }
-        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & (~SMBAUXCTL_CRC)));
-    }
-
-// TODO: also add word read write
     private byte ReadByte(byte register)
     {
         if (SMB_ADDRESS == 0)
             return 0;
-
-        //WriteSerialAddrReg(register);
 
         Ring0.WriteSmbus(SMBHSTADD, (byte)(((_chip_address & 0x7f) << 1) | (SMB_READ & 0x01)));
         Ring0.WriteSmbus(SMBHSTCMD, register);
@@ -307,8 +317,6 @@ internal class F753XX : ISuperIO
         if (SMB_ADDRESS == 0)
             return;
 
-        //WriteSerialAddrReg(register);
-
         Ring0.WriteSmbus(SMBHSTADD, (byte)(((_chip_address & 0x7f) << 1) | (SMB_WRITE & 0x01)));
         Ring0.WriteSmbus(SMBHSTCMD, register);
         Ring0.WriteSmbus(SMBHSTDAT0, value);
@@ -323,14 +331,14 @@ internal class F753XX : ISuperIO
     // ReSharper disable InconsistentNaming
 #pragma warning disable IDE1006 // Naming Styles
 
-    private const byte SERIAL_ADDR_REG = 0x04;
-
     private readonly byte[] TEMPERATURE_MSB_REG = { 0x14, 0x15, 0x1C }; // read MSB first!  [T1, T2, Local]
     private readonly byte[] TEMPERATURE_LSB_REG = { 0x1A, 0x1B, 0x1D };
 
     private const byte VOLTAGE_BASE_REG = 0x10;                         // [VCC, V1, V2, V3]
 
-    private readonly byte[] FAN_PWM_REG = { 0x76, 0x86 };               // set pwm (use PWM_EXP for F75387)
+
+    private const byte FAN_MODE_REG = 0x60;
+    private readonly byte[] FAN_PWM_DUTY_REG = { 0x76, 0x86 };          // set pwm (use PWM_EXP for F75387)
     private readonly byte[] FAN_PWM_EXP_MSB_REG = { 0x74, 0x84 };       // expected speed
     private readonly byte[] FAN_PWM_EXP_LSB_REG = { 0x75, 0x85 };
 
@@ -346,13 +354,7 @@ internal class F753XX : ISuperIO
     private ushort SMBHSTADD = 0;
     private ushort SMBHSTDAT0 = 0;
     private ushort SMBHSTDAT1 = 0;
-    //private ushort SMBBLKDAT = 0;
-    //private ushort SMBPEC = 0;
-    //private ushort SMBAUXSTS = 0;
     private ushort SMBAUXCTL = 0;
-    //private ushort SMBSLVSTS = 0;
-    //private ushort SMBSLVCMD = 0;
-    //private ushort SMBNTFDADD = 0;
 
     private const byte SMB_READ = 0x01;
     private const byte SMB_WRITE = 0x00;
