@@ -352,6 +352,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.NCT6798D:
             case Chip.NCT6799D:
             case Chip.NCT6683D:
+            case Chip.NCT6685D:
                 GetNuvotonConfigurationD(superIO, manufacturer, model, v, t, f, c);
                 break;
 
