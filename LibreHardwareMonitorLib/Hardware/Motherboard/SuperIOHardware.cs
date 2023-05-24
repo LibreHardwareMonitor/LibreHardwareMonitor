@@ -2034,7 +2034,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("CPU CORE", 1));
                         v.Add(new Voltage("GPU", 2));
-                        v.Add(new Voltage("+5V", 3, 51.06f, 12));
+                        v.Add(new Voltage("+5V", 3, 20, 4.7f));
                         v.Add(new Voltage("+12V", 4, 68, 6.8f));
                         v.Add(new Voltage("DRAM", 5, 150, 150));
                         v.Add(new Voltage("CPU I/O", 6));
@@ -2125,7 +2125,8 @@ internal sealed class SuperIOHardware : Hardware
 
                             t.Add(new Temperature("Temperature #1", 0));
                             t.Add(new Temperature("Temperature #2", 1));
-                            t.Add(new Temperature("Local", 2));
+                            if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                                t.Add(new Temperature("Local", 2));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("System Fan #" + (i + 3), i));
@@ -2143,7 +2144,8 @@ internal sealed class SuperIOHardware : Hardware
 
                             t.Add(new Temperature("Temperature #1", 0));
                             t.Add(new Temperature("Temperature #2", 1));
-                            t.Add(new Temperature("Local", 2));
+                            if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                                t.Add(new Temperature("Local", 2));
 
                             for (int i = 0; i < superIO.Fans.Length; i++)
                                 f.Add(new Fan("Fan #" + (i + 1), i));
@@ -2163,7 +2165,8 @@ internal sealed class SuperIOHardware : Hardware
 
                 t.Add(new Temperature("Temperature #1", 0));
                 t.Add(new Temperature("Temperature #2", 1));
-                t.Add(new Temperature("Local", 2));
+                if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                    t.Add(new Temperature("Local", 2));
 
                 for (int i = 0; i < superIO.Fans.Length; i++)
                     f.Add(new Fan("Fan #" + (i + 1), i));

@@ -15,6 +15,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class F753XX : ISuperIO
 {
+    private readonly byte[] _initialFanExpMsb = new byte[2]; // only for F75387 to prevent unexpected things on unknown HW
     private readonly byte[] _initialFanPwmControl = new byte[2];
     private byte _initialFanPwmMode;
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[2];
@@ -26,7 +27,7 @@ internal class F753XX : ISuperIO
         Dev = new SmBusDevice(addr, smb_addr);
         
         Voltages = new float?[4];
-        Temperatures = new float?[3];
+        Temperatures = new float?[chip == ChipSmbus.F75387 ? 3 : 2];
         Fans = new float?[2];
         Controls = new float?[2];
     }
@@ -159,7 +160,8 @@ internal class F753XX : ISuperIO
         for (int i = 0; i < Temperatures.Length; i++)
         {
             float value = ReadByte(TEMPERATURE_MSB_REG[i]);
-            value += ReadByte(TEMPERATURE_LSB_REG[i]) / 256.0f;
+            if (Chip == (Chip)ChipSmbus.F75387)
+                value += ReadByte(TEMPERATURE_LSB_REG[i]) / 256.0f;
 
             if (value is < 140 and > 0) // real range is 0 to 140.875
                 Temperatures[i] = value;
@@ -194,9 +196,14 @@ internal class F753XX : ISuperIO
             _initialFanPwmMode = ReadByte(FAN_MODE_REG);
 
             if (Chip == (Chip)ChipSmbus.F75387)
+            {
+                _initialFanExpMsb[index] = ReadByte(FAN_PWM_EXP_MSB_REG[index]);
                 _initialFanPwmControl[index] = ReadByte(FAN_PWM_EXP_LSB_REG[index]);
+            }
             else
+            {
                 _initialFanPwmControl[index] = ReadByte(FAN_PWM_DUTY_REG[index]);
+            }
 
             _restoreDefaultFanPwmControlRequired[index] = true;
         }
@@ -209,9 +216,14 @@ internal class F753XX : ISuperIO
             WriteByte(FAN_MODE_REG, _initialFanPwmMode);
 
             if (Chip == (Chip)ChipSmbus.F75387)
+            {
+                WriteByte(FAN_PWM_EXP_MSB_REG[index], _initialFanExpMsb[index]);
                 WriteByte(FAN_PWM_EXP_LSB_REG[index], _initialFanPwmControl[index]);
+            }
             else
+            {
                 WriteByte(FAN_PWM_DUTY_REG[index], _initialFanPwmControl[index]);
+            }
 
             _restoreDefaultFanPwmControlRequired[index] = false;
         }
@@ -242,10 +254,9 @@ internal class F753XX : ISuperIO
 #pragma warning disable IDE1006 // Naming Styles
 
     private readonly byte[] TEMPERATURE_MSB_REG = { 0x14, 0x15, 0x1C }; // read MSB first!  [T1, T2, Local]
-    private readonly byte[] TEMPERATURE_LSB_REG = { 0x1A, 0x1B, 0x1D };
+    private readonly byte[] TEMPERATURE_LSB_REG = { 0x1A, 0x1B, 0x1D }; // only for F75387
 
     private const byte VOLTAGE_BASE_REG = 0x10;                         // [VCC, V1, V2, V3]
-
 
     private const byte FAN_MODE_REG = 0x60;
     private readonly byte[] FAN_PWM_DUTY_REG = { 0x76, 0x86 };          // set pwm (use PWM_EXP for F75387)
