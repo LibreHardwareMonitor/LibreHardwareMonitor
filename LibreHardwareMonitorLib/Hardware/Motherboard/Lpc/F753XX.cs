@@ -169,8 +169,7 @@ internal class F753XX : ISuperIO
 
         for (int i = 0; i < Fans.Length; i++)
         {
-            int value = ReadByte(FAN_TACHOMETER_MSB_REG[i]) << 8;
-            value |= ReadByte(FAN_TACHOMETER_LSB_REG[i]);
+            int value = ReadMsbLsb(FAN_TACHOMETER_MSB_REG[i], FAN_TACHOMETER_LSB_REG[i]);
 
             if (value > 0)
                 Fans[i] = value < 0x0FFE ? 1.5e6f / value : 0;
@@ -180,8 +179,7 @@ internal class F753XX : ISuperIO
 
         for (int i = 0; i < Controls.Length; i++)
         {
-            int value = ReadByte(FAN_PWM_EXP_MSB_REG[i]) << 8;
-            value |= ReadByte(FAN_PWM_EXP_LSB_REG[i]);
+            int value = ReadMsbLsb(FAN_PWM_EXP_MSB_REG[i], FAN_PWM_EXP_LSB_REG[i]);
 
             Controls[i] = value * 100.0f / 0xFF;
         }
@@ -219,9 +217,20 @@ internal class F753XX : ISuperIO
         }
     }
 
+    private ushort ReadMsbLsb(byte reg_msb, byte reg_lsb)
+    {
+        return (ushort)((Dev.ReadByte(reg_msb) << 8) | Dev.ReadByte(reg_lsb));
+    }
+
     private byte ReadByte(byte register)
     {
         return Dev.ReadByte(register);
+    }
+
+    private void WriteMsbLsb(byte reg_msb, byte reg_lsb, ushort value)
+    {
+        Dev.WriteByte(reg_msb, (byte)((value >> 8) & 0xff));
+        Dev.WriteByte(reg_lsb, (byte)(value & 0xff));
     }
 
     private void WriteByte(byte register, byte value)
