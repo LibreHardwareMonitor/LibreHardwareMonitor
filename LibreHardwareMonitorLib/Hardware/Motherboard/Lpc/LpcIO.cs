@@ -90,6 +90,11 @@ internal class LpcIO
     {
         SmBusDevice tempDev = new SmBusDevice(addr, smb_addr);
 
+        // read word don't work for this chip, or for target hardware
+        ushort vid = (ushort)((tempDev.ReadByte(FINTEK_VENDOR_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(FINTEK_VENDOR_ID_SMBUS_REGISTER + 1));
+        if (vid != FINTEK_VENDOR_ID)
+            return false; // this is not a Fintek device
+
         ChipSmbus chip = (ChipSmbus)((tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER + 1));
 
         switch (chip)
@@ -740,6 +745,7 @@ internal class LpcIO
 
     // SMBus
     private const byte CHIP_ID_SMBUS_REGISTER = 0x5A;
+    private const byte FINTEK_VENDOR_ID_SMBUS_REGISTER = 0x5D;
 
     // ReSharper restore InconsistentNaming
 }
