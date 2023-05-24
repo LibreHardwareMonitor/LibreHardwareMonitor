@@ -2027,10 +2027,9 @@ internal sealed class SuperIOHardware : Hardware
                 break;
 
             case Manufacturer.MSI:
-                switch(model)
+                switch (model)
                 {
                     case Model.Z77_MPower: // F71889AD
-                    {
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1));
                         v.Add(new Voltage("GPU", 2));
@@ -2054,9 +2053,31 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("System Fan #" + i, i));
 
                         break;
-                    }
+                    case Model.X79_XPower_II: // F71889AD
+                        v.Add(new Voltage("VCC3V", 0, 150, 150));
+                        v.Add(new Voltage("Vcore", 1));
+                        v.Add(new Voltage("CPU SA", 2));
+                        v.Add(new Voltage("+5V", 3, 20, 4.7f));
+                        v.Add(new Voltage("+12V", 4, 68, 6.8f));
+                        v.Add(new Voltage("DRAM A/B", 5, 150, 150));
+                        v.Add(new Voltage("DRAM C/D", 6, 150, 150));
+                        v.Add(new Voltage("+3.3V", 7, 150, 150));
+                        v.Add(new Voltage("VBat", 8, 150, 150));
+
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("Probe", 1));
+                        t.Add(new Temperature("System", 2));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        for (int i = 1; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("System Fan #" + i, i));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        for (int i = 1; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("System Fan #" + i, i));
+
+                        break;
                     default:
-                    {
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1));
                         v.Add(new Voltage("Voltage #3", 2, true));
@@ -2079,7 +2100,6 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Fan Control #" + (i + 1), i));
 
                         break;
-                    }
                 }
 
                 break;
@@ -2118,43 +2138,39 @@ internal sealed class SuperIOHardware : Hardware
                 switch (model)
                 {
                     case Model.Z77_MPower: // Probably rev 4.0+ (F75387)
-                        {
-                            v.Add(new Voltage("VCC", 0, 150, 150));
-                            for (int i = 1; i < superIO.Voltages.Length; i++)
-                                v.Add(new Voltage("Voltage #" + i, i, true));
+                        v.Add(new Voltage("VCC", 0, 150, 150));
+                        for (int i = 1; i < superIO.Voltages.Length; i++)
+                            v.Add(new Voltage("Voltage #" + i, i, true));
 
-                            t.Add(new Temperature("Temperature #1", 0));
-                            t.Add(new Temperature("Temperature #2", 1));
-                            if (superIO.Chip == (Chip)ChipSmbus.F75387)
-                                t.Add(new Temperature("Local", 2));
+                        t.Add(new Temperature("Temperature #1", 0));
+                        t.Add(new Temperature("Temperature #2", 1));
+                        if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                            t.Add(new Temperature("Local", 2));
 
-                            for (int i = 0; i < superIO.Fans.Length; i++)
-                                f.Add(new Fan("System Fan #" + (i + 3), i));
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("System Fan #" + (i + 3), i));
 
-                            for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Control("System Fan #" + (i + 3), i));
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("System Fan #" + (i + 3), i));
 
-                            break;
-                        }
+                        break;
                     default:
-                        {
-                            v.Add(new Voltage("VCC", 0, 150, 150));
-                            for (int i = 1; i < superIO.Voltages.Length; i++)
-                                v.Add(new Voltage("Voltage #" + i, i, true));
+                        v.Add(new Voltage("VCC", 0, 150, 150));
+                        for (int i = 1; i < superIO.Voltages.Length; i++)
+                            v.Add(new Voltage("Voltage #" + i, i, true));
 
-                            t.Add(new Temperature("Temperature #1", 0));
-                            t.Add(new Temperature("Temperature #2", 1));
-                            if (superIO.Chip == (Chip)ChipSmbus.F75387)
-                                t.Add(new Temperature("Local", 2));
+                        t.Add(new Temperature("Temperature #1", 0));
+                        t.Add(new Temperature("Temperature #2", 1));
+                        if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                            t.Add(new Temperature("Local", 2));
 
-                            for (int i = 0; i < superIO.Fans.Length; i++)
-                                f.Add(new Fan("Fan #" + (i + 1), i));
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
 
-                            for (int i = 0; i < superIO.Controls.Length; i++)
-                                c.Add(new Control("Fan #" + (i + 1), i));
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
 
-                            break;
-                        }
+                        break;
                 }
                 break;
 

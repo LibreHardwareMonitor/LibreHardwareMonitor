@@ -282,6 +282,9 @@ internal class Identification
             case var _ when name.Equals("Z77A-GD55", StringComparison.OrdinalIgnoreCase):        // MS-7751 Rev 1.x
             case var _ when name.Equals("Z77A-GD55 (MS-7751)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z77_MPower;
+            case var _ when name.Equals("Big Bang-XPower II", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Big Bang-XPower II (MS-7737)", StringComparison.OrdinalIgnoreCase):
+                return Model.X79_XPower_II;
             case var _ when name.Equals("X79-UD3", StringComparison.OrdinalIgnoreCase):
                 return Model.X79_UD3;
             case var _ when name.Equals("Z68A-D3H-B3", StringComparison.OrdinalIgnoreCase):
