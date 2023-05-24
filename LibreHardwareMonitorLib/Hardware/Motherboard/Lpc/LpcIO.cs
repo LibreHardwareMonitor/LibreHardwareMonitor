@@ -95,13 +95,13 @@ internal class LpcIO
         if (vid != FINTEK_VENDOR_ID)
             return false; // this is not a Fintek device
 
-        ChipSmbus chip = (ChipSmbus)((tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER + 1));
+        Chip chip = (Chip)((tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER + 1));
 
         switch (chip)
         {
-            case ChipSmbus.F75373S:
-            case ChipSmbus.F75375S:
-            case ChipSmbus.F75387:
+            case Chip.F75373S:
+            case Chip.F75375S:
+            case Chip.F75387:
                 _superIOs.Add(new F753XX(chip, addr, smb_addr));
                 break;
 

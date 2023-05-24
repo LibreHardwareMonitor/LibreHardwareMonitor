@@ -263,9 +263,9 @@ internal sealed class SuperIOHardware : Hardware
                 GetFintekConfiguration(superIO, manufacturer, model, v, t, f, c);
                 break;
 
-            case (Chip)ChipSmbus.F75373S:
-            case (Chip)ChipSmbus.F75375S:
-            case (Chip)ChipSmbus.F75387:
+            case Chip.F75373S:
+            case Chip.F75375S:
+            case Chip.F75387:
                 GetFintekF753XXConfiguration(superIO, manufacturer, model, v, t, f, c);
                 break;
 
@@ -2144,7 +2144,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         t.Add(new Temperature("Temperature #1", 0));
                         t.Add(new Temperature("Temperature #2", 1));
-                        if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                        if (superIO.Chip == Chip.F75387)
                             t.Add(new Temperature("Local", 2));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
@@ -2161,7 +2161,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         t.Add(new Temperature("Temperature #1", 0));
                         t.Add(new Temperature("Temperature #2", 1));
-                        if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                        if (superIO.Chip == Chip.F75387)
                             t.Add(new Temperature("Local", 2));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
@@ -2181,7 +2181,7 @@ internal sealed class SuperIOHardware : Hardware
 
                 t.Add(new Temperature("Temperature #1", 0));
                 t.Add(new Temperature("Temperature #2", 1));
-                if (superIO.Chip == (Chip)ChipSmbus.F75387)
+                if (superIO.Chip == Chip.F75387)
                     t.Add(new Temperature("Local", 2));
 
                 for (int i = 0; i < superIO.Fans.Length; i++)

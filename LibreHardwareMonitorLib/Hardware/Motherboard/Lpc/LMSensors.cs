@@ -73,13 +73,13 @@ internal class LMSensors
                         break;
 
                     case "f75375":
-                        _superIOs.Add(new LMChip((Chip)ChipSmbus.F75375S, path));
+                        _superIOs.Add(new LMChip(Chip.F75375S, path));
                         break;
                     case "f75373":
-                        _superIOs.Add(new LMChip((Chip)ChipSmbus.F75373S, path));
+                        _superIOs.Add(new LMChip(Chip.F75373S, path));
                         break;
                     case "f75387":
-                        _superIOs.Add(new LMChip((Chip)ChipSmbus.F75387, path));
+                        _superIOs.Add(new LMChip(Chip.F75387, path));
                         break;
 
                     case "it8705":

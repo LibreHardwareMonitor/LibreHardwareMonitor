@@ -21,20 +21,20 @@ internal class F753XX : ISuperIO
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[2];
     SmBusDevice Dev;
 
-    public F753XX(ChipSmbus chip, byte addr, ushort smb_addr)
+    public F753XX(Chip chip, byte addr, ushort smb_addr)
     {
-        Chip = (Chip)chip;
+        Chip = chip;
         Dev = new SmBusDevice(addr, smb_addr);
         
         Voltages = new float?[4];
-        Temperatures = new float?[chip == ChipSmbus.F75387 ? 3 : 2];
+        Temperatures = new float?[chip == Chip.F75387 ? 3 : 2];
         Fans = new float?[2];
         Controls = new float?[2];
     }
 
-    public F753XX(ChipSmbus chip, SmBusDevice dev)
+    public F753XX(Chip chip, SmBusDevice dev)
     {
-        Chip = (Chip)chip;
+        Chip = chip;
         Dev = dev;
 
         Voltages = new float?[4];
@@ -75,7 +75,7 @@ internal class F753XX : ISuperIO
 
             // force change fan mode to manual
             byte fanmode = ReadByte(FAN_MODE_REG);
-            if (Chip == (Chip)ChipSmbus.F75387)
+            if (Chip == Chip.F75387)
             {
                 for (byte nr = 0; nr < Controls.Length; nr++)
                 {
@@ -95,7 +95,7 @@ internal class F753XX : ISuperIO
             }
             WriteByte(FAN_MODE_REG, fanmode);
 
-            if (Chip == (Chip)ChipSmbus.F75387)
+            if (Chip == Chip.F75387)
                 WriteByte(FAN_PWM_EXP_LSB_REG[index], value.Value);
             else
                 WriteByte(FAN_PWM_DUTY_REG[index], value.Value);
@@ -160,7 +160,7 @@ internal class F753XX : ISuperIO
         for (int i = 0; i < Temperatures.Length; i++)
         {
             float value = ReadByte(TEMPERATURE_MSB_REG[i]);
-            if (Chip == (Chip)ChipSmbus.F75387)
+            if (Chip == Chip.F75387)
                 value += ReadByte(TEMPERATURE_LSB_REG[i]) / 256.0f;
 
             if (value is < 140 and > 0) // real range is 0 to 140.875
@@ -195,7 +195,7 @@ internal class F753XX : ISuperIO
         {
             _initialFanPwmMode = ReadByte(FAN_MODE_REG);
 
-            if (Chip == (Chip)ChipSmbus.F75387)
+            if (Chip == Chip.F75387)
             {
                 _initialFanExpMsb[index] = ReadByte(FAN_PWM_EXP_MSB_REG[index]);
                 _initialFanPwmControl[index] = ReadByte(FAN_PWM_EXP_LSB_REG[index]);
@@ -215,7 +215,7 @@ internal class F753XX : ISuperIO
         {
             WriteByte(FAN_MODE_REG, _initialFanPwmMode);
 
-            if (Chip == (Chip)ChipSmbus.F75387)
+            if (Chip == Chip.F75387)
             {
                 WriteByte(FAN_PWM_EXP_MSB_REG[index], _initialFanExpMsb[index]);
                 WriteByte(FAN_PWM_EXP_LSB_REG[index], _initialFanPwmControl[index]);

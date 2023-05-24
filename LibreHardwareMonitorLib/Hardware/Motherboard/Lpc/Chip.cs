@@ -79,14 +79,10 @@ internal enum Chip : ushort
     W83687THF = 0x8541,
 
     IPMI = 0x4764,
-}
 
-internal enum ChipSmbus : ushort
-{
-    Unknown = 0,
-
-    // CHIPID reg at 0x5A (thats why another enum there)
-    // normal dev addr: 0x2D, 0x2E
+    // SMBus:
+    // CHIPID reg at 0x5A
+    // Normal dev addr: 0x2D, 0x2E
     F75373S = 0x0204,
     F75375S = 0x0306,
     F75387 = 0x0410,
@@ -111,9 +107,9 @@ internal class ChipName
             case Chip.F71889F: return "Fintek F71889F";
             case Chip.F71808E: return "Fintek F71808E";
 
-            case (Chip)ChipSmbus.F75373S: return "Fintek F75373S/F75373SG";
-            case (Chip)ChipSmbus.F75375S: return "Fintek F75375S/F75375SG";
-            case (Chip)ChipSmbus.F75387: return "Fintek F75387SG/F75387RG";
+            case Chip.F75373S: return "Fintek F75373S/SG";
+            case Chip.F75375S: return "Fintek F75375S/SG";
+            case Chip.F75387: return "Fintek F75387SG/RG";
 
             case Chip.IT8613E: return "ITE IT8613E";
             case Chip.IT8620E: return "ITE IT8620E";
