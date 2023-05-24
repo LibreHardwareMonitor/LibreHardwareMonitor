@@ -99,7 +99,7 @@ internal class SmBusDevice
         return 0;
     }
 
-    private int Transaction(byte xact) // 0x0C WORD_DATA, 0x08 BYTE_DATA
+    private int Transaction(byte xact) // I801: 0x0C WORD_DATA, 0x08 BYTE_DATA, 0x00 QUICK
     {
         int result = CheckPre();
         if (result < 0)
@@ -111,6 +111,23 @@ internal class SmBusDevice
         int status = WaitIntr();
 
         return CheckPost(status);
+    }
+
+    public ushort ReadWord(byte register)
+    {
+        if (SMB_ADDRESS == 0 || CHIP_ADDRESS == 0)
+            return 0xFFFF;
+
+        Ring0.WriteSmbus(SMBHSTADD, (byte)(((CHIP_ADDRESS & 0x7f) << 1) | (SMB_READ & 0x01)));
+        Ring0.WriteSmbus(SMBHSTCMD, register);
+
+        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & (~SMBAUXCTL_CRC)));
+
+        Transaction(0x0C);
+
+        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & ~(SMBAUXCTL_CRC | SMBAUXCTL_E32B)));
+
+        return (ushort)(Ring0.ReadSmbus(SMBHSTDAT0) | (Ring0.ReadSmbus(SMBHSTDAT1) << 8));
     }
 
     public byte ReadByte(byte register)
@@ -128,6 +145,23 @@ internal class SmBusDevice
         Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & ~(SMBAUXCTL_CRC | SMBAUXCTL_E32B)));
 
         return Ring0.ReadSmbus(SMBHSTDAT0);
+    }
+
+    public void WriteWord(byte register, byte value)
+    {
+        if (SMB_ADDRESS == 0 || CHIP_ADDRESS == 0)
+            return;
+
+        Ring0.WriteSmbus(SMBHSTADD, (byte)(((CHIP_ADDRESS & 0x7f) << 1) | (SMB_WRITE & 0x01)));
+        Ring0.WriteSmbus(SMBHSTCMD, register);
+        Ring0.WriteSmbus(SMBHSTDAT0, (byte)(value & 0x00ff));
+        Ring0.WriteSmbus(SMBHSTDAT1, (byte)((value & 0xff00) >> 8));
+
+        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & (~SMBAUXCTL_CRC)));
+
+        Transaction(0x0C);
+
+        Ring0.WriteSmbus(SMBAUXCTL, (byte)(Ring0.ReadSmbus(SMBAUXCTL) & ~(SMBAUXCTL_CRC | SMBAUXCTL_E32B)));
     }
 
     public void WriteByte(byte register, byte value)
@@ -229,6 +263,10 @@ internal class SmBusDevice
                             }
                         }
                     }
+                }
+                else if (manufacturer.Equals("ADVANCED MICRO DEVICES, INC") == true)
+                {
+                    return 0x0B00;
                 }
             }
         }
