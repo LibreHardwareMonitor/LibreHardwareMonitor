@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
@@ -58,7 +56,8 @@ internal sealed class KrakenV3 : Hardware
             _fanControl = true;
             _supportedFirmware = "5.7.0";
 
-        } else if (dev.ProductID == 0x300C)
+        }
+        else if (dev.ProductID == 0x300C)
         {
             Name = "NZXT Kraken Elite";
             _fanControl = true;
@@ -136,40 +135,56 @@ internal sealed class KrakenV3 : Hardware
 
     private void PumpSoftwareControlValueChanged(Control control)
     {
-        if (control.ControlMode == ControlMode.Software)
+        try
         {
-            float value = control.SoftwareValue;
+            if (control.ControlMode == ControlMode.Software)
+            {
+                float value = control.SoftwareValue;
 
-            FillTargetArray(_setPumpTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
+                FillTargetArray(_setPumpTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
 
-            _controllingPump = true;
-            _stream.Write(_setPumpTarget);
-            _pump.Value = value;
+                _controllingPump = true;
+                _stream.Write(_setPumpTarget);
+                _pump.Value = value;
+            }
+            else if (control.ControlMode == ControlMode.Default)
+            {
+                // There isn't a "default" mode with this pump, but a safe setting is 60%
+                FillTargetArray(_setPumpTarget, 60);
+                _stream.Write(_setPumpTarget);
+            }
         }
-        else if (control.ControlMode == ControlMode.Default)
+        catch (ObjectDisposedException)
         {
-            // There isn't a "default" mode with this pump, but a safe setting is 60%
-            FillTargetArray(_setPumpTarget, 60);
-            _stream.Write(_setPumpTarget);
+            // Could be unplugged, or the app is stopping...
+            return;
         }
     }
 
     private void FanSoftwareControlValueChanged(Control control)
     {
-        if (control.ControlMode == ControlMode.Software)
+        try
         {
-            float value = control.SoftwareValue;
-            FillTargetArray(_setFanTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
+            if (control.ControlMode == ControlMode.Software)
+            {
+                float value = control.SoftwareValue;
+                FillTargetArray(_setFanTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
 
-            _controllingFans = true;
-            _stream.Write(_setFanTarget);
-            _fan.Value = value;
+                _controllingFans = true;
+                _stream.Write(_setFanTarget);
+                _fan.Value = value;
+            }
+            else if (control.ControlMode == ControlMode.Default)
+            {
+                // There isn't a "default" mode with this fan, but a safe setting is 40%
+                FillTargetArray(_setFanTarget, 40);
+                _stream.Write(_setFanTarget);
+            }
         }
-        else if (control.ControlMode == ControlMode.Default)
+        catch (ObjectDisposedException)
         {
-            // There isn't a "default" mode with this fan, but a safe setting is 40%
-            FillTargetArray(_setFanTarget, 40);
-            _stream.Write(_setFanTarget);
+            // Could be unplugged, or the app is stopping...
+            return;
         }
     }
 
@@ -181,48 +196,56 @@ internal sealed class KrakenV3 : Hardware
 
     public override void Update()
     {
-        _stream.Write(_status_req); // Request status
-        _stream.Read(_rawData); // This is a blocking call, will wait for bytes to become available
-        if (_rawData[0] == 0x75 /*status response*/ && _rawData.Length >= 30)
+        try
+        {
+            _stream.Write(_status_req);
+            do
             {
-                _temperature.Value = _rawData[15] + (_rawData[16] / 10.0f);
-                _pumpRpm.Value = (_rawData[18] << 8) | _rawData[17];
+                _stream.Read(_rawData);
+            } while (_rawData[0] != 0x75 || _rawData[1] != 0x1);
 
-                // The following logic makes sure the pump is set to the controlling value. This pump sometimes sets itself to 0% when instructed to a value.
-                if (!_controllingPump)
+            _temperature.Value = _rawData[15] + (_rawData[16] / 10.0f);
+            _pumpRpm.Value = (_rawData[18] << 8) | _rawData[17];
+
+            // The following logic makes sure the pump is set to the controlling value. This pump sometimes sets itself to 0% when instructed to a value.
+            if (!_controllingPump)
+            {
+                _pump.Value = _rawData[19];
+            }
+            else if (_pump.Value != _rawData[19])
+            {
+                float value = _pump.Value.GetValueOrDefault();
+                FillTargetArray(_setPumpTarget, (byte)value);
+                _stream.Write(_setPumpTarget);
+            }
+            else
+            {
+                _controllingPump = false;
+            }
+
+            if (_fanControl)
+            {
+                _fanRpm.Value = (_rawData[24] << 8) | _rawData[23];
+                if (!_controllingFans)
                 {
-                    _pump.Value = _rawData[19];
+                    _fan.Value = _rawData[25];
                 }
-                else if (_pump.Value != _rawData[19])
+                else if (_fan.Value != _rawData[25])
                 {
-                    float value = _pump.Value.GetValueOrDefault();
-                    FillTargetArray(_setPumpTarget, (byte)value);
-                    _stream.Write(_setPumpTarget);
+                    float value = _fan.Value.GetValueOrDefault();
+                    FillTargetArray(_setFanTarget, (byte)value);
+                    _stream.Write(_setFanTarget);
                 }
                 else
                 {
-                    _controllingPump = false;
+                    _controllingFans = false;
                 }
-
-                if (_fanControl)
-                {
-                    _fanRpm.Value = (_rawData[24] << 8) | _rawData[23];
-                    if (!_controllingFans)
-                    {
-                        _fan.Value = _rawData[25];
-                    }
-                    else if (_fan.Value != _rawData[25])
-                    {
-                        float value = _fan.Value.GetValueOrDefault();
-                        FillTargetArray(_setFanTarget, (byte)value);
-                        _stream.Write(_setFanTarget);
-                    }
-                    else
-                    {
-                        _controllingFans = false;
-                    }
-                }
-            
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // Could be unplugged, or the app is stopping...
+            return;
         }
     }
 }

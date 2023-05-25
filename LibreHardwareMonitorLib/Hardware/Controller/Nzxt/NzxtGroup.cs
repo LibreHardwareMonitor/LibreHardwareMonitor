@@ -25,11 +25,11 @@ internal class NzxtGroup : IGroup
 
             switch (dev.ProductID)
             {
-                case 0x2007:
-                case 0x2014:
-                case 0x3008:
-                case 0x300C:
-                case 0x300E:
+                case 0x2007: // Kraken X3 original pid
+                case 0x2014: // Kraken X3 new pid
+                case 0x3008: // Kraken Z3
+                case 0x300C: // Kraken 2023 elite
+                case 0x300E: // Kraken 2023 standard
                     // NZXT KrakenV3 Devices
                     var krakenV3 = new KrakenV3(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
@@ -38,7 +38,7 @@ internal class NzxtGroup : IGroup
                     _report.AppendLine();
                     _hardware.Add(krakenV3);
                     break;
-     
+
                 case 0x1711:
                     var gridv3 = new GridV3(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
@@ -46,7 +46,7 @@ internal class NzxtGroup : IGroup
                     _report.AppendLine();
                     _hardware.Add(gridv3);
                     break;
-                
+
 
                 default:
                     _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
