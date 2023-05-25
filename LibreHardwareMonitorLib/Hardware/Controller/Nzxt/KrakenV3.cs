@@ -8,7 +8,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
      */
 internal sealed class KrakenV3 : Hardware
 {
-
     private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
     private static readonly byte[] _setPumpSpeedHeader = { 0x72, 0x01, 0x00, 0x00 };
     private static readonly byte[] _setFanSpeedHeader = { 0x72, 0x02, 0x00, 0x00 };
@@ -27,7 +26,6 @@ internal sealed class KrakenV3 : Hardware
     private readonly string _supportedFirmware;
     private volatile bool _controllingFans;
     private volatile bool _controllingPump;
-
 
     private static void FillTargetArray(byte[] targetArray, byte value)
     {
@@ -118,7 +116,6 @@ internal sealed class KrakenV3 : Hardware
                 fanControl.SoftwareControlValueChanged += FanSoftwareControlValueChanged;
                 FanSoftwareControlValueChanged(fanControl);
                 ActivateSensor(_fan);
-
 
                 // Fan RPM
                 _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
