@@ -9,8 +9,6 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
 internal sealed class KrakenV3 : Hardware
 {
     private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
-    private static readonly byte[] _setPumpSpeedHeader = { 0x72, 0x01, 0x00, 0x00 };
-    private static readonly byte[] _setFanSpeedHeader = { 0x72, 0x02, 0x00, 0x00 };
     private static readonly byte[] _status_req = { 0x74, 0x01 };
     private static readonly byte[] _setPumpTarget = new byte[64];
     private static readonly byte[] _setFanTarget = new byte[64];
@@ -33,19 +31,6 @@ internal sealed class KrakenV3 : Hardware
             targetArray[i] = value;
     }
 
-    static KrakenV3()
-    {
-        // Init pump control target array
-        Array.Copy(_setPumpSpeedHeader, 0, _setPumpTarget, 0, 4);
-        // Fill target array with a pump duty of 60%
-        FillTargetArray(_setPumpTarget, 60);
-
-        // Init fan control target array
-        Array.Copy(_setFanSpeedHeader, 0, _setFanTarget, 0, 4);
-        // Fill target array with a fan duty of 40%
-        FillTargetArray(_setFanTarget, 40);
-    }
-
     public KrakenV3(HidDevice dev, ISettings settings) : base("Nzxt Kraken Z", new Identifier("nzxt", "krakenz", dev.GetSerialNumber().TrimStart('0')), settings)
     {
         if (dev.ProductID == 0x3008)
@@ -53,6 +38,8 @@ internal sealed class KrakenV3 : Hardware
             Name = "NZXT Kraken Z3";
             _fanControl = true;
             _supportedFirmware = "5.7.0";
+            Array.Copy(new byte[] { 0x72, 0x01, 0x00, 0x00 }, 0, _setPumpTarget, 0, 4);
+            Array.Copy(new byte[] { 0x72, 0x02, 0x00, 0x00 }, 0, _setFanTarget, 0, 4);
 
         }
         else if (dev.ProductID == 0x300C)
@@ -60,19 +47,28 @@ internal sealed class KrakenV3 : Hardware
             Name = "NZXT Kraken Elite";
             _fanControl = true;
             _supportedFirmware = "1.2.4";
+            Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
+            Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
+
         }
         else if (dev.ProductID == 0x300E)
         {
             Name = "NZXT Kraken";
             _fanControl = true;
             _supportedFirmware = "1.2.4"; // Firmware version to be confirmed
+            Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
+            Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
         }
         else
         {
             Name = "NZXT Kraken X3";
             _fanControl = false;
             _supportedFirmware = "2.1.0";
+            Array.Copy(new byte[] { 0x72, 0x01, 0x00, 0x00 }, 0, _setPumpTarget, 0, 4);
         }
+
+        FillTargetArray(_setPumpTarget, 60);
+        FillTargetArray(_setFanTarget, 40);
 
         if (dev.TryOpen(out _stream))
         {
