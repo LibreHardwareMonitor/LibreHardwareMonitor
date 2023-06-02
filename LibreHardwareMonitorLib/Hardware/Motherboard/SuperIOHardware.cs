@@ -1157,6 +1157,25 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B75M_D3H: // IT8728F
+                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
+                        v.Add(new Voltage("+5V", 3, 15, 10));
+                        v.Add(new Voltage("+12V", 2, 10, 2));
+                        v.Add(new Voltage("iGPU VAXG", 4));
+                        v.Add(new Voltage("Vcore", 5));
+                        v.Add(new Voltage("DIMM", 6));
+                        v.Add(new Voltage("3VSB", 7, 10, 10));
+                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("CPU", 2));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan", 1));
+                        c.Add(new Control("CPU Fan", 2));
+                        c.Add(new Control("System Fan", 1));
+
+                        break;
+
                     case Model.H81M_HD3: //IT8620E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
