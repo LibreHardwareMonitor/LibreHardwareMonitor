@@ -9,62 +9,53 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
 internal sealed class KrakenV3 : Hardware
 {
     private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
-    private static readonly byte[] _status_req = { 0x74, 0x01 };
-    private static readonly byte[] _setPumpTarget = new byte[64];
     private static readonly byte[] _setFanTarget = new byte[64];
+    private static readonly byte[] _setPumpTarget = new byte[64];
+    private static readonly byte[] _statusRequest = { 0x74, 0x01 };
 
+    private readonly Sensor _fan;
+    private readonly bool _fanControl;
+    private readonly Sensor _fanRpm;
     private readonly Sensor _pump;
     private readonly Sensor _pumpRpm;
-    private readonly Sensor _fan;
-    private readonly Sensor _fanRpm;
     private readonly byte[] _rawData = new byte[64];
     private readonly HidStream _stream;
-    private readonly Sensor _temperature;
-    private readonly bool _fanControl;
     private readonly string _supportedFirmware;
+    private readonly Sensor _temperature;
     private volatile bool _controllingFans;
     private volatile bool _controllingPump;
 
-    private static void FillTargetArray(byte[] targetArray, byte value)
-    {
-        for (byte i = 4; i < targetArray.Length; i++)
-            targetArray[i] = value;
-    }
-
     public KrakenV3(HidDevice dev, ISettings settings) : base("Nzxt Kraken Z", new Identifier("nzxt", "krakenz", dev.GetSerialNumber().TrimStart('0')), settings)
     {
-        if (dev.ProductID == 0x3008)
+        switch (dev.ProductID)
         {
-            Name = "NZXT Kraken Z3";
-            _fanControl = true;
-            _supportedFirmware = "5.7.0";
-            Array.Copy(new byte[] { 0x72, 0x01, 0x00, 0x00 }, 0, _setPumpTarget, 0, 4);
-            Array.Copy(new byte[] { 0x72, 0x02, 0x00, 0x00 }, 0, _setFanTarget, 0, 4);
-
-        }
-        else if (dev.ProductID == 0x300C)
-        {
-            Name = "NZXT Kraken Elite";
-            _fanControl = true;
-            _supportedFirmware = "1.2.4";
-            Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
-            Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
-
-        }
-        else if (dev.ProductID == 0x300E)
-        {
-            Name = "NZXT Kraken";
-            _fanControl = true;
-            _supportedFirmware = "1.2.4"; // Firmware version to be confirmed
-            Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
-            Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
-        }
-        else
-        {
-            Name = "NZXT Kraken X3";
-            _fanControl = false;
-            _supportedFirmware = "2.1.0";
-            Array.Copy(new byte[] { 0x72, 0x01, 0x00, 0x00 }, 0, _setPumpTarget, 0, 4);
+            case 0x3008:
+                Name = "NZXT Kraken Z3";
+                _fanControl = true;
+                _supportedFirmware = "5.7.0";
+                Array.Copy(new byte[] { 0x72, 0x01, 0x00, 0x00 }, 0, _setPumpTarget, 0, 4);
+                Array.Copy(new byte[] { 0x72, 0x02, 0x00, 0x00 }, 0, _setFanTarget, 0, 4);
+                break;
+            case 0x300C:
+                Name = "NZXT Kraken Elite";
+                _fanControl = true;
+                _supportedFirmware = "1.2.4";
+                Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
+                Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
+                break;
+            case 0x300E:
+                Name = "NZXT Kraken";
+                _fanControl = true;
+                _supportedFirmware = "1.2.4"; // Firmware version to be confirmed
+                Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
+                Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
+                break;
+            default:
+                Name = "NZXT Kraken X3";
+                _fanControl = false;
+                _supportedFirmware = "2.1.0";
+                Array.Copy(new byte[] { 0x72, 0x01, 0x00, 0x00 }, 0, _setPumpTarget, 0, 4);
+                break;
         }
 
         FillTargetArray(_setPumpTarget, 60);
@@ -75,15 +66,19 @@ internal sealed class KrakenV3 : Hardware
             _stream.ReadTimeout = 5000;
 
             _stream.Write(_getFirmwareInfo);
-            do
+
+            int tries = 0;
+
+            while (FirmwareVersion == null && tries++ < 10)
             {
                 _stream.Read(_rawData);
+
                 if (_rawData[0] == 0x11 && _rawData[1] == 0x01)
-                {
                     FirmwareVersion = $"{_rawData[0x11]}.{_rawData[0x12]}.{_rawData[0x13]}";
-                }
             }
-            while (FirmwareVersion == null);
+
+            if (FirmwareVersion == null)
+                return;
 
             // Liquid temperature
             _temperature = new Sensor("Liquid", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
@@ -117,6 +112,8 @@ internal sealed class KrakenV3 : Hardware
                 _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_fanRpm);
             }
+
+            IsValid = true;
         }
     }
 
@@ -124,33 +121,41 @@ internal sealed class KrakenV3 : Hardware
 
     public override HardwareType HardwareType => HardwareType.Cooler;
 
-    public string Status => FirmwareVersion != _supportedFirmware ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version {_supportedFirmware}" : "Status: OK";
+    public bool IsValid { get; }
+
+    public string Status => FirmwareVersion != _supportedFirmware ? $"Status: Untested firmware version {FirmwareVersion}! Please consider updating to version {_supportedFirmware}" : "Status: OK";
+
+    private static void FillTargetArray(byte[] targetArray, byte value)
+    {
+        for (byte i = 4; i < targetArray.Length; i++)
+            targetArray[i] = value;
+    }
 
     private void PumpSoftwareControlValueChanged(Control control)
     {
         try
         {
-            if (control.ControlMode == ControlMode.Software)
+            switch (control.ControlMode)
             {
-                float value = control.SoftwareValue;
+                case ControlMode.Software:
+                    float value = control.SoftwareValue;
 
-                FillTargetArray(_setPumpTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
+                    FillTargetArray(_setPumpTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
 
-                _controllingPump = true;
-                _stream.Write(_setPumpTarget);
-                _pump.Value = value;
-            }
-            else if (control.ControlMode == ControlMode.Default)
-            {
-                // There isn't a "default" mode with this pump, but a safe setting is 60%
-                FillTargetArray(_setPumpTarget, 60);
-                _stream.Write(_setPumpTarget);
+                    _controllingPump = true;
+                    _stream.Write(_setPumpTarget);
+                    _pump.Value = value;
+                    break;
+                case ControlMode.Default:
+                    // There isn't a "default" mode with this pump, but a safe setting is 60%
+                    FillTargetArray(_setPumpTarget, 60);
+                    _stream.Write(_setPumpTarget);
+                    break;
             }
         }
         catch (ObjectDisposedException)
         {
             // Could be unplugged, or the app is stopping...
-            return;
         }
     }
 
@@ -158,26 +163,26 @@ internal sealed class KrakenV3 : Hardware
     {
         try
         {
-            if (control.ControlMode == ControlMode.Software)
+            switch (control.ControlMode)
             {
-                float value = control.SoftwareValue;
-                FillTargetArray(_setFanTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
+                case ControlMode.Software:
+                    float value = control.SoftwareValue;
+                    FillTargetArray(_setFanTarget, (byte)(value > 100 ? 100 : value < 0 ? 0 : value));
 
-                _controllingFans = true;
-                _stream.Write(_setFanTarget);
-                _fan.Value = value;
-            }
-            else if (control.ControlMode == ControlMode.Default)
-            {
-                // There isn't a "default" mode with this fan, but a safe setting is 40%
-                FillTargetArray(_setFanTarget, 40);
-                _stream.Write(_setFanTarget);
+                    _controllingFans = true;
+                    _stream.Write(_setFanTarget);
+                    _fan.Value = value;
+                    break;
+                case ControlMode.Default:
+                    // There isn't a "default" mode with this fan, but a safe setting is 40%
+                    FillTargetArray(_setFanTarget, 40);
+                    _stream.Write(_setFanTarget);
+                    break;
             }
         }
         catch (ObjectDisposedException)
         {
             // Could be unplugged, or the app is stopping...
-            return;
         }
     }
 
@@ -191,11 +196,13 @@ internal sealed class KrakenV3 : Hardware
     {
         try
         {
-            _stream.Write(_status_req);
+            _stream.Write(_statusRequest);
+
             do
             {
                 _stream.Read(_rawData);
-            } while (_rawData[0] != 0x75 || _rawData[1] != 0x1);
+            }
+            while (_rawData[0] != 0x75 || _rawData[1] != 0x1);
 
             _temperature.Value = _rawData[15] + (_rawData[16] / 10.0f);
             _pumpRpm.Value = (_rawData[18] << 8) | _rawData[17];
@@ -238,7 +245,6 @@ internal sealed class KrakenV3 : Hardware
         catch (ObjectDisposedException)
         {
             // Could be unplugged, or the app is stopping...
-            return;
         }
     }
 }

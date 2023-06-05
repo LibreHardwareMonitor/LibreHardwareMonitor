@@ -36,18 +36,21 @@ internal class NzxtGroup : IGroup
                     _report.AppendLine($"Firmware version: {krakenV3.FirmwareVersion}");
                     _report.AppendLine($"{krakenV3.Status}");
                     _report.AppendLine();
-                    _hardware.Add(krakenV3);
-                    break;
 
+                    if (krakenV3.IsValid)
+                        _hardware.Add(krakenV3);
+
+                    break;
                 case 0x1711:
                     var gridv3 = new GridV3(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
                     _report.AppendLine($"Firmware version: {gridv3.FirmwareVersion}");
                     _report.AppendLine();
-                    _hardware.Add(gridv3);
+
+                    if (gridv3.IsValid)
+                        _hardware.Add(gridv3);
+
                     break;
-
-
                 default:
                     _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
                     _report.AppendLine();
