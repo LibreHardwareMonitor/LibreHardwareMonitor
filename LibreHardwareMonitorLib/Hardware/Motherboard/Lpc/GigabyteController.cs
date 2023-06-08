@@ -95,7 +95,7 @@ internal class GigabyteController
         if (!originalMmIoEnabled)
         {
             Ring0.WritePciConfig(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, originalDecodeEnableRegister);
-            Ring0.WritePciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, originalRomAddressRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, originalPciMemoryAddressRegister);
             Ring0.WritePciConfig(amdIsaBridgeAddress, romAddressRange2Register, originalRomAddressRegister);
         }
 
