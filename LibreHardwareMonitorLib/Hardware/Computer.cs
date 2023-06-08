@@ -14,6 +14,7 @@ using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
 using LibreHardwareMonitor.Hardware.Controller.Nzxt;
+using LibreHardwareMonitor.Hardware.Controller.Razer;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
 using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Gpu;
@@ -123,6 +124,7 @@ public class Computer : IComputer
                     Add(new AquaComputerGroup(_settings));
                     Add(new AeroCoolGroup(_settings));
                     Add(new NzxtGroup(_settings));
+                    Add(new RazerGroup(_settings));
                 }
                 else
                 {
@@ -131,6 +133,7 @@ public class Computer : IComputer
                     RemoveType<AquaComputerGroup>();
                     RemoveType<AeroCoolGroup>();
                     RemoveType<NzxtGroup>();
+                    RemoveType<RazerGroup>();
                 }
             }
 
@@ -519,6 +522,7 @@ public class Computer : IComputer
             Add(new AquaComputerGroup(_settings));
             Add(new AeroCoolGroup(_settings));
             Add(new NzxtGroup(_settings));
+            Add(new RazerGroup(_settings));
         }
 
         if (_storageEnabled)
