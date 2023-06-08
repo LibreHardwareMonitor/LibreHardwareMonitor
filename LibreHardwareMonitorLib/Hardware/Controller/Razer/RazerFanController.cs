@@ -22,6 +22,7 @@ internal sealed class RazerFanController : Hardware
     public RazerFanController(HidDevice dev, ISettings settings) : base("Razer PWM PC Fan Controller", new Identifier(dev.DevicePath), settings)
     {
         _device = dev;
+        RazerGuard.Open();
 
         if (_device.TryOpen(out _stream))
         {
@@ -35,18 +36,23 @@ internal sealed class RazerFanController : Hardware
                 Command = 0x87,
             };
 
-            do
+            if (RazerGuard.WaitRazerMutex(250))
             {
-                Thread.Sleep(DEVICE_READ_DELAY_MS);
-
-                try
+                do
                 {
-                    Packet response = TryWriteAndRead(packet);
-                    FirmwareVersion = $"{response.Data[0]:D}.{response.Data[1]:D2}.{response.Data[2]:D2}";
+                    Thread.Sleep(DEVICE_READ_DELAY_MS);
+
+                    try
+                    {
+                        Packet response = TryWriteAndRead(packet);
+                        FirmwareVersion = $"{response.Data[0]:D}.{response.Data[1]:D2}.{response.Data[2]:D2}";
+                    }
+                    catch { }
                 }
-                catch { }
+                while (FirmwareVersion == null);
+
+                RazerGuard.ReleaseRazerMutex();
             }
-            while (FirmwareVersion == null);
 
             Name = "Razer PWM PC Fan Controller";
 
@@ -77,6 +83,9 @@ internal sealed class RazerFanController : Hardware
 
     private void FanSoftwareControlValueChanged(Control control) // TODO: Add timer
     {
+        if (control.ControlMode == ControlMode.Undefined || !RazerGuard.WaitRazerMutex(250))
+            return;
+
         if (control.ControlMode == ControlMode.Software)
         {
             SetChannelModeToManual(control.Sensor.Index);
@@ -120,6 +129,8 @@ internal sealed class RazerFanController : Hardware
 
             _pwm[control.Sensor.Index] = DEFAULT_SPEED_CHANNEL_POWER;
         }
+
+        RazerGuard.ReleaseRazerMutex();
     }
 
     private int GetChannelSpeed(int channel)
@@ -261,15 +272,21 @@ internal sealed class RazerFanController : Hardware
     {
         base.Close();
         _stream?.Close();
+        RazerGuard.Close();
     }
 
     public override void Update()
     {
+        if (!RazerGuard.WaitRazerMutex(250))
+            return;
+
         for (int i = 0; i < CHANNEL_COUNT; i++)
         {
             _rpmSensors[i].Value = GetChannelSpeed(i);
             _pwmControls[i].Value = _pwm[i];
         }
+
+        RazerGuard.ReleaseRazerMutex();
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -3,8 +3,12 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Razer;
@@ -64,5 +68,75 @@ internal class RazerGroup : IGroup
     public string GetReport()
     {
         return _report.ToString();
+    }
+}
+
+internal static class RazerGuard
+{
+    private static Mutex _razerMutex;
+
+    public static void Open()
+    {
+        const string razerMutexName = "Global\\RazerReadWriteGuardMutex";
+        if (!TryCreateOrOpenExistingMutex(razerMutexName, out _razerMutex))
+        {
+            // Mutex could not be created or opened.
+        }
+    }
+
+    public static void Close()
+    {
+        if (_razerMutex != null)
+        {
+            _razerMutex.Close();
+            _razerMutex = null;
+        }
+    }
+
+    public static bool WaitRazerMutex(int millisecondsTimeout)
+    {
+        if (_razerMutex == null)
+            return true;
+
+        try
+        {
+            return _razerMutex.WaitOne(millisecondsTimeout, false);
+        }
+        catch (AbandonedMutexException)
+        {
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    public static void ReleaseRazerMutex()
+    {
+        _razerMutex?.ReleaseMutex();
+    }
+
+    private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
+    {
+        try
+        {
+            mutex = new Mutex(false, name);
+            return true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            try
+            {
+                mutex = Mutex.OpenExisting(name);
+                return true;
+            }
+            catch
+            {
+                mutex = null;
+            }
+        }
+
+        return false;
     }
 }
