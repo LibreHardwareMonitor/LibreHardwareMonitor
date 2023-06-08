@@ -15,6 +15,7 @@ internal sealed class RazerFanController : Hardware
     private readonly HidDevice _device;
     private readonly SequenceCounter _sequenceCounter = new();
 
+    private readonly float[] _pwm = new float[CHANNEL_COUNT];
     private readonly Sensor[] _pwmControls = new Sensor[CHANNEL_COUNT];
     private readonly Sensor[] _rpmSensors = new Sensor[CHANNEL_COUNT];
 
@@ -97,7 +98,7 @@ internal sealed class RazerFanController : Hardware
 
             TryWriteAndRead(packet);
 
-            _pwmControls[control.Sensor.Index].Value = value;
+            _pwm[control.Sensor.Index] = value;
         }
         else if (control.ControlMode == ControlMode.Default)
         {
@@ -117,7 +118,7 @@ internal sealed class RazerFanController : Hardware
 
             TryWriteAndRead(packet);
 
-            _pwmControls[control.Sensor.Index].Value = DEFAULT_SPEED_CHANNEL_POWER;
+            _pwm[control.Sensor.Index] = DEFAULT_SPEED_CHANNEL_POWER;
         }
     }
 
@@ -234,6 +235,7 @@ internal sealed class RazerFanController : Hardware
                             _pwmControls[i].Control = null;
                             _pwmControls[i] = null;
                             _rpmSensors[i] = null;
+                            _pwm[i] = 0;
                         }
 
                         Close();
@@ -266,6 +268,7 @@ internal sealed class RazerFanController : Hardware
         for (int i = 0; i < CHANNEL_COUNT; i++)
         {
             _rpmSensors[i].Value = GetChannelSpeed(i);
+            _pwmControls[i].Value = _pwm[i];
         }
     }
 
