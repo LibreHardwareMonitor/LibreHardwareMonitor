@@ -67,7 +67,7 @@ internal enum Chip : ushort
     NCT6686D = 0xD440,
     NCT6687D = 0xD592,
     NCT6683D = 0xC732,
-    NCT6799D = 0xD802,
+    NCT6799D = 0xD800,
 
     W83627DHG = 0xA020,
     W83627DHGP = 0xB070,
