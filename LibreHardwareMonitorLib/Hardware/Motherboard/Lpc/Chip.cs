@@ -48,8 +48,8 @@ internal enum Chip : ushort
     IT8771E = 0x8771,
     IT8772E = 0x8772,
     IT8790E = 0x8790,
-    IT8792E = 0x8733, // Could also be IT8791E
-    IT8795E = 0x8695,
+    IT8792E = 0x8733, // Could also be IT8791E, IT8795E
+    IT87952E = 0x8695,
 
     NCT610XD = 0xC452,
     NCT6771F = 0xB470,
@@ -120,8 +120,8 @@ internal class ChipName
             case Chip.IT8771E: return "ITE IT8771E";
             case Chip.IT8772E: return "ITE IT8772E";
             case Chip.IT8790E: return "ITE IT8790E";
-            case Chip.IT8792E: return "ITE IT8791E/IT8792E";
-            case Chip.IT8795E: return "ITE IT8795E";
+            case Chip.IT8792E: return "ITE IT8791E/IT8792E/IT8795E";
+            case Chip.IT87952E: return "ITE IT87952E";
 
             case Chip.NCT610XD: return "Nuvoton NCT6102D/NCT6104D/NCT6106D";
             case Chip.NCT6771F: return "Nuvoton NCT6771F";

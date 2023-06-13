@@ -233,7 +233,7 @@ internal sealed class SuperIOHardware : Hardware
                 GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
                 break;
 
-            case Chip.IT8795E:
+            case Chip.IT87952E:
             case Chip.IT8792E:
             case Chip.IT8790E:
                 GetIteConfigurationsC(superIO, manufacturer, model, v, t, f, c);
