@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -662,6 +662,7 @@ internal class LpcIO
         uint address = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
             addressHi = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
+        
         Thread.Sleep(1);
         uint addressVerify = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
