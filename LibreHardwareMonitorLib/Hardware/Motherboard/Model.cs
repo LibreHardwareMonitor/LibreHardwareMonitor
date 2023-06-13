@@ -103,6 +103,7 @@ public enum Model
     B360M_PRO_VDH,
     B450A_PRO,
     Z270_PC_MATE,
+    Z77_MS7751,
 
     // EVGA
     X58_SLI_Classified,
