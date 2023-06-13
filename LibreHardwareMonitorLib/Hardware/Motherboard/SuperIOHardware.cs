@@ -2025,11 +2025,11 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z77_MPower: // F71889AD
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1));
-                        v.Add(new Voltage("GPU", 2));
+                        v.Add(new Voltage("iGPU", 2));
                         v.Add(new Voltage("+5V", 3, 20, 4.7f));
                         v.Add(new Voltage("+12V", 4, 68, 6.8f));
-                        v.Add(new Voltage("DRAM", 5, 150, 150));
-                        v.Add(new Voltage("CPU IO", 6));
+                        v.Add(new Voltage("DIMM", 5, 150, 150));
+                        v.Add(new Voltage("CPU I/O", 6));
                         v.Add(new Voltage("+3.3V", 7, 150, 150));
                         v.Add(new Voltage("VBat", 8, 150, 150));
 
@@ -2053,6 +2053,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #4", 3, true));
                         v.Add(new Voltage("Voltage #5", 4, true));
                         v.Add(new Voltage("Voltage #6", 5, true));
+                        
                         if (superIO.Chip != Chip.F71808E)
                             v.Add(new Voltage("Voltage #7", 6, true));
 
