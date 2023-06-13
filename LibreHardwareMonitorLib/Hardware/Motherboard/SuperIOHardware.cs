@@ -2022,7 +2022,7 @@ internal sealed class SuperIOHardware : Hardware
             case Manufacturer.MSI:
                 switch (model)
                 {
-                    case Model.Z77_MPower: // F71889AD
+                    case Model.Z77_MS7751: // F71889AD
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1));
                         v.Add(new Voltage("iGPU", 2));
