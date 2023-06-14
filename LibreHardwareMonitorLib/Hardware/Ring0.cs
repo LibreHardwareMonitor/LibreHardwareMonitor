@@ -4,7 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -18,10 +17,7 @@ namespace LibreHardwareMonitor.Hardware;
 internal static class Ring0
 {
     private static KernelDriver _driver;
-    private static Mutex _ecMutex;
     private static string _filePath;
-    private static Mutex _isaBusMutex;
-    private static Mutex _pciBusMutex;
 
     private static readonly StringBuilder _report = new();
 
@@ -92,24 +88,6 @@ internal static class Ring0
 
         if (!_driver.IsOpen)
             _driver = null;
-
-        const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
-        if (!TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex))
-        {
-            // Mutex could not be created or opened.
-        }
-
-        const string pciMutexName = "Global\\Access_PCI";
-        if (!TryCreateOrOpenExistingMutex(pciMutexName, out _pciBusMutex))
-        {
-            // Mutex could not be created or opened.
-        }
-
-        const string ecMutexName = "Global\\Access_EC";
-        if (!TryCreateOrOpenExistingMutex(ecMutexName, out _ecMutex))
-        {
-            // Mutex could not be created or opened.
-        }
     }
 
     private static bool Extract(string filePath)
@@ -169,29 +147,6 @@ internal static class Ring0
                 return false;
             }
         }
-    }
-
-    private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
-    {
-        try
-        {
-            mutex = new Mutex(false, name);
-            return true;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            try
-            {
-                mutex = Mutex.OpenExisting(name);
-                return true;
-            }
-            catch
-            {
-                mutex = null;
-            }
-        }
-
-        return false;
     }
 
     private static void Delete()
@@ -338,24 +293,6 @@ internal static class Ring0
             _driver = null;
         }
 
-        if (_isaBusMutex != null)
-        {
-            _isaBusMutex.Close();
-            _isaBusMutex = null;
-        }
-
-        if (_pciBusMutex != null)
-        {
-            _pciBusMutex.Close();
-            _pciBusMutex = null;
-        }
-
-        if (_ecMutex != null)
-        {
-            _ecMutex.Close();
-            _ecMutex = null;
-        }
-
         // try to delete temporary driver file again if failed during open
         Delete();
     }
@@ -373,78 +310,6 @@ internal static class Ring0
         }
 
         return null;
-    }
-
-    public static bool WaitIsaBusMutex(int millisecondsTimeout)
-    {
-        if (_isaBusMutex == null)
-            return true;
-
-        try
-        {
-            return _isaBusMutex.WaitOne(millisecondsTimeout, false);
-        }
-        catch (AbandonedMutexException)
-        {
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
-    public static void ReleaseIsaBusMutex()
-    {
-        _isaBusMutex?.ReleaseMutex();
-    }
-
-    public static bool WaitPciBusMutex(int millisecondsTimeout)
-    {
-        if (_pciBusMutex == null)
-            return true;
-
-        try
-        {
-            return _pciBusMutex.WaitOne(millisecondsTimeout, false);
-        }
-        catch (AbandonedMutexException)
-        {
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
-    public static void ReleasePciBusMutex()
-    {
-        _pciBusMutex?.ReleaseMutex();
-    }
-
-    public static bool WaitEcMutex(int millisecondsTimeout)
-    {
-        if (_ecMutex == null)
-            return true;
-
-        try
-        {
-            return _ecMutex.WaitOne(millisecondsTimeout, false);
-        }
-        catch (AbandonedMutexException)
-        {
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
-    public static void ReleaseEcMutex()
-    {
-        _ecMutex?.ReleaseMutex();
     }
 
     public static bool ReadMsr(uint index, out uint eax, out uint edx)

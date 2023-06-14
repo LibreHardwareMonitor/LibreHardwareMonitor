@@ -20,12 +20,12 @@ internal class LpcIO
 
     public LpcIO(Motherboard motherboard)
     {
-        if (!Ring0.IsOpen || !Ring0.WaitIsaBusMutex(100))
+        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100))
             return;
 
         Detect(motherboard);
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
 
         if (Ipmi.IsBmcPresent())
             _superIOs.Add(new Ipmi(motherboard.Manufacturer));

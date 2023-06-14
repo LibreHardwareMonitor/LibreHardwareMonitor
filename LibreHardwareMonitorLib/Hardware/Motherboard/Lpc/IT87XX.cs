@@ -257,7 +257,7 @@ internal class IT87XX : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         if (value.HasValue)
@@ -293,7 +293,7 @@ internal class IT87XX : ISuperIO
             RestoreDefaultFanPwmControl(index);
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public string GetReport()
@@ -312,7 +312,7 @@ internal class IT87XX : ISuperIO
         r.AppendLine(_gpioAddress.ToString("X4", CultureInfo.InvariantCulture));
         r.AppendLine();
 
-        if (!Ring0.WaitIsaBusMutex(100))
+        if (!Mutexes.WaitIsaBus(100))
             return r.ToString();
 
         // dump memory of all banks if supported by chip
@@ -361,7 +361,7 @@ internal class IT87XX : ISuperIO
 
         r.AppendLine();
         r.AppendLine();
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
         return r.ToString();
     }
 
@@ -390,7 +390,7 @@ internal class IT87XX : ISuperIO
 
     public void Update()
     {
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         for (int i = 0; i < Voltages.Length; i++)
@@ -491,7 +491,7 @@ internal class IT87XX : ISuperIO
             }
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     private byte ReadByte(byte register, out bool valid)

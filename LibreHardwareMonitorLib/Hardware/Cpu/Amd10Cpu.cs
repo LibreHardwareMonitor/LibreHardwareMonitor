@@ -451,19 +451,19 @@ internal sealed class Amd10Cpu : AmdCpu
 
     private static bool ReadSmuRegister(uint address, out uint value)
     {
-        if (Ring0.WaitPciBusMutex(10))
+        if (Mutexes.WaitPciBus(10))
         {
             if (!Ring0.WritePciConfig(0, 0xB8, address))
             {
                 value = 0;
 
-                Ring0.ReleasePciBusMutex();
+                Mutexes.ReleasePciBus();
                 return false;
             }
 
             bool result = Ring0.ReadPciConfig(0, 0xBC, out value);
 
-            Ring0.ReleasePciBusMutex();
+            Mutexes.ReleasePciBus();
             return result;
         }
 

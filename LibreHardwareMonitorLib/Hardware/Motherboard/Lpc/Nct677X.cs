@@ -362,7 +362,7 @@ internal class Nct677X : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         if (value.HasValue)
@@ -407,7 +407,7 @@ internal class Nct677X : ISuperIO
             RestoreDefaultFanControl(index);
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public void Update()
@@ -415,7 +415,7 @@ internal class Nct677X : ISuperIO
         if (!_isNuvotonVendor)
             return;
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         DisableIOSpaceLock();
@@ -634,7 +634,7 @@ internal class Nct677X : ISuperIO
             }
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public string GetReport()
@@ -651,7 +651,7 @@ internal class Nct677X : ISuperIO
         r.AppendLine(_port.ToString("X4", CultureInfo.InvariantCulture));
         r.AppendLine();
 
-        if (!Ring0.WaitIsaBusMutex(100))
+        if (!Mutexes.WaitIsaBus(100))
             return r.ToString();
 
         ushort[] addresses =
@@ -799,7 +799,7 @@ internal class Nct677X : ISuperIO
 
         r.AppendLine();
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
 
         return r.ToString();
     }
