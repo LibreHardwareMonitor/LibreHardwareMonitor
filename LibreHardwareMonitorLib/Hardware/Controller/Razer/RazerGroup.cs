@@ -28,6 +28,7 @@ internal class RazerGroup : IGroup
                 case 0x0F3C: // Razer PWM PC fan controller
                     if (dev.GetMaxFeatureReportLength() <= 0)
                         break;
+
                     var device = new RazerFanController(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
                     _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
