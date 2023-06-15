@@ -55,7 +55,7 @@ internal class GigabyteController
 
     private bool AmdEnable(bool enabled)
     {
-        if (!Ring0.WaitPciBusMutex(10))
+        if (!Mutexes.WaitPciBus(10))
             return false;
 
         // see D14F3x https://www.amd.com/system/files/TechDocs/55072_AMD_Family_15h_Models_70h-7Fh_BKDG.pdf 
@@ -95,11 +95,11 @@ internal class GigabyteController
         if (!originalMmIoEnabled)
         {
             Ring0.WritePciConfig(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, originalDecodeEnableRegister);
-            Ring0.WritePciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, originalRomAddressRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, originalPciMemoryAddressRegister);
             Ring0.WritePciConfig(amdIsaBridgeAddress, romAddressRange2Register, originalRomAddressRegister);
         }
 
-        Ring0.ReleasePciBusMutex();
+        Mutexes.ReleasePciBus();
 
         return result;
     }

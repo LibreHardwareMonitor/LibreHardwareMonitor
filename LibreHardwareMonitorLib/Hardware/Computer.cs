@@ -490,6 +490,7 @@ public class Computer : IComputer
         _smbios = new SMBios();
 
         Ring0.Open();
+        Mutexes.Open();
         OpCode.Open();
 
         AddGroups();
@@ -632,6 +633,7 @@ public class Computer : IComputer
         OpCode.Close();
         InpOut.Close();
         Ring0.Close();
+        Mutexes.Close();
 
         _smbios = null;
         _open = false;

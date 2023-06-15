@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -20,12 +20,12 @@ internal class LpcIO
 
     public LpcIO(Motherboard motherboard)
     {
-        if (!Ring0.IsOpen || !Ring0.WaitIsaBusMutex(100))
+        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100))
             return;
 
         Detect(motherboard);
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
 
         if (Ipmi.IsBmcPresent())
             _superIOs.Add(new Ipmi(motherboard.Manufacturer));
@@ -563,7 +563,7 @@ internal class LpcIO
             0x8772 => Chip.IT8772E,
             0x8790 => Chip.IT8790E,
             0x8733 => Chip.IT8792E,
-            0x8695 => Chip.IT8795E,
+            0x8695 => Chip.IT87952E,
             _ => Chip.Unknown
         };
 
@@ -642,7 +642,7 @@ internal class LpcIO
         // The controller only affects the 2nd ITE chip if present, and only a few
         // models are known to use this controller.
         // IT8795E likely to need this too, but may use different registers.
-        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E))
+        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
             return null;
 
         port.Select(IT87XX_SMFI_LDN);
@@ -657,15 +657,29 @@ internal class LpcIO
             return null;
 
         // Read the host RAM address that maps to the Embedded Controller's RAM (two registers).
+        uint addressHi = 0;
+        uint addressHiVerify = 0;
         uint address = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
+        if (chip == Chip.IT87952E)
+            addressHi = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
+        
         Thread.Sleep(1);
         uint addressVerify = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
+        if (chip == Chip.IT87952E)
+            addressHiVerify = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
 
-        if (address != addressVerify)
+        if ((address != addressVerify) || (addressHi != addressHiVerify))
             return null;
 
         // Address is xryy, Host Address is FFyyx000
-        uint hostAddress = 0xFF000000 | (address & 0xF000) | (address & 0xFF) << 0x10;
+        // For IT87952E, Address is rzxryy, Host Address is (0xFC000000 | 0x0zyyx000)
+        uint hostAddress;
+        if (chip == Chip.IT87952E)
+            hostAddress = 0xFC000000;
+        else
+            hostAddress = 0xFF000000;
+
+        hostAddress |= (address & 0xF000) | ((address & 0xFF) << 16) | ((addressHi & 0xF) << 24);
 
         return new GigabyteController(hostAddress, DetectVendor());
 
@@ -702,6 +716,7 @@ internal class LpcIO
     private const byte FINTEK_VENDOR_ID_REGISTER = 0x23;
     private const byte IT87_CHIP_VERSION_REGISTER = 0x22;
     private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER = 0xF5;
+    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH = 0xFC;
     private const byte IT87_LD_ACTIVE_REGISTER = 0x30;
 
     private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };

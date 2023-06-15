@@ -26,7 +26,7 @@ internal class F718XX : ISuperIO
         Voltages = new float?[chip == Chip.F71858 ? 3 : 9];
         Temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
         Fans = new float?[chip is Chip.F71882 or Chip.F71858 ? 4 : 3];
-        Controls = new float?[chip == Chip.F71878AD ? 3 : (chip == Chip.F71882 ? 4 : 0)];
+        Controls = new float?[chip == Chip.F71878AD || chip == Chip.F71889AD ? 3 : (chip == Chip.F71882 ? 4 : 0)];
     }
 
     public Chip Chip { get; }
@@ -52,7 +52,7 @@ internal class F718XX : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         if (value.HasValue)
@@ -66,7 +66,7 @@ internal class F718XX : ISuperIO
             RestoreDefaultFanPwmControl(index);
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public string GetReport()
@@ -79,7 +79,7 @@ internal class F718XX : ISuperIO
         r.AppendLine(_address.ToString("X4", CultureInfo.InvariantCulture));
         r.AppendLine();
 
-        if (!Ring0.WaitIsaBusMutex(100))
+        if (!Mutexes.WaitIsaBus(100))
             return r.ToString();
 
         r.AppendLine("Hardware Monitor Registers");
@@ -103,13 +103,13 @@ internal class F718XX : ISuperIO
 
         r.AppendLine();
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
         return r.ToString();
     }
 
     public void Update()
     {
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         for (int i = 0; i < Voltages.Length; i++)
@@ -191,7 +191,7 @@ internal class F718XX : ISuperIO
 
         for (int i = 0; i < Controls.Length; i++)
         {
-            if (Chip == Chip.F71882)
+            if (Chip == Chip.F71882 || Chip == Chip.F71889AD)
             {
                 Controls[i] = ReadByte((byte)(FAN_PWM_REG[i])) * 100.0f / 0xFF;
             }
@@ -201,7 +201,7 @@ internal class F718XX : ISuperIO
             }
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     private void SaveDefaultFanPwmControl(int index)
