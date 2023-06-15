@@ -45,6 +45,7 @@ public enum Model
     ROG_CROSSHAIR_VIII_IMPACT,
     ROG_STRIX_X470_I,
     ROG_CROSSHAIR_X670E_EXTREME,
+    ROG_CROSSHAIR_X670E_GENE,
     ROG_STRIX_X570_E_GAMING,
     ROG_STRIX_X570_F_GAMING,
     ROG_STRIX_X570_I_GAMING,
@@ -102,6 +103,7 @@ public enum Model
     B360M_PRO_VDH,
     B450A_PRO,
     Z270_PC_MATE,
+    Z77_MS7751,
 
     // EVGA
     X58_SLI_Classified,
@@ -133,6 +135,7 @@ public enum Model
     H67A_UD3H_B3,
     H67A_USB3_B3,
     H81M_HD3,
+    B75M_D3H,
     MA770T_UD3,
     MA770T_UD3P,
     MA785GM_US2H,

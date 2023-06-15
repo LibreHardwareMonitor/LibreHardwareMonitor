@@ -202,6 +202,7 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
+                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
@@ -361,7 +362,7 @@ internal class Nct677X : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         if (value.HasValue)
@@ -406,7 +407,7 @@ internal class Nct677X : ISuperIO
             RestoreDefaultFanControl(index);
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public void Update()
@@ -414,7 +415,7 @@ internal class Nct677X : ISuperIO
         if (!_isNuvotonVendor)
             return;
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         DisableIOSpaceLock();
@@ -633,7 +634,7 @@ internal class Nct677X : ISuperIO
             }
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public string GetReport()
@@ -650,7 +651,7 @@ internal class Nct677X : ISuperIO
         r.AppendLine(_port.ToString("X4", CultureInfo.InvariantCulture));
         r.AppendLine();
 
-        if (!Ring0.WaitIsaBusMutex(100))
+        if (!Mutexes.WaitIsaBus(100))
             return r.ToString();
 
         ushort[] addresses =
@@ -798,7 +799,7 @@ internal class Nct677X : ISuperIO
 
         r.AppendLine();
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
 
         return r.ToString();
     }
@@ -952,6 +953,7 @@ internal class Nct677X : ISuperIO
         AUXTIN4 = 7,
         SMBUSMASTER0 = 8,
         SMBUSMASTER1 = 9,
+        TSENSOR = 10,
         PECI_0 = 16,
         PECI_1 = 17,
         PCH_CHIP_CPU_MAX_TEMP = 18,

@@ -153,6 +153,8 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_VIII_IMPACT;
             case var _ when name.Equals("ROG CROSSHAIR X670E EXTREME", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X670E_EXTREME;
+            case var _ when name.Equals("ROG CROSSHAIR X670E GENE", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_CROSSHAIR_X670E_GENE;
             case var _ when name.Equals("M2N-SLI DELUXE", StringComparison.OrdinalIgnoreCase):
                 return Model.M2N_SLI_Deluxe;
             case var _ when name.Equals("M4A79XTD EVO", StringComparison.OrdinalIgnoreCase):
@@ -248,6 +250,8 @@ internal class Identification
                 return Model.H67A_USB3_B3;
             case var _ when name.Equals("H81M-HD3", StringComparison.OrdinalIgnoreCase):
                 return Model.H81M_HD3;
+            case var _ when name.Equals("B75M-D3H", StringComparison.OrdinalIgnoreCase):
+                return Model.B75M_D3H;
             case var _ when name.Equals("P35-DS3", StringComparison.OrdinalIgnoreCase):
                 return Model.P35_DS3;
             case var _ when name.Equals("P35-DS3L", StringComparison.OrdinalIgnoreCase):
@@ -273,6 +277,15 @@ internal class Identification
             case var _ when name.Equals("Z270 PC MATE", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z270 PC MATE (MS-7A72)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z270_PC_MATE;
+            case var _ when name.Equals("Z77 MPower", StringComparison.OrdinalIgnoreCase):       // MS-7751 Rev 4.x
+            case var _ when name.Equals("Z77 MPower (MS-7751)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z77A-GD65", StringComparison.OrdinalIgnoreCase):        // MS-7751 Rev >1.x
+            case var _ when name.Equals("Z77A-GD65 (MS-7751)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z77A-GD65 GAMING", StringComparison.OrdinalIgnoreCase): // MS-7751 Rev 2.x
+            case var _ when name.Equals("Z77A-GD65 GAMING (MS-7751)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z77A-GD55", StringComparison.OrdinalIgnoreCase):        // MS-7751 Rev 1.x
+            case var _ when name.Equals("Z77A-GD55 (MS-7751)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z77_MS7751;
             case var _ when name.Equals("X79-UD3", StringComparison.OrdinalIgnoreCase):
                 return Model.X79_UD3;
             case var _ when name.Equals("Z68A-D3H-B3", StringComparison.OrdinalIgnoreCase):
