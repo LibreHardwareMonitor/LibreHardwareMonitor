@@ -22,7 +22,6 @@ internal sealed class RazerFanController : Hardware
     public RazerFanController(HidDevice dev, ISettings settings) : base("Razer PWM PC Fan Controller", new Identifier(dev.DevicePath), settings)
     {
         _device = dev;
-        RazerGuard.Open();
 
         if (_device.TryOpen(out _stream))
         {
@@ -36,7 +35,7 @@ internal sealed class RazerFanController : Hardware
                 Command = 0x87,
             };
 
-            if (RazerGuard.WaitRazerMutex(250))
+            if (Mutexes.WaitRazer(250))
             {
                 do
                 {
@@ -51,7 +50,7 @@ internal sealed class RazerFanController : Hardware
                 }
                 while (FirmwareVersion == null);
 
-                RazerGuard.ReleaseRazerMutex();
+                Mutexes.ReleaseRazer();
             }
 
             Name = "Razer PWM PC Fan Controller";
@@ -83,7 +82,7 @@ internal sealed class RazerFanController : Hardware
 
     private void FanSoftwareControlValueChanged(Control control) // TODO: Add timer
     {
-        if (control.ControlMode == ControlMode.Undefined || !RazerGuard.WaitRazerMutex(250))
+        if (control.ControlMode == ControlMode.Undefined || !Mutexes.WaitRazer(250))
             return;
 
         if (control.ControlMode == ControlMode.Software)
@@ -130,7 +129,7 @@ internal sealed class RazerFanController : Hardware
             _pwm[control.Sensor.Index] = DEFAULT_SPEED_CHANNEL_POWER;
         }
 
-        RazerGuard.ReleaseRazerMutex();
+        Mutexes.ReleaseRazer();
     }
 
     private int GetChannelSpeed(int channel)
@@ -272,12 +271,11 @@ internal sealed class RazerFanController : Hardware
     {
         base.Close();
         _stream?.Close();
-        RazerGuard.Close();
     }
 
     public override void Update()
     {
-        if (!RazerGuard.WaitRazerMutex(250))
+        if (!Mutexes.WaitRazer(250))
             return;
 
         for (int i = 0; i < CHANNEL_COUNT; i++)
@@ -286,7 +284,7 @@ internal sealed class RazerFanController : Hardware
             _pwmControls[i].Value = _pwm[i];
         }
 
-        RazerGuard.ReleaseRazerMutex();
+        Mutexes.ReleaseRazer();
     }
 
     ///////////////////////////////////////////////////////////////////////////
