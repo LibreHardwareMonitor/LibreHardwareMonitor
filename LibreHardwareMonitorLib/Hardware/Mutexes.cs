@@ -8,6 +8,7 @@ internal static class Mutexes
     private static Mutex _ecMutex;
     private static Mutex _isaBusMutex;
     private static Mutex _pciBusMutex;
+    private static Mutex _smBusMutex;
 
     /// <summary>
     /// Opens the mutexes.
@@ -17,6 +18,7 @@ internal static class Mutexes
         _isaBusMutex = CreateOrOpenExistingMutex("Global\\Access_ISABUS.HTP.Method");
         _pciBusMutex = CreateOrOpenExistingMutex("Global\\Access_PCI");
         _ecMutex = CreateOrOpenExistingMutex("Global\\Access_EC");
+        _smBusMutex = CreateOrOpenExistingMutex("Global\\Access_SMBUS.HTP.Method");
 
         static Mutex CreateOrOpenExistingMutex(string name)
         {
@@ -48,6 +50,7 @@ internal static class Mutexes
         _isaBusMutex?.Close();
         _pciBusMutex?.Close();
         _ecMutex?.Close();
+        _smBusMutex?.Close();
     }
 
     public static bool WaitIsaBus(int millisecondsTimeout)
@@ -78,6 +81,16 @@ internal static class Mutexes
     public static void ReleaseEc()
     {
         _ecMutex?.ReleaseMutex();
+    }
+
+    public static bool WaitSmBus(int millisecondsTimeout)
+    {
+        return WaitMutex(_smBusMutex, millisecondsTimeout);
+    }
+
+    public static void ReleaseSmBus()
+    {
+        _smBusMutex?.ReleaseMutex();
     }
 
     private static bool WaitMutex(Mutex mutex, int millisecondsTimeout)
