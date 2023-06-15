@@ -434,6 +434,10 @@ internal class RyzenSMU
                         _pmTableSize = 0x948;
                         break;
 
+                    case 0x00540104:
+                        _pmTableSize = 0x950;
+                        break;
+
                     default:
                         return;
                 }
