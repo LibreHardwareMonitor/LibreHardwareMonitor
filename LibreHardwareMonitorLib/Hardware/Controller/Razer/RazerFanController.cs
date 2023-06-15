@@ -135,7 +135,7 @@ internal sealed class RazerFanController : Hardware
 
             TryWriteAndRead(packet);
 
-            _pwm[control.Sensor.Index] = null;
+            _pwm[control.Sensor.Index] = DEFAULT_SPEED_CHANNEL_POWER;
         }
 
         Mutexes.ReleaseRazer();
