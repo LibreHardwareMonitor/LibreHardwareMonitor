@@ -24,7 +24,6 @@ internal sealed class RazerFanController : Hardware
     private HidStream _stream;
     private readonly HidDevice _device;
     private readonly SequenceCounter _sequenceCounter = new();
-    private readonly new ISettings _settings;
 
     private readonly float?[] _pwm = new float?[CHANNEL_COUNT];
     private readonly Sensor[] _pwmControls = new Sensor[CHANNEL_COUNT];
@@ -33,7 +32,6 @@ internal sealed class RazerFanController : Hardware
     public RazerFanController(HidDevice dev, ISettings settings) : base("Razer PWM PC Fan Controller", new Identifier(dev.DevicePath), settings)
     {
         _device = dev;
-        _settings = settings;
 
         if (_device.TryOpen(out _stream))
         {
