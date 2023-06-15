@@ -203,7 +203,7 @@ internal class SmBusDevice
         if (smb_addr == 0)
             return 0;
 
-        if (Ring0.WaitSmBusMutex(100))
+        if (Mutexes.WaitSmBus(100))
         {
             int index = 0;
             SmBusDevice tempDev = new SmBusDevice();
@@ -211,14 +211,14 @@ internal class SmBusDevice
             {
                 if (tempDev.checkDevice(addr, smb_addr))
                 {
-                    Ring0.ReleaseSmBusMutex();
+                    Mutexes.ReleaseSmBus();
                     return addr;
                 }
 
                 Thread.Sleep(10);
                 index++;
             }
-            Ring0.ReleaseSmBusMutex();
+            Mutexes.ReleaseSmBus();
         }
         return 0;
     }
