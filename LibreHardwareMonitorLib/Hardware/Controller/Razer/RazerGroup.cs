@@ -3,10 +3,8 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Razer;

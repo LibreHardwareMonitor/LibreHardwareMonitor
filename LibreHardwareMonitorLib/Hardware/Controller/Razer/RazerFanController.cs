@@ -4,6 +4,8 @@
 // All Rights Reserved.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using HidSharp;
 
@@ -11,6 +13,14 @@ namespace LibreHardwareMonitor.Hardware.Controller.Razer;
 
 internal sealed class RazerFanController : Hardware
 {
+    private const int DEFAULT_SPEED_CHANNEL_POWER = 50;
+    private const byte PERCENT_MIN = 0;
+    private const byte PERCENT_MAX = 100;
+    private const int DEVICE_READ_DELAY_MS = 5;
+    private const int DEVICE_READ_TIMEOUT_MS = 500;
+    private const int CHANNEL_COUNT = 8;
+    //private const int FORCE_WRITE_SPEEDS_INTERVAL_MS = 2500; // TODO: Add timer
+
     private HidStream _stream;
     private readonly HidDevice _device;
     private readonly SequenceCounter _sequenceCounter = new();
@@ -37,7 +47,7 @@ internal sealed class RazerFanController : Hardware
 
             if (Mutexes.WaitRazer(250))
             {
-                do
+                while (FirmwareVersion == null)
                 {
                     Thread.Sleep(DEVICE_READ_DELAY_MS);
 
@@ -48,7 +58,6 @@ internal sealed class RazerFanController : Hardware
                     }
                     catch { }
                 }
-                while (FirmwareVersion == null);
 
                 Mutexes.ReleaseRazer();
             }
@@ -80,7 +89,7 @@ internal sealed class RazerFanController : Hardware
 
     public string Status => FirmwareVersion != "1.01.00" ? $"Status: Untested Firmware Version {FirmwareVersion}! Please consider Updating to Version 1.01.00" : "Status: OK";
 
-    private void FanSoftwareControlValueChanged(Control control) // TODO: Add timer
+    private void FanSoftwareControlValueChanged(Control control) // TODO: Add timer here
     {
         if (control.ControlMode == ControlMode.Undefined || !Mutexes.WaitRazer(250))
             return;
@@ -184,34 +193,6 @@ internal sealed class RazerFanController : Hardware
         }
     }
 
-    private Packet __WriteAndRead(Packet packet)
-    {
-        byte[] response = Packet.CreateBuffer();
-        byte[] buffer = packet.ToBuffer();
-
-        ThrowIfNotReady();
-        _stream?.SetFeature(buffer, 0, buffer.Length);
-        Thread.Sleep(DEVICE_READ_DELAY_MS);
-        ThrowIfNotReady();
-        _stream?.GetFeature(response, 0, response.Length);
-        Packet readPacket = Packet.FromBuffer(response);
-
-        if (readPacket.Status == DeviceStatus.Busy)
-        {
-            var cts = new CancellationTokenSource(DEVICE_READ_TIMEOUT_MS);
-
-            while (!cts.IsCancellationRequested && readPacket.Status == DeviceStatus.Busy)
-            {
-                Thread.Sleep(DEVICE_READ_DELAY_MS);
-                ThrowIfNotReady();
-                _stream?.GetFeature(response, 0, response.Length);
-                readPacket = Packet.FromBuffer(response);
-            }
-        }
-
-        return readPacket;
-    }
-
     private Packet TryWriteAndRead(Packet packet)
     {
         Packet readPacket = null;
@@ -222,13 +203,35 @@ internal sealed class RazerFanController : Hardware
         {
             try
             {
-                readPacket = __WriteAndRead(packet);
+                byte[] response = Packet.CreateBuffer();
+                byte[] buffer = packet.ToBuffer();
+
+                ThrowIfNotReady();
+                _stream?.SetFeature(buffer, 0, buffer.Length);
+                Thread.Sleep(DEVICE_READ_DELAY_MS);
+                ThrowIfNotReady();
+                _stream?.GetFeature(response, 0, response.Length);
+                readPacket = Packet.FromBuffer(response);
+
+                if (readPacket.Status == DeviceStatus.Busy)
+                {
+                    var stopwatch = new Stopwatch();
+                    stopwatch.Start();
+
+                    while (stopwatch.ElapsedMilliseconds < DEVICE_READ_TIMEOUT_MS && readPacket.Status == DeviceStatus.Busy)
+                    {
+                        Thread.Sleep(DEVICE_READ_DELAY_MS);
+                        ThrowIfNotReady();
+                        _stream?.GetFeature(response, 0, response.Length);
+                        readPacket = Packet.FromBuffer(response);
+                    }
+                }
             }
-            catch (System.IO.IOException) // Unexpected device disconnect or fan plug/unplug
+            catch (IOException) // Unexpected device disconnect or fan plug/unplug
             {
                 if (devTimeout <= 0)
                 {
-                    do
+                    while (devReconnectTimeout > 0)
                     {
                         _stream?.Close();
                         if (_device.TryOpen(out _stream))
@@ -236,7 +239,7 @@ internal sealed class RazerFanController : Hardware
 
                         Thread.Sleep(1000);
                         devReconnectTimeout -= 500;
-                    } while (devReconnectTimeout > 0);
+                    }
 
                     if (devReconnectTimeout <= 0) // Device disconnected
                     {
@@ -286,16 +289,6 @@ internal sealed class RazerFanController : Hardware
 
         Mutexes.ReleaseRazer();
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    private const int DEFAULT_SPEED_CHANNEL_POWER = 50;
-    private const byte PERCENT_MIN = 0;
-    private const byte PERCENT_MAX = 100;
-    private const int DEVICE_READ_DELAY_MS = 5;
-    private const int DEVICE_READ_TIMEOUT_MS = 500;
-    private const int CHANNEL_COUNT = 8;
-    //private const int FORCE_WRITE_SPEEDS_INTERVAL_MS = 2500; // TODO: Add timer
 
     private enum DeviceStatus : byte
     {
@@ -401,11 +394,11 @@ internal sealed class RazerFanController : Hardware
 
         public byte Next()
         {
-            do
+            while (_sequenceId == 0x00)
             {
                 _sequenceId += 0x08;
             }
-            while (_sequenceId == 0x00);
+
             return _sequenceId;
         }
     }
