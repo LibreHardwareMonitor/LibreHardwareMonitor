@@ -75,7 +75,7 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut,
             ECSensor.FanCPUOpt),
-        new(Model.ROG_CROSSHAIR_X670E_EXTREME,
+        new(Model.ROG_CROSSHAIR_X670E_GENE,
             BoardFamily.Amd600,
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut,
