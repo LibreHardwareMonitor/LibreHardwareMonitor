@@ -1002,6 +1002,9 @@ internal sealed class SuperIOHardware : Hardware
                         for (int i = 6; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
 
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
                         break;
 
                     case Model.TUF_X470_PLUS_GAMING: // IT8665E
@@ -1026,6 +1029,9 @@ internal sealed class SuperIOHardware : Hardware
 
                         for (int i = 1; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
 
@@ -2102,7 +2108,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #4", 3, true));
                         v.Add(new Voltage("Voltage #5", 4, true));
                         v.Add(new Voltage("Voltage #6", 5, true));
-                        
+
                         if (superIO.Chip != Chip.F71808E)
                             v.Add(new Voltage("Voltage #7", 6, true));
 
