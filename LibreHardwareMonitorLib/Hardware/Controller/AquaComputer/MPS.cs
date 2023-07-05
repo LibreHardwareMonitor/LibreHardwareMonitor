@@ -4,6 +4,7 @@
 // All Rights Reserved.
 
 using System;
+using System.IO;
 using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer;
@@ -76,8 +77,15 @@ internal sealed class MPS : Hardware
 
     public override void Update()
     {
-        _rawData[0] = MPS_REPORT_ID;
-        _stream.GetFeature(_rawData);
+        try
+        {
+            _rawData[0] = MPS_REPORT_ID;
+            _stream.GetFeature(_rawData);
+        }
+        catch (IOException)
+        {
+            return;
+        }
 
         if (_rawData[0] != MPS_REPORT_ID)
             return;
@@ -96,6 +104,7 @@ internal sealed class MPS : Hardware
         }
 
         _temperatures[1].Value = BitConverter.ToUInt16(_rawData, InternalWaterTemperature) / 100f;
+
     }
 
     private ushort ExtractFirmwareVersion()
