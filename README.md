@@ -90,5 +90,13 @@ public void Monitor()
 }
 ```
 
+**Administrator rights**
+
+Some sensors require administrator privileges to access the data.
+
+Restart your IDE with admin privileges or add an app.manifest with requestedExecutionLevel requireAdministrator.
+[learn.microsoft.com - application-manifests](https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests)
+
+
 ## License
 LibreHardwareMonitor is free and open source software licensed under MPL 2.0. You can use it in private and commercial projects. Keep in mind that you must include a copy of the license in your project.
