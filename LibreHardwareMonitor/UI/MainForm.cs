@@ -102,7 +102,6 @@ public sealed partial class MainForm : Form
             Theme.SetAutoTheme();
         }
 
-        InvalidatePlot();
         _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
 
         nodeCheckBox.IsVisibleValueNeeded += NodeCheckBox_IsVisibleValueNeeded;

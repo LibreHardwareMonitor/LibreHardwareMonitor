@@ -71,9 +71,9 @@ public class PlotPanel : UserControl
         UpdateAxesPosition();
 
         SuspendLayout();
-        ApplyTheme();
         Controls.Add(_plot);
         ResumeLayout(true);
+        ApplyTheme();
     }
 
     public void ApplyTheme()
