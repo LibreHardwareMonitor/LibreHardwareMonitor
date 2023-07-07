@@ -70,7 +70,6 @@ public sealed partial class MainForm : Form
         _settings = new PersistentSettings();
         _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
 
-
         _unitManager = new UnitManager(_settings);
 
         // make sure the buffers used for double buffering are not disposed
@@ -95,10 +94,15 @@ public sealed partial class MainForm : Form
 
         Theme setTheme = Theme.All.FirstOrDefault(theme => _settings.GetValue("theme", "auto") == theme.Id);
         if (setTheme != null)
+        {
             Theme.Current = setTheme;
+        }
         else
+        {
             Theme.SetAutoTheme();
+        }
 
+        InvalidatePlot();
         _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
 
         nodeCheckBox.IsVisibleValueNeeded += NodeCheckBox_IsVisibleValueNeeded;
@@ -421,9 +425,9 @@ public sealed partial class MainForm : Form
             _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
         };
 
+        InitializeTheme();
         InitializePlotForm();
         InitializeSplitter();
-        InitializeTheme();
 
         startupMenuItem.Visible = _startupManager.IsAvailable;
 
@@ -498,7 +502,9 @@ public sealed partial class MainForm : Form
             foreach (ToolStripItem x in themeMenuItem.DropDownItems)
             {
                 if (x is ToolStripMenuItem tmi)
+                {
                     tmi.Checked = false;
+                }
             }
         }
 

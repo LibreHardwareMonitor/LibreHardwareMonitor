@@ -113,7 +113,6 @@ namespace LibreHardwareMonitor.UI.Themes
                         }
                     }
                 }
-
                 return _all.OrderBy(x => x.DisplayName).ToList();
             }
         }
@@ -121,7 +120,9 @@ namespace LibreHardwareMonitor.UI.Themes
         public static bool SupportsAutoThemeSwitching()
         {
             if (Software.OperatingSystem.IsUnix)
+            {
                 return false;
+            }
 
             if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", -1) is int useLightTheme)
             {
@@ -133,14 +134,20 @@ namespace LibreHardwareMonitor.UI.Themes
         public static void SetAutoTheme()
         {
             if (Software.OperatingSystem.IsUnix)
+            {
                 return;
+            }
 
             if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is int useLightTheme)
             {
                 if (useLightTheme > 0)
+                {
                     Current = new LightTheme();
+                }
                 else
+                {
                     Current = new DarkTheme();
+                }
             }
             else
             {
@@ -227,13 +234,10 @@ namespace LibreHardwareMonitor.UI.Themes
                     // Windows 10 20H1 or later
                     attribute = DWMWA_USE_IMMERSIVE_DARK_MODE;
                 }
-
                 int useImmersiveDarkMode = WindowTitlebarFallbackToImmersiveDarkMode ? 1 : 0;
                 DwmSetWindowAttribute(form.Handle, (int)attribute, ref useImmersiveDarkMode, sizeof(int));
             }
-
             form.BackColor = BackgroundColor;
-
             foreach (Control control in form.Controls)
             {
                 Apply(control);

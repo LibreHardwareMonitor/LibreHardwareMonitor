@@ -353,7 +353,6 @@ public class PlotPanel : UserControl
         {
             series.StrokeThickness = strokeThickness;
         }
-
         InvalidatePlot();
     }
 
