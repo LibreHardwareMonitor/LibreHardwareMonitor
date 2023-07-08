@@ -92,10 +92,7 @@ public void Monitor()
 
 **Administrator rights**
 
-Some sensors require administrator privileges to access the data.
-
-Restart your IDE with admin privileges or add an app.manifest with requestedExecutionLevel requireAdministrator.
-[learn.microsoft.com - application-manifests](https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests)
+Some sensors require administrator privileges to access the data. Restart your IDE with admin privileges, or add an [app.manifest](https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests) file to your project with requestedExecutionLevel on requireAdministrator.
 
 
 ## License
