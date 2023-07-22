@@ -405,6 +405,8 @@ internal class Identification
                 return Model.Z790_Taichi;
             case var _ when name.Equals("B660M DS3H AX DDR4",StringComparison.OrdinalIgnoreCase):
                 return Model.B660M_DS3H_AX_DDR4;
+            case var _ when name.Equals("ROG STRIX Z790-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_Z790_I_GAMING_WIFI;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
