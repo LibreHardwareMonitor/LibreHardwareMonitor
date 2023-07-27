@@ -198,7 +198,11 @@ public abstract class EmbeddedController : Hardware
         new(Model.PRIME_Z690_A,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
-            ECSensor.TempVrm)
+            ECSensor.TempVrm),
+        new(Model.ROG_STRIX_Z790_I_GAMING_WIFI,
+            BoardFamily.Intel700,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut),
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
