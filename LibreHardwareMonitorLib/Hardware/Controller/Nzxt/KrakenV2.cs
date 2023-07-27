@@ -8,20 +8,27 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
      */
 internal sealed class KrakenV2 : Hardware
 {
+    private static readonly byte[] _getFirmwareInfo = {  0x10, 0x01 };
 
     private readonly HidDevice _device;
 
+    private readonly byte _fanChannel;
     private readonly Sensor _fan;
-    private readonly bool _fanControl;
     private readonly Sensor _fanRpm;
+
+    private readonly byte _pumpChannel;
     private readonly Sensor _pump;
     private readonly Sensor _pumpRpm;
+
     private readonly byte[] _rawData = new byte[64];
 
     private readonly string _supportedFirmware;
-    private readonly Sensor _temperature;
+    private readonly Sensor _liquidTemperature;
 
-    private byte[] _standardTemperatures;
+    private readonly TimeSpan _interval = TimeSpan.FromMilliseconds(5000);
+    private DateTime _lastUpdate = DateTime.MinValue;
+
+    private readonly bool _fanControl;
 
     public KrakenV2(HidDevice dev, ISettings settings) : base("Nzxt Kraken X", new Identifier("nzxt", "krakenx", dev.GetSerialNumber().TrimStart('0')), settings)
     {
@@ -32,18 +39,21 @@ internal sealed class KrakenV2 : Hardware
             case 0x170e:
             default:
                 Name = "NZXT Kraken X";
+
                 _fanControl = true;
+
+                _fanChannel = 0x00;
+                _pumpChannel = 0x40;
+
                 _supportedFirmware = "6.2.0";
                 break;
         }
 
-        SetStandardTemps();
-
-        if (dev.TryOpen(out HidStream stream))
+        try
         {
-            stream.ReadTimeout = 5000;
+            using var stream = dev.Open();
 
-            stream.Write(new byte[]{ 0x10, 0x01 });
+            stream.Write(_getFirmwareInfo);
 
             int tries = 0;
 
@@ -59,16 +69,19 @@ internal sealed class KrakenV2 : Hardware
                 return;
 
             // Liquid temperature
-            _temperature = new Sensor("Liquid", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
-            ActivateSensor(_temperature);
+            _liquidTemperature = new Sensor("Liquid", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(),
+                settings);
+            ActivateSensor(_liquidTemperature);
 
             // Pump Control
-            _pump = new Sensor("Pump Control", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
-            Control pumpControl = new(_pump, settings, 20, 100);
+            _pump = new Sensor("Pump Control", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(),
+                settings);
+
+            Control pumpControl = new(_pump, settings, 60, 100);
             _pump.Control = pumpControl;
-            pumpControl.ControlModeChanged += PumpSoftwareControlValueChanged;
-            pumpControl.SoftwareControlValueChanged += PumpSoftwareControlValueChanged;
-            PumpSoftwareControlValueChanged(pumpControl);
+            pumpControl.ControlModeChanged += c => ControlValueChanged(_pump, c);
+            pumpControl.SoftwareControlValueChanged += c => ControlValueChanged(_pump, c);
+            ControlValueChanged(_pump, pumpControl);
             ActivateSensor(_pump);
 
             // Pump RPM
@@ -78,12 +91,13 @@ internal sealed class KrakenV2 : Hardware
             if (_fanControl)
             {
                 // Fan Control
-                _fan = new Sensor("Fans Control", 1, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
-                Control fanControl = new(_fan, settings, 20, 100);
+                _fan = new Sensor("Fans Control", 1, SensorType.Control, this, Array.Empty<ParameterDescription>(),
+                    settings);
+                Control fanControl = new(_fan, settings, 0, 100);
                 _fan.Control = fanControl;
-                fanControl.ControlModeChanged += FanSoftwareControlValueChanged;
-                fanControl.SoftwareControlValueChanged += FanSoftwareControlValueChanged;
-                FanSoftwareControlValueChanged(fanControl);
+                fanControl.ControlModeChanged += c => ControlValueChanged(_fan, c);
+                fanControl.SoftwareControlValueChanged += c => ControlValueChanged(_fan, c);
+                ControlValueChanged(_fan, fanControl);
                 ActivateSensor(_fan);
 
                 // Fan RPM
@@ -92,6 +106,9 @@ internal sealed class KrakenV2 : Hardware
             }
 
             IsValid = true;
+        }
+        catch
+        {
         }
     }
 
@@ -103,43 +120,22 @@ internal sealed class KrakenV2 : Hardware
 
     public string Status => FirmwareVersion != _supportedFirmware ? $"Status: Untested firmware version {FirmwareVersion}! Please consider updating to version {_supportedFirmware}" : "Status: OK";
 
-    private void PumpSoftwareControlValueChanged(Control control)
+
+    private void ControlValueChanged(Sensor sensor, IControl control)
     {
         try
         {
-            switch (control.ControlMode)
+            if (control.ControlMode == ControlMode.Software)
             {
-                case ControlMode.Software:
-                    float value = control.SoftwareValue;
-                    SetPumpDuty((byte)(value > 100 ? 100 : value < 0 ? 0 : value));
-
-                    _pump.Value = value;
-                    break;
-                case ControlMode.Default:
-                    SetPumpDutyDefault();
-                    break;
+                //value will be updated at next Update()
+                sensor.Value = control.SoftwareValue;
+                _lastUpdate = DateTime.MinValue;
+                Update();
             }
-        }
-        catch (ObjectDisposedException)
-        {
-            // Could be unplugged, or the app is stopping...
-        }
-    }
-
-    private void FanSoftwareControlValueChanged(Control control)
-    {
-        try
-        {
-            switch (control.ControlMode)
+            else
             {
-                case ControlMode.Software:
-                    float value = control.SoftwareValue;
-                    SetFanDuty((byte)(value > 100 ? 100 : value < 0 ? 0 : value));
-                    _fan.Value = value;
-                    break;
-                case ControlMode.Default:
-                    SetFanDutyDefault();
-                    break;
+                //will let the device handle the value
+                sensor.Value = null;
             }
         }
         catch (ObjectDisposedException)
@@ -152,18 +148,31 @@ internal sealed class KrakenV2 : Hardware
     {
         try
         {
-            if (_device.TryOpen(out HidStream stream))
-            {
+            using HidStream stream = _device.Open();
 
-                stream.Read(_rawData);
-                if (_rawData[0] != 0x04 || _rawData[1] == 0x00) return;
+            stream.Read(_rawData);
 
-                _temperature.Value = _rawData[1] + (_rawData[2] / 10.0f);
-                _fanRpm.Value = (_rawData[3] << 8) | _rawData[4];
-                _pumpRpm.Value = (_rawData[5] << 8) | _rawData[6];
+            // if not 0x04, it is not temperature data
+            if (_rawData[0] != 0x04) return;
 
-                stream.Close();
-            }
+            // some packet may have 0 as temperature, don't know why just ignore it
+            if (_rawData[1] == 0x00) return;
+
+            _liquidTemperature.Value = _rawData[1] + _rawData[2] / 10.0f;
+            _fanRpm.Value = (_rawData[3] << 8) | _rawData[4];
+            _pumpRpm.Value = (_rawData[5] << 8) | _rawData[6];
+
+            // if we don't have control over the fan or pump, we don't need to update
+            if (!_pump.Value.HasValue && (!_fanControl || !_fan.Value.HasValue)) return;
+
+            //control value need to be updated every 5 seconds or it falls back to default
+            if(DateTime.Now - _lastUpdate < _interval) return;
+
+            if (_fanControl && _fan.Value.HasValue)
+                SetDuty(stream, _fanChannel, (byte)_fan.Value);
+
+            if (_fanControl && _pump.Value.HasValue)
+                SetDuty(stream, _pumpChannel, (byte)_pump.Value);
         }
         catch (ObjectDisposedException)
         {
@@ -171,87 +180,14 @@ internal sealed class KrakenV2 : Hardware
         }
     }
 
-
-    private void SetStandardTemps()
+    private void SetDuty(HidStream stream, byte channel, byte duty)
     {
-        _standardTemperatures = new byte[36];
-        int i =0;
-        for (byte t=20; t < 50; t++) { _standardTemperatures[i++] = t; }
-        for (byte t=50; t <= 60; t+=2) { _standardTemperatures[i++] = t; }
+        SetDuty(stream, channel, 0, duty);
     }
 
-    private void SetFanDuty(byte duty)
+    private void SetDuty(HidStream stream, byte channel, byte temperature, byte duty)
     {
-        if (_device.TryOpen(out HidStream stream))
-        {
-            byte channel = 0x80;
-            foreach(byte temp in _standardTemperatures)
-            {
-                if (temp < 60) SetProfileValue(stream, channel++, temp, duty);
-                else SetProfileValue(stream, channel++, temp, 100);
-            }
-            stream.Close();
-        }
+        stream.Write(new byte[]{0x2,0x4d,channel,temperature,duty});
+        _lastUpdate = DateTime.Now;
     }
-
-    private void SetPumpDuty(byte duty)
-    {
-        if (_device.TryOpen(out HidStream stream))
-        {
-            byte channel = 0xc0;
-            foreach(byte temp in _standardTemperatures)
-            {
-                if (temp < 50) SetProfileValue(stream, channel++, temp, duty);
-                else SetProfileValue(stream, channel++, temp, 100);
-            }
-            stream.Close();
-        }
-    }
-
-    private void SetFanDutyDefault()
-    {
-        if (_device.TryOpen(out HidStream stream))
-        {
-            byte channel = 0x80;
-            foreach(byte temp in _standardTemperatures)
-            {
-                if (temp < 20) SetProfileValue(stream, channel++, temp, 25);
-                else if (temp < 30) SetProfileValue(stream, channel++, temp, Interpolate(temp,20,30,25,50));
-                else if (temp < 50) SetProfileValue(stream, channel++, temp, Interpolate(temp,30,50,50,90));
-                else if (temp < 60) SetProfileValue(stream, channel++, temp, Interpolate(temp,50,60,90,100));
-                else SetProfileValue(stream, channel++, temp, 100);
-            }
-            stream.Close();
-        }
-    }
-
-    private void SetPumpDutyDefault()
-    {
-        if (_device.TryOpen(out HidStream stream))
-        {
-            byte channel = 0xC0;
-            foreach(byte temp in _standardTemperatures)
-            {
-                if (temp < 20) SetProfileValue(stream, channel++, temp, 50);
-                else if (temp < 30) SetProfileValue(stream, channel++, temp, Interpolate(temp,20,30,50,60));
-                else if (temp < 40) SetProfileValue(stream, channel++, temp, Interpolate(temp,30,40,60,90));
-                else if (temp < 50) SetProfileValue(stream, channel++, temp, Interpolate(temp,40,50,90,100));
-                else SetProfileValue(stream, channel++, temp, 100);
-            }
-            stream.Close();
-        }
-    }
-
-    private byte Interpolate(byte temp, byte minTemp, byte maxTemp, byte minDuty, byte maxDuty)
-    {
-        double ratio = (double)(temp - minTemp) / (double)(maxTemp - minTemp);
-        return (byte)(minDuty + ((maxDuty - minDuty) * ratio));
-    }
-
-    private void SetProfileValue(HidStream stream, byte channel, byte temp, byte duty)
-    {
-            stream.Write(new byte[]{0x2,0x4d,channel,temp,duty});
-    }
-
-
 }
