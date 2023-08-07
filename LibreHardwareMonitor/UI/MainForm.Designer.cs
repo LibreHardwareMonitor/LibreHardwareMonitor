@@ -40,12 +40,14 @@ namespace LibreHardwareMonitor.UI
             this.value = new Aga.Controls.Tree.TreeColumn();
             this.min = new Aga.Controls.Tree.TreeColumn();
             this.max = new Aga.Controls.Tree.TreeColumn();
+            this.average = new Aga.Controls.Tree.TreeColumn();
             this.nodeImage = new Aga.Controls.Tree.NodeControls.NodeIcon();
             this.nodeCheckBox = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
             this.nodeTextBoxText = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.nodeTextBoxValue = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.nodeTextBoxMin = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.nodeTextBoxMax = new Aga.Controls.Tree.NodeControls.NodeTextBox();
+            this.nodeTextBoxAverage = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.mainMenu = new System.Windows.Forms.MenuStrip();
             this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveReportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,6 +76,7 @@ namespace LibreHardwareMonitor.UI
             this.valueMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.minMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.averageMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startMinMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.minTrayMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -171,6 +174,13 @@ namespace LibreHardwareMonitor.UI
             this.max.TooltipText = null;
             this.max.Width = 100;
             // 
+            // average
+            // 
+            this.average.Header = "Average";
+            this.average.SortOrder = System.Windows.Forms.SortOrder.None;
+            this.average.TooltipText = null;
+            this.average.Width = 100;
+            // 
             // nodeImage
             // 
             this.nodeImage.DataPropertyName = "Image";
@@ -221,6 +231,15 @@ namespace LibreHardwareMonitor.UI
             this.nodeTextBoxMax.ParentColumn = this.max;
             this.nodeTextBoxMax.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxMax.UseCompatibleTextRendering = true;
+            // 
+            // nodeTextBoxAverage
+            // 
+            this.nodeTextBoxAverage.DataPropertyName = "Average";
+            this.nodeTextBoxAverage.IncrementalSearchEnabled = true;
+            this.nodeTextBoxAverage.LeftMargin = 3;
+            this.nodeTextBoxAverage.ParentColumn = this.average;
+            this.nodeTextBoxAverage.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
+            this.nodeTextBoxAverage.UseCompatibleTextRendering = true;
             // 
             // mainMenu
             // 
@@ -404,7 +423,8 @@ namespace LibreHardwareMonitor.UI
             this.columnsMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.valueMenuItem,
             this.minMenuItem,
-            this.maxMenuItem});
+            this.maxMenuItem,
+            this.averageMenuItem});
             this.columnsMenuItem.Name = "columnsMenuItem";
             this.columnsMenuItem.Size = new System.Drawing.Size(188, 22);
             this.columnsMenuItem.Text = "Columns";
@@ -426,6 +446,12 @@ namespace LibreHardwareMonitor.UI
             this.maxMenuItem.Name = "maxMenuItem";
             this.maxMenuItem.Size = new System.Drawing.Size(180, 22);
             this.maxMenuItem.Text = "Max";
+            // 
+            //  averageMenuItem
+            // 
+            this.averageMenuItem.Name = " averageMenuItem";
+            this.averageMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.averageMenuItem.Text = "Average";
             // 
             // optionsMenuItem
             // 
@@ -902,6 +928,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView.Columns.Add(this.value);
             this.treeView.Columns.Add(this.min);
             this.treeView.Columns.Add(this.max);
+            this.treeView.Columns.Add(this.average);
             this.treeView.DefaultToolTipProvider = null;
             this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView.DragDropMarkColor = System.Drawing.Color.Black;
@@ -917,6 +944,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView.NodeControls.Add(this.nodeTextBoxValue);
             this.treeView.NodeControls.Add(this.nodeTextBoxMin);
             this.treeView.NodeControls.Add(this.nodeTextBoxMax);
+            this.treeView.NodeControls.Add(this.nodeTextBoxAverage);
             this.treeView.SelectedNode = null;
             this.treeView.Size = new System.Drawing.Size(386, 354);
             this.treeView.TabIndex = 0;
@@ -969,11 +997,13 @@ namespace LibreHardwareMonitor.UI
         private Aga.Controls.Tree.TreeColumn value;
         private Aga.Controls.Tree.TreeColumn min;
         private Aga.Controls.Tree.TreeColumn max;
+        private Aga.Controls.Tree.TreeColumn average;
         private Aga.Controls.Tree.NodeControls.NodeIcon nodeImage;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxText;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxValue;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxMin;
         private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxMax;
+        private Aga.Controls.Tree.NodeControls.NodeTextBox nodeTextBoxAverage;
         private SplitContainerAdv splitContainer;
         private System.Windows.Forms.ToolStripMenuItem viewMenuItem;
         private System.Windows.Forms.ToolStripMenuItem plotMenuItem;
@@ -996,6 +1026,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem valueMenuItem;
         private System.Windows.Forms.ToolStripMenuItem minMenuItem;
         private System.Windows.Forms.ToolStripMenuItem maxMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem averageMenuItem;
         private System.Windows.Forms.ToolStripMenuItem temperatureUnitsMenuItem;
         private System.Windows.Forms.ToolStripSeparator webMenuItemSeparator;
         private ToolStripRadioButtonMenuItem celsiusMenuItem;

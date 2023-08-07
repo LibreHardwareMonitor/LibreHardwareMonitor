@@ -90,6 +90,11 @@ public interface ISensor : IElement
     float? Min { get; }
 
     /// <summary>
+    /// Gets an average value recorded for the given sensor.
+    /// </summary>
+    float? Average { get; }
+
+    /// <summary>
     /// Gets or sets a sensor name.
     /// <para>By default determined by the library.</para>
     /// </summary>
