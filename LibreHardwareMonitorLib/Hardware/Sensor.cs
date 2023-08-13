@@ -23,6 +23,7 @@ internal class Sensor : ISensor
     private float? _currentValue;
     private string _name;
     private float _sum;
+    private DateTime _averageCutoff = DateTime.MinValue;
     private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
 
     public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
@@ -171,6 +172,12 @@ internal class Sensor : ISensor
         Max = null;
     }
 
+    public void ResetAverage()
+    {
+        Average = null;
+        _averageCutoff = DateTime.UtcNow;
+    }
+
     public void ClearValues()
     {
         _values.Clear();
@@ -280,8 +287,8 @@ internal class Sensor : ISensor
     /// <summary>
     /// Estimate average value of time series.
     /// Updated every 4 measurements, since Sensor code performs basic filtering by averaging every 4 values.
-    /// Does not respect Mix/Max reset, but we can add it by introducing cutoff timestamp, or integrating as we go instead
-    /// (latter will also require much less computations: we will only update the last average value).
+    /// Can be changed to integrating as we go instead (will also require much less computations: we will only update the last average value,
+    /// but will have unfixable error as values go out of the logging window, as Min/Max now do).
     /// </summary>
     /// <param name = "lastPeriodOnly">Only average values the last application launch (till first break in histroy)</param>
     /// <returns>Estimated average</returns>
@@ -318,6 +325,9 @@ internal class Sensor : ISensor
 
             if (float.IsNaN(right.Value))
                 continue; // Start of period, ignore for now (should not happen now since we average only last period)
+
+            if(_averageCutoff > left.Time)
+                break; // We reached cutoff time, stop (in theory we should interpolate though).
 
             var delta = right.Time - left.Time;
 

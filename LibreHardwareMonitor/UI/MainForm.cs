@@ -1101,6 +1101,7 @@ public sealed partial class MainForm : Form
         {
             sensorClick.ResetMin();
             sensorClick.ResetMax();
+            sensorClick.ResetAverage();
         }));
     }
 

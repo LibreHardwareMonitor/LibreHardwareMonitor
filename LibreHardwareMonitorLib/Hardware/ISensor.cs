@@ -130,6 +130,11 @@ public interface ISensor : IElement
     void ResetMax();
 
     /// <summary>
+    /// Resets calculated Average <see cref="Average"/>.
+    /// </summary>
+    void ResetAverage();
+
+    /// <summary>
     /// Clears the values stored in <see cref="Values"/>.
     /// </summary>
     void ClearValues();
