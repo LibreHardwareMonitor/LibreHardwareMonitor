@@ -246,7 +246,7 @@ internal class Sensor : ISensor
                             break;
 
                         float value = reader.ReadSingle();
-                        AppendValue(value, time);
+                        AppendValue(value, time, false);
                         readLen = reader.BaseStream.Length - reader.BaseStream.Position;
                     }
                 }
@@ -266,14 +266,15 @@ internal class Sensor : ISensor
         _settings.Remove(name);
     }
 
-    private void AppendValue(float value, DateTime time)
+    private void AppendValue(float value, DateTime time, bool updateAverage = true)
     {
         if (_values.Count >= 2 && _values[_values.Count - 1].Value == value && _values[_values.Count - 2].Value == value)
             _values[_values.Count - 1] = new SensorValue(value, time);
         else
             _values.Add(new SensorValue(value, time));
 
-        Average = EstimateAverage();
+        if(updateAverage)
+            Average = EstimateAverage();
     }
 
     /// <summary>
