@@ -44,9 +44,12 @@ internal class Sensor : ISensor
             if (_lastTime.HasValue)
             {
                 var delta = time - _lastTime.Value;
-                var weighted = _sum * _timeSpan.TotalSeconds + (_lastValue + value) * delta.TotalSeconds / 2;
-                _timeSpan += delta;
-                _sum = weighted / _timeSpan.TotalSeconds;
+                if (delta.TotalSeconds > 0) // can be negative if system time changed
+                {
+                    var weighted = _sum * _timeSpan.TotalSeconds + (_lastValue + value) * delta.TotalSeconds / 2;
+                    _timeSpan += delta;
+                    _sum = weighted / _timeSpan.TotalSeconds;
+                }
             }
             else
             {
