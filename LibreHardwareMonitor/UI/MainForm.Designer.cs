@@ -380,7 +380,7 @@ namespace LibreHardwareMonitor.UI
             // 
             this.resetMinMaxMenuItem.Name = "resetMinMaxMenuItem";
             this.resetMinMaxMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.resetMinMaxMenuItem.Text = "Reset Min/Max";
+            this.resetMinMaxMenuItem.Text = "Reset Min/Max/Average";
             this.resetMinMaxMenuItem.Click += new System.EventHandler(this.ResetMinMaxMenuItem_Click);
             // 
             // resetPlotMenuItem
