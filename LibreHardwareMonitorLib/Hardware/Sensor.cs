@@ -23,8 +23,46 @@ internal class Sensor : ISensor
     private float? _currentValue;
     private string _name;
     private float _sum;
-    private DateTime _averageCutoff = DateTime.MinValue;
+    private readonly AverageAccumulator _average = new();
+
     private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
+
+    private class AverageAccumulator
+    {
+        private TimeSpan _timeSpan = TimeSpan.Zero;
+        private DateTime? _lastTime;
+        private double _sum = double.NaN;
+        private float _lastValue;
+
+        public float? Average => double.IsNaN(_sum) ? null : (float)_sum;
+
+        public void AddValue(float value, DateTime time)
+        {
+            if (float.IsNaN(value))
+                return;
+
+            if (_lastTime.HasValue)
+            {
+                var delta = time - _lastTime.Value;
+                var weighted = _sum * _timeSpan.TotalSeconds + (_lastValue + value) * delta.TotalSeconds / 2;
+                _timeSpan += delta;
+                _sum = weighted / _timeSpan.TotalSeconds;
+            }
+            else
+            {
+                _sum = value;
+            }
+            _lastTime = time;
+            _lastValue = value;
+        }
+
+        public void Reset()
+        {
+            _timeSpan = TimeSpan.Zero;
+            _lastTime = null;
+            _sum = double.NaN;
+        }
+    }
 
     public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
         this(name, index, sensorType, hardware, null, settings)
@@ -93,7 +131,7 @@ internal class Sensor : ISensor
 
     public float? Min { get; private set; }
 
-    public float? Average { get; private set; }
+    public float? Average => _average.Average;
 
     public string Name
     {
@@ -172,17 +210,9 @@ internal class Sensor : ISensor
         Max = null;
     }
 
-    public void ResetAverage()
-    {
-        Average = null;
-        _averageCutoff = DateTime.UtcNow;
-    }
+    public void ResetAverage() => _average.Reset();
 
-    public void ClearValues()
-    {
-        _values.Clear();
-        Average = null;
-    }
+    public void ClearValues() => _values.Clear();
 
     public void Accept(IVisitor visitor)
     {
@@ -280,15 +310,16 @@ internal class Sensor : ISensor
         else
             _values.Add(new SensorValue(value, time));
 
-        if(updateAverage)
-            Average = EstimateAverage();
+        if (updateAverage)
+        {
+            if (float.NaN != value)
+                _average.AddValue(value, time);
+        }
     }
 
     /// <summary>
-    /// Estimate average value of time series.
+    /// Estimate average value of time series. Can be useful later
     /// Updated every 4 measurements, since Sensor code performs basic filtering by averaging every 4 values.
-    /// Can be changed to integrating as we go instead (will also require much less computations: we will only update the last average value,
-    /// but will have unfixable error as values go out of the logging window, as Min/Max now do).
     /// </summary>
     /// <param name = "lastPeriodOnly">Only average values the last application launch (till first break in histroy)</param>
     /// <returns>Estimated average</returns>
@@ -325,9 +356,6 @@ internal class Sensor : ISensor
 
             if (float.IsNaN(right.Value))
                 continue; // Start of period, ignore for now (should not happen now since we average only last period)
-
-            if(_averageCutoff > left.Time)
-                break; // We reached cutoff time, stop (in theory we should interpolate though).
 
             var delta = right.Time - left.Time;
 
