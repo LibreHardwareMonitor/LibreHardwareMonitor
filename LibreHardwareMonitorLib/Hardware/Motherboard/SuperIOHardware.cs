@@ -1479,6 +1479,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z690_AORUS_PRO:
+                    case Model.Z690_AORUS_ULTRA: // ITE IT8689E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+12V", 2, 5f, 1));
@@ -1488,6 +1489,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 6, true));
                         v.Add(new Voltage("3VSB", 7, 1f, 1f));
                         v.Add(new Voltage("VBat", 8, 1f, 1f));
+                        v.Add(new Voltage("AVCC3", 9, true));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
                         t.Add(new Temperature("CPU", 2));

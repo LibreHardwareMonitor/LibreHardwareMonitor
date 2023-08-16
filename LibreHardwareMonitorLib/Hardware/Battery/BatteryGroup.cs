@@ -91,7 +91,7 @@ internal class BatteryGroup : IGroup
                                                                  IntPtr.Zero))
                                     {
                                         // Only batteries count.
-                                        if (bi.Capabilities == Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY)
+                                        if (bi.Capabilities.HasFlag(Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY))
                                         {
                                             const int maxLoadString = 100;
 
