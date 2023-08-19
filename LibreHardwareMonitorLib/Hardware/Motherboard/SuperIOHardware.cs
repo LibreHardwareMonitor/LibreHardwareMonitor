@@ -216,6 +216,13 @@ internal sealed class SuperIOHardware : Hardware
                 GetIteConfigurationsA(superIO, manufacturer, model, v, t, f, c, ref readFan, ref postUpdate, ref mutex);
                 break;
 
+
+            case Chip.IT87952E:
+            case Chip.IT8792E:
+            case Chip.IT8790E:
+                GetIteConfigurationsC(superIO, manufacturer, model, v, t, f, c);
+                break;
+
             case Chip.IT8613E:
             case Chip.IT8620E:
             case Chip.IT8625E:
@@ -231,12 +238,6 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.IT8771E:
             case Chip.IT8772E:
                 GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
-                break;
-
-            case Chip.IT87952E:
-            case Chip.IT8792E:
-            case Chip.IT8790E:
-                GetIteConfigurationsC(superIO, manufacturer, model, v, t, f, c);
                 break;
 
             case Chip.F71858:
@@ -1640,27 +1641,27 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.B660M_DS3H_AX_DDR4:
-                        v.Add(new Voltage("Vcore",0));
-                        v.Add(new Voltage("VAXG",1));
-                        v.Add(new Voltage("VCCIN AUX",2));
-                        v.Add(new Voltage("DIMM AB",3));
-                        v.Add(new Voltage("+12V",4));
-                        v.Add(new Voltage("+3.3V",5));
-                        v.Add(new Voltage("+5V",6));
-                        t.Add(new Temperature("CPU",0));
-                        t.Add(new Temperature("PCH",1));
-                        t.Add(new Temperature("PCIEX16",2));
-                        t.Add(new Temperature("System #1",3));
-                        t.Add(new Temperature("System #2",4));
-                        t.Add(new Temperature("VRAM MOS",5));
-                        f.Add(new Fan("CPU Fan",0));
-                        f.Add(new Fan("System Fan #1",2));
-                        f.Add(new Fan("System Fan #2",3));
-                        f.Add(new Fan("System Fan #3",4));
-                        c.Add(new Control("CPU Fan",0));
-                        c.Add(new Control("System Fan #1",2));
-                        c.Add(new Control("System Fan #2",3));
-                        c.Add(new Control("System Fan #3",4));
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("VAXG", 1));
+                        v.Add(new Voltage("VCCIN AUX", 2));
+                        v.Add(new Voltage("DIMM AB", 3));
+                        v.Add(new Voltage("+12V", 4));
+                        v.Add(new Voltage("+3.3V", 5));
+                        v.Add(new Voltage("+5V", 6));
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("PCIEX16", 2));
+                        t.Add(new Temperature("System #1", 3));
+                        t.Add(new Temperature("System #2", 4));
+                        t.Add(new Temperature("VRAM MOS", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 2));
+                        c.Add(new Control("System Fan #2", 3));
+                        c.Add(new Control("System Fan #3", 4));
                         break;
 
                     default:
@@ -2074,7 +2075,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #4", 3, true));
                         v.Add(new Voltage("Voltage #5", 4, true));
                         v.Add(new Voltage("Voltage #6", 5, true));
-                        
+
                         if (superIO.Chip != Chip.F71808E)
                             v.Add(new Voltage("Voltage #7", 6, true));
 

@@ -48,7 +48,7 @@ internal enum Chip : ushort
     IT8771E = 0x8771,
     IT8772E = 0x8772,
     IT8790E = 0x8790,
-    IT8792E = 0x8733, // Could also be IT8791E, IT8795E
+    IT8792E = 0xa60,//0x8733, // Could also be IT8791E, IT8795E
     IT87952E = 0x8695,
 
     NCT610XD = 0xC452,

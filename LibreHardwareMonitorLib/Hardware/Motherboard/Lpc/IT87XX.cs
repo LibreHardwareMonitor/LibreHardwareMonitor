@@ -72,7 +72,7 @@ internal class IT87XX : ISuperIO
 
         FAN_PWM_CTRL_REG = chip switch
         {
-            Chip.IT8665E or Chip.IT8625E =>new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
+            Chip.IT8665E or Chip.IT8625E => new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
             _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
         };
 
@@ -86,6 +86,7 @@ internal class IT87XX : ISuperIO
             Chip.IT8728F or
             Chip.IT8665E or
             Chip.IT8686E or
+            Chip.IT8792E or //Moved ahead of IT8688E
             Chip.IT8688E or
             Chip.IT8689E or
             Chip.IT87952E or
@@ -93,7 +94,6 @@ internal class IT87XX : ISuperIO
             Chip.IT8625E or
             Chip.IT8620E or
             Chip.IT8613E or
-            Chip.IT8792E or
             Chip.IT8655E or
             Chip.IT8631E;
 
@@ -134,6 +134,7 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[5];
                 break;
 
+            case Chip.IT8792E:
             case Chip.IT8688E:
                 Voltages = new float?[11];
                 Temperatures = new float?[6];
@@ -158,13 +159,6 @@ internal class IT87XX : ISuperIO
             case Chip.IT8655E:
                 Voltages = new float?[9];
                 Temperatures = new float?[6];
-                Fans = new float?[3];
-                Controls = new float?[3];
-                break;
-
-            case Chip.IT8792E:
-                Voltages = new float?[9];
-                Temperatures = new float?[3];
                 Fans = new float?[3];
                 Controls = new float?[3];
                 break;
@@ -276,6 +270,13 @@ internal class IT87XX : ISuperIO
                 if (Chip == Chip.IT8689E)
                 {
                     WriteByte(FAN_PWM_CTRL_REG[index], 0x7F);
+                }
+                else if (Chip == Chip.IT8792E)
+                {
+                    //WriteByte(FAN_PWM_CTRL_REG[index], 0x13);
+                    WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x14));
+                    //WriteByte(0x14, (byte)(value ^ (1 << index))); //Fan speed 50
+                    //WriteByte(FAN_MAIN_CTRL_REG, (byte)(value ^ (1 << index))); //Fan speed 100
                 }
                 else
                 {
