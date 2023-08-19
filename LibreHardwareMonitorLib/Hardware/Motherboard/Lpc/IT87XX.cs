@@ -72,7 +72,7 @@ internal class IT87XX : ISuperIO
 
         FAN_PWM_CTRL_REG = chip switch
         {
-            Chip.IT8665E or Chip.IT8625E => new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
+            Chip.IT8665E or Chip.IT8625E =>new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
             _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
         };
 
@@ -273,10 +273,7 @@ internal class IT87XX : ISuperIO
                 }
                 else if (Chip == Chip.IT8792E)
                 {
-                    //WriteByte(FAN_PWM_CTRL_REG[index], 0x13);
                     WriteByte(FAN_PWM_CTRL_REG[index], (byte)(_initialFanPwmControl[index] & 0x14));
-                    //WriteByte(0x14, (byte)(value ^ (1 << index))); //Fan speed 50
-                    //WriteByte(FAN_MAIN_CTRL_REG, (byte)(value ^ (1 << index))); //Fan speed 100
                 }
                 else
                 {
