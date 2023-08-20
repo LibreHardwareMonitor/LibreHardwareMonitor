@@ -19,7 +19,6 @@ namespace Aga.Controls
 			}
 
 			private int _count = 0;
-			
 			public int Count
 			{
 				get { return _count; }

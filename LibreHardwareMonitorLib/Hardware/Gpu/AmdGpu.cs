@@ -353,8 +353,8 @@ internal sealed class AmdGpu : GenericGpu
                 else
                 {
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_ASIC_POWER, _powerTotal, reset: false);
-                
                 }
+
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_GFX_POWER, _powerCore, reset: false);
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_SOC_POWER, _powerSoC, reset: false);
                 
