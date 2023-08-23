@@ -153,20 +153,24 @@ internal sealed class KrakenV2 : Hardware
             stream.Read(_rawData);
 
             // if not 0x04, it is not temperature data
-            if (_rawData[0] != 0x04) return;
+            if (_rawData[0] != 0x04)
+                return;
 
             // some packet may have 0 as temperature, don't know why just ignore it
-            if (_rawData[1] == 0x00) return;
+            if (_rawData[1] == 0x00)
+                return;
 
             _liquidTemperature.Value = _rawData[1] + _rawData[2] / 10.0f;
             _fanRpm.Value = (_rawData[3] << 8) | _rawData[4];
             _pumpRpm.Value = (_rawData[5] << 8) | _rawData[6];
 
             // if we don't have control over the fan or pump, we don't need to update
-            if (!_pump.Value.HasValue && (!_fanControl || !_fan.Value.HasValue)) return;
+            if (!_pump.Value.HasValue && (!_fanControl || !_fan.Value.HasValue))
+                return;
 
             //control value need to be updated every 5 seconds or it falls back to default
-            if(DateTime.Now - _lastUpdate < _interval) return;
+            if (DateTime.Now - _lastUpdate < _interval)
+                return;
 
             if (_fanControl && _fan.Value.HasValue)
                 SetDuty(stream, _fanChannel, (byte)_fan.Value);
