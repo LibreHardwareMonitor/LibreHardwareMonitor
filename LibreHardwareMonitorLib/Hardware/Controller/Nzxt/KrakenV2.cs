@@ -8,7 +8,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
      */
 internal sealed class KrakenV2 : Hardware
 {
-    private static readonly byte[] _getFirmwareInfo = {  0x10, 0x01 };
+    private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
 
     private readonly HidDevice _device;
 
@@ -51,7 +51,7 @@ internal sealed class KrakenV2 : Hardware
 
         try
         {
-            using var stream = dev.Open();
+            using HidStream stream = dev.Open();
 
             stream.Write(_getFirmwareInfo);
 
@@ -191,7 +191,7 @@ internal sealed class KrakenV2 : Hardware
 
     private void SetDuty(HidStream stream, byte channel, byte temperature, byte duty)
     {
-        stream.Write(new byte[]{0x2,0x4d,channel,temperature,duty});
+        stream.Write(new byte[] { 0x2, 0x4d, channel, temperature, duty });
         _lastUpdate = DateTime.Now;
     }
 }
