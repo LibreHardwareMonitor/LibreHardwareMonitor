@@ -52,7 +52,7 @@ internal class BatteryGroup : IGroup
                     if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
                     {
                         IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                        Marshal.WriteInt32(pdidd, Environment.Is64BitOperatingSystem ? 8 : 4); // cbSize.
+                        Marshal.WriteInt32(pdidd, Environment.Is64BitProcess ? 8 : 4 + Marshal.SystemDefaultCharSize); // cbSize.
 
                         if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                      did,
