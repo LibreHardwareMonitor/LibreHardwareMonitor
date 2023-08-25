@@ -1282,6 +1282,9 @@ internal sealed class SuperIOHardware : Hardware
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
 
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
                         break;
 
                     case Model.X399_AORUS_Gaming_7: // ITE IT8686E
