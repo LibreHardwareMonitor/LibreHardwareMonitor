@@ -3408,29 +3408,31 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.X570_Gaming_Plus:
+                        // NCT6797D
+                        // NCT771x : PCIE 1, M.2 1, not supported 
+                        // RF35204 : VRM not supported
+
                         v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
-                        v.Add(new Voltage("Voltage #5", 4, true));
-                        v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+12V", 4,  11, 1));
+                        //v.Add(new Voltage("Voltage #6", 5));
+                        v.Add(new Voltage("VIN4", 6, false));
                         v.Add(new Voltage("3VSB", 7, 34, 34));
                         v.Add(new Voltage("VBat", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9));
-                        v.Add(new Voltage("Voltage #11", 10, true));
-                        v.Add(new Voltage("Voltage #12", 11, true));
-                        v.Add(new Voltage("Voltage #13", 12, true));
-                        v.Add(new Voltage("Voltage #14", 13, true));
-                        v.Add(new Voltage("Voltage #15", 14, true));
+                        //v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("VIN6", 11));
+                        v.Add(new Voltage("CPU NB/SoC", 12));
+                        v.Add(new Voltage("DIMM", 13, 1, 1));
+                        v.Add(new Voltage("VIN7", 14));
 
-                        t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1));
+                        t.Add(new Temperature("Unknown Temperature #1", 1));
                         t.Add(new Temperature("System", 2));
                         t.Add(new Temperature("MOS", 3));
-                        t.Add(new Temperature("Temperature #4", 4));
                         t.Add(new Temperature("Chipset", 5));
-                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("CPU", 9));
 
                         f.Add(new Fan("Pump Fan", 0));
                         f.Add(new Fan("CPU Fan", 1));
