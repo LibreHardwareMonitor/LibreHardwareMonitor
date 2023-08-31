@@ -553,6 +553,7 @@ internal static class AtiAdlxx
         PMLOG_CLK_VCN1CLK2 = 37,
         PMLOG_SMART_POWERSHIFT_CPU = 38,
         PMLOG_SMART_POWERSHIFT_DGPU = 39,
-        PMLOG_MAX_SENSORS_REAL
+        PMLOG_MAX_SENSORS_REAL,
+        PMLOG_TOTAL_BOARD_POWER_RX_7000 = 73
     }
 }
