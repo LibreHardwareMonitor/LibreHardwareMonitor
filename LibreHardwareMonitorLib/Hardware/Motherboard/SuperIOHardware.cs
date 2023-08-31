@@ -724,6 +724,7 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan #2", 1));
                         f.Add(new Fan("Power Fan", 2));
                         f.Add(new Fan("System Fan #1", 3));
+                        c.Add(new Control("CPU Fan", 0));
 
                         break;
 
