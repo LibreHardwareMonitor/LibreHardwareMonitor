@@ -346,7 +346,7 @@ internal sealed class AmdGpu : GenericGpu
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX, _coreLoad, reset: false);
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_MEM, _memoryLoad);
 
-                if(_adapterInfo.AdapterName.Contains("AMD Radeon RX 7"))
+                if (_adapterInfo.AdapterName.Contains("AMD Radeon RX 7"))
                 {
                     GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TOTAL_BOARD_POWER_RX_7000, _powerTotal, reset: false);
                 }
