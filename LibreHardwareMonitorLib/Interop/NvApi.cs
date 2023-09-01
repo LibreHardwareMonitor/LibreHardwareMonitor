@@ -218,7 +218,7 @@ internal static class NvApi
 
     private static void GetDelegate<T>(uint id, out T newDelegate) where T : class
     {
-        IntPtr ptr = Environment.Is64BitOperatingSystem ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
+        IntPtr ptr = Environment.Is64BitProcess ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
 
         if (ptr != IntPtr.Zero)
             newDelegate = Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
@@ -228,7 +228,7 @@ internal static class NvApi
 
     public static bool DllExists()
     {
-        IntPtr module = Kernel32.LoadLibrary(Environment.Is64BitOperatingSystem ? DllName64 : DllName);
+        IntPtr module = Kernel32.LoadLibrary(Environment.Is64BitProcess ? DllName64 : DllName);
         if (module == IntPtr.Zero)
             return false;
 
