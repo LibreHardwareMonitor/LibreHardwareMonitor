@@ -156,9 +156,9 @@ internal class Sensor : ISensor
         get { return _currentValue; }
         set
         {
+            DateTime now = DateTime.UtcNow;
             if (_valuesTimeWindow != TimeSpan.Zero)
             {
-                DateTime now = DateTime.UtcNow;
                 while (_values.Count > 0 && now - _values[0].Time > _valuesTimeWindow)
                     _values.RemoveAt(0);
 
@@ -183,6 +183,9 @@ internal class Sensor : ISensor
 
                 if (!Max.HasValue || Max < value)
                     Max = value;
+
+                if (null != value)
+                    _average.AddValue((float)value, now);
             }
         }
     }
@@ -286,7 +289,7 @@ internal class Sensor : ISensor
                             break;
 
                         float value = reader.ReadSingle();
-                        AppendValue(value, time, false);
+                        AppendValue(value, time);
                         readLen = reader.BaseStream.Length - reader.BaseStream.Position;
                     }
                 }
@@ -306,69 +309,11 @@ internal class Sensor : ISensor
         _settings.Remove(name);
     }
 
-    private void AppendValue(float value, DateTime time, bool updateAverage = true)
+    private void AppendValue(float value, DateTime time)
     {
         if (_values.Count >= 2 && _values[_values.Count - 1].Value == value && _values[_values.Count - 2].Value == value)
             _values[_values.Count - 1] = new SensorValue(value, time);
         else
             _values.Add(new SensorValue(value, time));
-
-        if (updateAverage)
-        {
-            if (float.NaN != value)
-                _average.AddValue(value, time);
-        }
-    }
-
-    /// <summary>
-    /// Estimate average value of time series. Can be useful later
-    /// Updated every 4 measurements, since Sensor code performs basic filtering by averaging every 4 values.
-    /// </summary>
-    /// <param name = "lastPeriodOnly">Only average values the last application launch (till first break in histroy)</param>
-    /// <returns>Estimated average</returns>
-    private float? EstimateAverage(bool lastPeriodOnly = true)
-    {
-        if (_values.Count < 1)
-            return null;
-
-        if(_values.Count == 1)
-            return float.IsNaN(_values[0].Value) ? null : _values[0].Value;
-
-        // Lame unequal time intervals time series average.
-        // Basically counts total area of trapezoids between adjacent points and norms it by total time.
-        // Not very correct, but good enough for the purpose.
-        var totalTime = TimeSpan.Zero;
-        var totalAverage = 0.0;
-        for (var i = _values.Count - 1; i >= 1; --i)
-        {
-            var left = _values[i - 1];
-            var right = _values[i];
-            if (float.IsNaN(left.Value))
-            {
-                if (!lastPeriodOnly)
-                    continue;
-                else
-                {
-                    // End of period since last restart, stop.
-                    if (0.0 == totalTime.TotalSeconds)
-                        // We only have one new value since last restart
-                        return float.IsNaN(right.Value) ? null : right.Value;
-                    break;
-                }
-            }
-
-            if (float.IsNaN(right.Value))
-                continue; // Start of period, ignore for now (should not happen now since we average only last period)
-
-            var delta = right.Time - left.Time;
-
-            if (delta.TotalSeconds <= 0.0)
-                continue; // Should not happen, but just in case. Project in general will have issues if system time changes.
-
-            totalAverage += (left.Value + right.Value) * delta.TotalSeconds / 2;
-            totalTime += delta;
-        }
-        totalAverage /= totalTime.TotalSeconds;
-        return (float)totalAverage;
     }
 }
