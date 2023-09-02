@@ -35,7 +35,7 @@ internal sealed class Battery : Hardware
         Kernel32.BATTERY_INFORMATION batteryInfo,
         uint batteryTag,
         ISettings settings) :
-        base(name, new Identifier("battery"), settings)
+        base(name, new Identifier("battery", $"{name.Replace(' ', '-')}_{batteryTag}"), settings)
     {
         Name = name;
         Manufacturer = manufacturer;
