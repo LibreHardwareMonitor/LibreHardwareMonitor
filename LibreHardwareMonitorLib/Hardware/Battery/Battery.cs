@@ -19,7 +19,7 @@ internal sealed class Battery : Hardware
     private readonly Sensor _chargeDischargeCurrent;
     private readonly Sensor _chargeDischargeRate;
     private readonly Sensor _chargeLevel;
-    private readonly Sensor _degradationPercentage;
+    private readonly Sensor _degradationLevel;
     private readonly Sensor _designedCapacity;
     private readonly Sensor _fullChargedCapacity;
     private readonly Sensor _remainingCapacity;
@@ -93,8 +93,8 @@ internal sealed class Battery : Hardware
         _chargeDischargeRate = new Sensor("Charge/Discharge Rate", 0, SensorType.Power, this, settings);
         ActivateSensor(_chargeDischargeRate);
 
-        _degradationPercentage = new Sensor("Degradation Level", 0, SensorType.Level, this, settings);
-        ActivateSensor(_degradationPercentage);
+        _degradationLevel = new Sensor("Degradation Level", 0, SensorType.Level, this, settings);
+        ActivateSensor(_degradationLevel);
 
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
         ActivateSensor(_remainingTime);
@@ -102,7 +102,7 @@ internal sealed class Battery : Hardware
         if (batteryInfo.FullChargedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY &&
             batteryInfo.DesignedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY)
         {
-            _degradationPercentage.Value = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
+            _degradationLevel.Value = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
             DesignedCapacity = batteryInfo.DesignedCapacity;
             FullChargedCapacity = batteryInfo.FullChargedCapacity;
         }
@@ -116,7 +116,7 @@ internal sealed class Battery : Hardware
 
     public BatteryChemistry Chemistry { get; }
 
-    public float? DegradationLevel => _degradationPercentage.Value;
+    public float? DegradationLevel => _degradationLevel.Value;
 
     public float? DesignedCapacity { get; }
 
@@ -204,7 +204,7 @@ internal sealed class Battery : Hardware
                 }
             }
 
-            _degradationPercentage.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
+            _degradationLevel.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
         }
 
         uint estimatedRunTime = 0;
