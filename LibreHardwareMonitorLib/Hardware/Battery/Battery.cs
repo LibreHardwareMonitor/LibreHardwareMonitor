@@ -76,25 +76,25 @@ internal sealed class Battery : Hardware
         _chargeLevel = new Sensor("Charge Level", 0, SensorType.Level, this, settings);
         ActivateSensor(_chargeLevel);
 
-        _voltage = new Sensor("Voltage", 1, SensorType.Voltage, this, settings);
+        _voltage = new Sensor("Voltage", 0, SensorType.Voltage, this, settings);
         ActivateSensor(_voltage);
 
-        _chargeDischargeCurrent = new Sensor("Charge/Discharge Current", 2, SensorType.Current, this, settings);
+        _chargeDischargeCurrent = new Sensor("Charge/Discharge Current", 0, SensorType.Current, this, settings);
         ActivateSensor(_chargeDischargeCurrent);
 
-        _designedCapacity = new Sensor("Designed Capacity", 3, SensorType.Energy, this, settings);
+        _designedCapacity = new Sensor("Designed Capacity", 0, SensorType.Energy, this, settings);
         ActivateSensor(_designedCapacity);
 
-        _fullChargedCapacity = new Sensor("Fully-Charged Capacity", 4, SensorType.Energy, this, settings);
+        _fullChargedCapacity = new Sensor("Fully-Charged Capacity", 1, SensorType.Energy, this, settings);
         ActivateSensor(_fullChargedCapacity);
 
-        _remainingCapacity = new Sensor("Remaining Capacity", 5, SensorType.Energy, this, settings);
+        _remainingCapacity = new Sensor("Remaining Capacity", 2, SensorType.Energy, this, settings);
         ActivateSensor(_remainingCapacity);
 
         _chargeDischargeRate = new Sensor("Charge/Discharge Rate", 0, SensorType.Power, this, settings);
         ActivateSensor(_chargeDischargeRate);
 
-        _degradationLevel = new Sensor("Degradation Level", 0, SensorType.Level, this, settings);
+        _degradationLevel = new Sensor("Degradation Level", 1, SensorType.Level, this, settings);
         ActivateSensor(_degradationLevel);
 
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
