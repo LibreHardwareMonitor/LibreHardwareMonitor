@@ -197,10 +197,11 @@ internal class BatteryGroup : IGroup
             if (bat.Voltage is not null)
                 reportBuilder.Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
 
+            if (bat.Temperature is not null)
+                reportBuilder.Append(" Temperature: ").AppendFormat("{0:F3}", bat.Temperature).AppendLine(" ºC");
+
             if (bat.RemainingTime != Kernel32.BATTERY_UNKNOWN_TIME)
-            {
                 reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime)).AppendLine();
-            }
 
             string cdRateSensorName;
             string cdCurrentSensorName;

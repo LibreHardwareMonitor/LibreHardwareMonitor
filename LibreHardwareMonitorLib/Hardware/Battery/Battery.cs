@@ -24,6 +24,7 @@ internal sealed class Battery : Hardware
     private readonly Sensor _fullChargedCapacity;
     private readonly Sensor _remainingCapacity;
     private readonly Sensor _remainingTime;
+    private readonly Sensor _temperature;
     private readonly Sensor _voltage;
 
     public Battery
@@ -99,6 +100,9 @@ internal sealed class Battery : Hardware
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
         ActivateSensor(_remainingTime);
 
+        _temperature = new Sensor("Battery Temperature", 0, SensorType.Temperature, this, settings);
+        ActivateSensor(_temperature);
+
         if (batteryInfo.FullChargedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY &&
             batteryInfo.DesignedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY)
         {
@@ -129,6 +133,8 @@ internal sealed class Battery : Hardware
     public float? RemainingCapacity => _remainingCapacity.Value;
 
     public uint RemainingTime { get; private set; }
+
+    public float? Temperature => _temperature.Value;
 
     public float? Voltage => _voltage.Value;
 
@@ -230,6 +236,27 @@ internal sealed class Battery : Hardware
             {
                 DeactivateSensor(_remainingTime);
             }
+        }
+
+        uint temperature = 0;
+        bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryTemperature;
+        if (Kernel32.DeviceIoControl(_batteryHandle,
+                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                     ref bqi,
+                                     Marshal.SizeOf(bqi),
+                                     ref temperature,
+                                     Marshal.SizeOf<uint>(),
+                                     out _,
+                                     IntPtr.Zero))
+        {
+            // Convert temperature value from 10ths of a Kelvin to Kelvin, then
+            // to degrees Celsius.
+            _temperature.Value = (temperature * 10) - 273.15f;
+            ActivateSensor(_temperature);
+        }
+        else
+        {
+            DeactivateSensor(_temperature);
         }
     }
 
