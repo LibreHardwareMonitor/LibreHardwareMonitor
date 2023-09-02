@@ -177,37 +177,54 @@ internal class BatteryGroup : IGroup
             reportBuilder.Append("Battery #").Append(count).AppendLine(":")
                          .Append(" Name: ").AppendLine(bat.Name)
                          .Append(" Manufacturer: ").AppendLine(bat.Manufacturer)
-                         .Append(" Chemistry: ").AppendLine(chemistry)
-                         .Append(" Degradation Level: ").AppendFormat("{0:F2}", bat.DegradationLevel).AppendLine(" %")
-                         .Append(" Designed Capacity: ").Append(bat.DesignedCapacity).AppendLine(" mWh")
-                         .Append(" Full Charged Capacity: ").Append(bat.FullChargedCapacity).AppendLine(" mWh")
-                         .Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh")
-                         .Append(" Charge Level: ").AppendFormat("{0:F2}", bat.RemainingCapacity * 100f / bat.FullChargedCapacity).AppendLine(" %")
-                         .Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
+                         .Append(" Chemistry: ").AppendLine(chemistry);
+
+            if (bat.DegradationLevel is not null)
+                reportBuilder.Append(" Degradation Level: ").AppendFormat("{0:F2}", bat.DegradationLevel).AppendLine(" %");
+
+            if (bat.DesignedCapacity is not null)
+                reportBuilder.Append(" Designed Capacity: ").Append(bat.DesignedCapacity).AppendLine(" mWh");
+
+            if (bat.FullChargedCapacity is not null)
+                reportBuilder.Append(" Fully-Charged Capacity: ").Append(bat.FullChargedCapacity).AppendLine(" mWh");
+
+            if (bat.RemainingCapacity is not null)
+                reportBuilder.Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh");
+
+            if (bat.ChargeLevel is not null)
+                reportBuilder.Append(" Charge Level: ").AppendFormat("{0:F2}", bat.ChargeLevel).AppendLine(" %");
+
+            if (bat.Voltage is not null)
+                reportBuilder.Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
 
             if (bat.RemainingTime != Kernel32.BATTERY_UNKNOWN_TIME)
             {
                 reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime)).AppendLine();
             }
 
-            switch (bat.ChargeDischargeRate)
+            string cdRateSensorName;
+            string cdCurrentSensorName;
+            if (bat.ChargeDischargeRate > 0)
             {
-                case > 0:
-                    reportBuilder.Append(" Charge Rate: ").AppendFormat("{0:F1}", bat.ChargeDischargeRate).AppendLine(" W")
-                                 .Append(" Charge Current: ").AppendFormat("{0:F3}", bat.ChargeDischargeRate / bat.Voltage).AppendLine(" A");
-
-                    break;
-                case < 0:
-                    reportBuilder.Append(" Discharge Rate: ").AppendFormat("{0:F1}", Math.Abs(bat.ChargeDischargeRate)).AppendLine(" W")
-                                 .Append(" Discharge Current: ").AppendFormat("{0:F3}", Math.Abs(bat.ChargeDischargeRate) / bat.Voltage).AppendLine(" A");
-
-                    break;
-                default:
-                    reportBuilder.AppendLine(" Charge/Discharge Rate: 0 W")
-                                 .AppendLine(" Charge/Discharge Current: 0 A");
-
-                    break;
+                cdRateSensorName = " Charge Rate: ";
+                cdCurrentSensorName = " Charge Current: ";
             }
+            else if (bat.ChargeDischargeRate < 0)
+            {
+                cdRateSensorName = " Discharge Rate: ";
+                cdCurrentSensorName = " Discharge Current: ";
+            }
+            else
+            {
+                cdRateSensorName = " Charge/Discharge Rate: ";
+                cdCurrentSensorName = " Charge/Discharge Current: ";
+            }
+
+            if (bat.ChargeDischargeRate is not null)
+                reportBuilder.Append(cdRateSensorName).AppendFormat("{0:F1}", Math.Abs(bat.ChargeDischargeRate.Value)).AppendLine(" W");
+
+            if (bat.ChargeDischargeCurrent is not null)
+                reportBuilder.Append(cdCurrentSensorName).AppendFormat("{0:F3}", Math.Abs(bat.ChargeDischargeCurrent.Value)).AppendLine(" A");
 
             reportBuilder.AppendLine();
             count++;
