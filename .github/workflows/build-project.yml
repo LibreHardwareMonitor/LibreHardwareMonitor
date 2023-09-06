@@ -1,0 +1,47 @@
+name: Build Nuget Package
+
+on:
+  push:
+    branches:
+      - master
+      - hotfix/**
+      - bugfix/**
+      - misc/**
+      - features/**
+      - releases/**
+      - breaking/**
+      - dependabot/**
+  workflow_dispatch:
+    inputs:
+      verbosity:
+        description: "Sets the verbosity of the dotnet process"
+        default: 'minimal'
+        type: choice
+        options:
+          - quiet
+          - minimal
+          - normal
+          - detailed
+          - diagnostic
+      collectTelemetry:
+        description: "Uses runforesight/workflow-telemetry-action to publish telemetry information to the workflow summary"
+        default: false
+        type: boolean
+      runnerLabel:
+        description: "Specify runner label to use from https://github.com/3ShapeInternal/ThreeShape.CICD.Actions.Runners/blob/master/README.md"
+        default: "3shape-windows-latest"
+        type: string
+
+
+jobs:
+  build:
+    uses: 3ShapeInternal/ThreeShape.CICD.Workflows/.github/workflows/build-dotnet-package.yml@master
+    secrets: inherit
+    with:
+      collectTelemetry: "${{ inputs.collectTelemetry || false }}"
+      verbosity: "${{ inputs.verbosity || 'minimal' }}"
+      runnerLabel: "${{ inputs.runnerLabel || '3shape-windows-latest' }}"
+    permissions:
+      checks: write
+      contents: read
+      actions: read
