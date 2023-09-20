@@ -249,9 +249,7 @@ internal sealed class Battery : Hardware
                                      out _,
                                      IntPtr.Zero))
         {
-            // Convert temperature value from 10ths of a Kelvin to Kelvin, then
-            // to degrees Celsius.
-            _temperature.Value = (temperature * 10) - 273.15f;
+            _temperature.Value = (temperature / 10f) - 273.15f;
             ActivateSensor(_temperature);
         }
         else
