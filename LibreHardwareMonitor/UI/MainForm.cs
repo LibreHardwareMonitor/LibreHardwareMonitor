@@ -535,7 +535,7 @@ public sealed partial class MainForm : Form
                     _plotForm.Controls.Add(_plotPanel);
                     if (_showPlot.Value && Visible)
                         _plotForm.Show();
-
+                    splitContainer.FixedPanel = FixedPanel.None;
                     break;
                 case 1:
                     _plotForm.Controls.Clear();
@@ -543,6 +543,7 @@ public sealed partial class MainForm : Form
                     splitContainer.Orientation = Orientation.Horizontal;
                     splitContainer.Panel2.Controls.Add(_plotPanel);
                     splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    splitContainer.FixedPanel = FixedPanel.None;
                     break;
                 case 2:
                     _plotForm.Controls.Clear();
@@ -550,6 +551,7 @@ public sealed partial class MainForm : Form
                     splitContainer.Orientation = Orientation.Vertical;
                     splitContainer.Panel2.Controls.Add(_plotPanel);
                     splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    splitContainer.FixedPanel = FixedPanel.Panel1;
                     break;
             }
         };
