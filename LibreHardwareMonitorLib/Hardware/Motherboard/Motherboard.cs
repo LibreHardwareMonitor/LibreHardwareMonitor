@@ -77,20 +77,21 @@ public class Motherboard : IHardware
 
         SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
 
-        // there may be more than 1 of the same SuperIO chip 
-        Dictionary<Chip, bool> indexRequired = _lpcIO.SuperIO.GroupBy(x => x.Chip).ToDictionary(x => x.Key, x => x.Count() > 1);
-        Dictionary<Chip, int> currentIndexes = indexRequired.Where(x => x.Value).ToDictionary(x => x.Key, _ => 0);
+        // there may be more than 1 of the same SuperIO chip
+        Dictionary<Chip, int?> currentIndexes = _lpcIO.SuperIO
+            .GroupBy(x => x.Chip)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Count() > 1 ? 0 : default(int?));
 
         for (int i = 0; i < superIO.Count; i++)
         {
             ISuperIO currentSuperIO = superIO[i];
-            int? index = null;
+            int? index = currentIndexes[currentSuperIO.Chip];
 
-            if (indexRequired[currentSuperIO.Chip])
-            {
-                index = currentIndexes[currentSuperIO.Chip];
+            // there is more than 1 of this superIO chip, increment the counter
+            if (index.HasValue)
                 currentIndexes[currentSuperIO.Chip] = index.Value + 1;
-            }
 
             SubHardware[i] = new SuperIOHardware(this, currentSuperIO, Manufacturer, Model, settings, index);
         }
