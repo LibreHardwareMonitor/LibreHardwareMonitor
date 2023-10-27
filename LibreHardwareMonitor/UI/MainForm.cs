@@ -593,22 +593,9 @@ public sealed partial class MainForm : Form
 
         _strokeThickness.Changed += (sender, e) =>
         {
-            switch (_strokeThickness.Value)
-            {
-                case 0:
-                    _plotStrokeThickness = 1;
-                    break;
-                case 1:
-                    _plotStrokeThickness = 2;
-                    break;
-                case 2:
-                    _plotStrokeThickness = 3;
-                    break;
-                case 3:
-                    _plotStrokeThickness = 4;
-                    break;
-            }
-
+            _plotStrokeThickness = (_strokeThickness.Value >= 0 && _strokeThickness.Value <= 3)
+                                                   ? _strokeThickness.Value + 1
+                                                   : 4;
             _plotPanel.UpdateStrokeThickness(_plotStrokeThickness);
         };
 

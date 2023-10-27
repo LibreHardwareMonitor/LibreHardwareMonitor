@@ -74,6 +74,12 @@ public class PlotPanel : UserControl
         Controls.Add(_plot);
         ResumeLayout(true);
         ApplyTheme();
+        _plot.ShowTracker(new TrackerHitResult());
+        _plot.HideTracker();
+        foreach (Control plotControl in _plot.Controls)
+        {
+            plotControl.BackColor = Theme.Current.PlotBackgroundColor;
+        }
     }
 
     public void ApplyTheme()
