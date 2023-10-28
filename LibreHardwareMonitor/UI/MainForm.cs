@@ -676,6 +676,8 @@ public sealed partial class MainForm : Form
             else
                 _plotForm.Hide();
         };
+
+        Theme.Current.Apply(_plotForm);
     }
 
     private void InsertSorted(IList<Node> nodes, HardwareNode node)
@@ -953,12 +955,6 @@ public sealed partial class MainForm : Form
             {
                 expandPersistNode.Expanded = info.Node.IsExpanded;
             }
-
-            foreach(Form form in Application.OpenForms)
-            {
-                Theme.Current.Apply(form);
-            }
-
             return;
         }
 
