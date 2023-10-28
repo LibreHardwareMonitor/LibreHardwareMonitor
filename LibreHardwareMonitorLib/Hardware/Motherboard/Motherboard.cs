@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael MÃ¶ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -14,7 +14,7 @@ using OperatingSystem = LibreHardwareMonitor.Software.OperatingSystem;
 namespace LibreHardwareMonitor.Hardware.Motherboard;
 
 /// <summary>
-/// Represents the motherboard of a computer with its <see cref="LpcIO"/> and <see cref="EmbeddedController"/> as <see cref="SubHardware"/>.
+/// Represents the motherboard of a computer with its <see cref="LpcIO" /> and <see cref="EmbeddedController" /> as <see cref="SubHardware" />.
 /// </summary>
 public class Motherboard : IHardware
 {
@@ -25,31 +25,32 @@ public class Motherboard : IHardware
     private string _customName;
 
     /// <summary>
-    /// Creates motherboard instance by retrieving information from <see cref="LibreHardwareMonitor.Hardware.SMBios"/> and creates a new <see cref="SubHardware"/> based on data from <see cref="LpcIO"/> and <see cref="EmbeddedController"/>.
+    /// Creates motherboard instance by retrieving information from <see cref="LibreHardwareMonitor.Hardware.SMBios" /> and creates a new <see cref="SubHardware" /> based on data from <see cref="LpcIO" />
+    /// and <see cref="EmbeddedController" />.
     /// </summary>
-    /// <param name="smBios"><see cref="LibreHardwareMonitor.Hardware.SMBios"/> table containing motherboard data.</param>
-    /// <param name="settings">Additional settings passed by <see cref="IComputer"/>.</param>
+    /// <param name="smBios"><see cref="LibreHardwareMonitor.Hardware.SMBios" /> table containing motherboard data.</param>
+    /// <param name="settings">Additional settings passed by <see cref="IComputer" />.</param>
     public Motherboard(SMBios smBios, ISettings settings)
     {
         IReadOnlyList<ISuperIO> superIO;
         _settings = settings;
         SMBios = smBios;
 
-        Manufacturer manufacturer = smBios.Board == null ? Manufacturer.Unknown : Identification.GetManufacturer(smBios.Board.ManufacturerName);
-        Model model = smBios.Board == null ? Model.Unknown : Identification.GetModel(smBios.Board.ProductName);
+        Manufacturer = smBios.Board == null ? Manufacturer.Unknown : Identification.GetManufacturer(smBios.Board.ManufacturerName);
+        Model = smBios.Board == null ? Model.Unknown : Identification.GetModel(smBios.Board.ProductName);
 
         if (smBios.Board != null)
         {
             if (!string.IsNullOrEmpty(smBios.Board.ProductName))
             {
-                if (manufacturer == Manufacturer.Unknown)
+                if (Manufacturer == Manufacturer.Unknown)
                     _name = smBios.Board.ProductName;
                 else
-                    _name = manufacturer + " " + smBios.Board.ProductName;
+                    _name = Manufacturer + " " + smBios.Board.ProductName;
             }
             else
             {
-                _name = manufacturer.ToString();
+                _name = Manufacturer.ToString();
             }
         }
         else
@@ -66,40 +67,44 @@ public class Motherboard : IHardware
         }
         else
         {
-            _lpcIO = new LpcIO();
+            _lpcIO = new LpcIO(this);
             superIO = _lpcIO.SuperIO;
         }
 
-        EmbeddedController embeddedController = EmbeddedController.Create(model, settings);
+        EmbeddedController embeddedController = EmbeddedController.Create(Model, settings);
 
         SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
         for (int i = 0; i < superIO.Count; i++)
-            SubHardware[i] = new SuperIOHardware(this, superIO[i], manufacturer, model, settings);
+            SubHardware[i] = new SuperIOHardware(this, superIO[i], Manufacturer, Model, settings);
 
         if (embeddedController != null)
             SubHardware[superIO.Count] = embeddedController;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event SensorEventHandler SensorAdded;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event SensorEventHandler SensorRemoved;
 
-    /// <returns><see cref="HardwareType.Motherboard"/></returns>
-    public HardwareType HardwareType
-    {
-        get { return HardwareType.Motherboard; }
-    }
+    /// <inheritdoc />
+    public HardwareType HardwareType => HardwareType.Motherboard;
 
-    /// <inheritdoc/>
-    public Identifier Identifier
-    {
-        get { return new Identifier("motherboard"); }
-    }
+    /// <inheritdoc />
+    public Identifier Identifier => new("motherboard");
 
     /// <summary>
-    /// Gets the name obtained from <see cref="LibreHardwareMonitor.Hardware.SMBios"/>.
+    /// Gets the <see cref="LibreHardwareMonitor.Hardware.Motherboard.Manufacturer" />.
+    /// </summary>
+    public Manufacturer Manufacturer { get; }
+
+    /// <summary>
+    /// Gets the <see cref="LibreHardwareMonitor.Hardware.Motherboard.Model" />.
+    /// </summary>
+    public Model Model { get; }
+
+    /// <summary>
+    /// Gets the name obtained from <see cref="LibreHardwareMonitor.Hardware.SMBios" />.
     /// </summary>
     public string Name
     {
@@ -112,31 +117,31 @@ public class Motherboard : IHardware
         }
     }
 
-    /// <inheritdoc/>
-    /// <returns>Always <see langword="null"/></returns>
+    /// <inheritdoc />
+    /// <returns>Always <see langword="null" /></returns>
     public virtual IHardware Parent
     {
         get { return null; }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual IDictionary<string, string> Properties => new SortedDictionary<string, string>();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ISensor[] Sensors
     {
         get { return Array.Empty<ISensor>(); }
     }
 
     /// <summary>
-    /// Gets the <see cref="LibreHardwareMonitor.Hardware.SMBios"/> information.
+    /// Gets the <see cref="LibreHardwareMonitor.Hardware.SMBios" /> information.
     /// </summary>
     public SMBios SMBios { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IHardware[] SubHardware { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string GetReport()
     {
         StringBuilder r = new();
@@ -152,12 +157,12 @@ public class Motherboard : IHardware
     }
 
     /// <summary>
-    /// Motherboard itself cannot be updated. Update <see cref="SubHardware"/> instead.
+    /// Motherboard itself cannot be updated. Update <see cref="SubHardware" /> instead.
     /// </summary>
     public void Update()
-    {}
+    { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Accept(IVisitor visitor)
     {
         if (visitor == null)
@@ -166,7 +171,7 @@ public class Motherboard : IHardware
         visitor.VisitHardware(this);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Traverse(IVisitor visitor)
     {
         foreach (IHardware hardware in SubHardware)
@@ -174,7 +179,7 @@ public class Motherboard : IHardware
     }
 
     /// <summary>
-    /// Closes <see cref="SubHardware"/> using <see cref="Hardware.Close"/>.
+    /// Closes <see cref="SubHardware" /> using <see cref="Hardware.Close" />.
     /// </summary>
     public void Close()
     {

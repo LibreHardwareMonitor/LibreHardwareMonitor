@@ -37,7 +37,6 @@ internal enum Chip : ushort
     IT8686E = 0x8686,
     IT8688E = 0x8688,
     IT8689E = 0x8689,
-    IT8695E = 0x8695,
     IT8705F = 0x8705,
     IT8712F = 0x8712,
     IT8716F = 0x8716,
@@ -48,7 +47,9 @@ internal enum Chip : ushort
     IT8728F = 0x8728,
     IT8771E = 0x8771,
     IT8772E = 0x8772,
-    IT879XE = 0x8733,
+    IT8790E = 0x8790,
+    IT8792E = 0x8733, // Could also be IT8791E, IT8795E
+    IT87952E = 0x8695,
 
     NCT610XD = 0xC452,
     NCT6771F = 0xB470,
@@ -75,7 +76,9 @@ internal enum Chip : ushort
     W83627THF = 0x8280,
     W83667HG = 0xA510,
     W83667HGB = 0xB350,
-    W83687THF = 0x8541
+    W83687THF = 0x8541,
+
+    IPMI = 0x4764,
 }
 
 internal class ChipName
@@ -106,7 +109,6 @@ internal class ChipName
             case Chip.IT8686E: return "ITE IT8686E";
             case Chip.IT8688E: return "ITE IT8688E";
             case Chip.IT8689E: return "ITE IT8689E";
-            case Chip.IT8695E: return "ITE IT8695E";
             case Chip.IT8705F: return "ITE IT8705F";
             case Chip.IT8712F: return "ITE IT8712F";
             case Chip.IT8716F: return "ITE IT8716F";
@@ -117,7 +119,9 @@ internal class ChipName
             case Chip.IT8728F: return "ITE IT8728F";
             case Chip.IT8771E: return "ITE IT8771E";
             case Chip.IT8772E: return "ITE IT8772E";
-            case Chip.IT879XE: return "ITE IT8792E/IT8795E";
+            case Chip.IT8790E: return "ITE IT8790E";
+            case Chip.IT8792E: return "ITE IT8791E/IT8792E/IT8795E";
+            case Chip.IT87952E: return "ITE IT87952E";
 
             case Chip.NCT610XD: return "Nuvoton NCT6102D/NCT6104D/NCT6106D";
             case Chip.NCT6771F: return "Nuvoton NCT6771F";
@@ -145,6 +149,8 @@ internal class ChipName
             case Chip.W83667HG: return "Winbond W83667HG";
             case Chip.W83667HGB: return "Winbond W83667HG-B";
             case Chip.W83687THF: return "Winbond W83687THF";
+
+            case Chip.IPMI: return "IPMI";
 
             default: return "Unknown";
         }

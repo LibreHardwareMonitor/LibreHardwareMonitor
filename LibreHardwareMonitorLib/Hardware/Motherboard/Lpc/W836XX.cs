@@ -192,7 +192,7 @@ internal class W836XX : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         if (value.HasValue)
@@ -223,7 +223,7 @@ internal class W836XX : ISuperIO
             RestoreDefaultFanPwmControl(index);
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     private void SaveDefaultFanPwmControl(int index) //added to save initial control values
@@ -295,7 +295,7 @@ internal class W836XX : ISuperIO
 
     public void Update()
     {
-        if (!Ring0.WaitIsaBusMutex(10))
+        if (!Mutexes.WaitIsaBus(10))
             return;
 
         for (int i = 0; i < Voltages.Length; i++)
@@ -397,7 +397,7 @@ internal class W836XX : ISuperIO
             Controls[i] = (float)Math.Round(value * 100.0f / 0xFF);
         }
 
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
     }
 
     public string GetReport()
@@ -414,7 +414,7 @@ internal class W836XX : ISuperIO
         r.AppendLine(_address.ToString("X4", CultureInfo.InvariantCulture));
         r.AppendLine();
 
-        if (!Ring0.WaitIsaBusMutex(100))
+        if (!Mutexes.WaitIsaBus(100))
             return r.ToString();
 
         r.AppendLine("Hardware Monitor Registers");
@@ -454,7 +454,7 @@ internal class W836XX : ISuperIO
         }
 
         r.AppendLine();
-        Ring0.ReleaseIsaBusMutex();
+        Mutexes.ReleaseIsaBus();
         return r.ToString();
     }
 

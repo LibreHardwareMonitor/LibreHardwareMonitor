@@ -22,7 +22,7 @@ internal class IntelIntegratedGpu : GenericGpu
     private uint _lastEnergyConsumed;
     private DateTime _lastEnergyTime;
 
-    public IntelIntegratedGpu(CPU.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
+    public IntelIntegratedGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
                new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
                settings)
@@ -84,25 +84,27 @@ internal class IntelIntegratedGpu : GenericGpu
             if (_powerSensor != null && Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
             {
                 DateTime time = DateTime.UtcNow;
-                uint energyConsumed = eax;
                 float deltaTime = (float)(time - _lastEnergyTime).TotalSeconds;
                 if (deltaTime >= 0.01)
                 {
-                    _powerSensor.Value = _energyUnitMultiplier * unchecked(energyConsumed - _lastEnergyConsumed) / deltaTime;
+                    _powerSensor.Value = _energyUnitMultiplier * unchecked(eax - _lastEnergyConsumed) / deltaTime;
                     _lastEnergyTime = time;
-                    _lastEnergyConsumed = energyConsumed;
+                    _lastEnergyConsumed = eax;
                 }
             }
 
-            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+            if (_nodeUsage.Length == deviceInfo.Nodes.Length)
             {
-                long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
-                long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
+                foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+                {
+                    long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
+                    long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
 
-                _nodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
-                _nodeUsagePrevValue[node.Id] = node.RunningTime;
-                _nodeUsagePrevTick[node.Id] = node.QueryTime;
-                ActivateSensor(_nodeUsage[node.Id]);
+                    _nodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+                    _nodeUsagePrevValue[node.Id] = node.RunningTime;
+                    _nodeUsagePrevTick[node.Id] = node.QueryTime;
+                    ActivateSensor(_nodeUsage[node.Id]);
+                }
             }
         }
     }

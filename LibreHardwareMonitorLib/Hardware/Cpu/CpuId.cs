@@ -7,7 +7,7 @@
 using System;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 public enum Vendor
 {
@@ -49,6 +49,7 @@ public class CpuId
             AppendRegister(vendorBuilder, ebx);
             AppendRegister(vendorBuilder, edx);
             AppendRegister(vendorBuilder, ecx);
+
             Vendor = vendorBuilder.ToString() switch
             {
                 "GenuineIntel" => Vendor.Intel,
@@ -146,7 +147,6 @@ public class CpuId
                 threadMaskWith = NextLog2(maxCoreAndThreadIdPerPackage / maxCoreIdPerPackage);
                 coreMaskWith = NextLog2(maxCoreIdPerPackage);
                 break;
-
             case Vendor.AMD:
                 uint corePerPackage;
                 if (maxCpuidExt >= 8)
@@ -173,7 +173,6 @@ public class CpuId
                 }
 
                 break;
-
             default:
                 threadMaskWith = 0;
                 coreMaskWith = 0;

@@ -4,7 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -18,10 +17,7 @@ namespace LibreHardwareMonitor.Hardware;
 internal static class Ring0
 {
     private static KernelDriver _driver;
-    private static Mutex _ecMutex;
     private static string _filePath;
-    private static Mutex _isaBusMutex;
-    private static Mutex _pciBusMutex;
 
     private static readonly StringBuilder _report = new();
 
@@ -72,7 +68,7 @@ internal static class Ring0
                     }
                     else
                     {
-                        _report.Append("Status: Installing driver \"").Append(_filePath).Append("\" failed").AppendLine(File.Exists(_filePath) ? " and file exists" : string.Empty);
+                        _report.Append($"Status: Installing driver \"{_filePath}\" failed").AppendLine(File.Exists(_filePath) ? " and file exists" : string.Empty);
                         _report.Append("First Exception: ").AppendLine(installError);
                         _report.Append("Second Exception: ").AppendLine(secondError);
                     }
@@ -92,24 +88,6 @@ internal static class Ring0
 
         if (!_driver.IsOpen)
             _driver = null;
-
-        const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
-        if (!TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex))
-        {
-            // Mutex could not be created or opened.
-        }
-
-        const string pciMutexName = "Global\\Access_PCI";
-        if (!TryCreateOrOpenExistingMutex(pciMutexName, out _pciBusMutex))
-        {
-            // Mutex could not be created or opened.
-        }
-
-        const string ecMutexName = "Global\\Access_EC";
-        if (!TryCreateOrOpenExistingMutex(ecMutexName, out _ecMutex))
-        {
-            // Mutex could not be created or opened.
-        }
     }
 
     private static bool Extract(string filePath)
@@ -171,29 +149,6 @@ internal static class Ring0
         }
     }
 
-    private static bool TryCreateOrOpenExistingMutex(string name, out Mutex mutex)
-    {
-        try
-        {
-            mutex = new Mutex(false, name);
-            return true;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            try
-            {
-                mutex = Mutex.OpenExisting(name);
-                return true;
-            }
-            catch
-            {
-                mutex = null;
-            }
-        }
-
-        return false;
-    }
-
     private static void Delete()
     {
         try
@@ -205,7 +160,9 @@ internal static class Ring0
             _filePath = null;
         }
         catch
-        { }
+        {
+            // Ignored.
+        }
     }
 
     private static string GetServiceName()
@@ -251,7 +208,7 @@ internal static class Ring0
 
     private static string GetFilePath()
     {
-        string filePath;
+        string filePath = null;
 
         try
         {
@@ -259,7 +216,7 @@ internal static class Ring0
             if (!string.IsNullOrEmpty(processModule?.FileName))
             {
                 filePath = Path.ChangeExtension(processModule.FileName, ".sys");
-                if (TryCreate(filePath))
+                if (CanCreate(filePath))
                     return filePath;
             }
         }
@@ -268,12 +225,14 @@ internal static class Ring0
             // Continue with the other options.
         }
 
+        string previousFilePath = filePath;
         filePath = GetPathFromAssembly(Assembly.GetExecutingAssembly());
-        if (!string.IsNullOrEmpty(filePath) && TryCreate(filePath))
+        if (previousFilePath != filePath && !string.IsNullOrEmpty(filePath) && CanCreate(filePath))
             return filePath;
 
+        previousFilePath = filePath;
         filePath = GetPathFromAssembly(typeof(Ring0).Assembly);
-        if (!string.IsNullOrEmpty(filePath) && TryCreate(filePath))
+        if (previousFilePath != filePath && !string.IsNullOrEmpty(filePath) && CanCreate(filePath))
             return filePath;
 
         try
@@ -282,7 +241,7 @@ internal static class Ring0
             if (!string.IsNullOrEmpty(filePath))
             {
                 filePath = Path.ChangeExtension(filePath, ".sys");
-                if (TryCreate(filePath))
+                if (CanCreate(filePath))
                     return filePath;
             }
         }
@@ -306,11 +265,11 @@ internal static class Ring0
             }
         }
 
-        static bool TryCreate(string path)
+        static bool CanCreate(string path)
         {
             try
             {
-                using (File.Create(path))
+                using (File.Create(path, 1, FileOptions.DeleteOnClose))
                     return true;
             }
             catch
@@ -334,24 +293,6 @@ internal static class Ring0
             _driver = null;
         }
 
-        if (_isaBusMutex != null)
-        {
-            _isaBusMutex.Close();
-            _isaBusMutex = null;
-        }
-
-        if (_pciBusMutex != null)
-        {
-            _pciBusMutex.Close();
-            _pciBusMutex = null;
-        }
-
-        if (_ecMutex != null)
-        {
-            _ecMutex.Close();
-            _ecMutex = null;
-        }
-
         // try to delete temporary driver file again if failed during open
         Delete();
     }
@@ -369,78 +310,6 @@ internal static class Ring0
         }
 
         return null;
-    }
-
-    public static bool WaitIsaBusMutex(int millisecondsTimeout)
-    {
-        if (_isaBusMutex == null)
-            return true;
-
-        try
-        {
-            return _isaBusMutex.WaitOne(millisecondsTimeout, false);
-        }
-        catch (AbandonedMutexException)
-        {
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
-    public static void ReleaseIsaBusMutex()
-    {
-        _isaBusMutex?.ReleaseMutex();
-    }
-
-    public static bool WaitPciBusMutex(int millisecondsTimeout)
-    {
-        if (_pciBusMutex == null)
-            return true;
-
-        try
-        {
-            return _pciBusMutex.WaitOne(millisecondsTimeout, false);
-        }
-        catch (AbandonedMutexException)
-        {
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
-    public static void ReleasePciBusMutex()
-    {
-        _pciBusMutex?.ReleaseMutex();
-    }
-
-    public static bool WaitEcMutex(int millisecondsTimeout)
-    {
-        if (_ecMutex == null)
-            return true;
-
-        try
-        {
-            return _ecMutex.WaitOne(millisecondsTimeout, false);
-        }
-        catch (AbandonedMutexException)
-        {
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
-    public static void ReleaseEcMutex()
-    {
-        _ecMutex?.ReleaseMutex();
     }
 
     public static bool ReadMsr(uint index, out uint eax, out uint edx)

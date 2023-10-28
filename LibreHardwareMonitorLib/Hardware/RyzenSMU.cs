@@ -162,11 +162,8 @@ internal class RyzenSMU
 
         _supportedCPU = Environment.Is64BitOperatingSystem == Environment.Is64BitProcess && SetAddresses(_cpuCodeName);
 
-        if (_supportedCPU)
-        {
-            InpOut.Open();
+        if (_supportedCPU && InpOut.Open())
             SetupPmTableAddrAndSize();
-        }
     }
 
     private static CpuCodeName GetCpuCodeName(uint family, uint model, uint packageType)
@@ -437,6 +434,10 @@ internal class RyzenSMU
                         _pmTableSize = 0x948;
                         break;
 
+                    case 0x00540104:
+                        _pmTableSize = 0x950;
+                        break;
+
                     default:
                         return;
                 }
@@ -703,14 +704,12 @@ internal class RyzenSMU
 
     private static void WriteReg(uint addr, uint data)
     {
-        if (Ring0.WaitPciBusMutex(10))
+        if (Mutexes.WaitPciBus(10))
         {
             if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
-            {
                 Ring0.WritePciConfig(0x00, SMU_PCI_DATA_REG, data);
-            }
 
-            Ring0.ReleasePciBusMutex();
+            Mutexes.ReleasePciBus();
         }
     }
 
@@ -718,14 +717,12 @@ internal class RyzenSMU
     {
         bool read = false;
 
-        if (Ring0.WaitPciBusMutex(10))
+        if (Mutexes.WaitPciBus(10))
         {
             if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
-            {
                 read = Ring0.ReadPciConfig(0x00, SMU_PCI_DATA_REG, out data);
-            }
 
-            Ring0.ReleasePciBusMutex();
+            Mutexes.ReleasePciBus();
         }
 
         return read;

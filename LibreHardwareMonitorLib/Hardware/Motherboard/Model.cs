@@ -12,7 +12,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard;
 
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
-internal enum Model
+public enum Model
 {
     // ASRock
     _880GMH_USB3,
@@ -44,16 +44,24 @@ internal enum Model
     ROG_CROSSHAIR_VIII_FORMULA,
     ROG_CROSSHAIR_VIII_IMPACT,
     ROG_STRIX_X470_I,
+    ROG_CROSSHAIR_X670E_EXTREME,
+    ROG_CROSSHAIR_X670E_HERO,
+    ROG_CROSSHAIR_X670E_GENE,
     ROG_STRIX_X570_E_GAMING,
     ROG_STRIX_X570_F_GAMING,
     ROG_STRIX_X570_I_GAMING,
     ROG_STRIX_B550_E_GAMING,
     ROG_STRIX_B550_F_GAMING_WIFI,
     ROG_STRIX_B550_I_GAMING,
+    ROG_STRIX_Z390_E_GAMING,
+    ROG_STRIX_Z390_F_GAMING,
+    ROG_STRIX_Z390_I_GAMING,
     ROG_STRIX_Z690_A_GAMING_WIFI_D4,
+    ROG_MAXIMUS_X_HERO_WIFI_AC,
     ROG_MAXIMUS_Z690_FORMULA,
     ROG_MAXIMUS_Z690_HERO,
     ROG_MAXIMUS_Z690_EXTREME_GLACIAL,
+    ROG_STRIX_Z790_I_GAMING_WIFI,
     M2N_SLI_Deluxe,
     M4A79XTD_EVO,
     P5W_DH_Deluxe,
@@ -97,9 +105,12 @@ internal enum Model
     B360M_PRO_VDH,
     B450A_PRO,
     Z270_PC_MATE,
+    Z77_MS7751,
+    Z68_MS7672,
 
     // EVGA
     X58_SLI_Classified,
+    X58_3X_SLI,
 
     // Gigabyte
     _965P_S3,
@@ -108,9 +119,11 @@ internal enum Model
     AX370_Gaming_5,
     AX370_Gaming_K7,
     B360_AORUS_GAMING_3_WIFI_CF,
+    B550_AORUS_PRO,
     B560M_AORUS_ELITE,
     B560M_AORUS_PRO,
     B560M_AORUS_PRO_AX,
+    B660M_DS3H_AX_DDR4,
     EP45_DS3R,
     EP45_UD3R,
     EX58_EXTREME,
@@ -125,6 +138,7 @@ internal enum Model
     H67A_UD3H_B3,
     H67A_USB3_B3,
     H81M_HD3,
+    B75M_D3H,
     MA770T_UD3,
     MA770T_UD3P,
     MA785GM_US2H,
@@ -154,6 +168,7 @@ internal enum Model
     Z68X_UD7_B3,
     Z68XP_UD3R,
     Z690_AORUS_PRO,
+    Z690_AORUS_ULTRA,
     Z690_GAMING_X_DDR4,
     Z170N_WIFI,
     X470_AORUS_GAMING_7_WIFI,

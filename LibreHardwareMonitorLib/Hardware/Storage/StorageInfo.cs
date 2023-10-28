@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Interop;
+using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -15,6 +16,8 @@ internal abstract class StorageInfo
     public string DeviceId { get; set; }
 
     public ulong DiskSize { get; set; }
+
+    public SafeFileHandle Handle { get; set; }
 
     public int Index { get; protected set; }
 

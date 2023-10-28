@@ -10,7 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 public class GenericCpu : Hardware
 {
@@ -29,6 +29,7 @@ public class GenericCpu : Hardware
     private readonly Sensor[] _threadLoads;
 
     private readonly Sensor _totalLoad;
+    private readonly Sensor _maxLoad;
     private readonly Vendor _vendor;
     private long _lastTime;
     private ulong _lastTimeStampCount;
@@ -56,6 +57,7 @@ public class GenericCpu : Hardware
         _isInvariantTimeStampCounter = cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0;
 
         _totalLoad = _coreCount > 1 ? new Sensor("CPU Total", 0, SensorType.Load, this, settings) : null;
+        _maxLoad = _coreCount > 1 ? new Sensor("CPU Core Max", 1, SensorType.Load, this, settings) : null;
 
         _cpuLoad = new CpuLoad(cpuId);
         if (_cpuLoad.IsAvailable)
@@ -70,7 +72,7 @@ public class GenericCpu : Hardware
                     {
                         // Some cores may have 2 threads while others have only one (e.g. P-cores vs E-cores on Intel 12th gen).
                         string sensorName = CoreString(coreIdx) + (cpuId[coreIdx].Length > 1 ? $" Thread #{threadIdx + 1}" : string.Empty);
-                        _threadLoads[thread] = new Sensor(sensorName, thread + 1, SensorType.Load, this, settings);
+                        _threadLoads[thread] = new Sensor(sensorName, thread + 2, SensorType.Load, this, settings);
 
                         ActivateSensor(_threadLoads[thread]);
                     }
@@ -80,6 +82,11 @@ public class GenericCpu : Hardware
             if (_totalLoad != null)
             {
                 ActivateSensor(_totalLoad);
+            }
+
+            if (_maxLoad != null)
+            {
+                ActivateSensor(_maxLoad);
             }
         }
 
@@ -291,6 +298,7 @@ public class GenericCpu : Hardware
         {
             _cpuLoad.Update();
 
+            float maxLoad = 0;
             if (_threadLoads != null)
             {
                 for (int i = 0; i < _threadLoads.Length; i++)
@@ -298,12 +306,16 @@ public class GenericCpu : Hardware
                     if (_threadLoads[i] != null)
                     {
                         _threadLoads[i].Value = _cpuLoad.GetThreadLoad(i);
+                        maxLoad = Math.Max(maxLoad, _threadLoads[i].Value ?? 0);
                     }
                 }
             }
 
             if (_totalLoad != null)
                 _totalLoad.Value = _cpuLoad.GetTotalLoad();
+
+            if (_maxLoad != null)
+                _maxLoad.Value = maxLoad;
         }
     }
 }

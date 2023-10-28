@@ -28,34 +28,6 @@ internal static class ThreadAffinity
     public static int ProcessorGroupCount { get; }
 
     /// <summary>
-    /// Returns true if the <paramref name="affinity"/> is valid.
-    /// </summary>
-    /// <param name="affinity">The affinity.</param>
-    /// <returns><c>true</c> if the specified affinity is valid; otherwise, <c>false</c>.</returns>
-    public static bool IsValid(GroupAffinity affinity)
-    {
-        if (Software.OperatingSystem.IsUnix)
-        {
-            if (affinity.Group > 0)
-                return false;
-
-            return true;
-        }
-
-        UIntPtr uIntPtrMask;
-        try
-        {
-            uIntPtrMask = (UIntPtr)affinity.Mask;
-        }
-        catch (OverflowException)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
     /// Sets the processor group affinity for the current thread.
     /// </summary>
     /// <param name="affinity">The processor group affinity.</param>
@@ -75,33 +47,23 @@ internal static class ThreadAffinity
                 return GroupAffinity.Undefined;
 
             ulong mask = affinity.Mask;
-            if (LibC.sched_setaffinity(0, (IntPtr)8, ref mask) != 0)
-                return GroupAffinity.Undefined;
-
-            return new GroupAffinity(0, result);
+            return LibC.sched_setaffinity(0, (IntPtr)8, ref mask) != 0
+                ? GroupAffinity.Undefined
+                : new GroupAffinity(0, result);
         }
 
-        UIntPtr uIntPtrMask;
-        try
-        {
-            uIntPtrMask = (UIntPtr)affinity.Mask;
-        }
-        catch (OverflowException)
-        {
+        ulong maxValue = IntPtr.Size == 8 ? ulong.MaxValue : uint.MaxValue;
+        if (affinity.Mask > maxValue)
             throw new ArgumentOutOfRangeException(nameof(affinity));
-        }
 
-        var groupAffinity = new Kernel32.GROUP_AFFINITY { Group = affinity.Group, Mask = uIntPtrMask };
+        var groupAffinity = new Kernel32.GROUP_AFFINITY { Group = affinity.Group, Mask = (UIntPtr)affinity.Mask };
 
         IntPtr currentThread = Kernel32.GetCurrentThread();
 
-        if (Kernel32.SetThreadGroupAffinity(currentThread,
-                                            ref groupAffinity,
-                                            out Kernel32.GROUP_AFFINITY previousGroupAffinity))
-        {
-            return new GroupAffinity(previousGroupAffinity.Group, (ulong)previousGroupAffinity.Mask);
-        }
-
-        return GroupAffinity.Undefined;
+        return Kernel32.SetThreadGroupAffinity(currentThread,
+                                               ref groupAffinity,
+                                               out Kernel32.GROUP_AFFINITY previousGroupAffinity)
+            ? new GroupAffinity(previousGroupAffinity.Group, (ulong)previousGroupAffinity.Mask)
+            : GroupAffinity.Undefined;
     }
 }

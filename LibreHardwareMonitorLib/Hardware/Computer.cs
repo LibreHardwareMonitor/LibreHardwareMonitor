@@ -14,8 +14,9 @@ using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
 using LibreHardwareMonitor.Hardware.Controller.Nzxt;
+using LibreHardwareMonitor.Hardware.Controller.Razer;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
-using LibreHardwareMonitor.Hardware.CPU;
+using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
@@ -123,6 +124,7 @@ public class Computer : IComputer
                     Add(new AquaComputerGroup(_settings));
                     Add(new AeroCoolGroup(_settings));
                     Add(new NzxtGroup(_settings));
+                    Add(new RazerGroup(_settings));
                 }
                 else
                 {
@@ -131,6 +133,7 @@ public class Computer : IComputer
                     RemoveType<AquaComputerGroup>();
                     RemoveType<AeroCoolGroup>();
                     RemoveType<NzxtGroup>();
+                    RemoveType<RazerGroup>();
                 }
             }
 
@@ -487,6 +490,7 @@ public class Computer : IComputer
         _smbios = new SMBios();
 
         Ring0.Open();
+        Mutexes.Open();
         OpCode.Open();
 
         AddGroups();
@@ -519,6 +523,7 @@ public class Computer : IComputer
             Add(new AquaComputerGroup(_settings));
             Add(new AeroCoolGroup(_settings));
             Add(new NzxtGroup(_settings));
+            Add(new RazerGroup(_settings));
         }
 
         if (_storageEnabled)
@@ -628,6 +633,7 @@ public class Computer : IComputer
         OpCode.Close();
         InpOut.Close();
         Ring0.Close();
+        Mutexes.Close();
 
         _smbios = null;
         _open = false;

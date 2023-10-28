@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal sealed class Amd0FCpu : AmdCpu
 {
@@ -94,7 +94,7 @@ internal sealed class Amd0FCpu : AmdCpu
     {
         base.Update();
 
-        if (Ring0.WaitPciBusMutex(10))
+        if (Mutexes.WaitPciBus(10))
         {
             if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
             {
@@ -117,7 +117,7 @@ internal sealed class Amd0FCpu : AmdCpu
                 }
             }
 
-            Ring0.ReleasePciBusMutex();
+            Mutexes.ReleasePciBus();
         }
 
         if (HasTimeStampCounter)
