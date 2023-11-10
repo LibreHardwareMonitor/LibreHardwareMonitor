@@ -55,7 +55,7 @@ public sealed partial class MainForm : Form
     private int _delayCount;
     private Form _plotForm;
     private UserRadioGroup _plotLocation;
-    private UserRadioGroup _attachedPlotPanelScalingSetting;
+    private UserRadioGroup _splitPanelScalingSetting;
     private bool _selectionDragging;
     private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
     private UserOption _showPlot;
@@ -508,7 +508,7 @@ public sealed partial class MainForm : Form
 
         _showPlot = new UserOption("plotMenuItem", false, plotMenuItem, _settings);
         _plotLocation = new UserRadioGroup("plotLocation", 0, new[] { plotWindowMenuItem, plotBottomMenuItem, plotRightMenuItem }, _settings);
-        _attachedPlotPanelScalingSetting = new UserRadioGroup("attachedPlotPanelScalingSetting", 0, new[] { attachedPanelPercentageScalingMenuItem, attachedPanelFixedWidthPlotScalingMenuItem, attachedPanelFixedWidthSensorScalingMenuItem }, _settings);
+        _splitPanelScalingSetting = new UserRadioGroup("splitPanelScalingSetting", 0, new[] { splitPanelPercentageScalingMenuItem, splitPanelFixedPlotScalingMenuItem, splitPanelFixedSensorScalingMenuItem }, _settings);
 
         _showPlot.Changed += delegate
         {
@@ -555,9 +555,9 @@ public sealed partial class MainForm : Form
             }
         };
 
-        _attachedPlotPanelScalingSetting.Changed += delegate
+        _splitPanelScalingSetting.Changed += delegate
         {
-            switch (_attachedPlotPanelScalingSetting.Value)
+            switch (_splitPanelScalingSetting.Value)
             {
                 case 0:
                     splitContainer.FixedPanel = FixedPanel.None;

@@ -87,10 +87,10 @@ namespace LibreHardwareMonitor.UI
             this.plotWindowMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.plotBottomMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.plotRightMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.attachedPlotPanelScalingMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.attachedPanelPercentageScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.attachedPanelFixedWidthPlotScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-            this.attachedPanelFixedWidthSensorScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.splitPlotPanelScalingMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitPanelPercentageScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.splitPanelFixedPlotScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.splitPanelFixedSensorScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -441,7 +441,7 @@ namespace LibreHardwareMonitor.UI
             this.separatorMenuItem,
             this.temperatureUnitsMenuItem,
             this.plotLocationMenuItem,
-            this.attachedPlotPanelScalingMenuItem,
+            this.splitPlotPanelScalingMenuItem,
             this.logSeparatorMenuItem,
             this.logSensorsMenuItem,
             this.loggingIntervalMenuItem,
@@ -540,34 +540,34 @@ namespace LibreHardwareMonitor.UI
             // 
             // attachedPlotPanelScalingMenuItem
             // 
-            this.attachedPlotPanelScalingMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.attachedPanelPercentageScalingMenuItem,
-            this.attachedPanelFixedWidthPlotScalingMenuItem,
-            this.attachedPanelFixedWidthSensorScalingMenuItem});
-            this.attachedPlotPanelScalingMenuItem.Name = "attachedPlotPanelScalingMenuItem";
-            this.attachedPlotPanelScalingMenuItem.Size = new System.Drawing.Size(221, 22);
-            this.attachedPlotPanelScalingMenuItem.Text = "Attached plot panel scaling mode";
+            this.splitPlotPanelScalingMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.splitPanelPercentageScalingMenuItem,
+            this.splitPanelFixedPlotScalingMenuItem,
+            this.splitPanelFixedSensorScalingMenuItem});
+            this.splitPlotPanelScalingMenuItem.Name = "attachedPlotPanelScalingMenuItem";
+            this.splitPlotPanelScalingMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.splitPlotPanelScalingMenuItem.Text = "Split Panel Scaling Mode";
             // 
             // attachedPanelPercentageScalingMenuItem
             // 
-            this.attachedPanelPercentageScalingMenuItem.CheckOnClick = true;
-            this.attachedPanelPercentageScalingMenuItem.Name = "attachedPlotPanelPercentageScalingMenuItem";
-            this.attachedPanelPercentageScalingMenuItem.Size = new System.Drawing.Size(118, 22);
-            this.attachedPanelPercentageScalingMenuItem.Text = "Percentage scaling";
+            this.splitPanelPercentageScalingMenuItem.CheckOnClick = true;
+            this.splitPanelPercentageScalingMenuItem.Name = "attachedPlotPanelPercentageScalingMenuItem";
+            this.splitPanelPercentageScalingMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.splitPanelPercentageScalingMenuItem.Text = "Percentage Scaling";
             // 
             // attachedPanelFixedWidthPlotPanelScalingMenuItem
             // 
-            this.attachedPanelFixedWidthPlotScalingMenuItem.CheckOnClick = true;
-            this.attachedPanelFixedWidthPlotScalingMenuItem.Name = "attachedBottomMenuItem";
-            this.attachedPanelFixedWidthPlotScalingMenuItem.Size = new System.Drawing.Size(118, 22);
-            this.attachedPanelFixedWidthPlotScalingMenuItem.Text = "Fixed width plot panel";
+            this.splitPanelFixedPlotScalingMenuItem.CheckOnClick = true;
+            this.splitPanelFixedPlotScalingMenuItem.Name = "attachedBottomMenuItem";
+            this.splitPanelFixedPlotScalingMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.splitPanelFixedPlotScalingMenuItem.Text = "Fixed Size Plot Panel";
             // 
             // attachedPanelFixedWidthSensorPanelScalingMenuItem
             // 
-            this.attachedPanelFixedWidthSensorScalingMenuItem.CheckOnClick = true;
-            this.attachedPanelFixedWidthSensorScalingMenuItem.Name = "attachedRightMenuItem";
-            this.attachedPanelFixedWidthSensorScalingMenuItem.Size = new System.Drawing.Size(118, 22);
-            this.attachedPanelFixedWidthSensorScalingMenuItem.Text = "Fixed width sensor panel";
+            this.splitPanelFixedSensorScalingMenuItem.CheckOnClick = true;
+            this.splitPanelFixedSensorScalingMenuItem.Name = "attachedRightMenuItem";
+            this.splitPanelFixedSensorScalingMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.splitPanelFixedSensorScalingMenuItem.Text = "Fixed Size Sensor Panel";
             // 
             // logSeparatorMenuItem
             // 
@@ -1048,10 +1048,10 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem plotWindowMenuItem;
         private ToolStripRadioButtonMenuItem plotBottomMenuItem;
         private ToolStripRadioButtonMenuItem plotRightMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem attachedPlotPanelScalingMenuItem;
-        private ToolStripRadioButtonMenuItem attachedPanelPercentageScalingMenuItem;
-        private ToolStripRadioButtonMenuItem attachedPanelFixedWidthPlotScalingMenuItem;
-        private ToolStripRadioButtonMenuItem attachedPanelFixedWidthSensorScalingMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem splitPlotPanelScalingMenuItem;
+        private ToolStripRadioButtonMenuItem splitPanelPercentageScalingMenuItem;
+        private ToolStripRadioButtonMenuItem splitPanelFixedPlotScalingMenuItem;
+        private ToolStripRadioButtonMenuItem splitPanelFixedSensorScalingMenuItem;
         private System.Windows.Forms.ToolStripMenuItem webMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem serverPortMenuItem;
