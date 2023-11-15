@@ -55,6 +55,7 @@ public sealed partial class MainForm : Form
     private int _delayCount;
     private Form _plotForm;
     private UserRadioGroup _plotLocation;
+    private UserRadioGroup _splitPanelScalingSetting;
     private bool _selectionDragging;
     private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
     private UserOption _showPlot;
@@ -507,6 +508,7 @@ public sealed partial class MainForm : Form
 
         _showPlot = new UserOption("plotMenuItem", false, plotMenuItem, _settings);
         _plotLocation = new UserRadioGroup("plotLocation", 0, new[] { plotWindowMenuItem, plotBottomMenuItem, plotRightMenuItem }, _settings);
+        _splitPanelScalingSetting = new UserRadioGroup("splitPanelScalingSetting", 0, new[] { splitPanelPercentageScalingMenuItem, splitPanelFixedPlotScalingMenuItem, splitPanelFixedSensorScalingMenuItem }, _settings);
 
         _showPlot.Changed += delegate
         {
@@ -535,7 +537,6 @@ public sealed partial class MainForm : Form
                     _plotForm.Controls.Add(_plotPanel);
                     if (_showPlot.Value && Visible)
                         _plotForm.Show();
-
                     break;
                 case 1:
                     _plotForm.Controls.Clear();
@@ -550,6 +551,22 @@ public sealed partial class MainForm : Form
                     splitContainer.Orientation = Orientation.Vertical;
                     splitContainer.Panel2.Controls.Add(_plotPanel);
                     splitContainer.Panel2Collapsed = !_showPlot.Value;
+                    break;
+            }
+        };
+
+        _splitPanelScalingSetting.Changed += delegate
+        {
+            switch (_splitPanelScalingSetting.Value)
+            {
+                case 0:
+                    splitContainer.FixedPanel = FixedPanel.None;
+                    break;
+                case 1:
+                    splitContainer.FixedPanel = FixedPanel.Panel2;
+                    break;
+                case 2:
+                    splitContainer.FixedPanel = FixedPanel.Panel1;
                     break;
             }
         };
