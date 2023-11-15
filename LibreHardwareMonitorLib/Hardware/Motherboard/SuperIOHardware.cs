@@ -27,19 +27,8 @@ internal sealed class SuperIOHardware : Hardware
     private readonly List<Sensor> _temperatures = new();
     private readonly List<Sensor> _voltages = new();
 
-    private static Identifier CreateIdentifier(ISuperIO superIO, int? index = null)
-    {
-        List<string> identifierParts = new() { "lpc", superIO.Chip.ToString().ToLowerInvariant() };
-        if (index != null)
-        {
-            identifierParts.Add(index.ToString());
-        }
-
-        return new Identifier(identifierParts.ToArray());
-    }
-
-    public SuperIOHardware(Motherboard motherboard, ISuperIO superIO, Manufacturer manufacturer, Model model, ISettings settings, int? index = null)
-        : base(ChipName.GetName(superIO.Chip), CreateIdentifier(superIO, index), settings)
+    public SuperIOHardware(Motherboard motherboard, ISuperIO superIO, Manufacturer manufacturer, Model model, ISettings settings, int index)
+        : base(ChipName.GetName(superIO.Chip), new Identifier("lpc", superIO.Chip.ToString().ToLowerInvariant(), index.ToString()), settings)
     {
         _motherboard = motherboard;
         _superIO = superIO;
