@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 using LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
@@ -71,14 +72,26 @@ public class Motherboard : IHardware
             superIO = _lpcIO.SuperIO;
         }
 
+
         EmbeddedController embeddedController = EmbeddedController.Create(Model, settings);
 
-        SubHardware = new IHardware[superIO.Count + (embeddedController != null ? 1 : 0)];
-        for (int i = 0; i < superIO.Count; i++)
-            SubHardware[i] = new SuperIOHardware(this, superIO[i], Manufacturer, Model, settings);
+        List<IHardware> subHardwareList = new List<IHardware>();
+
+        // there may be more than 1 of the same SuperIO chip
+        // group by chip
+        foreach (IGrouping<Chip, ISuperIO> group in superIO.GroupBy(x => x.Chip))
+        {
+            // index by group
+            foreach ((ISuperIO superIo, int i) in group.Select((x, i) => (x, i)))
+            {
+                subHardwareList.Add(new SuperIOHardware(this, superIo, Manufacturer, Model, settings, i));
+            }
+        }
 
         if (embeddedController != null)
-            SubHardware[superIO.Count] = embeddedController;
+            subHardwareList.Add(embeddedController);
+
+        SubHardware = subHardwareList.ToArray();
     }
 
     /// <inheritdoc />
