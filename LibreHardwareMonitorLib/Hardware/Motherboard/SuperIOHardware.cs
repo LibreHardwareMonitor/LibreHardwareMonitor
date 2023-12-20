@@ -2823,6 +2823,45 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_MAXIMUS_XI_FORMULA: //NC6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("3VCC", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("VIN8", 5));
+                        v.Add(new Voltage("CPU Gfx", 6));
+                        v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
+                        v.Add(new Voltage("BAT_3V", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("DRAM", 10));
+                        v.Add(new Voltage("CPU VCCIO", 11, 1, 1));
+                        v.Add(new Voltage("PCH Core", 12));
+                        v.Add(new Voltage("CPU PLLs OC", 13));
+                        v.Add(new Voltage("CPU VCCSA", 14));
+                        
+                        t.Add(new Temperature("Motherboard", 0));
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU (Weighted Value)", 6));
+                        t.Add(new Temperature("CPU (PECI)", 7));
+                        t.Add(new Temperature("CPU", 8));
+                        
+                        fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "High Amp Fan", "Water Pump+", "AIO Pump" };
+                        System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
+                                                        $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+
+                        System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
+                                                        "Expected counts of cans controls and fan speed registers to be equal");
+                        
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Control(fanControlNames[i], i));
+                        
+                        break;
+                    
                     case Model.ROG_MAXIMUS_X_HERO_WIFI_AC: //NCT6793D
                         v.Add(new Voltage("Vcore", 0, 2, 2));
                         v.Add(new Voltage("+5V", 1, 4, 1));
