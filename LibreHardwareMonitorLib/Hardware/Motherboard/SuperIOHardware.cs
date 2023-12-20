@@ -3428,7 +3428,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM", 13, 1, 1));
                         v.Add(new Voltage("VIN7", 14));
 
-                        t.Add(new Temperature("Unknown Temperature #1", 1));
+                        //t.Add(new Temperature("Unknown Temperature #1", 1));
                         t.Add(new Temperature("System", 2));
                         t.Add(new Temperature("MOS", 3));
                         t.Add(new Temperature("Chipset", 5));
