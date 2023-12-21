@@ -3413,6 +3413,51 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X570_Gaming_Plus:
+                        // NCT6797D
+                        // NCT771x : PCIE 1, M.2 1, not supported 
+                        // RF35204 : VRM not supported
+
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4,  11, 1));
+                        //v.Add(new Voltage("Voltage #6", 5));
+                        v.Add(new Voltage("VIN4", 6, false));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9));
+                        //v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("VIN6", 11));
+                        v.Add(new Voltage("CPU NB/SoC", 12));
+                        v.Add(new Voltage("DIMM", 13, 1, 1));
+                        v.Add(new Voltage("VIN7", 14));
+
+                        //t.Add(new Temperature("Unknown Temperature #1", 1));
+                        t.Add(new Temperature("System", 2));
+                        t.Add(new Temperature("MOS", 3));
+                        t.Add(new Temperature("Chipset", 5));
+                        t.Add(new Temperature("CPU", 9));
+
+                        f.Add(new Fan("Pump Fan", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+                        f.Add(new Fan("System Fan #4", 5));
+                        f.Add(new Fan("Chipset Fan", 6));
+
+                        c.Add(new Control("Pump Fan", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("System Fan #1", 2));
+                        c.Add(new Control("System Fan #2", 3));
+                        c.Add(new Control("System Fan #3", 4));
+                        c.Add(new Control("System Fan #4", 5));
+                        c.Add(new Control("Chipset Fan", 6));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
