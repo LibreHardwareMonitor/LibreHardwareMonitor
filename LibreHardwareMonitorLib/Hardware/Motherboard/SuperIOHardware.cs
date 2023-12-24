@@ -2827,17 +2827,17 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVSB", 2, 34, 34));
-                        v.Add(new Voltage("3VCC", 3, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("VIN8", 5));
-                        v.Add(new Voltage("CPU Gfx", 6));
-                        v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
-                        v.Add(new Voltage("BAT_3V", 8, 34, 34));
+                        v.Add(new Voltage("CPU Graphics", 6));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9, 1, 1));
-                        v.Add(new Voltage("DRAM", 10));
+                        v.Add(new Voltage("DIMM", 10));
                         v.Add(new Voltage("CPU VCCIO", 11, 1, 1));
                         v.Add(new Voltage("PCH Core", 12));
-                        v.Add(new Voltage("CPU PLLs OC", 13));
+                        v.Add(new Voltage("CPU PLLs", 13));
                         v.Add(new Voltage("CPU VCCSA", 14));
                         
                         t.Add(new Temperature("Motherboard", 0));
