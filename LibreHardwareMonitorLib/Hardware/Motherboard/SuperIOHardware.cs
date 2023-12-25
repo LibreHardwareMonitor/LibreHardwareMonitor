@@ -2715,6 +2715,74 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B150M-C: //NCT6791D
+                        v.Add(new Voltage("Vcore", 0, 2, 2));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
+                        v.Add(new Voltage("CPU Graphics", 6, 2, 2));
+                        v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("DIMM", 10, 1, 1));
+                        v.Add(new Voltage("VCCSA", 11));
+                        v.Add(new Voltage("PCH Core", 12));
+                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("CPU VCCIO/IMC", 14));
+                        t.Add(new Temperature("CPU (PECI)", 0));
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU", 3));
+                        t.Add(new Temperature("PCH", 4));
+                        t.Add(new Temperature("Temperature #4", 5));
+                        t.Add(new Temperature("Temperature #5", 6));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Chassis Fan #1", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+
+                        break;
+
+                    case Model.B150M-C_D3: //NCT6791D
+                        v.Add(new Voltage("Vcore", 0, 2, 2));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
+                        v.Add(new Voltage("CPU Graphics", 6, 2, 2));
+                        v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("DIMM", 10, 1, 1));
+                        v.Add(new Voltage("VCCSA", 11));
+                        v.Add(new Voltage("PCH Core", 12));
+                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("CPU VCCIO/IMC", 14));
+                        t.Add(new Temperature("CPU (PECI)", 0));
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU", 3));
+                        t.Add(new Temperature("PCH", 4));
+                        t.Add(new Temperature("Temperature #4", 5));
+                        t.Add(new Temperature("Temperature #5", 6));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Chassis Fan #1", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+
+                        break;
+
                     case Model.TUF_GAMING_B550M_PLUS_WIFI: //NCT6798D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
