@@ -2715,8 +2715,8 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case Model.B150M-C: //NCT6791D
-                    case Model.B150M-C_D3: //NCT6791D
+                    case Model.B150M_C: //NCT6791D
+                    case Model.B150M_C_D3: //NCT6791D
                         v.Add(new Voltage("Vcore", 0, 2, 2));
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVSB", 2, 34, 34));
