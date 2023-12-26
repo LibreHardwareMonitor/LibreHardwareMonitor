@@ -2722,9 +2722,16 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("AVSB", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
-                        v.Add(new Voltage("3VSB_ATX", 5, 34, 34));
-                        v.Add(new Voltage("VBat", 6, 34, 34));
-                        v.Add(new Voltage("PCH", 7));
+                        //v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
+                        //v.Add(new Voltage("CPU Graphics", 6, 2, 2));
+                        v.Add(new Voltage("3VSB_ATX", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("PCH", 9));
+                        //v.Add(new Voltage("DIMM", 10, 1, 1));
+                        //v.Add(new Voltage("VCCSA", 11));
+                        //v.Add(new Voltage("PCH Core", 12));
+                        //v.Add(new Voltage("CPU PLLs", 13));
+                        //v.Add(new Voltage("CPU VCCIO/IMC", 14));
 
                         t.Add(new Temperature("CPU (PECI)", 0));
                         t.Add(new Temperature("CPU", 1));
