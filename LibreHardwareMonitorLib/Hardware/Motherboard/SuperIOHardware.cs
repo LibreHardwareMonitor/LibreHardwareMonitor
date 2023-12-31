@@ -2843,7 +2843,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
-                        t.Add(new Temperature("CPU (Weighted Value)", 6));
+                        t.Add(new Temperature("CPU (Weighted)", 6));
                         t.Add(new Temperature("CPU (PECI)", 7));
                         t.Add(new Temperature("CPU", 8));
                         
@@ -2957,7 +2957,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #15", 14));
 
                         t.Add(new Temperature("CPU Package", 0)); // Matches CPU Package in HWinfo & Armoury Crate.
-                        t.Add(new Temperature("CPU Weighted",
+                        t.Add(new Temperature("CPU (Weighted)",
                                               1)); // Unsure about this one. HWinfo & Armoury Crate doesn't have anything that match my values. Varies from 34 (idle) to 42C (under load). Hwinfo is 31-32C for same.
 
                         t.Add(new Temperature("Motherboard", 2)); // Matches MB in HWinfo & Armoury Crate.
