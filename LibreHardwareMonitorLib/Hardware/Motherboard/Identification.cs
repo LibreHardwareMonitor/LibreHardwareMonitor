@@ -395,6 +395,8 @@ internal class Identification
                 return Model.ROG_STRIX_Z390_I_GAMING;
             case var _ when name.Equals("ROG STRIX Z690-A GAMING WIFI D4", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4;
+            case var _ when name.Equals("ROG MAXIMUS XI FORMULA", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_MAXIMUS_XI_FORMULA;
             case var _ when name.Equals("ROG MAXIMUS X HERO (WI-FI AC)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_X_HERO_WIFI_AC;
             case var _ when name.Equals("ROG MAXIMUS Z690 FORMULA", StringComparison.OrdinalIgnoreCase):
@@ -403,6 +405,8 @@ internal class Identification
                 return Model.ROG_MAXIMUS_Z690_HERO;
             case var _ when name.Equals("ROG MAXIMUS Z690 EXTREME GLACIAL", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z690_EXTREME_GLACIAL;
+            case var _ when name.Equals("ROG STRIX X670E-F GAMING WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X670E_F_GAMING_WIFI;
             case var _ when name.Equals("B660GTN", StringComparison.OrdinalIgnoreCase):
                 return Model.B660GTN;
             case var _ when name.Equals("X670E VALKYRIE", StringComparison.OrdinalIgnoreCase):
