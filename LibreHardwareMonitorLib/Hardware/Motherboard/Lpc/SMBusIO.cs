@@ -46,13 +46,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
 
         private void Detect()
         {
-            ushort smb_addr = SmBusDevice.DetectSmBus();
+            ushort smb_addr = 0; // TODO: Detect SM Bus, "0" disables device detection
             for (byte addr = 0x09; addr != 0;)
             {
                 addr = SmBusDevice.DetectDevice((byte)(addr + 1), smb_addr);
                 if (addr != 0)
                 {
-                    if (DetectFintekF753XX(addr, smb_addr)) continue;
+                    // chip id check here, then "continue" if it's ok
 
                     // if no matches, but device on bus exists:
                     _report.Append("Unknown SMBus device:");
@@ -63,32 +63,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc
                     _report.AppendLine();
                 }
             }
-        }
-
-        private bool DetectFintekF753XX(byte addr, ushort smb_addr)
-        {
-            SmBusDevice tempDev = new SmBusDevice(addr, smb_addr);
-
-            // read word don't work for this chip, or for target hardware
-            ushort vid = (ushort)((tempDev.ReadByte(FINTEK_VENDOR_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(FINTEK_VENDOR_ID_SMBUS_REGISTER + 1));
-            if (vid != FINTEK_VENDOR_ID)
-                return false; // this is not a Fintek device
-
-            Chip chip = (Chip)((tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER) << 8) | tempDev.ReadByte(CHIP_ID_SMBUS_REGISTER + 1));
-
-            switch (chip)
-            {
-                case Chip.F75373S:
-                case Chip.F75375S:
-                case Chip.F75387:
-                    _superIOs.Add(new F753XX(chip, tempDev));
-                    break;
-
-                default:
-                    ReportUnknownChip(addr, smb_addr, "Fintek", (int)chip);
-                    return false;
-            }
-            return true;
         }
 
         public static bool isDetectEnabled
