@@ -60,6 +60,7 @@ namespace LibreHardwareMonitor.UI
             this.hddMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nicMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.smbusMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -136,6 +137,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.smbusMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundUpdater = new System.ComponentModel.BackgroundWorker();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
@@ -277,6 +279,7 @@ namespace LibreHardwareMonitor.UI
             this.hddMenuItem,
             this.nicMenuItem,
             this.psuMenuItem,
+            this.smbusMenuItem,
             this.batteryMenuItem});
             this.menuItem5.Name = "menuItem5";
             this.menuItem5.Size = new System.Drawing.Size(180, 22);
@@ -329,6 +332,12 @@ namespace LibreHardwareMonitor.UI
             this.psuMenuItem.Name = "psuMenuItem";
             this.psuMenuItem.Size = new System.Drawing.Size(180, 22);
             this.psuMenuItem.Text = "Power supplies";
+            //
+            // smbusMenuItem
+            //
+            this.smbusMenuItem.Name = "smbusMenuItem";
+            this.smbusMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.smbusMenuItem.Text = "SMBus Devices";
             // 
             // menuItem6
             // 
@@ -1059,6 +1068,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem smbusMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
     }

@@ -20,6 +20,7 @@ public class Motherboard : IHardware
 {
     private readonly LMSensors _lmSensors;
     private readonly LpcIO _lpcIO;
+    private readonly SmBusIO _smbusIO;
     private readonly string _name;
     private readonly ISettings _settings;
     private string _customName;
@@ -68,7 +69,15 @@ public class Motherboard : IHardware
         else
         {
             _lpcIO = new LpcIO(this);
-            superIO = _lpcIO.SuperIO;
+            _smbusIO = new SmBusIO(this);
+
+            List<ISuperIO> _buff = new();
+            for (int i = 0; i < _lpcIO.SuperIO.Length; i++)
+                _buff.Add(_lpcIO.SuperIO[i]);
+            for (int i = 0; i < _smbusIO.SuperIO.Length; i++)
+                _buff.Add(_smbusIO.SuperIO[i]);
+
+            superIO = _buff;
         }
 
         EmbeddedController embeddedController = EmbeddedController.Create(Model, settings);
@@ -152,6 +161,9 @@ public class Motherboard : IHardware
 
         if (_lpcIO != null)
             r.Append(_lpcIO.GetReport());
+
+        if (_smbusIO != null)
+            r.Append(_smbusIO.GetReport());
 
         return r.ToString();
     }

@@ -40,6 +40,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _readMainboardSensors;
     private readonly UserOption _readNicSensors;
     private readonly UserOption _readPsuSensors;
+    private readonly UserOption _readSmbusSensors;
     private readonly UserOption _readRamSensors;
     private readonly Node _root;
     private readonly UserOption _runWebServer;
@@ -198,6 +199,9 @@ public sealed partial class MainForm : Form
                 _autoStart.Value = _startupManager.Startup;
             }
         };
+
+        _readSmbusSensors = new UserOption("smbusMenuItem", true, smbusMenuItem, _settings);
+        _readSmbusSensors.Changed += delegate { _computer.IsSmbusEnabled = _readSmbusSensors.Value; };
 
         _readMainboardSensors = new UserOption("mainboardMenuItem", true, mainboardMenuItem, _settings);
         _readMainboardSensors.Changed += delegate { _computer.IsMotherboardEnabled = _readMainboardSensors.Value; };
