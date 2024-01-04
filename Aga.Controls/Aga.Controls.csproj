@@ -9,12 +9,20 @@
     <FileVersion>1.7.0.0</FileVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <DefineConstants>TRACE;DEBUG;PERF_TEST</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;DEBUG;PERF_TEST</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
