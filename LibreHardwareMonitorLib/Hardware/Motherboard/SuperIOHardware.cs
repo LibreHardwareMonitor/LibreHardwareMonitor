@@ -3318,6 +3318,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_X670E_E_GAMING_WIFI: // NCT6799D
                     case Model.ROG_STRIX_X670E_F_GAMING_WIFI: // NCT6799D
                         v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -3335,13 +3336,13 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
                         t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1));
-                        t.Add(new Temperature("Temperature #2", 2));
-                        t.Add(new Temperature("Temperature #3", 3));
-                        t.Add(new Temperature("Temperature #4", 4));
-                        t.Add(new Temperature("Temperature #5", 5));
-                        t.Add(new Temperature("Temperature #6", 6));
-                        t.Add(new Temperature("T Sensor", 24));
+                        t.Add(new Temperature("VRM", 1)); // Aligned with BIOS value ROG_STRIX_X670E_E_GAMING_WIFI
+                        t.Add(new Temperature("Motherboard", 2)); // Aligned with Armoury Crate ROG_STRIX_X670E_E_GAMING_WIFI
+                        t.Add(new Temperature("Temperature #3", 3)); // No matching temp value
+                        t.Add(new Temperature("Temperature #4", 4)); // No matching temp value
+                        t.Add(new Temperature("Temperature #5", 5)); // No matching temp value
+                        t.Add(new Temperature("Temperature #6", 6)); // No matching temp value
+                        t.Add(new Temperature("T Sensor", 24)); // Aligned with Armoury Crate ROG_STRIX_X670E_E_GAMING_WIFI
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
