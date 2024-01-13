@@ -221,6 +221,10 @@ public abstract class EmbeddedController : Hardware
             BoardFamily.Intel700,
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut),
+        new(Model.ROG_MAXIMUS_Z790_FORMULA,
+            BoardFamily.Intel700,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut),
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
