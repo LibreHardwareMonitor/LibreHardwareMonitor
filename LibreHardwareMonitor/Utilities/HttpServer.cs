@@ -344,7 +344,7 @@ public class HttpServer
                     }
                 case "GET":
                     {
-                        string requestedFile = request.RawUrl.Substring(1);
+                        string requestedFile = request.Url.AbsolutePath.Substring(1);
 
                         if (requestedFile == "data.json")
                         {
@@ -505,11 +505,37 @@ public class HttpServer
 
         JArray children = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
         json["Children"] = children;
+
+
+
 #if DEBUG
-        string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
+        Newtonsoft.Json.Formatting jsonFormat = Newtonsoft.Json.Formatting.Indented;
 #else
-            string responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
+        Newtonsoft.Json.Formatting jsonFormat = Newtonsoft.Json.Formatting.None;
 #endif
+
+        string responseContent;
+        if (!string.IsNullOrEmpty(request.QueryString["filter"]))
+        {
+            try
+            {
+                IEnumerable<JToken> tokens = json.SelectTokens(request.QueryString["filter"]);
+
+                JArray arr = [.. tokens];
+
+                responseContent = arr.ToString(jsonFormat);
+            }
+            catch (Newtonsoft.Json.JsonException e)
+            {
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                responseContent = e.Message;
+            }
+        }
+        else
+        {
+            responseContent = json.ToString(jsonFormat);
+        }
+
         byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
         bool acceptGzip;
