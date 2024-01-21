@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.CPU;
+namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal class CpuGroup : IGroup
 {
@@ -127,21 +127,17 @@ internal class CpuGroup : IGroup
 
         for (int i = 0; i < ThreadAffinity.ProcessorGroupCount; i++)
         {
-            for (int j = 0; j < 64; j++)
+            for (int j = 0; j < 192; j++)
             {
                 try
                 {
-                    if (!ThreadAffinity.IsValid(GroupAffinity.Single((ushort)i, j)))
-                        continue;
-
                     var cpuid = CpuId.Get(i, j);
                     if (cpuid != null)
                         threads.Add(cpuid);
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    // All cores found.
-                    break;
+                    // Continue...
                 }
             }
         }

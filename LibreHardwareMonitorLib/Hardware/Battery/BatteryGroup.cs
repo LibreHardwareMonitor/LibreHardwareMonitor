@@ -52,7 +52,7 @@ internal class BatteryGroup : IGroup
                     if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
                     {
                         IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                        Marshal.WriteInt32(pdidd, Environment.Is64BitOperatingSystem ? 8 : 4); // cbSize.
+                        Marshal.WriteInt32(pdidd, Environment.Is64BitProcess ? 8 : 4 + Marshal.SystemDefaultCharSize); // cbSize.
 
                         if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                      did,
@@ -91,7 +91,7 @@ internal class BatteryGroup : IGroup
                                                                  IntPtr.Zero))
                                     {
                                         // Only batteries count.
-                                        if (bi.Capabilities == Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY)
+                                        if (bi.Capabilities.HasFlag(Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY))
                                         {
                                             const int maxLoadString = 100;
 

@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net7.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -28,20 +28,20 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\inpout32.dll" />
-    <EmbeddedResource Include="Resources\inpoutx64.dll" />
-    <EmbeddedResource Include="Resources\WinRing0.sys" />
-    <EmbeddedResource Include="Resources\WinRing0x64.sys" />
+    <EmbeddedResource Include="Resources\inpout32.gz" />
+    <EmbeddedResource Include="Resources\inpoutx64.gz" />
+    <EmbeddedResource Include="Resources\WinRing0.gz" />
+    <EmbeddedResource Include="Resources\WinRing0x64.gz" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="7.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="System.Management" Version="7.0.0" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">

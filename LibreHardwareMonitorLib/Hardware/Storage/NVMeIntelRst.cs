@@ -7,6 +7,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using LibreHardwareMonitor.Interop;
+using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -118,7 +119,7 @@ internal class NVMeIntelRst : INVMeDrive
 
     public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
     {
-        SafeHandle handle = Kernel32.OpenDevice(storageInfo.Scsi);
+        SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.Scsi);
         if (handle?.IsInvalid != false)
             return null;
 

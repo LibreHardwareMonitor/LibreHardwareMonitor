@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.Hardware.Cpu;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -17,17 +18,17 @@ internal class LpcIO
     private readonly StringBuilder _report = new();
     private readonly List<ISuperIO> _superIOs = new();
 
-    public LpcIO()
+    public LpcIO(Motherboard motherboard)
     {
-        if (!Ring0.IsOpen)
+        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100))
             return;
 
-        if (!Ring0.WaitIsaBusMutex(100))
-            return;
+        Detect(motherboard);
 
-        Detect();
+        Mutexes.ReleaseIsaBus();
 
-        Ring0.ReleaseIsaBusMutex();
+        if (Ipmi.IsBmcPresent())
+            _superIOs.Add(new Ipmi(motherboard.Manufacturer));
     }
 
     public ISuperIO[] SuperIO => _superIOs.ToArray();
@@ -60,7 +61,7 @@ internal class LpcIO
         return false;
     }
 
-    private void Detect()
+    private void Detect(Motherboard motherboard)
     {
         for (int i = 0; i < REGISTER_PORTS.Length; i++)
         {
@@ -68,7 +69,7 @@ internal class LpcIO
 
             if (DetectWinbondFintek(port)) continue;
 
-            if (DetectIT87(port)) continue;
+            if (DetectIT87(port, motherboard)) continue;
 
             if (DetectSmsc(port)) continue;
         }
@@ -107,8 +108,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x06:
                 switch (revision)
                 {
@@ -117,8 +118,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x07:
                 switch (revision)
                 {
@@ -127,8 +128,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x08:
                 switch (revision)
                 {
@@ -137,8 +138,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x09:
                 switch (revision)
                 {
@@ -151,8 +152,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x10:
                 switch (revision)
                 {
@@ -165,8 +166,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x11:
                 switch (revision)
                 {
@@ -179,8 +180,8 @@ internal class LpcIO
                         logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x52:
                 switch (revision)
                 {
@@ -191,8 +192,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x82:
                 switch (revision & 0xF0)
                 {
@@ -201,8 +202,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x85:
                 switch (revision)
                 {
@@ -211,8 +212,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0x88:
                 switch (revision & 0xF0)
                 {
@@ -222,8 +223,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xA0:
                 switch (revision & 0xF0)
                 {
@@ -232,8 +233,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xA5:
                 switch (revision & 0xF0)
                 {
@@ -242,8 +243,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xB0:
                 switch (revision & 0xF0)
                 {
@@ -252,8 +253,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xB3:
                 switch (revision & 0xF0)
                 {
@@ -262,8 +263,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xB4:
                 switch (revision & 0xF0)
                 {
@@ -272,8 +273,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC3:
                 switch (revision & 0xF0)
                 {
@@ -282,8 +283,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC4:
                 switch (revision & 0xF0)
                 {
@@ -292,8 +293,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC5:
                 switch (revision & 0xF0)
                 {
@@ -302,8 +303,18 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
+            case 0xC7:
+                switch (revision)
+                {
+                    case 0x32:
+                        chip = Chip.NCT6683D;
+                        logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                        break;
+                }
+
+                break;
             case 0xC8:
                 switch (revision)
                 {
@@ -312,8 +323,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xC9:
                 switch (revision)
                 {
@@ -326,8 +337,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD1:
                 switch (revision)
                 {
@@ -336,8 +347,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD3:
                 switch (revision)
                 {
@@ -346,8 +357,8 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
+                break;
             case 0xD4:
                 switch (revision)
                 {
@@ -367,9 +378,14 @@ internal class LpcIO
                         chip = Chip.NCT6798D;
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
+                    case 0x40:
+                    case 0x41:
+                        chip = Chip.NCT6686D;
+                        logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                        break;
                 }
-                break;
 
+                break;
             case 0xD5:
                 switch (revision)
                 {
@@ -378,16 +394,17 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
-                break;
 
-            case 199:
+                break;
+            case 0xD8:
                 switch (revision)
                 {
-                    case 50:
-                        chip = Chip.NCT6683D;
+                    case 0x02:
+                        chip = Chip.NCT6799D;
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
+
                 break;
         }
 
@@ -410,7 +427,7 @@ internal class LpcIO
 
             // disable the hardware monitor i/o space lock on NCT679XD chips
             if (address == verify &&
-                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D)
+                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D)
             {
                 port.NuvotonDisableIOSpaceLock();
             }
@@ -472,6 +489,8 @@ internal class LpcIO
                 case Chip.NCT6796DR:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
+                case Chip.NCT6799D:
+                case Chip.NCT6686D:
                 case Chip.NCT6687D:
                 case Chip.NCT6683D:
                     _superIOs.Add(new Nct677X(chip, revision, address, port));
@@ -510,7 +529,7 @@ internal class LpcIO
         return false;
     }
 
-    private bool DetectIT87(LpcPort port)
+    private bool DetectIT87(LpcPort port, Motherboard motherboard)
     {
         // IT87XX can enter only on port 0x2E
         // IT8792 using 0x4E
@@ -524,6 +543,7 @@ internal class LpcIO
         {
             0x8613 => Chip.IT8613E,
             0x8620 => Chip.IT8620E,
+            0x8625 => Chip.IT8625E,
             0x8628 => Chip.IT8628E,
             0x8631 => Chip.IT8631E,
             0x8665 => Chip.IT8665E,
@@ -531,7 +551,6 @@ internal class LpcIO
             0x8686 => Chip.IT8686E,
             0x8688 => Chip.IT8688E,
             0x8689 => Chip.IT8689E,
-            0x8695 => Chip.IT8695E,
             0x8705 => Chip.IT8705F,
             0x8712 => Chip.IT8712F,
             0x8716 => Chip.IT8716F,
@@ -542,7 +561,9 @@ internal class LpcIO
             0x8728 => Chip.IT8728F,
             0x8771 => Chip.IT8771E,
             0x8772 => Chip.IT8772E,
-            0x8733 => Chip.IT879XE,
+            0x8790 => Chip.IT8790E,
+            0x8733 => Chip.IT8792E,
+            0x8695 => Chip.IT87952E,
             _ => Chip.Unknown
         };
 
@@ -583,6 +604,8 @@ internal class LpcIO
                 gpioVerify = port.ReadWord(BASE_ADDRESS_REGISTER + 2);
             }
 
+            GigabyteController gigabyteController = FindGigabyteEC(port, chip, motherboard);
+
             port.IT87Exit();
 
             if (address != verify || address < 0x100 || (address & 0xF007) != 0)
@@ -607,11 +630,70 @@ internal class LpcIO
                 return false;
             }
 
-            _superIOs.Add(new IT87XX(chip, address, gpioAddress, version));
+            _superIOs.Add(new IT87XX(chip, address, gpioAddress, version, motherboard, gigabyteController));
             return true;
         }
 
         return false;
+    }
+
+    private GigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
+    {
+        // The controller only affects the 2nd ITE chip if present, and only a few
+        // models are known to use this controller.
+        // IT8795E likely to need this too, but may use different registers.
+        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
+            return null;
+
+        port.Select(IT87XX_SMFI_LDN);
+
+        // Check if the SMFI logical device is enabled
+        byte enabled = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+        Thread.Sleep(1);
+        byte enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+
+        // The EC has no SMFI or it's RAM access is not enabled, assume the controller is not present
+        if (enabled != enabledVerify || enabled == 0)
+            return null;
+
+        // Read the host RAM address that maps to the Embedded Controller's RAM (two registers).
+        uint addressHi = 0;
+        uint addressHiVerify = 0;
+        uint address = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
+        if (chip == Chip.IT87952E)
+            addressHi = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
+        
+        Thread.Sleep(1);
+        uint addressVerify = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
+        if (chip == Chip.IT87952E)
+            addressHiVerify = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
+
+        if ((address != addressVerify) || (addressHi != addressHiVerify))
+            return null;
+
+        // Address is xryy, Host Address is FFyyx000
+        // For IT87952E, Address is rzxryy, Host Address is (0xFC000000 | 0x0zyyx000)
+        uint hostAddress;
+        if (chip == Chip.IT87952E)
+            hostAddress = 0xFC000000;
+        else
+            hostAddress = 0xFF000000;
+
+        hostAddress |= (address & 0xF000) | ((address & 0xFF) << 16) | ((addressHi & 0xF) << 24);
+
+        return new GigabyteController(hostAddress, DetectVendor());
+
+        Vendor DetectVendor()
+        {
+            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
+            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
+                return Vendor.Intel;
+
+            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+                return Vendor.AMD;
+
+            return Vendor.Unknown;
+        }
     }
 
     // ReSharper disable InconsistentNaming
@@ -624,12 +706,18 @@ internal class LpcIO
     private const byte IT87_ENVIRONMENT_CONTROLLER_LDN = 0x04;
     private const byte IT8705_GPIO_LDN = 0x05;
     private const byte IT87XX_GPIO_LDN = 0x07;
+
+    // Shared Memory/Flash Interface
+    private const byte IT87XX_SMFI_LDN = 0x0F;
     private const byte WINBOND_NUVOTON_HARDWARE_MONITOR_LDN = 0x0B;
 
     private const ushort FINTEK_VENDOR_ID = 0x1934;
 
     private const byte FINTEK_VENDOR_ID_REGISTER = 0x23;
     private const byte IT87_CHIP_VERSION_REGISTER = 0x22;
+    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER = 0xF5;
+    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH = 0xFC;
+    private const byte IT87_LD_ACTIVE_REGISTER = 0x30;
 
     private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };
     private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };

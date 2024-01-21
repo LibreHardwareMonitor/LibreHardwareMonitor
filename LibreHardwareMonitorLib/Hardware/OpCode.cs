@@ -217,7 +217,6 @@ internal static class OpCode
         else
         {
             rdTscCode = Rdtsc64;
-
             cpuidCode = Software.OperatingSystem.IsUnix ? CpuId64Linux : CpuId64Windows;
         }
 

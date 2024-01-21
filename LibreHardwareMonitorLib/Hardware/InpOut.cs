@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -45,7 +46,7 @@ internal static class InpOut
         }
 
         if (!IsOpen)
-            DeleteDll();
+            Delete();
 
         return IsOpen;
     }
@@ -55,7 +56,7 @@ internal static class InpOut
         if (_libraryHandle != IntPtr.Zero)
         {
             Kernel32.FreeLibrary(_libraryHandle);
-            DeleteDll();
+            Delete();
 
             _libraryHandle = IntPtr.Zero;
         }
@@ -81,15 +82,47 @@ internal static class InpOut
         return null;
     }
 
-    private static void DeleteDll()
+    public static bool WriteMemory(IntPtr baseAddress, byte value)
+    {
+        if (_mapPhysToLin == null || _unmapPhysicalMemory == null)
+            return false;
+
+        IntPtr pdwLinAddr = _mapPhysToLin(baseAddress, 1, out IntPtr pPhysicalMemoryHandle);
+        if (pdwLinAddr == IntPtr.Zero)
+            return false;
+
+        Marshal.WriteByte(pdwLinAddr, value);
+        _unmapPhysicalMemory(pPhysicalMemoryHandle, pdwLinAddr);
+
+        return true;
+    }
+
+    public static IntPtr MapMemory(IntPtr baseAddress, uint size, out IntPtr handle)
+    {
+        if (_mapPhysToLin == null)
+        {
+            handle = IntPtr.Zero;
+            return IntPtr.Zero;
+        }
+
+        return _mapPhysToLin(baseAddress, size, out handle);
+    }
+
+    public static bool UnmapMemory(IntPtr handle, IntPtr address)
+    {
+        if (_unmapPhysicalMemory == null)
+            return false;
+
+        return _unmapPhysicalMemory(handle, address);
+    }
+
+    private static void Delete()
     {
         try
         {
             // try to delete the DLL
             if (_filePath != null && File.Exists(_filePath))
-            {
                 File.Delete(_filePath);
-            }
 
             _filePath = null;
         }
@@ -127,7 +160,7 @@ internal static class InpOut
         if (!string.IsNullOrEmpty(filePath))
             return Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, fileName);
 
-        filePath = GetPathFromAssembly(typeof(Ring0).Assembly);
+        filePath = GetPathFromAssembly(typeof(InpOut).Assembly);
         if (!string.IsNullOrEmpty(filePath))
             return Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, fileName);
 
@@ -149,61 +182,60 @@ internal static class InpOut
 
     private static bool Extract(string filePath)
     {
-        string resourceName = $"{nameof(LibreHardwareMonitor)}.Resources.{(Software.OperatingSystem.Is64Bit ? "inpoutx64.dll" : "inpout32.dll")}";
+        string resourceName = $"{nameof(LibreHardwareMonitor)}.Resources.{(Software.OperatingSystem.Is64Bit ? "inpoutx64.gz" : "inpout32.gz")}";
 
-        Assembly assembly = typeof(Ring0).Assembly;
-
-        string[] names = assembly.GetManifestResourceNames();
-        byte[] buffer = null;
-
-        for (int i = 0; i < names.Length; i++)
-        {
-            if (names[i].Replace('\\', '.') == resourceName)
-            {
-                using Stream stream = assembly.GetManifestResourceStream(names[i]);
-
-                if (stream != null)
-                {
-                    buffer = new byte[stream.Length];
-                    stream.Read(buffer, 0, buffer.Length);
-                }
-            }
-        }
-
-        if (buffer == null)
-            return false;
+        Assembly assembly = typeof(InpOut).Assembly;
+        long requiredLength = 0;
 
         try
         {
-            using FileStream target = new(filePath, FileMode.Create);
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
 
-            target.Write(buffer, 0, buffer.Length);
-            target.Flush();
+            if (stream != null)
+            {
+                using FileStream target = new(filePath, FileMode.Create);
+
+                stream.Position = 1; // Skip first byte.
+
+                using var gzipStream = new GZipStream(stream, CompressionMode.Decompress);
+
+                gzipStream.CopyTo(target);
+
+                requiredLength = target.Length;
+            }
         }
         catch
         {
-            // for example there is not enough space on the disk
             return false;
         }
 
-        // make sure the file is actually written to the file system
+        if (HasValidFile())
+            return true;
+
+        // Ensure the file is actually written to the file system.
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
         while (stopwatch.ElapsedMilliseconds < 2000)
         {
-            try
-            {
-                if (File.Exists(filePath) && new FileInfo(filePath).Length == buffer.Length)
-                    return true;
-            }
-            catch
-            { }
+            if (HasValidFile())
+                return true;
 
-            Thread.Sleep(1);
+            Thread.Yield();
         }
 
-        // file still has not the right size, something is wrong
         return false;
+
+        bool HasValidFile()
+        {
+            try
+            {
+                return File.Exists(filePath) && new FileInfo(filePath).Length == requiredLength;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

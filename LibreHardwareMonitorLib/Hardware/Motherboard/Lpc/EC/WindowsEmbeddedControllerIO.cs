@@ -30,7 +30,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     public WindowsEmbeddedControllerIO()
     {
-        if (!Ring0.WaitEcMutex(10))
+        if (!Mutexes.WaitEc(10))
         {
             throw new BusMutexLockingFailedException();
         }
@@ -78,7 +78,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         if (!_disposed)
         {
             _disposed = true;
-            Ring0.ReleaseEcMutex();
+            Mutexes.ReleaseEc();
         }
     }
 

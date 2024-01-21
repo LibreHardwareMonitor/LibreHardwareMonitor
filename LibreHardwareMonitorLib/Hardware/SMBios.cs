@@ -1091,6 +1091,8 @@ public class MemoryDevice : InformationBase
         SerialNumber = GetString(0x18).Trim();
         PartNumber = GetString(0x1A).Trim();
         Speed = GetWord(0x15);
+        ConfiguredSpeed = GetWord(0x20);
+        ConfiguredVoltage = GetWord(0x26);
         Size = GetWord(0x0C);
         Type = (MemoryType)GetByte(0x12);
 
@@ -1134,6 +1136,16 @@ public class MemoryDevice : InformationBase
     public ushort Speed { get; }
 
     /// <summary>
+    /// Gets the configured speed of the device, in mega transfers per second (MT/s).
+    /// </summary>
+    public ushort ConfiguredSpeed { get; }
+
+    /// <summary>
+    /// Gets the configured voltage of this memory device, in millivolts (mV).
+    /// </summary>
+    public ushort ConfiguredVoltage { get; }
+
+    /// <summary>
     /// Gets the type of this memory device.
     /// </summary>
     /// <value>The type.</value>
@@ -1173,6 +1185,7 @@ public class SMBios
             Bios = new BiosInformation(biosVendor, biosVersion, biosDate);
 
             MemoryDevices = Array.Empty<MemoryDevice>();
+            ProcessorCaches = Array.Empty<CacheInformation>();
         }
         else
         {
@@ -1462,13 +1475,16 @@ public class SMBios
             }
         }
 
-        for (int i = 0; i < ProcessorCaches.Length; i++)
+        if (ProcessorCaches != null)
         {
-            r.Append("Cache [" + ProcessorCaches[i].Designation + "] Size: ");
-            r.AppendLine(ProcessorCaches[i].Size.ToString());
-            r.Append("Cache [" + ProcessorCaches[i].Designation + "] Associativity: ");
-            r.AppendLine(ProcessorCaches[i].Associativity.ToString().Replace("_", string.Empty));
-            r.AppendLine();
+            foreach (CacheInformation processorCaches in ProcessorCaches)
+            {
+                r.Append("Cache [" + processorCaches.Designation + "] Size: ");
+                r.AppendLine(processorCaches.Size.ToString());
+                r.Append("Cache [" + processorCaches.Designation + "] Associativity: ");
+                r.AppendLine(processorCaches.Associativity.ToString().Replace("_", string.Empty));
+                r.AppendLine();
+            }
         }
 
         for (int i = 0; i < MemoryDevices.Length; i++)
@@ -1483,6 +1499,10 @@ public class SMBios
             r.AppendLine(MemoryDevices[i].BankLocator);
             r.Append("Memory Device [" + i + "] Speed: ");
             r.AppendLine(MemoryDevices[i].Speed.ToString());
+            r.Append("Memory Device [" + i + "] Configured Speed: ");
+            r.AppendLine(MemoryDevices[i].ConfiguredSpeed.ToString());
+            r.Append("Memory Device [" + i + "] Configured Voltage: ");
+            r.AppendLine(MemoryDevices[i].ConfiguredVoltage.ToString());
             r.Append("Memory Device [" + i + "] Size: ");
             r.Append(MemoryDevices[i].Size.ToString());
             r.AppendLine(" MB");

@@ -123,4 +123,9 @@ public interface ISensor : IElement
     /// Resets a value stored in <see cref="Max"/>.
     /// </summary>
     void ResetMax();
+
+    /// <summary>
+    /// Clears the values stored in <see cref="Values"/>.
+    /// </summary>
+    void ClearValues();
 }
