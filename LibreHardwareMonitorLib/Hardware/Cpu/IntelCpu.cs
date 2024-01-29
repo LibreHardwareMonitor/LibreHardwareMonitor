@@ -669,7 +669,7 @@ internal sealed class IntelCpu : GenericCpu
         Airmont,
         AlderLake,
         Atom,
-        ArrowLake, //Gen. 15 (0xC6, -H = 0xC5)
+        ArrowLake, // Gen. 15 (0xC6, -H = 0xC5)
         Broadwell,
         CannonLake,
         CometLake,
