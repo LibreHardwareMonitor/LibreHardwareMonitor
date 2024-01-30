@@ -821,20 +821,26 @@ internal class Nct677X : ISuperIO
 
         //wait for access, access == EC_SPACE_PAGE_SELECT
         //after 100 retries, abort and force access
+        //after x millseconds timeout abort wait loop
         byte access;
-        int timeout = 100;
+        DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+        int retries = 100;
         do
         {
             access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
             if (access != EC_SPACE_PAGE_SELECT)
             {
-                timeout--;
+                retries--;
                 System.Threading.Thread.Sleep(1);
+                if(DateTime.UtcNow > timeout)
+                {
+                    retries = -1; //timeout elapsed
+                }
             }
         }
-        while (access != EC_SPACE_PAGE_SELECT && timeout > 0);
+        while (access != EC_SPACE_PAGE_SELECT && retries > 0);
 
-        if(timeout <= 0)
+        if(retries <= 0)
         {
             //timeout: force register access
             Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
@@ -868,20 +874,26 @@ internal class Nct677X : ISuperIO
 
             //wait for access, access == EC_SPACE_PAGE_SELECT
             //after 100 retries, abort and force access
+            //after x millseconds timeout abort wait loop
             byte access;
-            int timeout = 100;
+            DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+            int retries = 100;
             do
             {
                 access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
                 if (access != EC_SPACE_PAGE_SELECT)
                 {
-                    timeout--;
+                    retries--;
                     System.Threading.Thread.Sleep(1);
+                    if (DateTime.UtcNow > timeout)
+                    {
+                        retries = -1; //timeout elapsed
+                    }
                 }
             }
-            while (access != EC_SPACE_PAGE_SELECT && timeout > 0);
+            while (access != EC_SPACE_PAGE_SELECT && retries > 0);
 
-            if (timeout <= 0)
+            if (retries <= 0)
             {
                 //timeout: force register access
                 Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
