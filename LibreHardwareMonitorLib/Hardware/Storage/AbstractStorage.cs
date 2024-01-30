@@ -18,6 +18,7 @@ public abstract class AbstractStorage : Hardware
 {
     private readonly PerformanceValue _perfTotal = new();
     private readonly PerformanceValue _perfWrite = new();
+    private readonly PerformanceValue _perfRead = new();
     private readonly StorageInfo _storageInfo;
     private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
 
@@ -28,6 +29,7 @@ public abstract class AbstractStorage : Hardware
     private Sensor _sensorDiskReadRate;
     private Sensor _sensorDiskTotalActivity;
     private Sensor _sensorDiskWriteActivity;
+    private Sensor _sensorDiskReadActivity;
     private Sensor _sensorDiskWriteRate;
     private Sensor _usageSensor;
 
@@ -107,6 +109,9 @@ public abstract class AbstractStorage : Hardware
             _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
             ActivateSensor(_usageSensor);
         }
+
+        _sensorDiskReadActivity = new Sensor("Read Activity", 31, SensorType.Load, this, _settings);
+        ActivateSensor(_sensorDiskReadActivity);
 
         _sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, _settings);
         ActivateSensor(_sensorDiskWriteActivity);
@@ -188,6 +193,9 @@ public abstract class AbstractStorage : Hardware
         {
             return;
         }
+
+        _perfRead.Update(diskPerformance.ReadTime, diskPerformance.QueryTime);
+        _sensorDiskReadActivity.Value = (float)_perfRead.Result;
 
         _perfWrite.Update(diskPerformance.WriteTime, diskPerformance.QueryTime);
         _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
