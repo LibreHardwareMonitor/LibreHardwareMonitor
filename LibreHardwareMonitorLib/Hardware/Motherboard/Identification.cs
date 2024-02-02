@@ -321,6 +321,8 @@ internal class Identification
                 return Model.Z690_AORUS_PRO;
             case var _ when name.Equals("Z690 AORUS ULTRA", StringComparison.OrdinalIgnoreCase):
                 return Model.Z690_AORUS_ULTRA;
+            case var _ when name.Equals("Z690 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
+                return Model.Z690_AORUS_MASTER;
             case var _ when name.Equals("Z690 GAMING X DDR4", StringComparison.OrdinalIgnoreCase):
                 return Model.Z690_GAMING_X_DDR4;
             case var _ when name.Equals("FH67", StringComparison.OrdinalIgnoreCase):
