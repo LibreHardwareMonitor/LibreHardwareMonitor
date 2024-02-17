@@ -649,6 +649,9 @@ public class SensorGadget : Gadget
                             case SensorType.Noise:
                                 format = "{0:F0} dBA";
                                 break;
+                            case SensorType.Conductivity:
+                                format = "{0:F1} µS/cm";
+                                break;
                         }
 
                         if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)

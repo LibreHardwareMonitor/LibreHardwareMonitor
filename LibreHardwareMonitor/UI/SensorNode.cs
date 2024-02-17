@@ -82,6 +82,9 @@ public class SensorNode : Node
             case SensorType.Noise:
                 Format = "{0:F0} dBA";
                 break;
+            case SensorType.Conductivity:
+                Format = "{0:F1} µS/cm";
+                break;
         }
 
         bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
