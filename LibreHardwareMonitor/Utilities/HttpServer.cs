@@ -232,6 +232,8 @@ public class HttpServer
                         throw new ArgumentNullException("No value provided");
                     case "Get":
                         result["value"] = sNode.Sensor.Value;
+                        result["min"] = sNode.Sensor.Min;
+                        result["max"] = sNode.Sensor.Max;
                         result["format"] = sNode.Format;
                         break;
                     default:
@@ -358,6 +360,15 @@ public class HttpServer
                                                requestedFile.Replace("images_icon/", string.Empty));
 
                             return;
+                        }
+
+                        if (requestedFile.Contains("Sensor"))
+                        {
+                            JObject sensor_result = new JObject();
+                            HandleSensorRequest(request, sensor_result);
+                            SendJsonSensor(context.Response, sensor_result);
+                            return;
+
                         }
 
                         // default file to be served
@@ -549,6 +560,35 @@ public class HttpServer
         catch (HttpListenerException)
         { }
 
+        response.Close();
+    }
+    private void SendJsonSensor(HttpListenerResponse response, JObject sensorData)
+    {
+        // Add Min and Max values to the sensor data
+        // sensorData["Min"] = _root.Min;
+        // sensorData["Max"] = _root.Max;
+
+        // Convert the JObject to a JSON string
+        string responseContent = sensorData.ToString(Newtonsoft.Json.Formatting.None);
+        byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
+
+        // Add headers and set content type
+        response.AddHeader("Cache-Control", "no-cache");
+        response.AddHeader("Access-Control-Allow-Origin", "*");
+        response.ContentType = "application/json";
+
+        // Write the response content to the output stream
+        try
+        {
+            response.ContentLength64 = buffer.Length;
+            Stream output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
+        catch (HttpListenerException)
+        { }
+
+        // Close the response
         response.Close();
     }
 
