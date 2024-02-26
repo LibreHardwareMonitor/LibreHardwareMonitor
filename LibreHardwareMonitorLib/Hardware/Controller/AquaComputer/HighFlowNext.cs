@@ -18,6 +18,7 @@ internal sealed class HighFlowNext : Hardware
     private readonly Sensor[] _powers = new Sensor[1];
     private readonly Sensor[] _conductivities = new Sensor[1];
     private readonly Sensor[] _voltages = new Sensor[2];
+    private readonly Sensor[] _alarms = new Sensor[4];
 
     public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier(dev.DevicePath), settings)
     {
@@ -51,6 +52,18 @@ internal sealed class HighFlowNext : Hardware
 
             _voltages[1] = new Sensor("VCC USB", 1, SensorType.Voltage, this, settings);
             ActivateSensor(_voltages[1]);
+
+            _alarms[0] = new Sensor("Flow Alarm", 0, true, SensorType.Factor, this, null, settings);
+            ActivateSensor(_alarms[0]);
+
+            _alarms[1] = new Sensor("Water Temperature Alarm", 1, true, SensorType.Factor, this, null, settings);
+            ActivateSensor(_alarms[0]);
+
+            _alarms[2] = new Sensor("External Temperature Alarm", 2, true, SensorType.Factor, this, null, settings);
+            ActivateSensor(_alarms[0]);
+
+            _alarms[3] = new Sensor("Water Quality Alarm", 3, true, SensorType.Factor, this, null, settings);
+            ActivateSensor(_alarms[0]);
         }
     }
 
@@ -109,14 +122,14 @@ internal sealed class HighFlowNext : Hardware
         _voltages[0].Value = ReadUInt16BE(_rawData, 97) / 100f; // VCC
         _voltages[1].Value = ReadUInt16BE(_rawData, 99) / 100f; // VCC USB
 
+        _alarms[0].Value = (_rawData[116] & 0x02) >> 1; // Flow alarm
+        _alarms[1].Value = (_rawData[116] & 0x04) >> 2; // Water temperature alarm
+        _alarms[2].Value = (_rawData[116] & 0x08) >> 3; // External temperature alarm
+        _alarms[3].Value = (_rawData[116] & 0x10) >> 4; // Water quality alarm
+
         // Unused:
         // _rawData[101..104] -> Total pumped volume liters
         // _rawData[105..109] -> Internal impulse counter from flow meter
-        // _rawData[116] -> Alarm flags:
-        //                    0x02 = flow alarm,
-        //                    0x04 = water temp alarm,
-        //                    0x08 = external temp sensor alarm,
-        //                    0x10 = water qualiy alarm
     }
 
     private ushort ReadUInt16BE(byte[] value, int startIndex)
