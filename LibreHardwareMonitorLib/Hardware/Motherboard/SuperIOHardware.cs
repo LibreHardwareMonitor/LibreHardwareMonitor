@@ -1342,6 +1342,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.B560M_AORUS_ELITE: // IT8689E
                     case Model.B560M_AORUS_PRO:
                     case Model.B560M_AORUS_PRO_AX:
+                    case Model.B560I_AORUS_PRO_AX:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
                         v.Add(new Voltage("+12V", 2, 10f, 2f));
