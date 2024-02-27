@@ -157,6 +157,8 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_X670E_HERO;
             case var _ when name.Equals("ROG CROSSHAIR X670E GENE", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X670E_GENE;
+            case var _ when name.Equals("PROART X670E-CREATOR WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.PROART_X670E_CREATOR_WIFI;
             case var _ when name.Equals("M2N-SLI DELUXE", StringComparison.OrdinalIgnoreCase):
                 return Model.M2N_SLI_Deluxe;
             case var _ when name.Equals("M4A79XTD EVO", StringComparison.OrdinalIgnoreCase):

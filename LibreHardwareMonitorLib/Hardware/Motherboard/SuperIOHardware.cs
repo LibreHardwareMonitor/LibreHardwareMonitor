@@ -3351,6 +3351,27 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
+                    case Model.PROART_X670E_CREATOR_WIFI: // NCT6799D
+                        v.Add(new Voltage("Vcore", 0)); // This is wrong
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        //v.Add(new Voltage("VTT", 9)); // This is wrong
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("T_Sensor", 24)); // Aligned with Armoury Crate
+                        t.Add(new Temperature("Temperature #1", 1)); // Unknown, Possibly VRM with 23 offset
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
 
                     default:
                         v.Add(new Voltage("Vcore", 0));
