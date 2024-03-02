@@ -174,6 +174,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.SmallData:
             case SensorType.Factor:
             case SensorType.Throughput:
+            case SensorType.Conductivity:
                 return $"{Sensor.Value:F1}";
             case SensorType.Control:
             case SensorType.Frequency:
@@ -259,6 +260,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Factor: format = "\n{0}: {1:F3} GB"; break;
             case SensorType.Energy: format = "\n{0}: {0:F0} mWh"; break;
             case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
+            case SensorType.Conductivity: format = "\n{0}: {0:F1} µS/cm"; break;
         }
         string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
 
