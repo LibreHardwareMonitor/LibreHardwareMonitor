@@ -679,6 +679,8 @@ public class HttpServer
                 return "loudspeaker.png";
             case SensorType.Throughput:
                 return "throughput.png";
+            case SensorType.Humidity:
+                return "flow.png";
             default:
                 return "power.png";
         }
