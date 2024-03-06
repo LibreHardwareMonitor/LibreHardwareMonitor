@@ -96,7 +96,7 @@ public sealed class TypeNode : Node, IExpandPersistNode
                 Text = "Noise Levels";
                 break;
             case SensorType.Humidity:
-                Image = Utilities.EmbeddedResources.GetImage("flow.png");
+                Image = Utilities.EmbeddedResources.GetImage("humidity.png");
                 Text = "Humidity Levels";
                 break;
         }
