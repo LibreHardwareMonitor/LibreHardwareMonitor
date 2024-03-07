@@ -2618,7 +2618,7 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Chassis #5", 6));
 
                             t.Add(new Temperature("CPU Core", 0));
-                            t.Add(new Temperature("Motherboard", 1));
+                            t.Add(new Temperature("Motherboard", 2));
                             t.Add(new Temperature("T_SENSOR1", 3));
                             t.Add(new Temperature("T_SENSOR2", 4));
                             t.Add(new Temperature("T_SENSOR3", 5));
