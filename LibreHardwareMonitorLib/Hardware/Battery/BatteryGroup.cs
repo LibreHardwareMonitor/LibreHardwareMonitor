@@ -179,29 +179,29 @@ internal class BatteryGroup : IGroup
                          .Append(" Manufacturer: ").AppendLine(bat.Manufacturer)
                          .Append(" Chemistry: ").AppendLine(chemistry);
 
-            if (bat.DegradationLevel is not null)
+            if (bat.DegradationLevel.HasValue)
                 reportBuilder.Append(" Degradation Level: ").AppendFormat("{0:F2}", bat.DegradationLevel).AppendLine(" %");
 
-            if (bat.DesignedCapacity is not null)
+            if (bat.DesignedCapacity.HasValue)
                 reportBuilder.Append(" Designed Capacity: ").Append(bat.DesignedCapacity).AppendLine(" mWh");
 
-            if (bat.FullChargedCapacity is not null)
+            if (bat.FullChargedCapacity.HasValue)
                 reportBuilder.Append(" Fully-Charged Capacity: ").Append(bat.FullChargedCapacity).AppendLine(" mWh");
 
-            if (bat.RemainingCapacity is not null)
+            if (bat.RemainingCapacity.HasValue)
                 reportBuilder.Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh");
 
-            if (bat.ChargeLevel is not null)
+            if (bat.ChargeLevel.HasValue)
                 reportBuilder.Append(" Charge Level: ").AppendFormat("{0:F2}", bat.ChargeLevel).AppendLine(" %");
 
-            if (bat.Voltage is not null)
+            if (bat.Voltage.HasValue)
                 reportBuilder.Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
 
-            if (bat.Temperature is not null)
+            if (bat.Temperature.HasValue)
                 reportBuilder.Append(" Temperature: ").AppendFormat("{0:F3}", bat.Temperature).AppendLine(" ºC");
 
-            if (bat.RemainingTime != Kernel32.BATTERY_UNKNOWN_TIME)
-                reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime)).AppendLine();
+            if (bat.RemainingTime.HasValue)
+                reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime.Value)).AppendLine();
 
             string cdRateSensorName;
             string cdCurrentSensorName;
@@ -221,10 +221,10 @@ internal class BatteryGroup : IGroup
                 cdCurrentSensorName = " Charge/Discharge Current: ";
             }
 
-            if (bat.ChargeDischargeRate is not null)
+            if (bat.ChargeDischargeRate.HasValue)
                 reportBuilder.Append(cdRateSensorName).AppendFormat("{0:F1}", Math.Abs(bat.ChargeDischargeRate.Value)).AppendLine(" W");
 
-            if (bat.ChargeDischargeCurrent is not null)
+            if (bat.ChargeDischargeCurrent.HasValue)
                 reportBuilder.Append(cdCurrentSensorName).AppendFormat("{0:F3}", Math.Abs(bat.ChargeDischargeCurrent.Value)).AppendLine(" A");
 
             reportBuilder.AppendLine();

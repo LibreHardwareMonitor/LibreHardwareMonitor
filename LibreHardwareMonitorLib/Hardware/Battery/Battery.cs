@@ -73,42 +73,29 @@ internal sealed class Battery : Hardware
             Chemistry = BatteryChemistry.Unknown;
         }
 
-        _chargeLevel = new Sensor("Charge Level", 0, SensorType.Level, this, settings);
-        ActivateSensor(_chargeLevel);
-
-        _voltage = new Sensor("Voltage", 0, SensorType.Voltage, this, settings);
-        ActivateSensor(_voltage);
-
-        _chargeDischargeCurrent = new Sensor("Charge/Discharge Current", 0, SensorType.Current, this, settings);
-        ActivateSensor(_chargeDischargeCurrent);
-
         _designedCapacity = new Sensor("Designed Capacity", 0, SensorType.Energy, this, settings);
-        ActivateSensor(_designedCapacity);
-
         _fullChargedCapacity = new Sensor("Fully-Charged Capacity", 1, SensorType.Energy, this, settings);
-        ActivateSensor(_fullChargedCapacity);
-
-        _remainingCapacity = new Sensor("Remaining Capacity", 2, SensorType.Energy, this, settings);
-        ActivateSensor(_remainingCapacity);
-
-        _chargeDischargeRate = new Sensor("Charge/Discharge Rate", 0, SensorType.Power, this, settings);
-        ActivateSensor(_chargeDischargeRate);
-
         _degradationLevel = new Sensor("Degradation Level", 1, SensorType.Level, this, settings);
-        ActivateSensor(_degradationLevel);
-
+        _chargeLevel = new Sensor("Charge Level", 0, SensorType.Level, this, settings);
+        _voltage = new Sensor("Voltage", 0, SensorType.Voltage, this, settings);
+        _remainingCapacity = new Sensor("Remaining Capacity", 2, SensorType.Energy, this, settings);
+        _chargeDischargeCurrent = new Sensor("Charge/Discharge Current", 0, SensorType.Current, this, settings);
+        _chargeDischargeRate = new Sensor("Charge/Discharge Rate", 0, SensorType.Power, this, settings);
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
-        ActivateSensor(_remainingTime);
-
         _temperature = new Sensor("Battery Temperature", 0, SensorType.Temperature, this, settings);
-        ActivateSensor(_temperature);
 
         if (batteryInfo.FullChargedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY &&
             batteryInfo.DesignedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY)
         {
+            _designedCapacity.Value = batteryInfo.DesignedCapacity;
+            _fullChargedCapacity.Value = batteryInfo.FullChargedCapacity;
             _degradationLevel.Value = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
             DesignedCapacity = batteryInfo.DesignedCapacity;
             FullChargedCapacity = batteryInfo.FullChargedCapacity;
+
+            ActivateSensor(_designedCapacity);
+            ActivateSensor(_fullChargedCapacity);
+            ActivateSensor(_degradationLevel);
         }
     }
 
@@ -132,18 +119,18 @@ internal sealed class Battery : Hardware
 
     public float? RemainingCapacity => _remainingCapacity.Value;
 
-    public uint RemainingTime { get; private set; }
+    public float? RemainingTime => _remainingTime.Value;
 
     public float? Temperature => _temperature.Value;
 
     public float? Voltage => _voltage.Value;
 
-    private void SetSensorValue(Sensor sensor, uint value, uint notAvailableValue)
+    private void ActivateSensorIfValueNotNull(ISensor sensor)
     {
-        if (value != notAvailableValue)
-            sensor.Value = Convert.ToSingle(value);
+        if (sensor.Value != null)
+            ActivateSensor(sensor);
         else
-            sensor.Value = null;
+            DeactivateSensor(sensor);
     }
 
     public override void Update()
@@ -160,10 +147,10 @@ internal sealed class Battery : Hardware
                                      out _,
                                      IntPtr.Zero))
         {
-            SetSensorValue(_designedCapacity, _batteryInformation.DesignedCapacity, Kernel32.BATTERY_UNKNOWN_CAPACITY);
-            SetSensorValue(_fullChargedCapacity, _batteryInformation.FullChargedCapacity, Kernel32.BATTERY_UNKNOWN_CAPACITY);
-
-            SetSensorValue(_remainingCapacity, batteryStatus.Capacity, Kernel32.BATTERY_UNKNOWN_CAPACITY);
+            if (batteryStatus.Capacity != Kernel32.BATTERY_UNKNOWN_CAPACITY)
+                _remainingCapacity.Value = batteryStatus.Capacity;
+            else
+                _remainingCapacity.Value = null;
 
             _chargeLevel.Value = _remainingCapacity.Value * 100f / _fullChargedCapacity.Value;
 
@@ -209,8 +196,6 @@ internal sealed class Battery : Hardware
                     _chargeDischargeCurrent.Name = "Charge/Discharge Current";
                 }
             }
-
-            _degradationLevel.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
         }
 
         uint estimatedRunTime = 0;
@@ -226,16 +211,14 @@ internal sealed class Battery : Hardware
                                      out _,
                                      IntPtr.Zero))
         {
-            RemainingTime = estimatedRunTime;
             if (estimatedRunTime != Kernel32.BATTERY_UNKNOWN_TIME)
-            {
-                ActivateSensor(_remainingTime);
                 _remainingTime.Value = estimatedRunTime;
-            }
             else
-            {
-                DeactivateSensor(_remainingTime);
-            }
+                _remainingTime.Value = null;
+        }
+        else
+        {
+            _remainingTime.Value = null;
         }
 
         uint temperature = 0;
@@ -250,12 +233,19 @@ internal sealed class Battery : Hardware
                                      IntPtr.Zero))
         {
             _temperature.Value = (temperature / 10f) - 273.15f;
-            ActivateSensor(_temperature);
         }
         else
         {
-            DeactivateSensor(_temperature);
+            _temperature.Value = null;
         }
+
+        ActivateSensorIfValueNotNull(_remainingCapacity);
+        ActivateSensorIfValueNotNull(_chargeLevel);
+        ActivateSensorIfValueNotNull(_voltage);
+        ActivateSensorIfValueNotNull(_chargeDischargeCurrent);
+        ActivateSensorIfValueNotNull(_chargeDischargeRate);
+        ActivateSensorIfValueNotNull(_remainingTime);
+        ActivateSensorIfValueNotNull(_temperature);
     }
 
     public override void Close()
