@@ -1342,6 +1342,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.B560M_AORUS_ELITE: // IT8689E
                     case Model.B560M_AORUS_PRO:
                     case Model.B560M_AORUS_PRO_AX:
+                    case Model.B560I_AORUS_PRO_AX:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
                         v.Add(new Voltage("+12V", 2, 10f, 2f));
@@ -1521,6 +1522,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.Z690_AORUS_PRO:
                     case Model.Z690_AORUS_ULTRA: // ITE IT8689E
+                    case Model.Z690_AORUS_MASTER: // ITE IT8689E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+12V", 2, 5f, 1));
@@ -1951,6 +1953,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z690_AORUS_PRO:
+                    case Model.Z690_AORUS_MASTER: // ITE IT87952E
                         t.Add(new Temperature("PCIe x4", 0));
                         t.Add(new Temperature("EC_TEMP2", 1));
                         t.Add(new Temperature("System #2", 2));
@@ -3318,6 +3321,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_X670E_E_GAMING_WIFI: // NCT6799D
                     case Model.ROG_STRIX_X670E_F_GAMING_WIFI: // NCT6799D
                         v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -3335,13 +3339,34 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
                         t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1));
-                        t.Add(new Temperature("Temperature #2", 2));
-                        t.Add(new Temperature("Temperature #3", 3));
-                        t.Add(new Temperature("Temperature #4", 4));
-                        t.Add(new Temperature("Temperature #5", 5));
-                        t.Add(new Temperature("Temperature #6", 6));
-                        t.Add(new Temperature("T Sensor", 24));
+                        t.Add(new Temperature("VRM", 1)); // Aligned with BIOS value ROG_STRIX_X670E_E_GAMING_WIFI
+                        t.Add(new Temperature("Motherboard", 2)); // Aligned with Armoury Crate ROG_STRIX_X670E_E_GAMING_WIFI
+                        t.Add(new Temperature("Temperature #3", 3)); // No matching temp value
+                        t.Add(new Temperature("Temperature #4", 4)); // No matching temp value
+                        t.Add(new Temperature("Temperature #5", 5)); // No matching temp value
+                        t.Add(new Temperature("Temperature #6", 6)); // No matching temp value
+                        t.Add(new Temperature("T Sensor", 24)); // Aligned with Armoury Crate ROG_STRIX_X670E_E_GAMING_WIFI
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+                    case Model.PROART_X670E_CREATOR_WIFI: // NCT6799D
+                        v.Add(new Voltage("Vcore", 0)); // This is wrong
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        //v.Add(new Voltage("VTT", 9)); // This is wrong
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("T_Sensor", 24)); // Aligned with Armoury Crate
+                        t.Add(new Temperature("Temperature #1", 1)); // Unknown, Possibly VRM with 23 offset
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));

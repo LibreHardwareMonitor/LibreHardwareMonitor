@@ -186,23 +186,29 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0x8C: // Tiger Lake (10nm)
+                        case 0x8C: // Tiger Lake (Intel 10 nm SuperFin, Gen. 11)
                         case 0x8D:
                             _microArchitecture = MicroArchitecture.TigerLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0x97: // Alder Lake (7/10nm)
-                        case 0x9A: // Alder Lake-L (7/10nm)
-                        case 0xBE: // Alder Lake-N (7/10nm)
+                        case 0x97: // Alder Lake (Intel 7 (10ESF), Gen. 12)
+                        case 0x9A: // Alder Lake-L (Intel 7 (10ESF), Gen. 12)
+                        case 0xBE: // Alder Lake-N (Intel 7 (10ESF), Gen. 12)
                             _microArchitecture = MicroArchitecture.AlderLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xB7: // Raptor Lake (7nm)
-                        case 0xBA: // Raptor Lake-P (7nm)
-                        case 0xBF: // Raptor Lake-N (7nm)
+                        case 0xB7: // Raptor Lake (Intel 7 (10ESF), Gen. 13)
+                        case 0xBA: // Raptor Lake-P (Intel 7 (10ESF), Gen. 13)
+                        case 0xBF: // Raptor Lake-N (Intel 7 (10ESF), Gen. 13)
                             _microArchitecture = MicroArchitecture.RaptorLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xAC: // Meteor Lake (Intel 4, TSMC N5/N6, Gen. 14)
+                        case 0xAA: // Meteor Lake-L (Intel 4, TSMC N5/N6, Gen. 14)
+                            _microArchitecture = MicroArchitecture.MeteorLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
@@ -273,6 +279,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.JasperLake:
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.Nehalem:
+            case MicroArchitecture.MeteorLake:
             case MicroArchitecture.RaptorLake:
             case MicroArchitecture.RocketLake:
             case MicroArchitecture.SandyBridge:
@@ -385,6 +392,7 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.IvyBridge or
             MicroArchitecture.JasperLake or
             MicroArchitecture.KabyLake or
+            MicroArchitecture.MeteorLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
             MicroArchitecture.SandyBridge or
@@ -585,6 +593,7 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.IvyBridge:
                         case MicroArchitecture.JasperLake:
                         case MicroArchitecture.KabyLake:
+                        case MicroArchitecture.MeteorLake:
                         case MicroArchitecture.RaptorLake:
                         case MicroArchitecture.RocketLake:
                         case MicroArchitecture.SandyBridge:
@@ -660,6 +669,7 @@ internal sealed class IntelCpu : GenericCpu
         Airmont,
         AlderLake,
         Atom,
+        ArrowLake, // Gen. 15 (0xC6, -H = 0xC5)
         Broadwell,
         CannonLake,
         CometLake,
@@ -673,6 +683,7 @@ internal sealed class IntelCpu : GenericCpu
         KabyLake,
         Nehalem,
         NetBurst,
+        MeteorLake,
         RocketLake,
         SandyBridge,
         Silvermont,
