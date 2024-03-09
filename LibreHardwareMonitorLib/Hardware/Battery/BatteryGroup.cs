@@ -17,6 +17,35 @@ internal class BatteryGroup : IGroup
 {
     private readonly List<Battery> _hardware = new();
 
+    static bool QueryStringFromBatteryInfo(SafeFileHandle battery, Kernel32.BATTERY_QUERY_INFORMATION bqi, out string value)
+    {
+        const int maxLoadString = 100;
+
+        value = null;
+
+        bool result = false;
+        IntPtr ptrString = Marshal.AllocHGlobal(maxLoadString);
+        if (Kernel32.DeviceIoControl(battery,
+                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                     ref bqi,
+                                     Marshal.SizeOf(bqi),
+                                     ptrString,
+                                     maxLoadString,
+                                     out uint stringSizeBytes,
+                                     IntPtr.Zero))
+        {
+            // Use the value stored in stringSizeBytes to avoid relying on a
+            // terminator char.
+            // See https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/pull/1158#issuecomment-1979559929
+            int stringSizeChars = (int)stringSizeBytes / 2;
+            value = Marshal.PtrToStringUni(ptrString, stringSizeChars);
+            result = true;
+        }
+
+        Marshal.FreeHGlobal(ptrString);
+        return result;
+    }
+
     public unsafe BatteryGroup(ISettings settings)
     {
         // No implementation for battery information on Unix systems
@@ -93,42 +122,12 @@ internal class BatteryGroup : IGroup
                                         // Only batteries count.
                                         if (bi.Capabilities.HasFlag(Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY))
                                         {
-                                            const int maxLoadString = 100;
-
-                                            IntPtr ptrDevName = Marshal.AllocCoTaskMem(maxLoadString);
                                             bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryDeviceName;
+                                            QueryStringFromBatteryInfo(battery, bqi, out string batteryName);
+                                            bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
+                                            QueryStringFromBatteryInfo(battery, bqi, out string manufacturer);
 
-                                            if (Kernel32.DeviceIoControl(battery,
-                                                                         Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                         ref bqi,
-                                                                         Marshal.SizeOf(bqi),
-                                                                         ptrDevName,
-                                                                         maxLoadString,
-                                                                         out _,
-                                                                         IntPtr.Zero))
-                                            {
-                                                IntPtr ptrManName = Marshal.AllocCoTaskMem(maxLoadString);
-                                                bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
-
-                                                if (Kernel32.DeviceIoControl(battery,
-                                                                             Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                             ref bqi,
-                                                                             Marshal.SizeOf(bqi),
-                                                                             ptrManName,
-                                                                             maxLoadString,
-                                                                             out _,
-                                                                             IntPtr.Zero))
-                                                {
-                                                    string name = Marshal.PtrToStringUni(ptrDevName);
-                                                    string manufacturer = Marshal.PtrToStringUni(ptrManName);
-
-                                                    _hardware.Add(new Battery(name, manufacturer, battery, bi, bqi.BatteryTag, settings));
-                                                }
-
-                                                Marshal.FreeCoTaskMem(ptrManName);
-                                            }
-
-                                            Marshal.FreeCoTaskMem(ptrDevName);
+                                            _hardware.Add(new Battery(batteryName, manufacturer, battery, bi, bqi.BatteryTag, settings));
                                         }
                                     }
                                 }
