@@ -22,6 +22,7 @@ using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
+using LibreHardwareMonitor.Hardware.Psu.CoolerMaster;
 using LibreHardwareMonitor.Hardware.Storage;
 
 namespace LibreHardwareMonitor.Hardware;
@@ -249,10 +250,12 @@ public class Computer : IComputer
             {
                 if (value)
                 {
+                    Add(new CoolerMasterPsuGroup(_settings));
                     Add(new CorsairPsuGroup(_settings));
                 }
                 else
                 {
+                    RemoveType<CoolerMasterPsuGroup>();
                     RemoveType<CorsairPsuGroup>();
                 }
             }
@@ -533,7 +536,10 @@ public class Computer : IComputer
             Add(new NetworkGroup(_settings));
 
         if (_psuEnabled)
+        {
+            Add(new CoolerMasterPsuGroup(_settings));
             Add(new CorsairPsuGroup(_settings));
+        }
 
         if (_batteryEnabled)
             Add(new BatteryGroup(_settings));
