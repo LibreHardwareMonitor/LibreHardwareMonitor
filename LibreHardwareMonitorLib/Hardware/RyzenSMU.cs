@@ -124,6 +124,22 @@ internal class RyzenSMU
                 { 539, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
                 { 540, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
                 { 268, new SmuSensorType { Name = "LDO VDD", Type = SensorType.Voltage, Scale = 1 } },
+                { 325, new SmuSensorType { Name = "Core #1", Type = SensorType.Temperature, Scale = 1 } },
+                { 326, new SmuSensorType { Name = "Core #2", Type = SensorType.Temperature, Scale = 1 } },
+                { 327, new SmuSensorType { Name = "Core #3", Type = SensorType.Temperature, Scale = 1 } },
+                { 328, new SmuSensorType { Name = "Core #4", Type = SensorType.Temperature, Scale = 1 } },
+                { 329, new SmuSensorType { Name = "Core #5", Type = SensorType.Temperature, Scale = 1 } },
+                { 330, new SmuSensorType { Name = "Core #6", Type = SensorType.Temperature, Scale = 1 } },
+                { 331, new SmuSensorType { Name = "Core #7", Type = SensorType.Temperature, Scale = 1 } },
+                { 332, new SmuSensorType { Name = "Core #8", Type = SensorType.Temperature, Scale = 1 } },
+                { 333, new SmuSensorType { Name = "Core #9", Type = SensorType.Temperature, Scale = 1 } },
+                { 334, new SmuSensorType { Name = "Core #10", Type = SensorType.Temperature, Scale = 1 } },
+                { 335, new SmuSensorType { Name = "Core #11", Type = SensorType.Temperature, Scale = 1 } },
+                { 336, new SmuSensorType { Name = "Core #12", Type = SensorType.Temperature, Scale = 1 } },
+                { 337, new SmuSensorType { Name = "Core #13", Type = SensorType.Temperature, Scale = 1 } },
+                { 338, new SmuSensorType { Name = "Core #14", Type = SensorType.Temperature, Scale = 1 } },
+                { 339, new SmuSensorType { Name = "Core #15", Type = SensorType.Temperature, Scale = 1 } },
+                { 340, new SmuSensorType { Name = "Core #16", Type = SensorType.Temperature, Scale = 1 } },
 
                 // This is not working, some cores can be deactivated with the core disabled map.
                 // When Core 2 is disabled and Core 3 is enabled, the name of Core 3 == "Core 2".
