@@ -273,6 +273,11 @@ internal class RyzenSMU
         return 0;
     }
 
+    public uint GetPmTableVersion()
+    {
+        return _pmTableVersion;
+    }
+
     public Dictionary<uint, SmuSensorType> GetPmTableStructure()
     {
         if (!IsPmTableLayoutDefined())
