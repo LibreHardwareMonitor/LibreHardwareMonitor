@@ -590,7 +590,7 @@ internal sealed class Amd17Cpu : AmdCpu
             if (!double.IsNaN(energy))
                 _power.Value = (float)energy;
 
-            if (_cpu._lastPMTable.Length > 1 && _cpu._smu.IsPmTableLayoutDefined() && _cpu._family == 0x19 && _cpu._model == 0x61)
+            if (_cpu._lastPMTable.Length > 1 && _cpu._smu.IsPmTableLayoutDefined() && _cpu._family == 0x19)
             {
                 _temperature.Value = _cpu._lastPMTable[324 + CoreId];
             }
