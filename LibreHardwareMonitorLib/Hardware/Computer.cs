@@ -20,6 +20,7 @@ using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
+using LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Storage;
@@ -200,6 +201,28 @@ public class Computer : IComputer
             }
 
             _memoryEnabled = value;
+        }
+    }
+
+    /// <inheritdoc />
+    public bool IsSmbusEnabled
+    {
+        get { return SmBusIO.isDetectEnabled; }
+        set
+        {
+            if (_open && value != SmBusIO.isDetectEnabled)
+            {
+                SmBusIO.isDetectEnabled = value;
+                if (IsMotherboardEnabled)
+                {
+                    RemoveType<MotherboardGroup>();
+                    Add(new MotherboardGroup(_smbios, _settings));
+                }
+            }
+            else
+            {
+                SmBusIO.isDetectEnabled = value;
+            }
         }
     }
 
