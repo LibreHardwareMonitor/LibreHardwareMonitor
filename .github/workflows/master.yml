@@ -3,6 +3,7 @@ name: master
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -73,3 +74,28 @@ jobs:
 
       - name: Publish to NuGet
         run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
+
+      - name: Pack all artifacts but nupkg to outputs
+        run: |
+          New-Item -ItemType Directory -Path outputs -Force
+          Compress-Archive -Path bin/Release/net472/* -Destination outputs/LibreHardwareMonitor-net472.zip
+          Compress-Archive -Path bin/Release/netstandard2.0/* -Destination outputs/LibreHardwareMonitorLib-netstandard20.zip
+          Compress-Archive -Path bin/Release/net6.0/* -Destination outputs/LibreHardwareMonitorLib-net60.zip
+          Compress-Archive -Path bin/Release/net7.0/* -Destination outputs/LibreHardwareMonitorLib-net70.zip
+      - name: Upload artifact to prerelease
+        uses: ncipollo/release-action@v1
+        with:
+          # Only update attachments on "nightly" tag
+          prerelease: True
+          tag: "nightly"
+          updateOnlyUnreleased: True
+          # Remove old artifacts and replace with new ones
+          removeArtifacts: True
+          replacesArtifacts: True
+          # Update preferences
+          allowUpdates: True
+          omitBody: True
+          omitBodyDuringUpdate: True
+          omitNameDuringUpdate: True
+          artifacts: "outputs/LibreHardwareMonitor*.zip, bin/Release/LibreHardwareMonitorLib.*.nupkg"
+          token: ${{ secrets.GITHUB_TOKEN }}
