@@ -96,6 +96,7 @@ public sealed partial class MainForm : Form
         nodeTextBoxValue.DrawText += NodeTextBoxText_DrawText;
         nodeTextBoxMin.DrawText += NodeTextBoxText_DrawText;
         nodeTextBoxMax.DrawText += NodeTextBoxText_DrawText;
+        nodeTextBoxAverage.DrawText += NodeTextBoxText_DrawText;
         nodeTextBoxText.EditorShowing += NodeTextBoxText_EditorShowing;
 
         foreach (TreeColumn column in treeView.Columns)
@@ -175,6 +176,9 @@ public sealed partial class MainForm : Form
 
         UserOption showMax = new("maxMenuItem", true, maxMenuItem, _settings);
         showMax.Changed += delegate { treeView.Columns[3].IsVisible = showMax.Value; };
+
+        UserOption showAverage = new("averageMenuItem", true, averageMenuItem, _settings);
+        showAverage.Changed += delegate { treeView.Columns[4].IsVisible = showAverage.Value; };
 
         var _ = new UserOption("startMinMenuItem", false, startMinMenuItem, _settings);
         _minimizeToTray = new UserOption("minTrayMenuItem", true, minTrayMenuItem, _settings);
@@ -1114,6 +1118,7 @@ public sealed partial class MainForm : Form
         {
             sensorClick.ResetMin();
             sensorClick.ResetMax();
+            sensorClick.ResetAverage();
         }));
     }
 

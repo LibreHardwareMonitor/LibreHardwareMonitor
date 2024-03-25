@@ -91,6 +91,11 @@ public interface ISensor : IElement
     float? Min { get; }
 
     /// <summary>
+    /// Gets an average value recorded for the given sensor.
+    /// </summary>
+    float? Average { get; }
+
+    /// <summary>
     /// Gets or sets a sensor name.
     /// <para>By default determined by the library.</para>
     /// </summary>
@@ -124,6 +129,11 @@ public interface ISensor : IElement
     /// Resets a value stored in <see cref="Max"/>.
     /// </summary>
     void ResetMax();
+
+    /// <summary>
+    /// Resets calculated Average <see cref="Average"/>.
+    /// </summary>
+    void ResetAverage();
 
     /// <summary>
     /// Clears the values stored in <see cref="Values"/>.

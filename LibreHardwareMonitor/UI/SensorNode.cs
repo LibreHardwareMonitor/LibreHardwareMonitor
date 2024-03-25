@@ -120,6 +120,11 @@ public class SensorNode : Node
         get { return ValueToString(Sensor.Min); }
     }
 
+    public string Average
+    {
+        get { return ValueToString(Sensor.Average); }
+    }
+
     public Color? PenColor
     {
         get { return _penColor; }
