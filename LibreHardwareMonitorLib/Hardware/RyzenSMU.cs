@@ -125,6 +125,7 @@ internal class RyzenSMU
                 { 540, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
                 { 268, new SmuSensorType { Name = "LDO VDD", Type = SensorType.Voltage, Scale = 1 } },
 
+
                 // This is not working, some cores can be deactivated with the core disabled map.
                 // When Core 2 is disabled and Core 3 is enabled, the name of Core 3 == "Core 2".
                 //{ 357, new SmuSensorType { Name = "Core #1 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
@@ -270,6 +271,11 @@ internal class RyzenSMU
             return args[0];
 
         return 0;
+    }
+
+    public uint GetPmTableVersion()
+    {
+        return _pmTableVersion;
     }
 
     public Dictionary<uint, SmuSensorType> GetPmTableStructure()

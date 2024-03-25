@@ -15,6 +15,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private readonly Processor _processor;
     private readonly Dictionary<SensorType, int> _sensorTypeIndex;
     private readonly RyzenSMU _smu;
+    private float[] _lastPMTable;
 
     public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -81,6 +82,11 @@ internal sealed class Amd17Cpu : AmdCpu
     public override void Update()
     {
         base.Update();
+
+        if (_smu.IsPmTableLayoutDefined())
+        {
+            _lastPMTable = _smu.GetPmTable();
+        }
 
         _processor.UpdateSensors();
 
@@ -380,7 +386,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
             if (_cpu._smu.IsPmTableLayoutDefined())
             {
-                float[] smuData = _cpu._smu.GetPmTable();
+                float[] smuData = _cpu._lastPMTable;
 
                 foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
                 {
@@ -470,6 +476,8 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Sensor _multiplier;
         private readonly Sensor _power;
         private readonly Sensor _vcore;
+        private readonly Sensor _vcore2;
+        private readonly Sensor _temperature;
         private ISensor _busSpeed;
         private DateTime _lastPwrTime = new(0);
         private uint _lastPwrValue;
@@ -483,11 +491,15 @@ internal sealed class Amd17Cpu : AmdCpu
             _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings);
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
+            _vcore2 = new Sensor("Core #" + CoreId + " VID (PMT)", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
+            _temperature = new Sensor("Core #" + CoreId + " (PMT)", cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, cpu, cpu._settings);
 
             cpu.ActivateSensor(_clock);
             cpu.ActivateSensor(_multiplier);
             cpu.ActivateSensor(_power);
             cpu.ActivateSensor(_vcore);
+            cpu.ActivateSensor(_vcore2);
+            cpu.ActivateSensor(_temperature);
         }
 
         public int CoreId { get; }
@@ -580,6 +592,13 @@ internal sealed class Amd17Cpu : AmdCpu
 
             if (!double.IsNaN(energy))
                 _power.Value = (float)energy;
+
+            if (_cpu._smu.IsPmTableLayoutDefined() && _cpu._smu.GetPmTableVersion() == 0x00540004 && _cpu._lastPMTable.Length > 1)
+            {
+                _vcore2.Value = _cpu._lastPMTable[308 + CoreId];
+                _temperature.Value = _cpu._lastPMTable[324 + CoreId];
+            }
+
         }
     }
 
