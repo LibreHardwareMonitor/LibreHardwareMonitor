@@ -183,6 +183,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Load:
             case SensorType.Energy:
             case SensorType.Noise:
+            case SensorType.Humidity:
                 return $"{Sensor.Value:F0}";
             default:
                 return "-";
@@ -259,6 +260,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Factor: format = "\n{0}: {1:F3} GB"; break;
             case SensorType.Energy: format = "\n{0}: {0:F0} mWh"; break;
             case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
+            case SensorType.Humidity: format = "\n{0}: {0:F0} %"; break;
         }
         string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
 
