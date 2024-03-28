@@ -1402,7 +1402,7 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("System Fan #1", 1));
                         c.Add(new Control("System Fan #2", 2));
                         c.Add(new Control("System Fan #3", 3));
-                        c.Add(new Control("CPU Pump Fan", 3));
+                        c.Add(new Control("CPU Pump Fan", 4));
                         c.Add(new Control("CPU Optional Fan", 5));
 
                         break;
