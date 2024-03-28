@@ -1380,9 +1380,9 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
                         v.Add(new Voltage("+12V", 2, 10f, 2f));
                         v.Add(new Voltage("+5V", 3, 15f, 10f));
-                        v.Add(new Voltage("iGPU VAGX", 4));
-                        v.Add(new Voltage("VCCSA", 5));
-                        v.Add(new Voltage("DRAM", 6));
+                        v.Add(new Voltage("CPU Vcore SoC", 4));
+                        v.Add(new Voltage("CPU Vcore MISC", 5));
+                        v.Add(new Voltage("VIN6", 6));
                         v.Add(new Voltage("3VSB", 7, 10f, 10f));
                         v.Add(new Voltage("VBat", 8, 10f, 10f));
                         v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
@@ -1391,7 +1391,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
-                        t.Add(new Temperature("System #2", 5));
+                        t.Add(new Temperature("VSOC MOS", 5));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
