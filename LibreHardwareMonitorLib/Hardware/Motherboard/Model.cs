@@ -183,6 +183,10 @@ public enum Model
     X570_AORUS_MASTER,
     X570_GAMING_X,
     X570_AORUS_ULTRA,
+    B650M_AORUS_PRO,
+    B650M_AORUS_PRO_AX,
+    B650M_AORUS_ELITE,
+    B650M_AORUS_ELITE_AX,
 
     // Shuttle
     FH67,

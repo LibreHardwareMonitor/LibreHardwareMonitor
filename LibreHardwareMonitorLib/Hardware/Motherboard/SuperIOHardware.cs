@@ -1372,6 +1372,41 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B650M_AORUS_PRO: // IT8689E
+                    case Model.B650M_AORUS_PRO_AX:
+                    case Model.B650M_AORUS_ELITE:
+                    case Model.B650M_AORUS_ELITE_AX:
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
+                        v.Add(new Voltage("+12V", 2, 10f, 2f));
+                        v.Add(new Voltage("+5V", 3, 15f, 10f));
+                        v.Add(new Voltage("Vcore SoC", 4));
+                        v.Add(new Voltage("Vcore Misc", 5));
+                        v.Add(new Voltage("VIN6", 6));
+                        v.Add(new Voltage("3VSB", 7, 10f, 10f));
+                        v.Add(new Voltage("VBat", 8, 10f, 10f));
+                        v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("VSOC MOS", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("CPU Pump Fan", 4));
+                        f.Add(new Fan("CPU Optional Fan", 5));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("CPU Pump Fan", 4));
+                        c.Add(new Control("CPU Optional Fan", 5));
+
+                        break;
+
                     case Model.B360_AORUS_GAMING_3_WIFI_CF: // IT8688E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));

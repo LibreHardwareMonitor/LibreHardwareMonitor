@@ -200,7 +200,8 @@ public class PlotPanel : UserControl
             { SensorType.Data, "GB" },
             { SensorType.Frequency, "Hz" },
             { SensorType.Energy, "mWh" },
-            { SensorType.Noise, "dBA" }
+            { SensorType.Noise, "dBA" },
+            { SensorType.Humidity, "%" }
         };
 
         foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
