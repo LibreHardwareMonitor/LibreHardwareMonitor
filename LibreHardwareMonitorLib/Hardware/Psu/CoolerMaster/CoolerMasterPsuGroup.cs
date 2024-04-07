@@ -1,8 +1,15 @@
-﻿// This Source Code Form is subject to the terms of the GNU Public License, v. 2.0.
-// Copyright(C) 2020 Wilken Gottwalt<wilken.gottwalt@posteo.net>
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) 2020 Wilken Gottwalt<wilken.gottwalt@posteo.net>
+// Copyright (C) 2023 Jannis234
 // Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
-// Implemented after the Linuix kernel driver corsair_psu by Wilken Gottwalt and contributers
+
+// Implemented after the Linux kernel driver corsair_psu by Wilken Gottwalt and contributers
+// Implemented after the Linux kernel driver cm_psu by Jannis234 and contributers https://github.com/Jannis234/cm-psu
+
+
 
 using System.Collections.Generic;
 using System.Linq;
