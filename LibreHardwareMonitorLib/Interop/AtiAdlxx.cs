@@ -24,7 +24,6 @@ internal static class AtiAdlxx
     public const int ADL_DL_FANCTRL_SUPPORTS_RPM_WRITE = 8;
 
     public const int ADL_DRIVER_OK = 0;
-
     public const int ADL_FALSE = 0;
 
     public const int ADL_MAX_ADAPTERS = 40;
@@ -162,6 +161,30 @@ internal static class AtiAdlxx
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_FrameMetrics_Stop(IntPtr context, int adapterIndex, int displayIndex);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_PMLog_Support_Get(IntPtr context, int adapterIndex,
+                                                                  ref ADLPMLogSupportInfo pPMLogSupportInfo);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_PMLog_Start(IntPtr context, int adapterIndex,
+                                                            ref ADLPMLogStartInput pPMLogStartInput,
+                                                            ref ADLPMLogStartOutput pPMLogStartOutput,
+                                                            uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_PMLog_Stop(IntPtr context, int adapterIndex, uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Device_PMLog_Device_Create(IntPtr context, int adapterIndex, ref uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Device_PMLog_Device_Destroy(IntPtr context, uint device);
 
     public static bool ADL_Method_Exists(string ADL_Method)
     {
@@ -553,7 +576,145 @@ internal static class AtiAdlxx
         PMLOG_CLK_VCN1CLK2 = 37,
         PMLOG_SMART_POWERSHIFT_CPU = 38,
         PMLOG_SMART_POWERSHIFT_DGPU = 39,
-        PMLOG_MAX_SENSORS_REAL,
-        PMLOG_TOTAL_BOARD_POWER_RX_7000 = 73
+        PMLOG_MAX_SENSORS_REAL
+    }
+
+    internal enum ADLPMLogSensors
+    {
+        ADL_SENSOR_MAXTYPES             = 0,
+        ADL_PMLOG_CLK_GFXCLK            = 1,
+        ADL_PMLOG_CLK_MEMCLK            = 2,
+        ADL_PMLOG_CLK_SOCCLK            = 3,
+        ADL_PMLOG_CLK_UVDCLK1           = 4,
+        ADL_PMLOG_CLK_UVDCLK2           = 5,
+        ADL_PMLOG_CLK_VCECLK            = 6,
+        ADL_PMLOG_CLK_VCNCLK            = 7,
+        ADL_PMLOG_TEMPERATURE_EDGE      = 8,
+        ADL_PMLOG_TEMPERATURE_MEM       = 9,
+        ADL_PMLOG_TEMPERATURE_VRVDDC    = 10,
+        ADL_PMLOG_TEMPERATURE_VRMVDD    = 11,
+        ADL_PMLOG_TEMPERATURE_LIQUID    = 12,
+        ADL_PMLOG_TEMPERATURE_PLX       = 13,
+        ADL_PMLOG_FAN_RPM               = 14,
+        ADL_PMLOG_FAN_PERCENTAGE        = 15,
+        ADL_PMLOG_SOC_VOLTAGE           = 16,
+        ADL_PMLOG_SOC_POWER             = 17,
+        ADL_PMLOG_SOC_CURRENT           = 18,
+        ADL_PMLOG_INFO_ACTIVITY_GFX     = 19,
+        ADL_PMLOG_INFO_ACTIVITY_MEM     = 20,
+        ADL_PMLOG_GFX_VOLTAGE           = 21,
+        ADL_PMLOG_MEM_VOLTAGE           = 22,
+        ADL_PMLOG_ASIC_POWER            = 23,
+        ADL_PMLOG_TEMPERATURE_VRSOC     = 24,
+        ADL_PMLOG_TEMPERATURE_VRMVDD0   = 25,
+        ADL_PMLOG_TEMPERATURE_VRMVDD1   = 26,
+        ADL_PMLOG_TEMPERATURE_HOTSPOT   = 27,
+        ADL_PMLOG_TEMPERATURE_GFX       = 28,
+        ADL_PMLOG_TEMPERATURE_SOC       = 29,
+        ADL_PMLOG_GFX_POWER             = 30,
+        ADL_PMLOG_GFX_CURRENT           = 31,
+        ADL_PMLOG_TEMPERATURE_CPU       = 32,
+        ADL_PMLOG_CPU_POWER             = 33,
+        ADL_PMLOG_CLK_CPUCLK            = 34,
+        ADL_PMLOG_THROTTLER_STATUS      = 35,   // GFX
+        ADL_PMLOG_CLK_VCN1CLK1          = 36,
+        ADL_PMLOG_CLK_VCN1CLK2          = 37,
+        ADL_PMLOG_SMART_POWERSHIFT_CPU  = 38,
+        ADL_PMLOG_SMART_POWERSHIFT_DGPU = 39,
+        ADL_PMLOG_BUS_SPEED             = 40,
+        ADL_PMLOG_BUS_LANES             = 41,
+        ADL_PMLOG_TEMPERATURE_LIQUID0   = 42,
+        ADL_PMLOG_TEMPERATURE_LIQUID1   = 43,
+        ADL_PMLOG_CLK_FCLK              = 44,
+        ADL_PMLOG_THROTTLER_STATUS_CPU  = 45,
+        ADL_PMLOG_SSPAIRED_ASICPOWER    = 46, // apuPower
+        ADL_PMLOG_SSTOTAL_POWERLIMIT    = 47, // Total Power limit
+        ADL_PMLOG_SSAPU_POWERLIMIT      = 48, // APU Power limit
+        ADL_PMLOG_SSDGPU_POWERLIMIT     = 49, // DGPU Power limit
+        ADL_PMLOG_TEMPERATURE_HOTSPOT_GCD      = 50,
+        ADL_PMLOG_TEMPERATURE_HOTSPOT_MCD      = 51,
+        ADL_PMLOG_THROTTLER_TEMP_EDGE_PERCENTAGE        = 52,
+        ADL_PMLOG_THROTTLER_TEMP_HOTSPOT_PERCENTAGE     = 53,
+        ADL_PMLOG_THROTTLER_TEMP_HOTSPOT_GCD_PERCENTAGE = 54,
+        ADL_PMLOG_THROTTLER_TEMP_HOTSPOT_MCD_PERCENTAGE = 55,
+        ADL_PMLOG_THROTTLER_TEMP_MEM_PERCENTAGE     = 56,
+        ADL_PMLOG_THROTTLER_TEMP_VR_GFX_PERCENTAGE  = 57,
+        ADL_PMLOG_THROTTLER_TEMP_VR_MEM0_PERCENTAGE = 58,
+        ADL_PMLOG_THROTTLER_TEMP_VR_MEM1_PERCENTAGE = 59,
+        ADL_PMLOG_THROTTLER_TEMP_VR_SOC_PERCENTAGE  = 60,
+        ADL_PMLOG_THROTTLER_TEMP_LIQUID0_PERCENTAGE = 61,
+        ADL_PMLOG_THROTTLER_TEMP_LIQUID1_PERCENTAGE = 62,
+        ADL_PMLOG_THROTTLER_TEMP_PLX_PERCENTAGE = 63,
+        ADL_PMLOG_THROTTLER_TDC_GFX_PERCENTAGE  = 64,
+        ADL_PMLOG_THROTTLER_TDC_SOC_PERCENTAGE  = 65,
+        ADL_PMLOG_THROTTLER_TDC_USR_PERCENTAGE  = 66,
+        ADL_PMLOG_THROTTLER_PPT0_PERCENTAGE     = 67,
+        ADL_PMLOG_THROTTLER_PPT1_PERCENTAGE     = 68,
+        ADL_PMLOG_THROTTLER_PPT2_PERCENTAGE     = 69,
+        ADL_PMLOG_THROTTLER_PPT3_PERCENTAGE     = 70,
+        ADL_PMLOG_THROTTLER_FIT_PERCENTAGE           = 71,
+        ADL_PMLOG_THROTTLER_GFX_APCC_PLUS_PERCENTAGE = 72,
+        ADL_PMLOG_BOARD_POWER                        = 73,
+        ADL_PMLOG_MAX_SENSORS_REAL
+    }
+
+    //Structure containing information related power management logging.
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLPMLogSupportInfo
+    {
+        /// list of sensors defined by ADL_PMLOG_SENSORS
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS)]
+        public ushort[] usSensors;
+
+        /// Reserved
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public int[] iReserved;
+    }
+
+    //Structure containing information to start power management logging.
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLPMLogStartInput
+    {
+        /// list of sensors defined by ADL_PMLOG_SENSORS
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS)]
+        public ushort[] usSensors;
+
+        /// Sample rate in milliseconds
+        public uint ulSampleRate;
+
+        /// Reserved
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 15)]
+        public int[] iReserved;
+    }
+
+    //Structure containing information to start power management logging.
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct ADLPMLogStartOutput
+    {
+        /// Pointer to memory address containing logging data
+        [FieldOffset(0)] public IntPtr pLoggingAddress;
+        [FieldOffset(0)] public ulong ptrLoggingAddress;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLPMLogData
+    {
+        /// Structure version
+        public uint ulVersion;
+
+        /// Current driver sample rate
+        public uint ulActiveSampleRate;
+
+        /// Timestamp of last update
+        public ulong ulLastUpdated;
+
+        // 2D array of sensor and values -- unsigned int ulValues[ADL_PMLOG_MAX_SUPPORTED_SENSORS][2]
+        // the nested array will be accessed like a single dimension array
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS*2)]
+        public uint[] ulValues;
+
+        /// Reserved
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+        public uint[] ulReserved;
     }
 }
