@@ -24,7 +24,6 @@ internal static class AtiAdlxx
     public const int ADL_DL_FANCTRL_SUPPORTS_RPM_WRITE = 8;
 
     public const int ADL_DRIVER_OK = 0;
-
     public const int ADL_FALSE = 0;
 
     public const int ADL_MAX_ADAPTERS = 40;
