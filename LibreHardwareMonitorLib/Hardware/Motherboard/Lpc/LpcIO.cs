@@ -536,7 +536,11 @@ internal class LpcIO
         if (port.RegisterPort is not 0x2E and not 0x4E)
             return false;
 
-        port.IT87Enter();
+        // Read the chip ID before entering.
+        // If already entered (not 0xFFFF) and the register port is 0x4E, it is most likely bugged and should be left alone.
+        // Entering IT8792 in this state will result in IT8792 reporting with chip ID of 0x8883.
+        if (port.RegisterPort != 0x4E || port.ReadWord(CHIP_ID_REGISTER) == 0xFFFF)
+            port.IT87Enter();
 
         ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
         Chip chip = chipId switch
