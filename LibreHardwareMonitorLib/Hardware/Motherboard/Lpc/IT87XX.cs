@@ -72,7 +72,8 @@ internal class IT87XX : ISuperIO
 
         FAN_PWM_CTRL_REG = chip switch
         {
-            Chip.IT8665E or Chip.IT8625E =>new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
+            Chip.IT8665E or Chip.IT8625E => new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
+            Chip.IT8792E => new byte[] { 0x15, 0x16, 0x17 },
             _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
         };
 
