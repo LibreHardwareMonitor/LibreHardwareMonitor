@@ -539,10 +539,12 @@ internal class LpcIO
         // Read the chip ID before entering.
         // If already entered (not 0xFFFF) and the register port is 0x4E, it is most likely bugged and should be left alone.
         // Entering IT8792 in this state will result in IT8792 reporting with chip ID of 0x8883.
-        if (port.RegisterPort != 0x4E || port.ReadWord(CHIP_ID_REGISTER) == 0xFFFF)
+        if (port.RegisterPort != 0x4E || !port.TryReadWord(CHIP_ID_REGISTER, out ushort chipId))
+        {
             port.IT87Enter();
-
-        ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
+            chipId = port.ReadWord(CHIP_ID_REGISTER);
+        }
+        
         Chip chip = chipId switch
         {
             0x8613 => Chip.IT8613E,
@@ -666,7 +668,7 @@ internal class LpcIO
         uint address = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
             addressHi = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
-        
+
         Thread.Sleep(1);
         uint addressVerify = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
