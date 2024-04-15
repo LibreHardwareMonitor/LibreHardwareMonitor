@@ -32,11 +32,11 @@ internal class IT87XX : ISuperIO
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[MaxFanHeaders];
     private readonly byte _version;
     private readonly float _voltageGain;
-    private GigabyteController _gigabyteController;
+    private IGigabyteController _gigabyteController;
 
     private bool SupportsMultipleBanks => _bankCount > 1;
 
-    public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, GigabyteController gigabyteController)
+    public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, IGigabyteController gigabyteController)
     {
         _address = address;
         _version = version;
