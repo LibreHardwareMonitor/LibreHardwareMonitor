@@ -653,7 +653,7 @@ internal class LpcIO
 
         Vendor vendor = DetectVendor();
 
-        IGigabyteController gigabyteController = FindGigabyteECUsingSMFI(port, chip, vendor);
+        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port, chip, vendor);
         if (gigabyteController != null)
             return gigabyteController;
 
@@ -680,7 +680,7 @@ internal class LpcIO
         }
     }
 
-    private IGigabyteController FindGigabyteECUsingSMFI(LpcPort port, Chip chip, Vendor vendor)
+    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port, Chip chip, Vendor vendor)
     {
         port.Select(IT87XX_SMFI_LDN);
 
