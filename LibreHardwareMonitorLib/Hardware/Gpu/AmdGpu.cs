@@ -5,8 +5,10 @@
 // All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 
@@ -15,6 +17,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 internal sealed class AmdGpu : GenericGpu
 {
     private readonly AtiAdlxx.ADLAdapterInfo _adapterInfo;
+    private readonly AtiAdlxx.ADLPMLogStartOutput _adlPMLogStartOutput;
     private readonly IntPtr _context = IntPtr.Zero;
     private readonly Sensor _controlSensor;
     private readonly Sensor _coreClock;
@@ -22,6 +25,7 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _coreVoltage;
     private readonly int _currentOverdriveApiLevel;
     private readonly string _d3dDeviceId;
+    private readonly uint _device;
     private readonly Sensor _fan;
     private readonly Control _fanControl;
     private readonly bool _frameMetricsStarted;
@@ -35,6 +39,7 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _memoryLoad;
     private readonly Sensor _memoryVoltage;
     private readonly bool _overdriveApiSupported;
+    private readonly bool _pmLogStarted;
     private readonly Sensor _powerCore;
     private readonly Sensor _powerPpt;
     private readonly Sensor _powerSoC;
@@ -49,7 +54,7 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _temperaturePlx;
     private readonly Sensor _temperatureSoC;
     private readonly Sensor _temperatureVddc;
-
+    private readonly ushort pmLogSampleRate = 1000;
     private bool? _newQueryPmLogDataGetExists;
 
     public AmdGpu(AtiAdlxx.ADLAdapterInfo adapterInfo, ISettings settings)
@@ -139,11 +144,47 @@ internal sealed class AmdGpu : GenericGpu
         }
 
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) &&
-            AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK && supported == AtiAdlxx.ADL_TRUE && AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
+            AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK &&
+            supported == AtiAdlxx.ADL_TRUE &&
+            AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             _frameMetricsStarted = true;
             _fullscreenFps.Value = -1;
             ActivateSensor(_fullscreenFps);
+        }
+
+        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
+            AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)) &&
+            AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Start)))
+        {
+            AtiAdlxx.ADLPMLogSupportInfo _adlPMLogSupportInfo = new();
+            AtiAdlxx.ADLPMLogStartInput _adlPMLogStartInput = new();
+            _adlPMLogStartOutput = new AtiAdlxx.ADLPMLogStartOutput();
+            _adlPMLogStartInput.usSensors = new ushort[AtiAdlxx.ADL_PMLOG_MAX_SENSORS];
+            if (_device == 0 &&
+                AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, _adapterInfo.AdapterIndex, ref _device) &&
+                AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context, _adapterInfo.AdapterIndex, ref _adlPMLogSupportInfo))
+            {
+                int i = 0;
+                while (_adlPMLogSupportInfo.usSensors[i] != (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES)
+                {
+                    _adlPMLogStartInput.usSensors[i] = _adlPMLogSupportInfo.usSensors[i];
+                    i++;
+                }
+
+                _adlPMLogStartInput.usSensors[i] = (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES;
+                _adlPMLogStartInput.ulSampleRate = pmLogSampleRate;
+
+                if (AtiAdlxx.ADL2_Adapter_PMLog_Start(_context,
+                                                      adapterInfo.AdapterIndex,
+                                                      ref _adlPMLogStartInput,
+                                                      ref _adlPMLogStartOutput,
+                                                      _device) ==
+                    AtiAdlxx.ADLStatus.ADL_OK)
+                {
+                    _pmLogStarted = true;
+                }
+            }
         }
 
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive_Caps)) &&
@@ -163,11 +204,12 @@ internal sealed class AmdGpu : GenericGpu
                     _currentOverdriveApiLevel = 6;
                 }
             }
-            
+
             if (!_overdriveApiSupported)
             {
                 if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive5_ODParameters_Get)) &&
-                    AtiAdlxx.ADL_Overdrive5_ODParameters_Get(_adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p) == AtiAdlxx.ADLStatus.ADL_OK && p.iActivityReportingSupported > 0)
+                    AtiAdlxx.ADL_Overdrive5_ODParameters_Get(_adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p) == AtiAdlxx.ADLStatus.ADL_OK &&
+                    p.iActivityReportingSupported > 0)
                 {
                     _overdriveApiSupported = true;
                     _currentOverdriveApiLevel = 5;
@@ -310,7 +352,42 @@ internal sealed class AmdGpu : GenericGpu
 
             _newQueryPmLogDataGetExists ??= AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_New_QueryPMLogData_Get));
 
-            if (_newQueryPmLogDataGetExists == true && AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterInfo.AdapterIndex, ref logDataOutput) == AtiAdlxx.ADLStatus.ADL_OK)
+            if (_pmLogStarted)
+            {
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_GFXCLK, _coreClock, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_SOCCLK, _socClock);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_MEMCLK, _memoryClock, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_BOARD_POWER, _powerTotal, reset: false);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_EDGE, _temperatureCore, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_MEM, _temperatureMemory, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_VRVDDC, _temperatureVddc, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_VRMVDD, _temperatureMvdd, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_LIQUID, _temperatureLiquid, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_PLX, _temperaturePlx, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_HOTSPOT, _temperatureHotSpot, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_SOC, _temperatureSoC);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_GFXCLK, _coreClock, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_SOCCLK, _socClock);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_MEMCLK, _memoryClock, reset: false);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_FAN_RPM, _fan, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_FAN_PERCENTAGE, _controlSensor, reset: false);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_GFX_VOLTAGE, _coreVoltage, 0.001f, false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_SOC_VOLTAGE, _socVoltage, 0.001f);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_MEM_VOLTAGE, _memoryVoltage, 0.001f);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_INFO_ACTIVITY_GFX, _coreLoad, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_INFO_ACTIVITY_MEM, _memoryLoad);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_ASIC_POWER, _powerTotal, reset: false);
+
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_GFX_POWER, _powerCore, reset: false);
+                GetPMLog(AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_SOC_POWER, _powerSoC, reset: false);
+            }
+            else if (_newQueryPmLogDataGetExists == true && AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterInfo.AdapterIndex, ref logDataOutput) == AtiAdlxx.ADLStatus.ADL_OK)
             {
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_EDGE, _temperatureCore, reset: false);
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TEMPERATURE_MEM, _temperatureMemory, reset: false);
@@ -346,18 +423,10 @@ internal sealed class AmdGpu : GenericGpu
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_GFX, _coreLoad, reset: false);
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_INFO_ACTIVITY_MEM, _memoryLoad);
 
-                if (_adapterInfo.AdapterName.Contains("AMD Radeon RX 7"))
-                {
-                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_TOTAL_BOARD_POWER_RX_7000, _powerTotal, reset: false);
-                }
-                else
-                {
-                    GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_ASIC_POWER, _powerTotal, reset: false);
-                }
+                GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_ASIC_POWER, _powerTotal, reset: false);
 
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_GFX_POWER, _powerCore, reset: false);
                 GetPMLog(logDataOutput, AtiAdlxx.ADLSensorType.PMLOG_SOC_POWER, _powerSoC, reset: false);
-                
             }
         }
     }
@@ -490,6 +559,38 @@ internal sealed class AmdGpu : GenericGpu
     }
 
     /// <summary>
+    /// Gets a PMLog sensor value.
+    /// </summary>
+    /// <param name="sensorType">Type of the sensor.</param>
+    /// <param name="sensor">The sensor.</param>
+    /// <param name="factor">The factor.</param>
+    /// <param name="reset">If set to <c>true</c>, resets the sensor value to <c>null</c>.</param>
+    private void GetPMLog(AtiAdlxx.ADLPMLogSensors sensorType, Sensor sensor, float factor = 1.0f, bool reset = true)
+    {
+        int i = (int)sensorType;
+        bool found = false;
+        AtiAdlxx.ADLPMLogData _adlPMLogData = (AtiAdlxx.ADLPMLogData)Marshal.PtrToStructure(_adlPMLogStartOutput.pLoggingAddress, typeof(AtiAdlxx.ADLPMLogData));
+
+        if (_adlPMLogData.ulValues != null)
+        {
+            for (int k = 0; k < _adlPMLogData.ulValues.Length - 1; k += 2)
+            {
+                if (_adlPMLogData.ulValues[k] == i)
+                {
+                    sensor.Value = _adlPMLogData.ulValues[k + 1] * factor;
+                    ActivateSensor(sensor);
+                    found = true;
+                }
+            }
+        }
+
+        if (!found && reset)
+        {
+            sensor.Value = null;
+        }
+    }
+
+    /// <summary>
     /// Gets the Overdrive6 power.
     /// </summary>
     /// <param name="type">The type.</param>
@@ -518,6 +619,16 @@ internal sealed class AmdGpu : GenericGpu
 
         if (_frameMetricsStarted)
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Stop(_context, _adapterInfo.AdapterIndex, 0);
+
+        if (_pmLogStarted && _device != 0)
+        {
+            AtiAdlxx.ADL2_Adapter_PMLog_Stop(_context, _adapterInfo.AdapterIndex, _device);
+        }
+
+        if (_device != 0)
+        {
+            AtiAdlxx.ADL2_Device_PMLog_Device_Destroy(_context, _device);
+        }
 
         if (_context != IntPtr.Zero)
             AtiAdlxx.ADL2_Main_Control_Destroy(_context);
@@ -759,18 +870,49 @@ internal sealed class AmdGpu : GenericGpu
             r.AppendLine();
             try
             {
-                var data = new AtiAdlxx.ADLPMLogDataOutput();
-                AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterInfo.AdapterIndex, ref data);
-
-                r.Append(" Status: ");
-                r.AppendLine(status.ToString());
-
-                for (int i = 0; i < data.sensors.Length; i++)
+                if (_pmLogStarted)
                 {
-                    string st = ((AtiAdlxx.ADLSensorType)i).ToString();
+                    AtiAdlxx.ADLPMLogData _adlPMLogData = (AtiAdlxx.ADLPMLogData)Marshal.PtrToStructure(_adlPMLogStartOutput.pLoggingAddress, typeof(AtiAdlxx.ADLPMLogData));
+                    Dictionary<uint, Tuple<bool, uint>> allSensorsSupport = new();
 
-                    r.AppendFormat(" Sensor[{0}].Supported: {1}{2}", st, data.sensors[i].supported, Environment.NewLine);
-                    r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st, data.sensors[i].value, Environment.NewLine);
+                    foreach (int i in Enum.GetValues(typeof(AtiAdlxx.ADLPMLogSensors)))
+                    {
+                        allSensorsSupport.Add((uint)i, new Tuple<bool, uint>(false, 0));
+                    }
+
+                    for (int k = 0; k < _adlPMLogData.ulValues.Length - 1; k += 2)
+                    {
+                        allSensorsSupport[_adlPMLogData.ulValues[k]] = new Tuple<bool, uint>(true, _adlPMLogData.ulValues[k + 1]);
+                    }
+
+                    if (_adlPMLogData.ulValues != null)
+                    {
+                        r.AppendLine(" Status: OK");
+
+                        foreach (KeyValuePair<uint, Tuple<bool, uint>> kv in allSensorsSupport)
+                        {
+                            string st = ((AtiAdlxx.ADLPMLogSensors)kv.Key).ToString();
+
+                            r.AppendFormat(" Sensor[{0}].Supported: {1}{2}", st, kv.Value.Item1, Environment.NewLine);
+                            r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st, kv.Value.Item2, Environment.NewLine);
+                        }
+                    }
+                }
+                else
+                {
+                    var data = new AtiAdlxx.ADLPMLogDataOutput();
+                    AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterInfo.AdapterIndex, ref data);
+
+                    r.Append(" Status: ");
+                    r.AppendLine(status.ToString());
+
+                    for (int i = 0; i < data.sensors.Length; i++)
+                    {
+                        string st = ((AtiAdlxx.ADLSensorType)i).ToString();
+
+                        r.AppendFormat(" Sensor[{0}].Supported: {1}{2}", st, data.sensors[i].supported, Environment.NewLine);
+                        r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st, data.sensors[i].value, Environment.NewLine);
+                    }
                 }
             }
             catch (EntryPointNotFoundException)
