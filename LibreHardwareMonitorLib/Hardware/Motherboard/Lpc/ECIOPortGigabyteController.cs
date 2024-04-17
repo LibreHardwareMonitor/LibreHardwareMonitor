@@ -30,8 +30,7 @@ internal class ECIOPortGigabyteController : IGigabyteController
         IT879xECIOPort port = new IT879xECIOPort(ECIO_REGISTER_PORT, ECIO_VALUE_PORT);
 
         // Check compatibility by querying its version.
-        byte majorVersion = port.Read(CONTROLLER_FUNCTION_OFFSET + CONTROLLER_VERSION_OFFSET);
-        if (majorVersion != 1)
+        if (!port.Read(CONTROLLER_FUNCTION_OFFSET + CONTROLLER_VERSION_OFFSET, out byte majorVersion) || majorVersion != 1)
             return null;
 
         return new ECIOPortGigabyteController(port);
@@ -41,17 +40,21 @@ internal class ECIOPortGigabyteController : IGigabyteController
     {
         ushort offset = CONTROLLER_FUNCTION_OFFSET + CONTROLLER_ENABLE_OFFSET;
 
-        bool current = Convert.ToBoolean(_port.Read(offset));
+        if (!_port.Read(offset, out byte bCurrent))
+            return false;
+
+        bool current = Convert.ToBoolean(bCurrent);
 
         _initialState ??= current;
+        
+        if (current != enabled)
+        {
+            if (!_port.Write(offset, (byte)(enabled ? 1 : 0)))
+                return false;
 
-        if (current && !enabled)
-            _port.Write(offset, 0);
-        else if (!current && enabled)
-            _port.Write(offset, 1);
-
-        // Allow the system to catch up.
-        Thread.Sleep(250);
+            // Allow the system to catch up.
+            Thread.Sleep(250);
+        }
 
         return true;
     }

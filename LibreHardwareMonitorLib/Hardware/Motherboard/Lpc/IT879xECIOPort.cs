@@ -21,43 +21,51 @@ internal class IT879xECIOPort
 
     public ushort ValuePort { get; }
 
-    public byte Read(ushort offset)
+    public bool Read(ushort offset, out byte value)
     {
-        WriteToRegister(0xB0);
-        WriteToValue((byte) ((offset >> 8) & 0xFF));
-        WriteToValue((byte) (offset & 0xFF));
-        return ReadFromValue();
+        value = 0;
+
+        if (!WriteToRegister(0xB0) ||
+            !WriteToValue((byte)((offset >> 8) & 0xFF)) ||
+            !WriteToValue((byte)(offset & 0xFF)))
+            return false;
+
+        return ReadFromValue(out value);
     }
 
-    public void Write(ushort offset, byte value)
+    public bool Write(ushort offset, byte value)
     {
-        WriteToRegister(0xB1);
-        WriteToValue((byte)((offset >> 8) & 0xFF));
-        WriteToValue((byte)(offset & 0xFF));
-        WriteToValue(value);
+        if (!WriteToRegister(0xB1) ||
+            !WriteToValue((byte)((offset >> 8) & 0xFF)) ||
+            !WriteToValue((byte)(offset & 0xFF)))
+            return false;
+
+        return WriteToValue(value);
     }
 
-    private void WriteToRegister(byte value)
+    private bool WriteToRegister(byte value)
     {
         if (!WaitIBE())
-            return;
+            return false;
         Ring0.WriteIoPort(RegisterPort, value);
-        WaitIBE();
+        return WaitIBE();
     }
 
-    private void WriteToValue(byte value)
+    private bool WriteToValue(byte value)
     {
         if (!WaitIBE())
-            return;
+            return false;
         Ring0.WriteIoPort(ValuePort, value);
-        WaitIBE();
+        return WaitIBE();
     }
 
-    private byte ReadFromValue()
+    private bool ReadFromValue(out byte value)
     {
+        value = 0;
         if (!WaitOBF())
-            return 0;
-        return Ring0.ReadIoPort(ValuePort);
+            return false;
+        value = Ring0.ReadIoPort(ValuePort);
+        return true;
     }
 
     private bool WaitIBE()
