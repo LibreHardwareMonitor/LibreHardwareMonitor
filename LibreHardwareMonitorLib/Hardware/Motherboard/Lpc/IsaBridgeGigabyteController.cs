@@ -17,7 +17,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 /// It can be accessed by using memory mapped IO, mapping its internal RAM onto main RAM via the ISA Bridge.
 /// This class can disable it so that the regular IT87XX code can drive the fans.
 /// </summary>
-internal class ISABridgeGigabyteController : IGigabyteController
+internal class IsaBridgeGigabyteController : IGigabyteController
 {
     private const uint ControllerAddressRange = 0xFF;
     private const int ControllerEnableRegister = 0x47;
@@ -32,7 +32,7 @@ internal class ISABridgeGigabyteController : IGigabyteController
 
     private bool? _initialState;
 
-    public ISABridgeGigabyteController(uint address, Vendor vendor)
+    public IsaBridgeGigabyteController(uint address, Vendor vendor)
     {
         _controllerBaseAddress = address;
         _vendor = vendor;

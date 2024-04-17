@@ -9,9 +9,9 @@ using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
-internal class IT879xECIOPort
+internal class IT879xEcioPort
 {
-    public IT879xECIOPort(ushort registerPort, ushort valuePort)
+    public IT879xEcioPort(ushort registerPort, ushort valuePort)
     {
         RegisterPort = registerPort;
         ValuePort = valuePort;

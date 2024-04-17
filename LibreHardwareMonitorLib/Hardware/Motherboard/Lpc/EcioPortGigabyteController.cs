@@ -9,36 +9,38 @@ using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
-internal class ECIOPortGigabyteController : IGigabyteController
+internal class EcioPortGigabyteController : IGigabyteController
 {
-    private const ushort CONTROLLER_VERSION_OFFSET = 0x00;
-    private const ushort CONTROLLER_ENABLE_OFFSET = 0x47;
-    private const ushort CONTROLLER_FUNCTION_OFFSET = 0x900;
-    private const ushort ECIO_REGISTER_PORT = 0x3F4;
-    private const ushort ECIO_VALUE_PORT = 0x3F0;
+    private const ushort ControllerVersionOffset = 0x00;
+    private const ushort ControllerEnableRegister = 0x47;
+    private const ushort ControllerFanControlArea = 0x900;
 
-    private IT879xECIOPort _port;
+    private const ushort EcioRegisterPort = 0x3F4;
+    private const ushort EcioValuePort = 0x3F0;
+
+    private readonly IT879xEcioPort _port;
+
     private bool? _initialState;
 
-    private ECIOPortGigabyteController(IT879xECIOPort port)
+    private EcioPortGigabyteController(IT879xEcioPort port)
     {
         _port = port;
     }
 
-    public static ECIOPortGigabyteController TryCreate()
+    public static EcioPortGigabyteController TryCreate()
     {
-        IT879xECIOPort port = new IT879xECIOPort(ECIO_REGISTER_PORT, ECIO_VALUE_PORT);
+        IT879xEcioPort port = new(EcioRegisterPort, EcioValuePort);
 
         // Check compatibility by querying its version.
-        if (!port.Read(CONTROLLER_FUNCTION_OFFSET + CONTROLLER_VERSION_OFFSET, out byte majorVersion) || majorVersion != 1)
+        if (!port.Read(ControllerFanControlArea + ControllerVersionOffset, out byte majorVersion) || majorVersion != 1)
             return null;
 
-        return new ECIOPortGigabyteController(port);
+        return new EcioPortGigabyteController(port);
     }
 
     public bool Enable(bool enabled)
     {
-        ushort offset = CONTROLLER_FUNCTION_OFFSET + CONTROLLER_ENABLE_OFFSET;
+        ushort offset = ControllerFanControlArea + ControllerEnableRegister;
 
         if (!_port.Read(offset, out byte bCurrent))
             return false;
