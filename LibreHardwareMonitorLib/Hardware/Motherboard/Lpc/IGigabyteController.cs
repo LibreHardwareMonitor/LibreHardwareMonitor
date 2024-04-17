@@ -8,7 +8,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal interface IGigabyteController
 {
-    public bool Enable(bool enabled);
+    bool Enable(bool enabled);
 
-    public void Restore();
+    void Restore();
 }
