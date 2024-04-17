@@ -659,7 +659,11 @@ internal class LpcIO
 
         // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
         if (chip == Chip.IT8792E && vendor == Vendor.AMD)
-            return new ECIOPortGigabyteController();
+        {
+            gigabyteController = ECIOPortGigabyteController.TryCreate();
+            if (gigabyteController != null)
+                return gigabyteController;
+        }
 
         return null;
 
