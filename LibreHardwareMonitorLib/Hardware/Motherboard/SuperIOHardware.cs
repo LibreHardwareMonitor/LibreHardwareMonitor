@@ -3028,6 +3028,74 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 2));
                         break;
 
+                    case Model.X570_Phantom_Gaming_4: // NCT6796D (-R?)
+                        // internal on NCT6796D have a 1/2 voltage divider (by way of two 34kOhm resistors)
+                        // "Six internal signals connected to the power supplies (CPUVCORE, AVSB, VBAT, VTT, 3VSB, 3VCC)"
+                        // "All the internal inputs of the ADC, AVSB, VBAT, 3VSB, 3VCC utilize an integrated voltage divider
+                        //  with both resistors equal to 34kOhm"
+                        // it seems that VTT doesn't actually have the 1/2 divider
+
+                        // external sources can have whatever divider that gets them in the 0V to 2.048V range
+
+                        // assuming Vf = 0, then Ri = R1 and Rf = R2 (from voltage divider equation)
+
+                        v.Add(new Voltage("CPUVCORE", 0, 1, 1));
+                        v.Add(new Voltage("+5V", 1, 2, 1));
+                        v.Add(new Voltage("AVSB", 2, 1, 1));
+                        v.Add(new Voltage("3VCC", 3, 1, 1));
+                        v.Add(new Voltage("+12V", 4, 56, 10));
+                        v.Add(new Voltage("VDDCR_SOC", 5));
+                        v.Add(new Voltage("DRAM", 6));
+                        v.Add(new Voltage("3VSB", 7, 1, 1));
+                        v.Add(new Voltage("VBAT", 8, 1, 1));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("VIN5", 10, true)); // unknown
+                        v.Add(new Voltage("VPPM", 11, 3, 1));
+                        v.Add(new Voltage("PREM_VDDCR_SOC", 12));
+                        v.Add(new Voltage("VDDP", 13));
+                        v.Add(new Voltage("CPU VDD 1.8V", 14, 1, 1));
+                        v.Add(new Voltage("VIN9", 15, true)); // unknown
+
+                        t.Add(new Temperature("CPU", 9)); // AKA SMBUSMASTER0
+                        t.Add(new Temperature("SB", 10)); // AKA SMBUSMASTER1
+                        t.Add(new Temperature("Motherboard", 2)); // AKA SYSTIN
+
+                        // no idea what these sources are actually connected to.
+                        //t.Add(new Temperature("CPUTIN", 1));
+                        //t.Add(new Temperature("AUXTIN0", 3));
+                        //t.Add(new Temperature("AUXTIN1", 4));
+                        //t.Add(new Temperature("AUXTIN2", 5));
+                        //t.Add(new Temperature("AUXTIN3", 6));
+                        //t.Add(new Temperature("AUXTIN4", 7));
+                        //t.Add(new Temperature("TSENSOR", 8));
+                        //t.Add(new Temperature("VIRTUAL_TEMP", 24));
+
+                        f.Add(new Fan("CHA_FAN3", 0));
+                        c.Add(new Control("CHA_FAN3", 0));
+
+                        f.Add(new Fan("CPU_FAN1", 1));
+                        c.Add(new Control("CPU_FAN1", 1));
+
+                        f.Add(new Fan("CPU_FAN2/WP", 2));
+                        c.Add(new Control("CPU_FAN2/WP", 2));
+
+                        f.Add(new Fan("CHA_FAN1/WP", 3));
+                        c.Add(new Control("CHA_FAN1/WP", 3));
+
+                        f.Add(new Fan("CHA_FAN2/WP", 4));
+                        c.Add(new Control("CHA_FAN2/WP", 4));
+
+                        f.Add(new Fan("SB_FAN1", 5));
+                        c.Add(new Control("SB_FAN1", 5));
+
+                        // fan/control 6 is not exposed to a header
+                        //f.Add(new Fan("Fan #7", 6));
+                        //c.Add(new Control("Fan #7", 6));
+
+                       
+
+                        break;
+
                     case Model.Z790_Taichi:
                         v.Add(new Voltage("CPU 1.8V", 0));
                         v.Add(new Voltage("Chipset 0.82V", 1));
