@@ -34,6 +34,7 @@ public enum Model
     X570_Pro4,
     X570_Taichi,
     X570_Phantom_Gaming_ITX,
+    X570_Phantom_Gaming_4,
     Z790_Taichi,
 
     // ASUS
