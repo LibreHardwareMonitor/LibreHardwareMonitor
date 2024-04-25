@@ -33,7 +33,9 @@ internal class EcioPortGigabyteController : IGigabyteController
 
         // Check compatibility by querying its version.
         if (!port.Read(ControllerFanControlArea + ControllerVersionOffset, out byte majorVersion) || majorVersion != 1)
+        {
             return null;
+        }
 
         return new EcioPortGigabyteController(port);
     }
@@ -43,7 +45,9 @@ internal class EcioPortGigabyteController : IGigabyteController
         ushort offset = ControllerFanControlArea + ControllerEnableRegister;
 
         if (!_port.Read(offset, out byte bCurrent))
+        {
             return false;
+        }
 
         bool current = Convert.ToBoolean(bCurrent);
 
@@ -51,8 +55,10 @@ internal class EcioPortGigabyteController : IGigabyteController
         
         if (current != enabled)
         {
-            if (!_port.Write(offset, (byte)(enabled ? 1 : 0)))
+            if (!_port.Write(offset, Convert.ToByte(enabled)))
+            {
                 return false;
+            }
 
             // Allow the system to catch up.
             Thread.Sleep(250);
@@ -64,6 +70,8 @@ internal class EcioPortGigabyteController : IGigabyteController
     public void Restore()
     {
         if (_initialState.HasValue)
+        {
             Enable(_initialState.Value);
+        }
     }
 }

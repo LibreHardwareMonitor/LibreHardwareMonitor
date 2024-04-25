@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -23,30 +23,52 @@ internal class IT879xEcioPort
 
     public bool Read(ushort offset, out byte value)
     {
-        value = 0;
-
-        if (!WriteToRegister(0xB0) ||
-            !WriteToValue((byte)((offset >> 8) & 0xFF)) ||
-            !WriteToValue((byte)(offset & 0xFF)))
+        if (!Init(0xB0, offset))
+        {
+            value = 0;
             return false;
+        }
 
         return ReadFromValue(out value);
     }
 
     public bool Write(ushort offset, byte value)
     {
-        if (!WriteToRegister(0xB1) ||
-            !WriteToValue((byte)((offset >> 8) & 0xFF)) ||
-            !WriteToValue((byte)(offset & 0xFF)))
+        if (!Init(0xB1, offset))
+        {
             return false;
+        }
 
         return WriteToValue(value);
+    }
+
+    private bool Init(byte command, ushort offset)
+    {
+        if (!WriteToRegister(command))
+        {
+            return false;
+        }
+
+        if (!WriteToValue((byte)((offset >> 8) & 0xFF)))
+        {
+            return false;
+        }
+
+        if (!WriteToValue((byte)(offset & 0xFF)))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private bool WriteToRegister(byte value)
     {
         if (!WaitIBE())
+        {
             return false;
+        }
+
         Ring0.WriteIoPort(RegisterPort, value);
         return WaitIBE();
     }
@@ -54,16 +76,22 @@ internal class IT879xEcioPort
     private bool WriteToValue(byte value)
     {
         if (!WaitIBE())
+        {
             return false;
+        }
+
         Ring0.WriteIoPort(ValuePort, value);
         return WaitIBE();
     }
 
     private bool ReadFromValue(out byte value)
     {
-        value = 0;
         if (!WaitOBF())
+        {
+            value = 0;
             return false;
+        }
+
         value = Ring0.ReadIoPort(ValuePort);
         return true;
     }
@@ -76,7 +104,9 @@ internal class IT879xEcioPort
             while ((Ring0.ReadIoPort(RegisterPort) & 2) != 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
+                {
                     return false;
+                }
 
                 Thread.Sleep(1);
             }
@@ -96,7 +126,9 @@ internal class IT879xEcioPort
             while ((Ring0.ReadIoPort(RegisterPort) & 1) == 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
+                {
                     return false;
+                }
 
                 Thread.Sleep(1);
             }
