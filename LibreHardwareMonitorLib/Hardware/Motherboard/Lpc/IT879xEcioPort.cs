@@ -69,7 +69,7 @@ internal class IT879xEcioPort
         }
 
         Ring0.WriteIoPort(RegisterPort, value);
-        return WaitIBE();
+        return true;
     }
 
     private bool WriteToValue(byte value)
@@ -80,7 +80,7 @@ internal class IT879xEcioPort
         }
 
         Ring0.WriteIoPort(ValuePort, value);
-        return WaitIBE();
+        return true;
     }
 
     private bool ReadFromValue(out byte value)
