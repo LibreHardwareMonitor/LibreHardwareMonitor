@@ -169,6 +169,7 @@ internal sealed class AmdGpu : GenericGpu
             _adlPMLogSupportInfo = new();
             _adlPMLogStartOutput = new AtiAdlxx.ADLPMLogStartOutput();
             _adlPMLogStartInput.usSensors = new ushort[AtiAdlxx.ADL_PMLOG_MAX_SENSORS];
+            
             if (_device == 0 &&
                 AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, _adapterInfo.AdapterIndex, ref _device) &&
                 AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context, _adapterInfo.AdapterIndex, ref _adlPMLogSupportInfo))
@@ -187,8 +188,7 @@ internal sealed class AmdGpu : GenericGpu
                                                       adapterInfo.AdapterIndex,
                                                       ref _adlPMLogStartInput,
                                                       ref _adlPMLogStartOutput,
-                                                      _device) ==
-                    AtiAdlxx.ADLStatus.ADL_OK)
+                                                      _device) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     _pmLogStarted = true;
                 }
@@ -394,8 +394,7 @@ internal sealed class AmdGpu : GenericGpu
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_INFO_ACTIVITY_GFX, _coreLoad, reset: false);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_INFO_ACTIVITY_MEM, _memoryLoad);
 
-            if (_adlGcnInfo.ASICFamilyId >= (int)AtiAdlxx.GCNFamilies.FAMILY_NV3 ||
-                !GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_ASIC_POWER, _powerTotal, reset: false))
+            if (_adlGcnInfo.ASICFamilyId >= (int)AtiAdlxx.GCNFamilies.FAMILY_NV3 || !GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_ASIC_POWER, _powerTotal, reset: false))
             {
                 GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_BOARD_POWER, _powerTotal, reset: false);
             }
@@ -407,7 +406,8 @@ internal sealed class AmdGpu : GenericGpu
 
     private bool IsSensorSupportedByPMLog(AtiAdlxx.ADLPMLogSensors sensorType)
     {
-        if (!_pmLogStarted || (int)sensorType == 0) return false;
+        if (!_pmLogStarted || (int)sensorType == 0) 
+            return false;
 
         for (int i = 0; i < AtiAdlxx.ADL_PMLOG_MAX_SENSORS; i++)
         {
@@ -440,7 +440,9 @@ internal sealed class AmdGpu : GenericGpu
 
         if (!supportedByPMLog && !supportedByOD8)
         {
-            if (reset) sensor.Value = null;
+            if (reset) 
+                sensor.Value = null;
+
             return false;
         }
 
@@ -891,7 +893,9 @@ internal sealed class AmdGpu : GenericGpu
                 foreach (AtiAdlxx.ADLPMLogSensors sensorType in Enum.GetValues(typeof(AtiAdlxx.ADLPMLogSensors)))
                 {
                     int i = (int)sensorType;
-                    if (i == 0) continue;
+                    if (i == 0) 
+                        continue;
+
                     bool supported = false;
 
                     string st = ((AtiAdlxx.ADLPMLogSensors)i).ToString();
