@@ -186,6 +186,10 @@ internal static class AtiAdlxx
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Device_PMLog_Device_Destroy(IntPtr context, uint device);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_GcnAsicInfo_Get(IntPtr context, int adapterIndex, ref ADLGcnInfo gcnInfo);
+
     public static bool ADL_Method_Exists(string ADL_Method)
     {
         IntPtr module = Kernel32.LoadLibrary(DllName);
@@ -534,51 +538,6 @@ internal static class AtiAdlxx
         public ADLSingleSensorData[] sensors;
     }
 
-    internal enum ADLSensorType
-    {
-        SENSOR_MAXTYPES = 0,
-        PMLOG_CLK_GFXCLK = 1,
-        PMLOG_CLK_MEMCLK = 2,
-        PMLOG_CLK_SOCCLK = 3,
-        PMLOG_CLK_UVDCLK1 = 4,
-        PMLOG_CLK_UVDCLK2 = 5,
-        PMLOG_CLK_VCECLK = 6,
-        PMLOG_CLK_VCNCLK = 7,
-        PMLOG_TEMPERATURE_EDGE = 8,
-        PMLOG_TEMPERATURE_MEM = 9,
-        PMLOG_TEMPERATURE_VRVDDC = 10,
-        PMLOG_TEMPERATURE_VRMVDD = 11,
-        PMLOG_TEMPERATURE_LIQUID = 12,
-        PMLOG_TEMPERATURE_PLX = 13,
-        PMLOG_FAN_RPM = 14,
-        PMLOG_FAN_PERCENTAGE = 15,
-        PMLOG_SOC_VOLTAGE = 16,
-        PMLOG_SOC_POWER = 17,
-        PMLOG_SOC_CURRENT = 18,
-        PMLOG_INFO_ACTIVITY_GFX = 19,
-        PMLOG_INFO_ACTIVITY_MEM = 20,
-        PMLOG_GFX_VOLTAGE = 21,
-        PMLOG_MEM_VOLTAGE = 22,
-        PMLOG_ASIC_POWER = 23,
-        PMLOG_TEMPERATURE_VRSOC = 24,
-        PMLOG_TEMPERATURE_VRMVDD0 = 25,
-        PMLOG_TEMPERATURE_VRMVDD1 = 26,
-        PMLOG_TEMPERATURE_HOTSPOT = 27,
-        PMLOG_TEMPERATURE_GFX = 28,
-        PMLOG_TEMPERATURE_SOC = 29,
-        PMLOG_GFX_POWER = 30,
-        PMLOG_GFX_CURRENT = 31,
-        PMLOG_TEMPERATURE_CPU = 32,
-        PMLOG_CPU_POWER = 33,
-        PMLOG_CLK_CPUCLK = 34,
-        PMLOG_THROTTLER_STATUS = 35,
-        PMLOG_CLK_VCN1CLK1 = 36,
-        PMLOG_CLK_VCN1CLK2 = 37,
-        PMLOG_SMART_POWERSHIFT_CPU = 38,
-        PMLOG_SMART_POWERSHIFT_DGPU = 39,
-        PMLOG_MAX_SENSORS_REAL
-    }
-
     internal enum ADLPMLogSensors
     {
         ADL_SENSOR_MAXTYPES             = 0,
@@ -658,6 +617,27 @@ internal static class AtiAdlxx
         ADL_PMLOG_MAX_SENSORS_REAL
     }
 
+    internal enum GCNFamilies
+    {
+        FAMILY_UNKNOWN = 0,
+        FAMILY_TN = 105, // Trinity APUs
+        FAMILY_SI = 110, // Southern Islands: Tahiti, Pitcairn, CapeVerde, Oland, Hainan
+        FAMILY_CI = 120, // Sea Islands: Bonaire, Hawaii
+        FAMILY_KV = 125, // Kaveri, Kabini, Mullins
+        FAMILY_VI = 130, // Volcanic Islands: Iceland, Tonga, Fiji
+        FAMILY_CZ = 135, // Carrizo APUs: Carrizo, Stoney
+        FAMILY_AI = 141, // Vega: 10, 20
+        FAMILY_RV = 142, // Raven (Vega GCN 5.0)
+        FAMILY_NV = 143, // Navi10, Navi2x
+        FAMILY_VGH = 144, // Van Gogh (RDNA 2.0)
+        FAMILY_NV3 = 145, // Navi: 3x (GC 11.0.0, RDNA 3.0)
+        FAMILY_YC = 146, // Rembrandt (Yellow Carp, RDNA 2.0)
+        FAMILY_GC_11_0_1 = 148, // Phoenix (GC 11.0.1, RDNA 3.0)
+        FAMILY_GC_10_3_6 = 149, // Raphael (GC 10.3.6, RDNA 2.0)
+        FAMILY_GC_11_5_0 = 150, // GC 11.5.0
+        FAMILY_GC_10_3_7 = 151, // Mendocino (GC 10.3.7, RDNA 2.0)
+    }
+
     //Structure containing information related power management logging.
     [StructLayout(LayoutKind.Sequential)]
     internal struct ADLPMLogSupportInfo
@@ -716,5 +696,19 @@ internal static class AtiAdlxx
         /// Reserved
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
         public uint[] ulReserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLGcnInfo
+    {
+        public int CuCount; //Number of compute units on the ASIC.
+        public int TexCount; //Number of texture mapping units.
+        public int RopCount; //Number of Render backend Units.
+
+        // see GCNFamilies enum, references:
+        //        https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/amd/addrlib/src/amdgpu_asic_addr.h
+        //        https://github.com/torvalds/linux/blob/master/include/uapi/drm/amdgpu_drm.h
+        public int ASICFamilyId;
+        public int ASICRevisionId;
     }
 }
