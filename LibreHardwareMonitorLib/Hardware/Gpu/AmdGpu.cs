@@ -58,9 +58,11 @@ internal sealed class AmdGpu : GenericGpu
     private readonly ushort _pmLogSampleRate = 1000;
     private bool _overdrive8LogExists;
 
-    public AmdGpu(AtiAdlxx.ADLAdapterInfo adapterInfo, ISettings settings)
+    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
         : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
+        _context = amdContext;
+        _adlGcnInfo = gcnInfo;
         _adapterInfo = adapterInfo;
         BusNumber = adapterInfo.BusNumber;
         DeviceNumber = adapterInfo.DeviceNumber;
@@ -137,13 +139,6 @@ internal sealed class AmdGpu : GenericGpu
         int supported = 0;
         int enabled = 0;
         int version = 0;
-        _adlGcnInfo = new();
-
-        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Main_Control_Create)) &&
-            AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, _adapterInfo.AdapterIndex, ref _context) != AtiAdlxx.ADLStatus.ADL_OK)
-        {
-            _context = IntPtr.Zero;
-        }
 
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) &&
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK &&
@@ -155,12 +150,7 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_fullscreenFps);
         }
 
-        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_GcnAsicInfo_Get)))
-        {
-            AtiAdlxx.ADL2_GcnAsicInfo_Get(_context, _adapterInfo.AdapterIndex, ref _adlGcnInfo);
-        }
-
-        if (_adlGcnInfo.ASICFamilyId >= (int)AtiAdlxx.GCNFamilies.FAMILY_AI &&
+        if (AtiAdlxx.UsePmLogForFamily(_adlGcnInfo.ASICFamilyId) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Start)))
@@ -169,7 +159,7 @@ internal sealed class AmdGpu : GenericGpu
             _adlPMLogSupportInfo = new();
             _adlPMLogStartOutput = new AtiAdlxx.ADLPMLogStartOutput();
             _adlPMLogStartInput.usSensors = new ushort[AtiAdlxx.ADL_PMLOG_MAX_SENSORS];
-            
+
             if (_device == 0 &&
                 AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, _adapterInfo.AdapterIndex, ref _device) &&
                 AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context, _adapterInfo.AdapterIndex, ref _adlPMLogSupportInfo))
@@ -406,7 +396,7 @@ internal sealed class AmdGpu : GenericGpu
 
     private bool IsSensorSupportedByPMLog(AtiAdlxx.ADLPMLogSensors sensorType)
     {
-        if (!_pmLogStarted || (int)sensorType == 0) 
+        if (!_pmLogStarted || (int)sensorType == 0)
             return false;
 
         for (int i = 0; i < AtiAdlxx.ADL_PMLOG_MAX_SENSORS; i++)
@@ -440,7 +430,7 @@ internal sealed class AmdGpu : GenericGpu
 
         if (!supportedByPMLog && !supportedByOD8)
         {
-            if (reset) 
+            if (reset)
                 sensor.Value = null;
 
             return false;
@@ -641,9 +631,6 @@ internal sealed class AmdGpu : GenericGpu
         {
             AtiAdlxx.ADL2_Device_PMLog_Device_Destroy(_context, _device);
         }
-
-        if (_context != IntPtr.Zero)
-            AtiAdlxx.ADL2_Main_Control_Destroy(_context);
 
         base.Close();
     }
@@ -893,7 +880,7 @@ internal sealed class AmdGpu : GenericGpu
                 foreach (AtiAdlxx.ADLPMLogSensors sensorType in Enum.GetValues(typeof(AtiAdlxx.ADLPMLogSensors)))
                 {
                     int i = (int)sensorType;
-                    if (i == 0) 
+                    if (i == 0)
                         continue;
 
                     bool supported = false;
