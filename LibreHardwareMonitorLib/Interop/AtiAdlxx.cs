@@ -170,6 +170,14 @@ internal static class AtiAdlxx
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_Active_Get(IntPtr context, int adapterIndex, out int status);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_DedicatedVRAMUsage_Get(IntPtr context, int adapterIndex, out int iVRAMUsageInMB);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_MemoryInfoX4_Get(IntPtr context, int adapterIndex, out ADLMemoryInfoX4 memoryInfo);
+
     public static bool ADL_Method_Exists(string ADL_Method)
     {
         IntPtr module = Kernel32.LoadLibrary(DllName);
@@ -689,5 +697,29 @@ internal static class AtiAdlxx
         //        https://github.com/torvalds/linux/blob/master/include/uapi/drm/amdgpu_drm.h
         public int ASICFamilyId;
         public int ASICRevisionId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLMemoryInfoX4
+    {
+        /// Memory size in bytes.
+        public long iMemorySize;
+        /// Memory type in string.
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL_MAX_PATH)]
+        public string strMemoryType;
+        /// Highest default performance level Memory bandwidth in Mbytes/s
+        public long iMemoryBandwidth;
+        /// HyperMemory size in bytes.
+        public long iHyperMemorySize;
+        /// Invisible Memory size in bytes.
+        public long iInvisibleMemorySize;
+        /// Visible Memory size in bytes.
+        public long iVisibleMemorySize;
+        /// Vram vendor ID
+        public long iVramVendorRevId;
+        /// Memory Bandiwidth that is calculated and finalized on the driver side, grab and go.
+        public long iMemoryBandwidthX2;
+        /// Memory Bit Rate that is calculated and finalized on the driver side, grab and go.
+        public long iMemoryBitRateX2;
     }
 }
