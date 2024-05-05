@@ -503,6 +503,9 @@ internal sealed class AmdGpu : GenericGpu
             {
                 for (int k = 0; k < adlPMLogData.ulValues.Length - 1; k += 2)
                 {
+                    if (adlPMLogData.ulValues[k] == (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES)
+                        break;
+
                     if (adlPMLogData.ulValues[k] == i)
                     {
                         sensor.Value = adlPMLogData.ulValues[k + 1] * factor;
@@ -935,6 +938,9 @@ internal sealed class AmdGpu : GenericGpu
                     {
                         for (int k = 0; k < adlPMLogData.ulValues.Length - 1; k += 2)
                         {
+                            if (adlPMLogData.ulValues[k] == (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES)
+                                break;
+
                             if (adlPMLogData.ulValues[k] == i)
                             {
                                 r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st, adlPMLogData.ulValues[k + 1], Environment.NewLine);
