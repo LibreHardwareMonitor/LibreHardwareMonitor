@@ -52,38 +52,6 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Main_Control_Destroy();
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get();
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_ID_Get(int adapterIndex, out int adapterId);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Display_AdapterID_Get(int adapterIndex, out int adapterId);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_Active_Get(int adapterIndex, out int status);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL_Overdrive5_ODParameters_Get(int adapterIndex, out ADLODParameters parameters);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -144,10 +112,6 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Graphics_Versions_Get(out ADLVersionsInfo versionInfo);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_FrameMetrics_Caps(IntPtr context, int adapterIndex, ref int supported);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -190,6 +154,30 @@ internal static class AtiAdlxx
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_GcnAsicInfo_Get(IntPtr context, int adapterIndex, ref ADLGcnInfo gcnInfo);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_NumberOfAdapters_Get(IntPtr context, ref int numAdapters);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_AdapterInfo_Get(IntPtr context, IntPtr adapterInfo, int size);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_ID_Get(IntPtr context, int adapterIndex, out int adapterId);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_Active_Get(IntPtr context, int adapterIndex, out int status);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_DedicatedVRAMUsage_Get(IntPtr context, int adapterIndex, out int iVRAMUsageInMB);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_MemoryInfoX4_Get(IntPtr context, int adapterIndex, out ADLMemoryInfoX4 memoryInfo);
+
     public static bool ADL_Method_Exists(string ADL_Method)
     {
         IntPtr module = Kernel32.LoadLibrary(DllName);
@@ -203,11 +191,11 @@ internal static class AtiAdlxx
         return false;
     }
 
-    public static ADLStatus ADL_Main_Control_Create(int enumConnectedAdapters)
+    public static ADLStatus ADL2_Main_Control_Create(IntPtr context, int enumConnectedAdapters)
     {
         try
         {
-            return ADL_Method_Exists(nameof(ADL_Main_Control_Create)) ? ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters) : ADLStatus.ADL_ERR;
+            return ADL_Method_Exists(nameof(ADL2_Main_Control_Create)) ? ADL2_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters, ref context) : ADLStatus.ADL_ERR;
         }
         catch
         {
@@ -215,12 +203,12 @@ internal static class AtiAdlxx
         }
     }
 
-    public static ADLStatus ADL_Adapter_AdapterInfo_Get(ADLAdapterInfo[] info)
+    public static ADLStatus ADL2_Adapter_AdapterInfo_Get(ref IntPtr context, ADLAdapterInfo[] info)
     {
         int elementSize = Marshal.SizeOf(typeof(ADLAdapterInfo));
         int size = info.Length * elementSize;
         IntPtr ptr = Marshal.AllocHGlobal(size);
-        ADLStatus result = ADL_Adapter_AdapterInfo_Get(ptr, size);
+        ADLStatus result = ADL2_Adapter_AdapterInfo_Get(context, ptr, size);
         for (int i = 0; i < info.Length; i++)
             info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + (i * elementSize)), typeof(ADLAdapterInfo));
 
@@ -249,10 +237,9 @@ internal static class AtiAdlxx
         return result;
     }
 
-    public static void Main_Memory_Free(IntPtr buffer)
+    public static bool UsePmLogForFamily(int familyId)
     {
-        if (IntPtr.Zero != buffer)
-            Marshal.FreeHGlobal(buffer);
+        return familyId >= (int)GCNFamilies.FAMILY_AI;
     }
 
     internal enum ADLStatus
@@ -710,5 +697,29 @@ internal static class AtiAdlxx
         //        https://github.com/torvalds/linux/blob/master/include/uapi/drm/amdgpu_drm.h
         public int ASICFamilyId;
         public int ASICRevisionId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLMemoryInfoX4
+    {
+        /// Memory size in bytes.
+        public long iMemorySize;
+        /// Memory type in string.
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL_MAX_PATH)]
+        public string strMemoryType;
+        /// Highest default performance level Memory bandwidth in Mbytes/s
+        public long iMemoryBandwidth;
+        /// HyperMemory size in bytes.
+        public long iHyperMemorySize;
+        /// Invisible Memory size in bytes.
+        public long iInvisibleMemorySize;
+        /// Visible Memory size in bytes.
+        public long iVisibleMemorySize;
+        /// Vram vendor ID
+        public long iVramVendorRevId;
+        /// Memory Bandiwidth that is calculated and finalized on the driver side, grab and go.
+        public long iMemoryBandwidthX2;
+        /// Memory Bit Rate that is calculated and finalized on the driver side, grab and go.
+        public long iMemoryBitRateX2;
     }
 }

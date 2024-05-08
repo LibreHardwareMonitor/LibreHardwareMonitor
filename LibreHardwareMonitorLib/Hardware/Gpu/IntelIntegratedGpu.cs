@@ -11,6 +11,8 @@ internal class IntelIntegratedGpu : GenericGpu
     private const uint MSR_RAPL_POWER_UNIT = 0x606;
 
     private readonly Sensor _dedicatedMemoryUsage;
+    private readonly Sensor _sharedMemoryLimit;
+    private readonly Sensor _sharedMemoryFree;
     private readonly string _deviceId;
     private readonly float _energyUnitMultiplier;
     private readonly Sensor[] _nodeUsage;
@@ -37,6 +39,12 @@ internal class IntelIntegratedGpu : GenericGpu
         }
 
         _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+
+        if (deviceInfo.GpuSharedLimit > 0)
+        {
+            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
+            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
+        }
 
         if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint _))
         {
@@ -76,6 +84,17 @@ internal class IntelIntegratedGpu : GenericGpu
             {
                 _dedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
                 ActivateSensor(_dedicatedMemoryUsage);
+            }
+
+            if (_sharedMemoryLimit != null)
+            {
+                _sharedMemoryLimit.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024;
+                ActivateSensor(_sharedMemoryLimit);
+                if (_sharedMemoryUsage != null)
+                {
+                    _sharedMemoryFree.Value = _sharedMemoryLimit.Value - _sharedMemoryUsage.Value;
+                    ActivateSensor(_sharedMemoryFree);
+                }
             }
 
             _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
