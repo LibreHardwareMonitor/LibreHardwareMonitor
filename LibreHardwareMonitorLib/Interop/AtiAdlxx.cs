@@ -24,7 +24,6 @@ internal static class AtiAdlxx
     public const int ADL_DL_FANCTRL_SUPPORTS_RPM_WRITE = 8;
 
     public const int ADL_DRIVER_OK = 0;
-
     public const int ADL_FALSE = 0;
 
     public const int ADL_MAX_ADAPTERS = 40;
@@ -50,38 +49,6 @@ internal static class AtiAdlxx
     public delegate IntPtr ADL_Main_Memory_AllocDelegate(int size);
 
     public delegate IntPtr Context(int size);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Main_Control_Create(ADL_Main_Memory_AllocDelegate callback, int enumConnectedAdapters);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Main_Control_Destroy();
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_AdapterInfo_Get(IntPtr info, int size);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get();
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_NumberOfAdapters_Get(ref int numAdapters);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_ID_Get(int adapterIndex, out int adapterId);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Display_AdapterID_Get(int adapterIndex, out int adapterId);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Adapter_Active_Get(int adapterIndex, out int status);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -145,10 +112,6 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Graphics_Versions_Get(out ADLVersionsInfo versionInfo);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_FrameMetrics_Caps(IntPtr context, int adapterIndex, ref int supported);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -163,6 +126,58 @@ internal static class AtiAdlxx
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_FrameMetrics_Stop(IntPtr context, int adapterIndex, int displayIndex);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_PMLog_Support_Get(IntPtr context, int adapterIndex,
+                                                                  ref ADLPMLogSupportInfo pPMLogSupportInfo);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_PMLog_Start(IntPtr context, int adapterIndex,
+                                                            ref ADLPMLogStartInput pPMLogStartInput,
+                                                            ref ADLPMLogStartOutput pPMLogStartOutput,
+                                                            uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_PMLog_Stop(IntPtr context, int adapterIndex, uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Device_PMLog_Device_Create(IntPtr context, int adapterIndex, ref uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Device_PMLog_Device_Destroy(IntPtr context, uint device);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_GcnAsicInfo_Get(IntPtr context, int adapterIndex, ref ADLGcnInfo gcnInfo);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_NumberOfAdapters_Get(IntPtr context, ref int numAdapters);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_AdapterInfo_Get(IntPtr context, IntPtr adapterInfo, int size);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_ID_Get(IntPtr context, int adapterIndex, out int adapterId);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_Active_Get(IntPtr context, int adapterIndex, out int status);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_DedicatedVRAMUsage_Get(IntPtr context, int adapterIndex, out int iVRAMUsageInMB);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern ADLStatus ADL2_Adapter_MemoryInfoX4_Get(IntPtr context, int adapterIndex, out ADLMemoryInfoX4 memoryInfo);
+
     public static bool ADL_Method_Exists(string ADL_Method)
     {
         IntPtr module = Kernel32.LoadLibrary(DllName);
@@ -176,11 +191,11 @@ internal static class AtiAdlxx
         return false;
     }
 
-    public static ADLStatus ADL_Main_Control_Create(int enumConnectedAdapters)
+    public static ADLStatus ADL2_Main_Control_Create(IntPtr context, int enumConnectedAdapters)
     {
         try
         {
-            return ADL_Method_Exists(nameof(ADL_Main_Control_Create)) ? ADL_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters) : ADLStatus.ADL_ERR;
+            return ADL_Method_Exists(nameof(ADL2_Main_Control_Create)) ? ADL2_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters, ref context) : ADLStatus.ADL_ERR;
         }
         catch
         {
@@ -188,12 +203,12 @@ internal static class AtiAdlxx
         }
     }
 
-    public static ADLStatus ADL_Adapter_AdapterInfo_Get(ADLAdapterInfo[] info)
+    public static ADLStatus ADL2_Adapter_AdapterInfo_Get(ref IntPtr context, ADLAdapterInfo[] info)
     {
         int elementSize = Marshal.SizeOf(typeof(ADLAdapterInfo));
         int size = info.Length * elementSize;
         IntPtr ptr = Marshal.AllocHGlobal(size);
-        ADLStatus result = ADL_Adapter_AdapterInfo_Get(ptr, size);
+        ADLStatus result = ADL2_Adapter_AdapterInfo_Get(context, ptr, size);
         for (int i = 0; i < info.Length; i++)
             info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + (i * elementSize)), typeof(ADLAdapterInfo));
 
@@ -222,10 +237,9 @@ internal static class AtiAdlxx
         return result;
     }
 
-    public static void Main_Memory_Free(IntPtr buffer)
+    public static bool UsePmLogForFamily(int familyId)
     {
-        if (IntPtr.Zero != buffer)
-            Marshal.FreeHGlobal(buffer);
+        return familyId >= (int)GCNFamilies.FAMILY_AI;
     }
 
     internal enum ADLStatus
@@ -511,49 +525,201 @@ internal static class AtiAdlxx
         public ADLSingleSensorData[] sensors;
     }
 
-    internal enum ADLSensorType
+    internal enum ADLPMLogSensors
     {
-        SENSOR_MAXTYPES = 0,
-        PMLOG_CLK_GFXCLK = 1,
-        PMLOG_CLK_MEMCLK = 2,
-        PMLOG_CLK_SOCCLK = 3,
-        PMLOG_CLK_UVDCLK1 = 4,
-        PMLOG_CLK_UVDCLK2 = 5,
-        PMLOG_CLK_VCECLK = 6,
-        PMLOG_CLK_VCNCLK = 7,
-        PMLOG_TEMPERATURE_EDGE = 8,
-        PMLOG_TEMPERATURE_MEM = 9,
-        PMLOG_TEMPERATURE_VRVDDC = 10,
-        PMLOG_TEMPERATURE_VRMVDD = 11,
-        PMLOG_TEMPERATURE_LIQUID = 12,
-        PMLOG_TEMPERATURE_PLX = 13,
-        PMLOG_FAN_RPM = 14,
-        PMLOG_FAN_PERCENTAGE = 15,
-        PMLOG_SOC_VOLTAGE = 16,
-        PMLOG_SOC_POWER = 17,
-        PMLOG_SOC_CURRENT = 18,
-        PMLOG_INFO_ACTIVITY_GFX = 19,
-        PMLOG_INFO_ACTIVITY_MEM = 20,
-        PMLOG_GFX_VOLTAGE = 21,
-        PMLOG_MEM_VOLTAGE = 22,
-        PMLOG_ASIC_POWER = 23,
-        PMLOG_TEMPERATURE_VRSOC = 24,
-        PMLOG_TEMPERATURE_VRMVDD0 = 25,
-        PMLOG_TEMPERATURE_VRMVDD1 = 26,
-        PMLOG_TEMPERATURE_HOTSPOT = 27,
-        PMLOG_TEMPERATURE_GFX = 28,
-        PMLOG_TEMPERATURE_SOC = 29,
-        PMLOG_GFX_POWER = 30,
-        PMLOG_GFX_CURRENT = 31,
-        PMLOG_TEMPERATURE_CPU = 32,
-        PMLOG_CPU_POWER = 33,
-        PMLOG_CLK_CPUCLK = 34,
-        PMLOG_THROTTLER_STATUS = 35,
-        PMLOG_CLK_VCN1CLK1 = 36,
-        PMLOG_CLK_VCN1CLK2 = 37,
-        PMLOG_SMART_POWERSHIFT_CPU = 38,
-        PMLOG_SMART_POWERSHIFT_DGPU = 39,
-        PMLOG_MAX_SENSORS_REAL,
-        PMLOG_TOTAL_BOARD_POWER_RX_7000 = 73
+        ADL_SENSOR_MAXTYPES             = 0,
+        ADL_PMLOG_CLK_GFXCLK            = 1,
+        ADL_PMLOG_CLK_MEMCLK            = 2,
+        ADL_PMLOG_CLK_SOCCLK            = 3,
+        ADL_PMLOG_CLK_UVDCLK1           = 4,
+        ADL_PMLOG_CLK_UVDCLK2           = 5,
+        ADL_PMLOG_CLK_VCECLK            = 6,
+        ADL_PMLOG_CLK_VCNCLK            = 7,
+        ADL_PMLOG_TEMPERATURE_EDGE      = 8,
+        ADL_PMLOG_TEMPERATURE_MEM       = 9,
+        ADL_PMLOG_TEMPERATURE_VRVDDC    = 10,
+        ADL_PMLOG_TEMPERATURE_VRMVDD    = 11,
+        ADL_PMLOG_TEMPERATURE_LIQUID    = 12,
+        ADL_PMLOG_TEMPERATURE_PLX       = 13,
+        ADL_PMLOG_FAN_RPM               = 14,
+        ADL_PMLOG_FAN_PERCENTAGE        = 15,
+        ADL_PMLOG_SOC_VOLTAGE           = 16,
+        ADL_PMLOG_SOC_POWER             = 17,
+        ADL_PMLOG_SOC_CURRENT           = 18,
+        ADL_PMLOG_INFO_ACTIVITY_GFX     = 19,
+        ADL_PMLOG_INFO_ACTIVITY_MEM     = 20,
+        ADL_PMLOG_GFX_VOLTAGE           = 21,
+        ADL_PMLOG_MEM_VOLTAGE           = 22,
+        ADL_PMLOG_ASIC_POWER            = 23,
+        ADL_PMLOG_TEMPERATURE_VRSOC     = 24,
+        ADL_PMLOG_TEMPERATURE_VRMVDD0   = 25,
+        ADL_PMLOG_TEMPERATURE_VRMVDD1   = 26,
+        ADL_PMLOG_TEMPERATURE_HOTSPOT   = 27,
+        ADL_PMLOG_TEMPERATURE_GFX       = 28,
+        ADL_PMLOG_TEMPERATURE_SOC       = 29,
+        ADL_PMLOG_GFX_POWER             = 30,
+        ADL_PMLOG_GFX_CURRENT           = 31,
+        ADL_PMLOG_TEMPERATURE_CPU       = 32,
+        ADL_PMLOG_CPU_POWER             = 33,
+        ADL_PMLOG_CLK_CPUCLK            = 34,
+        ADL_PMLOG_THROTTLER_STATUS      = 35,   // GFX
+        ADL_PMLOG_CLK_VCN1CLK1          = 36,
+        ADL_PMLOG_CLK_VCN1CLK2          = 37,
+        ADL_PMLOG_SMART_POWERSHIFT_CPU  = 38,
+        ADL_PMLOG_SMART_POWERSHIFT_DGPU = 39,
+        ADL_PMLOG_BUS_SPEED             = 40,
+        ADL_PMLOG_BUS_LANES             = 41,
+        ADL_PMLOG_TEMPERATURE_LIQUID0   = 42,
+        ADL_PMLOG_TEMPERATURE_LIQUID1   = 43,
+        ADL_PMLOG_CLK_FCLK              = 44,
+        ADL_PMLOG_THROTTLER_STATUS_CPU  = 45,
+        ADL_PMLOG_SSPAIRED_ASICPOWER    = 46, // apuPower
+        ADL_PMLOG_SSTOTAL_POWERLIMIT    = 47, // Total Power limit
+        ADL_PMLOG_SSAPU_POWERLIMIT      = 48, // APU Power limit
+        ADL_PMLOG_SSDGPU_POWERLIMIT     = 49, // DGPU Power limit
+        ADL_PMLOG_TEMPERATURE_HOTSPOT_GCD      = 50,
+        ADL_PMLOG_TEMPERATURE_HOTSPOT_MCD      = 51,
+        ADL_PMLOG_THROTTLER_TEMP_EDGE_PERCENTAGE        = 52,
+        ADL_PMLOG_THROTTLER_TEMP_HOTSPOT_PERCENTAGE     = 53,
+        ADL_PMLOG_THROTTLER_TEMP_HOTSPOT_GCD_PERCENTAGE = 54,
+        ADL_PMLOG_THROTTLER_TEMP_HOTSPOT_MCD_PERCENTAGE = 55,
+        ADL_PMLOG_THROTTLER_TEMP_MEM_PERCENTAGE     = 56,
+        ADL_PMLOG_THROTTLER_TEMP_VR_GFX_PERCENTAGE  = 57,
+        ADL_PMLOG_THROTTLER_TEMP_VR_MEM0_PERCENTAGE = 58,
+        ADL_PMLOG_THROTTLER_TEMP_VR_MEM1_PERCENTAGE = 59,
+        ADL_PMLOG_THROTTLER_TEMP_VR_SOC_PERCENTAGE  = 60,
+        ADL_PMLOG_THROTTLER_TEMP_LIQUID0_PERCENTAGE = 61,
+        ADL_PMLOG_THROTTLER_TEMP_LIQUID1_PERCENTAGE = 62,
+        ADL_PMLOG_THROTTLER_TEMP_PLX_PERCENTAGE = 63,
+        ADL_PMLOG_THROTTLER_TDC_GFX_PERCENTAGE  = 64,
+        ADL_PMLOG_THROTTLER_TDC_SOC_PERCENTAGE  = 65,
+        ADL_PMLOG_THROTTLER_TDC_USR_PERCENTAGE  = 66,
+        ADL_PMLOG_THROTTLER_PPT0_PERCENTAGE     = 67,
+        ADL_PMLOG_THROTTLER_PPT1_PERCENTAGE     = 68,
+        ADL_PMLOG_THROTTLER_PPT2_PERCENTAGE     = 69,
+        ADL_PMLOG_THROTTLER_PPT3_PERCENTAGE     = 70,
+        ADL_PMLOG_THROTTLER_FIT_PERCENTAGE           = 71,
+        ADL_PMLOG_THROTTLER_GFX_APCC_PLUS_PERCENTAGE = 72,
+        ADL_PMLOG_BOARD_POWER                        = 73,
+        ADL_PMLOG_MAX_SENSORS_REAL
+    }
+
+    internal enum GCNFamilies
+    {
+        FAMILY_UNKNOWN = 0,
+        FAMILY_TN = 105, // Trinity APUs
+        FAMILY_SI = 110, // Southern Islands: Tahiti, Pitcairn, CapeVerde, Oland, Hainan
+        FAMILY_CI = 120, // Sea Islands: Bonaire, Hawaii
+        FAMILY_KV = 125, // Kaveri, Kabini, Mullins
+        FAMILY_VI = 130, // Volcanic Islands: Iceland, Tonga, Fiji
+        FAMILY_CZ = 135, // Carrizo APUs: Carrizo, Stoney
+        FAMILY_AI = 141, // Vega: 10, 20
+        FAMILY_RV = 142, // Raven (Vega GCN 5.0)
+        FAMILY_NV = 143, // Navi10, Navi2x
+        FAMILY_VGH = 144, // Van Gogh (RDNA 2.0)
+        FAMILY_NV3 = 145, // Navi: 3x (GC 11.0.0, RDNA 3.0)
+        FAMILY_YC = 146, // Rembrandt (Yellow Carp, RDNA 2.0)
+        FAMILY_GC_11_0_1 = 148, // Phoenix (GC 11.0.1, RDNA 3.0)
+        FAMILY_GC_10_3_6 = 149, // Raphael (GC 10.3.6, RDNA 2.0)
+        FAMILY_GC_11_5_0 = 150, // GC 11.5.0
+        FAMILY_GC_10_3_7 = 151, // Mendocino (GC 10.3.7, RDNA 2.0)
+    }
+
+    //Structure containing information related power management logging.
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLPMLogSupportInfo
+    {
+        /// list of sensors defined by ADL_PMLOG_SENSORS
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS)]
+        public ushort[] usSensors;
+
+        /// Reserved
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public int[] iReserved;
+    }
+
+    //Structure containing information to start power management logging.
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLPMLogStartInput
+    {
+        /// list of sensors defined by ADL_PMLOG_SENSORS
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS)]
+        public ushort[] usSensors;
+
+        /// Sample rate in milliseconds
+        public uint ulSampleRate;
+
+        /// Reserved
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 15)]
+        public int[] iReserved;
+    }
+
+    //Structure containing information to start power management logging.
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct ADLPMLogStartOutput
+    {
+        /// Pointer to memory address containing logging data
+        [FieldOffset(0)] public IntPtr pLoggingAddress;
+        [FieldOffset(0)] public ulong ptrLoggingAddress;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLPMLogData
+    {
+        /// Structure version
+        public uint ulVersion;
+
+        /// Current driver sample rate
+        public uint ulActiveSampleRate;
+
+        /// Timestamp of last update
+        public ulong ulLastUpdated;
+
+        // 2D array of sensor and values -- unsigned int ulValues[ADL_PMLOG_MAX_SUPPORTED_SENSORS][2]
+        // the nested array will be accessed like a single dimension array
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ADL_PMLOG_MAX_SENSORS*2)]
+        public uint[] ulValues;
+
+        /// Reserved
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+        public uint[] ulReserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLGcnInfo
+    {
+        public int CuCount; //Number of compute units on the ASIC.
+        public int TexCount; //Number of texture mapping units.
+        public int RopCount; //Number of Render backend Units.
+
+        // see GCNFamilies enum, references:
+        //        https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/amd/addrlib/src/amdgpu_asic_addr.h
+        //        https://github.com/torvalds/linux/blob/master/include/uapi/drm/amdgpu_drm.h
+        public int ASICFamilyId;
+        public int ASICRevisionId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ADLMemoryInfoX4
+    {
+        /// Memory size in bytes.
+        public long iMemorySize;
+        /// Memory type in string.
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL_MAX_PATH)]
+        public string strMemoryType;
+        /// Highest default performance level Memory bandwidth in Mbytes/s
+        public long iMemoryBandwidth;
+        /// HyperMemory size in bytes.
+        public long iHyperMemorySize;
+        /// Invisible Memory size in bytes.
+        public long iInvisibleMemorySize;
+        /// Visible Memory size in bytes.
+        public long iVisibleMemorySize;
+        /// Vram vendor ID
+        public long iVramVendorRevId;
+        /// Memory Bandiwidth that is calculated and finalized on the driver side, grab and go.
+        public long iMemoryBandwidthX2;
+        /// Memory Bit Rate that is calculated and finalized on the driver side, grab and go.
+        public long iMemoryBitRateX2;
     }
 }

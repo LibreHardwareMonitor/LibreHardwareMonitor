@@ -99,6 +99,7 @@ internal static class D3DDisplayDevice
             return false;
 
         deviceInfo.GpuSharedLimit = segmentSizeInfo.SharedSystemMemorySize;
+        deviceInfo.GpuVideoMemoryLimit = segmentSizeInfo.DedicatedVideoMemorySize;
         deviceInfo.GpuDedicatedLimit = segmentSizeInfo.DedicatedSystemMemorySize;
 
         for (uint segmentId = 0; segmentId < segmentCount; segmentId++)
@@ -273,6 +274,7 @@ internal static class D3DDisplayDevice
     {
         public ulong GpuSharedLimit;
         public ulong GpuDedicatedLimit;
+        public ulong GpuVideoMemoryLimit;
 
         public ulong GpuSharedUsed;
         public ulong GpuDedicatedUsed;
