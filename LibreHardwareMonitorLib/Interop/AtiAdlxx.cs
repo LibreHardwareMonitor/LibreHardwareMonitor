@@ -52,15 +52,15 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_ODParameters_Get(int adapterIndex, out ADLODParameters parameters);
+    public static extern ADLStatus ADL2_Overdrive5_ODParameters_Get(IntPtr context, int adapterIndex, out ADLODParameters parameters);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_CurrentActivity_Get(int iAdapterIndex, ref ADLPMActivity activity);
+    public static extern ADLStatus ADL2_Overdrive5_CurrentActivity_Get(IntPtr context, int iAdapterIndex, ref ADLPMActivity activity);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_Temperature_Get(int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
+    public static extern ADLStatus ADL2_Overdrive5_Temperature_Get(IntPtr context, int adapterIndex, int thermalControllerIndex, ref ADLTemperature temperature);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -68,19 +68,19 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_FanSpeed_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
+    public static extern ADLStatus ADL2_Overdrive5_FanSpeed_Get(IntPtr context, int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_FanSpeedInfo_Get(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
+    public static extern ADLStatus ADL2_Overdrive5_FanSpeedInfo_Get(IntPtr context, int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedInfo fanSpeedInfo);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_FanSpeedToDefault_Set(int adapterIndex, int thermalControllerIndex);
+    public static extern ADLStatus ADL2_Overdrive5_FanSpeedToDefault_Set(IntPtr context, int adapterIndex, int thermalControllerIndex);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive5_FanSpeed_Set(int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
+    public static extern ADLStatus ADL2_Overdrive5_FanSpeed_Set(IntPtr context, int adapterIndex, int thermalControllerIndex, ref ADLFanSpeedValue fanSpeedValue);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -88,7 +88,7 @@ internal static class AtiAdlxx
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern ADLStatus ADL_Overdrive_Caps(int adapterIndex, ref int supported, ref int enabled, ref int version);
+    public static extern ADLStatus ADL2_Overdrive_Caps(IntPtr context, int adapterIndex, ref int supported, ref int enabled, ref int version);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -189,18 +189,6 @@ internal static class AtiAdlxx
         }
 
         return false;
-    }
-
-    public static ADLStatus ADL2_Main_Control_Create(IntPtr context, int enumConnectedAdapters)
-    {
-        try
-        {
-            return ADL_Method_Exists(nameof(ADL2_Main_Control_Create)) ? ADL2_Main_Control_Create(Main_Memory_Alloc, enumConnectedAdapters, ref context) : ADLStatus.ADL_ERR;
-        }
-        catch
-        {
-            return ADLStatus.ADL_ERR;
-        }
     }
 
     public static ADLStatus ADL2_Adapter_AdapterInfo_Get(ref IntPtr context, ADLAdapterInfo[] info)

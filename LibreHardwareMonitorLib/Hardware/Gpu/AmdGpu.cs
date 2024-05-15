@@ -208,8 +208,8 @@ internal sealed class AmdGpu : GenericGpu
             }
         }
 
-        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive_Caps)) &&
-            AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Overdrive_Caps)) &&
+            AtiAdlxx.ADL2_Overdrive_Caps(_context, _adapterInfo.AdapterIndex, ref supported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             _overdriveApiSupported = supported == AtiAdlxx.ADL_TRUE;
             _currentOverdriveApiLevel = version;
@@ -228,8 +228,8 @@ internal sealed class AmdGpu : GenericGpu
 
             if (!_overdriveApiSupported)
             {
-                if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL_Overdrive5_ODParameters_Get)) &&
-                    AtiAdlxx.ADL_Overdrive5_ODParameters_Get(_adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p) == AtiAdlxx.ADLStatus.ADL_OK &&
+                if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Overdrive5_ODParameters_Get)) &&
+                    AtiAdlxx.ADL2_Overdrive5_ODParameters_Get(_context, _adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p) == AtiAdlxx.ADLStatus.ADL_OK &&
                     p.iActivityReportingSupported > 0)
                 {
                     _overdriveApiSupported = true;
@@ -243,7 +243,7 @@ internal sealed class AmdGpu : GenericGpu
         }
 
         AtiAdlxx.ADLFanSpeedInfo fanSpeedInfo = new();
-        if (AtiAdlxx.ADL_Overdrive5_FanSpeedInfo_Get(_adapterInfo.AdapterIndex, 0, ref fanSpeedInfo) != AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL2_Overdrive5_FanSpeedInfo_Get(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedInfo) != AtiAdlxx.ADLStatus.ADL_OK)
         {
             fanSpeedInfo.iMaxPercent = 100;
             fanSpeedInfo.iMinPercent = 0;
@@ -281,7 +281,7 @@ internal sealed class AmdGpu : GenericGpu
                 iFanSpeed = (int)control.SoftwareValue
             };
 
-            AtiAdlxx.ADL_Overdrive5_FanSpeed_Set(_adapterInfo.AdapterIndex, 0, ref fanSpeedValue);
+            AtiAdlxx.ADL2_Overdrive5_FanSpeed_Set(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedValue);
         }
     }
 
@@ -307,7 +307,7 @@ internal sealed class AmdGpu : GenericGpu
     /// </summary>
     private void SetDefaultFanSpeed()
     {
-        AtiAdlxx.ADL_Overdrive5_FanSpeedToDefault_Set(_adapterInfo.AdapterIndex, 0);
+        AtiAdlxx.ADL2_Overdrive5_FanSpeedToDefault_Set(_context, _adapterInfo.AdapterIndex, 0);
     }
 
     public override void Update()
@@ -538,7 +538,7 @@ internal sealed class AmdGpu : GenericGpu
     private void GetOD5CurrentActivity()
     {
         AtiAdlxx.ADLPMActivity adlpmActivity = new();
-        if (AtiAdlxx.ADL_Overdrive5_CurrentActivity_Get(_adapterInfo.AdapterIndex, ref adlpmActivity) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL2_Overdrive5_CurrentActivity_Get(_context, _adapterInfo.AdapterIndex, ref adlpmActivity) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             if (adlpmActivity.iEngineClock > 0)
             {
@@ -585,7 +585,7 @@ internal sealed class AmdGpu : GenericGpu
     private void GetOD5FanSpeed(int speedType, Sensor sensor)
     {
         AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new() { iSpeedType = speedType };
-        if (AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref fanSpeedValue) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL2_Overdrive5_FanSpeed_Get(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedValue) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             sensor.Value = fanSpeedValue.iFanSpeed;
             ActivateSensor(sensor);
@@ -599,7 +599,7 @@ internal sealed class AmdGpu : GenericGpu
     private void GetOD5Temperature(Sensor temperatureCore)
     {
         AtiAdlxx.ADLTemperature temperature = new();
-        if (AtiAdlxx.ADL_Overdrive5_Temperature_Get(_adapterInfo.AdapterIndex, 0, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL2_Overdrive5_Temperature_Get(_context, _adapterInfo.AdapterIndex, 0, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK)
         {
             temperatureCore.Value = 0.001f * temperature.iTemperature;
             ActivateSensor(temperatureCore);
@@ -702,7 +702,7 @@ internal sealed class AmdGpu : GenericGpu
             int supported = 0;
             int enabled = 0;
             int version = 0;
-            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive_Caps(_adapterInfo.AdapterIndex, ref supported, ref enabled, ref version);
+            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_Overdrive_Caps(_context, _adapterInfo.AdapterIndex, ref supported, ref enabled, ref version);
 
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
@@ -724,7 +724,7 @@ internal sealed class AmdGpu : GenericGpu
         r.AppendLine();
         try
         {
-            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_ODParameters_Get(_adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p);
+            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_Overdrive5_ODParameters_Get(_context, _adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p);
 
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
@@ -753,7 +753,7 @@ internal sealed class AmdGpu : GenericGpu
         try
         {
             var adlt = new AtiAdlxx.ADLTemperature();
-            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_Temperature_Get(_adapterInfo.AdapterIndex, 0, ref adlt);
+            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_Overdrive5_Temperature_Get(_context, _adapterInfo.AdapterIndex, 0, ref adlt);
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
             r.AppendFormat(" Value: {0}{1}", 0.001f * adlt.iTemperature, Environment.NewLine);
@@ -770,13 +770,13 @@ internal sealed class AmdGpu : GenericGpu
         try
         {
             var adlf = new AtiAdlxx.ADLFanSpeedValue { iSpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM };
-            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref adlf);
+            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_Overdrive5_FanSpeed_Get(_context, _adapterInfo.AdapterIndex, 0, ref adlf);
             r.Append(" Status RPM: ");
             r.AppendLine(status.ToString());
             r.AppendFormat(" Value RPM: {0}{1}", adlf.iFanSpeed, Environment.NewLine);
 
             adlf.iSpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT;
-            status = AtiAdlxx.ADL_Overdrive5_FanSpeed_Get(_adapterInfo.AdapterIndex, 0, ref adlf);
+            status = AtiAdlxx.ADL2_Overdrive5_FanSpeed_Get(_context, _adapterInfo.AdapterIndex, 0, ref adlf);
             r.Append(" Status Percent: ");
             r.AppendLine(status.ToString());
             r.AppendFormat(" Value Percent: {0}{1}", adlf.iFanSpeed, Environment.NewLine);
@@ -793,7 +793,7 @@ internal sealed class AmdGpu : GenericGpu
         try
         {
             var adlp = new AtiAdlxx.ADLPMActivity();
-            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL_Overdrive5_CurrentActivity_Get(_adapterInfo.AdapterIndex, ref adlp);
+            AtiAdlxx.ADLStatus status = AtiAdlxx.ADL2_Overdrive5_CurrentActivity_Get(_context, _adapterInfo.AdapterIndex, ref adlp);
 
             r.Append(" Status: ");
             r.AppendLine(status.ToString());
