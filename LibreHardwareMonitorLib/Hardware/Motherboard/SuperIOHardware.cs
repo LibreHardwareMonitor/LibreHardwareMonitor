@@ -2599,9 +2599,19 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z690_Extreme:
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("+5V", 1, 20, 10));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 110, 10));
-                        v.Add(new Voltage("VCCIN_AUX", 5, 1, 1));
+                        v.Add(new Voltage("VCCIN AUX", 5, 1, 1));
+                        v.Add(new Voltage("DRAM", 6));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("+0.82V PCH", 10));
+                        v.Add(new Voltage("+1.05V PCH", 11));
+                        v.Add(new Voltage("VCCSA", 12));
+                        v.Add(new Voltage("VIN7", 13));
+                        v.Add(new Voltage("VIN9", 14));
 
                         f.Add(new Fan("CPU Fan #1", 1));
                         f.Add(new Fan("CPU Fan #2", 2));
