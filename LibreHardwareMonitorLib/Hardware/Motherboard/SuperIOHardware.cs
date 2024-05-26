@@ -2597,12 +2597,11 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z690_Extreme:
-                        // v.Add(new Voltage("Vcore", 0));
-                        // v.Add(new Voltage("AVCC", 1));
-                        // v.Add(new Voltage("+3.3V", 3));
-                        // v.Add(new Voltage("3VSB", 4));
-                        // v.Add(new Voltage("VBat", 5));
-                        // v.Add(new Voltage("VTT", 6));
+                        v.Add(new Voltage("Vcore", 0, 10, 10));
+                        v.Add(new Voltage("+5V", 1, 20, 10));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 110, 10));
+                        v.Add(new Voltage("VCCIN_AUX", 5, 1, 1));
 
                         f.Add(new Fan("CPU Fan #1", 1));
                         f.Add(new Fan("CPU Fan #2", 2));
