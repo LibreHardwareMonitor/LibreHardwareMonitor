@@ -2596,6 +2596,33 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chipset Fan", 3));
                         break;
 
+                    case Model.Z690_Extreme:
+                        // v.Add(new Voltage("Vcore", 0));
+                        // v.Add(new Voltage("AVCC", 1));
+                        // v.Add(new Voltage("+3.3V", 3));
+                        // v.Add(new Voltage("3VSB", 4));
+                        // v.Add(new Voltage("VBat", 5));
+                        // v.Add(new Voltage("VTT", 6));
+
+                        f.Add(new Fan("CPU Fan #1", 1));
+                        f.Add(new Fan("CPU Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #1", 3));
+                        f.Add(new Fan("Chassis Fan #2", 4));
+                        f.Add(new Fan("Chassis Fan #3", 0));
+                        f.Add(new Fan("Chassis Fan #4", 5));
+                        f.Add(new Fan("Chassis Fan #5", 6));
+
+                        c.Add(new Control("CPU Fan #1", 1)); // CPU_FAN1
+                        c.Add(new Control("CPU Fan #2", 2)); // CPU_FAN2/WP
+                        c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1/WP
+                        c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2/WP
+                        c.Add(new Control("Chassis Fan #3", 0)); // CHA_FAN3/WP
+                        c.Add(new Control("Chassis Fan #4", 5)); // CHA_FAN4/WP
+                        c.Add(new Control("Chassis Fan #5", 6)); // CHA_FAN5/WP
+
+                        t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("Motherboard", 2));
+                        break;
                     case Model.Z790_Taichi:
                         v.Add(new Voltage("1.8V CPU Voltage", 0));
                         v.Add(new Voltage("0.82V Chipset Voltage", 1));
