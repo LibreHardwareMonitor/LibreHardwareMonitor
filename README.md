@@ -25,7 +25,9 @@ If you have a **GitHub** account, you can download nightly builds [here](https:/
 
 ## How can I help improve it?
 The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
-You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
+You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.*
+
+*Please refer the [ContributorGuide](ContributorGuide.md) before making contributions 
 
 ## Developer information
 **Integrate the library in own application**
