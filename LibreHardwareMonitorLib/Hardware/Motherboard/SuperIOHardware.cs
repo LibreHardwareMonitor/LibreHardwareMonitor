@@ -2604,14 +2604,15 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 4, 110, 10));
                         v.Add(new Voltage("VCCIN AUX", 5, 1, 1));
                         v.Add(new Voltage("DRAM", 6));
-                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("+3.3V Standby", 7, 34, 34));
                         v.Add(new Voltage("VBat", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9));
-                        v.Add(new Voltage("+0.82V PCH", 10));
-                        v.Add(new Voltage("+1.05V PCH", 11));
-                        v.Add(new Voltage("VCCSA", 12));
-                        v.Add(new Voltage("VIN7", 13));
-                        v.Add(new Voltage("VIN9", 14));
+                        v.Add(new Voltage("1.05V CPU Voltage", 10, 1, 1));
+                        v.Add(new Voltage("0.82V Chipset Voltage", 11, 1, 1));
+                        v.Add(new Voltage("1.0V Chipset Voltage", 12));
+                        v.Add(new Voltage("CPU SA", 13, 1, 1));
+                        v.Add(new Voltage("VIN7", 14)); // Still trying to identify what this is
+                        v.Add(new Voltage("VIN9", 15)); // Still trying to identify what this is
 
                         f.Add(new Fan("CPU Fan #1", 1));
                         f.Add(new Fan("CPU Fan #2", 2));
