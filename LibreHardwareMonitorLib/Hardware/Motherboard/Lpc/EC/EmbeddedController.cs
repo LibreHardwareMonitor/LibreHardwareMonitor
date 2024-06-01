@@ -230,6 +230,15 @@ public abstract class EmbeddedController : Hardware
             BoardFamily.Intel700,
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut),
+        new(Model.ROG_MAXIMUS_XII_HERO_WIFI,
+            BoardFamily.Intel400,
+            ECSensor.TempVrm,
+            ECSensor.TempChipset,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanCPUOpt,
+            ECSensor.CurrCPU),
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
@@ -297,6 +306,18 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                 { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
+            }
+        },
+        {
+            BoardFamily.Intel400, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
+                { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
+                { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) } // to be checked, value becomes negative after a certain threshold
             }
         },
         {
@@ -520,6 +541,7 @@ public abstract class EmbeddedController : Hardware
         Amd600,
         Intel100,
         Intel300,
+        Intel400,
         Intel600,
         Intel700
     }
