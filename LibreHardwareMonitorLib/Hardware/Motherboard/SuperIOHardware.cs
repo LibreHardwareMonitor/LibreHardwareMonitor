@@ -2319,6 +2319,27 @@ internal sealed class SuperIOHardware : Hardware
             case Manufacturer.ASRock:
                 switch (model)
                 {
+                    case Model.H61M_DGS: // NCT6776F
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+12V", 1, 28, 5));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("#Voltage #5", 4, 0, 1, 0, true));
+                        v.Add(new Voltage("+5V", 5, 2, 1));
+                        v.Add(new Voltage("#Voltage #7", 6, 0, 1, 0, true));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        t.Add(new Temperature("CPU", 1));
+                        //t.Add(new Temperature("Auxiliary", 2)); // not in bios, duplicate motherboard temp
+                        t.Add(new Temperature("Motherboard", 3));
+                        f.Add(new Fan("Chassis Fan", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Power Fan", 2));
+                        c.Add(new Control("Chassis Fan", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        //c.Add(new Control("Power Fan", 2)); // not in bios, always 100%
+
+                        break;
                     case Model.B85M_DGS:
                         {
                             v.Add(new Voltage("Vcore", 0, 1, 1));
