@@ -244,6 +244,8 @@ internal class Identification
                 return Model.H55_USB3;
             case var _ when name.Equals("H55N-USB3", StringComparison.OrdinalIgnoreCase):
                 return Model.H55N_USB3;
+            case var _ when name.Equals("H61M-DGS", StringComparison.OrdinalIgnoreCase):
+                return Model.H61M_DGS;
             case var _ when name.Equals("H61M-DS2 REV 1.2", StringComparison.OrdinalIgnoreCase):
                 return Model.H61M_DS2_REV_1_2;
             case var _ when name.Equals("H61M-USB3-B3 REV 2.0", StringComparison.OrdinalIgnoreCase):
@@ -353,6 +355,10 @@ internal class Identification
                 return Model.ROG_ZENITH_II_EXTREME;
             case var _ when name.Equals("Z170-A", StringComparison.OrdinalIgnoreCase):
                 return Model.Z170_A;
+            case var _ when name.Equals("B150M-C", StringComparison.OrdinalIgnoreCase):
+                return Model.B150M_C;
+            case var _ when name.Equals("B150M-C D3", StringComparison.OrdinalIgnoreCase):
+                return Model.B150M_C_D3;
             case var _ when name.Equals("Z77 Pro4-M", StringComparison.OrdinalIgnoreCase):
                 return Model.Z77Pro4M;
             case var _ when name.Equals("X570 Pro4", StringComparison.OrdinalIgnoreCase):

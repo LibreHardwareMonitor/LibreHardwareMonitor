@@ -36,6 +36,7 @@ public enum Model
     X570_Phantom_Gaming_ITX,
     Z690_Extreme,
     Z790_Taichi,
+    H61M_DGS,
 
     // ASUS
     CROSSHAIR_III_FORMULA,
@@ -91,6 +92,8 @@ public enum Model
     ROG_ZENITH_II_EXTREME,
     TUF_X470_PLUS_GAMING,
     Z170_A,
+    B150M_C,
+    B150M_C_D3,
     TUF_GAMING_B550M_PLUS_WIFI,
     ROG_MAXIMUS_Z790_HERO,
     PRIME_Z690_A,
