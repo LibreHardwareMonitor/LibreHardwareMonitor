@@ -820,19 +820,19 @@ internal class Nct677X : ISuperIO
         byte index = (byte)(address & 0xFF);
 
         //wait for access, access == EC_SPACE_PAGE_SELECT
-        //after 100 retries, abort and force access
+        //after 35 retries @ 16ms, abort and force access
         //after x millseconds timeout abort wait loop
         byte access;
         DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
-        int retries = 100;
+        int retries = 35;
         do
         {
             access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
             if (access != EC_SPACE_PAGE_SELECT)
             {
                 retries--;
-                System.Threading.Thread.Sleep(1);
-                if(DateTime.UtcNow > timeout)
+                System.Threading.Thread.Sleep(15);
+                if (DateTime.UtcNow > timeout)
                 {
                     retries = -1; //timeout elapsed
                 }
@@ -840,12 +840,12 @@ internal class Nct677X : ISuperIO
         }
         while (access != EC_SPACE_PAGE_SELECT && retries > 0);
 
-        if(retries <= 0)
+        if (retries <= 0)
         {
             //timeout: force register access
             Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
         }
-        
+
         Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
         Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
         byte result = Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
@@ -873,18 +873,18 @@ internal class Nct677X : ISuperIO
             byte index = (byte)(address & 0xFF);
 
             //wait for access, access == EC_SPACE_PAGE_SELECT
-            //after 100 retries, abort and force access
+            //after 35 retries @ 16ms, abort and force access
             //after x millseconds timeout abort wait loop
             byte access;
             DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
-            int retries = 100;
+            int retries = 35;
             do
             {
                 access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
                 if (access != EC_SPACE_PAGE_SELECT)
                 {
                     retries--;
-                    System.Threading.Thread.Sleep(1);
+                    System.Threading.Thread.Sleep(15);
                     if (DateTime.UtcNow > timeout)
                     {
                         retries = -1; //timeout elapsed
