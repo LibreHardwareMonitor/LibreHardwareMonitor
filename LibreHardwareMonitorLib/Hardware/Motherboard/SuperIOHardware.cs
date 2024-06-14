@@ -1688,8 +1688,9 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case Model.B550_AORUS_ELITE:
                     case Model.B550_AORUS_PRO:
+                    case Model.B550_AORUS_ELITE:
+                    case Model.B550_GAMING_X:
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -1700,7 +1701,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("VBat", 8, 10, 10));
                         t.Add(new Temperature("System #1", 0));
-                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("System #2", 1));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM", 4));
