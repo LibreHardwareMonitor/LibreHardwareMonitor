@@ -2623,15 +2623,15 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 110, 10));
-                        v.Add(new Voltage("CPU Input Voltage", 5, 1, 1));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5, 1, 1));
                         v.Add(new Voltage("DRAM", 6));
                         v.Add(new Voltage("+3.3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("1.05V CPU Voltage", 10, 1, 1));
                         v.Add(new Voltage("0.82V Chipset Voltage", 11, 1, 1));
                         v.Add(new Voltage("1.0V Chipset Voltage", 12));
-                        v.Add(new Voltage("CPU SA", 13, 1, 1));
+                        v.Add(new Voltage("CPU System Agent", 13, 1, 1));
                         v.Add(new Voltage("Voltage #14", 14, true));
                         v.Add(new Voltage("Voltage #15", 15, true));
 
