@@ -391,6 +391,9 @@ internal class Identification
                 return Model.B360_AORUS_GAMING_3_WIFI_CF;
             case var _ when name.Equals("B550 AORUS PRO", StringComparison.OrdinalIgnoreCase):
                 return Model.B550_AORUS_PRO;
+            case var _ when name.Equals("B550 AORUS ELITE", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B550 AORUS ELITE V2", StringComparison.OrdinalIgnoreCase):
+                return Model.B550_AORUS_ELITE;
             case var _ when name.Equals("B560M AORUS ELITE", StringComparison.OrdinalIgnoreCase):
                 return Model.B560M_AORUS_ELITE;
             case var _ when name.Equals("B560M AORUS PRO", StringComparison.OrdinalIgnoreCase):

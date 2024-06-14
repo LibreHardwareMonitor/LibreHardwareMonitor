@@ -1688,6 +1688,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B550_AORUS_ELITE:
                     case Model.B550_AORUS_PRO:
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
