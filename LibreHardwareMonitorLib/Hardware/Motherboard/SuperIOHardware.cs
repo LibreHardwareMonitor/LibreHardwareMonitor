@@ -2618,7 +2618,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z690_Extreme:
-                        v.Add(new Voltage("Vcore", 0, 10, 10));
+                        v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 20, 10));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
