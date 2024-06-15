@@ -2617,6 +2617,78 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chipset Fan", 3));
                         break;
 
+                    case Model.X570_Phantom_Gaming_4: // NCT6796D (-R?)
+                        // internal on NCT6796D have a 1/2 voltage divider (by way of two 34kOhm resistors)
+                        // "Six internal signals connected to the power supplies (CPUVCORE, AVSB, VBAT, VTT, 3VSB, 3VCC)"
+                        // "All the internal inputs of the ADC, AVSB, VBAT, 3VSB, 3VCC utilize an integrated voltage divider
+                        //  with both resistors equal to 34kOhm"
+                        // it seems that VTT doesn't actually have the 1/2 divider
+
+                        // external sources can have whatever divider that gets them in the 0V to 2.048V range
+
+                        // assuming Vf = 0, then Ri = R1 and Rf = R2 (from voltage divider equation)
+
+                        v.Add(new Voltage("Vcore", 0, 1, 1));
+                        v.Add(new Voltage("+5V", 1, 2, 1));
+                        v.Add(new Voltage("AVCC", 2, 1, 1));
+                        v.Add(new Voltage("+3.3V", 3, 1, 1));
+                        v.Add(new Voltage("+12V", 4, 56, 10));
+                        v.Add(new Voltage("VDDCR_SOC", 5));
+                        v.Add(new Voltage("DRAM", 6));
+                        v.Add(new Voltage("3VSB", 7, 1, 1));
+                        v.Add(new Voltage("VBat", 8, 1, 1));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("Voltage #11", 10, true)); // unknown. VIN5 pin
+                        v.Add(new Voltage("VPPM", 11, 3, 1));
+                        v.Add(new Voltage("PREM_VDDCR_SOC", 12));
+                        v.Add(new Voltage("VDDP", 13));
+                        v.Add(new Voltage("CPU +1.8V", 14, 1, 1));
+                        v.Add(new Voltage("Voltage #16", 15, true)); // unknown. VIN9 pin
+
+                        t.Add(new Temperature("CPU", 9)); // AKA SMBUSMASTER0
+                        t.Add(new Temperature("SB (Chipset)", 10)); // AKA SMBUSMASTER1
+                        t.Add(new Temperature("Motherboard", 2)); // AKA SYSTIN
+
+                        // no idea what these sources are actually connected to.
+                        //t.Add(new Temperature("CPUTIN", 1));
+                        //t.Add(new Temperature("AUXTIN0", 3));
+                        //t.Add(new Temperature("AUXTIN1", 4));
+                        //t.Add(new Temperature("AUXTIN2", 5));
+                        //t.Add(new Temperature("AUXTIN3", 6));
+                        //t.Add(new Temperature("AUXTIN4", 7));
+                        //t.Add(new Temperature("TSENSOR", 8));
+                        //t.Add(new Temperature("VIRTUAL_TEMP", 24));
+
+                        // CHA_FAN3 header
+                        f.Add(new Fan("Chassis Fan #3", 0));
+                        c.Add(new Control("Chassis Fan #3", 0));
+
+                        // CPU_FAN1 header
+                        f.Add(new Fan("CPU Fan #1", 1));
+                        c.Add(new Control("CPU Fan #1", 1));
+
+                        // CPU_FAN2/WP header
+                        f.Add(new Fan("CPU Fan #2", 2));
+                        c.Add(new Control("CPU Fan #2", 2));
+
+                        // CHA_FAN1/WP header
+                        f.Add(new Fan("Chassis Fan #1", 3));
+                        c.Add(new Control("Chassis Fan #1", 3));
+
+                        // CHA_FAN2/WP header
+                        f.Add(new Fan("Chassis Fan #2", 4));
+                        c.Add(new Control("Chassis Fan #2", 4));
+
+                        // SB_FAN1 header
+                        f.Add(new Fan("SB Fan", 5));
+                        c.Add(new Control("SB Fan", 5));
+
+                        // fan/control 6 is not exposed to a header
+                        //f.Add(new Fan("Fan #7", 6));
+                        //c.Add(new Control("Fan #7", 6));
+
+                        break;
+
                     case Model.Z790_Taichi:
                         v.Add(new Voltage("1.8V CPU Voltage", 0));
                         v.Add(new Voltage("0.82V Chipset Voltage", 1));
