@@ -2806,6 +2806,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.TUF_GAMING_X570_PLUS_WIFI: //NCT6798D
                     case Model.TUF_GAMING_B550M_PLUS_WIFI: //NCT6798D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
