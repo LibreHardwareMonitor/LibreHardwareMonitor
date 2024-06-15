@@ -1221,7 +1221,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("+3.3V", 4, 6.5f, 10));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU Package", 1));
                         t.Add(new Temperature("CPU Cores", 2));
