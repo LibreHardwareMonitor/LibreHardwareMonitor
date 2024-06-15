@@ -2815,24 +2815,10 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9));
-                        t.Add(new Temperature("PECI 0", 0)); // To be detected
-                        t.Add(new Temperature("CPU (TBD)", 1)); // To be evaluated
-                        t.Add(new Temperature("Motherboard", 2)); // Confirmed
-                        t.Add(new Temperature("SMBus 1", 9)); // To be detected
-                        t.Add(new Temperature("Chipset", 10)); // Confirmed
-                        t.Add(new Temperature("PCH Chip CPU Max", 11)); // To be detected
-                        t.Add(new Temperature("PCH Chip", 12)); // To be detected
-                        t.Add(new Temperature("PCH CPU", 13)); // To be detected
-                        t.Add(new Temperature("PCH MCH", 14)); // To be detected
-                        t.Add(new Temperature("Agent 0 DIMM 0", 15)); // To be detected
-                        t.Add(new Temperature("Agent 0 DIMM 1", 16)); // To be detected
-                        t.Add(new Temperature("Agent 1 DIMM 0", 17)); // To be detected
-                        t.Add(new Temperature("Agent 1 DIMM 1", 18)); // To be detected
-                        t.Add(new Temperature("Device 0", 19)); // To be detected
-                        t.Add(new Temperature("Device 1", 20)); // To be detected
-                        t.Add(new Temperature("PECI 0 Calibrated", 21)); // To be detected
-                        t.Add(new Temperature("CPU", 22)); // Confirmed
-                        t.Add(new Temperature("Virtual", 23)); // To be detected
+
+                        t.Add(new Temperature("CPU", 22));                        
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Chipset", 10));
 
                         f.Add(new Fan("CPU Fan", 1));
                         f.Add(new Fan("CPU Optional Fan", 6));
