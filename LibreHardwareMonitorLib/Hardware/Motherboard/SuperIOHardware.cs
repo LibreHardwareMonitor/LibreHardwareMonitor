@@ -1699,13 +1699,13 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VDDP", 5, 0, 1));
                         v.Add(new Voltage("DRAM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("System #2", 1));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
-                        t.Add(new Temperature("VRM", 4));
-                        t.Add(new Temperature("PCH", 5));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("Chipset", 5));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
@@ -1716,6 +1716,30 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("System Fan #2", 2));
                         c.Add(new Control("System Fan #3", 3));
                         c.Add(new Control("CPU Optional Fan", 4));
+
+                        break;
+
+                    case Model.B550M_AORUS_ELITE:
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("VDDP", 5, 0, 1));
+                        v.Add(new Voltage("DRAM", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("VSoC MOS", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("Chipset", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
 
                         break;
 
