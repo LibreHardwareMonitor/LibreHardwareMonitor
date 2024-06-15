@@ -2807,6 +2807,50 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.TUF_GAMING_X570_PLUS_WIFI: //NCT6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9));
+                        t.Add(new Temperature("PECI 0", 0)); // To be detected
+                        t.Add(new Temperature("CPU (TBD)", 1)); // To be evaluated
+                        t.Add(new Temperature("Motherboard", 2)); // Confirmed
+                        t.Add(new Temperature("SMBus 1", 9)); // To be detected
+                        t.Add(new Temperature("Chipset", 10)); // Confirmed
+                        t.Add(new Temperature("PCH Chip CPU Max", 11)); // To be detected
+                        t.Add(new Temperature("PCH Chip", 12)); // To be detected
+                        t.Add(new Temperature("PCH CPU", 13)); // To be detected
+                        t.Add(new Temperature("PCH MCH", 14)); // To be detected
+                        t.Add(new Temperature("Agent 0 DIMM 0", 15)); // To be detected
+                        t.Add(new Temperature("Agent 0 DIMM 1", 16)); // To be detected
+                        t.Add(new Temperature("Agent 1 DIMM 0", 17)); // To be detected
+                        t.Add(new Temperature("Agent 1 DIMM 1", 18)); // To be detected
+                        t.Add(new Temperature("Device 0", 19)); // To be detected
+                        t.Add(new Temperature("Device 1", 20)); // To be detected
+                        t.Add(new Temperature("PECI 0 Calibrated", 21)); // To be detected
+                        t.Add(new Temperature("CPU", 22)); // Confirmed
+                        t.Add(new Temperature("Virtual", 23)); // To be detected
+
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("CPU Optional Fan", 6));
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("Chipset Fan", 4));
+                        f.Add(new Fan("AIO Pump", 5));
+                        
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("CPU Optional Fan", 6));
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("Chipset Fan", 4));
+                        c.Add(new Control("AIO Pump", 5));
+
+                        break;
                     case Model.TUF_GAMING_B550M_PLUS_WIFI: //NCT6798D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
