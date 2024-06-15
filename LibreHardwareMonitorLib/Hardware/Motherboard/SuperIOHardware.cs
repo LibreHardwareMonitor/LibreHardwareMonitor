@@ -2632,8 +2632,6 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("0.82V Chipset Voltage", 11, 1, 1));
                         v.Add(new Voltage("1.0V Chipset Voltage", 12));
                         v.Add(new Voltage("CPU System Agent", 13, 1, 1));
-                        v.Add(new Voltage("Voltage #14", 14, true));
-                        v.Add(new Voltage("Voltage #15", 15, true));
 
                         f.Add(new Fan("CPU Fan #1", 1));
                         f.Add(new Fan("CPU Fan #2", 2));
