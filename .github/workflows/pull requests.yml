@@ -1,6 +1,7 @@
 name: pull requests
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [master]
 
