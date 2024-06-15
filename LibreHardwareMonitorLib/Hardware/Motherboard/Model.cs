@@ -125,6 +125,7 @@ public enum Model
 
     // Gigabyte
     _965P_S3,
+    _970A_DS3P,
     _970A_UD3,
     AB350_Gaming_3,
     AX370_Gaming_5,

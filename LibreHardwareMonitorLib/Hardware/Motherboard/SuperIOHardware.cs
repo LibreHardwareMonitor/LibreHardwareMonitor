@@ -1214,6 +1214,27 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model._970A_DS3P: // IT8620E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("DIMM", 1));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("+3.3V", 4, 6.5f, 10));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("VBat", 8));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("CPU Package", 1));
+                        t.Add(new Temperature("CPU Cores", 2));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("Power Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+
+                        break;
+
                     case Model.H81M_HD3: //IT8620E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
