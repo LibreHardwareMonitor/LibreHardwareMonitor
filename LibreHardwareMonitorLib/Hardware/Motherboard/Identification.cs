@@ -226,6 +226,9 @@ internal class Identification
                 return Model.G41MT_S2;
             case var _ when name.Equals("G41MT-S2P", StringComparison.OrdinalIgnoreCase):
                 return Model.G41MT_S2P;
+            case var _ when name.Equals("970A-DS3P", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("970A-DS3P FX", StringComparison.OrdinalIgnoreCase):
+                return Model._970A_DS3P;
             case var _ when name.Equals("GA-970A-UD3", StringComparison.OrdinalIgnoreCase):
                 return Model._970A_UD3;
             case var _ when name.Equals("GA-MA770T-UD3", StringComparison.OrdinalIgnoreCase):
