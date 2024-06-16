@@ -34,6 +34,8 @@ public enum Model
     X570_Pro4,
     X570_Taichi,
     X570_Phantom_Gaming_ITX,
+    Z690_Extreme,
+    Z690_Steel_Legend,
     Z790_Taichi,
     H61M_DGS,
 

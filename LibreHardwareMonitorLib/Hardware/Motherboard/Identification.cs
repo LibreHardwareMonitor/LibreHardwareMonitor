@@ -442,6 +442,12 @@ internal class Identification
                 return Model.ROG_MAXIMUS_Z790_HERO;
             case var _ when name.Equals("PRIME Z690-A", StringComparison.OrdinalIgnoreCase):
                 return Model.PRIME_Z690_A;
+            case var _ when name.Equals("Z690 Steel Legend WiFi 6E", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z690 Steel Legend", StringComparison.OrdinalIgnoreCase):
+                return Model.Z690_Steel_Legend;
+            case var _ when name.Equals("Z690 Extreme WiFi 6E", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z690 Extreme", StringComparison.OrdinalIgnoreCase):
+                return Model.Z690_Extreme;
             case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_Taichi;
