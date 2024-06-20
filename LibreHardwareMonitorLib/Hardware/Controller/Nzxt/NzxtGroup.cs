@@ -25,6 +25,17 @@ internal class NzxtGroup : IGroup
 
             switch (dev.ProductID)
             {
+                case 0x170E: // NZXT Kraken X (X42, X52, X62 or X72)
+                    var krakenV2 = new KrakenV2(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {krakenV2.FirmwareVersion}");
+                    _report.AppendLine($"{krakenV2.Status}");
+                    _report.AppendLine();
+
+                    if (krakenV2.IsValid)
+                        _hardware.Add(krakenV2);
+
+                    break;
                 case 0x2007: // Kraken X3 original pid
                 case 0x2014: // Kraken X3 new pid
                 case 0x3008: // Kraken Z3
