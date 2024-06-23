@@ -1689,8 +1689,12 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.B550_AORUS_PRO:
+                    case Model.B550_AORUS_PRO_AC:
+                    case Model.B550_AORUS_PRO_AX:
                     case Model.B550_AORUS_ELITE:
+                    case Model.B550_AORUS_ELITE_AX:
                     case Model.B550_GAMING_X:
+                    case Model.B550_UD_AC:
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -1720,6 +1724,11 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.B550M_AORUS_ELITE:
+                    case Model.B550M_GAMING:
+                    case Model.B550M_DS3H:
+                    case Model.B550M_DS3H_AC:
+                    case Model.B550M_S2H:
+                    case Model.B550M_H:
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -1950,6 +1959,8 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.X570_AORUS_MASTER: // IT879XE
                     case Model.X570_AORUS_ULTRA:
                     case Model.B550_AORUS_PRO:
+                    case Model.B550_AORUS_PRO_AC:
+                    case Model.B550_AORUS_PRO_AX:
                         v.Add(new Voltage("VIN0", 0));
                         v.Add(new Voltage("DDRVTT AB", 1));
                         v.Add(new Voltage("Chipset Core", 2));
