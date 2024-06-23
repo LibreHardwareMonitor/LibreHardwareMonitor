@@ -1360,6 +1360,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B560M_DS3H: // IT8689E
                     case Model.B560M_AORUS_ELITE: // IT8689E
                     case Model.B560M_AORUS_PRO:
                     case Model.B560M_AORUS_PRO_AX:
