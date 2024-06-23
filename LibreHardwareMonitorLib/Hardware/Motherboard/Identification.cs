@@ -380,6 +380,14 @@ internal class Identification
                 return Model.B450A_PRO;
             case var _ when name.Equals("B350 GAMING PLUS (MS-7A34)", StringComparison.OrdinalIgnoreCase):
                 return Model.B350_Gaming_Plus;
+            case var _ when name.Equals("B450 AORUS PRO", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450 AORUS PRO WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_AORUS_PRO;
+            case var _ when name.Equals("B450 GAMING X", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_GAMING_X;
+            case var _ when name.Equals("B450 AORUS ELITE", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450 AORUS ELITE V2", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_AORUS_ELITE;
             case var _ when name.Equals("B450M AORUS ELITE", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("B450M AORUS ELITE-CF", StringComparison.OrdinalIgnoreCase):
                 return Model.B450M_AORUS_ELITE;
