@@ -61,6 +61,14 @@ public class AquaComputerGroup : IGroup
                     _hardware.Add(quadro);
                     break;
                     
+                case 0xF00B:
+                    var aquastreamUltimate = new AquastreamUltimate(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {aquastreamUltimate.FirmwareVersion}");
+                    _report.AppendLine();
+                    _hardware.Add(aquastreamUltimate);
+                    break;
+                    
                 case 0xF011:
                     var octo = new Octo(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
