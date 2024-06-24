@@ -1345,7 +1345,6 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                        v.Add(new Voltage("AVCC3", 9, 54, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("Chipset", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -1377,7 +1376,6 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                        v.Add(new Voltage("AVCC3", 9, 54, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("Chipset", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -1406,7 +1404,6 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                        v.Add(new Voltage("AVCC3", 9, 54, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("Chipset", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -1435,7 +1432,6 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                        v.Add(new Voltage("AVCC3", 9, 54, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("Chipset", 1));
                         t.Add(new Temperature("CPU", 2));
