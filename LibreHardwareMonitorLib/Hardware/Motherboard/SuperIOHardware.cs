@@ -1755,6 +1755,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B550I_AORUS_PRO_AX:
                     case Model.B550M_AORUS_ELITE:
                     case Model.B550M_GAMING:
                     case Model.B550M_DS3H:

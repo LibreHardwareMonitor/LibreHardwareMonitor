@@ -146,6 +146,7 @@ public enum Model
     B550M_DS3H_AC,
     B550M_S2H,
     B550M_H,
+    B550I_AORUS_PRO_AX,
     B560M_AORUS_ELITE,
     B560M_AORUS_PRO,
     B560M_AORUS_PRO_AX,
