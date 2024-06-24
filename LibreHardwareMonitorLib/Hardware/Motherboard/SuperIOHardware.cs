@@ -1688,13 +1688,45 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B550_AORUS_MASTER:
                     case Model.B550_AORUS_PRO:
                     case Model.B550_AORUS_PRO_AC:
                     case Model.B550_AORUS_PRO_AX:
+                    case Model.B550_VISION_D:
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("VDDP", 5, 0, 1));
+                        v.Add(new Voltage("DRAM", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("EC_TEMP1", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("Chipset", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
+
+                        break;
+
                     case Model.B550_AORUS_ELITE:
                     case Model.B550_AORUS_ELITE_AX:
                     case Model.B550_GAMING_X:
                     case Model.B550_UD_AC:
+                    case Model.B550M_AORUS_PRO:
+                    case Model.B550M_AORUS_PRO_AX:
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -1958,9 +1990,11 @@ internal sealed class SuperIOHardware : Hardware
                 {
                     case Model.X570_AORUS_MASTER: // IT879XE
                     case Model.X570_AORUS_ULTRA:
+                    case Model.B550_AORUS_MASTER:
                     case Model.B550_AORUS_PRO:
                     case Model.B550_AORUS_PRO_AC:
                     case Model.B550_AORUS_PRO_AX:
+                    case Model.B550_VISION_D:
                         v.Add(new Voltage("VIN0", 0));
                         v.Add(new Voltage("DDRVTT AB", 1));
                         v.Add(new Voltage("Chipset Core", 2));
