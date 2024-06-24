@@ -419,6 +419,7 @@ internal class Identification
             case var _ when name.Equals("B550 GAMING X V2", StringComparison.OrdinalIgnoreCase):
                 return Model.B550_GAMING_X;
             case var _ when name.Equals("B550 UD AC", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B550 UD AC-Y1", StringComparison.OrdinalIgnoreCase):
                 return Model.B550_UD_AC;
             case var _ when name.Equals("B560M AORUS ELITE", StringComparison.OrdinalIgnoreCase):
                 return Model.B560M_AORUS_ELITE;
