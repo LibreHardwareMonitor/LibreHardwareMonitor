@@ -116,6 +116,7 @@ public enum Model
     B350_Gaming_Plus,
     B360M_PRO_VDH,
     B450A_PRO,
+    B550A_PRO,
     Z270_PC_MATE,
     Z77_MS7751,
     Z68_MS7672,
