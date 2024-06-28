@@ -560,7 +560,8 @@ public class HttpServer
             ["Text"] = n.Text,
             ["Min"] = string.Empty,
             ["Value"] = string.Empty,
-            ["Max"] = string.Empty
+            ["Max"] = string.Empty,
+            ["Average"] = string.Empty
         };
 
         if (n is SensorNode sensorNode)
@@ -570,6 +571,7 @@ public class HttpServer
             jsonNode["Min"] = sensorNode.Min;
             jsonNode["Value"] = sensorNode.Value;
             jsonNode["Max"] = sensorNode.Max;
+            jsonNode["Average"] = sensorNode.Average;
             jsonNode["ImageURL"] = "images/transparent.png";
         }
         else if (n is HardwareNode hardwareNode)

@@ -23,7 +23,49 @@ internal class Sensor : ISensor
     private float? _currentValue;
     private string _name;
     private float _sum;
+    private readonly AverageAccumulator _average = new();
+
     private TimeSpan _valuesTimeWindow = TimeSpan.FromDays(1.0);
+
+    private class AverageAccumulator
+    {
+        private TimeSpan _timeSpan = TimeSpan.Zero;
+        private DateTime? _lastTime;
+        private double _sum = double.NaN;
+        private float _lastValue;
+
+        public float? Average => double.IsNaN(_sum) ? null : (float)_sum;
+
+        public void AddValue(float value, DateTime time)
+        {
+            if (float.IsNaN(value))
+                return;
+
+            if (_lastTime.HasValue)
+            {
+                var delta = time - _lastTime.Value;
+                if (delta.TotalSeconds > 0) // can be negative if system time changed
+                {
+                    var weighted = _sum * _timeSpan.TotalSeconds + (_lastValue + value) * delta.TotalSeconds / 2;
+                    _timeSpan += delta;
+                    _sum = weighted / _timeSpan.TotalSeconds;
+                }
+            }
+            else
+            {
+                _sum = value;
+            }
+            _lastTime = time;
+            _lastValue = value;
+        }
+
+        public void Reset()
+        {
+            _timeSpan = TimeSpan.Zero;
+            _lastTime = null;
+            _sum = double.NaN;
+        }
+    }
 
     public Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings) :
         this(name, index, sensorType, hardware, null, settings)
@@ -92,6 +134,8 @@ internal class Sensor : ISensor
 
     public float? Min { get; private set; }
 
+    public float? Average => _average.Average;
+
     public string Name
     {
         get { return _name; }
@@ -112,9 +156,9 @@ internal class Sensor : ISensor
         get { return _currentValue; }
         set
         {
+            DateTime now = DateTime.UtcNow;
             if (_valuesTimeWindow != TimeSpan.Zero)
             {
-                DateTime now = DateTime.UtcNow;
                 while (_values.Count > 0 && now - _values[0].Time > _valuesTimeWindow)
                     _values.RemoveAt(0);
 
@@ -139,6 +183,9 @@ internal class Sensor : ISensor
 
                 if (!Max.HasValue || Max < value)
                     Max = value;
+
+                if (null != value)
+                    _average.AddValue((float)value, now);
             }
         }
     }
@@ -155,7 +202,7 @@ internal class Sensor : ISensor
         {
             _valuesTimeWindow = value;
             if (value == TimeSpan.Zero)
-                _values.Clear();
+                ClearValues();
         }
     }
 
@@ -169,10 +216,9 @@ internal class Sensor : ISensor
         Max = null;
     }
 
-    public void ClearValues()
-    {
-        _values.Clear();
-    }
+    public void ResetAverage() => _average.Reset();
+
+    public void ClearValues() => _values.Clear();
 
     public void Accept(IVisitor visitor)
     {
@@ -266,11 +312,8 @@ internal class Sensor : ISensor
     private void AppendValue(float value, DateTime time)
     {
         if (_values.Count >= 2 && _values[_values.Count - 1].Value == value && _values[_values.Count - 2].Value == value)
-        {
             _values[_values.Count - 1] = new SensorValue(value, time);
-            return;
-        }
-
-        _values.Add(new SensorValue(value, time));
+        else
+            _values.Add(new SensorValue(value, time));
     }
 }
