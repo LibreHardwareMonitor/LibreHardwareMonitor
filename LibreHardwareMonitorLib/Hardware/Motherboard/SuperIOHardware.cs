@@ -386,7 +386,6 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore", 4, -1, 2));
                         v.Add(new Voltage("Chipset", 5));
                         v.Add(new Voltage("CPU System Agent", 6));
-                        v.Add(new Voltage("CPU Input Auxiliary", 7));
                         v.Add(new Voltage("+3.3V", 8));
                         v.Add(new Voltage("CPU 1.8V", 9));
                         v.Add(new Voltage("CPU VDDP", 10));
