@@ -1703,7 +1703,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System #1", 0));
-                        t.Add(new Temperature("EC_TEMP1", 1));
+                        t.Add(new Temperature("External #1", 1));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
@@ -2006,7 +2006,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 1f, 1f));
                         v.Add(new Voltage("VBat", 8, 1f, 1f));
                         t.Add(new Temperature("PCIe x8", 0));
-                        t.Add(new Temperature("EC_TEMP2", 1));
+                        t.Add(new Temperature("External #2", 1));
                         t.Add(new Temperature("System #2", 2));
                         f.Add(new Fan("System Fan #5 Pump", 0));
                         f.Add(new Fan("System Fan #6 Pump", 1));
