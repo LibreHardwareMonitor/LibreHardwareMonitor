@@ -182,6 +182,16 @@ internal class LpcIO
                 }
 
                 break;
+            case 0x15:
+                switch (revision)
+                {
+                    case 0x2:
+                        chip = Chip.F81804;
+                        logicalDeviceNumber = FINTEK_HARDWARE_MONITOR_LDN;
+                        break;
+                }
+
+                break;
             case 0x52:
                 switch (revision)
                 {
@@ -349,6 +359,16 @@ internal class LpcIO
                 }
 
                 break;
+            case 0xD2:
+                switch (revision)
+                {
+                    case 0x82:
+                        chip = Chip.NCT6116D;
+                        logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                        break;
+                }
+
+                break;
             case 0xD3:
                 switch (revision)
                 {
@@ -406,6 +426,15 @@ internal class LpcIO
                 }
 
                 break;
+
+            default:
+                if (id is not 0 and not 0xff)
+                {
+                    ReportUnknownChip(port, "Winbond / Nuvoton / Fintek", (id << 8) | revision);
+                }
+
+                break;
+
         }
 
         if (chip == Chip.Unknown)
@@ -476,6 +505,7 @@ internal class LpcIO
                     _superIOs.Add(new W836XX(chip, revision, address));
                     break;
 
+                case Chip.NCT6116D:
                 case Chip.NCT610XD:
                 case Chip.NCT6771F:
                 case Chip.NCT6776F:
@@ -506,6 +536,7 @@ internal class LpcIO
                 case Chip.F71889ED:
                 case Chip.F71889F:
                 case Chip.F71808E:
+                case Chip.F81804:
                     if (vendorId != FINTEK_VENDOR_ID)
                     {
                         _report.Append("Chip ID: 0x");

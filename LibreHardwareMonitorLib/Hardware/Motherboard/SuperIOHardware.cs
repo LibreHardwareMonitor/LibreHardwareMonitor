@@ -260,6 +260,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.F71889AD:
             case Chip.F71889ED:
             case Chip.F71889F:
+            case Chip.F81804:
                 GetFintekConfiguration(superIO, manufacturer, model, v, t, f, c);
                 break;
 
@@ -317,6 +318,7 @@ internal sealed class SuperIOHardware : Hardware
                 GetNuvotonConfigurationF(superIO, manufacturer, model, v, t, f, c);
                 break;
 
+            case Chip.NCT6116D:
             case Chip.NCT610XD:
                 v.Add(new Voltage("Vcore", 0));
                 v.Add(new Voltage("Voltage #0", 1, true));
@@ -2183,6 +2185,64 @@ internal sealed class SuperIOHardware : Hardware
     {
         switch (manufacturer)
         {
+            case Manufacturer.ASRock:
+                switch (model)
+                {
+                    case Model.IMB_1222:
+                        v.Add(new Voltage("+3V", 0, 150, 150));
+                        v.Add(new Voltage("+3VSB", 5, 150, 150));
+                        v.Add(new Voltage("VCore", 1));
+                        v.Add(new Voltage("VCCM", 2, 150, 150));
+                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("VBAT", 6, 150, 150));
+                        v.Add(new Voltage("Voltage #8", 7, true));
+                        v.Add(new Voltage("Voltage #9", 8, true));
+                        for (int i = 0; i < superIO.Temperatures.Length; i++)
+                        {
+                            if (i == 0)
+                            {
+                                t.Add(new Temperature("CPU Temperature", i));
+                            }
+                            else if (i == 1)
+                            {
+                                t.Add(new Temperature("M/B Temperature", i));
+                            }
+                            else
+                            {
+                                t.Add(new Temperature("Temperature #" + (i + 1), i));
+                            }
+                        }
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan Control #" + (i + 1), i));
+                        break;
+                    default:
+                        v.Add(new Voltage("VCC3V", 0, 150, 150));
+                        v.Add(new Voltage("Vcore", 1));
+                        v.Add(new Voltage("Voltage #3", 2, true));
+                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("VSB3V", 7, 150, 150));
+                        v.Add(new Voltage("VBat", 8, 150, 150));
+
+                        for (int i = 0; i < superIO.Temperatures.Length; i++)
+                            t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+                };
+                break;
+
+
             case Manufacturer.EVGA:
                 switch (model)
                 {
