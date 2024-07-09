@@ -380,6 +380,44 @@ internal class Identification
                 return Model.B450A_PRO;
             case var _ when name.Equals("B350 GAMING PLUS (MS-7A34)", StringComparison.OrdinalIgnoreCase):
                 return Model.B350_Gaming_Plus;
+            case var _ when name.Equals("B450 AORUS PRO", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450 AORUS PRO WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_AORUS_PRO;
+            case var _ when name.Equals("B450 GAMING X", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_GAMING_X;
+            case var _ when name.Equals("B450 AORUS ELITE", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450 AORUS ELITE V2", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_AORUS_ELITE;
+            case var _ when name.Equals("B450M AORUS ELITE", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M AORUS ELITE-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450M_AORUS_ELITE;
+            case var _ when name.Equals("B450M GAMING", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M GAMING-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450M_GAMING;
+            case var _ when name.Equals("B450M AORUS M", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M AORUS M-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_AORUS_M;
+            case var _ when name.Equals("B450M DS3H", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M DS3H WIFI", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M DS3H-CF", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M DS3H WIFI-CF", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M DS3H V2", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M DS3H V2-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450M_DS3H;
+            case var _ when name.Equals("B450M S2H", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M S2H V2", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M S2H-CF", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M S2H V2-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450M_S2H;
+            case var _ when name.Equals("B450M H", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M H-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450M_H;
+            case var _ when name.Equals("B450M K", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M K-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450M_K;
+            case var _ when name.Equals("B450M I AORUS PRO WIFI", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B450M I AORUS PRO WIFI-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.B450_I_AORUS_PRO_WIFI;
             case var _ when name.Equals("X470 AORUS GAMING 7 WIFI-CF", StringComparison.OrdinalIgnoreCase):
                 return Model.X470_AORUS_GAMING_7_WIFI;
             case var _ when name.Equals("X570 AORUS MASTER", StringComparison.OrdinalIgnoreCase):

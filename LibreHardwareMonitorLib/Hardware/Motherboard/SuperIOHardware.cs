@@ -281,7 +281,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("AVCC", 3, 34, 51));
                 v.Add(new Voltage("Voltage #5", 4, true));
                 v.Add(new Voltage("+5VSB", 5, 34, 51));
-                v.Add(new Voltage("VBat", 6));
+                v.Add(new Voltage("CMOS Battery", 6));
                 t.Add(new Temperature("CPU", 0));
                 t.Add(new Temperature("Auxiliary", 1));
                 t.Add(new Temperature("System", 2));
@@ -300,7 +300,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("AVCC", 3, 34, 51));
                 v.Add(new Voltage("Voltage #5", 4, true));
                 v.Add(new Voltage("+5VSB", 5, 34, 51));
-                v.Add(new Voltage("VBat", 6));
+                v.Add(new Voltage("CMOS Battery", 6));
                 t.Add(new Temperature("CPU", 0));
                 t.Add(new Temperature("Auxiliary", 1));
                 t.Add(new Temperature("System", 2));
@@ -326,7 +326,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #2", 5, true));
                 v.Add(new Voltage("Reserved", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                v.Add(new Voltage("VBat", 8, 34, 34));
+                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                 v.Add(new Voltage("Voltage #10", 9, true));
                 t.Add(new Temperature("System", 1));
                 t.Add(new Temperature("CPU Core", 2));
@@ -385,14 +385,14 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #1", 3));
                         v.Add(new Voltage("DIMM", 4));
                         v.Add(new Voltage("CPU I/O", 5));
-                        v.Add(new Voltage("CPU SA", 6));
+                        v.Add(new Voltage("CPU System Agent", 6));
                         v.Add(new Voltage("Voltage #2", 7));
                         v.Add(new Voltage("AVCC3", 8));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("VRef", 10));
                         v.Add(new Voltage("VSB", 11));
                         v.Add(new Voltage("AVSB", 12));
-                        v.Add(new Voltage("VBat", 13));
+                        v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("System", 1));
@@ -482,7 +482,7 @@ internal sealed class SuperIOHardware : Hardware
                 switch (model)
                 {
                     case Model.CROSSHAIR_III_FORMULA: // IT8720F
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("CPU", 0));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
@@ -496,7 +496,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 30, 10));
                         v.Add(new Voltage("+5VSB", 7, 6.8f, 10));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -507,7 +507,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.M4A79XTD_EVO: // IT8720F
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -525,7 +525,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("Voltage #8", 7, true));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -563,7 +563,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("Voltage #8", 7, true));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -580,14 +580,14 @@ internal sealed class SuperIOHardware : Hardware
                 {
                     case Model.LP_BI_P45_T2RS_Elite: // IT8718F
                         v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("VTT", 1));
+                        v.Add(new Voltage("CPU Voltage Termination", 1));
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 30, 10));
                         v.Add(new Voltage("Northbridge Core", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+5VSB", 7, 6.8f, 10));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("System", 1));
                         t.Add(new Temperature("Chipset", 2));
@@ -599,14 +599,14 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.LP_DK_P55_T3EH9: // IT8720F
                         v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("VTT", 1));
+                        v.Add(new Voltage("CPU Voltage Termination", 1));
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 30, 10));
                         v.Add(new Voltage("CPU PLL", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+5VSB", 7, 6.8f, 10));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("Chipset", 0));
                         t.Add(new Temperature("CPU PWM", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -618,14 +618,14 @@ internal sealed class SuperIOHardware : Hardware
 
                     default:
                         v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("VTT", 1, true));
+                        v.Add(new Voltage("CPU Voltage Termination", 1, true));
                         v.Add(new Voltage("+3.3V", 2, true));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10, 0, true));
                         v.Add(new Voltage("+12V", 4, 30, 10, 0, true));
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("DIMM", 6, true));
                         v.Add(new Voltage("+5VSB", 7, 6.8f, 10, 0, true));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -649,7 +649,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -665,7 +665,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -679,7 +679,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("DIMM", 1));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Northbridge", 2));
@@ -697,7 +697,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -717,7 +717,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 5, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -735,7 +735,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 5, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -751,7 +751,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan", 1));
@@ -764,7 +764,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -785,7 +785,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -801,7 +801,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("VRM", 2));
@@ -819,7 +819,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
@@ -834,7 +834,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 5, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Northbridge", 2));
@@ -854,7 +854,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("Voltage #8", 7, true));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -879,7 +879,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("Voltage #8", 7, true));
-                v.Add(new Voltage("VBat", 8));
+                v.Add(new Voltage("CMOS Battery", 8));
 
                 for (int i = 0; i < superIO.Temperatures.Length; i++)
                     t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -908,7 +908,7 @@ internal sealed class SuperIOHardware : Hardware
         v.Add(new Voltage("+3.3V", 2));
         v.Add(new Voltage("+12V", 4, 30, 10));
         v.Add(new Voltage("+5V", 5, 6.8f, 10));
-        v.Add(new Voltage("VBat", 8));
+        v.Add(new Voltage("CMOS Battery", 8));
         t.Add(new Temperature("CPU", 0));
         t.Add(new Temperature("Motherboard", 1));
         f.Add(new Fan("CPU Fan", 0));
@@ -984,7 +984,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3.3V", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         v.Add(new Voltage("Voltage #10", 9, true));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
@@ -1018,7 +1018,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3.3V", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         v.Add(new Voltage("Voltage #10", 9, true));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
@@ -1046,7 +1046,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM CD", 5, 10, 10));
                         v.Add(new Voltage("1.8V PLL", 6, 10, 10));
                         v.Add(new Voltage("+3.3V", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
                         t.Add(new Temperature("CPU Socket", 2));
@@ -1072,7 +1072,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 5, 1));
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("+3.3V", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
                         t.Add(new Temperature("T_Sensor", 2));
@@ -1100,7 +1100,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("Voltage #8", 7, true));
-                        v.Add(new Voltage("VBat", 8));
+                        v.Add(new Voltage("CMOS Battery", 8));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -1125,7 +1125,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("AVCC", 3, 10, 10));
                         // v.Add(new Voltage("DIMM", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("System", 1));
                         t.Add(new Temperature("Northbridge", 2));
@@ -1144,7 +1144,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -1164,12 +1164,12 @@ internal sealed class SuperIOHardware : Hardware
                 {
                     case Model.H61M_DS2_REV_1_2: // IT8728F
                     case Model.H61M_USB3_B3_REV_2_0: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("+12V", 2, 30.9f, 10));
                         v.Add(new Voltage("Vcore", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -1179,13 +1179,13 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.H67A_UD3H_B3: // IT8728F
                     case Model.H67A_USB3_B3: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("+5V", 1, 15, 10));
                         v.Add(new Voltage("+12V", 2, 30.9f, 10));
                         v.Add(new Voltage("Vcore", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -1196,7 +1196,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.B75M_D3H: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+5V", 3, 15, 10));
                         v.Add(new Voltage("+12V", 2, 10, 2));
@@ -1204,7 +1204,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -1244,7 +1244,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CPU VRIN", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("System", 0));
                         f.Add(new Fan("CPU Fan", 0));
@@ -1264,7 +1264,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("iGPU VAXG", 5, 0, 1));
                         v.Add(new Voltage("DIMM AB", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         v.Add(new Voltage("AVCC3", 9, 54, 10));
 
                         t.Add(new Temperature("System #1", 0));
@@ -1294,7 +1294,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VDDP", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         v.Add(new Voltage("AVCC3", 9, 7.53f, 1));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("Chipset", 1));
@@ -1319,7 +1319,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore SoC", 5, 0, 1));
                         v.Add(new Voltage("DIMM AB", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         v.Add(new Voltage("AVCC3", 9, 54, 10));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("Chipset", 1));
@@ -1334,6 +1334,115 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
+                    
+                    case Model.B450_AORUS_PRO:
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("VDDP", 5, 0, 1));
+                        v.Add(new Voltage("DRAM", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("VSoC MOS", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
+
+                        break;
+
+                    case Model.B450_GAMING_X:
+                    case Model.B450_AORUS_ELITE:
+                    case Model.B450M_AORUS_ELITE:
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("VDDP", 5, 0, 1));
+                        v.Add(new Voltage("DRAM", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("VSoC MOS", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+
+                        break;
+
+                    case Model.B450M_GAMING: // ITE IT8686E
+                    case Model.B450_AORUS_M:
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("VDDP", 5, 0, 1));
+                        v.Add(new Voltage("DRAM", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("VSoC MOS", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+
+                        break;
+
+                    case Model.B450_I_AORUS_PRO_WIFI:
+                    case Model.B450M_DS3H: // ITE IT8686E
+                    case Model.B450M_S2H:
+                    case Model.B450M_H:
+                    case Model.B450M_K:
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("VDDP", 5, 0, 1));
+                        v.Add(new Voltage("DRAM", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("VSoC MOS", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan", 1));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan", 1));
+
+                        break;
 
                     case Model.X470_AORUS_GAMING_7_WIFI: // ITE IT8686E
                         v.Add(new Voltage("Vcore", 0, 0, 1));
@@ -1344,7 +1453,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VDDP", 5, 0, 1));
                         v.Add(new Voltage("DIMM AB", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         v.Add(new Voltage("AVCC3", 9, 54, 10));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("Chipset", 1));
@@ -1370,10 +1479,10 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 10f, 2f));
                         v.Add(new Voltage("+5V", 3, 15f, 10f));
                         v.Add(new Voltage("iGPU VAGX", 4));
-                        v.Add(new Voltage("VCCSA", 5));
+                        v.Add(new Voltage("CPU System Agent", 5));
                         v.Add(new Voltage("DRAM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10f, 10f));
-                        v.Add(new Voltage("VBat", 8, 10f, 10f));
+                        v.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
                         v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
@@ -1406,7 +1515,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore Misc", 5));
                         v.Add(new Voltage("VIN6", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10f, 10f));
-                        v.Add(new Voltage("VBat", 8, 10f, 10f));
+                        v.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
                         v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
@@ -1435,10 +1544,10 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 10f, 2f));
                         v.Add(new Voltage("+5V", 3, 15f, 10f));
                         v.Add(new Voltage("CPU Vcore", 4, 0, 1));
-                        v.Add(new Voltage("CPU VCCSA", 5, 0, 1));
+                        v.Add(new Voltage("CPU System Agent", 5, 0, 1));
                         v.Add(new Voltage("DIMM AB", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 1, 1));
-                        v.Add(new Voltage("VBat", 8, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("EC_TEMP1", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -1468,7 +1577,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VDDP", 5));
                         v.Add(new Voltage("DIMM AB", 6));
                         v.Add(new Voltage("+3V Standby", 7, 1f, 10f));
-                        v.Add(new Voltage("VBat", 8, 1f, 10f));
+                        v.Add(new Voltage("CMOS Battery", 8, 1f, 10f));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("EC_TEMP1", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -1523,7 +1632,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 5f, 1));
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("CPU VCCGT", 4));
-                        v.Add(new Voltage("CPU VCCSA", 5));
+                        v.Add(new Voltage("CPU System Agent", 5));
                         v.Add(new Voltage("VDDQ", 6));
                         v.Add(new Voltage("DDRVTT", 7));
                         v.Add(new Voltage("PCHCore", 8));
@@ -1552,11 +1661,11 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 5f, 1));
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("CPU VCCGT", 4));
-                        v.Add(new Voltage("CPU VCCSA", 5));
+                        v.Add(new Voltage("CPU System Agent", 5));
                         v.Add(new Voltage("DDR", 6));
                         v.Add(new Voltage("Voltage #7", 7, true));
                         v.Add(new Voltage("+3V Standby", 8, 1f, 1f, -0.312f));
-                        v.Add(new Voltage("VBat", 9, 6f, 1f, 0.01f));
+                        v.Add(new Voltage("CMOS Battery", 9, 6f, 1f, 0.01f));
                         v.Add(new Voltage("AVCC3", 10, 6f, 1f, 0.048f));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
@@ -1588,7 +1697,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CPU Input Auxiliary", 5));
                         v.Add(new Voltage("Voltage #6", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 1f, 1f));
-                        v.Add(new Voltage("VBat", 8, 1f, 1f));
+                        v.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
                         v.Add(new Voltage("AVCC3", 9, true));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
@@ -1630,14 +1739,14 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z68A_D3H_B3: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+12V", 2, 30.9f, 10));
                         v.Add(new Voltage("+5V", 3, 7.15f, 10));
                         v.Add(new Voltage("Vcore", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -1653,14 +1762,14 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z68AP_D3: // IT8728F
                     case Model.Z68X_UD3H_B3: // IT8728F
                     case Model.Z68XP_UD3R: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+12V", 2, 30.9f, 10));
                         v.Add(new Voltage("+5V", 3, 7.15f, 10));
                         v.Add(new Voltage("Vcore", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -1671,14 +1780,14 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z68X_UD7_B3: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+12V", 2, 30.9f, 10));
                         v.Add(new Voltage("+5V", 3, 7.15f, 10));
                         v.Add(new Voltage("Vcore", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("System #3", 2));
@@ -1691,7 +1800,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.X79_UD3: // IT8728F
-                        v.Add(new Voltage("VTT", 0));
+                        v.Add(new Voltage("CPU Voltage Termination", 0));
                         v.Add(new Voltage("DIMM AB", 1));
                         v.Add(new Voltage("+12V", 2, 10, 2));
                         v.Add(new Voltage("+5V", 3, 15, 10));
@@ -1699,7 +1808,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VCore", 5));
                         v.Add(new Voltage("DIMM CD", 6));
                         v.Add(new Voltage("+3V Standby", 7, 1, 1));
-                        v.Add(new Voltage("VBat", 8, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Northbridge", 2));
@@ -1719,7 +1828,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VDDP", 5, 0, 1));
                         v.Add(new Voltage("DRAM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("Chipset", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -1773,7 +1882,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -1805,7 +1914,7 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("CPU Input Auxiliary", 5)); // Reads 2.2V.
                         //v.Add(new Voltage("CPU GT", 6)); // Reads 2.6V.
                         //v.Add(new Voltage("+3V Standby", 7, 10, 10)); // Reads 5.8V ?
-                        v.Add(new Voltage("VBat", 8, 10, 10)); // Reads higher than it should at 3.4V.
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10)); // Reads higher than it should at 3.4V.
                         t.Add(new Temperature("System 1", 0));
                         t.Add(new Temperature("System 2", 1)); // Not sure what sensor is this.
                         t.Add(new Temperature("CPU", 2));
@@ -1854,7 +1963,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -1879,7 +1988,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CPU VCCIO", 3));
                         v.Add(new Voltage("Graphics", 4));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("Fan #1", 0));
@@ -1896,7 +2005,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -1921,7 +2030,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                v.Add(new Voltage("VBat", 8, 10, 10));
+                v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                 for (int i = 0; i < superIO.Temperatures.Length; i++)
                     t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -1954,7 +2063,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("PM_CLDO12", 5));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 1f, 1f));
-                        v.Add(new Voltage("VBat", 8, 1f, 1f));
+                        v.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
                         t.Add(new Temperature("PCIe x8", 0));
                         t.Add(new Temperature("EC_TEMP2", 1));
                         t.Add(new Temperature("System #2", 2));
@@ -1975,7 +2084,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CPU VDD18", 4, 0, 1));
                         v.Add(new Voltage("Chipset Core +2.5V", 5, 0.5F, 1));
                         v.Add(new Voltage("+3V Standby", 6, 1, 10));
-                        v.Add(new Voltage("VBat", 7, 0.7F, 1));
+                        v.Add(new Voltage("CMOS Battery", 7, 0.7F, 1));
                         t.Add(new Temperature("PCIe x8", 0));
                         t.Add(new Temperature("System #2", 2));
 
@@ -1996,7 +2105,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #7", 5, true));
                         v.Add(new Voltage("DDR VPP", 6));
                         v.Add(new Voltage("+3V Standby", 7, 1f, 1f));
-                        v.Add(new Voltage("VBat", 8, 1f, 1f));
+                        v.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
                         t.Add(new Temperature("PCIe x8", 0));
                         t.Add(new Temperature("EC_TEMP2", 1));
                         t.Add(new Temperature("System #2", 2));
@@ -2031,7 +2140,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -2056,7 +2165,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                v.Add(new Voltage("VBat", 8, 10, 10));
+                v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
                 for (int i = 0; i < superIO.Temperatures.Length; i++)
                     t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -2082,12 +2191,12 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1, 47, 100));
                         v.Add(new Voltage("DIMM", 2, 47, 100));
-                        v.Add(new Voltage("VTT", 3, 24, 100));
+                        v.Add(new Voltage("CPU Voltage Termination", 3, 24, 100));
                         v.Add(new Voltage("IOH Vcore", 4, 24, 100));
                         v.Add(new Voltage("+5V", 5, 51, 12));
                         v.Add(new Voltage("+12V", 6, 56, 6.8f));
                         v.Add(new Voltage("+3V Standby", 7, 150, 150));
-                        v.Add(new Voltage("VBat", 8, 150, 150));
+                        v.Add(new Voltage("CMOS Battery", 8, 150, 150));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("VREG", 1));
                         t.Add(new Temperature("System", 2));
@@ -2101,12 +2210,12 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VCC3V", 0, 150, 150));
                         v.Add(new Voltage("Vcore", 1, 47, 100));
                         v.Add(new Voltage("DIMM", 2, 47, 100));
-                        v.Add(new Voltage("VTT", 3, 24, 100));
+                        v.Add(new Voltage("CPU Voltage Termination", 3, 24, 100));
                         v.Add(new Voltage("IOH Vcore", 4, 24, 100));
                         v.Add(new Voltage("+5V", 5, 51, 12));
                         v.Add(new Voltage("+12V", 6, 56, 6.8f));
                         v.Add(new Voltage("+3V Standby", 7, 150, 150));
-                        v.Add(new Voltage("VBat", 8, 150, 150));
+                        v.Add(new Voltage("CMOS Battery", 8, 150, 150));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("VREG", 1));
                         t.Add(new Temperature("System", 2));
@@ -2130,7 +2239,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("VSB3V", 7, 150, 150));
-                        v.Add(new Voltage("VBat", 8, 150, 150));
+                        v.Add(new Voltage("CMOS Battery", 8, 150, 150));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -2155,7 +2264,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM", 5, 150, 150));
                         v.Add(new Voltage("CPU I/O", 6));
                         v.Add(new Voltage("+3.3V", 7, 150, 150));
-                        v.Add(new Voltage("VBat", 8, 150, 150));
+                        v.Add(new Voltage("CMOS Battery", 8, 150, 150));
 
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Probe", 1));
@@ -2182,7 +2291,7 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("Voltage #7", 6, true));
 
                         v.Add(new Voltage("VSB3V", 7, 150, 150));
-                        v.Add(new Voltage("VBat", 8, 150, 150));
+                        v.Add(new Voltage("CMOS Battery", 8, 150, 150));
 
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                             t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -2209,7 +2318,7 @@ internal sealed class SuperIOHardware : Hardware
                     v.Add(new Voltage("Voltage #7", 6, true));
 
                 v.Add(new Voltage("VSB3V", 7, 150, 150));
-                v.Add(new Voltage("VBat", 8, 150, 150));
+                v.Add(new Voltage("CMOS Battery", 8, 150, 150));
 
                 for (int i = 0; i < superIO.Temperatures.Length; i++)
                     t.Add(new Temperature("Temperature #" + (i + 1), i));
@@ -2240,7 +2349,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+5V", 4, 12, 3));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Auxiliary", 2));
                         t.Add(new Temperature("Motherboard", 3));
@@ -2263,7 +2372,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 3));
                         f.Add(new Fan("Chassis Fan #1", 0));
@@ -2281,7 +2390,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+5V", 4, 12, 3));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Auxiliary", 2));
                         t.Add(new Temperature("Motherboard", 3));
@@ -2301,7 +2410,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+5V", 4, 12, 3));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 3));
 
@@ -2322,7 +2431,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU Core", 0));
                         t.Add(new Temperature("Temperature #1", 1));
                         t.Add(new Temperature("Temperature #2", 2));
@@ -2350,7 +2459,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 5, 2, 1));
                         v.Add(new Voltage("#Voltage #7", 6, 0, 1, 0, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 1));
                         //t.Add(new Temperature("Auxiliary", 2)); // not in bios, duplicate motherboard temp
                         t.Add(new Temperature("Motherboard", 3));
@@ -2394,7 +2503,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 5, 20, 10));
                         //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU Core", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Auxiliary", 2));
@@ -2417,7 +2526,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU Core", 0));
                         t.Add(new Temperature("Temperature #1", 1));
                         t.Add(new Temperature("Temperature #2", 2));
@@ -2443,7 +2552,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                v.Add(new Voltage("VBat", 8, 34, 34));
+                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                 t.Add(new Temperature("CPU Core", 0));
                 t.Add(new Temperature("Temperature #1", 1));
                 t.Add(new Temperature("Temperature #2", 2));
@@ -2475,7 +2584,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VcoreRef", 5, 0, 1));
                         v.Add(new Voltage("DIMM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused #11", 11, 34, 34, 0, true));
@@ -2515,7 +2624,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore Refin", 5, 0, 1));
                         //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
                         v.Add(new Voltage("Chipset 1.05V", 11, 0, 1));
@@ -2547,7 +2656,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VDDCR_SOC", 5, 0, 1));
                         v.Add(new Voltage("DIMM", 6, 0, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
-                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         //v.Add(new Voltage("#Unused", 9, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused", 10, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused", 11, 0, 1, 0, true));
@@ -2578,8 +2687,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -2615,14 +2724,14 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #1", 3));
                         v.Add(new Voltage("DIMM", 4));
                         v.Add(new Voltage("CPU I/O", 5));
-                        v.Add(new Voltage("CPU SA", 6));
+                        v.Add(new Voltage("CPU System Agent", 6));
                         v.Add(new Voltage("Voltage #2", 7));
                         v.Add(new Voltage("AVCC3", 8));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("VRef", 10));
                         v.Add(new Voltage("VSB", 11));
                         v.Add(new Voltage("AVSB", 12));
-                        v.Add(new Voltage("VBat", 13));
+                        v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("Motherboard", 0));
                         //t.Add(new Temperature("System", 1)); //Unused
@@ -2700,8 +2809,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -2738,8 +2847,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -2768,10 +2877,10 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("DIMM", 10, 1, 1));
-                        v.Add(new Voltage("VCCSA", 11));
+                        v.Add(new Voltage("CPU System Agent", 11));
                         v.Add(new Voltage("PCH Core", 12));
                         v.Add(new Voltage("CPU PLLs", 13));
                         v.Add(new Voltage("CPU VCCIO/IMC", 14));
@@ -2804,10 +2913,10 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
                         v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("DIMM", 10, 1, 1));
-                        v.Add(new Voltage("VCCSA", 11));
+                        v.Add(new Voltage("CPU System Agent", 11));
                         v.Add(new Voltage("PCH Core", 12));
                         v.Add(new Voltage("CPU PLLs", 13));
                         v.Add(new Voltage("CPU VCCIO/IMC", 14));
@@ -2842,10 +2951,10 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("Voltage #6", 5, 0, 1, 0, true));
                         //v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("PCH", 9));
                         //v.Add(new Voltage("DIMM", 10, 1, 1));
-                        //v.Add(new Voltage("VCCSA", 11));
+                        //v.Add(new Voltage("CPU System Agent", 11));
                         //v.Add(new Voltage("PCH Core", 12));
                         //v.Add(new Voltage("CPU PLLs", 13));
                         //v.Add(new Voltage("CPU VCCIO/IMC", 14));
@@ -2872,7 +2981,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
 
                         t.Add(new Temperature("CPU", 22));                        
                         t.Add(new Temperature("Motherboard", 2));
@@ -2904,8 +3013,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -2956,8 +3065,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("CPU SoC", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -3012,13 +3121,13 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VIN8", 5));
                         v.Add(new Voltage("CPU Graphics", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
                         v.Add(new Voltage("DIMM", 10));
                         v.Add(new Voltage("CPU VCCIO", 11, 1, 1));
                         v.Add(new Voltage("PCH Core", 12));
                         v.Add(new Voltage("CPU PLLs", 13));
-                        v.Add(new Voltage("CPU VCCSA", 14));
+                        v.Add(new Voltage("CPU System Agent", 14));
                         
                         t.Add(new Temperature("Motherboard", 0));
                         t.Add(new Temperature("CPU", 1));
@@ -3051,10 +3160,10 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("CPU Graphics", 6, 2, 2));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("DIMM", 10, 1, 1));
-                        v.Add(new Voltage("VCCSA", 11));
+                        v.Add(new Voltage("CPU System Agent", 11));
                         v.Add(new Voltage("PCH Core", 12));
                         v.Add(new Voltage("CPU PLLs", 13));
                         v.Add(new Voltage("CPU VCCIO/IMC", 14));
@@ -3085,8 +3194,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
                         v.Add(new Voltage("Voltage #7", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
                         v.Add(new Voltage("Voltage #11", 10));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("PCH", 12));
@@ -3128,8 +3237,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
                         v.Add(new Voltage("Voltage #7", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
                         v.Add(new Voltage("Voltage #11", 10));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("PCH", 12));
@@ -3174,8 +3283,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
                         v.Add(new Voltage("Voltage #7", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
                         v.Add(new Voltage("Voltage #11", 10));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("PCH", 12));
@@ -3261,8 +3370,8 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("#Unused #5", 5, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
                         //v.Add(new Voltage("#Unused #11", 11, 0, 1, 0, true));
@@ -3394,8 +3503,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1)); //Probably not updating properly
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("Temperature #3", 3));
@@ -3448,8 +3557,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -3474,8 +3583,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9)); // This is wrong
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9)); // This is wrong
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -3508,8 +3617,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9)); // This is wrong
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9)); // This is wrong
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -3538,8 +3647,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        //v.Add(new Voltage("VTT", 9)); // This is wrong
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        //v.Add(new Voltage("CPU Voltage Termination", 9)); // This is wrong
                         t.Add(new Temperature("CPU", 22));
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("T_Sensor", 24)); // Aligned with Armoury Crate
@@ -3562,8 +3671,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -3599,8 +3708,8 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("CPU I/O", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
-                        v.Add(new Voltage("CPU SA", 10));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
+                        v.Add(new Voltage("CPU System Agent", 10));
                         //v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Northbridge/SoC", 12));
                         v.Add(new Voltage("DIMM", 13, 1, 1));
@@ -3627,8 +3736,8 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("Voltage #6", 5, false));
                         //v.Add(new Voltage("CPU I/O", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
-                        v.Add(new Voltage("CPU SA", 10));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
+                        v.Add(new Voltage("CPU System Agent", 10));
                         //v.Add(new Voltage("Voltage #12", 11, false));
                         v.Add(new Voltage("Northbridge/SoC", 12));
                         v.Add(new Voltage("DIMM", 13, 1, 1));
@@ -3663,8 +3772,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("CPU I/O", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
-                        v.Add(new Voltage("CPU SA", 10));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
+                        v.Add(new Voltage("CPU System Agent", 10));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("PCH", 12));
                         v.Add(new Voltage("DIMM", 13, 1, 1));
@@ -3700,8 +3809,8 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("Voltage #6", 5));
                         v.Add(new Voltage("VIN4", 6, false));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         //v.Add(new Voltage("Voltage #11", 10));
                         v.Add(new Voltage("Voltage #11", 11));
                         v.Add(new Voltage("CPU NB/SoC", 12));
@@ -3741,8 +3850,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9));
                         v.Add(new Voltage("Voltage #11", 10, true));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("Voltage #13", 12, true));
@@ -3776,8 +3885,8 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                v.Add(new Voltage("VBat", 8, 34, 34));
-                v.Add(new Voltage("VTT", 9));
+                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                v.Add(new Voltage("CPU Voltage Termination", 9));
                 v.Add(new Voltage("Voltage #11", 10, true));
                 v.Add(new Voltage("Voltage #12", 11, true));
                 v.Add(new Voltage("Voltage #13", 12, true));
@@ -3815,7 +3924,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 5, 20, 10));
                         v.Add(new Voltage("+12V", 6, 28, 5));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 2));
                         f.Add(new Fan("CPU Fan", 0));
@@ -3835,7 +3944,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("Voltage #10", 9, true));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Auxiliary", 1));
@@ -3863,7 +3972,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                v.Add(new Voltage("VBat", 8, 34, 34));
+                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                 v.Add(new Voltage("Voltage #10", 9, true));
                 t.Add(new Temperature("CPU", 0));
                 t.Add(new Temperature("Auxiliary", 1));
@@ -3894,7 +4003,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 5, 15, 7.5f));
                         v.Add(new Voltage("+12V", 6, 56, 10));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 2));
                         f.Add(new Fan("Chassis Fan", 0));
@@ -3915,7 +4024,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Auxiliary", 1));
                         t.Add(new Temperature("System", 2));
@@ -3944,7 +4053,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+5V", 4, 15, 7.5f));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 2));
                         f.Add(new Fan("Chassis Fan #1", 0));
@@ -3965,7 +4074,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+5V", 4, 15, 7.5f));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 2));
                         f.Add(new Fan("Chassis Fan #1", 0));
@@ -3988,7 +4097,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Auxiliary", 1));
                         t.Add(new Temperature("System", 2));
@@ -4015,7 +4124,7 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("Voltage #6", 5, true));
                 v.Add(new Voltage("Voltage #7", 6, true));
                 v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                v.Add(new Voltage("VBat", 8, 34, 34));
+                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                 t.Add(new Temperature("CPU", 0));
                 t.Add(new Temperature("Auxiliary", 1));
                 t.Add(new Temperature("System", 2));

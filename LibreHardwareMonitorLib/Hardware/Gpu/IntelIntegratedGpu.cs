@@ -8,7 +8,6 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 internal class IntelIntegratedGpu : GenericGpu
 {
     private const uint MSR_PP1_ENERGY_STATUS = 0x641;
-    private const uint MSR_RAPL_POWER_UNIT = 0x606;
 
     private readonly Sensor _dedicatedMemoryUsage;
     private readonly Sensor _sharedMemoryLimit;
@@ -46,7 +45,7 @@ internal class IntelIntegratedGpu : GenericGpu
             _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
         }
 
-        if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint _))
+        if (Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
         {
             _energyUnitMultiplier = intelCpu.EnergyUnitsMultiplier;
             if (_energyUnitMultiplier != 0)
