@@ -419,7 +419,7 @@ public abstract class EmbeddedController : Hardware
         {
             int val = _sources[si].Size switch
             {
-                1 => unchecked((sbyte)_data[readRegister]),
+                1 => _sources[si].Type switch { SensorType.Temperature => unchecked((sbyte)_data[readRegister]), _ => _data[readRegister] },
                 2 => unchecked((short)((_data[readRegister] << 8) + _data[readRegister + 1])),
                 _ => 0
             };
