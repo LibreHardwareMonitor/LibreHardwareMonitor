@@ -378,6 +378,46 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #1", 4));
                         c.Add(new Control("MOS Fan #1", 5));
                         break;
+                    case Manufacturer.MSI when model == Model.B550A_PRO:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("DRAM", 3, 1, 1));
+                        v.Add(new Voltage("Vcore", 4, -1, 2));
+                        v.Add(new Voltage("Chipset", 5));
+                        v.Add(new Voltage("CPU System Agent", 6));
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("CPU 1.8V", 9));
+                        v.Add(new Voltage("CPU VDDP", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+
+                        t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("VRM MOS", 2));
+                        t.Add(new Temperature("Chipset", 3));
+                        t.Add(new Temperature("CPU Socket", 4));
+                        t.Add(new Temperature("PCIe x1", 5));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Pump Fan", 1));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+                        f.Add(new Fan("System Fan #4", 5));
+                        f.Add(new Fan("System Fan #5", 6));
+                        f.Add(new Fan("System Fan #6", 7));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("Pump Fan", 1));
+                        c.Add(new Control("System Fan #1", 2));
+                        c.Add(new Control("System Fan #2", 3));
+                        c.Add(new Control("System Fan #3", 4));
+                        c.Add(new Control("System Fan #4", 5));
+                        c.Add(new Control("System Fan #5", 6));
+                        c.Add(new Control("System Fan #6", 7));
+
+                        break;
                     default:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));

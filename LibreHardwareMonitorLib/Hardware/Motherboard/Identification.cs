@@ -376,6 +376,9 @@ internal class Identification
                 return Model.TUF_X470_PLUS_GAMING;
             case var _ when name.Equals("B360M PRO-VDH (MS-7B24)", StringComparison.OrdinalIgnoreCase):
                 return Model.B360M_PRO_VDH;
+            case var _ when name.Equals("B550-A PRO (MS-7C56)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("PRO B550-VC (MS-7C56)", StringComparison.OrdinalIgnoreCase):
+                return Model.B550A_PRO;
             case var _ when name.Equals("B450-A PRO (MS-7B86)", StringComparison.OrdinalIgnoreCase):
                 return Model.B450A_PRO;
             case var _ when name.Equals("B350 GAMING PLUS (MS-7A34)", StringComparison.OrdinalIgnoreCase):
