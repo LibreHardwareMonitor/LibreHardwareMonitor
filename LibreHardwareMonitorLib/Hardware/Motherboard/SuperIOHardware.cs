@@ -2861,7 +2861,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.Z690_Extreme:
                     case Model.Z690_Steel_Legend:
-                    case model.Z790_Pro_RS:
+                    case Model.Z790_Pro_RS:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 20, 10));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
