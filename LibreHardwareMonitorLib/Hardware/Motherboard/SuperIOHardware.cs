@@ -2875,6 +2875,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Chipset 0.82V", 11, 1, 1));
                         v.Add(new Voltage("Chipset 1.0V", 12));
                         v.Add(new Voltage("CPU System Agent", 13, 1, 1));
+                        v.Add(new Voltage("+5V Standby", 14, 2.35f, 1));
 
                         f.Add(new Fan("CPU Fan #1", 1));
                         f.Add(new Fan("CPU Fan #2", 2));
@@ -2895,6 +2896,44 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU Core", 0));
                         t.Add(new Temperature("Motherboard", 2));
                         break;
+
+                    case Model.Z790_Pro_RS:
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 20, 10));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 110, 10));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5, 1, 1));
+                        v.Add(new Voltage("Integrated Memory Controller", 6));
+                        v.Add(new Voltage("+3.3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
+                        v.Add(new Voltage("CPU 1.05V", 10, 1, 1));
+                        v.Add(new Voltage("Chipset 0.82V", 11, 1, 1));
+                        v.Add(new Voltage("Chipset 1.0V", 12));
+                        v.Add(new Voltage("CPU System Agent", 13, 1, 1));
+                        v.Add(new Voltage("+5V Standby", 14, 2.35f, 1));
+
+                        f.Add(new Fan("CPU Fan #1", 1));
+                        f.Add(new Fan("CPU Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #1", 3));
+                        f.Add(new Fan("Chassis Fan #2", 4));
+                        f.Add(new Fan("Chassis Fan #3", 0));
+                        f.Add(new Fan("Chassis Fan #4", 5));
+                        f.Add(new Fan("Chassis Fan #5", 6));
+
+                        c.Add(new Control("CPU Fan #1", 1)); // CPU_FAN1
+                        c.Add(new Control("CPU Fan #2", 2)); // CPU_FAN2/WP
+                        c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1/WP
+                        c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2/WP
+                        c.Add(new Control("Chassis Fan #3", 0)); // CHA_FAN3/WP
+                        c.Add(new Control("Chassis Fan #4", 5)); // CHA_FAN4/WP
+                        c.Add(new Control("Chassis Fan #5", 6)); // CHA_FAN5/WP
+
+                        t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("Motherboard", 2));
+                        break;
+
                     case Model.Z790_Taichi:
                         v.Add(new Voltage("CPU 1.8V", 0));
                         v.Add(new Voltage("Chipset 0.82V", 1));

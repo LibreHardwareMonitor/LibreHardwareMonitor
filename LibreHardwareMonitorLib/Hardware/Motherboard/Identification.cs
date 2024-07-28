@@ -531,6 +531,9 @@ internal class Identification
             case var _ when name.Equals("Z690 Extreme WiFi 6E", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z690 Extreme", StringComparison.OrdinalIgnoreCase):
                 return Model.Z690_Extreme;
+            case var _ when name.Equals("Z790 Pro RS", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z790 Pro RS WiFi", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_Pro_RS;
             case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_Taichi;
