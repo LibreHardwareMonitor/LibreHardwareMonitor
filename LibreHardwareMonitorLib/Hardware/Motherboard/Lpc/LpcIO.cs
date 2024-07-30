@@ -536,9 +536,15 @@ internal class LpcIO
         if (port.RegisterPort is not 0x2E and not 0x4E)
             return false;
 
-        port.IT87Enter();
-
-        ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
+        // Read the chip ID before entering.
+        // If already entered (not 0xFFFF) and the register port is 0x4E, it is most likely bugged and should be left alone.
+        // Entering IT8792 in this state will result in IT8792 reporting with chip ID of 0x8883.
+        if (port.RegisterPort != 0x4E || !port.TryReadWord(CHIP_ID_REGISTER, out ushort chipId))
+        {
+            port.IT87Enter();
+            chipId = port.ReadWord(CHIP_ID_REGISTER);
+        }
+        
         Chip chip = chipId switch
         {
             0x8613 => Chip.IT8613E,
@@ -604,7 +610,7 @@ internal class LpcIO
                 gpioVerify = port.ReadWord(BASE_ADDRESS_REGISTER + 2);
             }
 
-            GigabyteController gigabyteController = FindGigabyteEC(port, chip, motherboard);
+            IGigabyteController gigabyteController = FindGigabyteEC(port, chip, motherboard);
 
             port.IT87Exit();
 
@@ -637,7 +643,7 @@ internal class LpcIO
         return false;
     }
 
-    private GigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
+    private IGigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
     {
         // The controller only affects the 2nd ITE chip if present, and only a few
         // models are known to use this controller.
@@ -645,6 +651,37 @@ internal class LpcIO
         if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
             return null;
 
+        Vendor vendor = DetectVendor();
+
+        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port, chip, vendor);
+        if (gigabyteController != null)
+            return gigabyteController;
+
+        // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
+        if (chip == Chip.IT8792E && vendor == Vendor.AMD)
+        {
+            gigabyteController = EcioPortGigabyteController.TryCreate();
+            if (gigabyteController != null)
+                return gigabyteController;
+        }
+
+        return null;
+
+        Vendor DetectVendor()
+        {
+            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
+            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
+                return Vendor.Intel;
+
+            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+                return Vendor.AMD;
+
+            return Vendor.Unknown;
+        }
+    }
+
+    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port, Chip chip, Vendor vendor)
+    {
         port.Select(IT87XX_SMFI_LDN);
 
         // Check if the SMFI logical device is enabled
@@ -662,7 +699,7 @@ internal class LpcIO
         uint address = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
             addressHi = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
-        
+
         Thread.Sleep(1);
         uint addressVerify = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
@@ -681,19 +718,7 @@ internal class LpcIO
 
         hostAddress |= (address & 0xF000) | ((address & 0xFF) << 16) | ((addressHi & 0xF) << 24);
 
-        return new GigabyteController(hostAddress, DetectVendor());
-
-        Vendor DetectVendor()
-        {
-            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
-            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
-                return Vendor.Intel;
-
-            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
-                return Vendor.AMD;
-
-            return Vendor.Unknown;
-        }
+        return new IsaBridgeGigabyteController(hostAddress, vendor);
     }
 
     // ReSharper disable InconsistentNaming

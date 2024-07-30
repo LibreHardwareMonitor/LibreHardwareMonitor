@@ -140,14 +140,14 @@ internal class Nct677X : ISuperIO
                 Temperatures = new float?[4];
                 break;
 
-            case Chip.NCT6779D:
-            case Chip.NCT6791D:
+            case Chip.NCT6779D: // 15 voltages
+            case Chip.NCT6791D: // 15 voltages
             case Chip.NCT6792D:
             case Chip.NCT6792DA:
-            case Chip.NCT6793D:
+            case Chip.NCT6793D: // 14 voltages
             case Chip.NCT6795D:
-            case Chip.NCT6796D:
-            case Chip.NCT6796DR:
+            case Chip.NCT6796D: // 16 voltages
+            case Chip.NCT6796DR: // 16 voltages
             case Chip.NCT6797D:
             case Chip.NCT6798D:
             case Chip.NCT6799D:
@@ -180,8 +180,8 @@ internal class Nct677X : ISuperIO
                 // min value that could be transferred to 16-bit RPM registers
                 _minFanCount = 0x15;
 
-                Voltages = new float?[15];
-                _voltageRegisters = new ushort[] { 0x480, 0x481, 0x482, 0x483, 0x484, 0x485, 0x486, 0x487, 0x488, 0x489, 0x48A, 0x48B, 0x48C, 0x48D, 0x48E };
+                Voltages = new float?[16];
+                _voltageRegisters = new ushort[] { 0x480, 0x481, 0x482, 0x483, 0x484, 0x485, 0x486, 0x487, 0x488, 0x489, 0x48A, 0x48B, 0x48C, 0x48D, 0x48E, 0x48F };
                 _voltageVBatRegister = 0x488;
                 var temperaturesSources = new List<TemperatureSourceData>();
 
@@ -818,10 +818,35 @@ internal class Nct677X : ISuperIO
 
         byte page = (byte)(address >> 8);
         byte index = (byte)(address & 0xFF);
-        Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+
+        //wait for access, access == EC_SPACE_PAGE_SELECT
+        //timeout: after 500ms, abort and force access
+        byte access;
+
+        DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+        while (true)
+        {
+            access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+            if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
+                break;
+
+            System.Threading.Thread.Sleep(1);
+        }
+
+        if (access != EC_SPACE_PAGE_SELECT)
+        {
+            // Failed to gain access: force register access
+            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+        }
+
         Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
         Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-        return Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
+        byte result = Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
+
+        //free access for other instances
+        Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+
+        return result;
     }
 
     private void WriteByte(ushort address, byte value)
@@ -839,10 +864,33 @@ internal class Nct677X : ISuperIO
         {
             byte page = (byte)(address >> 8);
             byte index = (byte)(address & 0xFF);
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+
+            //wait for access, access == EC_SPACE_PAGE_SELECT
+            //timeout: after 500ms, abort and force access
+            byte access;
+
+            DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+            while (true)
+            {
+                access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+                if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
+                    break;
+
+                System.Threading.Thread.Sleep(1);
+            }
+
+            if (access != EC_SPACE_PAGE_SELECT)
+            {
+                // Failed to gain access: force register access
+                Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            }
+
             Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
             Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
             Ring0.WriteIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET, value);
+
+            //free access for other instances
+            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
         }
     }
 
