@@ -1173,8 +1173,30 @@ public sealed partial class MainForm : Form
     {
         int newWidth = treeView.Width;
         for (int i = 1; i < treeView.Columns.Count; i++)
-            newWidth -= treeView.Columns[i].Width;
+        {
+            if (treeView.Columns[i].IsVisible)
+                newWidth -= treeView.Columns[i].Width;
+        }
         treeView.Columns[0].Width = newWidth;
+    }
+
+    private void TreeView_ColumnWidthChanged(TreeColumn column)
+    {
+        int index = treeView.Columns.IndexOf(column);
+        int columnsWidth = 0;
+        foreach (TreeColumn treeColumn in treeView.Columns)
+        {
+            if (treeColumn.IsVisible)
+                columnsWidth += treeColumn.Width;
+        }
+
+        int nextColumnIndex = index + 1;
+        while (nextColumnIndex < treeView.Columns.Count && treeView.Columns[nextColumnIndex].IsVisible == false)
+            nextColumnIndex++;
+        if (nextColumnIndex < treeView.Columns.Count) {
+            int diff = treeView.Width - columnsWidth;
+            treeView.Columns[nextColumnIndex].Width = Math.Max(20, treeView.Columns[nextColumnIndex].Width + diff);
+        }
     }
 
     private void ServerPortMenuItem_Click(object sender, EventArgs e)

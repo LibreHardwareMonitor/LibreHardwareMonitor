@@ -156,6 +156,7 @@ namespace LibreHardwareMonitor.UI
             this.sensor.SortOrder = System.Windows.Forms.SortOrder.None;
             this.sensor.TooltipText = null;
             this.sensor.Width = 250;
+            this.sensor.WidthChanged += delegate { TreeView_ColumnWidthChanged(this.sensor); };
             //
             // value
             //
@@ -163,6 +164,7 @@ namespace LibreHardwareMonitor.UI
             this.value.SortOrder = System.Windows.Forms.SortOrder.None;
             this.value.TooltipText = null;
             this.value.Width = 100;
+            this.value.WidthChanged += delegate { TreeView_ColumnWidthChanged(this.value); };
             //
             // min
             //
@@ -170,6 +172,7 @@ namespace LibreHardwareMonitor.UI
             this.min.SortOrder = System.Windows.Forms.SortOrder.None;
             this.min.TooltipText = null;
             this.min.Width = 100;
+            this.min.WidthChanged += delegate { TreeView_ColumnWidthChanged(this.min); };
             //
             // max
             //
@@ -177,6 +180,7 @@ namespace LibreHardwareMonitor.UI
             this.max.SortOrder = System.Windows.Forms.SortOrder.None;
             this.max.TooltipText = null;
             this.max.Width = 100;
+            this.max.WidthChanged += delegate { TreeView_ColumnWidthChanged(this.max); };
             //
             // nodeImage
             //
