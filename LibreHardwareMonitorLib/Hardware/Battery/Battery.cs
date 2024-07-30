@@ -19,11 +19,12 @@ internal sealed class Battery : Hardware
     private readonly Sensor _chargeDischargeCurrent;
     private readonly Sensor _chargeDischargeRate;
     private readonly Sensor _chargeLevel;
-    private readonly Sensor _degradationPercentage;
+    private readonly Sensor _degradationLevel;
     private readonly Sensor _designedCapacity;
     private readonly Sensor _fullChargedCapacity;
     private readonly Sensor _remainingCapacity;
     private readonly Sensor _remainingTime;
+    private readonly Sensor _temperature;
     private readonly Sensor _voltage;
 
     public Battery
@@ -34,7 +35,7 @@ internal sealed class Battery : Hardware
         Kernel32.BATTERY_INFORMATION batteryInfo,
         uint batteryTag,
         ISettings settings) :
-        base(name, new Identifier("battery"), settings)
+        base(name, new Identifier("battery", $"{name.Replace(' ', '-')}_{batteryTag}"), settings)
     {
         Name = name;
         Manufacturer = manufacturer;
@@ -72,61 +73,65 @@ internal sealed class Battery : Hardware
             Chemistry = BatteryChemistry.Unknown;
         }
 
-        DegradationLevel = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
-        DesignedCapacity = batteryInfo.DesignedCapacity;
-        FullChargedCapacity = batteryInfo.FullChargedCapacity;
-
+        _designedCapacity = new Sensor("Designed Capacity", 0, SensorType.Energy, this, settings);
+        _fullChargedCapacity = new Sensor("Fully-Charged Capacity", 1, SensorType.Energy, this, settings);
+        _degradationLevel = new Sensor("Degradation Level", 1, SensorType.Level, this, settings);
         _chargeLevel = new Sensor("Charge Level", 0, SensorType.Level, this, settings);
-        ActivateSensor(_chargeLevel);
-
-        _voltage = new Sensor("Voltage", 1, SensorType.Voltage, this, settings);
-        ActivateSensor(_voltage);
-
-        _chargeDischargeCurrent = new Sensor("Current", 2, SensorType.Current, this, settings);
-        ActivateSensor(_chargeDischargeCurrent);
-
-        _designedCapacity = new Sensor("Designed Capacity", 3, SensorType.Energy, this, settings);
-        ActivateSensor(_designedCapacity);
-
-        _fullChargedCapacity = new Sensor("Full Charged Capacity", 4, SensorType.Energy, this, settings);
-        ActivateSensor(_fullChargedCapacity);
-
-        _remainingCapacity = new Sensor("Remaining Capacity", 5, SensorType.Energy, this, settings);
-        ActivateSensor(_remainingCapacity);
-
+        _voltage = new Sensor("Voltage", 0, SensorType.Voltage, this, settings);
+        _remainingCapacity = new Sensor("Remaining Capacity", 2, SensorType.Energy, this, settings);
+        _chargeDischargeCurrent = new Sensor("Charge/Discharge Current", 0, SensorType.Current, this, settings);
         _chargeDischargeRate = new Sensor("Charge/Discharge Rate", 0, SensorType.Power, this, settings);
-        ActivateSensor(_chargeDischargeRate);
-
-        _degradationPercentage = new Sensor("Degradation Level", 0, SensorType.Level, this, settings);
-        ActivateSensor(_degradationPercentage);
-
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
-        ActivateSensor(_remainingTime);
+        _temperature = new Sensor("Battery Temperature", 0, SensorType.Temperature, this, settings);
+
+        if (batteryInfo.FullChargedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY &&
+            batteryInfo.DesignedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY)
+        {
+            _designedCapacity.Value = batteryInfo.DesignedCapacity;
+            _fullChargedCapacity.Value = batteryInfo.FullChargedCapacity;
+            _degradationLevel.Value = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
+            DesignedCapacity = batteryInfo.DesignedCapacity;
+            FullChargedCapacity = batteryInfo.FullChargedCapacity;
+
+            ActivateSensor(_designedCapacity);
+            ActivateSensor(_fullChargedCapacity);
+            ActivateSensor(_degradationLevel);
+        }
     }
 
-    public float ChargeDischargeCurrent { get; private set; }
+    public float? ChargeDischargeCurrent { get; private set; }
 
-    public float ChargeDischargeRate { get; private set; }
+    public float? ChargeDischargeRate { get; private set; }
 
-    public float ChargeLevel { get; private set; }
+    public float? ChargeLevel => _chargeLevel.Value;
 
     public BatteryChemistry Chemistry { get; }
 
-    public float DegradationLevel { get; }
+    public float? DegradationLevel => _degradationLevel.Value;
 
-    public float DesignedCapacity { get; }
+    public float? DesignedCapacity { get; }
 
-    public float FullChargedCapacity { get; }
+    public float? FullChargedCapacity { get; }
 
     public override HardwareType HardwareType => HardwareType.Battery;
 
     public string Manufacturer { get; }
 
-    public float RemainingCapacity { get; private set; }
+    public float? RemainingCapacity => _remainingCapacity.Value;
 
-    public uint RemainingTime { get; private set; }
+    public float? RemainingTime => _remainingTime.Value;
 
-    public float Voltage { get; private set; }
+    public float? Temperature => _temperature.Value;
+
+    public float? Voltage => _voltage.Value;
+
+    private void ActivateSensorIfValueNotNull(ISensor sensor)
+    {
+        if (sensor.Value != null)
+            ActivateSensor(sensor);
+        else
+            DeactivateSensor(sensor);
+    }
 
     public override void Update()
     {
@@ -142,53 +147,55 @@ internal sealed class Battery : Hardware
                                      out _,
                                      IntPtr.Zero))
         {
-            _designedCapacity.Value = Convert.ToSingle(_batteryInformation.DesignedCapacity);
-            _fullChargedCapacity.Value = Convert.ToSingle(_batteryInformation.FullChargedCapacity);
-
-            _remainingCapacity.Value = Convert.ToSingle(batteryStatus.Capacity);
-            RemainingCapacity = Convert.ToSingle(batteryStatus.Capacity);
-
-            _voltage.Value = Convert.ToSingle(batteryStatus.Voltage) / 1000f;
-            Voltage = Convert.ToSingle(batteryStatus.Voltage) / 1000f;
+            if (batteryStatus.Capacity != Kernel32.BATTERY_UNKNOWN_CAPACITY)
+                _remainingCapacity.Value = batteryStatus.Capacity;
+            else
+                _remainingCapacity.Value = null;
 
             _chargeLevel.Value = _remainingCapacity.Value * 100f / _fullChargedCapacity.Value;
-            ChargeLevel = (_remainingCapacity.Value * 100f / _fullChargedCapacity.Value).GetValueOrDefault();
 
-            ChargeDischargeRate = batteryStatus.Rate / 1000f;
+            if (batteryStatus.Voltage is not Kernel32.BATTERY_UNKNOWN_VOLTAGE)
+                _voltage.Value = batteryStatus.Voltage / 1000f;
+            else
+                _voltage.Value = null;
 
-            switch (batteryStatus.Rate)
+            if (batteryStatus.Rate is Kernel32.BATTERY_UNKNOWN_RATE)
             {
-                case > 0:
-                    _chargeDischargeRate.Name = "Charge Rate";
-                    _chargeDischargeRate.Value = batteryStatus.Rate / 1000f;
+                ChargeDischargeCurrent = null;
+                _chargeDischargeCurrent.Value = null;
 
-                    _chargeDischargeCurrent.Name = "Charge Current";
-                    _chargeDischargeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
-                    ChargeDischargeCurrent = (_chargeDischargeRate.Value / _voltage.Value).GetValueOrDefault();
-
-                    break;
-                case < 0:
-                    _chargeDischargeRate.Name = "Discharge Rate";
-                    _chargeDischargeRate.Value = Math.Abs(batteryStatus.Rate / 1000f);
-
-                    _chargeDischargeCurrent.Name = "Discharge Current";
-                    _chargeDischargeCurrent.Value = _chargeDischargeRate.Value / _voltage.Value;
-                    ChargeDischargeCurrent = (_chargeDischargeRate.Value / _voltage.Value).GetValueOrDefault();
-
-                    break;
-                default:
-                    _chargeDischargeRate.Name = "Charge/Discharge Rate";
-                    _chargeDischargeRate.Value = 0f;
-                    ChargeDischargeRate = 0f;
-
-                    _chargeDischargeCurrent.Name = "Charge/Discharge Current";
-                    _chargeDischargeCurrent.Value = 0f;
-                    ChargeDischargeCurrent = 0f;
-
-                    break;
+                ChargeDischargeRate = null;
+                _chargeDischargeRate.Value = null;
             }
+            else
+            {
+                float rateWatts = batteryStatus.Rate / 1000f;
+                ChargeDischargeRate = rateWatts;
+                _chargeDischargeRate.Value = Math.Abs(rateWatts);
 
-            _degradationPercentage.Value = 100f - (_fullChargedCapacity.Value * 100f / _designedCapacity.Value);
+                float? current = rateWatts / _voltage.Value;
+                ChargeDischargeCurrent = current;
+                if (current is not null)
+                    _chargeDischargeCurrent.Value = Math.Abs(current.Value);
+                else
+                    _chargeDischargeCurrent.Value = null;
+
+                if (rateWatts > 0)
+                {
+                    _chargeDischargeRate.Name = "Charge Rate";
+                    _chargeDischargeCurrent.Name = "Charge Current";
+                }
+                else if (rateWatts < 0)
+                {
+                    _chargeDischargeRate.Name = "Discharge Rate";
+                    _chargeDischargeCurrent.Name = "Discharge Current";
+                }
+                else
+                {
+                    _chargeDischargeRate.Name = "Charge/Discharge Rate";
+                    _chargeDischargeCurrent.Name = "Charge/Discharge Current";
+                }
+            }
         }
 
         uint estimatedRunTime = 0;
@@ -204,17 +211,41 @@ internal sealed class Battery : Hardware
                                      out _,
                                      IntPtr.Zero))
         {
-            RemainingTime = estimatedRunTime;
             if (estimatedRunTime != Kernel32.BATTERY_UNKNOWN_TIME)
-            {
-                ActivateSensor(_remainingTime);
                 _remainingTime.Value = estimatedRunTime;
-            }
             else
-            {
-                DeactivateSensor(_remainingTime);
-            }
+                _remainingTime.Value = null;
         }
+        else
+        {
+            _remainingTime.Value = null;
+        }
+
+        uint temperature = 0;
+        bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryTemperature;
+        if (Kernel32.DeviceIoControl(_batteryHandle,
+                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                     ref bqi,
+                                     Marshal.SizeOf(bqi),
+                                     ref temperature,
+                                     Marshal.SizeOf<uint>(),
+                                     out _,
+                                     IntPtr.Zero))
+        {
+            _temperature.Value = (temperature / 10f) - 273.15f;
+        }
+        else
+        {
+            _temperature.Value = null;
+        }
+
+        ActivateSensorIfValueNotNull(_remainingCapacity);
+        ActivateSensorIfValueNotNull(_chargeLevel);
+        ActivateSensorIfValueNotNull(_voltage);
+        ActivateSensorIfValueNotNull(_chargeDischargeCurrent);
+        ActivateSensorIfValueNotNull(_chargeDischargeRate);
+        ActivateSensorIfValueNotNull(_remainingTime);
+        ActivateSensorIfValueNotNull(_temperature);
     }
 
     public override void Close()
