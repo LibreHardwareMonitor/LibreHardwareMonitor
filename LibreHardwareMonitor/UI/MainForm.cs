@@ -228,6 +228,11 @@ public sealed partial class MainForm : Form
         _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
 
         _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
+
+        // Prevent Menu From Closing When UnClicking Hardware Items
+        menuItemFileHardware.DropDown.Closing += StopFileHardwareMenuFromClosing;
+
+
         _showGadget.Changed += delegate
         {
             if (_gadget != null)
@@ -457,6 +462,22 @@ public sealed partial class MainForm : Form
         };
 
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+    }
+    private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
+    {
+        var tsdd = (ToolStripDropDown)sender;
+        Point p = tsdd.PointToClient(Control.MousePosition);
+        Rectangle r = new Rectangle()
+        {
+            Location = p,
+            Width = tsdd.Width,
+            Height = tsdd.Height
+        };
+
+        if (tsdd.DisplayRectangle.Contains(p))
+        {
+            e.Cancel = true;  // cancel closing
+        }
     }
 
     public bool AuthWebServerMenuItemChecked
