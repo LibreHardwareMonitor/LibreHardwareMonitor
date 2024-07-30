@@ -61,4 +61,9 @@ public class UserOption
             _changed -= value;
         }
     }
+
+    public string getItemText()
+    {
+        return _menuItem.Text;
+    }
 }
