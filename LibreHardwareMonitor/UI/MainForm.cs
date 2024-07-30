@@ -465,18 +465,9 @@ public sealed partial class MainForm : Form
     }
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
     {
-        var tsdd = (ToolStripDropDown)sender;
-        Point p = tsdd.PointToClient(Control.MousePosition);
-        Rectangle r = new Rectangle()
+        if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
         {
-            Location = p,
-            Width = tsdd.Width,
-            Height = tsdd.Height
-        };
-
-        if (tsdd.DisplayRectangle.Contains(p))
-        {
-            e.Cancel = true;  // cancel closing
+            e.Cancel = true;
         }
     }
 
