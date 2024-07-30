@@ -1172,4 +1172,33 @@ public sealed partial class MainForm : Form
     {
         new AuthForm(this).ShowDialog();
     }
+
+    /// <summary>
+    /// Handles hardware selection the same way the menuItems would by supplying the
+    /// Form with the relevant userOptions.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void selectHardwareDialogMenuItem_Click(object sender, EventArgs e)
+    {
+        UserOption[] userOptions = [
+            _readMainboardSensors,
+            _readCpuSensors,
+            _readRamSensors,
+            _readGpuSensors,
+            _readFanControllersSensors,
+            _readHddSensors,
+            _readNicSensors,
+            _readPsuSensors,
+            _readBatterySensors
+         ];
+
+        var dialog = new SelectHardwareForm(userOptions);
+
+        if (dialog.ShowDialog() != DialogResult.OK)
+            return;
+
+        foreach (var userOption in userOptions) 
+            userOption.Value = dialog.GetSelectedOptions().Contains(userOption.getItemText());
+    }
 }
