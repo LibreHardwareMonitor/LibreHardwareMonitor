@@ -384,6 +384,9 @@ public sealed partial class MainForm : Form
                                                      },
                                                      _settings);
 
+        perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotationMethod.PerSession;
+        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotationMethod.Daily;
+
         _sensorValuesTimeWindow.Changed += (sender, e) =>
         {
             TimeSpan timeWindow = TimeSpan.Zero;
@@ -1171,5 +1174,18 @@ public sealed partial class MainForm : Form
     private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
     {
         new AuthForm(this).ShowDialog();
+    }
+
+    private void perSessionFileRotationMenuItem_Click(object sender, EventArgs e)
+    {
+        this.dailyFileRotationMenuItem.Checked = false;
+        this.perSessionFileRotationMenuItem.Checked = true;
+        this._logger.FileRotationMethod = LoggerFileRotationMethod.PerSession;
+    }
+    private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
+    {
+        this.dailyFileRotationMenuItem.Checked = true;
+        this.perSessionFileRotationMenuItem.Checked = false;
+        this._logger.FileRotationMethod = LoggerFileRotationMethod.Daily;
     }
 }

@@ -12,10 +12,18 @@ using System.Linq;
 using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.Utilities;
+public enum LoggerFileRotationMethod
+{
+    // Keep the same file for the entire record session
+    PerSession = 0,
+
+    // Create a new file every day
+    Daily,
+}
 
 public class Logger
 {
-    private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}.csv";
+    private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}{1}.csv";
 
     private readonly IComputer _computer;
 
@@ -24,6 +32,8 @@ public class Logger
     private string[] _identifiers;
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
+
+    public LoggerFileRotationMethod FileRotationMethod = LoggerFileRotationMethod.PerSession;
 
     public Logger(IComputer computer)
     {
@@ -80,9 +90,10 @@ public class Logger
         }
     }
 
-    private static string GetFileName(DateTime date)
+    private static string GetFileName(DateTime date, uint sessionNumber = 0)
     {
-        return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + string.Format(FileNameFormat, date);
+        return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar
+            + string.Format(FileNameFormat, date, sessionNumber == 0 ? "" : "-" + sessionNumber);
     }
 
     private bool OpenExistingLogFile()
@@ -170,13 +181,30 @@ public class Logger
         if (_lastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
             return;
 
-        if (_day != now.Date || !File.Exists(_fileName))
+        switch (FileRotationMethod)
         {
-            _day = now.Date;
-            _fileName = GetFileName(_day);
-
-            if (!OpenExistingLogFile())
-                CreateNewLogFile();
+            case LoggerFileRotationMethod.PerSession:
+                // Create file if it does not exist or the logging interval has passed (+ some margin)
+                if (!File.Exists(_fileName) || now - _lastLoggedTime > (LoggingInterval + TimeSpan.FromMilliseconds(100)))
+                {
+                    uint sessionNumber = 0;
+                    do {
+                        _fileName = GetFileName(DateTime.Now, sessionNumber);
+                        sessionNumber++;
+                    } while (File.Exists(_fileName));
+                    CreateNewLogFile();
+                }
+                break;
+            case LoggerFileRotationMethod.Daily:
+                // Create a new file if the day has changed or the file does not exist
+                if (_day != now.Date || !File.Exists(_fileName))
+                {
+                    _day = now.Date;
+                    _fileName = GetFileName(_day);
+                    if (!OpenExistingLogFile())
+                        CreateNewLogFile();
+                }
+                break;
         }
 
         try
