@@ -52,6 +52,8 @@ namespace LibreHardwareMonitor.UI
             this.MenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.resetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hardwareMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectHardwareDialogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.mainboardMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cpuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ramMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,8 +63,6 @@ namespace LibreHardwareMonitor.UI
             this.nicMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.selectHardwareDialogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -289,71 +289,72 @@ namespace LibreHardwareMonitor.UI
             this.hardwareMenuItem.Size = new System.Drawing.Size(180, 22);
             this.hardwareMenuItem.Text = "Hardware";
             // 
+            // selectHardwareDialogMenuItem
+            // 
+            this.selectHardwareDialogMenuItem.Name = "selectHardwareDialogMenuItem";
+            this.selectHardwareDialogMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.J)));
+            this.selectHardwareDialogMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.selectHardwareDialogMenuItem.Text = "&Select Hardware...";
+            this.selectHardwareDialogMenuItem.Click += new System.EventHandler(this.selectHardwareDialogMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(205, 6);
+            // 
             // mainboardMenuItem
             // 
             this.mainboardMenuItem.Name = "mainboardMenuItem";
-            this.mainboardMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mainboardMenuItem.Size = new System.Drawing.Size(208, 22);
             this.mainboardMenuItem.Text = "Motherboard";
             // 
             // cpuMenuItem
             // 
             this.cpuMenuItem.Name = "cpuMenuItem";
-            this.cpuMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.cpuMenuItem.Size = new System.Drawing.Size(208, 22);
             this.cpuMenuItem.Text = "CPU";
             // 
             // ramMenuItem
             // 
             this.ramMenuItem.Name = "ramMenuItem";
-            this.ramMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.ramMenuItem.Size = new System.Drawing.Size(208, 22);
             this.ramMenuItem.Text = "RAM";
             // 
             // gpuMenuItem
             // 
             this.gpuMenuItem.Name = "gpuMenuItem";
-            this.gpuMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.gpuMenuItem.Size = new System.Drawing.Size(208, 22);
             this.gpuMenuItem.Text = "GPU";
             // 
             // fanControllerMenuItem
             // 
             this.fanControllerMenuItem.Name = "fanControllerMenuItem";
-            this.fanControllerMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fanControllerMenuItem.Size = new System.Drawing.Size(208, 22);
             this.fanControllerMenuItem.Text = "Fan Controllers";
             // 
             // hddMenuItem
             // 
             this.hddMenuItem.Name = "hddMenuItem";
-            this.hddMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.hddMenuItem.Size = new System.Drawing.Size(208, 22);
             this.hddMenuItem.Text = "Storage Devices";
             // 
             // nicMenuItem
             // 
             this.nicMenuItem.Name = "nicMenuItem";
-            this.nicMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.nicMenuItem.Size = new System.Drawing.Size(208, 22);
             this.nicMenuItem.Text = "Network";
             // 
             // psuMenuItem
             // 
             this.psuMenuItem.Name = "psuMenuItem";
-            this.psuMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.psuMenuItem.Size = new System.Drawing.Size(208, 22);
             this.psuMenuItem.Text = "Power supplies";
             // 
             // batteryMenuItem
             // 
             this.batteryMenuItem.Name = "batteryMenuItem";
-            this.batteryMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.batteryMenuItem.Size = new System.Drawing.Size(208, 22);
             this.batteryMenuItem.Text = "Batteries";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
-            // 
-            // selectHardwareDialogMenuItem
-            // 
-            this.selectHardwareDialogMenuItem.Name = "selectHardwareDialogMenuItem";
-            this.selectHardwareDialogMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.selectHardwareDialogMenuItem.Text = "&Select Hardware...";
-            this.selectHardwareDialogMenuItem.Click += new System.EventHandler(this.selectHardwareDialogMenuItem_Click);
             // 
             // menuItem6
             // 
