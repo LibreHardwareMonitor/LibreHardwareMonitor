@@ -98,8 +98,11 @@ public sealed partial class MainForm : Form
         nodeTextBoxMax.DrawText += NodeTextBoxText_DrawText;
         nodeTextBoxText.EditorShowing += NodeTextBoxText_EditorShowing;
 
-        foreach (TreeColumn column in treeView.Columns)
+        for (int i = 1; i < treeView.Columns.Count; i++)
+        {
+            TreeColumn column = treeView.Columns[i];
             column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
+        }
 
         TreeModel treeModel = new();
         _root = new Node(Environment.MachineName) { Image = EmbeddedResources.GetImage("computer.png") };
@@ -1164,6 +1167,14 @@ public sealed partial class MainForm : Form
     private void TreeView_MouseUp(object sender, MouseEventArgs e)
     {
         _selectionDragging = false;
+    }
+
+    private void TreeView_SizeChanged(object sender, EventArgs e)
+    {
+        int newWidth = treeView.Width;
+        for (int i = 1; i < treeView.Columns.Count; i++)
+            newWidth -= treeView.Columns[i].Width;
+        treeView.Columns[0].Width = newWidth;
     }
 
     private void ServerPortMenuItem_Click(object sender, EventArgs e)

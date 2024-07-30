@@ -995,6 +995,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseDown);
             this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseMove);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseUp);
+            this.treeView.SizeChanged += new System.EventHandler(this.TreeView_SizeChanged);
             //
             // batteryMenuItem
             //
