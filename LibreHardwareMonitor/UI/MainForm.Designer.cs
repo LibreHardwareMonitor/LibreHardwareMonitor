@@ -613,7 +613,7 @@ namespace LibreHardwareMonitor.UI
             this.dailyFileRotationMenuItem.Name = "dailyFileRotationMenuItem";
             this.dailyFileRotationMenuItem.Size = new System.Drawing.Size(198, 24);
             this.dailyFileRotationMenuItem.Text = "Daily";
-            this.dailyFileRotationMenuItem.ToolTipText = "Create a new log file every day.\n Note: If a file already exists for the current day, the new data will be appended at the end.";
+            this.dailyFileRotationMenuItem.ToolTipText = "Create a new log file every day.\n If a file already exists for the current day, new data will be appended at the end.";
             this.dailyFileRotationMenuItem.Click += new System.EventHandler(this.dailyFileRotationMenuItem_Click);
             //
             // loggingIntervalMenuItem
