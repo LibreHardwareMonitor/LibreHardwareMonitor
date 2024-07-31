@@ -1324,11 +1324,11 @@ public class SMBios
                 return reader.ReadLine();
             }
 
-            return null;
+            return string.Empty;
         }
         catch
         {
-            return null;
+            return string.Empty;
         }
     }
 
