@@ -24,7 +24,7 @@ internal sealed class AquastreamUltimate : Hardware
     {
         if (dev.TryOpen(out _stream))
         {
-            //Reading output report instead of feature report, as the measurements are in the output report
+            // Reading output report instead of feature report, as the measurements are in the output report.
             _stream.Read(_rawData);
             
             FirmwareVersion = GetConvertedValue(0xD).GetValueOrDefault(0);
@@ -56,7 +56,6 @@ internal sealed class AquastreamUltimate : Hardware
             _flows[1] = new Sensor("Pressure (mBar)", 1, SensorType.Factor, this, Array.Empty<ParameterDescription>(), settings);
             ActivateSensor(_flows[1]);
 
-
             _rpmSensors[1] = new Sensor("Fan", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
             ActivateSensor(_rpmSensors[1]);
 
@@ -68,7 +67,6 @@ internal sealed class AquastreamUltimate : Hardware
 
             _powers[1] = new Sensor("Fan", 1, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
             ActivateSensor(_powers[1]);
-
         }
     }
 
@@ -87,24 +85,27 @@ internal sealed class AquastreamUltimate : Hardware
 
     public override void Update()
     {
-        //Reading output report instead of feature report, as the measurements are in the output report
+        // Reading output report instead of feature report, as the measurements are in the output report
         _stream.Read(_rawData);
 
+        _rpmSensors[0].Value = GetConvertedValue(0x51) ; // Pump speed.
+        _rpmSensors[1].Value = GetConvertedValue(0x41+0x06); // Fan speed.
 
-        _rpmSensors[0].Value = GetConvertedValue(0x51) ; //Pump speed
-        _rpmSensors[1].Value = GetConvertedValue(0x41+0x06); //Fan speed
-        _temperatures[0].Value = GetConvertedValue(0x2D) / 100f; //Water temp
-        _temperatures[1].Value = GetConvertedValue(0x2F) / 100f; //Ext sensor temp
-        _voltages[0].Value = GetConvertedValue(0x3D) / 100f; //Pump input voltage
-        _voltages[1].Value = GetConvertedValue(0x41+0x02) / 100f; //Fan output voltage
-        _currents[0].Value = GetConvertedValue(0x53) / 1000f; //Pump current
-        _currents[1].Value = GetConvertedValue(0x41+0x00) / 1000f; //Fan current
-        _powers[0].Value = GetConvertedValue(0x55) / 100f; //Pump power
-        _powers[1].Value = GetConvertedValue(0x41+0x04) / 100f; //Fan pwer
-        _flows[0].Value = GetConvertedValue(0x37); //Flow
-        _flows[1].Value = GetConvertedValue(0x57) / 1000f; //Pressure
+        _temperatures[0].Value = GetConvertedValue(0x2D) / 100f; // Water temp.
+        _temperatures[1].Value = GetConvertedValue(0x2F) / 100f; / /Ext sensor temp.
+
+        _voltages[0].Value = GetConvertedValue(0x3D) / 100f; // Pump input voltage.
+        _voltages[1].Value = GetConvertedValue(0x41+0x02) / 100f; // Fan output voltage.
+
+        _currents[0].Value = GetConvertedValue(0x53) / 1000f; // Pump current.
+        _currents[1].Value = GetConvertedValue(0x41+0x00) / 1000f; // Fan current.
+
+        _powers[0].Value = GetConvertedValue(0x55) / 100f; // Pump power.
+        _powers[1].Value = GetConvertedValue(0x41+0x04) / 100f; // Fan power.
+
+        _flows[0].Value = GetConvertedValue(0x37); // Flow.
+        _flows[1].Value = GetConvertedValue(0x57) / 1000f; // Pressure.
     }
-
 
     private ushort? GetConvertedValue(int index)
     {
@@ -112,6 +113,5 @@ internal sealed class AquastreamUltimate : Hardware
             return null;
             
         return Convert.ToUInt16(_rawData[index + 1] | (_rawData[index] << 8));
-    }
-    
+    }    
 }
