@@ -463,6 +463,7 @@ public sealed partial class MainForm : Form
 
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
     }
+
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
     {
         if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
