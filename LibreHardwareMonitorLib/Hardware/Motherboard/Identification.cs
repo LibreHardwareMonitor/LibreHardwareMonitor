@@ -425,6 +425,8 @@ internal class Identification
                 return Model.X470_AORUS_GAMING_7_WIFI;
             case var _ when name.Equals("X570 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
                 return Model.X570_AORUS_MASTER;
+            case var _ when name.Equals("X570 AORUS PRO", StringComparison.OrdinalIgnoreCase):
+                return Model.X570_AORUS_PRO;
             case var _ when name.Equals("X570 AORUS ULTRA", StringComparison.OrdinalIgnoreCase):
                 return Model.X570_AORUS_ULTRA;
             case var _ when name.Equals("X570 GAMING X", StringComparison.OrdinalIgnoreCase):
