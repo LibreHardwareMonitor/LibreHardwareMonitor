@@ -92,7 +92,7 @@ internal sealed class AquastreamUltimate : Hardware
         _rpmSensors[1].Value = GetConvertedValue(0x41+0x06); // Fan speed.
 
         _temperatures[0].Value = GetConvertedValue(0x2D) / 100f; // Water temp.
-        _temperatures[1].Value = GetConvertedValue(0x2F) / 100f; / /Ext sensor temp.
+        _temperatures[1].Value = GetConvertedValue(0x2F) / 100f; // Ext sensor temp.
 
         _voltages[0].Value = GetConvertedValue(0x3D) / 100f; // Pump input voltage.
         _voltages[1].Value = GetConvertedValue(0x41+0x02) / 100f; // Fan output voltage.
