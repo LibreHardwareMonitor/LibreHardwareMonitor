@@ -423,7 +423,7 @@ namespace Aga.Controls.Tree
 		}
 
 		/// <summary>
-		/// Expand all parent nodes, andd scroll to the specified node
+		/// Expand all parent nodes, and scroll to the specified node
 		/// </summary>
 		public void EnsureVisible(TreeNodeAdv node)
 		{
