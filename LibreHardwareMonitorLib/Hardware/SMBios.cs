@@ -648,15 +648,9 @@ public class BiosInformation : InformationBase
             int.TryParse(parts[1], out int day) &&
             int.TryParse(parts[2], out int year))
         {
-            if (day > 31)
-            {
-                (year, day) = (day, year);
-            }
-
-            if (month > 12)
-            {
-                (month, day) = (day, month);
-            }
+            // Check if the SMBIOS specification is followed.
+            if (month > 12 || day > 31)
+                return null;
 
             return new DateTime(year < 100 ? 1900 + year : year, month, day);
         }
