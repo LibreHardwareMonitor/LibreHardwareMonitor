@@ -387,8 +387,8 @@ public sealed partial class MainForm : Form
                                                      },
                                                      _settings);
 
-        perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotationMethod.PerSession;
-        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotationMethod.Daily;
+        perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
+        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
 
         _sensorValuesTimeWindow.Changed += (sender, e) =>
         {
@@ -1193,6 +1193,7 @@ public sealed partial class MainForm : Form
         int nextColumnIndex = index + 1;
         while (nextColumnIndex < treeView.Columns.Count && treeView.Columns[nextColumnIndex].IsVisible == false)
             nextColumnIndex++;
+
         if (nextColumnIndex < treeView.Columns.Count) {
             int diff = treeView.Width - columnsWidth;
             treeView.Columns[nextColumnIndex].Width = Math.Max(20, treeView.Columns[nextColumnIndex].Width + diff);
@@ -1211,14 +1212,15 @@ public sealed partial class MainForm : Form
 
     private void perSessionFileRotationMenuItem_Click(object sender, EventArgs e)
     {
-        this.dailyFileRotationMenuItem.Checked = false;
-        this.perSessionFileRotationMenuItem.Checked = true;
-        this._logger.FileRotationMethod = LoggerFileRotationMethod.PerSession;
+        dailyFileRotationMenuItem.Checked = false;
+        perSessionFileRotationMenuItem.Checked = true;
+        _logger.FileRotationMethod = LoggerFileRotation.PerSession;
     }
+
     private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
     {
-        this.dailyFileRotationMenuItem.Checked = true;
-        this.perSessionFileRotationMenuItem.Checked = false;
-        this._logger.FileRotationMethod = LoggerFileRotationMethod.Daily;
+        dailyFileRotationMenuItem.Checked = true;
+        perSessionFileRotationMenuItem.Checked = false;
+        _logger.FileRotationMethod = LoggerFileRotation.Daily;
     }
 }

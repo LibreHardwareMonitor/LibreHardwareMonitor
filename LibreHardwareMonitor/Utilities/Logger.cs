@@ -12,14 +12,6 @@ using System.Linq;
 using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.Utilities;
-public enum LoggerFileRotationMethod
-{
-    // Keep the same file for the entire record session
-    PerSession = 0,
-
-    // Create a new file every day
-    Daily,
-}
 
 public class Logger
 {
@@ -33,7 +25,7 @@ public class Logger
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
 
-    public LoggerFileRotationMethod FileRotationMethod = LoggerFileRotationMethod.PerSession;
+    public LoggerFileRotation FileRotationMethod = LoggerFileRotation.PerSession;
 
     public Logger(IComputer computer)
     {
@@ -183,11 +175,11 @@ public class Logger
 
         switch (FileRotationMethod)
         {
-            case LoggerFileRotationMethod.PerSession:
+            case LoggerFileRotation.PerSession:
                 // Create file if it does not exist or the logging interval has passed (+ some margin)
                 if (!File.Exists(_fileName) || now - _lastLoggedTime > (LoggingInterval + TimeSpan.FromMilliseconds(100)))
                 {
-                    uint sessionNumber = 0;
+                    uint sessionNumber = 1;
                     do {
                         _fileName = GetFileName(DateTime.Now, sessionNumber);
                         sessionNumber++;
@@ -195,7 +187,7 @@ public class Logger
                     CreateNewLogFile();
                 }
                 break;
-            case LoggerFileRotationMethod.Daily:
+            case LoggerFileRotation.Daily:
                 // Create a new file if the day has changed or the file does not exist
                 if (_day != now.Date || !File.Exists(_fileName))
                 {

@@ -93,9 +93,9 @@ namespace LibreHardwareMonitor.UI
             this.splitPanelFixedSensorScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.fileRotationMethod = new System.Windows.Forms.ToolStripMenuItem();
-			this.perSessionFileRotationMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
-			this.dailyFileRotationMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.fileRotationMethod = new System.Windows.Forms.ToolStripMenuItem();
+            this.perSessionFileRotationMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.dailyFileRotationMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.log1sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.log2sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -587,34 +587,34 @@ namespace LibreHardwareMonitor.UI
             this.logSensorsMenuItem.Name = "logSensorsMenuItem";
             this.logSensorsMenuItem.Size = new System.Drawing.Size(221, 22);
             this.logSensorsMenuItem.Text = "Log Sensors";
-			//
-			// fileRotationMethod
-			//
-			this.fileRotationMethod.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //
+            // fileRotationMethod
+            //
+            this.fileRotationMethod.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.perSessionFileRotationMenuItem,
             this.dailyFileRotationMenuItem});
-			this.fileRotationMethod.Name = "fileRotationMethod";
-			this.fileRotationMethod.Size = new System.Drawing.Size(246, 24);
-			this.fileRotationMethod.Text = "File rotation method";
-			this.fileRotationMethod.ToolTipText = "Determine how the log file should rotate.";
-			//
-			// perSessionFileRotationMenuItem
-			//
-			this.perSessionFileRotationMenuItem.CheckOnClick = true;
-			this.perSessionFileRotationMenuItem.Name = "perSessionFileRotationMenuItem";
-			this.perSessionFileRotationMenuItem.Size = new System.Drawing.Size(198, 24);
-			this.perSessionFileRotationMenuItem.Text = "Per session";
-			this.perSessionFileRotationMenuItem.ToolTipText = "Create a new log file for each logging session";
-			this.perSessionFileRotationMenuItem.Click += new System.EventHandler(this.perSessionFileRotationMenuItem_Click);
-			//
-			// dailyFileRotationMenuItem
-			//
-			this.dailyFileRotationMenuItem.CheckOnClick = true;
-			this.dailyFileRotationMenuItem.Name = "dailyFileRotationMenuItem";
-			this.dailyFileRotationMenuItem.Size = new System.Drawing.Size(198, 24);
-			this.dailyFileRotationMenuItem.Text = "Daily";
-			this.dailyFileRotationMenuItem.ToolTipText = "Create a new log file every day.\n Note: If a file already exists for the current day, the new data will be appended at the end.";
-			this.dailyFileRotationMenuItem.Click += new System.EventHandler(this.dailyFileRotationMenuItem_Click);
+            this.fileRotationMethod.Name = "fileRotationMethod";
+            this.fileRotationMethod.Size = new System.Drawing.Size(246, 24);
+            this.fileRotationMethod.Text = "File rotation method";
+            this.fileRotationMethod.ToolTipText = "Determine how the log file should rotate.";
+            //
+            // perSessionFileRotationMenuItem
+            //
+            this.perSessionFileRotationMenuItem.CheckOnClick = true;
+            this.perSessionFileRotationMenuItem.Name = "perSessionFileRotationMenuItem";
+            this.perSessionFileRotationMenuItem.Size = new System.Drawing.Size(198, 24);
+            this.perSessionFileRotationMenuItem.Text = "Per session";
+            this.perSessionFileRotationMenuItem.ToolTipText = "Create a new log file for each logging session";
+            this.perSessionFileRotationMenuItem.Click += new System.EventHandler(this.perSessionFileRotationMenuItem_Click);
+            //
+            // dailyFileRotationMenuItem
+            //
+            this.dailyFileRotationMenuItem.CheckOnClick = true;
+            this.dailyFileRotationMenuItem.Name = "dailyFileRotationMenuItem";
+            this.dailyFileRotationMenuItem.Size = new System.Drawing.Size(198, 24);
+            this.dailyFileRotationMenuItem.Text = "Daily";
+            this.dailyFileRotationMenuItem.ToolTipText = "Create a new log file every day.\n Note: If a file already exists for the current day, the new data will be appended at the end.";
+            this.dailyFileRotationMenuItem.Click += new System.EventHandler(this.dailyFileRotationMenuItem_Click);
             //
             // loggingIntervalMenuItem
             //
