@@ -3,32 +3,27 @@ using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
 
-/**
-     * Support for the Kraken X (X42, X52, X62 or X72) devices from NZXT
-     */
+/// <summary>
+/// Support for the Kraken X (X42, X52, X62 or X72) devices.
+/// </summary>
 internal sealed class KrakenV2 : Hardware
 {
-    private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
+    private static readonly byte[] _getFirmwareInfo = [0x10, 0x01];
 
     private readonly HidDevice _device;
-
-    private readonly byte _fanChannel;
     private readonly Sensor _fan;
-    private readonly Sensor _fanRpm;
-
-    private readonly byte _pumpChannel;
-    private readonly Sensor _pump;
-    private readonly Sensor _pumpRpm;
-
-    private readonly byte[] _rawData = new byte[64];
-
-    private readonly string _supportedFirmware;
-    private readonly Sensor _liquidTemperature;
-
-    private readonly TimeSpan _interval = TimeSpan.FromMilliseconds(5000);
-    private DateTime _lastUpdate = DateTime.MinValue;
-
+    private readonly byte _fanChannel;
     private readonly bool _fanControl;
+    private readonly Sensor _fanRpm;
+    private readonly TimeSpan _interval = TimeSpan.FromMilliseconds(5000);
+    private readonly Sensor _liquidTemperature;
+    private readonly Sensor _pump;
+    private readonly byte _pumpChannel;
+    private readonly Sensor _pumpRpm;
+    private readonly byte[] _rawData = new byte[64];
+    private readonly string _supportedFirmware;
+
+    private DateTime _lastUpdate = DateTime.MinValue;
 
     public KrakenV2(HidDevice dev, ISettings settings) : base("Nzxt Kraken X", new Identifier("nzxt", "krakenx", dev.GetSerialNumber().TrimStart('0')), settings)
     {
@@ -69,14 +64,11 @@ internal sealed class KrakenV2 : Hardware
                 return;
 
             // Liquid temperature
-            _liquidTemperature = new Sensor("Liquid", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(),
-                settings);
+            _liquidTemperature = new Sensor("Liquid", 0, SensorType.Temperature, this, [], settings);
             ActivateSensor(_liquidTemperature);
 
             // Pump Control
-            _pump = new Sensor("Pump Control", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(),
-                settings);
-
+            _pump = new Sensor("Pump Control", 0, SensorType.Control, this, [], settings);
             Control pumpControl = new(_pump, settings, 60, 100);
             _pump.Control = pumpControl;
             pumpControl.ControlModeChanged += c => ControlValueChanged(_pump, c);
@@ -85,14 +77,13 @@ internal sealed class KrakenV2 : Hardware
             ActivateSensor(_pump);
 
             // Pump RPM
-            _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+            _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, [], settings);
             ActivateSensor(_pumpRpm);
 
             if (_fanControl)
             {
                 // Fan Control
-                _fan = new Sensor("Fans Control", 1, SensorType.Control, this, Array.Empty<ParameterDescription>(),
-                    settings);
+                _fan = new Sensor("Fans Control", 1, SensorType.Control, this, [], settings);
                 Control fanControl = new(_fan, settings, 0, 100);
                 _fan.Control = fanControl;
                 fanControl.ControlModeChanged += c => ControlValueChanged(_fan, c);
@@ -101,15 +92,14 @@ internal sealed class KrakenV2 : Hardware
                 ActivateSensor(_fan);
 
                 // Fan RPM
-                _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+                _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, [], settings);
                 ActivateSensor(_fanRpm);
             }
 
             IsValid = true;
         }
         catch
-        {
-        }
+        { }
     }
 
     public string FirmwareVersion { get; }
@@ -119,7 +109,6 @@ internal sealed class KrakenV2 : Hardware
     public bool IsValid { get; }
 
     public string Status => FirmwareVersion != _supportedFirmware ? $"Status: Untested firmware version {FirmwareVersion}! Please consider updating to version {_supportedFirmware}" : "Status: OK";
-
 
     private void ControlValueChanged(Sensor sensor, IControl control)
     {
@@ -160,7 +149,7 @@ internal sealed class KrakenV2 : Hardware
             if (_rawData[1] == 0x00)
                 return;
 
-            _liquidTemperature.Value = _rawData[1] + _rawData[2] / 10.0f;
+            _liquidTemperature.Value = _rawData[1] + (_rawData[2] / 10.0f);
             _fanRpm.Value = (_rawData[3] << 8) | _rawData[4];
             _pumpRpm.Value = (_rawData[5] << 8) | _rawData[6];
 
@@ -191,7 +180,7 @@ internal sealed class KrakenV2 : Hardware
 
     private void SetDuty(HidStream stream, byte channel, byte temperature, byte duty)
     {
-        stream.Write(new byte[] { 0x2, 0x4d, channel, temperature, duty });
+        stream.Write([0x2, 0x4d, channel, temperature, duty]);
         _lastUpdate = DateTime.Now;
     }
 }
