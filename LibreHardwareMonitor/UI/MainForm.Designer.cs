@@ -51,7 +51,7 @@ namespace LibreHardwareMonitor.UI
             this.saveReportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.resetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItemFileHardware = new System.Windows.Forms.ToolStripMenuItem();
             this.mainboardMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cpuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ramMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -145,7 +145,6 @@ namespace LibreHardwareMonitor.UI
             this.splitContainer = new LibreHardwareMonitor.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundUpdater = new System.ComponentModel.BackgroundWorker();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
@@ -250,7 +249,7 @@ namespace LibreHardwareMonitor.UI
             this.saveReportMenuItem,
             this.MenuItem2,
             this.resetMenuItem,
-            this.menuItem5,
+            this.menuItemFileHardware,
             this.menuItem6,
             this.exitMenuItem});
             this.fileMenuItem.Name = "fileMenuItem";
@@ -278,7 +277,7 @@ namespace LibreHardwareMonitor.UI
             // 
             // menuItem5
             // 
-            this.menuItem5.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuItemFileHardware.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mainboardMenuItem,
             this.cpuMenuItem,
             this.ramMenuItem,
@@ -288,9 +287,9 @@ namespace LibreHardwareMonitor.UI
             this.nicMenuItem,
             this.psuMenuItem,
             this.batteryMenuItem});
-            this.menuItem5.Name = "menuItem5";
-            this.menuItem5.Size = new System.Drawing.Size(180, 22);
-            this.menuItem5.Text = "Hardware";
+            this.menuItemFileHardware.Name = "menuItem5";
+            this.menuItemFileHardware.Size = new System.Drawing.Size(180, 22);
+            this.menuItemFileHardware.Text = "Hardware";
             // 
             // mainboardMenuItem
             // 
@@ -1106,7 +1105,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem webMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem serverPortMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem menuItem5;
+        private System.Windows.Forms.ToolStripMenuItem menuItemFileHardware;
         private System.Windows.Forms.ToolStripMenuItem mainboardMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cpuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gpuMenuItem;
