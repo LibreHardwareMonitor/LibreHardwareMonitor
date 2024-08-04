@@ -579,7 +579,10 @@ public sealed partial class MainForm : Form
             if (_plotLocation.Value == 0)
             {
                 if (_showPlot.Value && Visible)
+                {
+                    Theme.Current.Apply(_plotForm);
                     _plotForm.Show();
+                }
                 else
                     _plotForm.Hide();
             }
