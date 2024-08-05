@@ -1294,6 +1294,28 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.H97_D3H: //IT8620E
+                        v.Add(new Voltage("Voltage #1", 0, true));
+                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("Voltage #3", 2, true));
+                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+
+                        for (int i = 0; i < 50; i++)
+                            t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.Z170N_WIFI: // ITE IT8628E
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
