@@ -112,8 +112,11 @@ public sealed partial class MainForm : Form
         nodeTextBoxMax.DrawText += NodeTextBoxText_DrawText;
         nodeTextBoxText.EditorShowing += NodeTextBoxText_EditorShowing;
 
-        foreach (TreeColumn column in treeView.Columns)
+        for (int i = 1; i < treeView.Columns.Count; i++)
+        {
+            TreeColumn column = treeView.Columns[i];
             column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
+        }
 
         TreeModel treeModel = new();
         _root = new Node(Environment.MachineName) { Image = EmbeddedResources.GetImage("computer.png") };
@@ -386,6 +389,9 @@ public sealed partial class MainForm : Form
                                                          timeWindow24hMenuItem
                                                      },
                                                      _settings);
+
+        perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
+        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
 
         _sensorValuesTimeWindow.Changed += (sender, e) =>
         {
@@ -1259,6 +1265,37 @@ public sealed partial class MainForm : Form
         _selectionDragging = false;
     }
 
+    private void TreeView_SizeChanged(object sender, EventArgs e)
+    {
+        int newWidth = treeView.Width;
+        for (int i = 1; i < treeView.Columns.Count; i++)
+        {
+            if (treeView.Columns[i].IsVisible)
+                newWidth -= treeView.Columns[i].Width;
+        }
+        treeView.Columns[0].Width = newWidth;
+    }
+
+    private void TreeView_ColumnWidthChanged(TreeColumn column)
+    {
+        int index = treeView.Columns.IndexOf(column);
+        int columnsWidth = 0;
+        foreach (TreeColumn treeColumn in treeView.Columns)
+        {
+            if (treeColumn.IsVisible)
+                columnsWidth += treeColumn.Width;
+        }
+
+        int nextColumnIndex = index + 1;
+        while (nextColumnIndex < treeView.Columns.Count && treeView.Columns[nextColumnIndex].IsVisible == false)
+            nextColumnIndex++;
+
+        if (nextColumnIndex < treeView.Columns.Count) {
+            int diff = treeView.Width - columnsWidth;
+            treeView.Columns[nextColumnIndex].Width = Math.Max(20, treeView.Columns[nextColumnIndex].Width + diff);
+        }
+    }
+
     private void ServerPortMenuItem_Click(object sender, EventArgs e)
     {
         new PortForm(this).ShowDialog();
@@ -1267,5 +1304,19 @@ public sealed partial class MainForm : Form
     private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
     {
         new AuthForm(this).ShowDialog();
+    }
+
+    private void perSessionFileRotationMenuItem_Click(object sender, EventArgs e)
+    {
+        dailyFileRotationMenuItem.Checked = false;
+        perSessionFileRotationMenuItem.Checked = true;
+        _logger.FileRotationMethod = LoggerFileRotation.PerSession;
+    }
+
+    private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
+    {
+        dailyFileRotationMenuItem.Checked = true;
+        perSessionFileRotationMenuItem.Checked = false;
+        _logger.FileRotationMethod = LoggerFileRotation.Daily;
     }
 }
