@@ -152,7 +152,7 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempCPU,
             ECSensor.TempMB,
             ECSensor.TempTSensor,
-            ECSensor.TempVrm,
+            ECSensor.TempVrm),
         new(Model.ROG_STRIX_X570_F_GAMING,
             BoardFamily.Amd500,
             ECSensor.TempChipset,
