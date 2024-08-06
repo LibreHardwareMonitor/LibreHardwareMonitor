@@ -1281,7 +1281,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 5, 1));
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("iGPU", 4));
-                        v.Add(new Voltage("CPU VRIN", 5));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
@@ -1300,7 +1300,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 5, 1));
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("iGPU", 4));
-                        v.Add(new Voltage("CPU VRIN", 5));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
