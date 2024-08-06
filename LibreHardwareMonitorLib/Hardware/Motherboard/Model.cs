@@ -172,6 +172,7 @@ public enum Model
     H61M_USB3_B3_REV_2_0,
     H67A_UD3H_B3,
     H67A_USB3_B3,
+    H97_D3H,
     H81M_HD3,
     B75M_D3H,
     MA770T_UD3,

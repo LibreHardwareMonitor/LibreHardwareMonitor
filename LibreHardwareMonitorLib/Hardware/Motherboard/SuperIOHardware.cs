@@ -1277,11 +1277,11 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.H81M_HD3: //IT8620E
                         v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("Voltage #2", 1, true));
-                        v.Add(new Voltage("Voltage #3", 2, true));
-                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("+3.3V", 1, 6.5f, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("iGPU", 4));
-                        v.Add(new Voltage("CPU VRIN", 5));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
@@ -1291,6 +1291,34 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan", 1));
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("System Fan", 1));
+
+                        break;
+
+                    case Model.H97_D3H: //IT8620E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.5f, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("iGPU", 4));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
+                        v.Add(new Voltage("DIMM", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("System", 0));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("CPU Optional Fan", 1));
+                        f.Add(new Fan("System Fan #1", 4));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("CPU Optional Fan", 1));
+                        c.Add(new Control("System Fan #1", 4));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
 
                         break;
 

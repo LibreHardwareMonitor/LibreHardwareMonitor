@@ -176,6 +176,13 @@ internal class IT87XX : ISuperIO
                 Fans = new float?[3];
                 Controls = new float?[3];
                 break;
+            
+            case Chip.IT8620E:
+                Voltages = new float?[9];
+                Temperatures = new float?[3];
+                Fans = new float?[5];
+                Controls = new float?[5];
+                break;
 
             default:
                 Voltages = new float?[9];

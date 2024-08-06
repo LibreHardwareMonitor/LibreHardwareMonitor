@@ -257,6 +257,8 @@ internal class Identification
                 return Model.H67A_UD3H_B3;
             case var _ when name.Equals("H67A-USB3-B3", StringComparison.OrdinalIgnoreCase):
                 return Model.H67A_USB3_B3;
+            case var _ when name.Equals("H97-D3H-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.H97_D3H;
             case var _ when name.Equals("H81M-HD3", StringComparison.OrdinalIgnoreCase):
                 return Model.H81M_HD3;
             case var _ when name.Equals("B75M-D3H", StringComparison.OrdinalIgnoreCase):
