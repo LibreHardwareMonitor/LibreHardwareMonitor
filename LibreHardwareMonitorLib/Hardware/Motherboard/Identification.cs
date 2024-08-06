@@ -198,6 +198,8 @@ internal class Identification
                 return Model.ROG_STRIX_B550_I_GAMING;
             case var _ when name.Equals("ROG STRIX X570-E GAMING", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_X570_E_GAMING;
+            case var _ when name.Equals("ROG STRIX X570-E GAMING WIFI II", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X570_E_GAMING_WIFI_II;
             case var _ when name.Equals("ROG STRIX X570-I GAMING", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_X570_I_GAMING;
             case var _ when name.Equals("ROG STRIX X570-F GAMING", StringComparison.OrdinalIgnoreCase):
