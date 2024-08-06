@@ -1277,9 +1277,9 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.H81M_HD3: //IT8620E
                         v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("Voltage #2", 1, true));
-                        v.Add(new Voltage("Voltage #3", 2, true));
-                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("+3.3V", 1, 6.5f, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("iGPU", 4));
                         v.Add(new Voltage("CPU VRIN", 5));
                         v.Add(new Voltage("DIMM", 6));
@@ -1295,24 +1295,30 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.H97_D3H: //IT8620E
-                        v.Add(new Voltage("Voltage #1", 0, true));
-                        v.Add(new Voltage("Voltage #2", 1, true));
-                        v.Add(new Voltage("Voltage #3", 2, true));
-                        v.Add(new Voltage("Voltage #4", 3, true));
-                        v.Add(new Voltage("Voltage #5", 4, true));
-                        v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.5f, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("iGPU", 4));
+                        v.Add(new Voltage("CPU VRIN", 5));
+                        v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
 
-                        for (int i = 0; i < 50; i++)
-                            t.Add(new Temperature("Temperature #" + (i + 1), i));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("System", 0));
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
-                            f.Add(new Fan("Fan #" + (i + 1), i));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("CPU Optional Fan", 1));
+                        f.Add(new Fan("System Fan #1", 4));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
-                            c.Add(new Control("Fan #" + (i + 1), i));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("CPU Optional Fan", 1));
+                        c.Add(new Control("System Fan #1", 4));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
 
                         break;
 
