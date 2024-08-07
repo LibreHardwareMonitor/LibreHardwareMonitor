@@ -17,7 +17,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 /// It can be accessed by using memory mapped IO, mapping its internal RAM onto main RAM via the ISA Bridge.
 /// This class can disable it so that the regular IT87XX code can drive the fans.
 /// </summary>
-internal class GigabyteController
+internal class IsaBridgeGigabyteController : IGigabyteController
 {
     private const uint ControllerAddressRange = 0xFF;
     private const int ControllerEnableRegister = 0x47;
@@ -32,7 +32,7 @@ internal class GigabyteController
 
     private bool? _initialState;
 
-    public GigabyteController(uint address, Vendor vendor)
+    public IsaBridgeGigabyteController(uint address, Vendor vendor)
     {
         _controllerBaseAddress = address;
         _vendor = vendor;
@@ -58,7 +58,7 @@ internal class GigabyteController
         if (!Mutexes.WaitPciBus(10))
             return false;
 
-        // see D14F3x https://www.amd.com/system/files/TechDocs/55072_AMD_Family_15h_Models_70h-7Fh_BKDG.pdf 
+        // see D14F3x https://www.amd.com/system/files/TechDocs/55072_AMD_Family_15h_Models_70h-7Fh_BKDG.pdf
         uint amdIsaBridgeAddress = Ring0.GetPciAddress(0x0, 0x14, 0x3);
 
         const uint ioOrMemoryPortDecodeEnableRegister = 0x48;
@@ -124,7 +124,7 @@ internal class GigabyteController
         {
             Marshal.WriteByte(mapped, ControllerEnableRegister, Convert.ToByte(enabled));
             // Give it some time to see the change
-            Thread.Sleep(200);
+            Thread.Sleep(500);
         }
 
         InpOut.UnmapMemory(handle, mapped);

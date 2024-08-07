@@ -16,17 +16,21 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class LMSensors
 {
-    private readonly List<ISuperIO> _superIOs = new();
+    private const string HwMonPath = "/sys/class/hwmon/";
+    private readonly List<ISuperIO> _superIOs = [];
 
     public LMSensors()
     {
-        foreach (string basePath in Directory.GetDirectories("/sys/class/hwmon/"))
+        if (!Directory.Exists(HwMonPath))
+            return;
+
+        foreach (string basePath in Directory.GetDirectories(HwMonPath))
         {
             foreach (string devicePath in new[] { "/device", string.Empty })
             {
                 string path = basePath + devicePath;
-
                 string name = null;
+
                 try
                 {
                     using StreamReader reader = new(path + "/name");

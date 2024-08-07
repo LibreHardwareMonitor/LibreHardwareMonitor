@@ -219,7 +219,7 @@ namespace Aga.Controls.Tree.NodeControls
 
 		private void CreateBrushes(TreeNodeAdv node, DrawContext context, string text, out Brush backgroundBrush, out Color textColor, out Font font, ref string label)
 		{
-			textColor = SystemColors.ControlText;
+			textColor = Parent.ForeColor;
 			backgroundBrush = null;
 			font = context.Font;
 			if (context.DrawSelection == DrawSelectionMode.Active)
@@ -229,11 +229,11 @@ namespace Aga.Controls.Tree.NodeControls
 			}
 			else if (context.DrawSelection == DrawSelectionMode.Inactive)
 			{
-				textColor = SystemColors.ControlText;
+				textColor = Parent.ForeColor;
                 backgroundBrush = SystemBrushes.InactiveBorder;
 			}
 			else if (context.DrawSelection == DrawSelectionMode.FullRowSelect)
-				textColor = SystemColors.ControlText;
+				textColor = Parent.ForeColor;
 
 			if (!context.Enabled)
 				textColor = SystemColors.GrayText;

@@ -8,8 +8,8 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v2
-      - uses: nuget/setup-nuget@v1
+      - uses: actions/checkout@v4
+      - uses: nuget/setup-nuget@v2
       - uses: microsoft/setup-msbuild@v1.1
         with:
           msbuild-architecture: x64
@@ -36,35 +36,35 @@ jobs:
         run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
 
       - name: Publish net472
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitor-net472
           path: |
             bin/Release/net472
 
       - name: Publish netstandard20
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitorLib-netstandard20
           path: |
             bin/Release/netstandard2.0
 
       - name: Publish net60
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitorLib-net60
           path: |
             bin/Release/net6.0
 
       - name: Publish net70
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitorLib-net70
           path: |
             bin/Release/net7.0
 
       - name: Publish nupkg
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitorLib-nupkg
           path: |
