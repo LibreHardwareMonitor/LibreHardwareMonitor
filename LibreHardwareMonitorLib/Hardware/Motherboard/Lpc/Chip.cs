@@ -26,6 +26,7 @@ internal enum Chip : ushort
     F71889AD = 0x1005,
     F71889ED = 0x0909,
     F71889F = 0x0723,
+    F81804 = 0x1502,
 
     IT8613E = 0x8613,
     IT8620E = 0x8620,
@@ -51,6 +52,7 @@ internal enum Chip : ushort
     IT8792E = 0x8733, // Could also be IT8791E, IT8795E
     IT87952E = 0x8695,
 
+    NCT6116D = 0xD282,
     NCT610XD = 0xC452,
     NCT6771F = 0xB470,
     NCT6776F = 0xC330,
@@ -99,6 +101,7 @@ internal class ChipName
             case Chip.F71889ED: return "Fintek F71889ED";
             case Chip.F71889F: return "Fintek F71889F";
             case Chip.F71808E: return "Fintek F71808E";
+            case Chip.F81804: return "Fintek F81804";
             case Chip.IT8613E: return "ITE IT8613E";
             case Chip.IT8620E: return "ITE IT8620E";
             case Chip.IT8625E: return "ITE IT8625E";
@@ -123,6 +126,7 @@ internal class ChipName
             case Chip.IT8792E: return "ITE IT8791E/IT8792E/IT8795E";
             case Chip.IT87952E: return "ITE IT87952E";
 
+            case Chip.NCT6116D: return "Nuvoton NCT6116D";
             case Chip.NCT610XD: return "Nuvoton NCT6102D/NCT6104D/NCT6106D";
             case Chip.NCT6771F: return "Nuvoton NCT6771F";
             case Chip.NCT6776F: return "Nuvoton NCT6776F";

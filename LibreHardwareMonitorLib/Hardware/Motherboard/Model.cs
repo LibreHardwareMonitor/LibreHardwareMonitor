@@ -28,6 +28,8 @@ public enum Model
     B450M_Steel_Legend,
     B85M_DGS,
     Fatal1ty_AB350_Gaming_K4,
+    IMB_1213,
+    IMB_1222,
     P55_Deluxe,
     X399_Phantom_Gaming_6,
     Z77Pro4M,
