@@ -1670,6 +1670,35 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X570_AORUS_PRO: // IT8688E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
+                        v.Add(new Voltage("+12V", 2, 10f, 2f));
+                        v.Add(new Voltage("+5V", 3, 15f, 10f));
+                        v.Add(new Voltage("Vcore SoC", 4));
+                        v.Add(new Voltage("VDDP", 5));
+                        v.Add(new Voltage("DIMM AB", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 10f, 10f));
+                        v.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("External #1", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("PCH", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("PCH Fan", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("PCH Fan", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
+
+                        break;
+
                     case Model.X570_GAMING_X: // IT8688E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
@@ -2224,6 +2253,7 @@ internal sealed class SuperIOHardware : Hardware
                 switch (model)
                 {
                     case Model.X570_AORUS_MASTER: // IT879XE
+                    case Model.X570_AORUS_PRO:
                     case Model.X570_AORUS_ULTRA:
                     case Model.B550_AORUS_MASTER:
                     case Model.B550_AORUS_PRO:
