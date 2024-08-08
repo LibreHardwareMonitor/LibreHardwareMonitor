@@ -1983,6 +1983,36 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B660_DS3H_DDR4:
+                    case Model.B660_DS3H_AC_DDR4:
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("iGPU", 4));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
+                        v.Add(new Voltage("DRAM", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("System #2", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3 / Pump", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3 / Pump", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
+
+                        break;
+                    
                     case Model.B660M_DS3H_AX_DDR4:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("VAXG", 1));

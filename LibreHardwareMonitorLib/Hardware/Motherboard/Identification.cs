@@ -541,6 +541,12 @@ internal class Identification
             case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_Taichi;
+            case var _ when name.Equals("B660 DS3H DDR4-Y1",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H DDR4",StringComparison.OrdinalIgnoreCase):
+                return Model.B660_DS3H_DDR4;
+            case var _ when name.Equals("B660 DS3H AC DDR4-Y1",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H AC DDR4",StringComparison.OrdinalIgnoreCase):
+                return Model.B660_DS3H_AC_DDR4;
             case var _ when name.Equals("B660M DS3H AX DDR4",StringComparison.OrdinalIgnoreCase):
                 return Model.B660M_DS3H_AX_DDR4;
             case var _ when name.Equals("ROG STRIX Z790-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
