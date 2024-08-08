@@ -1570,6 +1570,12 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B650_AORUS_ELITE: // IT8689E
+                    case Model.B650_AORUS_ELITE_AX: // IT8689E
+                    case Model.B650_AORUS_ELITE_V2: // IT8689E
+                    case Model.B650_AORUS_ELITE_AX_V2: // IT8689E
+                    case Model.B650_AORUS_ELITE_AX_ICE: // IT8689E
+                    case Model.B650E_AORUS_ELITE_AX_ICE: // IT8689E
                     case Model.B650M_AORUS_PRO: // IT8689E
                     case Model.B650M_AORUS_PRO_AX:
                     case Model.B650M_AORUS_ELITE:
@@ -1584,23 +1590,23 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 10f, 10f));
                         v.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
                         v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
-                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("PCH", 1));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
-                        t.Add(new Temperature("VSOC MOS", 5));
+                        t.Add(new Temperature("VSoC MOS", 5));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
                         f.Add(new Fan("System Fan #3", 3));
-                        f.Add(new Fan("CPU Pump Fan", 4));
+                        f.Add(new Fan("System Fan #4 / Pump", 4));
                         f.Add(new Fan("CPU Optional Fan", 5));
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("System Fan #1", 1));
                         c.Add(new Control("System Fan #2", 2));
                         c.Add(new Control("System Fan #3", 3));
-                        c.Add(new Control("CPU Pump Fan", 4));
+                        c.Add(new Control("System Fan #4 / Pump", 4));
                         c.Add(new Control("CPU Optional Fan", 5));
 
                         break;
