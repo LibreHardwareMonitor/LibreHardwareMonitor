@@ -17,6 +17,35 @@ internal class BatteryGroup : IGroup
 {
     private readonly List<Battery> _hardware = new();
 
+    static bool QueryStringFromBatteryInfo(SafeFileHandle battery, Kernel32.BATTERY_QUERY_INFORMATION bqi, out string value)
+    {
+        const int maxLoadString = 100;
+
+        value = null;
+
+        bool result = false;
+        IntPtr ptrString = Marshal.AllocHGlobal(maxLoadString);
+        if (Kernel32.DeviceIoControl(battery,
+                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                                     ref bqi,
+                                     Marshal.SizeOf(bqi),
+                                     ptrString,
+                                     maxLoadString,
+                                     out uint stringSizeBytes,
+                                     IntPtr.Zero))
+        {
+            // Use the value stored in stringSizeBytes to avoid relying on a
+            // terminator char.
+            // See https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/pull/1158#issuecomment-1979559929
+            int stringSizeChars = (int)stringSizeBytes / 2;
+            value = Marshal.PtrToStringUni(ptrString, stringSizeChars);
+            result = true;
+        }
+
+        Marshal.FreeHGlobal(ptrString);
+        return result;
+    }
+
     public unsafe BatteryGroup(ISettings settings)
     {
         // No implementation for battery information on Unix systems
@@ -93,42 +122,12 @@ internal class BatteryGroup : IGroup
                                         // Only batteries count.
                                         if (bi.Capabilities.HasFlag(Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY))
                                         {
-                                            const int maxLoadString = 100;
-
-                                            IntPtr ptrDevName = Marshal.AllocCoTaskMem(maxLoadString);
                                             bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryDeviceName;
+                                            QueryStringFromBatteryInfo(battery, bqi, out string batteryName);
+                                            bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
+                                            QueryStringFromBatteryInfo(battery, bqi, out string manufacturer);
 
-                                            if (Kernel32.DeviceIoControl(battery,
-                                                                         Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                         ref bqi,
-                                                                         Marshal.SizeOf(bqi),
-                                                                         ptrDevName,
-                                                                         maxLoadString,
-                                                                         out _,
-                                                                         IntPtr.Zero))
-                                            {
-                                                IntPtr ptrManName = Marshal.AllocCoTaskMem(maxLoadString);
-                                                bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
-
-                                                if (Kernel32.DeviceIoControl(battery,
-                                                                             Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                             ref bqi,
-                                                                             Marshal.SizeOf(bqi),
-                                                                             ptrManName,
-                                                                             maxLoadString,
-                                                                             out _,
-                                                                             IntPtr.Zero))
-                                                {
-                                                    string name = Marshal.PtrToStringUni(ptrDevName);
-                                                    string manufacturer = Marshal.PtrToStringUni(ptrManName);
-
-                                                    _hardware.Add(new Battery(name, manufacturer, battery, bi, bqi.BatteryTag, settings));
-                                                }
-
-                                                Marshal.FreeCoTaskMem(ptrManName);
-                                            }
-
-                                            Marshal.FreeCoTaskMem(ptrDevName);
+                                            _hardware.Add(new Battery(batteryName, manufacturer, battery, bi, bqi.BatteryTag, settings));
                                         }
                                     }
                                 }
@@ -177,37 +176,55 @@ internal class BatteryGroup : IGroup
             reportBuilder.Append("Battery #").Append(count).AppendLine(":")
                          .Append(" Name: ").AppendLine(bat.Name)
                          .Append(" Manufacturer: ").AppendLine(bat.Manufacturer)
-                         .Append(" Chemistry: ").AppendLine(chemistry)
-                         .Append(" Degradation Level: ").AppendFormat("{0:F2}", bat.DegradationLevel).AppendLine(" %")
-                         .Append(" Designed Capacity: ").Append(bat.DesignedCapacity).AppendLine(" mWh")
-                         .Append(" Full Charged Capacity: ").Append(bat.FullChargedCapacity).AppendLine(" mWh")
-                         .Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh")
-                         .Append(" Charge Level: ").AppendFormat("{0:F2}", bat.RemainingCapacity * 100f / bat.FullChargedCapacity).AppendLine(" %")
-                         .Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
+                         .Append(" Chemistry: ").AppendLine(chemistry);
 
-            if (bat.RemainingTime != Kernel32.BATTERY_UNKNOWN_TIME)
+            if (bat.DegradationLevel.HasValue)
+                reportBuilder.Append(" Degradation Level: ").AppendFormat("{0:F2}", bat.DegradationLevel).AppendLine(" %");
+
+            if (bat.DesignedCapacity.HasValue)
+                reportBuilder.Append(" Designed Capacity: ").Append(bat.DesignedCapacity).AppendLine(" mWh");
+
+            if (bat.FullChargedCapacity.HasValue)
+                reportBuilder.Append(" Fully-Charged Capacity: ").Append(bat.FullChargedCapacity).AppendLine(" mWh");
+
+            if (bat.RemainingCapacity.HasValue)
+                reportBuilder.Append(" Remaining Capacity: ").Append(bat.RemainingCapacity).AppendLine(" mWh");
+
+            if (bat.ChargeLevel.HasValue)
+                reportBuilder.Append(" Charge Level: ").AppendFormat("{0:F2}", bat.ChargeLevel).AppendLine(" %");
+
+            if (bat.Voltage.HasValue)
+                reportBuilder.Append(" Voltage: ").AppendFormat("{0:F3}", bat.Voltage).AppendLine(" V");
+
+            if (bat.Temperature.HasValue)
+                reportBuilder.Append(" Temperature: ").AppendFormat("{0:F3}", bat.Temperature).AppendLine(" ºC");
+
+            if (bat.RemainingTime.HasValue)
+                reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime.Value)).AppendLine();
+
+            string cdRateSensorName;
+            string cdCurrentSensorName;
+            if (bat.ChargeDischargeRate > 0)
             {
-                reportBuilder.Append(" Remaining Time (Estimated): ").AppendFormat("{0:g}", TimeSpan.FromSeconds(bat.RemainingTime)).AppendLine();
+                cdRateSensorName = " Charge Rate: ";
+                cdCurrentSensorName = " Charge Current: ";
+            }
+            else if (bat.ChargeDischargeRate < 0)
+            {
+                cdRateSensorName = " Discharge Rate: ";
+                cdCurrentSensorName = " Discharge Current: ";
+            }
+            else
+            {
+                cdRateSensorName = " Charge/Discharge Rate: ";
+                cdCurrentSensorName = " Charge/Discharge Current: ";
             }
 
-            switch (bat.ChargeDischargeRate)
-            {
-                case > 0:
-                    reportBuilder.Append(" Charge Rate: ").AppendFormat("{0:F1}", bat.ChargeDischargeRate).AppendLine(" W")
-                                 .Append(" Charge Current: ").AppendFormat("{0:F3}", bat.ChargeDischargeRate / bat.Voltage).AppendLine(" A");
+            if (bat.ChargeDischargeRate.HasValue)
+                reportBuilder.Append(cdRateSensorName).AppendFormat("{0:F1}", Math.Abs(bat.ChargeDischargeRate.Value)).AppendLine(" W");
 
-                    break;
-                case < 0:
-                    reportBuilder.Append(" Discharge Rate: ").AppendFormat("{0:F1}", Math.Abs(bat.ChargeDischargeRate)).AppendLine(" W")
-                                 .Append(" Discharge Current: ").AppendFormat("{0:F3}", Math.Abs(bat.ChargeDischargeRate) / bat.Voltage).AppendLine(" A");
-
-                    break;
-                default:
-                    reportBuilder.AppendLine(" Charge/Discharge Rate: 0 W")
-                                 .AppendLine(" Charge/Discharge Current: 0 A");
-
-                    break;
-            }
+            if (bat.ChargeDischargeCurrent.HasValue)
+                reportBuilder.Append(cdCurrentSensorName).AppendFormat("{0:F3}", Math.Abs(bat.ChargeDischargeCurrent.Value)).AppendLine(" A");
 
             reportBuilder.AppendLine();
             count++;
