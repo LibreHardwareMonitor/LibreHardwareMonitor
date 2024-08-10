@@ -22,7 +22,7 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _distToTjMaxTemperatures;
 
-    private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, MSR_PLATFORM_ENERGY_STATUS };
+    private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS };
     private readonly uint[] _lastEnergyConsumed;
     private readonly DateTime[] _lastEnergyTime;
 
@@ -186,29 +186,23 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0x8C: // Tiger Lake (Intel 10 nm SuperFin, Gen. 11)
+                        case 0x8C: // Tiger Lake (10nm)
                         case 0x8D:
                             _microArchitecture = MicroArchitecture.TigerLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0x97: // Alder Lake (Intel 7 (10ESF), Gen. 12)
-                        case 0x9A: // Alder Lake-L (Intel 7 (10ESF), Gen. 12)
-                        case 0xBE: // Alder Lake-N (Intel 7 (10ESF), Gen. 12)
+                        case 0x97: // Alder Lake (7/10nm)
+                        case 0x9A: // Alder Lake-L (7/10nm)
+                        case 0xBE: // Alder Lake-N (7/10nm)
                             _microArchitecture = MicroArchitecture.AlderLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xB7: // Raptor Lake (Intel 7 (10ESF), Gen. 13)
-                        case 0xBA: // Raptor Lake-P (Intel 7 (10ESF), Gen. 13)
-                        case 0xBF: // Raptor Lake-N (Intel 7 (10ESF), Gen. 13)
+                        case 0xB7: // Raptor Lake (7nm)
+                        case 0xBA: // Raptor Lake-P (7nm)
+                        case 0xBF: // Raptor Lake-N (7nm)
                             _microArchitecture = MicroArchitecture.RaptorLake;
-                            tjMax = GetTjMaxFromMsr();
-                            break;
-
-                        case 0xAC: // Meteor Lake (Intel 4, TSMC N5/N6, Gen. 14)
-                        case 0xAA: // Meteor Lake-L (Intel 4, TSMC N5/N6, Gen. 14)
-                            _microArchitecture = MicroArchitecture.MeteorLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
@@ -279,7 +273,6 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.JasperLake:
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.Nehalem:
-            case MicroArchitecture.MeteorLake:
             case MicroArchitecture.RaptorLake:
             case MicroArchitecture.RocketLake:
             case MicroArchitecture.SandyBridge:
@@ -392,7 +385,6 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.IvyBridge or
             MicroArchitecture.JasperLake or
             MicroArchitecture.KabyLake or
-            MicroArchitecture.MeteorLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
             MicroArchitecture.SandyBridge or
@@ -416,7 +408,7 @@ internal sealed class IntelCpu : GenericCpu
 
             if (EnergyUnitsMultiplier != 0)
             {
-                string[] powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory", "CPU Platform" };
+                string[] powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory" };
 
                 for (int i = 0; i < _energyStatusMsrs.Length; i++)
                 {
@@ -494,8 +486,7 @@ internal sealed class IntelCpu : GenericCpu
             MSR_PKG_ENERGY_STATUS,
             MSR_DRAM_ENERGY_STATUS,
             MSR_PP0_ENERGY_STATUS,
-            MSR_PP1_ENERGY_STATUS,
-            MSR_PLATFORM_ENERGY_STATUS,
+            MSR_PP1_ENERGY_STATUS
         };
     }
 
@@ -594,7 +585,6 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.IvyBridge:
                         case MicroArchitecture.JasperLake:
                         case MicroArchitecture.KabyLake:
-                        case MicroArchitecture.MeteorLake:
                         case MicroArchitecture.RaptorLake:
                         case MicroArchitecture.RocketLake:
                         case MicroArchitecture.SandyBridge:
@@ -670,7 +660,6 @@ internal sealed class IntelCpu : GenericCpu
         Airmont,
         AlderLake,
         Atom,
-        ArrowLake, // Gen. 15 (0xC6, -H = 0xC5)
         Broadwell,
         CannonLake,
         CometLake,
@@ -684,7 +673,6 @@ internal sealed class IntelCpu : GenericCpu
         KabyLake,
         Nehalem,
         NetBurst,
-        MeteorLake,
         RocketLake,
         SandyBridge,
         Silvermont,
@@ -706,7 +694,6 @@ internal sealed class IntelCpu : GenericCpu
     private const uint MSR_PLATFORM_INFO = 0xCE;
     private const uint MSR_PP0_ENERGY_STATUS = 0x639;
     private const uint MSR_PP1_ENERGY_STATUS = 0x641;
-    private const uint MSR_PLATFORM_ENERGY_STATUS = 0x64D;
 
     private const uint MSR_RAPL_POWER_UNIT = 0x606;
     // ReSharper restore InconsistentNaming

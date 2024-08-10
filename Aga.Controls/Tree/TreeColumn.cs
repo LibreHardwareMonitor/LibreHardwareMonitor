@@ -249,41 +249,34 @@ namespace Aga.Controls.Tree
 
         private void DrawContent(Graphics gr, Rectangle bounds, Font font)
         {
-            if (TreeViewAdv.CustomColumnTextRenderFunc != null)
+            Rectangle innerBounds = new Rectangle(bounds.X + HeaderLeftMargin, bounds.Y,
+                                   bounds.Width - HeaderLeftMargin - HeaderRightMargin,
+                                   bounds.Height);
+
+            if (SortOrder != SortOrder.None)
+				innerBounds.Width -= (SortMarkSize.Width + SortOrderMarkMargin);
+
+            Size maxTextSize = TextRenderer.MeasureText(gr, Header, font, innerBounds.Size, TextFormatFlags.NoPadding);
+			Size textSize = TextRenderer.MeasureText(gr, Header, font, innerBounds.Size, _baseHeaderFlags);
+
+            if (SortOrder != SortOrder.None)
             {
-                TreeViewAdv.CustomColumnTextRenderFunc(gr, bounds, font, Header);
-            }
-            else
-            {
-                Rectangle innerBounds = new Rectangle(bounds.X + HeaderLeftMargin, bounds.Y,
-                                       bounds.Width - HeaderLeftMargin - HeaderRightMargin,
-                                       bounds.Height);
+				int tw = Math.Min(textSize.Width, innerBounds.Size.Width);
 
-                if (SortOrder != SortOrder.None)
-                    innerBounds.Width -= (SortMarkSize.Width + SortOrderMarkMargin);
-
-                Size maxTextSize = TextRenderer.MeasureText(gr, Header, font, innerBounds.Size, TextFormatFlags.NoPadding);
-                Size textSize = TextRenderer.MeasureText(gr, Header, font, innerBounds.Size, _baseHeaderFlags);
-
-                if (SortOrder != SortOrder.None)
-                {
-                    int tw = Math.Min(textSize.Width, innerBounds.Size.Width);
-
-                    int x = 0;
-                    if (TextAlign == HorizontalAlignment.Left)
-                        x = innerBounds.X + tw + SortOrderMarkMargin;
-                    else if (TextAlign == HorizontalAlignment.Right)
-                        x = innerBounds.Right + SortOrderMarkMargin;
-                    else
-                        x = innerBounds.X + tw + (innerBounds.Width - tw) / 2 + SortOrderMarkMargin;
-                    DrawSortMark(gr, bounds, x);
-                }
-
-                if (textSize.Width < maxTextSize.Width)
-                    TextRenderer.DrawText(gr, Header, font, innerBounds, SystemColors.ControlText, _baseHeaderFlags | TextFormatFlags.Left);
+                int x = 0;
+                if (TextAlign == HorizontalAlignment.Left)
+					x = innerBounds.X + tw + SortOrderMarkMargin;
+                else if (TextAlign == HorizontalAlignment.Right)
+					x = innerBounds.Right + SortOrderMarkMargin;
                 else
-                    TextRenderer.DrawText(gr, Header, font, innerBounds, SystemColors.ControlText, _headerFlags);
-            }
+					x = innerBounds.X + tw + (innerBounds.Width - tw) / 2 + SortOrderMarkMargin;
+                DrawSortMark(gr, bounds, x);
+			}
+
+			if (textSize.Width < maxTextSize.Width)
+				TextRenderer.DrawText(gr, Header, font, innerBounds, SystemColors.ControlText, _baseHeaderFlags | TextFormatFlags.Left);
+            else
+				TextRenderer.DrawText(gr, Header, font, innerBounds, SystemColors.ControlText, _headerFlags);
         }
 
 		private void DrawSortMark(Graphics gr, Rectangle bounds, int x)
@@ -311,41 +304,34 @@ namespace Aga.Controls.Tree
 
 		internal static void DrawBackground(Graphics gr, Rectangle bounds, bool pressed, bool hot)
 		{
-            if (TreeViewAdv.CustomColumnBackgroundRenderFunc != null)
-            {
-                TreeViewAdv.CustomColumnBackgroundRenderFunc(gr, bounds, pressed, hot);
-            }
-            else
-            {
-                if (Application.RenderWithVisualStyles)
-                {
-                    CreateRenderers();
-                    if (pressed)
-                        _pressedRenderer.DrawBackground(gr, bounds);
-                    else if (hot)
-                        _hotRenderer.DrawBackground(gr, bounds);
-                    else
-                        _normalRenderer.DrawBackground(gr, bounds);
-                }
-                else
-                {
-                    gr.FillRectangle(SystemBrushes.Control, bounds);
-                    Pen p1 = SystemPens.ControlLightLight;
-                    Pen p2 = SystemPens.ControlDark;
-                    Pen p3 = SystemPens.ControlDarkDark;
-                    if (pressed)
-                        gr.DrawRectangle(p2, bounds.X, bounds.Y, bounds.Width, bounds.Height);
-                    else
-                    {
-                        gr.DrawLine(p1, bounds.X, bounds.Y, bounds.Right, bounds.Y);
-                        gr.DrawLine(p3, bounds.X, bounds.Bottom, bounds.Right, bounds.Bottom);
-                        gr.DrawLine(p3, bounds.Right - 1, bounds.Y, bounds.Right - 1, bounds.Bottom - 1);
-                        gr.DrawLine(p1, bounds.Left, bounds.Y + 1, bounds.Left, bounds.Bottom - 2);
-                        gr.DrawLine(p2, bounds.Right - 2, bounds.Y + 1, bounds.Right - 2, bounds.Bottom - 2);
-                        gr.DrawLine(p2, bounds.X, bounds.Bottom - 1, bounds.Right - 2, bounds.Bottom - 1);
-                    }
-                }
-            }
+			if (Application.RenderWithVisualStyles)
+			{
+				CreateRenderers();
+				if (pressed)
+					_pressedRenderer.DrawBackground(gr, bounds);
+				else if (hot)
+					_hotRenderer.DrawBackground(gr, bounds);
+				else
+					_normalRenderer.DrawBackground(gr, bounds);
+			}
+			else
+			{
+				gr.FillRectangle(SystemBrushes.Control, bounds);
+				Pen p1 = SystemPens.ControlLightLight;
+				Pen p2 = SystemPens.ControlDark;
+				Pen p3 = SystemPens.ControlDarkDark;
+				if (pressed)
+					gr.DrawRectangle(p2, bounds.X, bounds.Y, bounds.Width, bounds.Height);
+				else
+				{
+					gr.DrawLine(p1, bounds.X, bounds.Y, bounds.Right, bounds.Y);
+					gr.DrawLine(p3, bounds.X, bounds.Bottom, bounds.Right, bounds.Bottom);
+					gr.DrawLine(p3, bounds.Right - 1, bounds.Y, bounds.Right - 1, bounds.Bottom - 1);
+					gr.DrawLine(p1, bounds.Left, bounds.Y + 1, bounds.Left, bounds.Bottom - 2);
+					gr.DrawLine(p2, bounds.Right - 2, bounds.Y + 1, bounds.Right - 2, bounds.Bottom - 2);
+					gr.DrawLine(p2, bounds.X, bounds.Bottom - 1, bounds.Right - 2, bounds.Bottom - 1);
+				}
+			}
 		}
 
 		#endregion

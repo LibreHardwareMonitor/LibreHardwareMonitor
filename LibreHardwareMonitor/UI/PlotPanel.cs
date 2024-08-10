@@ -16,7 +16,6 @@ using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
-using LibreHardwareMonitor.UI.Themes;
 
 namespace LibreHardwareMonitor.UI;
 
@@ -49,7 +48,7 @@ public class PlotPanel : UserControl
         SetDpi();
         _model = CreatePlotModel();
 
-        _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.Black, ContextMenuStrip = CreateMenu() };
+        _plot = new PlotView { Dock = DockStyle.Fill, Model = _model, BackColor = Color.White, ContextMenuStrip = CreateMenu() };
         _plot.MouseDown += (sender, e) =>
         {
             if (e.Button == MouseButtons.Right)
@@ -73,34 +72,6 @@ public class PlotPanel : UserControl
         SuspendLayout();
         Controls.Add(_plot);
         ResumeLayout(true);
-        _plot.ShowTracker(new TrackerHitResult());
-        _plot.HideTracker();
-        foreach (Control plotControl in _plot.Controls)
-        {
-            plotControl.BackColor = Theme.Current.PlotBackgroundColor;
-            plotControl.ForeColor = Theme.Current.PlotTextColor;
-        }
-        ApplyTheme();
-    }
-
-    public void ApplyTheme()
-    {
-        _model.Background = Theme.Current.PlotBackgroundColor.ToOxyColor();
-        _model.PlotAreaBorderColor = Theme.Current.PlotBorderColor.ToOxyColor();
-        foreach (Axis axis in _model.Axes)
-        {
-            axis.AxislineColor = Theme.Current.PlotBorderColor.ToOxyColor();
-            axis.MajorGridlineColor = Theme.Current.PlotGridMajorColor.ToOxyColor();
-            axis.MinorGridlineColor = Theme.Current.PlotGridMinorColor.ToOxyColor();
-            axis.TextColor = Theme.Current.PlotTextColor.ToOxyColor();
-            axis.TitleColor = Theme.Current.PlotTextColor.ToOxyColor();
-            axis.MinorTicklineColor = Theme.Current.PlotBorderColor.ToOxyColor();
-            axis.TicklineColor = Theme.Current.PlotBorderColor.ToOxyColor();
-        }
-        foreach (LineAnnotation annotation in _model.Annotations.Select(x => x as LineAnnotation).Where(x => x != null))
-        {
-            annotation.Color = Theme.Current.PlotBorderColor.ToOxyColor();
-        }
     }
 
     public void SetCurrentSettings()
@@ -117,7 +88,6 @@ public class PlotPanel : UserControl
     private ContextMenuStrip CreateMenu()
     {
         ContextMenuStrip menu = new ContextMenuStrip();
-        menu.Renderer = new ThemedToolStripRenderer();
         menu.Opening += (sender, e) =>
         {
             if (_cancelContextMenu)
@@ -230,8 +200,7 @@ public class PlotPanel : UserControl
             { SensorType.Data, "GB" },
             { SensorType.Frequency, "Hz" },
             { SensorType.Energy, "mWh" },
-            { SensorType.Noise, "dBA" },
-            { SensorType.Humidity, "%" }
+            { SensorType.Noise, "dBA" }
         };
 
         foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
@@ -257,7 +226,7 @@ public class PlotPanel : UserControl
                 ClipByXAxis = false,
                 ClipByYAxis = false,
                 LineStyle = LineStyle.Solid,
-                Color = Theme.Current.PlotBorderColor.ToOxyColor(),
+                Color = OxyColors.Black,
                 YAxisKey = typeName,
                 StrokeThickness = 2,
             };
@@ -305,7 +274,7 @@ public class PlotPanel : UserControl
             _dpiYScale = _dpiY / defaultDpi;
     }
 
-    public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors, double strokeThickness)
+    public void SetSensors(List<ISensor> sensors, IDictionary<ISensor, Color> colors)
     {
         _model.Series.Clear();
         var types = new HashSet<SensorType>();
@@ -334,7 +303,7 @@ public class PlotPanel : UserControl
             {
                 ItemsSource = sensor.Values.Select(value => CreateDataPoint(sensor.SensorType, value)),
                 Color = colors[sensor].ToOxyColor(),
-                StrokeThickness = strokeThickness,
+                StrokeThickness = 1,
                 YAxisKey = _axes[sensor.SensorType].Key,
                 Title = sensor.Hardware.Name + " " + sensor.Name
             };
@@ -352,15 +321,6 @@ public class PlotPanel : UserControl
         }
 
         UpdateAxesPosition();
-        InvalidatePlot();
-    }
-
-    public void UpdateStrokeThickness(double strokeThickness)
-    {
-        foreach (LineSeries series in _model.Series)
-        {
-            series.StrokeThickness = strokeThickness;
-        }
         InvalidatePlot();
     }
 

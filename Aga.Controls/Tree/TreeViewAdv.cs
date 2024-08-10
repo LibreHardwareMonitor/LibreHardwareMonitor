@@ -23,15 +23,7 @@ namespace Aga.Controls.Tree
 	/// </summary>
 	public partial class TreeViewAdv : Control
 	{
-        public static Action<Graphics, Rectangle, bool> CustomCheckRenderFunc;
-        public static Action<Graphics, Rectangle, bool, bool> CustomColumnBackgroundRenderFunc;
-        public static Action<Graphics, Rectangle, Font, string> CustomColumnTextRenderFunc;
-        public static Color CustomSelectedTextColor = SystemColors.ControlText;
-        public static Pen CustomHorizontalLinePen = new Pen(Color.FromArgb(247, 247, 247));
-        public static Action<Graphics, Rectangle, bool> CustomPlusMinusRenderFunc;
-        public static Brush CustomSelectedRowBrush = new SolidBrush(Color.FromArgb(240, 240, 240));
-
-        private const int LeftMargin = 7;
+		private const int LeftMargin = 7;
 		internal const int ItemDragSensivity = 4;
 		private readonly int _columnHeaderHeight;
 		private const int DividerWidth = 9;
@@ -258,8 +250,6 @@ namespace Aga.Controls.Tree
 
 			Font = _font;
 			ExpandingIcon.IconChanged += ExpandingIconChanged;
-
-            BackColor = Color.Black;
 		}
 
 		public void SetDPI()
@@ -423,7 +413,7 @@ namespace Aga.Controls.Tree
 		}
 
 		/// <summary>
-		/// Expand all parent nodes, and scroll to the specified node
+		/// Expand all parent nodes, andd scroll to the specified node
 		/// </summary>
 		public void EnsureVisible(TreeNodeAdv node)
 		{

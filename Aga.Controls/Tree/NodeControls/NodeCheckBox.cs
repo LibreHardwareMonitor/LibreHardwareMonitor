@@ -55,11 +55,7 @@ namespace Aga.Controls.Tree.NodeControls
 		{
 			Rectangle bounds = GetBounds(node, context);
 			CheckState state = GetCheckState(node);
-            if (TreeViewAdv.CustomCheckRenderFunc != null)
-            {
-                TreeViewAdv.CustomCheckRenderFunc(context.Graphics, bounds, state == CheckState.Checked);
-            }
-            else if (Application.RenderWithVisualStyles)
+			if (Application.RenderWithVisualStyles)
 			{
 				VisualStyleRenderer renderer;
 				int scaledX = node.Tree.GetScaledSize(ImageSize, false);
