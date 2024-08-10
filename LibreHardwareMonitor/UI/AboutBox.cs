@@ -7,7 +7,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using LibreHardwareMonitor.UI.Themes;
 
 namespace LibreHardwareMonitor.UI;
 
@@ -22,7 +21,6 @@ public sealed partial class AboutBox : Form
         projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
         licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);
         licenseLinkLabel.Links.Add(0, licenseLinkLabel.Text.Length, "https://www.mozilla.org/en-US/MPL/2.0/");
-        Theme.Current.Apply(this);
     }
 
     private void LinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

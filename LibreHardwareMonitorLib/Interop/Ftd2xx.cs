@@ -161,7 +161,7 @@ internal static class Ftd2xx
     [StructLayout(LayoutKind.Sequential)]
     internal struct FT_HANDLE
     {
-        private readonly IntPtr _handle;
+        private readonly uint _handle;
     }
 
     [StructLayout(LayoutKind.Sequential)]

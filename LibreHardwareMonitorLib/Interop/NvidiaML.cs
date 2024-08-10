@@ -295,15 +295,8 @@ internal static class NvidiaML
                         return nvmlDevice;
                 }
             }
-            else
-            {
-                try
-                {
-                    if (_windowsNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
-                        return nvmlDevice;
-                }
-                catch { }
-            }
+            else if (_windowsNvmlDeviceGetHandleByIndex(index, out nvmlDevice) == NvmlReturn.Success)
+                return nvmlDevice;
         }
 
         return null;
@@ -319,15 +312,8 @@ internal static class NvidiaML
                 if (nvmlDeviceGetHandleByPciBusId(pciBusId, out nvmlDevice) == NvmlReturn.Success)
                     return nvmlDevice;
             }
-            else
-            {
-                try
-                {
-                    if (_windowsNvmlDeviceGetHandleByPciBusId(pciBusId, out nvmlDevice) == NvmlReturn.Success)
-                        return nvmlDevice;
-                }
-                catch { }
-            }
+            else if (_windowsNvmlDeviceGetHandleByPciBusId(pciBusId, out nvmlDevice) == NvmlReturn.Success)
+                return nvmlDevice;
         }
 
         return null;
@@ -343,15 +329,8 @@ internal static class NvidiaML
                 if (nvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                     return powerUsage;
             }
-            else
-            {
-                try
-                {
-                    if (_windowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
-                        return powerUsage;
-                }
-                catch { }
-            }
+            else if (_windowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
+                return powerUsage;
         }
 
         return null;
@@ -367,15 +346,8 @@ internal static class NvidiaML
                 if (nvmlDeviceGetPcieThroughput(nvmlDevice, counter, out pcieThroughput) == NvmlReturn.Success)
                     return pcieThroughput;
             }
-            else
-            {
-                try
-                {
-                    if (_windowsNvmlDeviceGetPcieThroughputDelegate(nvmlDevice, counter, out pcieThroughput) == NvmlReturn.Success)
-                        return pcieThroughput;
-                }
-                catch { }
-            }
+            else if (_windowsNvmlDeviceGetPcieThroughputDelegate(nvmlDevice, counter, out pcieThroughput) == NvmlReturn.Success)
+                return pcieThroughput;
         }
 
         return null;
@@ -392,15 +364,8 @@ internal static class NvidiaML
                 if (nvmlDeviceGetPciInfo(nvmlDevice, ref pci) == NvmlReturn.Success)
                     return pci;
             }
-            else
-            {
-                try
-                {
-                    if (_windowsNvmlDeviceGetPciInfo(nvmlDevice, ref pci) == NvmlReturn.Success)
-                        return pci;
-                }
-                catch { }
-            }
+            else if (_windowsNvmlDeviceGetPciInfo(nvmlDevice, ref pci) == NvmlReturn.Success)
+                return pci;
         }
 
         return null;

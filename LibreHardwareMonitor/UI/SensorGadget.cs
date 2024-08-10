@@ -598,8 +598,7 @@ public class SensorGadget : Gadget
 
                 if ((sensor.SensorType != SensorType.Load &&
                      sensor.SensorType != SensorType.Control &&
-                     sensor.SensorType != SensorType.Level &&
-                     sensor.SensorType != SensorType.Humidity) || !sensor.Value.HasValue)
+                     sensor.SensorType != SensorType.Level) || !sensor.Value.HasValue)
                 {
                     string formatted;
 
