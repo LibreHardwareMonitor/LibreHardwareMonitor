@@ -525,6 +525,8 @@ internal class Identification
                 return Model.ROG_MAXIMUS_XI_FORMULA;
             case var _ when name.Equals("ROG MAXIMUS X HERO (WI-FI AC)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_X_HERO_WIFI_AC;
+            case var _ when name.Equals("ROG MAXIMUS XII FORMULA", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_MAXIMUS_XII_Z490_FORMULA;
             case var _ when name.Equals("ROG MAXIMUS Z690 FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z690_FORMULA;
             case var _ when name.Equals("ROG MAXIMUS Z690 HERO", StringComparison.OrdinalIgnoreCase):

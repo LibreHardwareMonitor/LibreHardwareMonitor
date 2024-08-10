@@ -198,6 +198,14 @@ public abstract class EmbeddedController : Hardware
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
             ECSensor.TempVrm),
+        new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
+            BoardFamily.Intel400,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.TempWaterBlockIn,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z690_FORMULA,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -323,14 +331,12 @@ public abstract class EmbeddedController : Hardware
         {
             BoardFamily.Intel400, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
-                { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                 { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
-                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
-                { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) }, // todo: need validation for this calculation
-                { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
+                { ECSensor.TempWaterBlockIn, new EmbeddedControllerSource("Water Block In", SensorType.Temperature, 0x0102, blank: -40) },
+                { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
             }
         },
         {
@@ -513,7 +519,7 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
         TempTSensor,
-        
+
         /// <summary>"T_Sensor 2" temperature sensor reading [℃]</summary>
         TempTSensor2,
 
@@ -522,6 +528,12 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>CPU Core voltage [mV]</summary>
         VoltageCPU,
+
+        /// <summary>CPU standby voltage [V]</summary>
+        CPUStandbyVoltage,
+
+        /// <summary>PLL Termination Voltage [V]</summary>
+        PLLVoltage,
 
         /// <summary>CPU_Opt fan [RPM]</summary>
         FanCPUOpt,
@@ -540,6 +552,9 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>CPU current [A]</summary>
         CurrCPU,
+
+        /// <summary>CPU core power [W]</summary>
+        CPUPower,
 
         /// <summary>"Water_In" temperature sensor reading [℃]</summary>
         TempWaterIn,
