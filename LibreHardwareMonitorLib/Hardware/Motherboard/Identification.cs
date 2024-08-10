@@ -336,6 +336,14 @@ internal class Identification
                 return Model.Z690_AORUS_MASTER;
             case var _ when name.Equals("Z690 GAMING X DDR4", StringComparison.OrdinalIgnoreCase):
                 return Model.Z690_GAMING_X_DDR4;
+            case var _ when name.Equals("Z790 UD", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_UD;
+            case var _ when name.Equals("Z790 UD AC", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_UD_AC;
+            case var _ when name.Equals("Z790 GAMING X", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_GAMING_X;
+            case var _ when name.Equals("Z790 GAMING X AX", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_GAMING_X_AX;
             case var _ when name.Equals("FH67", StringComparison.OrdinalIgnoreCase):
                 return Model.FH67;
             case var _ when name.Equals("AX370-Gaming K7", StringComparison.OrdinalIgnoreCase):
