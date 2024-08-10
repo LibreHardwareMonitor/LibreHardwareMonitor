@@ -38,6 +38,7 @@ public enum Model
     Z690_Steel_Legend,
     Z790_Pro_RS,
     Z790_Taichi,
+    B650M_C,
     H61M_DGS,
 
     // ASUS

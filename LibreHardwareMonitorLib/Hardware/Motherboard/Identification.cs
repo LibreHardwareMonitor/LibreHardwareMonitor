@@ -555,6 +555,8 @@ internal class Identification
             case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_Taichi;
+            case var _ when name.Equals("B650M-C", StringComparison.OrdinalIgnoreCase):
+                return Model.B650M_C;
             case var _ when name.Equals("B660 DS3H DDR4-Y1",StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("B660 DS3H DDR4",StringComparison.OrdinalIgnoreCase):
                 return Model.B660_DS3H_DDR4;
