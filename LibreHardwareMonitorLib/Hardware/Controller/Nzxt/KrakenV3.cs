@@ -3,15 +3,15 @@ using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.Nzxt;
 
-/**
-     * Support for the KrakenZ devices from NZXT
-     */
+/// <summary>
+/// Support for the KrakenZ devices.
+/// </summary>
 internal sealed class KrakenV3 : Hardware
 {
-    private static readonly byte[] _getFirmwareInfo = { 0x10, 0x01 };
+    private static readonly byte[] _getFirmwareInfo = [0x10, 0x01];
     private static readonly byte[] _setFanTarget = new byte[64];
     private static readonly byte[] _setPumpTarget = new byte[64];
-    private static readonly byte[] _statusRequest = { 0x74, 0x01 };
+    private static readonly byte[] _statusRequest = [0x74, 0x01];
 
     private readonly Sensor _fan;
     private readonly bool _fanControl;
@@ -81,11 +81,11 @@ internal sealed class KrakenV3 : Hardware
                 return;
 
             // Liquid temperature
-            _temperature = new Sensor("Liquid", 0, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
+            _temperature = new Sensor("Liquid", 0, SensorType.Temperature, this, [], settings);
             ActivateSensor(_temperature);
 
             // Pump Control
-            _pump = new Sensor("Pump Control", 0, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
+            _pump = new Sensor("Pump Control", 0, SensorType.Control, this, [], settings);
             Control pumpControl = new(_pump, settings, 20, 100);
             _pump.Control = pumpControl;
             pumpControl.ControlModeChanged += PumpSoftwareControlValueChanged;
@@ -94,13 +94,13 @@ internal sealed class KrakenV3 : Hardware
             ActivateSensor(_pump);
 
             // Pump RPM
-            _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+            _pumpRpm = new Sensor("Pump", 0, SensorType.Fan, this, [], settings);
             ActivateSensor(_pumpRpm);
 
             if (_fanControl)
             {
                 // Fan Control
-                _fan = new Sensor("Fans Control", 1, SensorType.Control, this, Array.Empty<ParameterDescription>(), settings);
+                _fan = new Sensor("Fans Control", 1, SensorType.Control, this, [], settings);
                 Control fanControl = new(_fan, settings, 20, 100);
                 _fan.Control = fanControl;
                 fanControl.ControlModeChanged += FanSoftwareControlValueChanged;
@@ -109,7 +109,7 @@ internal sealed class KrakenV3 : Hardware
                 ActivateSensor(_fan);
 
                 // Fan RPM
-                _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+                _fanRpm = new Sensor("Fans", 1, SensorType.Fan, this, [], settings);
                 ActivateSensor(_fanRpm);
             }
 
