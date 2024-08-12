@@ -1402,7 +1402,7 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
-                    
+
                     case Model.B450_AORUS_PRO:
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
@@ -2047,7 +2047,7 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("CPU Optional Fan", 4));
 
                         break;
-                    
+
                     case Model.B660M_DS3H_AX_DDR4:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("VAXG", 1));
@@ -3227,7 +3227,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Voltage Termination", 9));
 
-                        t.Add(new Temperature("CPU", 22));                        
+                        t.Add(new Temperature("CPU", 22));
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("Chipset", 10));
 
@@ -3238,7 +3238,7 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("Chassis Fan #3", 3));
                         f.Add(new Fan("Chipset Fan", 4));
                         f.Add(new Fan("AIO Pump", 5));
-                        
+
                         c.Add(new Control("CPU Fan", 1));
                         c.Add(new Control("CPU Optional Fan", 6));
                         c.Add(new Control("Chassis Fan #1", 0));
@@ -3372,29 +3372,72 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("PCH Core", 12));
                         v.Add(new Voltage("CPU PLLs", 13));
                         v.Add(new Voltage("CPU System Agent", 14));
-                        
+
                         t.Add(new Temperature("Motherboard", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU (Weighted)", 6));
                         t.Add(new Temperature("CPU (PECI)", 7));
                         t.Add(new Temperature("CPU", 8));
-                        
+
                         fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "High Amp Fan", "Water Pump+", "AIO Pump" };
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
                                                         $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
 
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
                                                         "Expected counts of cans controls and fan speed registers to be equal");
-                        
+
                         for (int i = 0; i < fanControlNames.Length; i++)
                             f.Add(new Fan(fanControlNames[i], i));
 
                         for (int i = 0; i < fanControlNames.Length; i++)
                             c.Add(new Control(fanControlNames[i], i));
-                        
+
                         break;
-                    
+
+                    case Model.ROG_MAXIMUS_XII_Z490_FORMULA: //NCT6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("3VCC", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
+                        v.Add(new Voltage("Voltage #7", 6));
+                        v.Add(new Voltage("3VSB", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 1, 1));
+                        v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
+                        v.Add(new Voltage("PCH", 12));
+                        v.Add(new Voltage("Voltage #14", 13));
+                        v.Add(new Voltage("Voltage #15", 14));
+
+                        t.Add(new Temperature("Temperature #1", 0));
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Temperature #4", 4));
+                        t.Add(new Temperature("Temperature #5", 5));
+                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("Temperature #7", 7));
+                        t.Add(new Temperature("PCH", 12));
+                        t.Add(new Temperature("Temperature #9", 21));
+
+                        fanControlNames = ["Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Waterpump", "AIO Pump"];
+
+                        System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
+                                                        $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+
+                        System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length,
+                                                        "Expected counts of cans controls and fan speed registers to be equal");
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Control(fanControlNames[i], i));
+
+                        break;
+
                     case Model.ROG_MAXIMUS_X_HERO_WIFI_AC: //NCT6793D
                         v.Add(new Voltage("Vcore", 0, 2, 2));
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -4042,7 +4085,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X570_Gaming_Plus:
                         // NCT6797D
-                        // NCT771x : PCIE 1, M.2 1, not supported 
+                        // NCT771x : PCIE 1, M.2 1, not supported
                         // RF35204 : VRM not supported
 
                         v.Add(new Voltage("Vcore", 0));

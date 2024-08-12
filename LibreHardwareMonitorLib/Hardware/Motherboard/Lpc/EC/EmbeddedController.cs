@@ -194,6 +194,13 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
+            BoardFamily.Intel400,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -513,7 +520,7 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
         TempTSensor,
-        
+
         /// <summary>"T_Sensor 2" temperature sensor reading [℃]</summary>
         TempTSensor2,
 
