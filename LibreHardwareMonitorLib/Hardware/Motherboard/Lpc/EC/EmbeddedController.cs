@@ -361,6 +361,7 @@ public abstract class EmbeddedController : Hardware
             BoardFamily.Intel700, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0109, blank: -40) },
+                { ECSensor.TempTSensor2, new EmbeddedControllerSource("T Sensor 2", SensorType.Temperature, 0x105, blank: -40) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                 { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
