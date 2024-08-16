@@ -49,6 +49,7 @@ namespace LibreHardwareMonitor.UI.Themes
         {
             if (_isScrolling)
                 return;
+
             _isScrolling = true;
 
             //note: this.Capture is true when the control is clicked, no need to handle this
