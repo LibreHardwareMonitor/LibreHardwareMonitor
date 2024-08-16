@@ -2988,6 +2988,7 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #5", 6)); // CHA_FAN5/WP
 
                         t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("VRM", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         break;
 
@@ -3025,6 +3026,7 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #5", 6)); // CHA_FAN5/WP
 
                         t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("VRM", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         break;
 
