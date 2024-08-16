@@ -76,21 +76,17 @@ namespace LibreHardwareMonitor.UI.Themes
             double totalRange = _scrollbar.Maximum - _scrollbar.Minimum;
 
             if (totalRange <= 0)
-            {
                 return;
-            }
 
             double scaleToPercent = totalRange / Bounds.Height;
             double scrollValue = _startValue + (e.Y - _startPos) * scaleToPercent;
 
             if (scrollValue < _scrollbar.Minimum)
-            {
                 scrollValue = _scrollbar.Minimum;
-            }
+
             if (scrollValue > (_scrollbar.Maximum - _scrollbar.LargeChange))
-            {
                 scrollValue = _scrollbar.Maximum - _scrollbar.LargeChange;
-            }
+
             _scrollbar.Value = (int)scrollValue;
             Refresh();
         }

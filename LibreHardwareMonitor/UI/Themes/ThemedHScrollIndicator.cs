@@ -49,6 +49,7 @@ namespace LibreHardwareMonitor.UI.Themes
         {
             if (_isScrolling)
                 return;
+
             _isScrolling = true;
 
             //note: this.Capture is true when the control is clicked, no need to handle this
@@ -76,21 +77,17 @@ namespace LibreHardwareMonitor.UI.Themes
             double totalRange = _scrollbar.Maximum - _scrollbar.Minimum;
 
             if (totalRange <= 0)
-            {
                 return;
-            }
 
             double scaleToPercent = totalRange / Bounds.Width;
             double scrollValue = _startValue + (e.X - _startPos) * scaleToPercent;
 
             if (scrollValue < _scrollbar.Minimum)
-            {
                 scrollValue = _scrollbar.Minimum;
-            }
+
             if (scrollValue > (_scrollbar.Maximum - _scrollbar.LargeChange))
-            {
                 scrollValue = _scrollbar.Maximum - _scrollbar.LargeChange;
-            }
+
             _scrollbar.Value = (int)scrollValue;
             Refresh();
         }
