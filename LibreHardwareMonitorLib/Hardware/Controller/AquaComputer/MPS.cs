@@ -23,7 +23,7 @@ internal sealed class MPS : Hardware
 
     private ushort _externalTemperature;
 
-    public MPS(HidDevice dev, ISettings settings) : base("MPS", new Identifier(dev.DevicePath), settings)
+    public MPS(HidDevice dev, ISettings settings) : base("MPS", new Identifier("aquacomputer", "mps", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         if (dev.TryOpen(out _stream))
         {
