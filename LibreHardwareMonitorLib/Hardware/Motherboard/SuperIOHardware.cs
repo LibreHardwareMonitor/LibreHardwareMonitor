@@ -3044,20 +3044,20 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("AVCC", 2, 1, 1));
                         v.Add(new Voltage("+3.3V", 3, 1, 1));
                         v.Add(new Voltage("+12V", 4, 56, 10));
-                        v.Add(new Voltage("VDDCR_SOC", 5));
+                        v.Add(new Voltage("CPU SoC Voltage", 5));
                         v.Add(new Voltage("DRAM", 6));
-                        v.Add(new Voltage("3VSB", 7, 1, 1));
-                        v.Add(new Voltage("VBat", 8, 1, 1));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("+3V Standby", 7, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
+                        v.Add(new Voltage("DRAM Termination Voltage", 9));
                         v.Add(new Voltage("Voltage #11", 10, true)); // unknown. VIN5 pin
                         v.Add(new Voltage("VPPM", 11, 3, 1));
-                        v.Add(new Voltage("PREM_VDDCR_SOC", 12));
-                        v.Add(new Voltage("VDDP", 13));
+                        v.Add(new Voltage("PREM CPU SoC Voltage", 12));
+                        v.Add(new Voltage("DRAM Write Voltage", 13));
                         v.Add(new Voltage("CPU +1.8V", 14, 1, 1));
                         v.Add(new Voltage("Voltage #16", 15, true)); // unknown. VIN9 pin
 
                         t.Add(new Temperature("CPU", 9)); // AKA SMBUSMASTER0
-                        t.Add(new Temperature("SB (Chipset)", 10)); // AKA SMBUSMASTER1
+                        t.Add(new Temperature("Chipset", 10)); // AKA SMBUSMASTER1
                         t.Add(new Temperature("Motherboard", 2)); // AKA SYSTIN
 
                         // no idea what these sources are actually connected to.
@@ -3091,8 +3091,8 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #2", 4));
 
                         // SB_FAN1 header
-                        f.Add(new Fan("SB Fan", 5));
-                        c.Add(new Control("SB Fan", 5));
+                        f.Add(new Fan("Chipset Fan", 5));
+                        c.Add(new Control("Chipset Fan", 5));
 
                         // fan/control 6 is not exposed to a header
                         //f.Add(new Fan("Fan #7", 6));
