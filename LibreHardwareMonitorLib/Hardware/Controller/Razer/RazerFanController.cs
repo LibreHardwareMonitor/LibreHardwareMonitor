@@ -29,7 +29,7 @@ internal sealed class RazerFanController : Hardware
     private readonly Sensor[] _pwmControls = new Sensor[CHANNEL_COUNT];
     private readonly Sensor[] _rpmSensors = new Sensor[CHANNEL_COUNT];
 
-    public RazerFanController(HidDevice dev, ISettings settings) : base("Razer PWM PC Fan Controller", new Identifier(dev.DevicePath), settings)
+    public RazerFanController(HidDevice dev, ISettings settings) : base("Razer PWM PC Fan Controller", new Identifier("razer", "pwmpcfancontroller", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         _device = dev;
 
