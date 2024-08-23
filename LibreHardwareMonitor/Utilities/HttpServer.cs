@@ -677,6 +677,8 @@ public class HttpServer
                 return "power.png";
             case SensorType.Noise:
                 return "loudspeaker.png";
+            case SensorType.Conductivity:
+                return "voltage.png";
             case SensorType.Throughput:
                 return "throughput.png";
             case SensorType.Humidity:
