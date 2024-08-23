@@ -37,6 +37,7 @@ public enum Model
     Z690_Extreme,
     Z690_Steel_Legend,
     Z790_Pro_RS,
+    X570_Phantom_Gaming_4,
     Z790_Taichi,
     B650M_C,
     H61M_DGS,
