@@ -80,19 +80,19 @@ internal static class WindowsStorage
         {
             Kernel32.STORAGE_DEVICE_DESCRIPTOR descriptor = Marshal.PtrToStructure<Kernel32.STORAGE_DEVICE_DESCRIPTOR>(descriptorPtr);
             Index = index;
-            Vendor = GetString(descriptorPtr, descriptor.VendorIdOffset);
-            Product = GetString(descriptorPtr, descriptor.ProductIdOffset);
-            Revision = GetString(descriptorPtr, descriptor.ProductRevisionOffset);
-            Serial = GetString(descriptorPtr, descriptor.SerialNumberOffset);
+            Vendor = GetString(descriptorPtr, descriptor.VendorIdOffset, descriptor.Size);
+            Product = GetString(descriptorPtr, descriptor.ProductIdOffset, descriptor.Size);
+            Revision = GetString(descriptorPtr, descriptor.ProductRevisionOffset, descriptor.Size);
+            Serial = GetString(descriptorPtr, descriptor.SerialNumberOffset, descriptor.Size);
             BusType = descriptor.BusType;
             Removable = descriptor.RemovableMedia;
             RawData = new byte[descriptor.Size];
             Marshal.Copy(descriptorPtr, RawData, 0, RawData.Length);
         }
 
-        private static string GetString(IntPtr descriptorPtr, uint offset)
+        private static string GetString(IntPtr descriptorPtr, uint offset, uint size)
         {
-            return offset > 0 ? Marshal.PtrToStringAnsi(IntPtr.Add(descriptorPtr, (int)offset))?.Trim() : string.Empty;
+            return offset > 0 && offset < size ? Marshal.PtrToStringAnsi(IntPtr.Add(descriptorPtr, (int)offset))?.Trim() : string.Empty;
         }
     }
 }
