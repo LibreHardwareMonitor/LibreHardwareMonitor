@@ -20,11 +20,11 @@ internal sealed class HighFlowNext : Hardware
     private readonly Sensor[] _voltages = new Sensor[2];
     private readonly Sensor[] _alarms = new Sensor[4];
 
-    public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier(dev.DevicePath), settings)
+    public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier("aquacomputer", "hfn", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         if (dev.TryOpen(out _stream))
         {
-            //Reading output report instead of feature report, as the measurements are in the output report
+            // Reading output report instead of feature report, as the measurements are in the output report.
             _stream.Read(_rawData);
 
             FirmwareVersion = ReadUInt16BE(_rawData, 13);
@@ -82,12 +82,12 @@ internal sealed class HighFlowNext : Hardware
 
     public override void Update()
     {
-        //Reading output report instead of feature report, as the measurements are in the output report
+        // Reading output report instead of feature report, as the measurements are in the output report.
         _stream.Read(_rawData);
 
         _temperatures[0].Value = ReadUInt16BE(_rawData, 85) / 100f; // Water Temperature
 
-        // External Temperature
+        // External Temperature.
         ushort rawExtTempValue = ReadUInt16BE(_rawData, 87);
         bool externalTempSensorConnected = rawExtTempValue != short.MaxValue;
 
@@ -106,7 +106,7 @@ internal sealed class HighFlowNext : Hardware
 
         _levels[0].Value = ReadUInt16BE(_rawData, 89) / 100f; // Water Quality
 
-        // Dissipated Power
+        // Dissipated Power.
         if (externalTempSensorConnected)
         {
             _powers[0].Value = ReadUInt16BE(_rawData, 91);
