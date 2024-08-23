@@ -184,6 +184,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Load:
             case SensorType.Energy:
             case SensorType.Noise:
+            case SensorType.Humidity:
                 return $"{Sensor.Value:F0}";
             default:
                 return "-";
@@ -261,7 +262,9 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Energy: format = "\n{0}: {0:F0} mWh"; break;
             case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
             case SensorType.Conductivity: format = "\n{0}: {0:F1} µS/cm"; break;
+            case SensorType.Humidity: format = "\n{0}: {0:F0} %"; break;
         }
+
         string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
 
         if (Sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)

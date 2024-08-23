@@ -7,14 +7,14 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using LibreHardwareMonitor.UI.Themes;
 
 namespace LibreHardwareMonitor.UI;
 
 public class SplitContainerAdv : SplitContainer
 {
     private int _delta;
-    private Border3DStyle _border3DStyle = Border3DStyle.Raised;
-    private Color _bgColor = SystemColors.Control;
+    private bool _mouseOver;
 
     public SplitContainerAdv()
     {
@@ -32,10 +32,8 @@ public class SplitContainerAdv : SplitContainer
         Graphics g = e.Graphics;
         Rectangle r = SplitterRectangle;
 
-        using (SolidBrush brush = new SolidBrush(_bgColor))
+        using (SolidBrush brush = new SolidBrush(_mouseOver ? Theme.Current.SplitterHoverColor : Theme.Current.SplitterColor))
             g.FillRectangle(brush, r);
-
-        ControlPaint.DrawBorder3D(g, r, _border3DStyle);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -73,6 +71,13 @@ public class SplitContainerAdv : SplitContainer
         IsSplitterFixed = true;
     }
 
+    protected override void OnMouseEnter(EventArgs e)
+    {
+        base.OnMouseEnter(e);
+        _mouseOver = true;
+        Invalidate();
+    }
+
     protected override void OnMouseMove(MouseEventArgs e)
     {
         if (IsSplitterFixed)
@@ -107,6 +112,8 @@ public class SplitContainerAdv : SplitContainer
     {
         base.OnMouseLeave(e);
         Cursor = Cursors.Default;
+        _mouseOver = false;
+        Invalidate();
     }
 
     protected override void OnMouseUp(MouseEventArgs e)
@@ -114,25 +121,5 @@ public class SplitContainerAdv : SplitContainer
         _delta = 0;
         IsSplitterFixed = false;
         Cursor.Current = Cursors.Default;
-    }
-
-    public Border3DStyle Border3DStyle
-    {
-        get { return _border3DStyle; }
-        set
-        {
-            _border3DStyle = value;
-            Invalidate(false);
-        }
-    }
-
-    public Color Color
-    {
-        get { return _bgColor; }
-        set
-        {
-            _bgColor = value;
-            Invalidate(false);
-        }
     }
 }

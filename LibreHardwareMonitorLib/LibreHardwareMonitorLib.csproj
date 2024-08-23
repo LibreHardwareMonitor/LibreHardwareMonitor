@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

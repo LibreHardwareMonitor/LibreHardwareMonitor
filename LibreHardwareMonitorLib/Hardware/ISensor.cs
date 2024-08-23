@@ -33,6 +33,7 @@ public enum SensorType
     Energy, // milliwatt-hour (mWh)
     Noise, // dBA
     Conductivity // µS/cm
+    Humidity // %
 }
 
 /// <summary>

@@ -35,6 +35,12 @@ internal class LpcPort
         return (ushort)((ReadByte(register) << 8) | ReadByte((byte)(register + 1)));
     }
 
+    public bool TryReadWord(byte register, out ushort value)
+    {
+        value = ReadWord(register);
+        return value != 0xFFFF;
+    }
+
     public void Select(byte logicalDeviceNumber)
     {
         Ring0.WriteIoPort(RegisterPort, DEVICE_SELECT_REGISTER);
