@@ -32,7 +32,7 @@ public enum SensorType
     TimeSpan, // Seconds 
     Energy, // milliwatt-hour (mWh)
     Noise, // dBA
-    Conductivity // µS/cm
+    Conductivity, // µS/cm
     Humidity // %
 }
 
