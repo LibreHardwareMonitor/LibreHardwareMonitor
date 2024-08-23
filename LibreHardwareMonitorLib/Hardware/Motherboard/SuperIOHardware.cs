@@ -387,7 +387,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Chipset", 5));
                         v.Add(new Voltage("CPU System Agent", 6));
                         v.Add(new Voltage("+3.3V", 8));
-                        v.Add(new Voltage("CPU 1.8V", 9));
+                        v.Add(new Voltage("+1.8V", 9));
                         v.Add(new Voltage("CPU VDDP", 10));
                         v.Add(new Voltage("+3V Standby", 11));
                         v.Add(new Voltage("AVSB", 12));
@@ -643,7 +643,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 30, 10));
-                        v.Add(new Voltage("CPU PLL", 5));
+                        v.Add(new Voltage("Phase Locked Loop", 5));
                         v.Add(new Voltage("DIMM", 6));
                         v.Add(new Voltage("+5VSB", 7, 6.8f, 10));
                         v.Add(new Voltage("CMOS Battery", 8));
@@ -1084,7 +1084,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 3, 1.5f, 1));
                         v.Add(new Voltage("Southbridge 1.05V", 4, 10, 10));
                         v.Add(new Voltage("DIMM CD", 5, 10, 10));
-                        v.Add(new Voltage("1.8V PLL", 6, 10, 10));
+                        v.Add(new Voltage("Phase Locked Loop", 6, 10, 10));
                         v.Add(new Voltage("+3.3V", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU", 0));
@@ -3053,7 +3053,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VPPM", 11, 3, 1));
                         v.Add(new Voltage("PREM CPU SoC Voltage", 12));
                         v.Add(new Voltage("DRAM Write Voltage", 13));
-                        v.Add(new Voltage("CPU +1.8V", 14, 1, 1));
+                        v.Add(new Voltage("+1.8V", 14, 1, 1));
                         v.Add(new Voltage("Voltage #16", 15, true)); // unknown. VIN9 pin
 
                         t.Add(new Temperature("CPU", 9)); // AKA SMBUSMASTER0
@@ -3101,7 +3101,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z790_Taichi:
-                        v.Add(new Voltage("CPU 1.8V", 0));
+                        v.Add(new Voltage("+1.8V", 0));
                         v.Add(new Voltage("Chipset 0.82V", 1));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("CPU 1.05V", 4));
@@ -3229,7 +3229,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM", 10, 1, 1));
                         v.Add(new Voltage("CPU System Agent", 11));
                         v.Add(new Voltage("PCH Core", 12));
-                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("Phase Locked Loop", 13));
                         v.Add(new Voltage("CPU VCCIO/IMC", 14));
                         t.Add(new Temperature("CPU (PECI)", 0));
                         t.Add(new Temperature("T2", 1));
@@ -3265,7 +3265,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM", 10, 1, 1));
                         v.Add(new Voltage("CPU System Agent", 11));
                         v.Add(new Voltage("PCH Core", 12));
-                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("Phase Locked Loop", 13));
                         v.Add(new Voltage("CPU VCCIO/IMC", 14));
                         t.Add(new Temperature("CPU (PECI)", 0));
                         t.Add(new Temperature("CPU", 1));
@@ -3303,7 +3303,7 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("DIMM", 10, 1, 1));
                         //v.Add(new Voltage("CPU System Agent", 11));
                         //v.Add(new Voltage("PCH Core", 12));
-                        //v.Add(new Voltage("CPU PLLs", 13));
+                        //v.Add(new Voltage("Phase Locked Loop", 13));
                         //v.Add(new Voltage("CPU VCCIO/IMC", 14));
 
                         t.Add(new Temperature("CPU (PECI)", 0));
@@ -3473,7 +3473,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM", 10));
                         v.Add(new Voltage("CPU VCCIO", 11, 1, 1));
                         v.Add(new Voltage("PCH Core", 12));
-                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("Phase Locked Loop", 13));
                         v.Add(new Voltage("CPU System Agent", 14));
 
                         t.Add(new Temperature("Motherboard", 0));
@@ -3555,7 +3555,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DIMM", 10, 1, 1));
                         v.Add(new Voltage("CPU System Agent", 11));
                         v.Add(new Voltage("PCH Core", 12));
-                        v.Add(new Voltage("CPU PLLs", 13));
+                        v.Add(new Voltage("Phase Locked Loop", 13));
                         v.Add(new Voltage("CPU VCCIO/IMC", 14));
                         t.Add(new Temperature("CPU (PECI)", 0));
                         t.Add(new Temperature("T2", 1));
@@ -3835,7 +3835,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 4, 6, 1));
                         v.Add(new Voltage("DIMM CD", 11, 10, 10));
                         v.Add(new Voltage("DIMM AB", 13));
-                        v.Add(new Voltage("1.8V PPL", 14));
+                        v.Add(new Voltage("Phase Locked Loop", 14));
 
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
