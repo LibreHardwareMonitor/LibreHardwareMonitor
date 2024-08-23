@@ -112,13 +112,13 @@ public class CpuId
         nameBuilder.Replace("Quad-Core Processor", string.Empty);
         nameBuilder.Replace("Six-Core Processor", string.Empty);
         nameBuilder.Replace("Eight-Core Processor", string.Empty);
-        nameBuilder.Replace("6-Core Processor", string.Empty);
-        nameBuilder.Replace("8-Core Processor", string.Empty);
-        nameBuilder.Replace("12-Core Processor", string.Empty);
-        nameBuilder.Replace("16-Core Processor", string.Empty);
-        nameBuilder.Replace("24-Core Processor", string.Empty);
-        nameBuilder.Replace("32-Core Processor", string.Empty);
         nameBuilder.Replace("64-Core Processor", string.Empty);
+        nameBuilder.Replace("32-Core Processor", string.Empty);
+        nameBuilder.Replace("24-Core Processor", string.Empty);
+        nameBuilder.Replace("16-Core Processor", string.Empty);
+        nameBuilder.Replace("12-Core Processor", string.Empty);
+        nameBuilder.Replace("8-Core Processor", string.Empty);
+        nameBuilder.Replace("6-Core Processor", string.Empty);
 
         for (int i = 0; i < 10; i++)
             nameBuilder.Replace("  ", " ");
