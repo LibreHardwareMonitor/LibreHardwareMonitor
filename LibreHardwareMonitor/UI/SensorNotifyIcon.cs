@@ -200,11 +200,37 @@ public class SensorNotifyIcon : IDisposable
                 count++;
         bool small = count > 2;
 
-        _graphics.Clear(Color.Transparent);
+        _graphics.Clear(Color.Black);
         Rectangle bounds = new Rectangle(Point.Empty, _bitmap.Size);
-        TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font, bounds, _color, Color.Transparent, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font,
+            bounds, Color.White, Color.Black, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        
+        BitmapData data = _bitmap.LockBits(
+            new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
+            ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-        return IconFactory.Create(_bitmap);
+        IntPtr Scan0 = data.Scan0;
+
+        int numBytes = _bitmap.Width * _bitmap.Height * 4;
+        byte[] bytes = new byte[numBytes];
+        Marshal.Copy(Scan0, bytes, 0, numBytes);
+        _bitmap.UnlockBits(data);
+
+        byte red, green, blue;
+        for (int i = 0; i < bytes.Length; i += 4)
+        {
+            blue = bytes[i];
+            green = bytes[i + 1];
+            red = bytes[i + 2];
+
+            bytes[i] = _color.B;
+            bytes[i + 1] = _color.G;
+            bytes[i + 2] = _color.R;
+            bytes[i + 3] = (byte)(0.3 * red + 0.59 * green + 0.11 * blue);
+        }
+
+        return IconFactory.Create(bytes, _bitmap.Width, _bitmap.Height,
+            PixelFormat.Format32bppArgb);
     }
 
     private Icon CreatePercentageIcon()
