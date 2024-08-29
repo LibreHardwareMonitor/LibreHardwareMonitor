@@ -198,6 +198,8 @@ internal class Identification
                 return Model.ROG_STRIX_B550_I_GAMING;
             case var _ when name.Equals("ROG STRIX X570-E GAMING", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_X570_E_GAMING;
+            case var _ when name.Equals("ROG STRIX X570-E GAMING WIFI II", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X570_E_GAMING_WIFI_II;
             case var _ when name.Equals("ROG STRIX X570-I GAMING", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_X570_I_GAMING;
             case var _ when name.Equals("ROG STRIX X570-F GAMING", StringComparison.OrdinalIgnoreCase):
@@ -257,6 +259,8 @@ internal class Identification
                 return Model.H67A_UD3H_B3;
             case var _ when name.Equals("H67A-USB3-B3", StringComparison.OrdinalIgnoreCase):
                 return Model.H67A_USB3_B3;
+            case var _ when name.Equals("H97-D3H-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.H97_D3H;
             case var _ when name.Equals("H81M-HD3", StringComparison.OrdinalIgnoreCase):
                 return Model.H81M_HD3;
             case var _ when name.Equals("B75M-D3H", StringComparison.OrdinalIgnoreCase):
@@ -370,6 +374,8 @@ internal class Identification
                 return Model.X570_Taichi;
             case var _ when name.Equals("X570 Phantom Gaming-ITX/TB3", StringComparison.OrdinalIgnoreCase):
                 return Model.X570_Phantom_Gaming_ITX;
+            case var _ when name.Equals("X570 Phantom Gaming 4", StringComparison.OrdinalIgnoreCase):
+                return Model.X570_Phantom_Gaming_4;
             case var _ when name.Equals("AX370-Gaming 5", StringComparison.OrdinalIgnoreCase):
                 return Model.AX370_Gaming_5;
             case var _ when name.Equals("TUF X470-PLUS GAMING", StringComparison.OrdinalIgnoreCase):
@@ -425,6 +431,8 @@ internal class Identification
                 return Model.X470_AORUS_GAMING_7_WIFI;
             case var _ when name.Equals("X570 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
                 return Model.X570_AORUS_MASTER;
+            case var _ when name.Equals("X570 AORUS PRO", StringComparison.OrdinalIgnoreCase):
+                return Model.X570_AORUS_PRO;
             case var _ when name.Equals("X570 AORUS ULTRA", StringComparison.OrdinalIgnoreCase):
                 return Model.X570_AORUS_ULTRA;
             case var _ when name.Equals("X570 GAMING X", StringComparison.OrdinalIgnoreCase):
@@ -487,6 +495,18 @@ internal class Identification
                 return Model.B560M_AORUS_PRO_AX;
             case var _ when name.Equals("B560I AORUS PRO AX", StringComparison.OrdinalIgnoreCase):
                 return Model.B560I_AORUS_PRO_AX;
+            case var _ when name.Equals("B650 AORUS ELITE", StringComparison.OrdinalIgnoreCase):
+                return Model.B650_AORUS_ELITE;
+            case var _ when name.Equals("B650 AORUS ELITE AX", StringComparison.OrdinalIgnoreCase):
+                return Model.B650_AORUS_ELITE_AX;
+            case var _ when name.Equals("B650 AORUS ELITE V2", StringComparison.OrdinalIgnoreCase):
+                return Model.B650_AORUS_ELITE_V2;
+            case var _ when name.Equals("B650 AORUS ELITE AX V2", StringComparison.OrdinalIgnoreCase):
+                return Model.B650_AORUS_ELITE_AX_V2;
+            case var _ when name.Equals("B650 AORUS ELITE AX ICE", StringComparison.OrdinalIgnoreCase):
+                return Model.B650_AORUS_ELITE_AX_ICE;
+            case var _ when name.Equals("B650E AORUS ELITE AX ICE", StringComparison.OrdinalIgnoreCase):
+                return Model.B650E_AORUS_ELITE_AX_ICE;
             case var _ when name.Equals("B650M AORUS PRO", StringComparison.OrdinalIgnoreCase):
                 return Model.B650M_AORUS_PRO;
             case var _ when name.Equals("B650M AORUS PRO AX", StringComparison.OrdinalIgnoreCase):
@@ -505,6 +525,8 @@ internal class Identification
                 return Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4;
             case var _ when name.Equals("ROG MAXIMUS XI FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XI_FORMULA;
+            case var _ when name.Equals("ROG MAXIMUS XII FORMULA", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_MAXIMUS_XII_Z490_FORMULA;
             case var _ when name.Equals("ROG MAXIMUS X HERO (WI-FI AC)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_X_HERO_WIFI_AC;
             case var _ when name.Equals("ROG MAXIMUS Z690 FORMULA", StringComparison.OrdinalIgnoreCase):
@@ -537,6 +559,17 @@ internal class Identification
             case var _ when name.Equals("Z790 Taichi", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z790 Taichi Carrara", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_Taichi;
+            case var _ when name.Equals("B650M-C", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B650M-CW", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B650M-CX", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B650M-CWX", StringComparison.OrdinalIgnoreCase):
+                return Model.B650M_C;
+            case var _ when name.Equals("B660 DS3H DDR4-Y1",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H DDR4",StringComparison.OrdinalIgnoreCase):
+                return Model.B660_DS3H_DDR4;
+            case var _ when name.Equals("B660 DS3H AC DDR4-Y1",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H AC DDR4",StringComparison.OrdinalIgnoreCase):
+                return Model.B660_DS3H_AC_DDR4;
             case var _ when name.Equals("B660M DS3H AX DDR4",StringComparison.OrdinalIgnoreCase):
                 return Model.B660M_DS3H_AX_DDR4;
             case var _ when name.Equals("ROG STRIX Z790-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):

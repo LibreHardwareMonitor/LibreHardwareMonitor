@@ -19,7 +19,7 @@ internal sealed class P7H1 : Hardware
     private readonly HidStream _stream;
     private bool _running;
 
-    public P7H1(HidDevice dev, ISettings settings) : base("AeroCool P7-H1", new Identifier(dev.DevicePath), settings)
+    public P7H1(HidDevice dev, ISettings settings) : base("AeroCool P7-H1", new Identifier("aerocool", "p7h1", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         _device = dev;
         HubNumber = _device.ProductID - 0x1000;

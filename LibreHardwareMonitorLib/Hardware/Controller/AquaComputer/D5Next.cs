@@ -25,7 +25,7 @@ internal sealed class D5Next : Hardware
     private readonly HidStream _stream;
     private readonly Sensor[] _temperatures = new Sensor[1];
 
-    public D5Next(HidDevice dev, ISettings settings) : base("D5Next", new Identifier(dev.DevicePath), settings)
+    public D5Next(HidDevice dev, ISettings settings) : base("D5Next", new Identifier("aquacomputer", "d5next", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         if (dev.TryOpen(out _stream))
         {

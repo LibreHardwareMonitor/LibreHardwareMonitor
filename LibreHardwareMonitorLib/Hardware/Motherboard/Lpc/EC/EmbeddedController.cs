@@ -146,6 +146,13 @@ public abstract class EmbeddedController : Hardware
             ECSensor.FanChipset,
             ECSensor.CurrCPU,
             ECSensor.VoltageCPU),
+        new(Model.ROG_STRIX_X570_E_GAMING_WIFI_II,
+            BoardFamily.Amd500,
+            ECSensor.TempChipset,
+            ECSensor.TempCPU,
+            ECSensor.TempMB,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm),
         new(Model.ROG_STRIX_X570_F_GAMING,
             BoardFamily.Amd500,
             ECSensor.TempChipset,
@@ -187,10 +194,23 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
+            BoardFamily.Intel400,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
             ECSensor.TempVrm),
+        new(Model.ROG_MAXIMUS_Z690_HERO,
+            BoardFamily.Intel600,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z690_FORMULA,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -506,7 +526,7 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
         TempTSensor,
-        
+
         /// <summary>"T_Sensor 2" temperature sensor reading [℃]</summary>
         TempTSensor2,
 
