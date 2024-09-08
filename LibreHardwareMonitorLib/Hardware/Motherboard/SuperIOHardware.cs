@@ -3751,6 +3751,66 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_MAXIMUS_Z790_DARK_HERO: //NCT6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("3VCC", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
+                        v.Add(new Voltage("VIN4", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9, 1, 1));
+                        //v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
+                        v.Add(new Voltage("PCH", 12));
+                        //v.Add(new Voltage("Voltage #14", 13));
+                        //v.Add(new Voltage("Voltage #15", 14));
+                        v.Add(new Voltage("VIN9", 15));
+
+
+                        t.Add(new Temperature("CPU Package", 0));
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        //t.Add(new Temperature("Temperature #3", 3));
+                        //t.Add(new Temperature("Temperature #4", 4));
+                        //t.Add(new Temperature("Temperature #5", 5));
+                        //t.Add(new Temperature("Temperature #6", 6));
+                        //t.Add(new Temperature("Temperature #7", 7));
+                        //t.Add(new Temperature("Temperature #8", 8));
+                        //t.Add(new Temperature("Temperature #9", 9));
+                        //t.Add(new Temperature("Temperature #10", 10));
+                        //t.Add(new Temperature("Temperature #11", 11));
+                        t.Add(new Temperature("Chipset", 12));
+                        t.Add(new Temperature("PCH", 13));
+                        //t.Add(new Temperature("Temperature #14", 14));
+                        //t.Add(new Temperature("Temperature #15", 15));
+                        //t.Add(new Temperature("Temperature #16", 16));
+                        //t.Add(new Temperature("Temperature #17", 17));
+                        //t.Add(new Temperature("Temperature #18", 18));
+                        //t.Add(new Temperature("Temperature #19", 19));
+                        //t.Add(new Temperature("Temperature #20", 20));
+                        t.Add(new Temperature("CPU", 21));
+
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("Chassis Fan #4", 4));
+                        f.Add(new Fan("Water Pump", 5));
+                        f.Add(new Fan("AIO Pump", 6));
+
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("Chassis Fan #4", 4));
+                        c.Add(new Control("Water Pump", 5));
+                        c.Add(new Control("AIO Pump", 6));
+
+                        break;
+
                     case Model.ROG_STRIX_B550_I_GAMING: //NCT6798D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly
