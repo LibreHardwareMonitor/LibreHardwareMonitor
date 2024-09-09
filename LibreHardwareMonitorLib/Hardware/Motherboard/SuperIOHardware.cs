@@ -3762,16 +3762,16 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, 1, 1));
-                        //v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("Voltage #10", 10, 1, 1));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
-                        v.Add(new Voltage("PCH", 12));
-                        //v.Add(new Voltage("Voltage #14", 13));
-                        //v.Add(new Voltage("Voltage #15", 14));
+                        v.Add(new Voltage("PCH 1.05V", 12));
+                        v.Add(new Voltage("IVR_VCCSA", 13, 1, 1));
+                        v.Add(new Voltage("VCCIN_AUX", 14, 1, 1));
                         v.Add(new Voltage("VIN9", 15));
 
 
                         t.Add(new Temperature("CPU Package", 0));
-                        t.Add(new Temperature("VRM", 1));
+                        //t.Add(new Temperature("VRM", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         //t.Add(new Temperature("Temperature #3", 3));
                         //t.Add(new Temperature("Temperature #4", 4));
@@ -3791,7 +3791,10 @@ internal sealed class SuperIOHardware : Hardware
                         //t.Add(new Temperature("Temperature #18", 18));
                         //t.Add(new Temperature("Temperature #19", 19));
                         //t.Add(new Temperature("Temperature #20", 20));
-                        t.Add(new Temperature("CPU", 21));
+                        //t.Add(new Temperature("Temperature #21", 21));
+                        t.Add(new Temperature("CPU", 22));
+                        //t.Add(new Temperature("Temperature #23", 23));
+                        //t.Add(new Temperature("Temperature #24", 24));
 
                         f.Add(new Fan("Chassis Fan #1", 0));
                         f.Add(new Fan("CPU Fan", 1));
