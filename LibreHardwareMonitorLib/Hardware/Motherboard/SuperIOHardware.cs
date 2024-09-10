@@ -3586,7 +3586,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, 1, 1));
-                        v.Add(new Voltage("Voltage #11", 10));
+                        v.Add(new Voltage("Voltage #10", 10));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("PCH", 12));
                         v.Add(new Voltage("Voltage #14", 13));
@@ -3762,16 +3762,16 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, 1, 1));
-                        v.Add(new Voltage("Voltage #10", 10, 1, 1));
+                        v.Add(new Voltage("Voltage #11", 10, 1, 1));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("PCH 1.05V", 12));
-                        v.Add(new Voltage("IVR_VCCSA", 13, 1, 1));
-                        v.Add(new Voltage("VCCIN_AUX", 14, 1, 1));
+                        v.Add(new Voltage("CPU System Agent", 13, 1, 1));
+                        v.Add(new Voltage("CPU Input Auxiliary", 14, 1, 1));
                         v.Add(new Voltage("VIN9", 15));
 
 
                         t.Add(new Temperature("CPU Package", 0));
-                        //t.Add(new Temperature("VRM", 1));
+                        //t.Add(new Temperature("Temperature #1", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         //t.Add(new Temperature("Temperature #3", 3));
                         //t.Add(new Temperature("Temperature #4", 4));
