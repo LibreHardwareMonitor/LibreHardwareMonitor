@@ -527,9 +527,10 @@ internal class Identification
                 return Model.PRIME_Z690_A;
             case var _ when name.Equals("PRIME Z690-P", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("PRIME Z690-P WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.PRIME_Z690_P;
             case var _ when name.Equals("PRIME Z690-P D4", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("PRIME Z690-P WIFI D4", StringComparison.OrdinalIgnoreCase):
-                return Model.PRIME_Z690_P;
+                return Model.PRIME_Z690_P_D4;
             case var _ when name.Equals("Z690 Steel Legend WiFi 6E", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z690 Steel Legend", StringComparison.OrdinalIgnoreCase):
                 return Model.Z690_Steel_Legend;

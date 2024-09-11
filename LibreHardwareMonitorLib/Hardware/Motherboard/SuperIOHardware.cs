@@ -3350,6 +3350,44 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, 1, 1));
+                        v.Add(new Voltage("Integrated Memory Controller", 10, 1, 1));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
+                        v.Add(new Voltage("Chipset 1.05V", 12));
+                        v.Add(new Voltage("CPU System Agent", 13, 1, 1));
+                        v.Add(new Voltage("CPU Input Auxilary", 14, 1, 1));
+
+                        t.Add(new Temperature("CPU Core", 22));
+                        t.Add(new Temperature("Motherboard", 1));
+                        t.Add(new Temperature("VRM", 2));
+
+                        // CPU Optional Fan will show the active fan RPM, but cannot be controlled. As a control, this value remains at 60%.
+                        fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "CPU Optional Fan", "Chassis Fan #2", "Chassis Fan #3", "AIO Pump" };
+
+                        // Reordered for programs that sort via the added sources instead of sorting by index
+                        int[] newOrder = { 1, 2, 0, 3, 4, 5 };
+
+                        foreach (int originalIndex in newOrder)
+                            f.Add(new Fan(fanControlNames[originalIndex], originalIndex));
+
+                        foreach (int originalIndex in newOrder)
+                        {
+                            if (originalIndex != 2)
+                                c.Add(new Control(fanControlNames[originalIndex], originalIndex));
+                        }
+
+                        break;
+                    
+                    case Model.PRIME_Z690_P_D4: //NCT6798D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
+                        v.Add(new Voltage("Voltage #7", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9, 1, 1));
                         v.Add(new Voltage("DIMM", 10, 1, 1));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("Chipset 1.05V", 12));
