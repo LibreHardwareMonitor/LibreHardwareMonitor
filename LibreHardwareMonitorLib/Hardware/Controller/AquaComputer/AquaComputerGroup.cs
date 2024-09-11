@@ -61,6 +61,14 @@ public class AquaComputerGroup : IGroup
                     _hardware.Add(quadro);
                     break;
                     
+                case 0xF00B:
+                    var aquastreamUltimate = new AquastreamUltimate(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {aquastreamUltimate.FirmwareVersion}");
+                    _report.AppendLine();
+                    _hardware.Add(aquastreamUltimate);
+                    break;
+                    
                 case 0xF011:
                     var octo = new Octo(dev, settings);
                     _report.AppendLine($"Device name: {productName}");
@@ -76,6 +84,14 @@ public class AquaComputerGroup : IGroup
                     _report.AppendLine($"{farbwerk.Status}");
                     _report.AppendLine();
                     _hardware.Add(farbwerk);
+                    break;
+
+                case 0xF012:
+                    var highflownext = new HighFlowNext(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {highflownext.FirmwareVersion}");
+                    _report.AppendLine();
+                    _hardware.Add(highflownext);
                     break;
 
                 default:

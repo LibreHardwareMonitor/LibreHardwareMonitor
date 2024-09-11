@@ -27,7 +27,7 @@ internal sealed class Farbwerk : Hardware
     private readonly Sensor[] _temperatures = new Sensor[TEMPERATURE_COUNT];
     private readonly Sensor[] _colors = new Sensor[COLOR_VALUE_COUNT];
 
-    public Farbwerk(HidDevice dev, ISettings settings) : base("Farbwerk", new Identifier(dev.DevicePath), settings)
+    public Farbwerk(HidDevice dev, ISettings settings) : base("Farbwerk", new Identifier("aquacomputer", "farbwerk", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         if (dev.TryOpen(out _stream))
         {

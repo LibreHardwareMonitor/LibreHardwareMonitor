@@ -18,30 +18,30 @@ internal sealed class Octo : Hardware
     private readonly Sensor[] _currents = new Sensor[8];
     private readonly Sensor[] _powers = new Sensor[8];
 
-    public Octo(HidDevice dev, ISettings settings) : base("Octo", new Identifier(dev.DevicePath), settings)
+    public Octo(HidDevice dev, ISettings settings) : base("Octo", new Identifier("aquacomputer", "octo", dev.GetSerialNumber().Replace(" ", "")), settings)
     {
         if (dev.TryOpen(out _stream))
         {
             //Reading output report instead of feature report, as the measurements are in the output report
             _stream.Read(_rawData);
-                
+
             Name = "OCTO";
             FirmwareVersion = GetConvertedValue(OctoDataIndexes.FIRMWARE_VERSION).GetValueOrDefault(0);
 
             // Initialize the 4 temperature sensors
             for (int i = 0; i < 4; i++)
             {
-                _temperatures[i] = new Sensor($"Temperature {i+1}", i, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
+                _temperatures[i] = new Sensor($"Temperature {i + 1}", i, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[i]);
             }
 
             // Initialize the 8 fan speed sensors
             for (int i = 0; i < 8; i++)
             {
-                _rpmSensors[i] = new Sensor($"Fan {i+1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+                _rpmSensors[i] = new Sensor($"Fan {i + 1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_rpmSensors[i]);
             }
-                
+
             // Initialize the input voltage sensor
             _voltages[0] = new Sensor("Input", 0, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
             ActivateSensor(_voltages[0]);
@@ -52,18 +52,18 @@ internal sealed class Octo : Hardware
                 _voltages[i] = new Sensor($"Fan {i}", i, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_voltages[i]);
             }
-                
+
             // Initialize the 8 fan current sensors
             for (int i = 0; i < 8; i++)
             {
-                _currents[i] = new Sensor($"Fan {i+1}", i, SensorType.Current, this, Array.Empty<ParameterDescription>(), settings);
+                _currents[i] = new Sensor($"Fan {i + 1}", i, SensorType.Current, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_currents[i]);
             }
-                
+
             // Initialize the 8 fan power sensors
             for (int i = 0; i < 8; i++)
             {
-                _powers[i] = new Sensor($"Fan {i+1}", i, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
+                _powers[i] = new Sensor($"Fan {i + 1}", i, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_powers[i]);
             }
         }
@@ -86,7 +86,7 @@ internal sealed class Octo : Hardware
     {
         //Reading output report instead of feature report, as the measurements are in the output report
         _stream.Read(_rawData);
-            
+
         _temperatures[0].Value = GetConvertedValue(OctoDataIndexes.TEMP_1) / 100f; // Temp 1
         _temperatures[1].Value = GetConvertedValue(OctoDataIndexes.TEMP_2) / 100f; // Temp 2
         _temperatures[2].Value = GetConvertedValue(OctoDataIndexes.TEMP_3) / 100f; // Temp 3
@@ -100,7 +100,7 @@ internal sealed class Octo : Hardware
         _rpmSensors[5].Value = GetConvertedValue(OctoDataIndexes.FAN_SPEED_6); // Fan 6 speed
         _rpmSensors[6].Value = GetConvertedValue(OctoDataIndexes.FAN_SPEED_7); // Fan 7 speed
         _rpmSensors[7].Value = GetConvertedValue(OctoDataIndexes.FAN_SPEED_8); // Fan 8 speed
-            
+
         _voltages[0].Value = GetConvertedValue(OctoDataIndexes.VOLTAGE) / 100f; // Input voltage
         _voltages[1].Value = GetConvertedValue(OctoDataIndexes.FAN_VOLTAGE_1) / 100f; // Fan 1 voltage
         _voltages[2].Value = GetConvertedValue(OctoDataIndexes.FAN_VOLTAGE_2) / 100f; // Fan 2 voltage
@@ -110,7 +110,7 @@ internal sealed class Octo : Hardware
         _voltages[6].Value = GetConvertedValue(OctoDataIndexes.FAN_VOLTAGE_6) / 100f; // Fan 6 voltage
         _voltages[7].Value = GetConvertedValue(OctoDataIndexes.FAN_VOLTAGE_7) / 100f; // Fan 7 voltage
         _voltages[8].Value = GetConvertedValue(OctoDataIndexes.FAN_VOLTAGE_8) / 100f; // Fan 8 voltage
-            
+
         _currents[0].Value = GetConvertedValue(OctoDataIndexes.FAN_CURRENT_1) / 1000f; // Fan 1 current
         _currents[1].Value = GetConvertedValue(OctoDataIndexes.FAN_CURRENT_2) / 1000f; // Fan 2 current
         _currents[2].Value = GetConvertedValue(OctoDataIndexes.FAN_CURRENT_3) / 1000f; // Fan 3 current
@@ -119,7 +119,7 @@ internal sealed class Octo : Hardware
         _currents[5].Value = GetConvertedValue(OctoDataIndexes.FAN_CURRENT_6) / 1000f; // Fan 6 current
         _currents[6].Value = GetConvertedValue(OctoDataIndexes.FAN_CURRENT_7) / 1000f; // Fan 7 current
         _currents[7].Value = GetConvertedValue(OctoDataIndexes.FAN_CURRENT_8) / 1000f; // Fan 8 current
-            
+
         _powers[0].Value = GetConvertedValue(OctoDataIndexes.FAN_POWER_1) / 100f; // Fan 1 power
         _powers[1].Value = GetConvertedValue(OctoDataIndexes.FAN_POWER_2) / 100f; // Fan 2 power
         _powers[2].Value = GetConvertedValue(OctoDataIndexes.FAN_POWER_3) / 100f; // Fan 3 power
@@ -133,7 +133,7 @@ internal sealed class Octo : Hardware
     private sealed class OctoDataIndexes
     {
         public const int FIRMWARE_VERSION = 13;
-            
+
         public const int TEMP_1 = 61;
         public const int TEMP_2 = 63;
         public const int TEMP_3 = 65;
@@ -147,7 +147,7 @@ internal sealed class Octo : Hardware
         public const int FAN_SPEED_6 = 198;
         public const int FAN_SPEED_7 = 211;
         public const int FAN_SPEED_8 = 224;
-            
+
         public const int FAN_POWER_1 = 131;
         public const int FAN_POWER_2 = 144;
         public const int FAN_POWER_3 = 157;
@@ -166,7 +166,7 @@ internal sealed class Octo : Hardware
         public const int FAN_VOLTAGE_6 = 192;
         public const int FAN_VOLTAGE_7 = 205;
         public const int FAN_VOLTAGE_8 = 218;
-            
+
         public const int FAN_CURRENT_1 = 129;
         public const int FAN_CURRENT_2 = 142;
         public const int FAN_CURRENT_3 = 155;
@@ -181,7 +181,7 @@ internal sealed class Octo : Hardware
     {
         if (_rawData[index] == sbyte.MaxValue)
             return null;
-            
+
         return Convert.ToUInt16(_rawData[index + 1] | (_rawData[index] << 8));
     }
 }
