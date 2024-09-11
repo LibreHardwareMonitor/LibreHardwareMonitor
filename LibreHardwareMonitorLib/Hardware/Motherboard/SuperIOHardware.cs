@@ -3183,6 +3183,7 @@ internal sealed class SuperIOHardware : Hardware
                 break;
             case Manufacturer.ASUS:
                 string[] fanControlNames;
+                int[] newOrder;
                 switch (model)
                 {
                     case Model.P8Z77_V: // NCT6779D
@@ -3643,7 +3644,7 @@ internal sealed class SuperIOHardware : Hardware
                         fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "CPU Optional Fan", "Chassis Fan #2", "Chassis Fan #3", "AIO Pump" };
 
                         // Reordered for programs that sort via the added sources instead of sorting by index
-                        int[] newOrder = { 1, 2, 0, 3, 4, 5 };
+                        newOrder = { 1, 2, 0, 3, 4, 5 };
 
                         foreach (int originalIndex in newOrder)
                             f.Add(new Fan(fanControlNames[originalIndex], originalIndex));
@@ -3681,7 +3682,7 @@ internal sealed class SuperIOHardware : Hardware
                         fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "CPU Optional Fan", "Chassis Fan #2", "Chassis Fan #3", "AIO Pump" };
 
                         // Reordered for programs that sort via the added sources instead of sorting by index
-                        int[] newOrder = { 1, 2, 0, 3, 4, 5 };
+                        newOrder = { 1, 2, 0, 3, 4, 5 };
 
                         foreach (int originalIndex in newOrder)
                             f.Add(new Fan(fanControlNames[originalIndex], originalIndex));
