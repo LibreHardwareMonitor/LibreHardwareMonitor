@@ -3964,6 +3964,86 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.PRIME_B650_PLUS: // NCT6799D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+                        v.Add(new Voltage("Voltage #12", 11, true));
+                        v.Add(new Voltage("Voltage #13", 12, true));
+                        v.Add(new Voltage("Voltage #14", 13, true));
+                        v.Add(new Voltage("Voltage #15", 14, true));
+                        v.Add(new Voltage("Voltage #16", 15, true));
+                        v.Add(new Voltage("Voltage #17", 16, true));
+                        v.Add(new Voltage("Voltage #18", 17, true));
+                        v.Add(new Voltage("Voltage #19", 18, true));
+                        v.Add(new Voltage("Voltage #20", 19, true));
+                        v.Add(new Voltage("Voltage #21", 20, true));
+                        v.Add(new Voltage("Voltage #22", 21, true));
+                        v.Add(new Voltage("Voltage #23", 22, true));
+                        v.Add(new Voltage("Voltage #24", 23, true));
+                        v.Add(new Voltage("Voltage #25", 24, true));
+                        v.Add(new Voltage("Voltage #26", 25, true));
+                        v.Add(new Voltage("Voltage #27", 26, true));
+                        v.Add(new Voltage("Voltage #28", 27, true));
+                        v.Add(new Voltage("Voltage #29", 28, true));
+                        v.Add(new Voltage("Voltage #30", 29, true));
+                        v.Add(new Voltage("Voltage #31", 30, true));
+                        v.Add(new Voltage("Voltage #32", 31, true));
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("Temperature #1", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Temperature #3", 3));
+                        t.Add(new Temperature("Temperature #4", 4));
+                        t.Add(new Temperature("Temperature #5", 5));
+                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("Temperature #7", 7));
+                        t.Add(new Temperature("Temperature #8", 8));
+                        t.Add(new Temperature("Temperature #9", 9));
+                        t.Add(new Temperature("Temperature #10", 10));
+                        t.Add(new Temperature("Temperature #11", 11));
+                        t.Add(new Temperature("Temperature #12", 12));
+                        t.Add(new Temperature("Temperature #13", 13));
+                        t.Add(new Temperature("Temperature #14", 14));
+                        t.Add(new Temperature("Temperature #15", 15));
+                        t.Add(new Temperature("Temperature #16", 16));
+                        t.Add(new Temperature("Temperature #17", 17));
+                        t.Add(new Temperature("Temperature #18", 18));
+                        t.Add(new Temperature("Temperature #19", 19));
+                        t.Add(new Temperature("Temperature #20", 20));
+                        t.Add(new Temperature("Temperature #21", 21));
+                        t.Add(new Temperature("Temperature #23", 23));
+                        t.Add(new Temperature("Temperature #24", 25));
+                        t.Add(new Temperature("Temperature #25", 25));
+                        t.Add(new Temperature("Temperature #26", 26));
+                        t.Add(new Temperature("Temperature #27", 27));
+                        t.Add(new Temperature("Temperature #28", 28));
+                        t.Add(new Temperature("Temperature #29", 29));
+                        t.Add(new Temperature("Temperature #30", 30));
+
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("AIO Pump", 5));
+
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("AIO Pump", 5));
+
+                        break;
+
                     case Model.ROG_CROSSHAIR_X670E_GENE: // NCT6799D
                         v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -3980,6 +4060,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #13", 12, true));
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
+
                         t.Add(new Temperature("CPU Core", 0));
                         t.Add(new Temperature("Temperature #1", 1));
                         t.Add(new Temperature("Temperature #2", 2));

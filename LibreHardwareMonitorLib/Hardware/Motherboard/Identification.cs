@@ -151,6 +151,8 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_VIII_FORMULA;
             case var _ when name.Equals("ROG CROSSHAIR VIII IMPACT", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_VIII_IMPACT;
+            case var _ when name.Equals("PRIME B650-PLUS", StringComparison.OrdinalIgnoreCase):
+                return Model.PRIME_B650_PLUS;
             case var _ when name.Equals("ROG CROSSHAIR X670E EXTREME", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X670E_EXTREME;
             case var _ when name.Equals("ROG CROSSHAIR X670E HERO", StringComparison.OrdinalIgnoreCase):

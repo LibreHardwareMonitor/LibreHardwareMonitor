@@ -86,6 +86,7 @@ public enum Model
     P8P67_PRO,
     P8Z77_V,
     P9X79,
+    PRIME_B650_PLUS,
     PRIME_X370_PRO,
     PRIME_X470_PRO,
     PRIME_X570_PRO,
