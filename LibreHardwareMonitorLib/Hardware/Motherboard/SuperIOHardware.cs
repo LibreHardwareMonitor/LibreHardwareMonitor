@@ -3349,8 +3349,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #7", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
-                        v.Add(new Voltage("DRAM", 10, 1, 1));
+                        v.Add(new Voltage("CPU Termination", 9, 1, 1));
+                        v.Add(new Voltage("DIMM", 10, 1, 1));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
                         v.Add(new Voltage("Chipset 1.05V", 12));
                         v.Add(new Voltage("CPU System Agent", 13, 1, 1));
