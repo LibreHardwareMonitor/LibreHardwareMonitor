@@ -2963,7 +2963,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 6));
                         v.Add(new Voltage("+3.3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
+                        v.Add(new Voltage("CPU Termination", 9, 1, 1));
                         v.Add(new Voltage("CPU 1.05V", 10, 1, 1));
                         v.Add(new Voltage("Chipset 0.82V", 11, 1, 1));
                         v.Add(new Voltage("Chipset 1.0V", 12));
@@ -3000,7 +3000,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 6));
                         v.Add(new Voltage("+3.3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("CPU Voltage Termination", 9, 1, 1));
+                        v.Add(new Voltage("CPU Termination", 9, 1, 1));
                         v.Add(new Voltage("CPU 1.05V", 10, 1, 1));
                         v.Add(new Voltage("Chipset 0.82V", 11, 1, 1));
                         v.Add(new Voltage("Chipset 1.0V", 12));
