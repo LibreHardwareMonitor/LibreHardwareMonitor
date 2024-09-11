@@ -2583,9 +2583,9 @@ internal sealed class SuperIOHardware : Hardware
                         if (index != 0)
                         {
                             // second SIO
-                            v.Add(new Voltage("0.82V Chipset", 4));
                             v.Add(new Voltage("1.05V CPU", 0));
                             v.Add(new Voltage("VDD_CPU", 1));
+                            v.Add(new Voltage("0.82V Chipset", 4));
                             v.Add(new Voltage("1.05V Chispet", 12, 5, 100));
 
                             f.Add(new Fan("VRM", 0));
@@ -2596,10 +2596,12 @@ internal sealed class SuperIOHardware : Hardware
                         }
                         else
                         {
-                            v.Add(new Voltage("+12V", 4, 110, 10));
+                            v.Add(new Voltage("Vcore", 0));
                             v.Add(new Voltage("+5V", 1, 20, 10));
                             v.Add(new Voltage("+3.3V", 3, 34, 34));
+                            v.Add(new Voltage("+12V", 4, 110, 10));
                             v.Add(new Voltage("VCCIN_AUX", 5, 1, 1));
+                            v.Add(new Voltage("CPU System Agent", 13, 1, 1));
 
                             f.Add(new Fan("Chassis #3", 0));
                             f.Add(new Fan("CPU #1", 1));
