@@ -2602,6 +2602,7 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("+12V", 4, 110, 10));
                             v.Add(new Voltage("VCCIN_AUX", 5, 1, 1));
                             v.Add(new Voltage("CPU System Agent", 13, 1, 1));
+                            v.Add(new Voltage("+5V Standby", 14, 235, 100));
 
                             f.Add(new Fan("Chassis #3", 0));
                             f.Add(new Fan("CPU #1", 1));
