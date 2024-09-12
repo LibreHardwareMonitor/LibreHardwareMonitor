@@ -20,7 +20,7 @@ internal sealed class HighFlowNext : Hardware
     private readonly Sensor[] _voltages = new Sensor[2];
     private readonly Sensor[] _alarms = new Sensor[4];
 
-    public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier("aquacomputer", "hfn", dev.GetSerialNumber().Replace(" ", "")), settings)
+    public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier(dev.DevicePath), settings)
     {
         if (dev.TryOpen(out _stream))
         {
