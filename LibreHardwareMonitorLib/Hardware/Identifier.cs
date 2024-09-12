@@ -66,9 +66,7 @@ public class Identifier : IComparable<Identifier>
         {
             string s = identifiers[i];
             if (s.IndexOf(' ') >= 0)
-            {
                 identifiers[i] = s.Replace(' ', '-');
-            }                
         }
     }
 
