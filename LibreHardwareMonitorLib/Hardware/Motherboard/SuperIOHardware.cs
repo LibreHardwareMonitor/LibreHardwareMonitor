@@ -1788,6 +1788,9 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.Z790_AORUS_PRO_X: // ITE IT8689E
+                        
+
                     case Model.Z790_UD: // ITE IT8689E
                     case Model.Z790_UD_AC: // ITE IT8689E
                     case Model.Z790_GAMING_X: // ITE IT8689E
@@ -2355,6 +2358,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.Z790_AORUS_PRO_X: // ITE IT87952E
                     case Model.Z690_AORUS_PRO:
                     case Model.Z690_AORUS_MASTER: // ITE IT87952E
                         t.Add(new Temperature("PCIe x4", 0));

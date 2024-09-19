@@ -210,6 +210,7 @@ public enum Model
     Z690_AORUS_ULTRA,
     Z690_AORUS_MASTER,
     Z690_GAMING_X_DDR4,
+    Z790_AORUS_PRO_X,
     Z790_UD,
     Z790_UD_AC,
     Z790_GAMING_X,
