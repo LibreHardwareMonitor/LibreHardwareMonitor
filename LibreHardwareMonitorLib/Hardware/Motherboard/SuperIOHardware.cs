@@ -1788,9 +1788,6 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case Model.Z790_AORUS_PRO_X: // ITE IT8689E
-                        
-
                     case Model.Z790_UD: // ITE IT8689E
                     case Model.Z790_UD_AC: // ITE IT8689E
                     case Model.Z790_GAMING_X: // ITE IT8689E
@@ -1823,6 +1820,7 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("CPU Optional Fan", 4));
                         break;
 
+                    case Model.Z790_AORUS_PRO_X: // ITE IT8689E
                     case Model.Z690_AORUS_PRO:
                     case Model.Z690_AORUS_ULTRA: // ITE IT8689E
                     case Model.Z690_AORUS_MASTER: // ITE IT8689E
@@ -1841,16 +1839,16 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
-                        t.Add(new Temperature("EC_TEMP1", 5));
+                        t.Add(new Temperature("External #1", 5));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
-                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("System Fan #3 / Pump", 3));
                         f.Add(new Fan("CPU Optional Fan", 4));
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("System Fan #1", 1));
                         c.Add(new Control("System Fan #2", 2));
-                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("System Fan #3 / Pump", 3));
                         c.Add(new Control("CPU Optional Fan", 4));
                         break;
 
@@ -2307,11 +2305,11 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("PCIe x8", 0));
                         t.Add(new Temperature("External #2", 1));
                         t.Add(new Temperature("System #2", 2));
-                        f.Add(new Fan("System Fan #5 Pump", 0));
-                        f.Add(new Fan("System Fan #6 Pump", 1));
+                        f.Add(new Fan("System Fan #5 / Pump", 0));
+                        f.Add(new Fan("System Fan #6 / Pump", 1));
                         f.Add(new Fan("System Fan #4", 2));
-                        c.Add(new Control("System Fan #5 Pump", 0));
-                        c.Add(new Control("System Fan #6 Pump", 1));
+                        c.Add(new Control("System Fan #5 / Pump", 0));
+                        c.Add(new Control("System Fan #6 / Pump", 1));
                         c.Add(new Control("System Fan #4", 2));
 
                         break;
@@ -2347,14 +2345,14 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 1f, 1f));
                         v.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
                         t.Add(new Temperature("PCIe x8", 0));
-                        t.Add(new Temperature("EC_TEMP2", 1));
+                        t.Add(new Temperature("External #2", 1));
                         t.Add(new Temperature("System #2", 2));
-                        f.Add(new Fan("System Fan #5 Pump", 0));
-                        f.Add(new Fan("System Fan #6 Pump", 1));
+                        f.Add(new Fan("System Fan #5 / Pump", 0));
+                        f.Add(new Fan("System Fan #6 / Pump", 1));
                         f.Add(new Fan("System Fan #4", 2));
-                        c.Add(new Control("Fan #5", 0));
-                        c.Add(new Control("Fan #6", 1));
-                        c.Add(new Control("Fan #4", 2));
+                        c.Add(new Control("System Fan #5 / Pump", 0));
+                        c.Add(new Control("System Fan #6 / Pump", 1));
+                        c.Add(new Control("System Fan #4", 2));
 
                         break;
 
@@ -2362,13 +2360,13 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z690_AORUS_PRO:
                     case Model.Z690_AORUS_MASTER: // ITE IT87952E
                         t.Add(new Temperature("PCIe x4", 0));
-                        t.Add(new Temperature("EC_TEMP2", 1));
+                        t.Add(new Temperature("External #2", 1));
                         t.Add(new Temperature("System #2", 2));
-                        f.Add(new Fan("System Fan #5 Pump", 0));
-                        f.Add(new Fan("System Fan #6 Pump", 1));
+                        f.Add(new Fan("System Fan #5 / Pump", 0));
+                        f.Add(new Fan("System Fan #6 / Pump", 1));
                         f.Add(new Fan("System Fan #4", 2));
-                        c.Add(new Control("System Fan #5 Pump", 0));
-                        c.Add(new Control("System Fan #6 Pump", 1));
+                        c.Add(new Control("System Fan #5 / Pump", 0));
+                        c.Add(new Control("System Fan #6 / Pump", 1));
                         c.Add(new Control("System Fan #4", 2));
                         break;
 
