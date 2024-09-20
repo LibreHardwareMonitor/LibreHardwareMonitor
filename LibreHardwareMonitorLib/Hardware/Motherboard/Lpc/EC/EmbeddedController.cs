@@ -232,6 +232,14 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut,
             ECSensor.FanWaterFlow),
+        new(Model.ROG_MAXIMUS_Z790_DARK_HERO,
+            BoardFamily.Intel700,
+            ECSensor.TempVrm,
+            ECSensor.FanCPUOpt,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.Z170_A,
             BoardFamily.Intel100,
             ECSensor.TempTSensor,
@@ -360,6 +368,8 @@ public abstract class EmbeddedController : Hardware
         {
             BoardFamily.Intel700, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0109, blank: -40) },
                 { ECSensor.TempTSensor2, new EmbeddedControllerSource("T Sensor 2", SensorType.Temperature, 0x105, blank: -40) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
