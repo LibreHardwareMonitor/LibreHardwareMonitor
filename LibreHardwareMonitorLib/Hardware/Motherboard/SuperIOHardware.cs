@@ -4001,6 +4001,38 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.PRIME_B650_PLUS: // NCT6799D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+                        
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU Package", 3));
+
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("AIO Pump", 5));
+
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("AIO Pump", 5));
+
+                        break;
+
                     case Model.ROG_CROSSHAIR_X670E_GENE: // NCT6799D
                         v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
                         v.Add(new Voltage("+5V", 1, 4, 1));
