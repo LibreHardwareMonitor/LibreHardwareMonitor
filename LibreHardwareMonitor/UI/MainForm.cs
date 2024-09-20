@@ -10,10 +10,12 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
 
@@ -21,6 +23,7 @@ namespace LibreHardwareMonitor.UI;
 
 public sealed partial class MainForm : Form
 {
+    private ToolStripMenuItem _autoThemeMenuItem;
     private readonly UserOption _autoStart;
     private readonly Computer _computer;
     private readonly SensorGadget _gadget;
@@ -30,7 +33,6 @@ public sealed partial class MainForm : Form
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
-    private readonly Color[] _plotColorPalette;
     private readonly PlotPanel _plotPanel;
     private readonly UserOption _readBatterySensors;
     private readonly UserOption _readCpuSensors;
@@ -59,6 +61,8 @@ public sealed partial class MainForm : Form
     private bool _selectionDragging;
     private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
     private UserOption _showPlot;
+    private UserRadioGroup _strokeThickness;
+    private double _plotStrokeThickness = 2;
 
     public MainForm()
     {
@@ -89,6 +93,16 @@ public sealed partial class MainForm : Form
             Height = _settings.GetValue("mainForm.Height", 640)
         };
 
+        Theme setTheme = Theme.All.FirstOrDefault(theme => _settings.GetValue("theme", "auto") == theme.Id);
+        if (setTheme != null)
+        {
+            Theme.Current = setTheme;
+        }
+        else
+        {
+            Theme.SetAutoTheme();
+        }
+
         _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
 
         nodeCheckBox.IsVisibleValueNeeded += NodeCheckBox_IsVisibleValueNeeded;
@@ -98,8 +112,11 @@ public sealed partial class MainForm : Form
         nodeTextBoxMax.DrawText += NodeTextBoxText_DrawText;
         nodeTextBoxText.EditorShowing += NodeTextBoxText_EditorShowing;
 
-        foreach (TreeColumn column in treeView.Columns)
+        for (int i = 1; i < treeView.Columns.Count; i++)
+        {
+            TreeColumn column = treeView.Columns[i];
             column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
+        }
 
         TreeModel treeModel = new();
         _root = new Node(Environment.MachineName) { Image = EmbeddedResources.GetImage("computer.png") };
@@ -118,7 +135,6 @@ public sealed partial class MainForm : Form
             // Unix
             treeView.RowHeight = Math.Max(treeView.RowHeight, 18);
             splitContainer.BorderStyle = BorderStyle.None;
-            splitContainer.Border3DStyle = Border3DStyle.Adjust;
             splitContainer.SplitterWidth = 4;
             treeView.BorderStyle = BorderStyle.Fixed3D;
             _plotPanel.BorderStyle = BorderStyle.Fixed3D;
@@ -141,21 +157,6 @@ public sealed partial class MainForm : Form
         nodeTextBoxText.ToolTipProvider = tooltipProvider;
         nodeTextBoxValue.ToolTipProvider = tooltipProvider;
         _logger = new Logger(_computer);
-
-        _plotColorPalette = new Color[13];
-        _plotColorPalette[0] = Color.Blue;
-        _plotColorPalette[1] = Color.OrangeRed;
-        _plotColorPalette[2] = Color.Green;
-        _plotColorPalette[3] = Color.LightSeaGreen;
-        _plotColorPalette[4] = Color.Goldenrod;
-        _plotColorPalette[5] = Color.DarkViolet;
-        _plotColorPalette[6] = Color.YellowGreen;
-        _plotColorPalette[7] = Color.SaddleBrown;
-        _plotColorPalette[8] = Color.RoyalBlue;
-        _plotColorPalette[9] = Color.DeepPink;
-        _plotColorPalette[10] = Color.MediumSeaGreen;
-        _plotColorPalette[11] = Color.Olive;
-        _plotColorPalette[12] = Color.Firebrick;
 
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
@@ -228,6 +229,11 @@ public sealed partial class MainForm : Form
         _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
 
         _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
+
+        // Prevent Menu From Closing When UnClicking Hardware Items
+        menuItemFileHardware.DropDown.Closing += StopFileHardwareMenuFromClosing;
+
+
         _showGadget.Changed += delegate
         {
             if (_gadget != null)
@@ -384,6 +390,9 @@ public sealed partial class MainForm : Form
                                                      },
                                                      _settings);
 
+        perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
+        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
+
         _sensorValuesTimeWindow.Changed += (sender, e) =>
         {
             TimeSpan timeWindow = TimeSpan.Zero;
@@ -427,6 +436,7 @@ public sealed partial class MainForm : Form
             _computer.Accept(new SensorVisitor(delegate(ISensor sensor) { sensor.ValuesTimeWindow = timeWindow; }));
         };
 
+        InitializeTheme();
         InitializePlotForm();
         InitializeSplitter();
 
@@ -459,6 +469,14 @@ public sealed partial class MainForm : Form
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
     }
 
+    private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
+    {
+        if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
+        {
+            e.Cancel = true;
+        }
+    }
+
     public bool AuthWebServerMenuItemChecked
     {
         get { return authWebServerMenuItem.Checked; }
@@ -488,6 +506,71 @@ public sealed partial class MainForm : Form
         }
     }
 
+    private void InitializeTheme()
+    {
+        mainMenu.Renderer = new ThemedToolStripRenderer();
+        treeContextMenu.Renderer = new ThemedToolStripRenderer();
+        ThemedVScrollIndicator.AddToControl(treeView);
+        ThemedHScrollIndicator.AddToControl(treeView);
+
+        string themeSetting = _settings.GetValue("theme", "auto");
+        bool themeSelected = false;
+
+        void ClearThemeMenu()
+        {
+            foreach (ToolStripItem x in themeMenuItem.DropDownItems)
+            {
+                if (x is ToolStripMenuItem tmi)
+                {
+                    tmi.Checked = false;
+                }
+            }
+        }
+
+        if (Theme.SupportsAutoThemeSwitching())
+        {
+            _autoThemeMenuItem = new ToolStripMenuItem();
+            _autoThemeMenuItem.Text = "Auto";
+            _autoThemeMenuItem.Click += (o, e) =>
+            {
+                ClearThemeMenu();
+                _autoThemeMenuItem.Checked = true;
+                Theme.SetAutoTheme();
+                _settings.SetValue("theme", "auto");
+                PlotSelectionChanged(o, e);
+            };
+            themeMenuItem.DropDownItems.Add(_autoThemeMenuItem);
+        }
+
+        foreach (Theme theme in Theme.All)
+        {
+            ToolStripMenuItem item = new ToolStripMenuItem();
+            item.Text = theme.DisplayName;
+            item.Click += (o, e) =>
+            {
+                ClearThemeMenu();
+                item.Checked = true;
+                Theme.Current = theme;
+                _settings.SetValue("theme", theme.Id);
+                PlotSelectionChanged(o, e);
+            };
+            themeMenuItem.DropDownItems.Add(item);
+
+            if (themeSetting == theme.Id)
+            {
+                item.PerformClick();
+                themeSelected = true;
+            }
+        }
+
+        if (!themeSelected)
+        {
+            themeMenuItem.DropDownItems[0].PerformClick();
+        }
+
+        Theme.Current.Apply(this);
+    }
+
     private void InitializeSplitter()
     {
         splitContainer.SplitterDistance = _settings.GetValue("splitContainer.SplitterDistance", 400);
@@ -515,7 +598,10 @@ public sealed partial class MainForm : Form
             if (_plotLocation.Value == 0)
             {
                 if (_showPlot.Value && Visible)
+                {
+                    Theme.Current.Apply(_plotForm);
                     _plotForm.Show();
+                }
                 else
                     _plotForm.Hide();
             }
@@ -525,6 +611,16 @@ public sealed partial class MainForm : Form
             }
 
             treeView.Invalidate();
+        };
+
+        _strokeThickness = new UserRadioGroup("plotStroke", 1, new[] { strokeThickness1ptMenuItem, strokeThickness2ptMenuItem, strokeThickness3ptMenuItem, strokeThickness4ptMenuItem }, _settings);
+
+        _strokeThickness.Changed += (sender, e) =>
+        {
+            _plotStrokeThickness = (_strokeThickness.Value >= 0 && _strokeThickness.Value <= 3)
+                                                   ? _strokeThickness.Value + 1
+                                                   : 4;
+            _plotPanel.UpdateStrokeThickness(_plotStrokeThickness);
         };
 
         _plotLocation.Changed += delegate
@@ -619,6 +715,8 @@ public sealed partial class MainForm : Form
             else
                 _plotForm.Hide();
         };
+
+        Theme.Current.Apply(_plotForm);
     }
 
     private void InsertSorted(IList<Node> nodes, HardwareNode node)
@@ -692,7 +790,7 @@ public sealed partial class MainForm : Form
                     if (!sensorNode.PenColor.HasValue)
                     {
                         colors.Add(sensorNode.Sensor,
-                                   _plotColorPalette[colorIndex % _plotColorPalette.Length]);
+                                   Theme.Current.PlotColorPalette[colorIndex % Theme.Current.PlotColorPalette.Length]);
                     }
 
                     selected.Add(sensorNode.Sensor);
@@ -716,7 +814,7 @@ public sealed partial class MainForm : Form
             Color curColor = colors[curSelectedSensor];
             if (usedColors.Contains(curColor))
             {
-                foreach (Color potentialNewColor in _plotColorPalette)
+                foreach (Color potentialNewColor in Theme.Current.PlotColorPalette)
                 {
                     if (!colors.Values.Contains(potentialNewColor))
                     {
@@ -739,7 +837,7 @@ public sealed partial class MainForm : Form
         }
 
         _sensorPlotColors = colors;
-        _plotPanel.SetSensors(selected, colors);
+        _plotPanel.SetSensors(selected, colors, _plotStrokeThickness);
     }
 
     private void NodeTextBoxText_EditorShowing(object sender, CancelEventArgs e)
@@ -896,7 +994,6 @@ public sealed partial class MainForm : Form
             {
                 expandPersistNode.Expanded = info.Node.IsExpanded;
             }
-
             return;
         }
 
@@ -1052,12 +1149,17 @@ public sealed partial class MainForm : Form
     protected override void WndProc(ref Message m)
     {
         const int WM_SYSCOMMAND = 0x112;
+        const int WM_WININICHANGE = 0x001A;
         const int SC_MINIMIZE = 0xF020;
         const int SC_CLOSE = 0xF060;
 
         if (_minimizeToTray.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_MINIMIZE)
         {
             SysTrayHideShow();
+        }
+        else if (m.Msg == WM_WININICHANGE && Marshal.PtrToStringUni(m.LParam) == "ImmersiveColorSet" && _autoThemeMenuItem?.Checked == true)
+        {
+            Theme.SetAutoTheme();
         }
         else if (_minimizeOnClose.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_CLOSE)
         {
@@ -1163,6 +1265,37 @@ public sealed partial class MainForm : Form
         _selectionDragging = false;
     }
 
+    private void TreeView_SizeChanged(object sender, EventArgs e)
+    {
+        int newWidth = treeView.Width;
+        for (int i = 1; i < treeView.Columns.Count; i++)
+        {
+            if (treeView.Columns[i].IsVisible)
+                newWidth -= treeView.Columns[i].Width;
+        }
+        treeView.Columns[0].Width = newWidth;
+    }
+
+    private void TreeView_ColumnWidthChanged(TreeColumn column)
+    {
+        int index = treeView.Columns.IndexOf(column);
+        int columnsWidth = 0;
+        foreach (TreeColumn treeColumn in treeView.Columns)
+        {
+            if (treeColumn.IsVisible)
+                columnsWidth += treeColumn.Width;
+        }
+
+        int nextColumnIndex = index + 1;
+        while (nextColumnIndex < treeView.Columns.Count && treeView.Columns[nextColumnIndex].IsVisible == false)
+            nextColumnIndex++;
+
+        if (nextColumnIndex < treeView.Columns.Count) {
+            int diff = treeView.Width - columnsWidth;
+            treeView.Columns[nextColumnIndex].Width = Math.Max(20, treeView.Columns[nextColumnIndex].Width + diff);
+        }
+    }
+
     private void ServerPortMenuItem_Click(object sender, EventArgs e)
     {
         new PortForm(this).ShowDialog();
@@ -1171,5 +1304,19 @@ public sealed partial class MainForm : Form
     private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
     {
         new AuthForm(this).ShowDialog();
+    }
+
+    private void perSessionFileRotationMenuItem_Click(object sender, EventArgs e)
+    {
+        dailyFileRotationMenuItem.Checked = false;
+        perSessionFileRotationMenuItem.Checked = true;
+        _logger.FileRotationMethod = LoggerFileRotation.PerSession;
+    }
+
+    private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
+    {
+        dailyFileRotationMenuItem.Checked = true;
+        perSessionFileRotationMenuItem.Checked = false;
+        _logger.FileRotationMethod = LoggerFileRotation.Daily;
     }
 }

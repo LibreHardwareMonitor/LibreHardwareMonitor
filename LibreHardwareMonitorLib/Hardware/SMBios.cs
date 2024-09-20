@@ -648,15 +648,9 @@ public class BiosInformation : InformationBase
             int.TryParse(parts[1], out int day) &&
             int.TryParse(parts[2], out int year))
         {
-            if (day > 31)
-            {
-                (year, day) = (day, year);
-            }
-
-            if (month > 12)
-            {
-                (month, day) = (day, month);
-            }
+            // Check if the SMBIOS specification is followed.
+            if (month > 12 || day > 31)
+                return null;
 
             return new DateTime(year < 100 ? 1900 + year : year, month, day);
         }
@@ -1094,10 +1088,9 @@ public class MemoryDevice : InformationBase
         ConfiguredSpeed = GetWord(0x20);
         ConfiguredVoltage = GetWord(0x26);
         Size = GetWord(0x0C);
+        if (Size == 0x7FFF)
+            Size = GetDword(0x1C);
         Type = (MemoryType)GetByte(0x12);
-
-        if (GetWord(0x1C) > 0)
-            Size += GetWord(0x1C);
     }
 
     /// <summary>
@@ -1126,9 +1119,11 @@ public class MemoryDevice : InformationBase
     public string SerialNumber { get; }
 
     /// <summary>
-    /// Gets the size of the memory device. If the value is 0, no memory device is installed in the socket.
+    /// Gets the size of the memory device.
+    /// If the value is 0, no memory device is installed in the socket.
+    /// If the value is 0xFFFF, the size is unknown.
     /// </summary>
-    public ushort Size { get; }
+    public uint Size { get; }
 
     /// <summary>
     /// Gets the value that identifies the maximum capable speed of the device, in mega transfers per second (MT/s).
@@ -1323,11 +1318,11 @@ public class SMBios
                 return reader.ReadLine();
             }
 
-            return null;
+            return string.Empty;
         }
         catch
         {
-            return null;
+            return string.Empty;
         }
     }
 

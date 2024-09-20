@@ -146,6 +146,13 @@ public abstract class EmbeddedController : Hardware
             ECSensor.FanChipset,
             ECSensor.CurrCPU,
             ECSensor.VoltageCPU),
+        new(Model.ROG_STRIX_X570_E_GAMING_WIFI_II,
+            BoardFamily.Amd500,
+            ECSensor.TempChipset,
+            ECSensor.TempCPU,
+            ECSensor.TempMB,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm),
         new(Model.ROG_STRIX_X570_F_GAMING,
             BoardFamily.Amd500,
             ECSensor.TempChipset,
@@ -187,10 +194,23 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
+            BoardFamily.Intel400,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
             ECSensor.TempVrm),
+        new(Model.ROG_MAXIMUS_Z690_HERO,
+            BoardFamily.Intel600,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z690_FORMULA,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -208,6 +228,15 @@ public abstract class EmbeddedController : Hardware
             ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z790_HERO,
             BoardFamily.Intel700,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
+        new(Model.ROG_MAXIMUS_Z790_DARK_HERO,
+            BoardFamily.Intel700,
+            ECSensor.TempVrm,
+            ECSensor.FanCPUOpt,
+            ECSensor.TempTSensor,
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut,
             ECSensor.FanWaterFlow),
@@ -224,12 +253,25 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempVrm),
         new(Model.ROG_STRIX_Z790_I_GAMING_WIFI,
             BoardFamily.Intel700,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut),
+            ECSensor.TempTSensor,
+            ECSensor.TempTSensor2),
+        new(Model.ROG_STRIX_Z790_E_GAMING_WIFI,
+            BoardFamily.Intel700,
+            ECSensor.TempWaterIn),
         new(Model.ROG_MAXIMUS_Z790_FORMULA,
             BoardFamily.Intel700,
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut),
+        new(Model.ROG_MAXIMUS_XII_HERO_WIFI,
+            BoardFamily.Intel400,
+            ECSensor.TempTSensor,
+            ECSensor.TempChipset,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.CurrCPU,
+            ECSensor.FanCPUOpt,
+            ECSensor.FanWaterFlow),
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
@@ -300,6 +342,19 @@ public abstract class EmbeddedController : Hardware
             }
         },
         {
+            BoardFamily.Intel400, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) }, // todo: need validation for this calculation
+                { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
+                { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
+            }
+        },
+        {
             BoardFamily.Intel600, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
@@ -313,6 +368,10 @@ public abstract class EmbeddedController : Hardware
         {
             BoardFamily.Intel700, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0109, blank: -40) },
+                { ECSensor.TempTSensor2, new EmbeddedControllerSource("T Sensor 2", SensorType.Temperature, 0x105, blank: -40) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                 { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
@@ -393,7 +452,7 @@ public abstract class EmbeddedController : Hardware
         {
             int val = _sources[si].Size switch
             {
-                1 => unchecked((sbyte)_data[readRegister]),
+                1 => _sources[si].Type switch { SensorType.Temperature => unchecked((sbyte)_data[readRegister]), _ => _data[readRegister] },
                 2 => unchecked((short)((_data[readRegister] << 8) + _data[readRegister + 1])),
                 _ => 0
             };
@@ -478,6 +537,9 @@ public abstract class EmbeddedController : Hardware
         /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
         TempTSensor,
 
+        /// <summary>"T_Sensor 2" temperature sensor reading [℃]</summary>
+        TempTSensor2,
+
         /// <summary>VRM temperature [℃]</summary>
         TempVrm,
 
@@ -520,6 +582,7 @@ public abstract class EmbeddedController : Hardware
         Amd600,
         Intel100,
         Intel300,
+        Intel400,
         Intel600,
         Intel700
     }

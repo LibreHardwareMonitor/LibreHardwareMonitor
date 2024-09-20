@@ -18,7 +18,6 @@ internal class RyzenSMU
     private const uint SMU_RETRIES_MAX = 8096;
 
     private readonly CpuCodeName _cpuCodeName;
-    private readonly Mutex _mutex = new();
     private readonly bool _supportedCPU;
 
     private readonly Dictionary<uint, Dictionary<uint, SmuSensorType>> _supportedPmTableVersions = new()
@@ -192,6 +191,11 @@ internal class RyzenSMU
                 0x61 => CpuCodeName.Raphael,
                 _ => CpuCodeName.Undefined
             },
+            0x1A => model switch
+            {
+                0x44 => CpuCodeName.GraniteRidge,
+                _ => CpuCodeName.Undefined
+            },
             _ => CpuCodeName.Undefined
         };
     }
@@ -233,6 +237,7 @@ internal class RyzenSMU
             case CpuCodeName.Matisse:
             case CpuCodeName.Vermeer:
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 _cmdAddr = 0x3B10524;
                 _rspAddr = 0x3B10570;
                 _argsAddr = 0x3B10A40;
@@ -264,12 +269,9 @@ internal class RyzenSMU
 
     public uint GetSmuVersion()
     {
-        uint[] args = { 1 };
+        uint[] args = [1];
 
-        if (SendCommand(0x02, ref args))
-            return args[0];
-
-        return 0;
+        return SendCommand(0x02, ref args) ? args[0] : 0;
     }
 
     public Dictionary<uint, SmuSensorType> GetPmTableStructure()
@@ -288,7 +290,7 @@ internal class RyzenSMU
     public float[] GetPmTable()
     {
         if (!_supportedCPU || !TransferTableToDram())
-            return new float[] { 0 };
+            return [0];
 
         float[] table = ReadDramToArray();
 
@@ -428,6 +430,7 @@ internal class RyzenSMU
                 break;
 
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 switch (_pmTableVersion)
                 {
                     case 0x00540004:
@@ -451,7 +454,7 @@ internal class RyzenSMU
 
     private bool GetPmTableVersion(ref uint version)
     {
-        uint[] args = { 0 };
+        uint[] args = [0];
         uint fn;
 
         switch (_cpuCodeName)
@@ -468,6 +471,7 @@ internal class RyzenSMU
                 fn = 0x06;
                 break;
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 fn = 0x05;
                 break;
             default:
@@ -482,7 +486,7 @@ internal class RyzenSMU
 
     private void SetupAddrClass1(uint[] fn)
     {
-        uint[] args = { 1, 1 };
+        uint[] args = [1, 1];
 
         bool command = SendCommand(fn[0], ref args);
         if (!command)
@@ -494,13 +498,13 @@ internal class RyzenSMU
 
     private void SetupAddrClass2(uint[] fn)
     {
-        uint[] args = { 0, 0, 0, 0, 0, 0 };
+        uint[] args = [0, 0, 0, 0, 0, 0];
 
         bool command = SendCommand(fn[0], ref args);
         if (!command)
             return;
 
-        args = new uint[] { 0 };
+        args = [0];
         command = SendCommand(fn[1], ref args);
         if (!command)
             return;
@@ -510,15 +514,15 @@ internal class RyzenSMU
 
     private void SetupAddrClass3(uint[] fn)
     {
-        uint[] parts = { 0, 0 };
+        uint[] parts = [0, 0];
 
         // == Part 1 ==
-        uint[] args = { 3 };
+        uint[] args = [3];
         bool command = SendCommand(fn[0], ref args);
         if (!command)
             return;
 
-        args = new uint[] { 3 };
+        args = [3];
         command = SendCommand(fn[2], ref args);
         if (!command)
             return;
@@ -528,17 +532,17 @@ internal class RyzenSMU
         // == Part 1 End ==
 
         // == Part 2 ==
-        args = new uint[] { 3 };
+        args = [3];
         command = SendCommand(fn[1], ref args);
         if (!command)
             return;
 
-        args = new uint[] { 5 };
+        args = [5];
         command = SendCommand(fn[0], ref args);
         if (!command)
             return;
 
-        args = new uint[] { 5 };
+        args = [5];
         command = SendCommand(fn[2], ref args);
         if (!command)
             return;
@@ -552,11 +556,12 @@ internal class RyzenSMU
 
     private void SetupDramBaseAddr()
     {
-        uint[] fn = { 0, 0, 0 };
+        uint[] fn = [0, 0, 0];
 
         switch (_cpuCodeName)
         {
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 fn[0] = 0x04;
                 SetupAddrClass1(fn);
                 return;
@@ -592,12 +597,13 @@ internal class RyzenSMU
 
     public bool TransferTableToDram()
     {
-        uint[] args = { 0 };
+        uint[] args = [0];
         uint fn;
 
         switch (_cpuCodeName)
         {
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 fn = 0x03;
                 break;
             case CpuCodeName.Matisse:
@@ -630,7 +636,7 @@ internal class RyzenSMU
             cmdArgs[i] = args[i];
 
         uint tmp = 0;
-        if (_mutex.WaitOne(5000))
+        if (Mutexes.WaitPciBus(5000))
         {
             // Step 1: Wait until the RSP register is non-zero.
 
@@ -640,17 +646,17 @@ internal class RyzenSMU
             {
                 if (!ReadReg(_rspAddr, ref tmp))
                 {
-                    _mutex.ReleaseMutex();
+                    Mutexes.ReleasePciBus();
                     return false;
                 }
             }
-            while (tmp == 0 && 0 != retries--);
+            while (tmp == 0 && retries-- != 0);
 
             // Step 1.b: A command is still being processed meaning a new command cannot be issued.
 
             if (retries == 0 && tmp == 0)
             {
-                _mutex.ReleaseMutex();
+                Mutexes.ReleasePciBus();
                 return false;
             }
 
@@ -671,7 +677,7 @@ internal class RyzenSMU
             {
                 if (!ReadReg(_rspAddr, ref tmp))
                 {
-                    _mutex.ReleaseMutex();
+                    Mutexes.ReleasePciBus();
                     return false;
                 }
             }
@@ -679,7 +685,7 @@ internal class RyzenSMU
 
             if (retries == 0 && tmp != (uint)Status.OK)
             {
-                _mutex.ReleaseMutex();
+                Mutexes.ReleasePciBus();
                 return false;
             }
 
@@ -690,13 +696,13 @@ internal class RyzenSMU
             {
                 if (!ReadReg(_argsAddr + (uint)(i * 4), ref args[i]))
                 {
-                    _mutex.ReleaseMutex();
+                    Mutexes.ReleasePciBus();
                     return false;
                 }
             }
 
             ReadReg(_rspAddr, ref tmp);
-            _mutex.ReleaseMutex();
+            Mutexes.ReleasePciBus();
         }
 
         return tmp == (uint)Status.OK;
@@ -763,6 +769,7 @@ internal class RyzenSMU
         Cezanne,
         Milan,
         Dali,
-        Raphael
+        Raphael,
+        GraniteRidge
     }
 }

@@ -31,7 +31,9 @@ public enum SensorType
     Throughput, // B/s
     TimeSpan, // Seconds 
     Energy, // milliwatt-hour (mWh)
-    Noise // dBA
+    Noise, // dBA
+    Conductivity, // µS/cm
+    Humidity // %
 }
 
 /// <summary>
