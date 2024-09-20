@@ -290,7 +290,7 @@ internal sealed class Amd17Cpu : AmdCpu
                 {
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
-                        if (cpuId.Model is 0x61 or 0x44) //Raphael or GraniteRidge
+                        if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
                             Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
                         else
                             Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
