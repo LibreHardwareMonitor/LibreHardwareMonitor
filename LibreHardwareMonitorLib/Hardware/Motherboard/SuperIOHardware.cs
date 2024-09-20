@@ -3689,19 +3689,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Temperature #5", 5));
                         t.Add(new Temperature("Temperature #6", 6));
                         t.Add(new Temperature("Temperature #7", 7));
-                        //t.Add(new Temperature("Temperature 08", 8));
-                        //t.Add(new Temperature("Temperature 09", 9));
-                        //t.Add(new Temperature("Temperature 10", 10));
-                        //t.Add(new Temperature("Temperature 11", 11));
                         t.Add(new Temperature("PCH", 12));
-                        //t.Add(new Temperature("Temperature 13", 13));
-                        //t.Add(new Temperature("Temperature 14", 14));
-                        //t.Add(new Temperature("Temperature 15", 15));
-                        //t.Add(new Temperature("Temperature 16", 16));
-                        //t.Add(new Temperature("Temperature 17", 17));
-                        //t.Add(new Temperature("Temperature 18", 18));
-                        //t.Add(new Temperature("Temperature 19", 19));
-                        //t.Add(new Temperature("Temperature 20", 20));
                         t.Add(new Temperature("Temperature #9", 21));
 
                         fanControlNames = new[] { "Chassis Fan 1", "CPU Fan", "Radiator Fan 1", "Radiator Fan 2", "Chassis Fan 2", "Water Pump 1", "Water Pump 2" };
@@ -3758,43 +3746,22 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("3VCC", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
                         v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
-                        v.Add(new Voltage("VIN4", 6));
+                        v.Add(new Voltage("Voltage #6", 6));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, 1, 1));
                         v.Add(new Voltage("Voltage #11", 10, 1, 1));
                         v.Add(new Voltage("IVR Atom L2 Cluster #0", 11, 1, 1));
-                        v.Add(new Voltage("PCH 1.05V", 12));
+                        v.Add(new Voltage("PCH", 12));
                         v.Add(new Voltage("CPU System Agent", 13, 1, 1));
                         v.Add(new Voltage("CPU Input Auxiliary", 14, 1, 1));
-                        v.Add(new Voltage("VIN9", 15));
-
+                        v.Add(new Voltage("Voltage #15", 15));
 
                         t.Add(new Temperature("CPU Package", 0));
-                        //t.Add(new Temperature("Temperature #1", 1));
                         t.Add(new Temperature("Motherboard", 2));
-                        //t.Add(new Temperature("Temperature #3", 3));
-                        //t.Add(new Temperature("Temperature #4", 4));
-                        //t.Add(new Temperature("Temperature #5", 5));
-                        //t.Add(new Temperature("Temperature #6", 6));
-                        //t.Add(new Temperature("Temperature #7", 7));
-                        //t.Add(new Temperature("Temperature #8", 8));
-                        //t.Add(new Temperature("Temperature #9", 9));
-                        //t.Add(new Temperature("Temperature #10", 10));
-                        //t.Add(new Temperature("Temperature #11", 11));
                         t.Add(new Temperature("Chipset", 12));
                         t.Add(new Temperature("PCH", 13));
-                        //t.Add(new Temperature("Temperature #14", 14));
-                        //t.Add(new Temperature("Temperature #15", 15));
-                        //t.Add(new Temperature("Temperature #16", 16));
-                        //t.Add(new Temperature("Temperature #17", 17));
-                        //t.Add(new Temperature("Temperature #18", 18));
-                        //t.Add(new Temperature("Temperature #19", 19));
-                        //t.Add(new Temperature("Temperature #20", 20));
-                        //t.Add(new Temperature("Temperature #21", 21));
                         t.Add(new Temperature("CPU", 22));
-                        //t.Add(new Temperature("Temperature #23", 23));
-                        //t.Add(new Temperature("Temperature #24", 24));
 
                         f.Add(new Fan("Chassis Fan #1", 0));
                         f.Add(new Fan("CPU Fan", 1));
