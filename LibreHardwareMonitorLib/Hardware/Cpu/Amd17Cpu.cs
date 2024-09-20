@@ -197,7 +197,8 @@ internal sealed class Amd17Cpu : AmdCpu
                         supportsPerCcdTemperatures = true;
                         break;
 
-                    case 0x61:
+                    case 0x61: //Zen 4
+                    case 0x44: //Zen 5
                         sviPlane0Offset = F17H_M01H_SVI + 0x10;
                         sviPlane1Offset = F17H_M01H_SVI + 0xC;
                         supportsPerCcdTemperatures = true;
@@ -289,7 +290,7 @@ internal sealed class Amd17Cpu : AmdCpu
                 {
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
-                        if (cpuId.Model == 0x61)
+                        if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
                             Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
                         else
                             Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
@@ -348,7 +349,7 @@ internal sealed class Amd17Cpu : AmdCpu
             double vcc;
             uint svi0PlaneXVddCor;
 
-            if (cpuId.Model is 0x61) // Readout not working for Ryzen 7000.
+            if (cpuId.Model is 0x61 or 0x44) // Readout not working for Ryzen 7000/9000.
                 smuSvi0Tfn |= 0x01 | 0x02;
 
             // Core (0x01).
