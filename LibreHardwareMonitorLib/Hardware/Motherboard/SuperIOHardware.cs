@@ -2361,10 +2361,10 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z690_AORUS_MASTER: // ITE IT87952E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("DIMM I/O", 1));
-                        v.Add(new Voltage("Chipset +0.82V", 2, true));
+                        v.Add(new Voltage("Chipset +0.82V", 2));
                         v.Add(new Voltage("Voltage #4", 3, true));
-                        v.Add(new Voltage("CPU System Agent", 4, true));
-                        v.Add(new Voltage("Chipset +1.8V", 5, true));
+                        v.Add(new Voltage("CPU System Agent", 4));
+                        v.Add(new Voltage("Chipset +1.8V", 5));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
