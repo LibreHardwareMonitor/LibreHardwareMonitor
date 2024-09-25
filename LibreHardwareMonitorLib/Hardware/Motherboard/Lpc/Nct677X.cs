@@ -194,30 +194,55 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6799D:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
+                            // SYSFAN, MONITOR TEMPERATURE 1
                             new(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),
+                            // CPUFAN, MONITOR TEMPERATURE 2, Value RAM (CPUTIN)
                             new(SourceNct67Xxd.CPUTIN, 0x075, 0x076, 7, 0x200, 0x491),
+                            // AUXFAN0, MONITOR TEMPERATURE 3, Value RAM (SYSTIN)
                             new(SourceNct67Xxd.SYSTIN, 0x077, 0x078, 7, 0x300, 0x490),
+                            // AUXFAN1, MONITOR TEMPERATURE 4, Value RAM (AUXTIN0)
                             new(SourceNct67Xxd.AUXTIN0, 0x079, 0x07A, 7, 0x800, 0x492),
+                            // AUXFAN2, MONITOR TEMPERATURE 5, Value RAM (AUXTIN1)
                             new(SourceNct67Xxd.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493),
+                            // AUXFAN3, MONITOR TEMPERATURE 6, Value RAM (AUXTIN2)
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
+                            // AUXFAN4, AUXFANOUT4, Value RAM (AUXTIN3)
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
+                            // SMIOVT1, SMIOVT1, Value RAM (SMIOVT1, SYSTIN)
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
+                            // ?
                             new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
+                            // SMIOVT2, CPUTIN
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
+                            // SMIOVT3, AUXTIN0
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
+                            // SMIOVT4, AUXTIN1
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
+                            // SMIOVT5, AUXTIN2
                             new(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, 0, -1, 0xC28, 0x400),
+                            // SMIOVT6, AUXTIN3
                             new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),
+                            // SMIOVT7, AUXTIN4
                             new(SourceNct67Xxd.PCH_CPU_TEMP,  0x678, 0, -1, 0xC2A, 0x402),
+                            // SMIOVT8, CPUTIN
                             new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),
+
                             new(SourceNct67Xxd.AGENT0_DIMM0, 0),
+
                             new(SourceNct67Xxd.AGENT0_DIMM1, 0),
-                            new(SourceNct67Xxd.AGENT1_DIMM0, 0),
+
+                            new(SourceNct67Xxd.AGENT1_DIMM0,0),
+
                             new(SourceNct67Xxd.AGENT1_DIMM1, 0),
+
                             new(SourceNct67Xxd.BYTE_TEMP0, 0),
+
                             new(SourceNct67Xxd.BYTE_TEMP1, 0),
+
                             new(SourceNct67Xxd.PECI_0_CAL, 0),
+
                             new(SourceNct67Xxd.PECI_1_CAL, 0),
+
                             new(SourceNct67Xxd.VIRTUAL_TEMP, 0)
                         });
                         break;
@@ -412,41 +437,70 @@ internal class Nct677X : ISuperIO
 
     public void Update()
     {
-        if (!_isNuvotonVendor)
-            return;
+        if (!_isNuvotonVendor) return;
 
-        if (!Mutexes.WaitIsaBus(10))
-            return;
+        if (!Mutexes.WaitIsaBus(10)) return;
 
         DisableIOSpaceLock();
 
-        for (int i = 0; i < Voltages.Length; i++)
+        for (var i = 0; i < Voltages.Length; i++)
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            switch (Chip)
             {
-                float value = 0.008f * ReadByte(_voltageRegisters[i]);
-                bool valid = value > 0;
+                case Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D:
+                    {
+                        float value = 0.001f * ((16 * ReadByte(_voltageRegisters[i])) + (ReadByte((ushort)(_voltageRegisters[i] + 1)) >> 4));
+                        Voltages[i] = i switch
+                        {
+                            // 12V
+                            0 => value * 12.0f,
+                            // 5V
+                            1 => value * 5.0f,
+                            // DRAM
+                            4 => value * 2.0f,
+                            _ => value
+                        };
+                        break;
+                    }
+                case Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6797D or Chip.NCT6798D or Chip.NCT6799D:
+                    {
+                        // NCT 6796D - 8.6.2 Voltage Data Format
+                        var value = 0.008f * ReadByte(_voltageRegisters[i]);
 
-                // check if battery voltage monitor is enabled
-                if (valid && _voltageRegisters[i] == _voltageVBatRegister)
-                    valid = (ReadByte(_vBatMonitorControlRegister) & 0x01) > 0;
+                        // Scale for Voltage Divider limitation of 2.048V (8mV LSB)
+                        Voltages[i] = i switch
+                        {
+                            // VCore
+                            0 => value * 1.11f,
+                            // 5V
+                            1 => value * 5.0f,
+                            // 3.3V
+                            2 or 3 or 7 or 8 => value * 2.0f,
+                            // Double value
+                            9 or 13 or 14 => value * 2.0f,
+                            // 12V
+                            4 => value * 12.0f,
+                            // IMC VDD (VIN5)
+                            10 => value * 2.22f,
+                            // CPU L2 (VIN6)
+                            11 => value * 1.94f,
+                            // Use raw value - no scaling needed
+                            _ => value
+                        };
+                        break;
+                    }
+                default:
+                    {
+                        var value = 0.008f * ReadByte(_voltageRegisters[i]);
+                        var valid = value > 0;
 
-                Voltages[i] = valid ? value : null;
-            }
-            else
-            {
-                float value = 0.001f * ((16 * ReadByte(_voltageRegisters[i])) + (ReadByte((ushort)(_voltageRegisters[i] + 1)) >> 4));
+                        // check if battery voltage monitor is enabled
+                        if (valid && _voltageRegisters[i] == _voltageVBatRegister)
+                            valid = (ReadByte(_vBatMonitorControlRegister) & 0x01) > 0;
 
-                Voltages[i] = i switch
-                {
-                    // 12V
-                    0 => value * 12.0f,
-                    // 5V
-                    1 => value * 5.0f,
-                    // DRAM
-                    4 => value * 2.0f,
-                    _ => value
-                };
+                        Voltages[i] = valid ? value : null;
+                        break;
+                    }
             }
         }
 
@@ -655,7 +709,7 @@ internal class Nct677X : ISuperIO
             return r.ToString();
 
         ushort[] addresses =
-        {
+        [
             0x000,
             0x010,
             0x020,
@@ -756,7 +810,7 @@ internal class Nct677X : ISuperIO
             0xF30,
             0x8040,
             0x80F0
-        };
+        ];
 
         r.AppendLine("Hardware Monitor Registers");
         r.AppendLine();
@@ -901,49 +955,45 @@ internal class Nct677X : ISuperIO
 
     private void SaveDefaultFanControl(int index)
     {
-        if (!_restoreDefaultFanControlRequired[index])
+        if (_restoreDefaultFanControlRequired[index]) return;
+        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
-            {
-                _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
-            }
-            else
-            {
-                byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                byte bitMask = (byte)(0x01 << index);
-                _initialFanControlMode[index] = (byte)(mode & bitMask);
-            }
-
-            _initialFanPwmCommand[index] = ReadByte(FAN_PWM_COMMAND_REG[index]);
-            _restoreDefaultFanControlRequired[index] = true;
+            _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
         }
+        else
+        {
+            byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+            byte bitMask = (byte)(0x01 << index);
+            _initialFanControlMode[index] = (byte)(mode & bitMask);
+        }
+
+        _initialFanPwmCommand[index] = ReadByte(FAN_PWM_COMMAND_REG[index]);
+        _restoreDefaultFanControlRequired[index] = true;
     }
 
     private void RestoreDefaultFanControl(int index)
     {
-        if (_restoreDefaultFanControlRequired[index])
+        if (!_restoreDefaultFanControlRequired[index]) return;
+        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
-            {
-                WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
-                WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
-            }
-            else
-            {
-                byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                mode = (byte)(mode & ~_initialFanControlMode[index]);
-                WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-
-                WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
-                Thread.Sleep(50);
-
-                WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
-                WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
-                Thread.Sleep(50);
-            }
-
-            _restoreDefaultFanControlRequired[index] = false;
+            WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
+            WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
         }
+        else
+        {
+            byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+            mode = (byte)(mode & ~_initialFanControlMode[index]);
+            WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+
+            WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
+            Thread.Sleep(50);
+
+            WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
+            WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
+            Thread.Sleep(50);
+        }
+
+        _restoreDefaultFanControlRequired[index] = false;
     }
 
     private void DisableIOSpaceLock()
@@ -963,8 +1013,7 @@ internal class Nct677X : ISuperIO
         }
 
         // the lock is disabled already if the vendor ID can be read
-        if (IsNuvotonVendor())
-            return;
+        if (IsNuvotonVendor()) return;
 
         _lpcPort.WinbondNuvotonFintekEnter();
         _lpcPort.NuvotonDisableIOSpaceLock();
