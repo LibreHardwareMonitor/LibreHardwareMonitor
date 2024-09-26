@@ -3826,27 +3826,24 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("AV (Standby)", 2));
                         v.Add(new Voltage("+3.3V", 3));
                         v.Add(new Voltage("+12V", 4));
-                        v.Add(new Voltage("AUXTIN4 (VIN8)", 5));
+                        v.Add(new Voltage("IVR Atom L2 Cluster #1", 5));
                         v.Add(new Voltage("AUXTIN0 (VIN4)", 6));
                         v.Add(new Voltage("+3.3V (Standby)", 7));
                         v.Add(new Voltage("CMOS Battery", 8));
-                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("CPU Termination", 9));
                         v.Add(new Voltage("Memory Controller", 10));
                         v.Add(new Voltage("CPU L2 Cache", 11));
                         v.Add(new Voltage("PCH 1.05V", 12));
                         v.Add(new Voltage("CPU System Agent", 13));
-                        v.Add(new Voltage("CPU Input Voltage", 14));
+                        v.Add(new Voltage("CPU Input Auxiliary", 14));
                         v.Add(new Voltage("SYSTIN (VIN9)", 15));
 
                         // Temps
                         t.Add(new Temperature("CPU Package", 0));
-                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("CPU (Weighted)", 1));
                         t.Add(new Temperature("Motherboard", 2));
-                        t.Add(new Temperature("AUXTIN0", 3));
-                        t.Add(new Temperature("AUXTIN1", 4));
-                        t.Add(new Temperature("AUXTIN2", 5));
-                        t.Add(new Temperature("AUXTIN3", 6));
-                        t.Add(new Temperature("AUXTIN4", 7));
+                        t.Add(new Temperature("PCH", 13));
+                        t.Add(new Temperature("CPU", 22));
 
                         f.Add(new Fan("Chassis Fan #1", 0));
                         f.Add(new Fan("CPU Fan", 1));
