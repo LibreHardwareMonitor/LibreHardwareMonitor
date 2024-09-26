@@ -3848,11 +3848,21 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("AUXTIN3", 6));
                         t.Add(new Temperature("AUXTIN4", 7));
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
-                            f.Add(new Fan("Fan #" + (i + 1), i));
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("Chassis Fan #4", 4));
+                        f.Add(new Fan("Chassis Fan #5", 5));
+                        f.Add(new Fan("AIO Pump", 6));
 
-                        for (int i = 0; i < superIO.Controls.Length; i++)
-                            c.Add(new Control("Fan #" + (i + 1), i));
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("Chassis Fan #4", 4));
+                        c.Add(new Control("Chassis Fan #5", 5));
+                        c.Add(new Control("AIO Pump", 6));
 
                         break;
 
