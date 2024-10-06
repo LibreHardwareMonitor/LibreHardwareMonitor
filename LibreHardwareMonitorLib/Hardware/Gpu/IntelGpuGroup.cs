@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using LibreHardwareMonitor.Hardware.Cpu;
+using LibreHardwareMonitor.Hardware.Cpu.Intel;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 

@@ -94,7 +94,7 @@ internal class TBalancer : Hardware
         get { return HardwareType.Cooler; }
     }
 
-    protected override void ActivateSensor(ISensor sensor)
+    protected internal override void ActivateSensor(ISensor sensor)
     {
         _deactivating.Remove(sensor);
         base.ActivateSensor(sensor);

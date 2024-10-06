@@ -107,7 +107,7 @@ public abstract class Hardware : IHardware
     }
 
     /// <inheritdoc />
-    protected virtual void ActivateSensor(ISensor sensor)
+    protected internal virtual void ActivateSensor(ISensor sensor)
     {
         if (_active.Add(sensor))
             SensorAdded?.Invoke(sensor);

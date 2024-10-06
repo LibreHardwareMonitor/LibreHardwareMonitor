@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using LibreHardwareMonitor.Hardware.Cpu.Intel;
 using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -23,7 +24,7 @@ internal class IntelIntegratedGpu : GenericGpu
     private uint _lastEnergyConsumed;
     private DateTime _lastEnergyTime;
 
-    public IntelIntegratedGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
+    public IntelIntegratedGpu(IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
                new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
                settings)

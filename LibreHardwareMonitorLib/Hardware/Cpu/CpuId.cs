@@ -9,13 +9,6 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
-public enum Vendor
-{
-    Unknown,
-    Intel,
-    AMD
-}
-
 public class CpuId
 {
     /// <summary>
@@ -52,9 +45,9 @@ public class CpuId
 
             Vendor = vendorBuilder.ToString() switch
             {
-                "GenuineIntel" => Vendor.Intel,
-                "AuthenticAMD" => Vendor.AMD,
-                _ => Vendor.Unknown
+                "GenuineIntel" => CpuVendor.Intel,
+                "AuthenticAMD" => CpuVendor.AMD,
+                _ => CpuVendor.Unknown
             };
 
             if (OpCode.CpuId(CPUID_EXT, 0, out eax, out _, out _, out _))
@@ -136,7 +129,7 @@ public class CpuId
 
         switch (Vendor)
         {
-            case Vendor.Intel:
+            case CpuVendor.Intel:
                 uint maxCoreAndThreadIdPerPackage = (Data[1, 1] >> 16) & 0xFF;
                 uint maxCoreIdPerPackage;
                 if (maxCpuid >= 4)
@@ -147,7 +140,7 @@ public class CpuId
                 threadMaskWith = NextLog2(maxCoreAndThreadIdPerPackage / maxCoreIdPerPackage);
                 coreMaskWith = NextLog2(maxCoreIdPerPackage);
                 break;
-            case Vendor.AMD:
+            case CpuVendor.AMD:
                 uint corePerPackage;
                 if (maxCpuidExt >= 8)
                     corePerPackage = (ExtData[8, 2] & 0xFF) + 1;
@@ -214,7 +207,7 @@ public class CpuId
 
     public uint ThreadId { get; }
 
-    public Vendor Vendor { get; } = Vendor.Unknown;
+    public CpuVendor Vendor { get; } = CpuVendor.Unknown;
 
     /// <summary>
     /// Gets the specified <see cref="CpuId" />.

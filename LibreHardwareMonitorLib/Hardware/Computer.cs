@@ -17,6 +17,7 @@ using LibreHardwareMonitor.Hardware.Controller.Nzxt;
 using LibreHardwareMonitor.Hardware.Controller.Razer;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
 using LibreHardwareMonitor.Hardware.Cpu;
+using LibreHardwareMonitor.Hardware.Cpu.Intel;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
