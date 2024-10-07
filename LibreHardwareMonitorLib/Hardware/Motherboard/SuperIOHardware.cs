@@ -4139,6 +4139,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_X670E_A_GAMING_WIFI: // NCT6799D
                     case Model.ROG_STRIX_X670E_E_GAMING_WIFI: // NCT6799D
                     case Model.ROG_STRIX_X670E_F_GAMING_WIFI: // NCT6799D
                         v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
