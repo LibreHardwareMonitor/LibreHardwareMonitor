@@ -21,10 +21,10 @@ public class GenericCpu : Hardware
     #region Fields
 
     private readonly CpuVendor _vendor;
+    private readonly bool _isInvariantTimeStampCounter;
     private CpuLoad _cpuLoad;
     private double _estimatedTimeStampCounterFrequency;
     private double _estimatedTimeStampCounterFrequencyError;
-    private bool _isInvariantTimeStampCounter;
     private Sensor[] _threadLoads;
     
     private Sensor _totalLoad;
