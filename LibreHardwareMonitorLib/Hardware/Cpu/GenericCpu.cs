@@ -60,7 +60,7 @@ public class GenericCpu : Hardware
     /// <value>
     ///   <c>true</c> if this instance has time stamp counter; otherwise, <c>false</c>.
     /// </value>
-    public bool HasTimeStampCounter { get; private set; }
+    public bool HasTimeStampCounter { get; }
 
     /// <summary>
     /// Gets the CPU index.
