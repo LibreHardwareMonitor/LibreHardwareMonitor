@@ -651,14 +651,14 @@ internal class LpcIO
         if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
             return null;
 
-        CpuVendor vendor = DetectVendor();
+        Vendor vendor = DetectVendor();
 
         IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port, chip, vendor);
         if (gigabyteController != null)
             return gigabyteController;
 
         // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
-        if (chip == Chip.IT8792E && vendor == CpuVendor.AMD)
+        if (chip == Chip.IT8792E && vendor == Vendor.AMD)
         {
             gigabyteController = EcioPortGigabyteController.TryCreate();
             if (gigabyteController != null)
@@ -667,20 +667,20 @@ internal class LpcIO
 
         return null;
 
-        CpuVendor DetectVendor()
+        Vendor DetectVendor()
         {
             string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
             if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
-                return CpuVendor.Intel;
+                return Vendor.Intel;
 
             if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
-                return CpuVendor.AMD;
+                return Vendor.AMD;
 
-            return CpuVendor.Unknown;
+            return Vendor.Unknown;
         }
     }
 
-    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port, Chip chip, CpuVendor vendor)
+    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port, Chip chip, Vendor vendor)
     {
         port.Select(IT87XX_SMFI_LDN);
 

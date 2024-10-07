@@ -28,11 +28,11 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// </summary>
     private readonly uint _controllerBaseAddress;
 
-    private readonly CpuVendor _vendor;
+    private readonly Vendor _vendor;
 
     private bool? _initialState;
 
-    public IsaBridgeGigabyteController(uint address, CpuVendor vendor)
+    public IsaBridgeGigabyteController(uint address, Vendor vendor)
     {
         _controllerBaseAddress = address;
         _vendor = vendor;
@@ -48,7 +48,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         // TODO: Intel
         return _vendor switch
         {
-            CpuVendor.AMD => AmdEnable(enabled),
+            Vendor.AMD => AmdEnable(enabled),
             _ => false
         };
     }
