@@ -39,6 +39,7 @@ public enum Model
     Z790_Pro_RS,
     X570_Phantom_Gaming_4,
     Z790_Taichi,
+    Z790_Nova_WiFi,
     B650M_C,
     H61M_DGS,
 
