@@ -4052,7 +4052,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.ROG_STRIX_Z790_E_GAMING_WIFI: //NCT6798D
 
                         // Volts
-                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("CPU Core Voltage", 0));
                         v.Add(new Voltage("+5V", 1));
                         v.Add(new Voltage("AV (Standby)", 2));
                         v.Add(new Voltage("+3.3V", 3));
