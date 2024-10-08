@@ -25,7 +25,7 @@ internal sealed class KrakenV2 : Hardware
 
     private DateTime _lastUpdate = DateTime.MinValue;
 
-    public KrakenV2(HidDevice dev, ISettings settings) : base("Nzxt Kraken X", new Identifier(dev.DevicePath), settings)
+    public KrakenV2(HidDevice dev, ISettings settings) : base("Nzxt Kraken X", new Identifier(dev), settings)
     {
         _device = dev;
 
