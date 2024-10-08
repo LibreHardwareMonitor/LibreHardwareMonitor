@@ -131,6 +131,10 @@ internal class Identification
                 return Model.B450M_Pro4;
             case var _ when name.Equals("Fatal1ty AB350 Gaming K4", StringComparison.OrdinalIgnoreCase):
                 return Model.Fatal1ty_AB350_Gaming_K4;
+            case var _ when name.Equals("IMB-1213", StringComparison.OrdinalIgnoreCase):
+                return Model.IMB_1213;
+            case var _ when name.Equals("IMB-1222", StringComparison.OrdinalIgnoreCase):
+                return Model.IMB_1222;
             case var _ when name.Equals("AB350M-HDV", StringComparison.OrdinalIgnoreCase):
                 return Model.AB350M_HDV;
             case var _ when name.Equals("X399 Phantom Gaming 6", StringComparison.OrdinalIgnoreCase):
