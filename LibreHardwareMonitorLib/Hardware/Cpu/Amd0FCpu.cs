@@ -46,8 +46,8 @@ internal sealed class Amd0FCpu : AmdCpu
         // check if processor supports a digital thermal sensor
         if (cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 1) != 0)
         {
-            _coreTemperatures = new Sensor[_coreCount];
-            for (int i = 0; i < _coreCount; i++)
+            _coreTemperatures = new Sensor[CoreCount];
+            for (int i = 0; i < CoreCount; i++)
             {
                 _coreTemperatures[i] = new Sensor("Core #" + (i + 1),
                                                   i,
@@ -64,14 +64,18 @@ internal sealed class Amd0FCpu : AmdCpu
 
         _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, MISCELLANEOUS_CONTROL_DEVICE_ID);
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
-        _coreClocks = new Sensor[_coreCount];
+        _coreClocks = new Sensor[CoreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            _coreClocks[i] = new Sensor(SetCoreName(i), i + 1, SensorType.Clock, this, settings);
             if (HasTimeStampCounter)
                 ActivateSensor(_coreClocks[i]);
         }
 
+        // Initialize
+        Initialize();
+
+        // Update
         Update();
     }
 
@@ -128,7 +132,7 @@ internal sealed class Amd0FCpu : AmdCpu
             {
                 Thread.Sleep(1);
 
-                if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
+                if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, CpuId[i][0].Affinity))
                 {
                     // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
                     // 8-13 hold StartFID, we don't use that here.

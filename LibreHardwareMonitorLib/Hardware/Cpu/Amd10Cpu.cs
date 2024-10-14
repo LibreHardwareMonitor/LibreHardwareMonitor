@@ -39,9 +39,9 @@ internal sealed class Amd10Cpu : AmdCpu
         _northbridgeVoltage = new Sensor("Northbridge", 0, SensorType.Voltage, this, settings);
         ActivateSensor(_northbridgeVoltage);
 
-        _isSvi2 = (_family == 0x15 && _model >= 0x10) || _family == 0x16;
+        _isSvi2 = (Family == 0x15 && Model >= 0x10) || Family == 0x16;
 
-        switch (_family)
+        switch (Family)
         {
             case 0x10:
                 miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
@@ -56,7 +56,7 @@ internal sealed class Amd10Cpu : AmdCpu
                 miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
                 break;
             case 0x15:
-                switch (_model & 0xF0)
+                switch (Model & 0xF0)
                 {
                     case 0x00:
                         miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
@@ -82,7 +82,7 @@ internal sealed class Amd10Cpu : AmdCpu
 
                 break;
             case 0x16:
-                miscellaneousControlDeviceId = (_model & 0xF0) switch
+                miscellaneousControlDeviceId = (Model & 0xF0) switch
                 {
                     0x00 => FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID,
                     0x30 => FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID,
@@ -92,15 +92,17 @@ internal sealed class Amd10Cpu : AmdCpu
             default:
                 miscellaneousControlDeviceId = 0;
                 break;
+
+
         }
 
         // get the pci address for the Miscellaneous Control registers
         _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, miscellaneousControlDeviceId);
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
-        _coreClocks = new Sensor[_coreCount];
+        _coreClocks = new Sensor[CoreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            _coreClocks[i] = new Sensor(SetCoreName(i), i + 1, SensorType.Clock, this, settings);
             if (HasTimeStampCounter)
                 ActivateSensor(_coreClocks[i]);
         }
@@ -176,6 +178,10 @@ internal sealed class Amd10Cpu : AmdCpu
             ActivateSensor(_cStatesResidency[1]);
         }
 
+        // Initialize
+        Initialize();
+
+        // Update
         Update();
     }
 
@@ -246,7 +252,7 @@ internal sealed class Amd10Cpu : AmdCpu
         r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
         r.Append("Time Stamp Counter Multiplier: ");
         r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
-        if (_family == 0x14)
+        if (Family == 0x14)
         {
             Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
             r.Append("PCI Register D18F3xD4: ");
@@ -262,7 +268,7 @@ internal sealed class Amd10Cpu : AmdCpu
         uint cpuDid;
         uint cpuFid;
 
-        switch (_family)
+        switch (Family)
         {
             case 0x10:
             case 0x11:
@@ -342,9 +348,9 @@ internal sealed class Amd10Cpu : AmdCpu
 
                 if (isValueValid)
                 {
-                    if ((_family == 0x15 || _family == 0x16) && (value & 0x30000) == 0x3000)
+                    if ((Family == 0x15 || Family == 0x16) && (value & 0x30000) == 0x3000)
                     {
-                        if (_family == 0x15 && (_model & 0xF0) == 0x00)
+                        if (Family == 0x15 && (Model & 0xF0) == 0x00)
                         {
                             _coreTemperature.Value = (((value >> 21) & 0x7FC) / 8.0f) + _coreTemperature.Parameters[0].Value - 49;
                         }
@@ -393,7 +399,7 @@ internal sealed class Amd10Cpu : AmdCpu
             {
                 Thread.Sleep(1);
 
-                if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, _cpuId[i][0].Affinity))
+                if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, CpuId[i][0].Affinity))
                 {
                     double multiplier = GetCoreMultiplier(curEax);
 

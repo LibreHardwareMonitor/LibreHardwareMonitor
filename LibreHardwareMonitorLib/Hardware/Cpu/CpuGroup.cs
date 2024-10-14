@@ -11,11 +11,34 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
+/// <summary>
+/// CPU Group
+/// </summary>
+/// <seealso cref="IGroup" />
 internal class CpuGroup : IGroup
 {
-    private readonly List<GenericCpu> _hardware = new();
+    #region Fields
+
+    private readonly List<GenericCpu> _hardware = [];
     private readonly CpuId[][][] _threads;
 
+    #endregion
+
+    #region Properties
+
+    /// <summary>
+    /// Gets a list that stores information about <see cref="IHardware" /> in a given group.
+    /// </summary>
+    public IReadOnlyList<IHardware> Hardware => _hardware;
+
+    #endregion
+
+    #region Constructors
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CpuGroup"/> class.
+    /// </summary>
+    /// <param name="settings">The settings.</param>
     public CpuGroup(ISettings settings)
     {
         CpuId[][] processorThreads = GetProcessorThreads();
@@ -24,9 +47,7 @@ internal class CpuGroup : IGroup
         int index = 0;
         foreach (CpuId[] threads in processorThreads)
         {
-            if (threads.Length == 0)
-                continue;
-
+            if (threads.Length == 0) continue;
             CpuId[][] coreThreads = GroupThreadsByCore(threads);
             _threads[index] = coreThreads;
 
@@ -69,8 +90,27 @@ internal class CpuGroup : IGroup
         }
     }
 
-    public IReadOnlyList<IHardware> Hardware => _hardware;
+    #endregion
 
+    #region Methods
+    
+    /// <summary>
+    /// Stop updating this group in the future.
+    /// </summary>
+    public void Close()
+    {
+        foreach (GenericCpu cpu in _hardware)
+        {
+            cpu.Close();
+        }
+    }
+
+    /// <summary>
+    /// Report containing most of the known information about all <see cref="IHardware" /> in this <see cref="IGroup" />.
+    /// </summary>
+    /// <returns>
+    /// A formatted text string with hardware information.
+    /// </returns>
     public string GetReport()
     {
         if (_threads == null)
@@ -89,7 +129,6 @@ internal class CpuGroup : IGroup
             r.AppendFormat("Model: 0x{0}{1}", _threads[i][0][0].Model.ToString("X", CultureInfo.InvariantCulture), Environment.NewLine);
             r.AppendFormat("Stepping: 0x{0}{1}", _threads[i][0][0].Stepping.ToString("X", CultureInfo.InvariantCulture), Environment.NewLine);
             r.AppendLine();
-
             r.AppendLine("CPUID Return Values");
             r.AppendLine();
             for (int j = 0; j < _threads[i].Length; j++)
@@ -104,8 +143,8 @@ internal class CpuGroup : IGroup
                     r.AppendLine(" Thread ID: " + _threads[i][j][k].ThreadId);
                     r.AppendLine();
                     r.AppendLine(" Function  EAX       EBX       ECX       EDX");
-                    AppendCpuidData(r, _threads[i][j][k].Data, CpuId.CPUID_0);
-                    AppendCpuidData(r, _threads[i][j][k].ExtData, CpuId.CPUID_EXT);
+                    AppendCpuIdData(r, _threads[i][j][k].Data, CpuId.CPUID_0);
+                    AppendCpuIdData(r, _threads[i][j][k].ExtData, CpuId.CPUID_EXT);
                     r.AppendLine();
                 }
             }
@@ -114,14 +153,10 @@ internal class CpuGroup : IGroup
         return r.ToString();
     }
 
-    public void Close()
-    {
-        foreach (GenericCpu cpu in _hardware)
-        {
-            cpu.Close();
-        }
-    }
-
+    /// <summary>
+    /// Gets the processor threads.
+    /// </summary>
+    /// <returns></returns>
     private static CpuId[][] GetProcessorThreads()
     {
         List<CpuId> threads = new();
@@ -167,6 +202,11 @@ internal class CpuGroup : IGroup
         return processorThreads;
     }
 
+    /// <summary>
+    /// Groups the threads by core.
+    /// </summary>
+    /// <param name="threads">The threads.</param>
+    /// <returns></returns>
     private static CpuId[][] GroupThreadsByCore(IEnumerable<CpuId> threads)
     {
         SortedDictionary<uint, List<CpuId>> cores = new();
@@ -193,7 +233,13 @@ internal class CpuGroup : IGroup
         return coreThreads;
     }
 
-    private static void AppendCpuidData(StringBuilder r, uint[,] data, uint offset)
+    /// <summary>
+    /// Appends the cpu identifier data.
+    /// </summary>
+    /// <param name="r">The r.</param>
+    /// <param name="data">The data.</param>
+    /// <param name="offset">The offset.</param>
+    private static void AppendCpuIdData(StringBuilder r, uint[,] data, uint offset)
     {
         for (int i = 0; i < data.GetLength(0); i++)
         {
@@ -208,4 +254,6 @@ internal class CpuGroup : IGroup
             r.AppendLine();
         }
     }
+
+    #endregion
 }
