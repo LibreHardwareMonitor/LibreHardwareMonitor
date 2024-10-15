@@ -4296,6 +4296,35 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B650M_Gaming_Plus_Wifi: // NCT6687D
+                        v.Add(new Voltage("+12V", ));
+                        v.Add(new Voltage("+5V", ));
+                        v.Add(new Voltage("CPU NB/SoC", ));
+                        v.Add(new Voltage("CPU VDDIO", ));
+                        v.Add(new Voltage("Vcore", ));
+                        v.Add(new Voltage("+3.3V", ));
+
+                        t.Add(new Temperature("CPU", ));
+                        t.Add(new Temperature("System", ));
+                        t.Add(new Temperature("MOS", ));
+                        t.Add(new Temperature("Chipset", ));
+                        t.Add(new Temperature("VR", ));
+                        t.Add(new Temperature("T15", ));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("CPU Optional Fan", 1));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("CPU Optional Fan", 1));
+                        c.Add(new Control("System Fan #1", 2));
+                        c.Add(new Control("System Fan #2", 3));
+                        c.Add(new Control("System Fan #3", 4));
+                        
+                        break;
+
                     case Model.Z270_PC_MATE: // NCT6795D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
