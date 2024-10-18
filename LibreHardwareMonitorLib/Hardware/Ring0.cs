@@ -364,6 +364,25 @@ internal static class Ring0
         _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
     }
 
+    public static byte ReadSmbus(ushort port)
+    {
+        if (_driver == null)
+            return 0;
+
+        uint value = 0;
+        _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
+        return (byte)(value & 0xFF);
+    }
+
+    public static void WriteSmbus(ushort port, byte value)
+    {
+        if (_driver == null)
+            return;
+
+        WriteIoPortInput input = new() { PortNumber = port, Value = value };
+        _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
+    }
+
     public static uint GetPciAddress(byte bus, byte device, byte function)
     {
         return (uint)(((bus & 0xFF) << 8) | ((device & 0x1F) << 3) | (function & 7));
