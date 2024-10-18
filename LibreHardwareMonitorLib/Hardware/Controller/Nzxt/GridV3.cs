@@ -33,7 +33,7 @@ internal sealed class GridV3 : Hardware
     private readonly HidStream _stream;
     private readonly Sensor[] _voltages = new Sensor[FANS_COUNT];
 
-    public GridV3(HidDevice dev, ISettings settings) : base("NZXT GRID+ V3", new Identifier(dev.DevicePath), settings)
+    public GridV3(HidDevice dev, ISettings settings) : base("NZXT GRID+ V3", new Identifier(dev), settings)
     {
         if (dev.TryOpen(out _stream))
         {
