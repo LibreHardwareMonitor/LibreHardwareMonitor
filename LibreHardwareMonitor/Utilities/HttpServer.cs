@@ -368,7 +368,6 @@ public class HttpServer
                             HandleSensorRequest(request, sensor_result);
                             SendJsonSensor(context.Response, sensor_result);
                             return;
-
                         }
 
                         // default file to be served
@@ -564,10 +563,6 @@ public class HttpServer
     }
     private void SendJsonSensor(HttpListenerResponse response, JObject sensorData)
     {
-        // Add Min and Max values to the sensor data
-        // sensorData["Min"] = _root.Min;
-        // sensorData["Max"] = _root.Max;
-
         // Convert the JObject to a JSON string
         string responseContent = sensorData.ToString(Newtonsoft.Json.Formatting.None);
         byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
