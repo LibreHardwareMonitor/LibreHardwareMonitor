@@ -5,7 +5,6 @@
 // All Rights Reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware;
@@ -20,7 +19,7 @@ public class Identifier : IComparable<Identifier>
 
     public Identifier(params string[] identifiers)
     {
-        CheckIdentifiers(identifiers);
+        CoerceIdentifiers(identifiers);
         StringBuilder s = new();
         for (int i = 0; i < identifiers.Length; i++)
         {
@@ -38,7 +37,7 @@ public class Identifier : IComparable<Identifier>
     /// <param name="extensions">Additional parts by which the base <see cref="Identifier" /> will be extended.</param>
     public Identifier(Identifier identifier, params string[] extensions)
     {
-        CheckIdentifiers(extensions);
+        CoerceIdentifiers(extensions);
         StringBuilder s = new();
         s.Append(identifier);
         for (int i = 0; i < extensions.Length; i++)
@@ -61,12 +60,13 @@ public class Identifier : IComparable<Identifier>
                               StringComparison.Ordinal);
     }
 
-    private static void CheckIdentifiers(IEnumerable<string> identifiers)
+    private static void CoerceIdentifiers(string[] identifiers)
     {
-        foreach (string s in identifiers)
+        for (int i = 0; i < identifiers.Length; i++)
         {
-            if (s.Contains(" ") || s.Contains(Separator.ToString()))
-                throw new ArgumentException("Invalid identifier");
+            string s = identifiers[i];
+            if (s.IndexOf(' ') >= 0)
+                identifiers[i] = s.Replace(' ', '-');
         }
     }
 

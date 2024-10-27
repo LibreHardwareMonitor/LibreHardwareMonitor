@@ -191,6 +191,11 @@ internal class RyzenSMU
                 0x61 => CpuCodeName.Raphael,
                 _ => CpuCodeName.Undefined
             },
+            0x1A => model switch
+            {
+                0x44 => CpuCodeName.GraniteRidge,
+                _ => CpuCodeName.Undefined
+            },
             _ => CpuCodeName.Undefined
         };
     }
@@ -232,6 +237,7 @@ internal class RyzenSMU
             case CpuCodeName.Matisse:
             case CpuCodeName.Vermeer:
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 _cmdAddr = 0x3B10524;
                 _rspAddr = 0x3B10570;
                 _argsAddr = 0x3B10A40;
@@ -424,6 +430,7 @@ internal class RyzenSMU
                 break;
 
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 switch (_pmTableVersion)
                 {
                     case 0x00540004:
@@ -464,6 +471,7 @@ internal class RyzenSMU
                 fn = 0x06;
                 break;
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 fn = 0x05;
                 break;
             default:
@@ -553,6 +561,7 @@ internal class RyzenSMU
         switch (_cpuCodeName)
         {
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 fn[0] = 0x04;
                 SetupAddrClass1(fn);
                 return;
@@ -594,6 +603,7 @@ internal class RyzenSMU
         switch (_cpuCodeName)
         {
             case CpuCodeName.Raphael:
+            case CpuCodeName.GraniteRidge:
                 fn = 0x03;
                 break;
             case CpuCodeName.Matisse:
@@ -759,6 +769,7 @@ internal class RyzenSMU
         Cezanne,
         Milan,
         Dali,
-        Raphael
+        Raphael,
+        GraniteRidge
     }
 }

@@ -26,7 +26,7 @@ internal sealed class AquastreamXT : Hardware
     private readonly Sensor[] _temperatures = new Sensor[3];
     private readonly Sensor[] _voltages = new Sensor[2];
 
-    public AquastreamXT(HidDevice dev, ISettings settings) : base("Aquastream XT", new Identifier("aquacomputer", "asxt", dev.GetSerialNumber().Replace(" ", "")), settings)
+    public AquastreamXT(HidDevice dev, ISettings settings) : base("Aquastream XT", new Identifier(dev.DevicePath), settings)
     {
         if (dev.TryOpen(out _stream))
         {
@@ -129,6 +129,7 @@ internal sealed class AquastreamXT : Hardware
         {
             return;
         }
+       
 
         if (_rawData[0] != 0x4)
             return;
