@@ -86,6 +86,14 @@ public class AquaComputerGroup : IGroup
                     _hardware.Add(farbwerk);
                     break;
 
+                case 0xF012:
+                    var highflownext = new HighFlowNext(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {highflownext.FirmwareVersion}");
+                    _report.AppendLine();
+                    _hardware.Add(highflownext);
+                    break;
+
                 default:
                     _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
                     _report.AppendLine();
