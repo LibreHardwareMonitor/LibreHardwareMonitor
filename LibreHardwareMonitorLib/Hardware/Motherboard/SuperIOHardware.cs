@@ -1790,8 +1790,6 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.Z790_UD: // ITE IT8689E
                     case Model.Z790_UD_AC: // ITE IT8689E
-                    case Model.Z790_GAMING_X: // ITE IT8689E
-                    case Model.Z790_GAMING_X_AX: // ITE IT8689E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
                         v.Add(new Voltage("+12V", 2, 5f, 1));
@@ -1818,6 +1816,38 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("System Fan #2", 2));
                         c.Add(new Control("System Fan #3 / Pump", 3));
                         c.Add(new Control("CPU Optional Fan", 4));
+                        break;
+
+                    case Model.Z790_GAMING_X: // ITE IT8689E
+                    case Model.Z790_GAMING_X_AX: // ITE IT8689E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
+                        v.Add(new Voltage("+12V", 2, 5f, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("iGPU", 4));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
+                        v.Add(new Voltage("Dual DDR5 5V", 6, 1.5f, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
+                        v.Add(new Voltage("AVCC3", 9, true));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("Chipset", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("System #2", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("System Fan #4 / Pump", 4));
+                        f.Add(new Fan("CPU Optional Fan", 5));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("System Fan #4 / Pump", 4));
+                        c.Add(new Control("CPU Optional Fan", 5));
                         break;
 
                     case Model.Z790_AORUS_PRO_X: // ITE IT8689E
