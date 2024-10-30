@@ -3819,7 +3819,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.ROG_MAXIMUS_Z790_HERO: //NCT6798D
                         t.Add(new Temperature("CPU Package", 0));
-                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         //t.Add(new Temperature("Temperature #3", 3));
                         //t.Add(new Temperature("Temperature #4", 4));
@@ -3830,8 +3830,8 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Temperature #9", 9));
                         t.Add(new Temperature("Temperature #10", 10));
                         t.Add(new Temperature("Temperature #11", 11));
-                        t.Add(new Temperature("Chipset", 12));
-                        t.Add(new Temperature("Temperature #13", 13));
+                        t.Add(new Temperature("Temperature #12", 12));
+                        t.Add(new Temperature("Chipset", 13));
                         t.Add(new Temperature("Temperature #14", 14));
                         t.Add(new Temperature("Temperature #15", 15));
                         t.Add(new Temperature("Temperature #16", 16));
@@ -3839,7 +3839,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Temperature #18", 18));
                         t.Add(new Temperature("Temperature #19", 19));
                         t.Add(new Temperature("Temperature #20", 20));
-                        t.Add(new Temperature("CPU", 21));
+                        t.Add(new Temperature("Temperature #21", 21));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
