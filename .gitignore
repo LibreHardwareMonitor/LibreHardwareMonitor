@@ -5,3 +5,4 @@
 .idea/
 .vs/
 packages/
+/LibreHardwareMonitorLib/Hardware/Motherboard/Lpc/IT87XX.cs

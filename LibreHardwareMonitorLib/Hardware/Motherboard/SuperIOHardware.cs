@@ -230,6 +230,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.IT8728F:
             case Chip.IT8771E:
             case Chip.IT8772E:
+            case Chip.IT8696E:
                 GetIteConfigurationsB(superIO, manufacturer, model, v, t, f, c);
                 break;
 
@@ -1852,6 +1853,25 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("CPU Optional Fan", 4));
                         break;
 
+                    case Model.X870_AORUS_ELITE_WIFI7: // ITE IT8696E
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("EC_TEMP1", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3 / Pump", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3 / Pump", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
+                        break;
+
                     case Model.Z690_GAMING_X_DDR4:
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
@@ -2359,6 +2379,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z790_AORUS_PRO_X: // ITE IT87952E
                     case Model.Z690_AORUS_PRO:
                     case Model.Z690_AORUS_MASTER: // ITE IT87952E
+                    case Model.X870_AORUS_ELITE_WIFI7: // ITE IT87952E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("DIMM I/O", 1));
                         v.Add(new Voltage("Chipset +0.82V", 2));
