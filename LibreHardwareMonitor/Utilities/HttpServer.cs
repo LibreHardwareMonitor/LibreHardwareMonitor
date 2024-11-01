@@ -14,6 +14,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,9 +32,10 @@ public class HttpServer
     private readonly Node _root;
     private Thread _listenerThread;
 
-    public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string password = "")
+    public HttpServer(Node node, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
         _root = node;
+        ListenerIp = ip;
         ListenerPort = port;
         AuthEnabled = authEnabled;
         UserName = userName;
@@ -63,6 +65,8 @@ public class HttpServer
 
     public int ListenerPort { get; set; }
 
+    public string ListenerIp { get; set; }
+
     public string Password
     {
         get { return PasswordSHA256; }
@@ -89,8 +93,25 @@ public class HttpServer
             if (_listener.IsListening)
                 return true;
 
+            // validate that the selected IP exists (it could have been previously selected before switching networks)
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+            bool ipFound = false;
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ListenerIp == ip.ToString())
+                {
+                    ipFound = true;
+                    break;
+                }
+            }
+            if (!ipFound)
+            {
+                // default to behavior of previous version if we don't know what interface to use.
+                ListenerIp = "+";
+            }
 
-            string prefix = "http://+:" + ListenerPort + "/";
+
+            string prefix = "http://" + ListenerIp + ":" + ListenerPort + "/";
             _listener.Prefixes.Clear();
             _listener.Prefixes.Add(prefix);
             _listener.Realm = "Libre Hardware Monitor";
