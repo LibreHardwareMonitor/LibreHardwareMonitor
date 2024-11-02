@@ -1854,7 +1854,6 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.X870_AORUS_ELITE_WIFI7: // ITE IT8696E
-                    case Model.X870E_AORUS_ELITE_WIFI7: // ITE IT8696E
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -2381,7 +2380,6 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z690_AORUS_PRO:
                     case Model.Z690_AORUS_MASTER: // ITE IT87952E
                     case Model.X870_AORUS_ELITE_WIFI7: // ITE IT87952E
-                    case Model.X870E_AORUS_ELITE_WIFI7: // ITE IT87952E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("DIMM I/O", 1));
                         v.Add(new Voltage("Chipset +0.82V", 2));
