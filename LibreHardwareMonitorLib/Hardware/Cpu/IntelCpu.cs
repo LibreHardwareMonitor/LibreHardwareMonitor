@@ -227,7 +227,7 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xBD: // Intel Core Ultra 7 200 Series ArrowLake
+                        case 0xBD: // Intel Core Ultra 5/7 200 Series LunarLake
                             _microArchitecture = MicroArchitecture.LunarLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
