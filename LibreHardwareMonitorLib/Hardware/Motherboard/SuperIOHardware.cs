@@ -1131,6 +1131,41 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.TUF_GAMING_B450_PLUS_II: // IT8665E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("Vccp2", 1));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("3VSB", 7, 10, 10));
+                        v.Add(new Voltage("VBat", 8, 10, 10));
+                        v.Add(new Voltage("AVCC3", 15, 10, 10));
+
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("Motherboard", 1));
+                        t.Add(new Temperature("Temperature #3", 2));
+                        t.Add(new Temperature("Temperature #4", 3));
+                        t.Add(new Temperature("Temperature #5", 4));
+                        t.Add(new Temperature("Temperature #6", 5));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Chassis Fan #1", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        //f.Add(new Fan("Chassis Fan #4", 4)); //Useless. Not connected to anything.
+                        f.Add(new Fan("AIO Pump", 5));
+
+                        c.Add(new Control("CPU Fan Control", 0));
+                        c.Add(new Control("Chassis Fan #1 Control", 1));
+                        c.Add(new Control("Chassis Fan #2 Control", 2));
+                        c.Add(new Control("Chassis Fan #3 Control", 3));
+                        //c.Add(new Control("Chassis Fan #4 Control", 4)); //Useless. Not connected to anything.
+                        c.Add(new Control("AIO Pump Control", 5));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
@@ -3249,7 +3284,7 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("Chassis Fan #1", 3)); // CHA_FAN1/WP
                         f.Add(new Fan("Chassis Fan #2", 4)); // CHA_FAN2/WP
                         f.Add(new Fan("Chassis Fan #3", 6)); // CHA_FAN3/WP
-                        
+
                         c.Add(new Control("CPU Fan #1", 1)); // CPU_FAN1
                         c.Add(new Control("CPU Fan #2", 0)); // CPU_FAN2/WP
                         c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1/WP
@@ -4116,7 +4151,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9));
                         v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
-                        
+
                         t.Add(new Temperature("CPU", 22));
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU Package", 3));
