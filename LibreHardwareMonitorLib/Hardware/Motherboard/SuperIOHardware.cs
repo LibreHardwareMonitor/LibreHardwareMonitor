@@ -4342,7 +4342,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("System", 1));
                         t.Add(new Temperature("VRM MOS", 2));
                         t.Add(new Temperature("Chipset", 3));
-                        t.Add(new Temperature("VR", ));
+                        t.Add(new Temperature("CPU Socket", 4));
 
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("CPU Optional Fan", 1));
