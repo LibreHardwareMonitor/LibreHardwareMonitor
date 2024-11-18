@@ -226,6 +226,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.IT8686E:
             case Chip.IT8688E:
             case Chip.IT8689E:
+            case Chip.IT8696E:
             case Chip.IT8721F:
             case Chip.IT8728F:
             case Chip.IT8771E:
@@ -2023,6 +2024,8 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.B550_UD_AC:
                     case Model.B550M_AORUS_PRO:
                     case Model.B550M_AORUS_PRO_AX:
+                    case Model.X870E_AORUS_PRO: // ITE IT8696E
+                    case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -2404,6 +2407,27 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan #5 / Pump", 0));
                         f.Add(new Fan("System Fan #6 / Pump", 1));
                         f.Add(new Fan("System Fan #4", 2));
+                        c.Add(new Control("System Fan #5 / Pump", 0));
+                        c.Add(new Control("System Fan #6 / Pump", 1));
+                        c.Add(new Control("System Fan #4", 2));
+                        break;
+
+                    case Model.X870E_AORUS_PRO:
+                    case Model.X870E_AORUS_PRO_ICE: // ITE IT87952E
+                        v.Add(new Voltage("VIN0", 0));
+                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("PM_VCC18", 2));
+                        v.Add(new Voltage("VIN3", 3));
+                        v.Add(new Voltage("CPU VDD18", 4));
+                        v.Add(new Voltage("PM_VDD1V", 5));
+                        v.Add(new Voltage("VIN6", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
+                        t.Add(new Temperature("PCIe x4", 0));
+                        t.Add(new Temperature("System #2", 1));
+                        f.Add(new Fan("System Fan #5 / Pump", 0));
+                        f.Add(new Fan("System Fan #6 / Pump", 1));
+                        f.Add(new Fan("System Fan #4 ", 2));
                         c.Add(new Control("System Fan #5 / Pump", 0));
                         c.Add(new Control("System Fan #6 / Pump", 1));
                         c.Add(new Control("System Fan #4", 2));
