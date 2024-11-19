@@ -2024,8 +2024,6 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.B550_UD_AC:
                     case Model.B550M_AORUS_PRO:
                     case Model.B550M_AORUS_PRO_AX:
-                    case Model.X870E_AORUS_PRO: // ITE IT8696E
-                    case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.5F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -2136,6 +2134,35 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("System Fan #1", 2));
                         c.Add(new Control("System Fan #2", 3));
                         c.Add(new Control("System Fan #3", 4));
+
+                        break;
+
+                    case Model.X870E_AORUS_PRO: // ITE IT8696E
+                    case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.49F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("Vcore Misc", 5, 0, 1));
+                        v.Add(new Voltage("CPU VDDIO Memory", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
 
                         break;
 
