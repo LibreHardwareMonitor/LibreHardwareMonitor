@@ -422,14 +422,14 @@ internal sealed class SuperIOHardware : Hardware
                     case Manufacturer.MSI when model == Model.B650M_Gaming_Plus_Wifi: // NCT6687D
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
-                        v.Add(new Voltage("CPU NB/SoC", 2));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
                         v.Add(new Voltage("CPU VDDIO", 3, 1, 1, 0));
                         v.Add(new Voltage("Vcore", 4, -1, 2, 0));
                         v.Add(new Voltage("+3.3V", 8));
-                        v.Add(new Voltage("3VSB", 11));
+                        v.Add(new Voltage("+3V Standby", 11));
                         v.Add(new Voltage("AVSB", 12));
-                        v.Add(new Voltage("VTT", 9));
-                        v.Add(new Voltage("VBAT", 13));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("System", 1));
@@ -438,13 +438,13 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU Socket", 4));
 
                         f.Add(new Fan("CPU Fan", 0));
-                        f.Add(new Fan("CPU Optional Fan", 1));
+                        f.Add(new Fan("CPU Pump Fan", 1));
                         f.Add(new Fan("System Fan #1", 2));
                         f.Add(new Fan("System Fan #2", 3));
                         f.Add(new Fan("System Fan #3", 4));
 
                         c.Add(new Control("CPU Fan", 0));
-                        c.Add(new Control("CPU Optional Fan", 1));
+                        c.Add(new Control("CPU Pump Fan", 1));
                         c.Add(new Control("System Fan #1", 2));
                         c.Add(new Control("System Fan #2", 3));
                         c.Add(new Control("System Fan #3", 4));
