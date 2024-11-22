@@ -98,7 +98,8 @@ internal class IT87XX : ISuperIO
             Chip.IT8613E or
             Chip.IT8792E or
             Chip.IT8655E or
-            Chip.IT8631E;
+            Chip.IT8631E or
+            Chip.IT8696E;
 
         switch (chip)
         {
@@ -158,8 +159,15 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[6];
                 break;
 
+            case Chip.IT8696E:
+                Voltages = new float?[10];
+                Temperatures = new float?[6];
+                Fans = new float?[6];
+                Controls = new float?[6];
+                break;
+
             case Chip.IT87952E:
-                Voltages = new float?[6];
+                Voltages = new float?[10];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
                 Controls = new float?[3];
@@ -208,7 +216,7 @@ internal class IT87XX : ISuperIO
         // Conflicting reports on IT8792E: either 0.0109 in linux drivers or 0.011 comparing with Gigabyte board & SIV SW.
         _voltageGain = chip switch
         {
-            Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
+            Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E or Chip.IT8696E => 0.012f,
             Chip.IT8625E or Chip.IT8792E or Chip.IT87952E => 0.011f,
             Chip.IT8655E or Chip.IT8665E => 0.0109f,
             _ => 0.016f

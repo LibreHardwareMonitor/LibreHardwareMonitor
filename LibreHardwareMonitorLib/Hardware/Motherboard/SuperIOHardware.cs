@@ -226,6 +226,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.IT8686E:
             case Chip.IT8688E:
             case Chip.IT8689E:
+            case Chip.IT8696E:
             case Chip.IT8721F:
             case Chip.IT8728F:
             case Chip.IT8771E:
@@ -2136,6 +2137,36 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X870E_AORUS_PRO: // ITE IT8696E
+                    case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
+                        v.Add(new Voltage("Vcore", 0, 0, 1));
+                        v.Add(new Voltage("+3.3V", 1, 6.49F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("Vcore SoC", 4, 0, 1));
+                        v.Add(new Voltage("Vcore Misc", 5, 0, 1));
+                        v.Add(new Voltage("CPU VDDIO Memory", 6, 0, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("External #1", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("CPU Optional Fan", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("CPU Optional Fan", 4));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("Voltage #1", 0, true));
                         v.Add(new Voltage("Voltage #2", 1, true));
@@ -2404,6 +2435,28 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan #5 / Pump", 0));
                         f.Add(new Fan("System Fan #6 / Pump", 1));
                         f.Add(new Fan("System Fan #4", 2));
+                        c.Add(new Control("System Fan #5 / Pump", 0));
+                        c.Add(new Control("System Fan #6 / Pump", 1));
+                        c.Add(new Control("System Fan #4", 2));
+                        break;
+
+                    case Model.X870E_AORUS_PRO:
+                    case Model.X870E_AORUS_PRO_ICE: // ITE IT87952E
+                        v.Add(new Voltage("VIN0", 0));
+                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("PM_VCC18", 2));
+                        v.Add(new Voltage("VIN3", 3));
+                        v.Add(new Voltage("CPU VDD18", 4));
+                        v.Add(new Voltage("PM_VDD1V", 5));
+                        v.Add(new Voltage("VIN6", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
+                        t.Add(new Temperature("PCIe x4", 0));
+                        t.Add(new Temperature("External #2", 1));
+                        t.Add(new Temperature("System #2", 2));
+                        f.Add(new Fan("System Fan #5 / Pump", 0));
+                        f.Add(new Fan("System Fan #6 / Pump", 1));
+                        f.Add(new Fan("System Fan #4 ", 2));
                         c.Add(new Control("System Fan #5 / Pump", 0));
                         c.Add(new Control("System Fan #6 / Pump", 1));
                         c.Add(new Control("System Fan #4", 2));
