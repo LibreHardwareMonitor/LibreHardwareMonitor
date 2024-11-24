@@ -599,6 +599,8 @@ internal class Identification
                 return Model.X570_Gaming_Plus;
             case var _ when name.Equals("ROG MAXIMUS Z790 FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z790_FORMULA;
+            case var _ when name.Equals("Z790 Nova WiFi", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_Nova_WiFi;
             case var _ when name.Equals("ROG MAXIMUS XII HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XII_HERO_WIFI;
             case var _ when name.Equals("X870E AORUS PRO", StringComparison.OrdinalIgnoreCase):
