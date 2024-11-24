@@ -45,12 +45,69 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// <returns>true on success</returns>
     public bool Enable(bool enabled)
     {
-        // TODO: Intel
         return _vendor switch
         {
+            Vendor.Intel => IntelEnable(enabled),
             Vendor.AMD => AmdEnable(enabled),
             _ => false
         };
+    }
+
+    private bool IntelEnable(bool enabled)
+    {
+        if (!Mutexes.WaitPciBus(10))
+            return false;
+
+        bool result = false;
+
+        uint intelIsaBridgeAddress = Ring0.GetPciAddress(0x0, 0x1F, 0x0);
+
+        const uint ioOrMemoryPortDecodeEnableRegister = 0xD8;
+        const uint romAddressRange2Register = 0x98;
+
+        uint controllerFanControlAddress = _controllerBaseAddress + ControllerFanControlArea;
+
+        Ring0.ReadPciConfig(intelIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, out uint originalDecodeEnableRegister);
+        Ring0.ReadPciConfig(intelIsaBridgeAddress, romAddressRange2Register, out uint originalRomAddressRegister);
+
+        bool originalMmIoEnabled = false;
+        if (!enabled)
+        {
+            originalMmIoEnabled = ((int)originalDecodeEnableRegister & 1) == 0 || ((int)originalRomAddressRegister & 1) == 1;
+        }
+        else
+        {
+            originalMmIoEnabled = ((int)originalDecodeEnableRegister & 1) == 0 && ((int)originalRomAddressRegister & 1) == 1;
+        }
+
+        if (enabled == originalMmIoEnabled)
+        {
+            result = Enable(enabled, new IntPtr(controllerFanControlAddress));
+            Mutexes.ReleasePciBus();
+            return result;
+        }
+
+        uint lpcBiosDecodeEnable;
+        uint lpcMemoryRange;
+        if (enabled)
+        {
+            lpcBiosDecodeEnable = ioOrMemoryPortDecodeEnableRegister & ~(uint)(1 << 0);
+            lpcMemoryRange = romAddressRange2Register | (uint)(1 << 0);
+        }
+        else
+        {
+            lpcBiosDecodeEnable = Convert.ToUInt32(ioOrMemoryPortDecodeEnableRegister | (uint)(1 << 0));
+            lpcMemoryRange = Convert.ToUInt32(romAddressRange2Register & ~(uint)(1 << 0));
+        }
+
+        Ring0.WritePciConfig(intelIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, lpcBiosDecodeEnable);
+        Ring0.WritePciConfig(intelIsaBridgeAddress, romAddressRange2Register, lpcMemoryRange);
+
+        result = Enable(enabled, new IntPtr(controllerFanControlAddress));
+
+        Mutexes.ReleasePciBus();
+
+        return result;
     }
 
     private bool AmdEnable(bool enabled)
