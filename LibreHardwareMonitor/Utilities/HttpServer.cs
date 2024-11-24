@@ -14,7 +14,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -62,9 +61,9 @@ public class HttpServer
 
     public bool AuthEnabled { get; set; }
 
-    public int ListenerPort { get; set; }
-
     public string ListenerIp { get; set; }
+
+    public int ListenerPort { get; set; }
 
     public string Password
     {
@@ -102,6 +101,7 @@ public class HttpServer
                     break;
                 }
             }
+
             if (!ipFound)
             {
                 // default to behavior of previous version if we don't know what interface to use.
