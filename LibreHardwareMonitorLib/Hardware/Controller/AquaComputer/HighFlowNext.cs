@@ -20,7 +20,7 @@ internal sealed class HighFlowNext : Hardware
     private readonly Sensor[] _voltages = new Sensor[2];
     private readonly Sensor[] _alarms = new Sensor[4];
 
-    public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier(dev.DevicePath), settings)
+    public HighFlowNext(HidDevice dev, ISettings settings) : base("high flow NEXT", new Identifier(dev), settings)
     {
         if (dev.TryOpen(out _stream))
         {
@@ -93,7 +93,7 @@ internal sealed class HighFlowNext : Hardware
 
         if (externalTempSensorConnected)
         {
-            _temperatures[1].Value = rawExtTempValue / 100f; 
+            _temperatures[1].Value = rawExtTempValue / 100f;
         }
         else
         {
