@@ -6,6 +6,7 @@
 
 using System;
 using System.Text;
+using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -49,6 +50,35 @@ public class Identifier : IComparable<Identifier>
         _identifier = s.ToString();
     }
 
+    /// <summary>
+    /// Creates a new identifier instance based on the supplied <see cref="HidDevice" />.
+    /// If available the identifier will consist of the vendor-id, product-id and serial number of the HidDevice.
+    /// Alternatively a platform dependent identifier based on the usb device-path is generated.
+    /// </summary>
+    /// <param name="dev">The <see cref="HidDevice" /> this identifier will be created for.</param>
+    public Identifier(HidDevice dev)
+    {
+        string[] identifiers;
+        try
+        {
+            identifiers = ["usbhid", dev.VendorID.ToString("X4"), dev.ProductID.ToString("X4"), dev.GetSerialNumber()];
+        }
+        catch
+        {
+            identifiers = ["usbhid", dev.DevicePath];
+        }
+
+        CoerceIdentifiers(identifiers);
+        StringBuilder s = new();
+        for (int i = 0; i < identifiers.Length; i++)
+        {
+            s.Append(Separator);
+            s.Append(identifiers[i]);
+        }
+
+        _identifier = s.ToString();
+    }
+
     /// <inheritdoc />
     public int CompareTo(Identifier other)
     {
@@ -65,8 +95,7 @@ public class Identifier : IComparable<Identifier>
         for (int i = 0; i < identifiers.Length; i++)
         {
             string s = identifiers[i];
-            if (s.IndexOf(' ') >= 0)
-                identifiers[i] = s.Replace(' ', '-');
+            identifiers[i] = Uri.EscapeDataString(identifiers[i]);
         }
     }
 
