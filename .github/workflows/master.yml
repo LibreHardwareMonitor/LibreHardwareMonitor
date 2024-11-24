@@ -57,12 +57,12 @@ jobs:
           path: |
             bin/Release/net6.0
 
-      - name: Publish net70
+      - name: Publish net80
         uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitorLib-net70
           path: |
-            bin/Release/net7.0
+            bin/Release/net8.0
 
       - name: Publish nupkg
         uses: actions/upload-artifact@v4
