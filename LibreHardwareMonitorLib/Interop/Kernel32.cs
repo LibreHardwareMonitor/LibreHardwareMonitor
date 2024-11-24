@@ -18,7 +18,11 @@ public class Kernel32
 
     public const int ERROR_SERVICE_EXISTS = unchecked((int)0x80070431);
 
+    internal const uint BATTERY_UNKNOWN_CAPACITY = 0xFFFFFFFF;
+    internal const uint BATTERY_UNKNOWN_VOLTAGE = 0xFFFFFFFF;
+    internal const int BATTERY_UNKNOWN_RATE = unchecked((int)0x80000000);
     internal const uint BATTERY_UNKNOWN_TIME = 0xFFFFFFFF;
+
     internal const string IntelNVMeMiniPortSignature1 = "NvmeMini";
     internal const string IntelNVMeMiniPortSignature2 = "IntelNvm";
 
