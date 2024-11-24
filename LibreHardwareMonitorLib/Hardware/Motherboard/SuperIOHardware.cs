@@ -3160,7 +3160,7 @@ internal sealed class SuperIOHardware : Hardware
                         {
                             // second SIO
                             v.Add(new Voltage("1.05V CPU", 0));
-                            v.Add(new Voltage("VDD_CPU", 1));
+                            v.Add(new Voltage("CPU I/O", 1));
                             v.Add(new Voltage("0.82V Chipset", 4));
                             v.Add(new Voltage("1.05V Chipset", 12, 5, 100));
 
