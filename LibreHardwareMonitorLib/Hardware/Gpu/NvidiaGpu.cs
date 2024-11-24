@@ -391,7 +391,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                     if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                     {
-                                        int loadSensorIndex = (_loads?.Length ?? 0) + (_powers?.Length ?? 0) + 1;
+                                        int sensorCount = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
+                                        int loadSensorIndex = sensorCount > 0 ? sensorCount + 1 : 0;
                                         int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
 
                                         _d3dDeviceId = deviceId;
