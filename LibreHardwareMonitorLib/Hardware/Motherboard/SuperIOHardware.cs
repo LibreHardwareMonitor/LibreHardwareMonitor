@@ -3162,7 +3162,7 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("1.05V CPU", 0));
                             v.Add(new Voltage("VDD_CPU", 1));
                             v.Add(new Voltage("0.82V Chipset", 4));
-                            v.Add(new Voltage("1.05V Chispet", 12, 5, 100));
+                            v.Add(new Voltage("1.05V Chipset", 12, 5, 100));
 
                             f.Add(new Fan("VRM", 0));
                             f.Add(new Fan("MOS", 1));
@@ -3198,9 +3198,9 @@ internal sealed class SuperIOHardware : Hardware
 
                             t.Add(new Temperature("CPU Core", 0));
                             t.Add(new Temperature("Motherboard", 2));
-                            t.Add(new Temperature("External Temperature #1", 3));
-                            t.Add(new Temperature("External Temperature #2", 4));
-                            t.Add(new Temperature("External Temperature #3", 5));
+                            t.Add(new Temperature("External #1", 3));
+                            t.Add(new Temperature("External #2", 4));
+                            t.Add(new Temperature("External #3", 5));
                         }
                         break;
 
