@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -31,9 +31,10 @@ public class HttpServer
     private readonly Node _root;
     private Thread _listenerThread;
 
-    public HttpServer(Node node, int port, bool authEnabled = false, string userName = "", string password = "")
+    public HttpServer(Node node, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
         _root = node;
+        ListenerIp = ip;
         ListenerPort = port;
         AuthEnabled = authEnabled;
         UserName = userName;
@@ -59,6 +60,8 @@ public class HttpServer
     }
 
     public bool AuthEnabled { get; set; }
+
+    public string ListenerIp { get; set; }
 
     public int ListenerPort { get; set; }
 
@@ -87,7 +90,26 @@ public class HttpServer
             if (_listener.IsListening)
                 return true;
 
-            string prefix = "http://+:" + ListenerPort + "/";
+            // validate that the selected IP exists (it could have been previously selected before switching networks)
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+            bool ipFound = false;
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ListenerIp == ip.ToString())
+                {
+                    ipFound = true;
+                    break;
+                }
+            }
+
+            if (!ipFound)
+            {
+                // default to behavior of previous version if we don't know what interface to use.
+                ListenerIp = "+";
+            }
+
+            string prefix = "http://" + ListenerIp + ":" + ListenerPort + "/";
+
             _listener.Prefixes.Clear();
             _listener.Prefixes.Add(prefix);
             _listener.Realm = "Libre Hardware Monitor";
