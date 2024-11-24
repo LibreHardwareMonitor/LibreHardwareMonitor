@@ -54,7 +54,6 @@ public class HttpServer
         if (PlatformNotSupported)
             return;
 
-
         StopHttpListener();
         _listener.Abort();
     }
@@ -83,12 +82,10 @@ public class HttpServer
         if (PlatformNotSupported)
             return false;
 
-
         try
         {
             if (_listener.IsListening)
                 return true;
-
 
             string prefix = "http://+:" + ListenerPort + "/";
             _listener.Prefixes.Clear();
@@ -115,7 +112,6 @@ public class HttpServer
     {
         if (PlatformNotSupported)
             return false;
-
 
         try
         {
@@ -255,7 +251,7 @@ public class HttpServer
     //Currently the only supported base URL is http://localhost:8085/Sensor.
     private string HandlePostRequest(HttpListenerRequest request)
     {
-        JObject result = new JObject { ["result"] = "ok" };
+        JObject result = new() { ["result"] = "ok" };
 
         try
         {
@@ -281,7 +277,7 @@ public class HttpServer
 #if DEBUG
         return result.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
-            return result.ToString(Newtonsoft.Json.Formatting.None);
+        return result.ToString(Newtonsoft.Json.Formatting.None);
 #endif
     }
 
@@ -290,7 +286,6 @@ public class HttpServer
         HttpListener listener = (HttpListener)result.AsyncState;
         if (listener == null || !listener.IsListening)
             return;
-
 
         // Call EndGetContext to complete the asynchronous operation.
         HttpListenerContext context;
@@ -364,9 +359,9 @@ public class HttpServer
 
                         if (requestedFile.Contains("Sensor"))
                         {
-                            JObject sensor_result = new JObject();
-                            HandleSensorRequest(request, sensor_result);
-                            SendJsonSensor(context.Response, sensor_result);
+                            JObject sensorResult = new();
+                            HandleSensorRequest(request, sensorResult);
+                            SendJsonSensor(context.Response, sensorResult);
                             return;
                         }
 
@@ -422,38 +417,36 @@ public class HttpServer
         name = "LibreHardwareMonitor.Resources." +
                name.Replace("custom-theme", "custom_theme");
 
-        string[] names =
-            Assembly.GetExecutingAssembly().GetManifestResourceNames();
+        string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
 
         for (int i = 0; i < names.Length; i++)
         {
             if (names[i].Replace('\\', '.') == name)
             {
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
+                using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]);
+
+                response.ContentType = GetContentType("." + ext);
+                response.ContentLength64 = stream.Length;
+                byte[] buffer = new byte[512 * 1024];
+                try
                 {
-                    response.ContentType = GetContentType("." + ext);
-                    response.ContentLength64 = stream.Length;
-                    byte[] buffer = new byte[512 * 1024];
-                    try
+                    Stream output = response.OutputStream;
+                    int len;
+                    while ((len = stream.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        Stream output = response.OutputStream;
-                        int len;
-                        while ((len = stream.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            output.Write(buffer, 0, len);
-                        }
-
-                        output.Flush();
-                        output.Close();
-                        response.Close();
+                        output.Write(buffer, 0, len);
                     }
-                    catch (HttpListenerException)
-                    { }
-                    catch (InvalidOperationException)
-                    { }
 
-                    return;
+                    output.Flush();
+                    output.Close();
+                    response.Close();
                 }
+                catch (HttpListenerException)
+                { }
+                catch (InvalidOperationException)
+                { }
+
+                return;
             }
         }
 
@@ -471,28 +464,27 @@ public class HttpServer
         {
             if (names[i].Replace('\\', '.') == name)
             {
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]))
+                using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]);
+
+                Image image = Image.FromStream(stream);
+                response.ContentType = "image/png";
+                try
                 {
-                    Image image = Image.FromStream(stream);
-                    response.ContentType = "image/png";
-                    try
+                    Stream output = response.OutputStream;
+                    using (MemoryStream ms = new())
                     {
-                        Stream output = response.OutputStream;
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            image.Save(ms, ImageFormat.Png);
-                            ms.WriteTo(output);
-                        }
-
-                        output.Close();
+                        image.Save(ms, ImageFormat.Png);
+                        ms.WriteTo(output);
                     }
-                    catch (HttpListenerException)
-                    { }
 
-                    image.Dispose();
-                    response.Close();
-                    return;
+                    output.Close();
                 }
+                catch (HttpListenerException)
+                { }
+
+                image.Dispose();
+                response.Close();
+                return;
             }
         }
 
@@ -502,7 +494,7 @@ public class HttpServer
 
     private void SendJson(HttpListenerResponse response, HttpListenerRequest request = null)
     {
-        JObject json = new JObject();
+        JObject json = new();
 
         int nodeIndex = 0;
 
@@ -513,12 +505,12 @@ public class HttpServer
         json["Max"] = "Max";
         json["ImageURL"] = string.Empty;
 
-        JArray children = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
-        json["Children"] = children;
+        json["Children"] = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
+
 #if DEBUG
         string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
 #else
-            string responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
+        string responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
 #endif
         byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
@@ -542,13 +534,11 @@ public class HttpServer
         {
             if (acceptGzip)
             {
-                using (var ms = new MemoryStream())
-                {
-                    using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
-                        zip.Write(buffer, 0, buffer.Length);
+                using var ms = new MemoryStream();
+                using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
+                    zip.Write(buffer, 0, buffer.Length);
 
-                    buffer = ms.ToArray();
-                }
+                buffer = ms.ToArray();
             }
 
             response.ContentLength64 = buffer.Length;
@@ -561,6 +551,7 @@ public class HttpServer
 
         response.Close();
     }
+
     private void SendJsonSensor(HttpListenerResponse response, JObject sensorData)
     {
         // Convert the JObject to a JSON string
@@ -589,7 +580,7 @@ public class HttpServer
 
     private JObject GenerateJsonForNode(Node n, ref int nodeIndex)
     {
-        JObject jsonNode = new JObject
+        JObject jsonNode = new()
         {
             ["id"] = nodeIndex++,
             ["Text"] = n.Text,
@@ -598,29 +589,28 @@ public class HttpServer
             ["Max"] = string.Empty
         };
 
-        if (n is SensorNode sensorNode)
+        switch (n)
         {
-            jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
-            jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
-            jsonNode["Min"] = sensorNode.Min;
-            jsonNode["Value"] = sensorNode.Value;
-            jsonNode["Max"] = sensorNode.Max;
-            jsonNode["ImageURL"] = "images/transparent.png";
-        }
-        else if (n is HardwareNode hardwareNode)
-        {
-            jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
-        }
-        else if (n is TypeNode typeNode)
-        {
-            jsonNode["ImageURL"] = "images_icon/" + GetTypeImageFile(typeNode);
-        }
-        else
-        {
-            jsonNode["ImageURL"] = "images_icon/computer.png";
+            case SensorNode sensorNode:
+                jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
+                jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
+                jsonNode["Min"] = sensorNode.Min;
+                jsonNode["Value"] = sensorNode.Value;
+                jsonNode["Max"] = sensorNode.Max;
+                jsonNode["ImageURL"] = "images/transparent.png";
+                break;
+            case HardwareNode hardwareNode:
+                jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
+                break;
+            case TypeNode typeNode:
+                jsonNode["ImageURL"] = "images_icon/" + GetTypeImageFile(typeNode);
+                break;
+            default:
+                jsonNode["ImageURL"] = "images_icon/computer.png";
+                break;
         }
 
-        JArray children = new JArray();
+        JArray children = [];
         foreach (Node child in n.Nodes)
         {
             children.Add(GenerateJsonForNode(child, ref nodeIndex));
@@ -725,19 +715,16 @@ public class HttpServer
 
     private string ComputeSHA256(string text)
     {
-        using (SHA256 hash = SHA256.Create())
-        {
-            return string.Concat(hash
-                                .ComputeHash(Encoding.UTF8.GetBytes(text))
-                                .Select(item => item.ToString("x2")));
-        }
+        using SHA256 hash = SHA256.Create();
+        return string.Concat(hash
+                            .ComputeHash(Encoding.UTF8.GetBytes(text))
+                            .Select(item => item.ToString("x2")));
     }
 
     public void Quit()
     {
         if (PlatformNotSupported)
             return;
-
 
         StopHttpListener();
         _listener.Abort();
