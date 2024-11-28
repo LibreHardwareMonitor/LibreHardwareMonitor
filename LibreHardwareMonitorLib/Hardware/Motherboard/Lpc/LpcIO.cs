@@ -557,6 +557,7 @@ internal class LpcIO
             0x8686 => Chip.IT8686E,
             0x8688 => Chip.IT8688E,
             0x8689 => Chip.IT8689E,
+            0x8696 => Chip.IT8696E,
             0x8705 => Chip.IT8705F,
             0x8712 => Chip.IT8712F,
             0x8716 => Chip.IT8716F,

@@ -25,7 +25,7 @@ internal sealed class KrakenV3 : Hardware
     private volatile bool _controllingFans;
     private volatile bool _controllingPump;
 
-    public KrakenV3(HidDevice dev, ISettings settings) : base("Nzxt Kraken Z", new Identifier(dev.DevicePath), settings)
+    public KrakenV3(HidDevice dev, ISettings settings) : base("Nzxt Kraken Z", new Identifier(dev), settings)
     {
         switch (dev.ProductID)
         {

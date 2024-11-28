@@ -39,6 +39,7 @@ public enum Model
     Z790_Pro_RS,
     X570_Phantom_Gaming_4,
     Z790_Taichi,
+    Z790_Nova_WiFi,
     B650M_C,
     H61M_DGS,
 
@@ -127,6 +128,7 @@ public enum Model
     B360M_PRO_VDH,
     B450A_PRO,
     B550A_PRO,
+    B650M_Gaming_Plus_Wifi,
     Z270_PC_MATE,
     Z77_MS7751,
     Z68_MS7672,
@@ -249,6 +251,8 @@ public enum Model
     B650M_AORUS_PRO_AX,
     B650M_AORUS_ELITE,
     B650M_AORUS_ELITE_AX,
+    X870E_AORUS_PRO,
+    X870E_AORUS_PRO_ICE,
 
     // Shuttle
     FH67,

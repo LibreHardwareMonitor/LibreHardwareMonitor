@@ -244,6 +244,7 @@ public sealed partial class MainForm : Form
         fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
         Server = new HttpServer(_root,
+                                _settings.GetValue("listenerIp", "?"),
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
                                 _settings.GetValue("authenticationUserName", ""),
@@ -878,6 +879,7 @@ public sealed partial class MainForm : Form
         foreach (TreeColumn column in treeView.Columns)
             _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
 
+        _settings.SetValue("listenerIp", Server.ListenerIp);
         _settings.SetValue("listenerPort", Server.ListenerPort);
         _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
         _settings.SetValue("authenticationUserName", Server.UserName);
@@ -1296,9 +1298,9 @@ public sealed partial class MainForm : Form
         }
     }
 
-    private void ServerPortMenuItem_Click(object sender, EventArgs e)
+    private void ServerInterfacePortMenuItem_Click(object sender, EventArgs e)
     {
-        new PortForm(this).ShowDialog();
+        new InterfacePortForm(this).ShowDialog();
     }
 
     private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
