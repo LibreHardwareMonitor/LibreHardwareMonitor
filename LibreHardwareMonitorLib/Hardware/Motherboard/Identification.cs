@@ -581,24 +581,32 @@ internal class Identification
             case var _ when name.Equals("B650M-CX", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("B650M-CWX", StringComparison.OrdinalIgnoreCase):
                 return Model.B650M_C;
-            case var _ when name.Equals("B660 DS3H DDR4-Y1",StringComparison.OrdinalIgnoreCase):
-            case var _ when name.Equals("B660 DS3H DDR4",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B650M GAMING PLUS WIFI (MS-7E24)", StringComparison.OrdinalIgnoreCase):
+                return Model.B650M_Gaming_Plus_Wifi;
+            case var _ when name.Equals("B660 DS3H DDR4-Y1", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H DDR4", StringComparison.OrdinalIgnoreCase):
                 return Model.B660_DS3H_DDR4;
-            case var _ when name.Equals("B660 DS3H AC DDR4-Y1",StringComparison.OrdinalIgnoreCase):
-            case var _ when name.Equals("B660 DS3H AC DDR4",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H AC DDR4-Y1", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660 DS3H AC DDR4", StringComparison.OrdinalIgnoreCase):
                 return Model.B660_DS3H_AC_DDR4;
-            case var _ when name.Equals("B660M DS3H AX DDR4",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("B660M DS3H AX DDR4", StringComparison.OrdinalIgnoreCase):
                 return Model.B660M_DS3H_AX_DDR4;
             case var _ when name.Equals("ROG STRIX Z790-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_Z790_I_GAMING_WIFI;
             case var _ when name.Equals("ROG STRIX Z790-E GAMING WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_Z790_E_GAMING_WIFI;
-            case var _ when name.Equals("MPG X570 GAMING PLUS (MS-7C37)",StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MPG X570 GAMING PLUS (MS-7C37)", StringComparison.OrdinalIgnoreCase):
                 return Model.X570_Gaming_Plus;
             case var _ when name.Equals("ROG MAXIMUS Z790 FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z790_FORMULA;
+            case var _ when name.Equals("Z790 Nova WiFi", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_Nova_WiFi;
             case var _ when name.Equals("ROG MAXIMUS XII HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XII_HERO_WIFI;
+            case var _ when name.Equals("X870E AORUS PRO", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_AORUS_PRO;
+            case var _ when name.Equals("X870E AORUS PRO ICE", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_AORUS_PRO_ICE;
             case var _ when name.Equals("TUF GAMING B450-PLUS II", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_B450_PLUS_II;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
