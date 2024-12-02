@@ -544,7 +544,7 @@ internal class LpcIO
             port.IT87Enter();
             chipId = port.ReadWord(CHIP_ID_REGISTER);
         }
-        
+
         Chip chip = chipId switch
         {
             0x8613 => Chip.IT8613E,
