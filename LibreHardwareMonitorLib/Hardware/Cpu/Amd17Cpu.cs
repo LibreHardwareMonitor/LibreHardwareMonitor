@@ -398,9 +398,18 @@ internal sealed class Amd17Cpu : AmdCpu
         private double GetTimeStampCounterMultiplier()
         {
             Ring0.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
-            uint cpuDfsId = (eax >> 8) & 0x3f;
-            uint cpuFid = eax & 0xff;
-            return 2.0 * cpuFid / cpuDfsId;
+            if (_cpu._family == 0x1a)
+            {
+                //zen 5
+                uint cpuFid = eax & 0xfff;
+                return (cpuFid * 5) / 100.0;
+            }
+            else
+            {
+                uint cpuDfsId = (eax >> 8) & 0x3f;
+                uint cpuFid = eax & 0xff;
+                return 2.0 * cpuFid / cpuDfsId;
+            }
         }
 
         public void AppendThread(CpuId thread, int numaId, int coreId)
@@ -520,35 +529,57 @@ internal sealed class Amd17Cpu : AmdCpu
             // CurHwPstate [24:22]
             // CurCpuVid [21:14]
             // CurCpuDfsId [13:8]
-            // CurCpuFid [7:0]
+            // CurCpuFid [7:0] zen1..4
+            // CurCpuFid [11:0] zen5
             Ring0.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
+            uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
-            int curCpuDfsId = (int)((eax >> 8) & 0x3f);
-            int curCpuFid = (int)(eax & 0xff);
 
             // MSRC001_0064 + x
             // IddDiv [31:30]
             // IddValue [29:22]
             // CpuVid [21:14]
             // CpuDfsId [13:8]
-            // CpuFid [7:0]
+            // CpuFid [7:0] zen1..4
+            // CpuFid [11:0] zen5
             // Ring0.ReadMsr(MSR_PSTATE_0 + (uint)CurHwPstate, out eax, out edx);
             // int IddDiv = (int)((eax >> 30) & 0x03);
             // int IddValue = (int)((eax >> 22) & 0xff);
             // int CpuVid = (int)((eax >> 14) & 0xff);
             ThreadAffinity.Set(previousAffinity);
 
-            // clock
-            // CoreCOF is (Core::X86::Msr::PStateDef[CpuFid[7:0]] / Core::X86::Msr::PStateDef[CpuDfsId]) * 200
-            double clock = 200.0;
-            _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
-            if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
-                clock = (double)(_busSpeed.Value * 2);
+            if (cpu.Family == 0x1A)
+            {
+                //zen5 (0x1A)
+                //57896-B0-PUB_3.00.pdf, CoreCOF
+                //CoreCOF is Core current operating frequency in MHz.CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]] * 5MHz
+                //CpuFid[11:0]: core frequency ID.Read - write.Reset: XXXh.Specifies the core frequency multiplier.The core
+                //COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
+                int curCpuFid = (int)(msrPstate & 0xfff);
+                _clock.Value = curCpuFid * 5;
 
-            _clock.Value = (float)(curCpuFid / (double)curCpuDfsId * clock);
+                // multiplier, clock speed with 100Mhz as Multiplier Reference
+                _multiplier.Value = (float)((curCpuFid * 5) / 100.0);
+            }
+            else
+            {
+                // clock zen 0x17 and 0x19
+                //55570-B1-3.16_PUB_NRV.pdf, CoreCOF
+                // CoreCOF is (Core::X86::Msr::PStateDef[CpuFid[7:0]] / Core::X86::Msr::PStateDef[CpuDfsId]) * 200
+                //CpuFid[7:0]: core frequency ID.Read - write.Reset: XXh.Specifies the core frequency multiplier.The core
+                //COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
+                int curCpuDfsId = (int)((msrPstate >> 8) & 0x3f);
+                int curCpuFid = (int)(msrPstate & 0xff);
 
-            // multiplier
-            _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
+                double clock = 200.0;
+                _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
+                if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
+                    clock = (double)(_busSpeed.Value * 2);
+                _clock.Value = (float)(curCpuFid / (double)curCpuDfsId * clock);
+
+                // multiplier
+                _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
+            }
 
             // Voltage
             const double vidStep = 0.00625;
