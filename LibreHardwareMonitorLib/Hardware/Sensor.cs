@@ -134,11 +134,14 @@ internal class Sensor : ISensor
             _currentValue = value;
             if (_trackMinMax)
             {
-                if (!Min.HasValue || Min > value)
-                    Min = value;
+                if (value.HasValue && !float.IsNaN(value.Value) && !float.IsInfinity(value.Value))
+                {
+                    if (!Min.HasValue || Min > value)
+                        Min = value;
 
-                if (!Max.HasValue || Max < value)
-                    Max = value;
+                    if (!Max.HasValue || Max < value)
+                        Max = value;
+                }
             }
         }
     }
