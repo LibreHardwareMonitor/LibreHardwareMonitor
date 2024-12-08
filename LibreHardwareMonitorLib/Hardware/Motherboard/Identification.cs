@@ -581,6 +581,8 @@ internal class Identification
             case var _ when name.Equals("B650M-CX", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("B650M-CWX", StringComparison.OrdinalIgnoreCase):
                 return Model.B650M_C;
+            case var _ when name.Equals("B650M GAMING PLUS WIFI (MS-7E24)", StringComparison.OrdinalIgnoreCase):
+                return Model.B650M_Gaming_Plus_Wifi;
             case var _ when name.Equals("B660 DS3H DDR4-Y1",StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("B660 DS3H DDR4",StringComparison.OrdinalIgnoreCase):
                 return Model.B660_DS3H_DDR4;
@@ -597,8 +599,14 @@ internal class Identification
                 return Model.X570_Gaming_Plus;
             case var _ when name.Equals("ROG MAXIMUS Z790 FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z790_FORMULA;
+            case var _ when name.Equals("Z790 Nova WiFi", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_Nova_WiFi;
             case var _ when name.Equals("ROG MAXIMUS XII HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XII_HERO_WIFI;
+            case var _ when name.Equals("X870E AORUS PRO", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_AORUS_PRO;
+            case var _ when name.Equals("X870E AORUS PRO ICE", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_AORUS_PRO_ICE;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;

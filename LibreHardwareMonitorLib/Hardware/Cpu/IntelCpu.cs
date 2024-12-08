@@ -310,6 +310,24 @@ internal sealed class IntelCpu : GenericCpu
 
         int coreSensorId = 0;
 
+        //core temp avg and max value
+        //is only available when the cpu has more than 1 core
+        if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown && _coreCount > 1)
+        {
+            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings);
+            ActivateSensor(_coreMax);
+            coreSensorId++;
+
+            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
+            ActivateSensor(_coreAvg);
+            coreSensorId++;
+        }
+        else
+        {
+            _coreMax = null;
+            _coreAvg = null;
+        }
+
         // check if processor supports a digital thermal sensor at core level
         if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 1) != 0 && _microArchitecture != MicroArchitecture.Unknown)
         {
@@ -365,23 +383,6 @@ internal sealed class IntelCpu : GenericCpu
         }
         else
             _distToTjMaxTemperatures = Array.Empty<Sensor>();
-
-        //core temp avg and max value
-        //is only available when the cpu has more than 1 core
-        if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown && _coreCount > 1)
-        {
-            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings);
-            ActivateSensor(_coreMax);
-            coreSensorId++;
-
-            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
-            ActivateSensor(_coreAvg);
-        }
-        else
-        {
-            _coreMax = null;
-            _coreAvg = null;
-        }
 
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
         _coreClocks = new Sensor[_coreCount];

@@ -391,13 +391,14 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                     if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                     {
-                                        int nodeSensorIndex = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
-                                        int memorySensorIndex = 4; // There are 4 normal GPU memory sensors.
+                                        int sensorCount = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
+                                        int loadSensorIndex = sensorCount > 0 ? sensorCount + 1 : 0;
+                                        int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
 
                                         _d3dDeviceId = deviceId;
 
-                                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
-                                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex, SensorType.SmallData, this, settings);
+                                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", smallDataSensorIndex++, SensorType.SmallData, this, settings);
+                                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", smallDataSensorIndex, SensorType.SmallData, this, settings);
 
                                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -405,7 +406,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
                                         {
-                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings);
+                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, loadSensorIndex++, SensorType.Load, this, settings);
                                             _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                                             _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                                         }

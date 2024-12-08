@@ -6,7 +6,7 @@
 
 namespace LibreHardwareMonitor.UI
 {
-    partial class PortForm
+    partial class InterfacePortForm
     {
         /// <summary>
         /// Required designer variable.
@@ -34,7 +34,7 @@ namespace LibreHardwareMonitor.UI
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PortForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InterfacePortForm));
             this.portOKButton = new System.Windows.Forms.Button();
             this.portCancelButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -44,12 +44,14 @@ namespace LibreHardwareMonitor.UI
             this.webServerLinkLabel = new System.Windows.Forms.LinkLabel();
             this.portNumericUpDn = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
+            this.interfaceLabel = new System.Windows.Forms.Label();
+            this.interfaceComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.portNumericUpDn)).BeginInit();
             this.SuspendLayout();
             // 
             // portOKButton
             // 
-            this.portOKButton.Location = new System.Drawing.Point(244, 137);
+            this.portOKButton.Location = new System.Drawing.Point(244, 162);
             this.portOKButton.Name = "portOKButton";
             this.portOKButton.Size = new System.Drawing.Size(75, 23);
             this.portOKButton.TabIndex = 0;
@@ -60,7 +62,7 @@ namespace LibreHardwareMonitor.UI
             // portCancelButton
             // 
             this.portCancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.portCancelButton.Location = new System.Drawing.Point(162, 137);
+            this.portCancelButton.Location = new System.Drawing.Point(162, 162);
             this.portCancelButton.Name = "portCancelButton";
             this.portCancelButton.Size = new System.Drawing.Size(75, 23);
             this.portCancelButton.TabIndex = 1;
@@ -71,7 +73,7 @@ namespace LibreHardwareMonitor.UI
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 106);
+            this.label1.Location = new System.Drawing.Point(13, 131);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(377, 13);
             this.label1.TabIndex = 3;
@@ -81,16 +83,16 @@ namespace LibreHardwareMonitor.UI
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 9);
+            this.label2.Location = new System.Drawing.Point(13, 34);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(193, 13);
+            this.label2.Size = new System.Drawing.Size(190, 13);
             this.label2.TabIndex = 4;
-            this.label2.Text = "Port number for  the remote web server:";
+            this.label2.Text = "Port number for the remote web server:";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 39);
+            this.label3.Location = new System.Drawing.Point(13, 64);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(443, 13);
             this.label3.TabIndex = 5;
@@ -100,7 +102,7 @@ namespace LibreHardwareMonitor.UI
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 62);
+            this.label4.Location = new System.Drawing.Point(13, 86);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(262, 13);
             this.label4.TabIndex = 6;
@@ -109,7 +111,7 @@ namespace LibreHardwareMonitor.UI
             // webServerLinkLabel
             // 
             this.webServerLinkLabel.AutoSize = true;
-            this.webServerLinkLabel.Location = new System.Drawing.Point(269, 62);
+            this.webServerLinkLabel.Location = new System.Drawing.Point(269, 86);
             this.webServerLinkLabel.Name = "webServerLinkLabel";
             this.webServerLinkLabel.Size = new System.Drawing.Size(55, 13);
             this.webServerLinkLabel.TabIndex = 7;
@@ -119,7 +121,7 @@ namespace LibreHardwareMonitor.UI
             // 
             // portNumericUpDn
             // 
-            this.portNumericUpDn.Location = new System.Drawing.Point(208, 7);
+            this.portNumericUpDn.Location = new System.Drawing.Point(208, 32);
             this.portNumericUpDn.Maximum = new decimal(new int[] {
             20000,
             0,
@@ -144,18 +146,40 @@ namespace LibreHardwareMonitor.UI
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 84);
+            this.label5.Location = new System.Drawing.Point(13, 109);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(304, 13);
             this.label5.TabIndex = 9;
             this.label5.Text = "You will have to start the server by clicking Run from the menu.";
             // 
-            // PortForm
+            // interfaceLabel
+            // 
+            this.interfaceLabel.AutoSize = true;
+            this.interfaceLabel.Location = new System.Drawing.Point(14, 8);
+            this.interfaceLabel.Name = "interfaceLabel";
+            this.interfaceLabel.Size = new System.Drawing.Size(217, 13);
+            this.interfaceLabel.TabIndex = 10;
+            this.interfaceLabel.Text = "Network interface for the remote web server:";
+            // 
+            // interfaceComboBox
+            // 
+            this.interfaceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.interfaceComboBox.FormattingEnabled = true;
+            this.interfaceComboBox.Location = new System.Drawing.Point(233, 6);
+            this.interfaceComboBox.Margin = new System.Windows.Forms.Padding(2);
+            this.interfaceComboBox.Name = "interfaceComboBox";
+            this.interfaceComboBox.Size = new System.Drawing.Size(221, 21);
+            this.interfaceComboBox.TabIndex = 11;
+            this.interfaceComboBox.SelectedIndexChanged += new System.EventHandler(this.interfaceComboBox_SelectedIndexChanged);
+            // 
+            // InterfacePortForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.portCancelButton;
-            this.ClientSize = new System.Drawing.Size(466, 170);
+            this.ClientSize = new System.Drawing.Size(466, 202);
+            this.Controls.Add(this.interfaceComboBox);
+            this.Controls.Add(this.interfaceLabel);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.portNumericUpDn);
             this.Controls.Add(this.webServerLinkLabel);
@@ -169,7 +193,7 @@ namespace LibreHardwareMonitor.UI
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "PortForm";
+            this.Name = "InterfacePortForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Set Port";
@@ -191,5 +215,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.LinkLabel webServerLinkLabel;
         private System.Windows.Forms.NumericUpDown portNumericUpDn;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label interfaceLabel;
+        private System.Windows.Forms.ComboBox interfaceComboBox;
     }
 }
