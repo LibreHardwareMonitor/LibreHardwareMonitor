@@ -85,6 +85,15 @@ public class AquaComputerGroup : IGroup
                     _report.AppendLine();
                     _hardware.Add(farbwerk);
                     break;
+                
+                case 0xF010:
+                    var farbwerk360 = new Farbwerk360(dev, settings);
+                    _report.AppendLine($"Device name: {productName}");
+                    _report.AppendLine($"Firmware version: {farbwerk360.FirmwareVersion}");
+                    _report.AppendLine($"{farbwerk360.Status}");
+                    _report.AppendLine();
+                    _hardware.Add(farbwerk360);
+                    break;
 
                 case 0xF012:
                     var highflownext = new HighFlowNext(dev, settings);
