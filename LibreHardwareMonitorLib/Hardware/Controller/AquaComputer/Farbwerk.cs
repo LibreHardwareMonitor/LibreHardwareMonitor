@@ -34,7 +34,7 @@ internal sealed class Farbwerk : Hardware
 
         for (int i = 0; i < _temperatures.Length; i++)
         {
-            _temperatures[i] = new Sensor($"Sensor {i + 1}", i, SensorType.Temperature, this, settings);
+            _temperatures[i] = new Sensor($"Temperature #{i + 1}", i, SensorType.Temperature, this, settings);
             ActivateSensor(_temperatures[i]);
         }
 
