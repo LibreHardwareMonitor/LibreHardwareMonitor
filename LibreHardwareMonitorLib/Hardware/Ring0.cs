@@ -328,6 +328,20 @@ internal static class Ring0
         return result;
     }
 
+    public static bool ReadMsr(uint index, out ulong edxeax)
+    {
+        if (_driver == null)
+        {
+            edxeax = 0;
+            return false;
+        }
+
+        ulong buffer = 0;
+        bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MSR, index, ref buffer);
+        edxeax = buffer;
+        return result;
+    }
+
     public static bool ReadMsr(uint index, out uint eax, out uint edx, GroupAffinity affinity)
     {
         GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
