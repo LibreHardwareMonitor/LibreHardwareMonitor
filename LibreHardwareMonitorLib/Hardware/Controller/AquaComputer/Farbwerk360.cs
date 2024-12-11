@@ -10,13 +10,13 @@ namespace LibreHardwareMonitor.Hardware.Controller.AquaComputer;
 //TODO:
 //Implement set RGB Controls
 
-internal sealed class Farbwerk : Hardware
+internal sealed class Farbwerk360 : Hardware
 {
     private const int FEATURE_ID = 3;
 
-    private const int HEADER_SIZE = 27;
+    private const int HEADER_SIZE = 30;
     private const int SENSOR_OFFSET = 20;
-    private const int COLORS_OFFSET = 40;
+    private const int COLORS_OFFSET = 43;
 
     private const int TEMPERATURE_COUNT = 4;
     private const int TEMP_SENSOR_DISCONNECTED = 32767;
@@ -24,11 +24,10 @@ internal sealed class Farbwerk : Hardware
     private const int COLOR_VALUE_COUNT = COLOR_COUNT * 3;
     private readonly HidDevice _device;
     private readonly byte[] _rawData = new byte[140];
-    
     private readonly Sensor[] _temperatures = new Sensor[TEMPERATURE_COUNT];
     private readonly Sensor[] _colors = new Sensor[COLOR_VALUE_COUNT];
 
-    public Farbwerk(HidDevice dev, ISettings settings) : base("Farbwerk", new Identifier(dev), settings)
+    public Farbwerk360(HidDevice dev, ISettings settings) : base("Farbwerk 360", new Identifier(dev), settings)
     {
         _device = dev;
 
