@@ -4362,7 +4362,7 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
-                        
+
                     case Model.PRIME_X870_P: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
@@ -4379,7 +4379,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU", 22));
 
-                        fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "Chassis Fan #5", "AIO Pump" };
+                        fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "CPU_OPT", "Chassis Fan #4", "AIO Pump" };
 
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length, $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length, "Expected counts of cans controls and fan speed registers to be equal");
