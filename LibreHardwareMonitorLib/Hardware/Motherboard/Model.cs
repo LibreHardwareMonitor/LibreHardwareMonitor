@@ -110,6 +110,7 @@ public enum Model
     PRIME_Z690_A,
     ROG_MAXIMUS_Z790_FORMULA,
     ROG_MAXIMUS_XII_HERO_WIFI,
+    PRIME_X870_P,
 
     //BIOSTAR
     B660GTN,
