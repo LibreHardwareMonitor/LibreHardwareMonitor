@@ -423,9 +423,7 @@ internal class IT87XX : ISuperIO
 
         // Is this needed on every update?  Yes, until a way to detect resume from sleep/hibernation is added, as that invalidates the bank select.
         if (_requiresBankSelect)
-        {
             SelectBank(0);
-        }
 
         for (int i = 0; i < Voltages.Length; i++)
         {
