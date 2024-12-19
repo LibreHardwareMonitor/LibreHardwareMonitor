@@ -8,7 +8,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 // ReSharper disable once InconsistentNaming
 
@@ -167,7 +166,7 @@ internal class IT87XX : ISuperIO
                 break;
 
             case Chip.IT87952E:
-                Voltages = new float?[10];
+                Voltages = new float?[9];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
                 Controls = new float?[3];
@@ -194,7 +193,7 @@ internal class IT87XX : ISuperIO
                 Fans = new float?[3];
                 Controls = new float?[3];
                 break;
-            
+
             case Chip.IT8620E:
                 Voltages = new float?[9];
                 Temperatures = new float?[3];
@@ -428,7 +427,7 @@ internal class IT87XX : ISuperIO
 
         for (int i = 0; i < Voltages.Length; i++)
         {
-            float value = _voltageGain * ReadByte((byte)(VOLTAGE_BASE_REG + i), out bool valid);
+            float value = _voltageGain * ReadByte(IT87_REG_VIN[i], out bool valid);
 
             if (!valid)
                 continue;
@@ -602,7 +601,9 @@ internal class IT87XX : ISuperIO
 
     private const byte TEMPERATURE_BASE_REG = 0x29;
     private const byte VENDOR_ID_REGISTER = 0x58;
-    private const byte VOLTAGE_BASE_REG = 0x20;
+
+    // https://github.com/torvalds/linux/blob/master/drivers/hwmon/it87.c
+    private readonly byte[] IT87_REG_VIN = { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2f, 0x2c, 0x2d, 0x2e };
 
     private readonly byte[] FAN_PWM_CTRL_REG;
     private readonly byte[] FAN_PWM_CTRL_EXT_REG = { 0x63, 0x6b, 0x73, 0x7b, 0xa3, 0xab };
