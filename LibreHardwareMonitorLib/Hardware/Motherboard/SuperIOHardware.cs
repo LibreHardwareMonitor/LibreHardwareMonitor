@@ -4896,11 +4896,6 @@ internal sealed class SuperIOHardware : Hardware
             _superIO.SetControl(sensor.Index, null);
         }
 
-        if (_superIO is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-
         base.Close();
     }
 
