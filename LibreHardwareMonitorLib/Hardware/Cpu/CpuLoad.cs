@@ -14,6 +14,8 @@ namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal class CpuLoad
 {
+    private static readonly bool _queryIdleTimeSeparated = QueryIdleTimeSeparated();
+
     private readonly float[] _threadLoads;
 
     private long[] _idleTimes;
@@ -35,8 +37,7 @@ internal class CpuLoad
             _totalTimes = null;
         }
 
-        if (_idleTimes != null)
-            IsAvailable = true;
+        IsAvailable = _idleTimes != null;
     }
 
     public bool IsAvailable { get; }
@@ -52,29 +53,38 @@ internal class CpuLoad
         total = null;
 
         //Query processor idle information
-        Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
-        int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
-            return false;
+        int idleSize = 0, idleReturn = 0;
+        Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = null;
+        if (_queryIdleTimeSeparated)
+        {
+            idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
+            idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
+            if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out idleReturn) != 0)
+                return false;
+        }
 
         //Query processor performance information
         Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
         int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation,
-                                                   perfInformation,
-                                                   perfInformation.Length * perfSize,
-                                                   out int perfReturn) != 0)
-        {
+        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation, perfInformation, perfInformation.Length * perfSize, out int perfReturn) != 0)
             return false;
-        }
 
-        idle = new long[idleReturn / idleSize];
-        for (int i = 0; i < idle.Length; i++)
-            idle[i] = idleInformation[i].IdleTime;
+        idle = new long[_queryIdleTimeSeparated ? idleReturn / idleSize : perfReturn / perfSize];
+        if (_queryIdleTimeSeparated && idleInformation != null)
+        {
+            for (int i = 0; i < idle.Length; i++)
+                idle[i] = idleInformation[i].IdleTime;
+        }
 
         total = new long[perfReturn / perfSize];
         for (int i = 0; i < total.Length; i++)
+        {
             total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
+            if (!_queryIdleTimeSeparated)
+            {
+                idle[i] = perfInformation[i].IdleTime;
+            }
+        }
 
         return true;
     }
@@ -144,7 +154,7 @@ internal class CpuLoad
 
     public void Update()
     {
-        if (_idleTimes == null || !GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
+        if (_idleTimes == null || !GetTimes(out long[] newIdleTimes, out long[] newTotalTimes) || newIdleTimes == null)
             return;
 
         int minDiff = Software.OperatingSystem.IsUnix ? 100 : 100000;
@@ -153,9 +163,6 @@ internal class CpuLoad
             if (newTotalTimes[i] - _totalTimes[i] < minDiff)
                 return;
         }
-
-        if (newIdleTimes == null)
-            return;
 
         float total = 0;
         int count = 0;
@@ -180,5 +187,17 @@ internal class CpuLoad
         _totalLoad = total * 100;
         _totalTimes = newTotalTimes;
         _idleTimes = newIdleTimes;
+    }
+
+    private static bool QueryIdleTimeSeparated()
+    {
+        if (Software.OperatingSystem.IsUnix)
+            return false;
+
+        // From Windows 11 22H2 the CPU idle time returned by SystemProcessorPerformanceInformation is invalid, this issue has been fixed with 24H2. 
+        OperatingSystem os = Environment.OSVersion;
+        Version win1122H2 = new Version(10, 0, 22621, 0);
+        Version win1124H2 = new Version(10, 0, 26100, 0);
+        return os.Version >= win1122H2 && os.Version < win1124H2;
     }
 }
