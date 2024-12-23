@@ -354,6 +354,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.NCT6797D:
             case Chip.NCT6798D:
             case Chip.NCT6799D:
+            case Chip.NCT6701D:
             case Chip.NCT6683D:
                 GetNuvotonConfigurationD(superIO, manufacturer, model, superIOIndex, v, t, f, c);
                 break;
@@ -4359,6 +4360,42 @@ internal sealed class SuperIOHardware : Hardware
 
                         for (int i = 0; i < superIO.Controls.Length; i++)
                             c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
+                    case Model.ROG_STRIX_X870_I_GAMING_WIFI: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9, true)); // Value does not match any in hwmonnitor
+                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU", 22));
+
+                        f.Add(new Fan("Chasis Fan", 0)); // CHA_FAN
+                        f.Add(new Fan("CPU Fan", 1)); // CPU_FAN
+                        // Unused for this board
+                        //f.Add(new Fan("Chasis Fan #2", 2));
+                        //f.Add(new Fan("Chasis Fan #3", 3));
+                        //f.Add(new Fan("Chasis Fan #4", 4));
+                        f.Add(new Fan("Chipset Fan", 5)); // CHIPSET_FAN
+                        f.Add(new Fan("AIO Pump", 6)); // AIO_PUMP
+
+                        c.Add(new Control("Chasis Fan", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        // Unused for this board
+                        //c.Add(new Control("Chasis Fan #2", 2));
+                        //c.Add(new Control("Chasis Fan #3", 3));
+                        //c.Add(new Control("Chasis Fan #4", 4));
+                        c.Add(new Control("Chipset Fan", 5));
+                        c.Add(new Control("AIO Pump", 6));
 
                         break;
 
