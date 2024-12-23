@@ -4754,14 +4754,14 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU", 22));
 
-                        f.Add(new Fan("Chasis Fan", 0));
-                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chasis Fan", 0)); // CHA_FAN
+                        f.Add(new Fan("CPU Fan", 1)); // CPU_FAN
                         // Unused for this board
                         //f.Add(new Fan("Chasis Fan #2", 2));
                         //f.Add(new Fan("Chasis Fan #3", 3));
                         //f.Add(new Fan("Chasis Fan #4", 4));
-                        //f.Add(new Fan("Chasis Fan #5", 5));
-                        f.Add(new Fan("AIO Pump", 6));
+                        f.Add(new Fan("Chipset Fan", 5)); // CHIPSET_FAN
+                        f.Add(new Fan("AIO Pump", 6)); // AIO_PUMP
 
                         c.Add(new Control("Chasis Fan", 0));
                         c.Add(new Control("CPU Fan", 1));
@@ -4769,7 +4769,7 @@ internal sealed class SuperIOHardware : Hardware
                         //c.Add(new Control("Chasis Fan #2", 2));
                         //c.Add(new Control("Chasis Fan #3", 3));
                         //c.Add(new Control("Chasis Fan #4", 4));
-                        //c.Add(new Control("Chasis Fan #5", 5));
+                        c.Add(new Control("Chipset Fan", 5));
                         c.Add(new Control("AIO Pump", 6));
 
                         break;
