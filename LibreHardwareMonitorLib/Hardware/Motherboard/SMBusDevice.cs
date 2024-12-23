@@ -144,7 +144,7 @@ internal class SmBusDevice
         return Ring0.ReadSmbus(SMBHSTDAT0);
     }
 
-    public void WriteWord(byte register, byte value)
+    public void WriteWord(byte register, ushort value)
     {
         if (SMB_ADDRESS == 0 || CHIP_ADDRESS == 0)
             return;
