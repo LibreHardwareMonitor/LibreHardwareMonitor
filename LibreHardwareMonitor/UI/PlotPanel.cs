@@ -231,6 +231,7 @@ public class PlotPanel : UserControl
             { SensorType.Frequency, "Hz" },
             { SensorType.Energy, "mWh" },
             { SensorType.Noise, "dBA" },
+            { SensorType.Conductivity, "µS/cm" },
             { SensorType.Humidity, "%" }
         };
 

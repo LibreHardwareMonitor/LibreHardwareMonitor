@@ -194,10 +194,23 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
+            BoardFamily.Intel400,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
             ECSensor.TempVrm),
+        new(Model.ROG_MAXIMUS_Z690_HERO,
+            BoardFamily.Intel600,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z690_FORMULA,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -215,6 +228,16 @@ public abstract class EmbeddedController : Hardware
             ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_Z790_HERO,
             BoardFamily.Intel700,
+            ECSensor.TempVrm,
+            ECSensor.TempTSensor,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.FanWaterFlow,
+            ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_Z790_DARK_HERO,
+            BoardFamily.Intel700,
+            ECSensor.TempVrm,
+            ECSensor.FanCPUOpt,
             ECSensor.TempTSensor,
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut,
@@ -347,6 +370,8 @@ public abstract class EmbeddedController : Hardware
         {
             BoardFamily.Intel700, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0109, blank: -40) },
                 { ECSensor.TempTSensor2, new EmbeddedControllerSource("T Sensor 2", SensorType.Temperature, 0x105, blank: -40) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
@@ -513,7 +538,7 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
         TempTSensor,
-        
+
         /// <summary>"T_Sensor 2" temperature sensor reading [℃]</summary>
         TempTSensor2,
 

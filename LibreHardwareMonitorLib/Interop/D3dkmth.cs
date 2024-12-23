@@ -381,16 +381,16 @@ internal static class D3dkmth
     [StructLayout(LayoutKind.Explicit)]
     internal struct D3DKMT_QUERYSTATISTICS_RESULT
     {
-        [FieldOffset(8)]
+        [FieldOffset(0), MarshalAs(UnmanagedType.Struct)]
         public D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION AdapterInformation;
 
-        [FieldOffset(8)]
+        [FieldOffset(0), MarshalAs(UnmanagedType.Struct)]
         public D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION SegmentInformation;
 
-        [FieldOffset(8)]
+        [FieldOffset(0), MarshalAs(UnmanagedType.Struct)]
         public D3DKMT_QUERYSTATISTICS_PROCESS_SEGMENT_INFORMATION ProcessSegmentInformation;
 
-        [FieldOffset(8)]
+        [FieldOffset(0), MarshalAs(UnmanagedType.Struct)]
         public D3DKMT_QUERYSTATISTICS_NODE_INFORMATION NodeInformation;
 
         // D3DKMT_QUERYSTATISTICS_PROCESS_INFORMATION ProcessInformation;
@@ -430,7 +430,7 @@ internal static class D3dkmth
     {
         public D3DKMT_QUERYSTATISTICS_TYPE Type;
         public WinNt.LUID AdapterLuid;
-        public uint ProcessHandle;
+        public IntPtr ProcessHandle;
         public D3DKMT_QUERYSTATISTICS_RESULT QueryResult;
         public D3DKMT_QUERYSTATISTICS_QUERY_ELEMENT QueryElement;
     }

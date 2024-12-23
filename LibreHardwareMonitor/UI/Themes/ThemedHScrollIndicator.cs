@@ -6,6 +6,9 @@ namespace LibreHardwareMonitor.UI.Themes
     public class ThemedHScrollIndicator : Control
     {
         private readonly HScrollBar _scrollbar;
+        private int _startValue = 0;
+        private int _startPos = 0;
+        private bool _isScrolling = false;
 
         public static void AddToControl(Control control)
         {
@@ -39,6 +42,54 @@ namespace LibreHardwareMonitor.UI.Themes
             scrollBar.ValueChanged += (s, e) => Invalidate();
 
             scrollBar.Height = 0;
+            this.MouseDown += OnMouseDown;
+        }
+
+        private void OnMouseDown(object sender, MouseEventArgs e)
+        {
+            if (_isScrolling)
+                return;
+
+            _isScrolling = true;
+
+            //note: this.Capture is true when the control is clicked, no need to handle this
+
+            _startPos = e.X;
+            _startValue = _scrollbar.Value;
+
+            this.MouseUp += OnMouseUp;
+            this.MouseMove += OnMouseMove;
+        }
+
+        private void OnMouseUp(object sender, MouseEventArgs e)
+        {
+            _isScrolling = false;
+            this.MouseUp -= OnMouseUp;
+            this.MouseMove -= OnMouseMove;
+        }
+
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_isScrolling)
+                return;
+
+            //pixel to range scaling:
+            double totalRange = _scrollbar.Maximum - _scrollbar.Minimum;
+
+            if (totalRange <= 0)
+                return;
+
+            double scaleToPercent = totalRange / Bounds.Width;
+            double scrollValue = _startValue + (e.X - _startPos) * scaleToPercent;
+
+            if (scrollValue < _scrollbar.Minimum)
+                scrollValue = _scrollbar.Minimum;
+
+            if (scrollValue > (_scrollbar.Maximum - _scrollbar.LargeChange))
+                scrollValue = _scrollbar.Maximum - _scrollbar.LargeChange;
+
+            _scrollbar.Value = (int)scrollValue;
+            Refresh();
         }
 
         protected override void OnPaint(PaintEventArgs e)

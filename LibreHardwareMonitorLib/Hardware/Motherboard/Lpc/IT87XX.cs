@@ -33,6 +33,7 @@ internal class IT87XX : ISuperIO
     private readonly byte _version;
     private readonly float _voltageGain;
     private IGigabyteController _gigabyteController;
+    private readonly bool _requiresBankSelect;  // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
 
     private bool SupportsMultipleBanks => _bankCount > 1;
 
@@ -44,6 +45,7 @@ internal class IT87XX : ISuperIO
         _dataReg = (ushort)(address + DATA_REGISTER_OFFSET);
         _gpioAddress = gpioAddress;
         _gigabyteController = gigabyteController;
+        _requiresBankSelect = false;
 
         Chip = chip;
 
@@ -96,7 +98,8 @@ internal class IT87XX : ISuperIO
             Chip.IT8613E or
             Chip.IT8792E or
             Chip.IT8655E or
-            Chip.IT8631E;
+            Chip.IT8631E or
+            Chip.IT8696E;
 
         switch (chip)
         {
@@ -128,6 +131,13 @@ internal class IT87XX : ISuperIO
                 break;
 
             case Chip.IT8665E:
+                Voltages = new float?[9];
+                Temperatures = new float?[6];
+                Fans = new float?[6];
+                Controls = new float?[6];
+                _requiresBankSelect = true;
+                break;
+
             case Chip.IT8686E:
                 Voltages = new float?[10];
                 Temperatures = new float?[6];
@@ -149,8 +159,15 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[6];
                 break;
 
+            case Chip.IT8696E:
+                Voltages = new float?[10];
+                Temperatures = new float?[6];
+                Fans = new float?[6];
+                Controls = new float?[6];
+                break;
+
             case Chip.IT87952E:
-                Voltages = new float?[6];
+                Voltages = new float?[10];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
                 Controls = new float?[3];
@@ -161,6 +178,7 @@ internal class IT87XX : ISuperIO
                 Temperatures = new float?[6];
                 Fans = new float?[3];
                 Controls = new float?[3];
+                _requiresBankSelect = true;
                 break;
 
             case Chip.IT8792E:
@@ -198,7 +216,7 @@ internal class IT87XX : ISuperIO
         // Conflicting reports on IT8792E: either 0.0109 in linux drivers or 0.011 comparing with Gigabyte board & SIV SW.
         _voltageGain = chip switch
         {
-            Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
+            Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E or Chip.IT8696E => 0.012f,
             Chip.IT8625E or Chip.IT8792E or Chip.IT87952E => 0.011f,
             Chip.IT8655E or Chip.IT8665E => 0.0109f,
             _ => 0.016f
@@ -323,6 +341,9 @@ internal class IT87XX : ISuperIO
         if (!Mutexes.WaitIsaBus(100))
             return r.ToString();
 
+        if (_requiresBankSelect)
+            SelectBank(0);
+
         // dump memory of all banks if supported by chip
         for (byte b = 0; b < _bankCount; b++)
         {
@@ -400,6 +421,10 @@ internal class IT87XX : ISuperIO
     {
         if (!Mutexes.WaitIsaBus(10))
             return;
+
+        // Is this needed on every update?  Yes, until a way to detect resume from sleep/hibernation is added, as that invalidates the bank select.
+        if (_requiresBankSelect)
+            SelectBank(0);
 
         for (int i = 0; i < Voltages.Length; i++)
         {

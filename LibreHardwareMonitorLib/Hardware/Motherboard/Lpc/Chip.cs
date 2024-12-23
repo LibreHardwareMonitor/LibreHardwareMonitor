@@ -37,6 +37,7 @@ internal enum Chip : ushort
     IT8686E = 0x8686,
     IT8688E = 0x8688,
     IT8689E = 0x8689,
+    IT8696E = 0x8696,
     IT8705F = 0x8705,
     IT8712F = 0x8712,
     IT8716F = 0x8716,
@@ -109,6 +110,7 @@ internal class ChipName
             case Chip.IT8686E: return "ITE IT8686E";
             case Chip.IT8688E: return "ITE IT8688E";
             case Chip.IT8689E: return "ITE IT8689E";
+            case Chip.IT8696E: return "ITE IT8696E";
             case Chip.IT8705F: return "ITE IT8705F";
             case Chip.IT8712F: return "ITE IT8712F";
             case Chip.IT8716F: return "ITE IT8716F";
