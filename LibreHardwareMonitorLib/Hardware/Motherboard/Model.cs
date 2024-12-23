@@ -132,6 +132,7 @@ public enum Model
     Z77_MS7751,
     Z68_MS7672,
     X570_Gaming_Plus,
+    X570_MS7C35,
 
     // EVGA
     X58_SLI_Classified,
