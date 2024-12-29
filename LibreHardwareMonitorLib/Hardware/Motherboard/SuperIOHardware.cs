@@ -1705,6 +1705,37 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X670_AORUS_ELITE_AX:
+                        v.Add(new Voltage("CPU Vcore", 0));
+                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("Voltage #3", 2, true));
+                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3.3V", 7, 10, 10, 0));
+                        v.Add(new Voltage("VBat", 8, 10, 10));
+
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIEX16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+
+                        f.Add(new Fan("CPU", 0));
+                        f.Add(new Fan("System #1", 1));
+                        f.Add(new Fan("System #2", 2));
+                        f.Add(new Fan("System #3", 3));
+                        f.Add(new Fan("CPU OPT", 4));
+
+                        c.Add(new Control("CPU", 0));
+                        c.Add(new Control("System #1", 1));
+                        c.Add(new Control("System #2", 2));
+                        c.Add(new Control("System #3", 3));
+                        c.Add(new Control("CPU OPT", 4));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("Voltage #1", 0, true));
                         v.Add(new Voltage("Voltage #2", 1, true));
