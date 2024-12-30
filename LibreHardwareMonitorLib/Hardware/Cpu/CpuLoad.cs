@@ -14,6 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal class CpuLoad
 {
+    private static readonly bool _queryIdleTimeSeparated = QueryIdleTimeSeparated();
     private readonly double[] _threadLoads;
     private double _totalLoad;
     private long[] _idleTimes;
@@ -50,6 +51,10 @@ internal class CpuLoad
         idle = null;
         total = null;
 
+        //use the idle time routine only with a few specific windows 11 versions
+        if (_queryIdleTimeSeparated)
+            return GetWindowsTimesFromIdleTimes(out idle, out total);
+
         //Query processor performance information
         Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
         int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
@@ -61,6 +66,45 @@ internal class CpuLoad
         for (int i = 0; i < total.Length; i++)
         {
             idle[i] = perfInformation[i].IdleTime;
+            total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
+        }
+
+        return true;
+    }
+
+    private static bool GetWindowsTimesFromIdleTimes(out long[] idle, out long[] total)
+    {
+        idle = null;
+        total = null;
+
+        Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
+        int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
+        Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
+        int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
+
+        //Query processor performance and idle information
+        //these 2 methods must be called as directly as possible one after the other
+
+        //Query processor idle information
+        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
+            return false;
+
+        //Query processor performance information
+        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation, perfInformation, perfInformation.Length * perfSize, out int perfReturn) != 0)
+            return false;
+
+        int perfItemsCount = perfReturn / perfSize;
+        int idleItemsCount = idleReturn / idleSize;
+
+        if (perfItemsCount != idleItemsCount)
+            return false;
+
+        idle = new long[perfItemsCount];
+        total = new long[perfItemsCount];
+
+        for (int i = 0; i < perfItemsCount; i++)
+        {
+            idle[i] = idleInformation[i].IdleTime;
             total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
         }
 
@@ -174,5 +218,17 @@ internal class CpuLoad
         _totalLoad = total;
         _totalTimes = newTotalTimes;
         _idleTimes = newIdleTimes;
+    }
+
+    private static bool QueryIdleTimeSeparated()
+    {
+        if (Software.OperatingSystem.IsUnix)
+            return false;
+
+        // From Windows 11 22H2 the CPU idle time returned by SystemProcessorPerformanceInformation is invalid, this issue has been fixed with 24H2. 
+        OperatingSystem os = Environment.OSVersion;
+        Version win1122H2 = new Version(10, 0, 22621, 0);
+        Version win1124H2 = new Version(10, 0, 26100, 0);
+        return os.Version >= win1122H2 && os.Version < win1124H2;
     }
 }
