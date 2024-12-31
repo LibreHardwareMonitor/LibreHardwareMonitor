@@ -3,7 +3,7 @@
 // Copyright (C) 2020 Wilken Gottwalt<wilken.gottwalt@posteo.net>
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
-// Implemented after the Linuix kernel driver corsair_psu by Wilken Gottwalt and contributers
+// Implemented after the Linux kernel driver corsair_psu by Wilken Gottwalt and contributers
 
 using System;
 using System.Collections.Generic;
@@ -294,7 +294,8 @@ internal sealed class CorsairPsu : Hardware
                 _efficiency = voltage < 200 ? EfficiencyCurve.GetInputCurve115V(_productId) : EfficiencyCurve.GetInputCurve230V(_productId);
                 _oldVoltage = voltage;
             }
-            if (_power.Value is { } power) Value = _efficiency?.GetInputPower(power);
+            if (_power.Value is { } power)
+                Value = _efficiency?.GetInputPower(power);
         }
 
     }
@@ -810,21 +811,67 @@ internal abstract class EfficiencyCurve
 
     class ExtrapolatedEfficiency(float[] powerOut, float[] powerIn) : EfficiencyCurve
     {
+        int _lowerIndex = 0;
+        int _upperIndex = 1;
+        readonly int _lastIndex = powerOut.Length - 1;
+
+        float _lowerOut = powerOut[0];
+        float _upperOut = powerOut[1];
+
+        float _lowerIn = powerIn[0];
+
+        float _ratio = (powerIn[1] - powerIn[0]) / (powerOut[1] - powerOut[0]);
+
+        // optimized version of the GetInputPower method to avoid parsing the whole array
+        // now starting from the last known index
         public override float GetInputPower(float power)
         {
-            float pOut0 = 0;
-            float pIn0 = 0;
-            for (int i = 0; i < powerOut.Length; i++)
+            if(power < _lowerOut)
             {
-                float pOut1 = powerOut[i];
-                float pIn1 = powerIn[i];
-                if (power < pOut1)
-                    return (pIn1 - pIn0) * (power - pOut0) / (pOut1 - pOut0) + pIn0;
-                pOut0 = pOut1;
-                pIn0 = pIn1;
+                do {
+                    if (_lowerIndex <= 0) return power * powerIn[0] / powerOut[0];
+                    _upperIndex = _lowerIndex--;
+                    _lowerOut = powerOut[_lowerIndex];
+                }
+                while (power < _lowerOut);
+
+                _upperOut = powerOut[_upperIndex];
+                _lowerIn = powerIn[_lowerIndex];
+
+                _ratio = (powerIn[_upperIndex] - _lowerIn) / (_upperOut - _lowerOut);
             }
-            return powerIn.Last() * power / powerOut.Last();
+            else if (power > _upperOut)
+            {
+                do {
+                    if (_upperIndex >= _lastIndex) return power * powerIn.Last() / powerOut.Last();
+                    _lowerIndex = _upperIndex++;
+                    _upperOut = powerOut[_upperIndex];
+                }
+                while (power > _upperOut);
+
+                _lowerOut = powerOut[_lowerIndex];
+                _lowerIn = powerIn[_lowerIndex];
+
+                _ratio = (powerIn[_upperIndex] - _lowerIn) / (_upperOut - _lowerOut);
+            }
+            return (power - _lowerOut) * _ratio + _lowerIn;
         }
+
+        //public override float GetInputPower(float power)
+        //{
+        //    float pOut0 = 0;
+        //    float pIn0 = 0;
+        //    for (int i = 0; i < powerOut.Length; i++)
+        //    {
+        //        float pOut1 = powerOut[i];
+        //        float pIn1 = powerIn[i];
+        //        if (power < pOut1)
+        //            return (pIn1 - pIn0) * (power - pOut0) / (pOut1 - pOut0) + pIn0;
+        //        pOut0 = pOut1;
+        //        pIn0 = pIn1;
+        //    }
+        //    return powerIn.Last() * power / powerOut.Last();
+        //}
     }
 }
 
