@@ -4376,8 +4376,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CPU Termination", 9, true)); // Value does not match any in hwmonitor
                         v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
 
-                        t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU Package", 0));
+                        t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU", 22));
 
                         fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "W Pump+", "AIO Pump" };
