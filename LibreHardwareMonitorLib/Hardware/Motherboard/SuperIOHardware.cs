@@ -4380,7 +4380,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU", 22));
 
-                        fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "W Pump+", "AIO Pump" };
+                        fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "Water Pump", "AIO Pump" };
 
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length, $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length, "Expected counts of fan controls and fan speed registers to be equal");
