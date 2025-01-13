@@ -2170,33 +2170,33 @@ internal sealed class SuperIOHardware : Hardware
                 switch (model)
                 {
                     case Model.IMB_1222:
-                        v.Add(new Voltage("+3V", 0, 150, 150));
-                        v.Add(new Voltage("+3VSB", 5, 150, 150));
+                        v.Add(new Voltage("+3.3V", 0, 150, 150));
+                        v.Add(new Voltage("+3V Standby", 5, 150, 150));
                         v.Add(new Voltage("VCore", 1));
                         v.Add(new Voltage("VCCM", 2, 150, 150));
                         v.Add(new Voltage("Voltage #4", 3, true));
                         v.Add(new Voltage("Voltage #5", 4, true));
-                        v.Add(new Voltage("VBAT", 6, 150, 150));
+                        v.Add(new Voltage("CMOS Battery", 6, 150, 150));
                         v.Add(new Voltage("Voltage #8", 7, true));
                         v.Add(new Voltage("Voltage #9", 8, true));
                         for (int i = 0; i < superIO.Temperatures.Length; i++)
                         {
                             if (i == 0)
                             {
-                                t.Add(new Temperature("CPU Temperature", i));
+                                t.Add(new Temperature("CPU Core", i));
                             }
                             else if (i == 1)
                             {
-                                t.Add(new Temperature("M/B Temperature", i));
+                                t.Add(new Temperature("System", i));
                             }
                             else
                             {
                                 t.Add(new Temperature("Temperature #" + (i + 1), i));
                             }
                         }
-                        for (int i = 0; i < superIO.Fans.Length; i++)
+                        for (int i = 0; i < superIO.Fans.Length && i < 2; i++) //only 2 fans
                             f.Add(new Fan("Fan #" + (i + 1), i));
-                        for (int i = 0; i < superIO.Controls.Length; i++)
+                        for (int i = 0; i < superIO.Controls.Length && i < 2; i++) //only 2 fans
                             c.Add(new Control("Fan Control #" + (i + 1), i));
                         break;
                     default:
@@ -2384,21 +2384,21 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Vcore", 0));
                         //v.Add(new Voltage("Voltage #2", 1));
                         v.Add(new Voltage("+3V Standby", 2, 34, 34));
-                        v.Add(new Voltage("+3V", 3, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
                         //v.Add(new Voltage("Voltage #5", 4));
                         //v.Add(new Voltage("Voltage #6", 5));
                         //v.Add(new Voltage("Voltage #7", 6)); //true
                         v.Add(new Voltage("CMOS Battery", 7, 34, 34));
                         //v.Add(new Voltage("Voltage #8", 8, 34, 34));
                         //t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("M/B Temperature", 1));
-                        t.Add(new Temperature("CPU Temperature", 2));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("CPU Core", 2));
                         //t.Add(new Temperature("Temperature #3", 3));
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
+                        for (int i = 0; i < superIO.Fans.Length && i < 2; i++) //only 2 fans
                             f.Add(new Fan("Fan #" + (i + 1), i));
 
-                        for (int i = 0; i < superIO.Controls.Length; i++)
+                        for (int i = 0; i < superIO.Controls.Length && i < 2; i++) //only 2 fans
                             c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
