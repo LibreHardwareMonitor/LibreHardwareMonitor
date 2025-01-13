@@ -320,27 +320,8 @@ internal sealed class SuperIOHardware : Hardware
 
             case Chip.NCT6116D:
             case Chip.NCT610XD:
-                v.Add(new Voltage("Vcore", 0));
-                v.Add(new Voltage("Voltage #0", 1, true));
-                v.Add(new Voltage("AVCC", 2, 34, 34));
-                v.Add(new Voltage("+3.3V", 3, 34, 34));
-                v.Add(new Voltage("Voltage #1", 4, true));
-                v.Add(new Voltage("Voltage #2", 5, true));
-                v.Add(new Voltage("Reserved", 6, true));
-                v.Add(new Voltage("+3V Standby", 7, 34, 34));
-                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                v.Add(new Voltage("Voltage #10", 9, true));
-                t.Add(new Temperature("System", 1));
-                t.Add(new Temperature("CPU Core", 2));
-                t.Add(new Temperature("Auxiliary", 3));
-
-                for (int i = 0; i < superIO.Fans.Length; i++)
-                    f.Add(new Fan("Fan #" + (i + 1), i));
-
-                for (int i = 0; i < superIO.Controls.Length; i++)
-                    c.Add(new Control("Fan #" + (i + 1), i));
-
-                break;
+                GetNuvotonConfigurationG(superIO, manufacturer, model, v, t, f, c);
+                break;            
 
             case Chip.NCT6779D:
             case Chip.NCT6791D:
@@ -2381,6 +2362,86 @@ internal sealed class SuperIOHardware : Hardware
 
                 for (int i = 0; i < superIO.Temperatures.Length; i++)
                     t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                for (int i = 0; i < superIO.Fans.Length; i++)
+                    f.Add(new Fan("Fan #" + (i + 1), i));
+
+                for (int i = 0; i < superIO.Controls.Length; i++)
+                    c.Add(new Control("Fan #" + (i + 1), i));
+
+                break;
+        }
+    }
+
+    private static void GetNuvotonConfigurationG(ISuperIO superIO, Manufacturer manufacturer, Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Control> c)
+    {
+        switch (manufacturer)
+        {
+            case Manufacturer.ASRock:
+                switch (model)
+                {
+                    case Model.IMB_1213: //NCT6116D
+                        v.Add(new Voltage("Vcore", 0));
+                        //v.Add(new Voltage("Voltage #2", 1));
+                        v.Add(new Voltage("+3V Standby", 2, 34, 34));
+                        v.Add(new Voltage("+3V", 3, 34, 34));
+                        //v.Add(new Voltage("Voltage #5", 4));
+                        //v.Add(new Voltage("Voltage #6", 5));
+                        //v.Add(new Voltage("Voltage #7", 6)); //true
+                        v.Add(new Voltage("CMOS Battery", 7, 34, 34));
+                        //v.Add(new Voltage("Voltage #8", 8, 34, 34));
+                        //t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("M/B Temperature", 1));
+                        t.Add(new Temperature("CPU Temperature", 2));
+                        //t.Add(new Temperature("Temperature #3", 3));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
+                    default:
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("Voltage #0", 1, true));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("Voltage #1", 4, true));
+                        v.Add(new Voltage("Voltage #2", 5, true));
+                        v.Add(new Voltage("Reserved", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("Voltage #10", 9, true));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("CPU Core", 2));
+                        t.Add(new Temperature("Auxiliary", 3));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+                }
+                break;
+
+            default:
+                v.Add(new Voltage("Vcore", 0));
+                v.Add(new Voltage("Voltage #0", 1, true));
+                v.Add(new Voltage("AVCC", 2, 34, 34));
+                v.Add(new Voltage("+3.3V", 3, 34, 34));
+                v.Add(new Voltage("Voltage #1", 4, true));
+                v.Add(new Voltage("Voltage #2", 5, true));
+                v.Add(new Voltage("Reserved", 6, true));
+                v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                v.Add(new Voltage("Voltage #10", 9, true));
+                t.Add(new Temperature("System", 1));
+                t.Add(new Temperature("CPU Core", 2));
+                t.Add(new Temperature("Auxiliary", 3));
 
                 for (int i = 0; i < superIO.Fans.Length; i++)
                     f.Add(new Fan("Fan #" + (i + 1), i));
