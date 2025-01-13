@@ -58,7 +58,7 @@ internal class Nct677X : ISuperIO
         _port = port;
         _lpcPort = lpcPort;
 
-        if (chip == Chip.NCT610XD)
+        if (chip is Chip.NCT610XD or Chip.NCT6116D)
         {
             VENDOR_ID_HIGH_REGISTER = 0x80FE;
             VENDOR_ID_LOW_REGISTER = 0x00FE;
@@ -240,6 +240,7 @@ internal class Nct677X : ISuperIO
                 Temperatures = new float?[_temperaturesSource.Length];
                 break;
 
+            case Chip.NCT6116D:
             case Chip.NCT610XD:
                 Fans = new float?[3];
                 Controls = new float?[3];
