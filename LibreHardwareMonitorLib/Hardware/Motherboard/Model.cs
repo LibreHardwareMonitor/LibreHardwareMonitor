@@ -102,6 +102,7 @@ public enum Model
     ROG_MAXIMUS_Z790_HERO,
     PRIME_Z690_A,
     ROG_MAXIMUS_Z790_FORMULA,
+    Q87T,
 
     //BIOSTAR
     B660GTN,
