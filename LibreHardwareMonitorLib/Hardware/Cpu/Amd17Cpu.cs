@@ -756,16 +756,18 @@ internal sealed class Amd17Cpu : AmdCpu
                     int curCpuDfsId = (int)((msrPstate >> 8) & 0x3f);
                     int curCpuFid = (int)(msrPstate & 0xff);
 
-                    coreClock = (float)(curCpuFid / (double)curCpuDfsId * (busClock * 2));
+                    coreClock = (curCpuFid / (double)curCpuDfsId * (busClock * 2));
 
                     // multiplier
                     _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
                 }
 
-                coreClock = ((double)thread.AperfDelta / (double)thread.MperfDelta) * coreClock;
-                coreClock = Math.Round(coreClock);
-                CoreClock = coreClock;
-                _clock.Value = (float)coreClock;
+                //clock values valid when AperfDelta < MperfDelta (ratio is < 1.0)
+                if (thread.AperfDelta < thread.MperfDelta)
+                    coreClock = ((double)thread.AperfDelta / (double)thread.MperfDelta) * coreClock;
+
+                CoreClock = Math.Round(coreClock);
+                _clock.Value = (float)CoreClock;
             }
 
             // Vcore voltage
