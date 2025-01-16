@@ -4373,9 +4373,9 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9, 34, 34));
                         v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
-                        v.Add(new Voltage("VMISC", 11, 34, 34));
+                        v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("+1.8V Standby", 12, true)); // Uknown values needed for tuning, hidden for now
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
