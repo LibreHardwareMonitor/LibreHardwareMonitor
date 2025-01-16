@@ -2018,6 +2018,10 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
                         f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("System Fan #4", 4));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
 
                         break;
 
