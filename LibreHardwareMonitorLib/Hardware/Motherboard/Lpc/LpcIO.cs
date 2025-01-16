@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Management;
 using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.Hardware.Cpu;
@@ -75,7 +76,7 @@ internal class LpcIO
         }
     }
 
-    public string GetReport()
+        public string GetReport()
     {
         if (_report.Length > 0)
         {
@@ -752,5 +753,6 @@ internal class LpcIO
 
     private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };
     private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };
+
     // ReSharper restore InconsistentNaming
 }
