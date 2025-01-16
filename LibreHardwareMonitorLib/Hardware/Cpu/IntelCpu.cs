@@ -231,6 +231,10 @@ internal sealed class IntelCpu : GenericCpu
                             _microArchitecture = MicroArchitecture.LunarLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
+                        case 0x8F: // Intel Xeon W5-3435X // SapphireRapids 
+                            _microArchitecture = MicroArchitecture.SapphireRapids;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
 
                         default:
                             _microArchitecture = MicroArchitecture.Unknown;
@@ -298,6 +302,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Silvermont:
             case MicroArchitecture.Skylake:
             case MicroArchitecture.TigerLake:
+            case MicroArchitecture.SapphireRapids:
             case MicroArchitecture.Tremont:
                 if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
@@ -414,6 +419,7 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.Silvermont or
             MicroArchitecture.Skylake or
             MicroArchitecture.TigerLake or
+            MicroArchitecture.SapphireRapids or
             MicroArchitecture.Tremont)
         {
             _powerSensors = new Sensor[_energyStatusMsrs.Length];
@@ -618,6 +624,7 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.Silvermont:
                         case MicroArchitecture.Skylake:
                         case MicroArchitecture.TigerLake:
+                        case MicroArchitecture.SapphireRapids:
                         case MicroArchitecture.Tremont:
                             _coreClocks[i].Value = (float)(((eax >> 8) & 0xff) * newBusClock);
                             break;
@@ -710,6 +717,7 @@ internal sealed class IntelCpu : GenericCpu
         TigerLake,
         Tremont,
         RaptorLake,
+        SapphireRapids,
         Unknown
     }
 
