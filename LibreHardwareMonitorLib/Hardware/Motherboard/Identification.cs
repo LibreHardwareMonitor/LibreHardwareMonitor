@@ -597,6 +597,11 @@ internal class Identification
                 return Model.ROG_STRIX_Z790_E_GAMING_WIFI;
             case var _ when name.Equals("MPG X570 GAMING PLUS (MS-7C37)",StringComparison.OrdinalIgnoreCase):
                 return Model.X570_Gaming_Plus;
+            case var _ when name.Equals("MEG X570 UNIFY", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X570 UNIFY (MS-7C35)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X570 ACE", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X570 ACE (MS-7C35)", StringComparison.OrdinalIgnoreCase):
+                return Model.X570_MS7C35;
             case var _ when name.Equals("ROG MAXIMUS Z790 FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_Z790_FORMULA;
             case var _ when name.Equals("Z790 Nova WiFi", StringComparison.OrdinalIgnoreCase):
