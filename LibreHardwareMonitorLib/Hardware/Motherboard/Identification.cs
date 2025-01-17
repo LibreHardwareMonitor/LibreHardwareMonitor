@@ -609,6 +609,10 @@ internal class Identification
                 return Model.X870E_AORUS_PRO_ICE;
             case var _ when name.Equals("PROART X870E-CREATOR WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.PROART_X870E_CREATOR_WIFI;
+            case var _ when name.Equals("PRIME X870-P", StringComparison.OrdinalIgnoreCase):
+                return Model.PRIME_X870_P;
+            case var _ when name.Equals("ROG CROSSHAIR X870E HERO", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_CROSSHAIR_X870E_HERO;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
