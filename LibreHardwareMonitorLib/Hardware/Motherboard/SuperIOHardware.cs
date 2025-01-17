@@ -4345,6 +4345,36 @@ internal sealed class SuperIOHardware : Hardware
                             c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
+
+                    case Model.ROG_STRIX_X870E_E_GAMING_WIFI: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9, true)); // Value does not match any in hwmonnitor
+                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU", 22));
+
+                        fanControlNames = new[] { "Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "Chassis Fan #5", "AIO Pump" };
+
+                        System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length, $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+                        System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length, "Expected counts of cans controls and fan speed registers to be equal");
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Control(fanControlNames[i], i));
+
+                        break;
+
                     case Model.PROART_X670E_CREATOR_WIFI: // NCT6799D
                         v.Add(new Voltage("Vcore", 0)); // This is wrong
                         v.Add(new Voltage("+5V", 1, 4, 1));
