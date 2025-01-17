@@ -305,14 +305,14 @@ public class GenericCpu : Hardware
                 {
                     if (_threadLoads[i] != null)
                     {
-                        _threadLoads[i].Value = _cpuLoad.GetThreadLoad(i);
+                        _threadLoads[i].Value = (float)_cpuLoad.GetThreadLoad(i);
                         maxLoad = Math.Max(maxLoad, _threadLoads[i].Value ?? 0);
                     }
                 }
             }
 
             if (_totalLoad != null)
-                _totalLoad.Value = _cpuLoad.GetTotalLoad();
+                _totalLoad.Value = (float)_cpuLoad.GetTotalLoad();
 
             if (_maxLoad != null)
                 _maxLoad.Value = maxLoad;
