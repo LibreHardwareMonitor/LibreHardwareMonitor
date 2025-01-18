@@ -22,6 +22,7 @@ public class CorsairPsuGroup : IGroup
         0x1c07, // HX1000i
         0x1c1e, // HX1000i REV2
         0x1c08, // HX1200i
+        0x1c23, // HX1200i REV2
         0x1c1f, // HX1500i
 
         0x1c09, // RM550i
@@ -32,6 +33,7 @@ public class CorsairPsuGroup : IGroup
 
         // 0x1c11, // AX1600i
     };
+
 
     private static readonly ushort _vendorId = 0x1b1c;
     private readonly List<IHardware> _hardware;
