@@ -1626,7 +1626,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Dual DDR5 5V", 6, 1.5f, 1));
                         v.Add(new Voltage("+3V Standby", 7, 10f, 10f));
                         v.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
-                        v.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
+                        v.Add(new Voltage("AVCC3", 9, 10f, 10f));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("PCH", 1));
                         t.Add(new Temperature("CPU", 2));
