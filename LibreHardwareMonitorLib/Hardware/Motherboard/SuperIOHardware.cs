@@ -4460,7 +4460,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case Model.PROART_X870E_CREATOR_WIFI: // ITE IT8696E
+                    case Model.PROART_X870E_CREATOR_WIFI: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
