@@ -69,7 +69,7 @@ internal class Nct677X : ISuperIO
 
             _vBatMonitorControlRegister = 0x0318;
         }
-        else if (chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D) //These work on older NCT6687D boards, but only the first 3 fans on newer (X870 and Z890) motherboards. Unsure of controls for "next 8".
+        else if (chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D) //These work on older NCT6687D boards, but only fans 0, 1 and 3 on newer (X870 and Z890) motherboards. Unsure of controls for "next pack of 8".
         {
             FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 }; // Next 8 fans will be 0xE00, 0xE01, 0xE02, 0xE03, 0xE04, 0xE05, 0xE06, 0xE07 
             FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xA2A, 0xA2B, 0xA2C, 0xA2D, 0xA2E, 0xA2F }; // Possibly 0X260, 0X261, 0X262, 0X263, 0X264, 0X265, 0X266, 0X267 but can't confirm

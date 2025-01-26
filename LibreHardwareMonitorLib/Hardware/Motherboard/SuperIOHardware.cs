@@ -481,12 +481,12 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("Pump Fan", 1));
                         f.Add(new Fan("EZConn Fan", 3));
-                        f.Add(new Fan("System Fan #Sys Fan 6", 10));
-                        f.Add(new Fan("System Fan #Sys Fan 5", 11));
-                        f.Add(new Fan("System Fan #Sys Fan 4", 12));
-                        f.Add(new Fan("System Fan #Sys Fan 3", 13));
-                        f.Add(new Fan("System Fan #Sys Fan 2", 14));
-                        f.Add(new Fan("System Fan #Sys Fan 1", 15));
+                        f.Add(new Fan("System Fan #6", 10));
+                        f.Add(new Fan("System Fan #5", 11));
+                        f.Add(new Fan("System Fan #4", 12));
+                        f.Add(new Fan("System Fan #3", 13));
+                        f.Add(new Fan("System Fan #2", 14));
+                        f.Add(new Fan("System Fan #1", 15));
 
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("Pump Fan", 1));
@@ -514,11 +514,11 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("Pump Fan", 1));
                         f.Add(new Fan("EZConn Fan", 3));
-                        f.Add(new Fan("System Fan #Sys Fan 5", 11));
-                        f.Add(new Fan("System Fan #Sys Fan 4", 12));
-                        f.Add(new Fan("System Fan #Sys Fan 3", 13));
-                        f.Add(new Fan("System Fan #Sys Fan 2", 14));
-                        f.Add(new Fan("System Fan #Sys Fan 1", 15));
+                        f.Add(new Fan("System Fan #5", 11));
+                        f.Add(new Fan("System Fan #4", 12));
+                        f.Add(new Fan("System Fan #3", 13));
+                        f.Add(new Fan("System Fan #2", 14));
+                        f.Add(new Fan("System Fan #1", 15));
 
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("Pump Fan", 1));
