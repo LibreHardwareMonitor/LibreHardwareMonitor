@@ -69,7 +69,7 @@ jobs:
         with:
           name: LibreHardwareMonitorLib-nupkg
           path: |
-            bin/Release/LibreHardwareMonitorLib.*.nupkg
+            bin/Release/LibreHardwareMonitorLibDemoman.*.nupkg
 
       - name: Publish to NuGet
         run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
