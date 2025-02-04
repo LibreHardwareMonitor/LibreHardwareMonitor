@@ -13,12 +13,6 @@ using LibreHardwareMonitor.Hardware;
 using Prometheus;
 
 namespace LibreHardwareMonitor.Utilities;
-public interface ICounter
-{
-    void Inc(double increment);
-    void Inc(Exemplar exemplar);
-    void Inc(double increment, Exemplar exemplar);
-}
 public class Logger
 {
     private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}{1}.csv";
@@ -30,7 +24,6 @@ public class Logger
     private string[] _identifiers;
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
-    private Counter[] _counters;
 
     public LoggerFileRotation FileRotationMethod = LoggerFileRotation.PerSession;
 
