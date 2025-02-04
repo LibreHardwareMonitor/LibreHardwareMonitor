@@ -24,6 +24,7 @@ public class Logger
     private string[] _identifiers;
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
+    private string _pcName = Environment.MachineName;
 
     public LoggerFileRotation FileRotationMethod = LoggerFileRotation.PerSession;
 
@@ -166,7 +167,7 @@ public class Logger
 
     public void SendMetricsToPrometheus()
     {
-        var sensorGauge = Metrics.CreateGauge("sensor_value", "sensor value", new[] { "sensor_name" });
+        var sensorGauge = Metrics.CreateGauge(_pcName, "sensors", new[] { "sensor_name" });
 
         foreach (var sensor in _sensors)
         {
@@ -176,11 +177,6 @@ public class Logger
                 double sensorValue = sensor.Value.Value;
 
                 sensorGauge.WithLabels(sensor.Name).Set(sensorValue);
-                Console.WriteLine($"Sensor {sensor.Name}: {sensorValue}");
-            }
-            else
-            {
-                Console.WriteLine($"Sensor {sensor.Name} not exists.");
             }
         }
         var server = new MetricServer(port: 8085);

@@ -495,7 +495,7 @@ public sealed partial class MainForm : Form
 
         if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
             _logger.Log();
-        if (_logSensors != null && _logSensors.Value && _delayCount >= 4 && _sendToPrometheus.Value == true)
+        if (_logSensors != null && _delayCount >= 4 && _sendToPrometheus.Value == true)
         {
             _logger.SendMetricsToPrometheus();
         }
