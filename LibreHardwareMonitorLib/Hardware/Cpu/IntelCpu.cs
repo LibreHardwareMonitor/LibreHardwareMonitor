@@ -235,6 +235,10 @@ internal sealed class IntelCpu : GenericCpu
                             _microArchitecture = MicroArchitecture.SapphireRapids;
                             tjMax = GetTjMaxFromMsr();
                             break;
+                        case 0x96: // Intel Celeron ElkhartLake 
+                            _microArchitecture = MicroArchitecture.ElkhartLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
 
                         default:
                             _microArchitecture = MicroArchitecture.Unknown;
@@ -303,6 +307,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Skylake:
             case MicroArchitecture.TigerLake:
             case MicroArchitecture.SapphireRapids:
+            case MicroArchitecture.ElkhartLake:
             case MicroArchitecture.Tremont:
                 if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
@@ -420,6 +425,7 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.Skylake or
             MicroArchitecture.TigerLake or
             MicroArchitecture.SapphireRapids or
+            MicroArchitecture.ElkhartLake or
             MicroArchitecture.Tremont)
         {
             _powerSensors = new Sensor[_energyStatusMsrs.Length];
@@ -625,6 +631,7 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.Skylake:
                         case MicroArchitecture.TigerLake:
                         case MicroArchitecture.SapphireRapids:
+                        case MicroArchitecture.ElkhartLake:
                         case MicroArchitecture.Tremont:
                             _coreClocks[i].Value = (float)(((eax >> 8) & 0xff) * newBusClock);
                             break;
@@ -718,6 +725,7 @@ internal sealed class IntelCpu : GenericCpu
         Tremont,
         RaptorLake,
         SapphireRapids,
+        ElkhartLake,
         Unknown
     }
 
