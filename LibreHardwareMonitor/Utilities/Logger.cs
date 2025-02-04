@@ -10,9 +10,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using LibreHardwareMonitor.Hardware;
+using Prometheus;
 
 namespace LibreHardwareMonitor.Utilities;
-
+public interface ICounter
+{
+    void Inc(double increment);
+    void Inc(Exemplar exemplar);
+    void Inc(double increment, Exemplar exemplar);
+}
 public class Logger
 {
     private const string FileNameFormat = "LibreHardwareMonitorLog-{0:yyyy-MM-dd}{1}.csv";
@@ -24,6 +30,7 @@ public class Logger
     private string[] _identifiers;
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
+    private Counter[] _counters;
 
     public LoggerFileRotation FileRotationMethod = LoggerFileRotation.PerSession;
 
@@ -164,6 +171,29 @@ public class Logger
         }
     }
 
+    public void SendMetricsToPrometheus()
+    {
+        var sensorGauge = Metrics.CreateGauge("sensor_value", "sensor value", new[] { "sensor_name" });
+
+        foreach (var sensor in _sensors)
+        {
+
+            if (sensor.Value.HasValue)
+            {
+                double sensorValue = sensor.Value.Value;
+
+                sensorGauge.WithLabels(sensor.Name).Set(sensorValue);
+                Console.WriteLine($"Sensor {sensor.Name}: {sensorValue}");
+            }
+            else
+            {
+                Console.WriteLine($"Sensor {sensor.Name} not exists.");
+            }
+        }
+        var server = new MetricServer(port: 8085);
+        server.Start();
+    }
+
     public TimeSpan LoggingInterval { get; set; }
 
     public void Log()
@@ -180,7 +210,8 @@ public class Logger
                 if (!File.Exists(_fileName) || now - _lastLoggedTime > (LoggingInterval + TimeSpan.FromMilliseconds(100)))
                 {
                     uint sessionNumber = 1;
-                    do {
+                    do
+                    {
                         _fileName = GetFileName(DateTime.Now, sessionNumber);
                         sessionNumber++;
                     } while (File.Exists(_fileName));

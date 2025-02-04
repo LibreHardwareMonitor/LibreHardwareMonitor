@@ -141,6 +141,7 @@ namespace LibreHardwareMonitor.UI
             this.serverInterfacePortMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.authWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.prometheusMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
@@ -368,7 +369,8 @@ namespace LibreHardwareMonitor.UI
             this.plotMenuItem,
             this.gadgetMenuItem,
             this.MenuItem1,
-            this.columnsMenuItem});
+            this.columnsMenuItem,
+            this.prometheusMenuItem});
             this.viewMenuItem.Name = "viewMenuItem";
             this.viewMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewMenuItem.Text = "View";
@@ -379,6 +381,7 @@ namespace LibreHardwareMonitor.UI
             this.resetMinMaxMenuItem.Size = new System.Drawing.Size(188, 22);
             this.resetMinMaxMenuItem.Text = "Reset Min/Max";
             this.resetMinMaxMenuItem.Click += new System.EventHandler(this.ResetMinMaxMenuItem_Click);
+
             //
             // resetPlotMenuItem
             //
@@ -463,10 +466,17 @@ namespace LibreHardwareMonitor.UI
             this.fileRotationMethod,
             this.sensorValuesTimeWindowMenuItem,
             this.webMenuItemSeparator,
-            this.webMenuItem});
+            this.webMenuItem,
+            this.prometheusMenuItem});
             this.optionsMenuItem.Name = "optionsMenuItem";
             this.optionsMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsMenuItem.Text = "Options";
+            //
+            // prometheusMenuItem
+            //
+            this.prometheusMenuItem.Name = "prometheusMenuItem";
+            this.prometheusMenuItem.Text = "send to prometheus";
+            this.prometheusMenuItem.Size = new System.Drawing.Size(221, 22);
             //
             // startMinMenuItem
             //
@@ -1197,6 +1207,8 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem strokeThickness1ptMenuItem;
         private ToolStripRadioButtonMenuItem strokeThickness2ptMenuItem;
         private ToolStripRadioButtonMenuItem strokeThickness3ptMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem prometheusMenuItem;
+        
     }
 }
 

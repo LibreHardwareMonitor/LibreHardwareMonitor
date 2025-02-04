@@ -45,6 +45,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _readRamSensors;
     private readonly Node _root;
     private readonly UserOption _runWebServer;
+    private readonly UserOption _sendToPrometheus = null;
     private readonly UserRadioGroup _sensorValuesTimeWindow;
     private readonly PersistentSettings _settings;
     private readonly UserOption _showGadget;
@@ -264,6 +265,8 @@ public sealed partial class MainForm : Form
             else
                 Server.StopHttpListener();
         };
+
+        _sendToPrometheus = new UserOption("sendToPrometheus", false, prometheusMenuItem, _settings);
 
         authWebServerMenuItem.Checked = _settings.GetValue("authenticationEnabled", false);
 
@@ -492,6 +495,10 @@ public sealed partial class MainForm : Form
 
         if (_logSensors != null && _logSensors.Value && _delayCount >= 4)
             _logger.Log();
+        if (_logSensors != null && _logSensors.Value && _delayCount >= 4 && _sendToPrometheus.Value == true)
+        {
+            _logger.SendMetricsToPrometheus();
+        }
 
         if (_delayCount < 4)
             _delayCount++;
