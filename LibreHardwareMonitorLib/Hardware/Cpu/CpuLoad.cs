@@ -15,6 +15,7 @@ namespace LibreHardwareMonitor.Hardware.Cpu;
 internal class CpuLoad
 {
     private static readonly bool _queryIdleTimeSeparated = QueryIdleTimeSeparated();
+
     private readonly double[] _threadLoads;
     private double _totalLoad;
     private long[] _idleTimes;
@@ -213,9 +214,8 @@ internal class CpuLoad
         {
             total = 0;
         }
-        total = Math.Round(total * 100.0, 2);
-
-        _totalLoad = total;
+        
+        _totalLoad = Math.Round(total * 100.0, 2);
         _totalTimes = newTotalTimes;
         _idleTimes = newIdleTimes;
     }
