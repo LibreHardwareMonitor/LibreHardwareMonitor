@@ -130,8 +130,8 @@ internal sealed class Amd17Cpu : AmdCpu
             _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _busClock = new Sensor("Bus Speed", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _avgClock = new Sensor("Cores (Avg)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _avgClockEffcetive = new Sensor("Cores (Avg Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _avgClock = new Sensor("Cores (Average)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _avgClockEffcetive = new Sensor("Cores (Average Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
 
             _cpu.ActivateSensor(_packagePower);
             _cpu.ActivateSensor(_avgClock);
@@ -241,8 +241,8 @@ internal sealed class Amd17Cpu : AmdCpu
                     _lastSampleTime = sampleTime;
                     _lastPwrValue = totalEnergy;
                 }
+                
                 _lastSampleTime = sampleTime;
-
 
                 // ticks diff
                 // power consumption
@@ -410,9 +410,7 @@ internal sealed class Amd17Cpu : AmdCpu
                             _cpu.ActivateSensor(sensor.Value);
                     }
                 }
-            }
-
-            
+            }            
         }
 
         public void UpdateVirtualSensor()
@@ -430,6 +428,7 @@ internal sealed class Amd17Cpu : AmdCpu
         private double GetTimeStampCounterMultiplier()
         {
             Ring0.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
+
             if (_cpu._family == 0x1a)
             {
                 //zen 5
@@ -614,13 +613,9 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public bool HasValidCounters()
         {
-            if(_mperfDelta > 0 && _aperfDelta > 0 && SampleDuration.Ticks > 0)
-                return true;
-            return false;
+            return _mperfDelta > 0 && _aperfDelta > 0 && SampleDuration.Ticks > 0;
         }
-
     }
-
 
     private class Core
     {
@@ -670,7 +665,6 @@ internal sealed class Amd17Cpu : AmdCpu
                 return;
 
             CpuThread thread = Threads[0];
-
             GroupAffinity previousAffinity = ThreadAffinity.Set(thread.Cpu.Affinity);
 
             // MSRC001_0299
