@@ -331,9 +331,12 @@ internal sealed class SuperIOHardware : Hardware
                 v.Add(new Voltage("+3V Standby", 7, 34, 34));
                 v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                 v.Add(new Voltage("Voltage #10", 9, true));
-                t.Add(new Temperature("System", 1));
-                t.Add(new Temperature("CPU Core", 2));
-                t.Add(new Temperature("Auxiliary", 3));
+                t.Add(new Temperature("CPU Core", 0));
+                t.Add(new Temperature("Auxiliary", 1));
+                t.Add(new Temperature("System0", 2));
+                t.Add(new Temperature("System1", 3));
+                t.Add(new Temperature("System2", 4));
+                t.Add(new Temperature("System3", 5));
 
                 for (int i = 0; i < superIO.Fans.Length; i++)
                     f.Add(new Fan("Fan #" + (i + 1), i));
