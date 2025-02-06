@@ -260,6 +260,9 @@ public enum Model
     // Shuttle
     FH67,
 
+    //Supermicro
+    X11SWN_E,
+
     // Unknown
     Unknown
 }
