@@ -20,7 +20,8 @@ public abstract class AbstractStorage : Hardware
     private readonly PerformanceValue _perfWrite = new();
     private readonly PerformanceValue _perfRead = new();
     private readonly StorageInfo _storageInfo;
-    private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
+
+    protected TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
 
     private ulong _lastReadCount;
     private long _lastTime;
