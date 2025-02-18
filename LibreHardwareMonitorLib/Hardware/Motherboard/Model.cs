@@ -257,7 +257,6 @@ public enum Model
     X870E_AORUS_PRO,
     X870E_AORUS_PRO_ICE,
     X870E_AORUS_XTREME_AI_TOP,
-    PROART_X870E_CREATOR_WIFI,
 
     // Shuttle
     FH67,
