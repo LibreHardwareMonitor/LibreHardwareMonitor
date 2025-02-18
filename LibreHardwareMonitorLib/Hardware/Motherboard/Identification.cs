@@ -617,6 +617,8 @@ internal class Identification
                 return Model.PRIME_X870_P;
             case var _ when name.Equals("ROG CROSSHAIR X870E HERO", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X870E_HERO;
+            case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
+                return Model.X11SWN_E;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
