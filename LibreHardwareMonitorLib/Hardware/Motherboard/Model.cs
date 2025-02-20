@@ -113,6 +113,7 @@ public enum Model
     PRIME_X870_P,
     ROG_CROSSHAIR_X870E_HERO,
     ROG_STRIX_X870E_E_GAMING_WIFI,
+    PROART_X870E_CREATOR_WIFI,
 
     //BIOSTAR
     B660GTN,
@@ -262,10 +263,12 @@ public enum Model
     B650M_AORUS_ELITE_AX,
     X870E_AORUS_PRO,
     X870E_AORUS_PRO_ICE,
-    PROART_X870E_CREATOR_WIFI,
 
     // Shuttle
     FH67,
+
+    //Supermicro
+    X11SWN_E,
 
     // Unknown
     Unknown

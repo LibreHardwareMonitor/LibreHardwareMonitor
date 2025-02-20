@@ -627,6 +627,8 @@ internal class Identification
                 return Model.X870_P_WIFI;
             case var _ when name.Equals("MPG Z890 EDGE TI WIFI (MS-7E19)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z890_EDGE_TI_WIFI;
+            case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
+                return Model.X11SWN_E;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
