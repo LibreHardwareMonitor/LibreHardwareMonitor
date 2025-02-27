@@ -619,6 +619,36 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_X870E_HERO;
             case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
                 return Model.X11SWN_E;
+            case var _ when name.Equals("PRO B850-P WIFI (MS-7E56)", StringComparison.OrdinalIgnoreCase):
+                return Model.B850P_PRO_WIFI;
+            case var _ when name.Equals("B850 GAMING PLUS WIFI (MS-7E56)", StringComparison.OrdinalIgnoreCase):
+                return Model.B850_GAMING_PLUS_WIFI;
+            case var _ when name.Equals("MAG B850 TOMAHAWK MAX WIFI (MS-7E62)", StringComparison.OrdinalIgnoreCase):
+                return Model.B850_TOMAHAWK_MAX_WIFI;
+            case var _ when name.Equals("X870 GAMING PLUS WIFI (MS-7E47)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870_GAMING_PLUS_WIFI;
+            case var _ when name.Equals("MAG X870 TOMAHAWK WIFI (MS-7E51)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870_TOMAHAWK_WIFI;
+            case var _ when name.Equals("MAG X870E TOMAHAWK WIFI (MS-7E59)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_TOMAHAWK_WIFI;
+            case var _ when name.Equals("MEG X870E GODLIKE (MS-7E48)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_GODLIKE;
+            case var _ when name.Equals("PRO X870-P WIFI (MS-7E47)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870P_PRO_WIFI;
+            case var _ when name.Equals("MPG X870E CARBON WIFI (MS-7E49)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_CARBON_WIFI;
+            case var _ when name.Equals("MPG X870E EDGE TI WIFI (MS-7E59)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_EDGE_TI_WIFI;
+            case var _ when name.Equals("MEG Z890 ACE (MS-7E22)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_ACE;
+            case var _ when name.Equals("MAG Z890 TOMAHAWK WIFI (MS-7E32)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_TOMAHAWK_WIFI;
+            case var _ when name.Equals("MPG Z890 CARBON WIFI (MS-7E17)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_CARBON_WIFI;
+            case var _ when name.Equals("MPG Z890 EDGE TI WIFI (MS-7E19)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_EDGE_TI_WIFI;
+            case var _ when name.Equals("PRO Z890-P WIFI (MS-7E34)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890P_PRO_WIFI;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
