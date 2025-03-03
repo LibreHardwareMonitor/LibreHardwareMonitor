@@ -93,11 +93,16 @@ internal sealed class Amd17Cpu : AmdCpu
                 c.UpdateSensors();
             }
         }
+
+        _processor.UpdateVirtualSensor();
     }
 
     private class Processor
     {
         private readonly Sensor _busClock;
+        private readonly Sensor _avgClock;
+        private readonly Sensor _avgClockEffcetive;
+
         private readonly Sensor[] _ccdTemperatures;
         private readonly Sensor _coreTemperatureTctl;
         private readonly Sensor _coreTemperatureTctlTdie;
@@ -110,7 +115,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
         private Sensor _ccdsAverageTemperature;
         private Sensor _ccdsMaxTemperature;
-        private DateTime _lastPwrTime = new(0);
+        private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue;
 
         public Processor(Hardware hardware)
@@ -125,8 +130,12 @@ internal sealed class Amd17Cpu : AmdCpu
             _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _busClock = new Sensor("Bus Speed", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _avgClock = new Sensor("Cores (Average)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _avgClockEffcetive = new Sensor("Cores (Average Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
 
             _cpu.ActivateSensor(_packagePower);
+            _cpu.ActivateSensor(_avgClock);
+            _cpu.ActivateSensor(_avgClockEffcetive);
 
             foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in _cpu._smu.GetPmTableStructure())
             {
@@ -140,7 +149,7 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             NumaNode node = Nodes[0];
             Core core = node?.Cores[0];
-            CpuId cpuId = core?.Threads[0];
+            CpuId cpuId = core?.Threads.FirstOrDefault()?.Cpu;
 
             if (cpuId == null)
                 return;
@@ -149,14 +158,17 @@ internal sealed class Amd17Cpu : AmdCpu
 
             // MSRC001_0299
             // TU [19:16]
-            // ESU [12:8] -> Unit 15.3 micro Joule per increment
+            // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            Ring0.ReadMsr(MSR_PWR_UNIT, out uint _, out uint _);
+            Ring0.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
+            int esu = (int)((eax >> 8) & 0x1F);
+            double energyBaseUnit = Math.Pow(0.5,esu);
+
 
             // MSRC001_029B
             // total_energy [31:0]
-            DateTime sampleTime = DateTime.Now;
-            Ring0.ReadMsr(MSR_PKG_ENERGY_STAT, out uint eax, out _);
+            DateTime sampleTime = DateTime.UtcNow;
+            Ring0.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
 
             uint totalEnergy = eax;
 
@@ -222,17 +234,21 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 ThreadAffinity.Set(previousAffinity);
 
-                // power consumption
-                // power.Value = (float) ((double)pu * 0.125);
-                // esu = 15.3 micro Joule per increment
-                if (_lastPwrTime.Ticks == 0)
+                TimeSpan deltaTime = sampleTime - _lastSampleTime;
+                if (_lastSampleTime.Ticks == 0)
                 {
-                    _lastPwrTime = sampleTime;
+                    deltaTime = new(0);
+                    _lastSampleTime = sampleTime;
                     _lastPwrValue = totalEnergy;
                 }
+                
+                _lastSampleTime = sampleTime;
 
                 // ticks diff
-                TimeSpan time = sampleTime - _lastPwrTime;
+                // power consumption
+                // power.Value = (float) ((double)pu * 0.125);
+                // energyBaseUnit = micro Joule per increment, from [ESU]
+
                 long pwr;
                 if (_lastPwrValue <= totalEnergy)
                     pwr = totalEnergy - _lastPwrValue;
@@ -240,14 +256,16 @@ internal sealed class Amd17Cpu : AmdCpu
                     pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
 
                 // update for next sample
-                _lastPwrTime = sampleTime;
                 _lastPwrValue = totalEnergy;
 
-                double energy = 15.3e-6 * pwr;
-                energy /= time.TotalSeconds;
+                if (deltaTime.Ticks > 0)
+                {
+                    double energy = energyBaseUnit * pwr;
+                    energy /= deltaTime.TotalSeconds;
 
-                if (!double.IsNaN(energy))
-                    _packagePower.Value = (float)energy;
+                    if (!double.IsNaN(energy))
+                        _packagePower.Value = (float)energy;
+                }
 
                 // current temp Bit [31:21]
                 // If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
@@ -392,15 +410,37 @@ internal sealed class Amd17Cpu : AmdCpu
                             _cpu.ActivateSensor(sensor.Value);
                     }
                 }
-            }
+            }            
+        }
+
+        public void UpdateVirtualSensor()
+        {
+            if (Nodes == null || Nodes.Count == 0)
+                return;
+
+            double clock = Nodes.Average(x => x.CoreClock);
+            _avgClock.Value = (float)Math.Round(clock, 0);
+
+            clock = Nodes.Average(x => x.EffectiveClock);
+            _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
         }
 
         private double GetTimeStampCounterMultiplier()
         {
             Ring0.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
-            uint cpuDfsId = (eax >> 8) & 0x3f;
-            uint cpuFid = eax & 0xff;
-            return 2.0 * cpuFid / cpuDfsId;
+
+            if (_cpu._family == 0x1a)
+            {
+                //zen 5
+                uint cpuFid = eax & 0xfff;
+                return (cpuFid * 5) / 100.0;
+            }
+            else
+            {
+                uint cpuDfsId = (eax >> 8) & 0x3f;
+                uint cpuFid = eax & 0xff;
+                return 2.0 * cpuFid / cpuDfsId;
+            }
         }
 
         public void AppendThread(CpuId thread, int numaId, int coreId)
@@ -441,6 +481,29 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public int NodeId { get; }
 
+        public double CoreClock
+        {
+            get
+            {
+                if(Cores == null)
+                    return 0;
+
+                return Cores.Average(x => x.CoreClock);
+            }
+        }
+
+        public double EffectiveClock
+        {
+            get
+            {
+                if (Cores == null)
+                    return 0;
+
+                return Cores.Average(x => x.EffectiveClock);
+            }
+        }
+
+
         public void AppendThread(CpuId thread, int coreId)
         {
             Core core = null;
@@ -457,35 +520,130 @@ internal sealed class Amd17Cpu : AmdCpu
             }
 
             if (thread != null)
-                core.Threads.Add(thread);
+                core.AppedThread(thread);
         }
 
         public static void UpdateSensors()
         { }
     }
 
+    private class CpuThread
+    {
+        private DateTime _sampleTime = new(0);
+        private DateTime _lastSampleTime = new(0);
+        private ulong _mperf = 0;
+        private ulong _aperf = 0;
+        private ulong _mperfLast = 0;
+        private ulong _aperfLast = 0;
+        private ulong _mperfDelta = 0;
+        private ulong _aperfDelta = 0;
+
+        private CpuId _cpu;
+        public CpuId Cpu { get { return _cpu; } }
+
+        public TimeSpan SampleDuration { get; private set; }= TimeSpan.Zero;
+        public double EffectiveClock { get; private set; } = 0;
+
+        public ulong MperfDelta { get {  return _mperfDelta; } }
+        public ulong AperfDelta { get { return _aperfDelta; } }
+
+        public CpuThread(CpuId cpu)
+        {
+            _cpu = cpu;
+        }
+
+        public void ReadPerformanceCounter()
+        {
+            ThreadAffinity.Set(Cpu.Affinity);
+
+            _sampleTime = DateTime.UtcNow;
+
+            // performance counter
+            // MSRC000_00E7, P0 state counter
+            Ring0.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
+            _mperf = edxeax;
+            // MSRC000_00E8, C0 state counter
+            Ring0.ReadMsr(MSR_APERF_RO, out edxeax);
+            _aperf = edxeax;
+        }
+
+        public void UpdateMeasurements()
+        {
+            if (_mperf < _mperfLast || _aperf < _aperfLast)
+            {
+                // current measurment is invalid when _mperf or _aperf overflow
+                _lastSampleTime = new(0);
+            }
+
+            if (_lastSampleTime.Ticks == 0)
+            {
+                _lastSampleTime = _sampleTime;
+                _mperfLast = _mperf;
+                _aperfLast = _aperf;
+
+                _mperfDelta = 0;
+                _aperfDelta = 0;
+                return;
+            }
+
+            SampleDuration = _sampleTime - _lastSampleTime;
+            _lastSampleTime = _sampleTime;
+
+            _mperfDelta = _mperf - _mperfLast;
+            _aperfDelta = _aperf - _aperfLast;
+            _mperfLast = _mperf;
+            _aperfLast = _aperf;
+
+            if (_mperfDelta > 20000e6)
+                _mperfDelta = 0;
+            if (_aperfDelta > 20000e6)
+                _aperfDelta = 0;
+
+            if(_aperfDelta == 0 || _mperfDelta == 0)
+            {
+                //overflow possible, numbers are > 20 GHz
+                _lastSampleTime = new(0);
+                return;
+            }
+
+            //effective clock
+            double freq = (double)_aperfDelta / (SampleDuration.TotalMilliseconds * 1000.0);
+            EffectiveClock = Math.Round(freq);
+        }
+
+        public bool HasValidCounters()
+        {
+            return _mperfDelta > 0 && _aperfDelta > 0 && SampleDuration.Ticks > 0;
+        }
+    }
+
     private class Core
     {
         private readonly Sensor _clock;
+        private readonly Sensor _clockEffective;
         private readonly Amd17Cpu _cpu;
         private readonly Sensor _multiplier;
         private readonly Sensor _power;
         private readonly Sensor _vcore;
         private ISensor _busSpeed;
-        private DateTime _lastPwrTime = new(0);
-        private uint _lastPwrValue;
+        private DateTime _lastSampleTime = new(0);
+        private uint _lastPwrValue = 0;
+
+        public double CoreClock { get; set; } = 0;
+        public double EffectiveClock { get; set; } = 0;
 
         public Core(Amd17Cpu cpu, int id)
         {
             _cpu = cpu;
-            Threads = new List<CpuId>();
             CoreId = id;
             _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings);
+            _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings);
             _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings);
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
 
             cpu.ActivateSensor(_clock);
+            cpu.ActivateSensor(_clockEffective);
             cpu.ActivateSensor(_multiplier);
             cpu.ActivateSensor(_power);
             cpu.ActivateSensor(_vcore);
@@ -493,94 +651,155 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public int CoreId { get; }
 
-        public List<CpuId> Threads { get; }
+        public List<CpuThread> Threads { get; } = new List<CpuThread>();
+
+        public void AppedThread(CpuId cpu)
+        {
+            CpuThread t = new CpuThread(cpu);
+            Threads.Add(t);
+        }
 
         public void UpdateSensors()
         {
-            // CPUID cpu = threads.FirstOrDefault();
-            CpuId cpu = Threads[0];
-            if (cpu == null)
+            if (Threads.Count == 0)
                 return;
 
-            GroupAffinity previousAffinity = ThreadAffinity.Set(cpu.Affinity);
+            CpuThread thread = Threads[0];
+            GroupAffinity previousAffinity = ThreadAffinity.Set(thread.Cpu.Affinity);
 
             // MSRC001_0299
             // TU [19:16]
-            // ESU [12:8] -> Unit 15.3 micro Joule per increment
+            // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            Ring0.ReadMsr(MSR_PWR_UNIT, out _, out _);
+            Ring0.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
+            int esu = (int)((eax >> 8) & 0x1F);
+            double energyBaseUnit = Math.Pow(0.5, esu);
 
             // MSRC001_029A
             // total_energy [31:0]
-            DateTime sampleTime = DateTime.Now;
-            Ring0.ReadMsr(MSR_CORE_ENERGY_STAT, out uint eax, out _);
+            DateTime sampleTime = DateTime.UtcNow;
+            Ring0.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
             uint totalEnergy = eax;
 
             // MSRC001_0293
             // CurHwPstate [24:22]
             // CurCpuVid [21:14]
             // CurCpuDfsId [13:8]
-            // CurCpuFid [7:0]
+            // CurCpuFid [7:0] zen1..4
+            // CurCpuFid [11:0] zen5
             Ring0.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
+            uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
-            int curCpuDfsId = (int)((eax >> 8) & 0x3f);
-            int curCpuFid = (int)(eax & 0xff);
+
+            foreach(var t in Threads)
+            {
+                t.ReadPerformanceCounter();
+            }
+
+            // MSRC001_0063[P - state Status](PStateStat)
+            // Ring0.ReadMsr(MSR_PSTATE_STATUS, out eax, out _);
+            // int curPstateStaus = (int)(eax & 0x7);
 
             // MSRC001_0064 + x
+            // PstateEn[63], 1 == enabled
             // IddDiv [31:30]
             // IddValue [29:22]
             // CpuVid [21:14]
             // CpuDfsId [13:8]
-            // CpuFid [7:0]
-            // Ring0.ReadMsr(MSR_PSTATE_0 + (uint)CurHwPstate, out eax, out edx);
-            // int IddDiv = (int)((eax >> 30) & 0x03);
-            // int IddValue = (int)((eax >> 22) & 0xff);
-            // int CpuVid = (int)((eax >> 14) & 0xff);
+            // CpuFid [7:0] zen1..4
+            // CpuFid [11:0] zen5
+            // Ring0.ReadMsr(MSR_PSTATE_0 + curPstateStaus, out eax, out uint edx);
+            // uint curPstate = eax;
+            // int PstateEn = (int)(edx >> 31);
+
             ThreadAffinity.Set(previousAffinity);
 
-            // clock
-            // CoreCOF is (Core::X86::Msr::PStateDef[CpuFid[7:0]] / Core::X86::Msr::PStateDef[CpuDfsId]) * 200
-            double clock = 200.0;
-            _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
-            if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
-                clock = (double)(_busSpeed.Value * 2);
+            // Update clock counter and cffective clock calculation
+            Threads.ForEach(t => t.UpdateMeasurements());
+            EffectiveClock = Threads.Average(x => x.EffectiveClock);
+            _clockEffective.Value = (float)EffectiveClock;
 
-            _clock.Value = (float)(curCpuFid / (double)curCpuDfsId * clock);
+            if (thread.HasValidCounters())
+            {
+                double coreClock = 0;
+                double busClock = 100.0; //bus speed in MHz
+                _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
+                if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
+                    busClock = (double)_busSpeed.Value;
 
-            // multiplier
-            _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
+                if (thread.Cpu.Family == 0x1A)
+                {
+                    // zen5 (0x1A)
+                    // 57896-B0-PUB_3.00.pdf, CoreCOF
+                    // CoreCOF is Core current operating frequency in MHz.CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]] * 5MHz
+                    // CpuFid[11:0]: core frequency ID.Read - write.Reset: XXXh.Specifies the core frequency multiplier.The core
+                    // COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
+                    int curCpuFid = (int)(msrPstate & 0xfff);
+                    coreClock = curCpuFid * 5;
 
-            // Voltage
+                    // multiplier, clock speed with 100Mhz as Multiplier Reference
+                    _multiplier.Value = (float)((curCpuFid * 5) / busClock);
+                }
+                else
+                {
+                    // clock zen 0x17 and 0x19
+                    // 55570-B1-3.16_PUB_NRV.pdf, CoreCOF
+                    // CoreCOF is (Core::X86::Msr::PStateDef[CpuFid[7:0]] / Core::X86::Msr::PStateDef[CpuDfsId]) * 200
+                    // CpuFid[7:0]: core frequency ID.Read - write.Reset: XXh.Specifies the core frequency multiplier.The core
+                    // COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
+                    int curCpuDfsId = (int)((msrPstate >> 8) & 0x3f);
+                    int curCpuFid = (int)(msrPstate & 0xff);
+
+                    coreClock = (curCpuFid / (double)curCpuDfsId * (busClock * 2));
+
+                    // multiplier
+                    _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
+                }
+
+                //clock values valid when AperfDelta < MperfDelta (ratio is < 1.0)
+                if (thread.AperfDelta < thread.MperfDelta)
+                    coreClock = ((double)thread.AperfDelta / (double)thread.MperfDelta) * coreClock;
+
+                CoreClock = Math.Round(coreClock);
+                _clock.Value = (float)CoreClock;
+            }
+
+            // Vcore voltage
             const double vidStep = 0.00625;
             double vcc = 1.550 - (vidStep * curCpuVid);
             _vcore.Value = (float)vcc;
 
-            // power consumption
-            // power.Value = (float) ((double)pu * 0.125);
-            // esu = 15.3 micro Joule per increment
-            if (_lastPwrTime.Ticks == 0)
+            // core power consumption
+            //current delta time
+            TimeSpan deltaTime = sampleTime - _lastSampleTime;
+            if (_lastSampleTime.Ticks == 0)
             {
-                _lastPwrTime = sampleTime;
+                deltaTime = new(0);
+                _lastSampleTime = sampleTime;
                 _lastPwrValue = totalEnergy;
             }
+            _lastSampleTime = sampleTime;
 
-            // ticks diff
-            TimeSpan time = sampleTime - _lastPwrTime;
-            long pwr;
-            if (_lastPwrValue <= totalEnergy)
-                pwr = totalEnergy - _lastPwrValue;
-            else
-                pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
+            if (deltaTime.Ticks > 0)
+            {
+                // power.Value = (float) ((double)pu * 0.125);
+                // energyBaseUnit = micro Joule per increment, from [ESU]
+                // ticks diff
+                long pwr;
+                if (_lastPwrValue <= totalEnergy)
+                    pwr = totalEnergy - _lastPwrValue;
+                else
+                    pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
 
-            // update for next sample
-            _lastPwrTime = sampleTime;
-            _lastPwrValue = totalEnergy;
+                // update for next sample
+                _lastPwrValue = totalEnergy;
 
-            double energy = 15.3e-6 * pwr;
-            energy /= time.TotalSeconds;
+                double energy = energyBaseUnit * pwr;
+                energy /= deltaTime.TotalSeconds;
 
-            if (!double.IsNaN(energy))
-                _power.Value = (float)energy;
+                if (!double.IsNaN(energy))
+                    _power.Value = (float)energy;
+            }
         }
     }
 
@@ -596,8 +815,11 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
     private const uint MSR_HARDWARE_PSTATE_STATUS = 0xC0010293;
     private const uint MSR_PKG_ENERGY_STAT = 0xC001029B;
+    private const uint MSR_PSTATE_STATUS = 0xC0010063;
     private const uint MSR_PSTATE_0 = 0xC0010064;
     private const uint MSR_PWR_UNIT = 0xC0010299;
+    private const uint MSR_MPERF_RO = 0xC000_00E7;
+    private const uint MSR_APERF_RO = 0xC000_00E8;
     private const uint PERF_CTL_0 = 0xC0010000;
     private const uint PERF_CTR_0 = 0xC0010004;
     // ReSharper restore InconsistentNaming

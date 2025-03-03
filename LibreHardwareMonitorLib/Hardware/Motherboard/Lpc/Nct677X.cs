@@ -151,6 +151,7 @@ internal class Nct677X : ISuperIO
             case Chip.NCT6797D:
             case Chip.NCT6798D:
             case Chip.NCT6799D:
+            case Chip.NCT6701D:
                 switch (chip)
                 {
                     case Chip.NCT6779D:
@@ -162,6 +163,7 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
                     case Chip.NCT6799D:
+                    case Chip.NCT6701D:
                         Fans = new float?[7];
                         Controls = new float?[7];
                         break;
@@ -192,6 +194,7 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
                     case Chip.NCT6799D:
+                    case Chip.NCT6701D:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
                             new(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),
@@ -254,12 +257,15 @@ internal class Nct677X : ISuperIO
                 Voltages = new float?[9];
                 _voltageRegisters = new ushort[] { 0x300, 0x301, 0x302, 0x303, 0x304, 0x305, 0x307, 0x308, 0x309 };
                 _voltageVBatRegister = 0x308;
-                Temperatures = new float?[4];
+                Temperatures = new float?[7];
                 _temperaturesSource = new TemperatureSourceData[] {
-                    new(SourceNct610X.PECI_0, 0x027, 0, -1, 0x621),
-                    new(SourceNct610X.SYSTIN, 0x018, 0x01B, 7, 0x100, 0x018),
-                    new(SourceNct610X.CPUTIN, 0x019, 0x11B, 7, 0x200, 0x019),
-                    new(SourceNct610X.AUXTIN, 0x01A, 0x21B, 7, 0x300, 0x01A)
+                    new(SourceNct610X.PECI_0, 0x06b, 0, -1, 0x621),
+                    new(SourceNct610X.AUXTIN, 0x010, 0x016, 0),
+                    new(SourceNct610X.CPUTIN, 0x011, 0x01B, 1),
+                    new(SourceNct610X.SYSTIN0, 0x012, 0x01B, 2),
+                    new(SourceNct610X.SYSTIN1, 0x013, 0x016, 3),
+                    new(SourceNct610X.SYSTIN2, 0x014, 0x01B, 4),
+                    new(SourceNct610X.SYSTIN3, 0x015, 0x01B, 5)
                 };
                 break;
 
@@ -461,11 +467,18 @@ internal class Nct677X : ISuperIO
 
             switch (Chip)
             {
+                case Chip.NCT610XD:
+                    value = (sbyte)ReadByte(ts.Register);
+                    int half = (ReadByte((ushort)(ts.HalfRegister)) >> ts.HalfBit) & 0x1;
+                    temperature = value + (0.5f * half);
+                    Temperatures[i] = temperature;
+                    break;
+
                 case Chip.NCT6687D:
                 case Chip.NCT6686D:
                 case Chip.NCT6683D:
                     value = (sbyte)ReadByte(ts.Register);
-                    int half = (ReadByte((ushort)(ts.Register + 1)) >> 7) & 0x1;
+                    half = (ReadByte((ushort)(ts.Register + 1)) >> 7) & 0x1;
                     Temperatures[i] = value + (0.5f * half);
                     break;
 
@@ -1022,9 +1035,12 @@ internal class Nct677X : ISuperIO
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     private enum SourceNct610X : byte
     {
-        SYSTIN = 1,
-        CPUTIN = 2,
-        AUXTIN = 3,
+        CPUTIN = 1,
+        AUXTIN = 2,
+        SYSTIN0 = 3,
+        SYSTIN1 = 4,
+        SYSTIN2 = 5,
+        SYSTIN3 = 6,
         PECI_0 = 12
     }
 
