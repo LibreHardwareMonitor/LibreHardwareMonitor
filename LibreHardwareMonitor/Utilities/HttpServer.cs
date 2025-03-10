@@ -241,6 +241,14 @@ public class HttpServer
                     throw new ArgumentException("Unknown id " + dict["id"] + " specified");
                 }
 
+                if (dict["action"] == "ResetMinMax")
+                {
+                    // Reset Min/Max, then return Sensor values...
+                    sNode.Sensor.ResetMin();
+                    sNode.Sensor.ResetMax();
+                    dict["action"] = "Get";
+                }
+
                 switch (dict["action"])
                 {
                     case "Set" when dict.ContainsKey("value"):
