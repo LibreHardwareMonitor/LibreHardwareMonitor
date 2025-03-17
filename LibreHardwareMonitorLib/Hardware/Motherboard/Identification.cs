@@ -518,6 +518,8 @@ internal class Identification
                 return Model.B650_AORUS_ELITE_AX_V2;
             case var _ when name.Equals("B650 AORUS ELITE AX ICE", StringComparison.OrdinalIgnoreCase):
                 return Model.B650_AORUS_ELITE_AX_ICE;
+            case var _ when name.Equals("B650 GAMING X AX", StringComparison.OrdinalIgnoreCase):
+                return Model.B650_GAMING_X_AX;
             case var _ when name.Equals("B650E AORUS ELITE AX ICE", StringComparison.OrdinalIgnoreCase):
                 return Model.B650E_AORUS_ELITE_AX_ICE;
             case var _ when name.Equals("B650M AORUS PRO", StringComparison.OrdinalIgnoreCase):

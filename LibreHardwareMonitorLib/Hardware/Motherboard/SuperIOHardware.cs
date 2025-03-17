@@ -1640,6 +1640,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.B650_AORUS_ELITE_V2: // IT8689E
                     case Model.B650_AORUS_ELITE_AX_V2: // IT8689E
                     case Model.B650_AORUS_ELITE_AX_ICE: // IT8689E
+                    case Model.B650_GAMING_X_AX: // IT8689E
                     case Model.B650E_AORUS_ELITE_AX_ICE: // IT8689E
                     case Model.B650M_AORUS_PRO: // IT8689E
                     case Model.B650M_AORUS_PRO_AX:
