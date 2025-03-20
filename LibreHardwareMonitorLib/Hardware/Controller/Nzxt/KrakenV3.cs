@@ -43,6 +43,13 @@ internal sealed class KrakenV3 : Hardware
                 Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
                 Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
                 break;
+            case 0x3012:
+                Name = "NZXT Kraken Elite v2";
+                _fanControl = true;
+                _supportedFirmware = "1.2.1";
+                Array.Copy(new byte[] { 0x72, 0x01, 0x01, 0x00 }, 0, _setPumpTarget, 0, 4);
+                Array.Copy(new byte[] { 0x72, 0x02, 0x01, 0x01 }, 0, _setFanTarget, 0, 4);
+                break;
             case 0x300E:
                 Name = "NZXT Kraken";
                 _fanControl = true;
