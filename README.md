@@ -20,6 +20,12 @@ You can read information from devices such as:
 ## Where can I download it?
 You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).
 
+Or using the WinGet package manager with:
+
+```
+winget install -e --id LibreHardwareMonitor.LibreHardwareMonitor
+```
+
 ### Nightly builds
 If you have a **GitHub** account, you can download nightly builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Otherwise, you can download the *latest* nightly build [here](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor-net472.zip).
 
