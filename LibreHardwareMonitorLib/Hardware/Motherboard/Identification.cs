@@ -621,6 +621,8 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_X870E_HERO;
             case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
                 return Model.X11SWN_E;
+            case var _ when name.Equals("TUF GAMING B450-PLUS II", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_B450_PLUS_II;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;

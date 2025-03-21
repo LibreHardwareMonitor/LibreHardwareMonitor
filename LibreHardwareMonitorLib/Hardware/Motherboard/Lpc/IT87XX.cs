@@ -25,6 +25,7 @@ internal class IT87XX : ISuperIO
     private readonly int _gpioCount;
     private readonly bool _has16BitFanCounter;
     private readonly bool _hasExtReg;
+    private readonly bool _hasAlt6thFanReg;
     private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; // Initial Fan Controller Main Control Register value. 
     private readonly byte[] _initialFanPwmControl = new byte[MaxFanHeaders]; // This will also store the 2nd control register value.
     private readonly byte[] _initialFanPwmControlExt = new byte[MaxFanHeaders];
@@ -99,6 +100,8 @@ internal class IT87XX : ISuperIO
             Chip.IT8655E or
             Chip.IT8631E or
             Chip.IT8696E;
+
+        _hasAlt6thFanReg = chip is Chip.IT8665E or Chip.IT8625E;
 
         switch (chip)
         {
@@ -225,7 +228,7 @@ internal class IT87XX : ISuperIO
         _has16BitFanCounter = (chip != Chip.IT8705F || version >= 3) && (chip != Chip.IT8712F || version >= 8);
 
         // Disable any fans that aren't set with 16-bit fan counters
-        if (_has16BitFanCounter)
+        if (motherboard.Model == Model.Unknown && _has16BitFanCounter)
         {
             int modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER, out valid);
 
@@ -457,11 +460,11 @@ internal class IT87XX : ISuperIO
                 if (_fansDisabled[i])
                     continue;
 
-                int value = ReadByte(FAN_TACHOMETER_REG[i], out bool valid);
+                int value = ReadByte(_hasAlt6thFanReg ? FAN_TACHOMETER_REG_ALT[i] : FAN_TACHOMETER_REG[i], out bool valid);
                 if (!valid)
                     continue;
 
-                value |= ReadByte(FAN_TACHOMETER_EXT_REG[i], out valid) << 8;
+                value |= ReadByte(_hasAlt6thFanReg ? FAN_TACHOMETER_EXT_REG_ALT[i] : FAN_TACHOMETER_EXT_REG[i], out valid) << 8;
                 if (!valid)
                     continue;
 
@@ -609,6 +612,8 @@ internal class IT87XX : ISuperIO
     private readonly byte[] FAN_PWM_CTRL_EXT_REG = { 0x63, 0x6b, 0x73, 0x7b, 0xa3, 0xab };
     private readonly byte[] FAN_TACHOMETER_EXT_REG = { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x4d };
     private readonly byte[] FAN_TACHOMETER_REG = { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c };
+    private readonly byte[] FAN_TACHOMETER_EXT_REG_ALT = { 0x18, 0x19, 0x1a, 0x81, 0x83, 0x94 };
+    private readonly byte[] FAN_TACHOMETER_REG_ALT = { 0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x93 };
 
     // Address of the Fan Controller Main Control Register.
     // No need for the 2nd control register (bit 7 of 0x15 0x16 0x17),
