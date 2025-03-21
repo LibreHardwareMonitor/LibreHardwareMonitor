@@ -33,7 +33,7 @@ internal sealed class Quadro : Hardware
             // Initialize the 4 temperature sensors
             for (int i = 0; i < 4; i++)
             {
-                _temperatures[i] = new Sensor($"Temperature {i + 1}", i, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
+                _temperatures[i] = new Sensor($"Temperature #{i + 1}", i, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_temperatures[i]);
             }
 
@@ -48,28 +48,28 @@ internal sealed class Quadro : Hardware
             // Initialize the 4 fan voltage sensors
             for (int i = 1; i < 5; i++)
             {
-                _voltages[i] = new Sensor($"Fan {i}", i, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
+                _voltages[i] = new Sensor($"Fan #{i}", i, SensorType.Voltage, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_voltages[i]);
             }
 
             // Initialize the 4 fan current sensors
             for (int i = 0; i < 4; i++)
             {
-                _currents[i] = new Sensor($"Fan {i + 1}", i, SensorType.Current, this, Array.Empty<ParameterDescription>(), settings);
+                _currents[i] = new Sensor($"Fan #{i + 1}", i, SensorType.Current, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_currents[i]);
             }
 
             // Initialize the 4 fan power sensors
             for (int i = 0; i < 4; i++)
             {
-                _powers[i] = new Sensor($"Fan {i + 1}", i, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
+                _powers[i] = new Sensor($"Fan #{i + 1}", i, SensorType.Power, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_powers[i]);
             }
 
             // Initialize the 4 fan speed sensors
             for (int i = 0; i < 4; i++)
             {
-                _rpmSensors[i] = new Sensor($"Fan {i + 1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
+                _rpmSensors[i] = new Sensor($"Fan #{i + 1}", i, SensorType.Fan, this, Array.Empty<ParameterDescription>(), settings);
                 ActivateSensor(_rpmSensors[i]);
             }
 
