@@ -287,7 +287,7 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempVrm),
         new(Model.FRANMDCP07,
             BoardFamily.CrOS,
-            ECSensor.TempTSensor)
+            null)
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
@@ -403,39 +403,6 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
                 { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f) } // todo: need validation for this calculation
             }
-        },
-        {
-            BoardFamily.CrOS, new Dictionary<ECSensor, EmbeddedControllerSource>
-            {
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 1", SensorType.Temperature, 0x0020, offset: 200f - 274.15f, blank: 0xff) },
-                /* { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 2", SensorType.Temperature, 0x0021, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 3", SensorType.Temperature, 0x0022, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 4", SensorType.Temperature, 0x0023, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 5", SensorType.Temperature, 0x0024, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 6", SensorType.Temperature, 0x0025, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 7", SensorType.Temperature, 0x0026, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 8", SensorType.Temperature, 0x0027, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 9", SensorType.Temperature, 0x0028, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 10", SensorType.Temperature, 0x0029, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 11", SensorType.Temperature, 0x002a, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 12", SensorType.Temperature, 0x002b, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 13", SensorType.Temperature, 0x002c, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 14", SensorType.Temperature, 0x002d, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 15", SensorType.Temperature, 0x002e, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 16", SensorType.Temperature, 0x002f, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.FanSystem, new EmbeddedControllerSource("System Fan 1", SensorType.Fan, 0x0030, 2, blank: 0xffff) },
-                { ECSensor.FanSystem, new EmbeddedControllerSource("System Fan 2", SensorType.Fan, 0x0032, 2, blank: 0xffff) },
-                { ECSensor.FanSystem, new EmbeddedControllerSource("System Fan 3", SensorType.Fan, 0x0034, 2, blank: 0xffff) },
-                { ECSensor.FanSystem, new EmbeddedControllerSource("System Fan 4", SensorType.Fan, 0x0036, 2, blank: 0xffff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 17", SensorType.Temperature, 0x0038, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 18", SensorType.Temperature, 0x0039, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 19", SensorType.Temperature, 0x003a, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 20", SensorType.Temperature, 0x003b, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 21", SensorType.Temperature, 0x003c, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 22", SensorType.Temperature, 0x003d, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 23", SensorType.Temperature, 0x003e, offset: 200f - 274.15f, blank: 0xff) },
-                { ECSensor.TempTSensor, new EmbeddedControllerSource("Temp 24", SensorType.Temperature, 0x003f, offset: 200f - 274.15f, blank: 0xff) } */
-            }
         }
     };
 
@@ -490,6 +457,12 @@ public abstract class EmbeddedController : Hardware
         }
 
         BoardInfo board = boards[0];
+
+        if (board.Family == BoardFamily.CrOS)
+        {
+            return ChromeOSEmbeddedController.Create(settings);
+        }
+
         IEnumerable<EmbeddedControllerSource> sources = board.Sensors.Select(ecs => _knownSensors[board.Family][ecs]);
 
         return Environment.OSVersion.Platform switch
@@ -510,10 +483,13 @@ public abstract class EmbeddedController : Hardware
         int readRegister = 0;
         for (int si = 0; si < _sensors.Count; ++si)
         {
+            int littleEndian    = _sources[si].LittleEndian ? 1 : 0;
+            int bigEndian       = _sources[si].LittleEndian ? 0 : 1;
+
             int val = _sources[si].Size switch
             {
                 1 => _sources[si].Type switch { SensorType.Temperature => unchecked((sbyte)_data[readRegister]), _ => _data[readRegister] },
-                2 => unchecked((short)((_data[readRegister] << 8) + _data[readRegister + 1])),
+                2 => unchecked((short)((_data[readRegister + littleEndian] << 8) + _data[readRegister + bigEndian])),
                 _ => 0
             };
 
@@ -611,9 +587,6 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>CPU_Opt fan [RPM]</summary>
         FanCPUOpt,
-
-        /// <summary>System fan [RPM]</summary>
-        FanSystem,
 
         /// <summary>VRM heat sink fan [RPM]</summary>
         FanVrmHS,
