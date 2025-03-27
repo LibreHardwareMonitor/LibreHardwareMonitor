@@ -52,6 +52,8 @@ internal class Identification
                 return Manufacturer.FIC;
             case var _ when name.Equals("Foxconn", StringComparison.OrdinalIgnoreCase):
                 return Manufacturer.Foxconn;
+            case var _ when name.StartsWith("Framework", StringComparison.OrdinalIgnoreCase):
+                return Manufacturer.Framework;
             case var _ when name.StartsWith("Fujitsu", StringComparison.OrdinalIgnoreCase):
                 return Manufacturer.Fujitsu;
             case var _ when name.StartsWith("Gigabyte", StringComparison.OrdinalIgnoreCase):
@@ -621,6 +623,8 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_X870E_HERO;
             case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
                 return Model.X11SWN_E;
+            case var _ when name.Equals("FRANMDCP07", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMDCP07;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
