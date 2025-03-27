@@ -314,6 +314,9 @@ public enum Model
     //Supermicro
     X11SWN_E,
 
+    // Framework
+    FRANMDCP07,
+
     // Unknown
     Unknown
 }
