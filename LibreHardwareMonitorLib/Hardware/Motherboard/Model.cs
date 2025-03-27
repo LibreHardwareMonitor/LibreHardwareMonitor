@@ -315,7 +315,22 @@ public enum Model
     X11SWN_E,
 
     // Framework
-    FRANMDCP07,
+    FRANBMCP06, // Intel Core i7-1165G7
+    FRANBMCP0A, // Intel Core i5-1135G7
+    FRANBMCP0C, // Intel Core i7-1185G7
+    FRANMACP04, // Intel Core i5-1240P
+    FRANMACP08, // Intel Core i7-1280P
+    FRANMACP06, // Intel Core i7-1260P
+    FRANMCCP04, // Intel Core i5-1340P
+    FRANMCCP06, // Intel Core i7-1360P
+    FRANMCCP07, // Intel Core i7-1370P
+    FRANMDCP05, // FW13 AMD Ryzen 5 7640U
+    FRANMDCP07, // FW13 AMD Ryzen 7 7840U
+    FRANMECP02, // FW13 Intel Core Ultra 5 125H
+    FRANMECP05, // FW13 Intel Core Ultra 7 155H
+    FRANMECP06, // FW13 Intel Core Ultra 7 165H
+    FRANMZCP07, // FW16 AMD Ryzen 7 7840HS
+    FRANMZCP09, // FW16 AMD Ryzen 9 7940HS
 
     // Unknown
     Unknown
