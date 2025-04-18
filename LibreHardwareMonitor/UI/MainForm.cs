@@ -391,6 +391,7 @@ public sealed partial class MainForm : Form
                                                      },
                                                      _settings);
 
+        Enum.TryParse(_settings.GetValue("logFileRotationMethod", _logger.FileRotationMethod.ToString()), out _logger.FileRotationMethod);
         perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
         dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
 
@@ -1313,6 +1314,7 @@ public sealed partial class MainForm : Form
         dailyFileRotationMenuItem.Checked = false;
         perSessionFileRotationMenuItem.Checked = true;
         _logger.FileRotationMethod = LoggerFileRotation.PerSession;
+        _settings.SetValue("logFileRotationMethod", _logger.FileRotationMethod.ToString());
     }
 
     private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
@@ -1320,5 +1322,6 @@ public sealed partial class MainForm : Form
         dailyFileRotationMenuItem.Checked = true;
         perSessionFileRotationMenuItem.Checked = false;
         _logger.FileRotationMethod = LoggerFileRotation.Daily;
+        _settings.SetValue("logFileRotationMethod", _logger.FileRotationMethod.ToString());
     }
 }
