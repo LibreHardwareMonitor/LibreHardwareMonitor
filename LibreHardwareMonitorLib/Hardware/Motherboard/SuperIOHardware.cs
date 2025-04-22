@@ -1776,6 +1776,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.B650_AORUS_ELITE_V2: // IT8689E
                     case Model.B650_AORUS_ELITE_AX_V2: // IT8689E
                     case Model.B650_AORUS_ELITE_AX_ICE: // IT8689E
+                    case Model.B650_GAMING_X_AX: // IT8689E
                     case Model.B650E_AORUS_ELITE_AX_ICE: // IT8689E
                     case Model.B650M_AORUS_PRO: // IT8689E
                     case Model.B650M_AORUS_PRO_AX:
@@ -2343,6 +2344,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X870E_AORUS_PRO: // ITE IT8696E
                     case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
+                    case Model.X870E_AORUS_XTREME_AI_TOP: // ITE IT8696E
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.49F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -2646,6 +2648,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X870E_AORUS_PRO:
                     case Model.X870E_AORUS_PRO_ICE: // ITE IT87952E
+                    case Model.X870E_AORUS_XTREME_AI_TOP: // ITE IT87952E
                         v.Add(new Voltage("VIN0", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
                         v.Add(new Voltage("PM_VCC18", 2));

@@ -69,12 +69,12 @@ internal class Nct677X : ISuperIO
 
             _vBatMonitorControlRegister = 0x0318;
         }
-        else if (chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D)
+        else if (chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D) //These work on older NCT6687D boards, but only fans 0, 1 and 3 on newer (X870 and Z890) motherboards. Unsure of controls for "next pack of 8".
         {
-            FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 };
-            FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xA2A, 0xA2B, 0xA2C, 0xA2D, 0xA2E, 0xA2F };
-            FAN_CONTROL_MODE_REG = new ushort[] { 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00 };
-            FAN_PWM_REQUEST_REG = new ushort[] { 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01 };
+            FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 }; // Next 8 fans will be 0xE00, 0xE01, 0xE02, 0xE03, 0xE04, 0xE05, 0xE06, 0xE07 
+            FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xA2A, 0xA2B, 0xA2C, 0xA2D, 0xA2E, 0xA2F }; // Possibly 0X260, 0X261, 0X262, 0X263, 0X264, 0X265, 0X266, 0X267 but can't confirm
+            FAN_CONTROL_MODE_REG = new ushort[] { 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00 }; // Not sure of next 8, MSI won't provide info
+            FAN_PWM_REQUEST_REG = new ushort[] { 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01 }; // Not sure of next 8, MSI won't provide info
         }
         else if (chip is Chip.NCT6687DR) // MSI AM5/LGA1851 Motherboards
         {
@@ -279,7 +279,7 @@ internal class Nct677X : ISuperIO
             case Chip.NCT6683D:
             case Chip.NCT6686D:
             case Chip.NCT6687D:
-                Fans = new float?[8];
+                Fans = new float?[16];
                 Controls = new float?[8];
                 Voltages = new float?[14];
                 Temperatures = new float?[7];
@@ -319,13 +319,19 @@ internal class Nct677X : ISuperIO
 
                 // CPU Fan
                 // PUMP Fan
-                // SYS Fan 1
-                // SYS Fan 2
-                // SYS Fan 3
-                // SYS Fan 4
-                // SYS Fan 5
-                // SYS Fan 6
-                _fanRpmRegister = new ushort[] { 0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E };
+                // SYS Fan 1 on some older NCT6687Ds, Nil on others
+                // SYS Fan 2 on some older NCT6687Ds, EZConn on others
+                // SYS Fan 3 on some older NCT6687Ds
+                // SYS Fan 4 on some older NCT6687Ds
+                // SYS Fan 5 on some older NCT6687Ds
+                // SYS Fan 6 on some older NCT6687Ds
+                // SYS Fan 6 on newer NCT6687Ds
+                // SYS Fan 5 on newer NCT6687Ds
+                // SYS Fan 4 on newer NCT6687Ds
+                // SYS Fan 3 on newer NCT6687Ds
+                // SYS Fan 2 on newer NCT6687Ds
+                // SYS Fan 1 on newer NCT6687Ds
+                _fanRpmRegister = new ushort[] { 0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x154, 0x156, 0x158, 0x15A, 0x15C, 0x15E };
 
                 _restoreDefaultFanControlRequired = new bool[_fanRpmRegister.Length];
                 _initialFanControlMode = new byte[_fanRpmRegister.Length];
