@@ -619,6 +619,18 @@ internal class Identification
                 return Model.PRIME_X870_P;
             case var _ when name.Equals("ROG CROSSHAIR X870E HERO", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X870E_HERO;
+            case var _ when name.Equals("MAG X870 TOMAHAWK WIFI (MS-7E51)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870_TOMAHAWK_WIFI;
+            case var _ when name.Equals("MPG Z890 CARBON WIFI (MS-7E17)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_CARBON_WIFI;
+            case var _ when name.Equals("MAG X870E TOMAHAWK WIFI (MS-7E59)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_TOMAHAWK_WIFI;
+            case var _ when name.Equals("MPG X870E CARBON WIFI (MS-7E49)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_CARBON_WIFI;
+            case var _ when name.Equals("PRO X870-P WIFI (MS-7E47)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870_P_WIFI;
+            case var _ when name.Equals("MPG Z890 EDGE TI WIFI (MS-7E19)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_EDGE_TI_WIFI;
             case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
                 return Model.X11SWN_E;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):

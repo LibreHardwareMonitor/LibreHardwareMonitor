@@ -483,6 +483,76 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Manufacturer.MSI when model == Model.X870_TOMAHAWK_WIFI: //NCT6687D with 9 fans
+                    case Manufacturer.MSI when model == Model.X870_TOMAHAWK_WIFI:
+                    case Manufacturer.MSI when model == Model.Z890_CARBON_WIFI:
+                    case Manufacturer.MSI when model == Model.X870E_TOMAHAWK_WIFI:
+                    case Manufacturer.MSI when model == Model.X870E_CARBON_WIFI:
+                    case Manufacturer.MSI when model == Model.X870_P_WIFI:
+                    case Manufacturer.MSI when model == Model.Z890_EDGE_TI_WIFI:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("VDDIO", 3, 1, 1, 0));
+                        v.Add(new Voltage("Vcore", 4, -1, 2, 0));
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("VRM MOS", 2));
+                        t.Add(new Temperature("Chipset A", 3));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Pump Fan", 1));
+                        f.Add(new Fan("EZConn Fan", 3));
+                        f.Add(new Fan("System Fan #6", 10));
+                        f.Add(new Fan("System Fan #5", 11));
+                        f.Add(new Fan("System Fan #4", 12));
+                        f.Add(new Fan("System Fan #3", 13));
+                        f.Add(new Fan("System Fan #2", 14));
+                        f.Add(new Fan("System Fan #1", 15));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("Pump Fan", 1));
+                        c.Add(new Control("EZConn Fan", 3));
+                        break;
+                    
+                    case Manufacturer.MSI when model == Model.Z890_CARBON_WIFI: //NCT6687D with 8 fans
+                    case Manufacturer.MSI when model == Model.X870E_CARBON_WIFI:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("VDDIO", 3, 1, 1, 0));
+                        v.Add(new Voltage("Vcore", 4, -1, 2, 0));
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("VRM MOS", 2));
+                        t.Add(new Temperature("Chipset A", 3));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Pump Fan", 1));
+                        f.Add(new Fan("EZConn Fan", 3));
+                        f.Add(new Fan("System Fan #5", 11));
+                        f.Add(new Fan("System Fan #4", 12));
+                        f.Add(new Fan("System Fan #3", 13));
+                        f.Add(new Fan("System Fan #2", 14));
+                        f.Add(new Fan("System Fan #1", 15));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("Pump Fan", 1));
+                        c.Add(new Control("EZConn Fan", 3));
+                        break;
+
                     default:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
