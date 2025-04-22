@@ -76,6 +76,13 @@ internal class Nct677X : ISuperIO
             FAN_CONTROL_MODE_REG = new ushort[] { 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00 }; // Not sure of next 8, MSI won't provide info
             FAN_PWM_REQUEST_REG = new ushort[] { 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01 }; // Not sure of next 8, MSI won't provide info
         }
+        else if (chip is Chip.NCT6687DR) // MSI AM5/LGA1851 Motherboards
+        {
+            FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0xE05, 0xE04, 0xE03, 0xE02, 0xE01, 0xE00 }; // Duty Cycle Sensors
+            FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xC70, 0xC58, 0xC40, 0xC28, 0xC10, 0xBF8 }; // Control Registers for CPU/Pump, Initial Fan Curve Registers for System Fans
+            FAN_CONTROL_MODE_REG = new ushort[] { 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00 };
+            FAN_PWM_REQUEST_REG = new ushort[] { 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01 };
+        }
         else
         {
             VENDOR_ID_HIGH_REGISTER = 0x804F;
@@ -345,6 +352,68 @@ internal class Nct677X : ISuperIO
                 WriteByte(0x1BE, 0x64);
                 WriteByte(0x1BF, 0x65);
                 break;
+
+            case Chip.NCT6687DR:
+                Fans = new float?[8];
+                Controls = new float?[8];
+                Voltages = new float?[14];
+                Temperatures = new float?[7];
+
+                _temperaturesSource = new TemperatureSourceData[] {
+                    new(null, 0x100), // CPU
+                    new(null, 0x102), // System
+                    new(null, 0x104), // MOS
+                    new(null, 0x106), // PCH
+                    new(null, 0x108), // CPU Socket
+                    new(null, 0x10A), // PCIE_1
+                    new(null, 0x10C)  // M2_1
+                };
+
+                // VIN0 +12V
+                // VIN1 +5V
+                // VIN2 VCore
+                // VIN3 SIO
+                // VIN4 DRAM
+                // VIN5 CPU IO
+                // VIN6 CPU SA
+                // VIN7 SIO
+                // 3VCC I/O +3.3
+                // SIO VTT
+                // SIO VREF
+                // SIO VSB
+                // SIO AVSB
+                // SIO VBAT
+                _voltageRegisters = new ushort[] { 0x120, 0x122, 0x124, 0x126, 0x128, 0x12A, 0x12C, 0x12E, 0x130, 0x13A, 0x13E, 0x136, 0x138, 0x13C };
+
+                // CPU Fan 0x140
+                // PUMP Fan 0x142
+                // SYS Fan 1 0x15E
+                // SYS Fan 2 0x15C
+                // SYS Fan 3 0x15A
+                // SYS Fan 4 0x158
+                // SYS Fan 5 0x156
+                // SYS Fan 6 0x154
+                _fanRpmRegister = new ushort[] { 0x140, 0x142, 0x15E, 0x15C, 0x15A, 0x158, 0x156, 0x154 };
+
+                _restoreDefaultFanControlRequired = new bool[_fanRpmRegister.Length];
+                _initialFanControlMode = new byte[_fanRpmRegister.Length];
+                _initialFanPwmCommand = new byte[_fanRpmRegister.Length];
+
+                // initialize
+                const ushort initRegisterNct6687DR = 0x180;
+                byte dataNct6687DR = ReadByte(initRegisterNct6687DR);
+                if ((dataNct6687DR & 0x80) == 0)
+                {
+                    WriteByte(initRegisterNct6687DR, (byte)(dataNct6687DR | 0x80));
+                }
+
+                // enable SIO voltage -- address, value
+                WriteByte(0x1BB, 0x61);
+                WriteByte(0x1BC, 0x62);
+                WriteByte(0x1BD, 0x63);
+                WriteByte(0x1BE, 0x64);
+                WriteByte(0x1BF, 0x65);
+                break;
         }
     }
 
@@ -381,7 +450,7 @@ internal class Nct677X : ISuperIO
         {
             SaveDefaultFanControl(index);
 
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 // set manual mode
                 WriteByte(FAN_CONTROL_MODE_REG[index], 0);
@@ -409,7 +478,15 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
+                if (Chip is Chip.NCT6687DR) // For MSI AM5/LGA1851 NCT6687D functionality
+                {
+                    Set6687DRControl(index, value.Value);
+                }
+                else // All other Nuvoton SIO controllers and motherboards that use NCT6683/6686/6687
+                {
+                    WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
+                }
+
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
                 Thread.Sleep(50);
             }
@@ -434,7 +511,7 @@ internal class Nct677X : ISuperIO
 
         for (int i = 0; i < Voltages.Length; i++)
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 float value = 0.008f * ReadByte(_voltageRegisters[i]);
                 bool valid = value > 0;
@@ -481,6 +558,7 @@ internal class Nct677X : ISuperIO
                     break;
 
                 case Chip.NCT6687D:
+                case Chip.NCT6687DR:
                 case Chip.NCT6686D:
                 case Chip.NCT6683D:
                     value = (sbyte)ReadByte(ts.Register);
@@ -600,7 +678,7 @@ internal class Nct677X : ISuperIO
 
         for (int i = 0; i < Fans.Length; i++)
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 if (_fanCountRegister != null)
                 {
@@ -641,7 +719,7 @@ internal class Nct677X : ISuperIO
 
         for (int i = 0; i < Controls.Length; i++)
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 int value = ReadByte(FAN_PWM_OUT_REG[i]);
                 Controls[i] = value / 2.55f;
@@ -782,7 +860,7 @@ internal class Nct677X : ISuperIO
         r.AppendLine("        00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
         r.AppendLine();
 
-        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
         {
             foreach (ushort address in addresses)
             {
@@ -825,7 +903,7 @@ internal class Nct677X : ISuperIO
 
     private byte ReadByte(ushort address)
     {
-        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
@@ -870,7 +948,7 @@ internal class Nct677X : ISuperIO
 
     private void WriteByte(ushort address, byte value)
     {
-        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+        if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
@@ -915,14 +993,45 @@ internal class Nct677X : ISuperIO
 
     private bool IsNuvotonVendor()
     {
-        return Chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
+        return Chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D or Chip.NCT6687DR || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
+    }
+
+    private void Set6687DRControl(int index, byte? value)
+    {
+        if (index > 1) // System Fan Control
+        {
+            int initFanCurveReg = FAN_PWM_COMMAND_REG[index];       // Initial Register Address for the Fan Curve
+            int targetFanCurveAddr = initFanCurveReg;               // Address of the Current Fan Curve Register we're writing to
+            ushort targetFanCurveReg;                               // Integer value of the current fan curve register address, not the value within
+            byte currentSpeed = ReadByte(FAN_PWM_OUT_REG[index]);   // Current Speed of the target fan
+        
+            // If current fan duty cycle matches requested duty cycle, skip re-writing the fan curve 
+            if (currentSpeed == value.Value)
+            {
+                return;
+            }
+            else
+            {
+                // Write 7-point fan curve
+                for (int count = 0; count < 14; count = count + 2)
+                {
+                    targetFanCurveAddr = initFanCurveReg+count;
+                    targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr);
+                    WriteByte(targetFanCurveReg, value.Value);
+                }
+            }
+        }
+        else // Control CPU and Pump Fan normally
+        {
+            WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
+        }
     }
 
     private void SaveDefaultFanControl(int index)
     {
         if (!_restoreDefaultFanControlRequired[index])
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
             }
@@ -942,7 +1051,7 @@ internal class Nct677X : ISuperIO
     {
         if (_restoreDefaultFanControlRequired[index])
         {
-            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D)
+            if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
                 WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
@@ -956,7 +1065,13 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
+                if (Chip is Chip.NCT6687DR) { // for MSI AM5/LGA1851 boards using NCT6687D
+                    Set6687DRControl(index, _initialFanPwmCommand[index]);
+                }
+                else { // All other motherboards that use NCT6683/6686/6687
+                    WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
+                }
+
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
                 Thread.Sleep(50);
             }
