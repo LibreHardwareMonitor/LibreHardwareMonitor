@@ -607,6 +607,8 @@ internal class Identification
                 return Model.Z790_Nova_WiFi;
             case var _ when name.Equals("ROG MAXIMUS XII HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XII_HERO_WIFI;
+            case var _ when name.Equals("X670E AORUS XTREME", StringComparison.OrdinalIgnoreCase):
+                return Model.X670E_AORUS_XTREME;
             case var _ when name.Equals("X870E AORUS PRO", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_AORUS_PRO;
             case var _ when name.Equals("X870E AORUS PRO ICE", StringComparison.OrdinalIgnoreCase):

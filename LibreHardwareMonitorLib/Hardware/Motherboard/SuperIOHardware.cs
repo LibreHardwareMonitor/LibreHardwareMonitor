@@ -2342,6 +2342,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X670E_AORUS_XTREME: // IT8689E
                     case Model.X870E_AORUS_PRO: // ITE IT8696E
                     case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
                     case Model.X870E_AORUS_XTREME_AI_TOP: // ITE IT8696E
