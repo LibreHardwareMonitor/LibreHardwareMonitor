@@ -29,11 +29,13 @@ public class HttpServer
 {
     private readonly HttpListener _listener;
     private readonly Node _root;
+    private readonly IElement _rootElement;
     private Thread _listenerThread;
 
-    public HttpServer(Node node, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
+    public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
         _root = node;
+        _rootElement = rootElement;
         ListenerIp = ip;
         ListenerPort = port;
         AuthEnabled = authEnabled;
@@ -241,6 +243,14 @@ public class HttpServer
                     throw new ArgumentException("Unknown id " + dict["id"] + " specified");
                 }
 
+                if (dict["action"] == "ResetMinMax")
+                {
+                    // Reset Min/Max, then return Sensor values...
+                    sNode.Sensor.ResetMin();
+                    sNode.Sensor.ResetMax();
+                    dict["action"] = "Get";
+                }
+
                 switch (dict["action"])
                 {
                     case "Set" when dict.ContainsKey("value"):
@@ -384,6 +394,17 @@ public class HttpServer
                             JObject sensorResult = new();
                             HandleSensorRequest(request, sensorResult);
                             SendJsonSensor(context.Response, sensorResult);
+                            return;
+                        }
+
+                        if (requestedFile.Contains("ResetAllMinMax"))
+                        {
+                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
+                            {
+                                sensor.ResetMin();
+                                sensor.ResetMax();
+                            }));
+                            SendJson(context.Response, request);
                             return;
                         }
 
