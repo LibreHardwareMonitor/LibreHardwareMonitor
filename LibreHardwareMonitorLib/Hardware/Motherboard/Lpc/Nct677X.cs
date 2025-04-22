@@ -480,7 +480,7 @@ internal class Nct677X : ISuperIO
 
                 if (Chip is Chip.NCT6687DR) // For MSI AM5/LGA1851 NCT6687D functionality
                 {
-                    NCT6687DRFanCtrl(index, value.Value);
+                    Set6687DRControl(index, value.Value);
                 }
                 else // All other Nuvoton SIO controllers and motherboards that use NCT6683/6686/6687
                 {
@@ -996,7 +996,7 @@ internal class Nct677X : ISuperIO
         return Chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D or Chip.NCT6687DR || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
-    public void NCT6687DRFanCtrl(int index, byte? value)
+    private void Set6687DRControl(int index, byte? value)
     {
         if (index > 1) // System Fan Control
         {
@@ -1065,10 +1065,10 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                if (Chip is Chip.NCT6687DR){ // for MSI AM5/LGA1851 boards using NCT6687D
-                    NCT6687DRFanCtrl(index, _initialFanPwmCommand[index]);
+                if (Chip is Chip.NCT6687DR) { // for MSI AM5/LGA1851 boards using NCT6687D
+                    Set6687DRControl(index, _initialFanPwmCommand[index]);
                 }
-                else{ // All other motherboards that use NCT6683/6686/6687
+                else { // All other motherboards that use NCT6683/6686/6687
                     WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
                 }
 
