@@ -36,16 +36,15 @@ public partial class InterfacePortForm : Form
             if (ip.AddressFamily == AddressFamily.InterNetwork)
                 interfaceComboBox.Items.Add(ip.ToString());
         }
+
+        interfaceComboBox.Items.Add("0.0.0.0");
+
         // select the last one by default to match the existing behavior
         if (interfaceComboBox.Items.Count > 0)
         {
             interfaceComboBox.SelectedIndex = interfaceComboBox.Items.Count - 1;
-        } else
-        {
-            // default to ? just like previous version
-            interfaceComboBox.Items.Add("?");
-            interfaceComboBox.SelectedIndex = 0;
         }
+
         // check to see if the selected listener IP is in our list.
         if (interfaceComboBox.Items.Contains(selectedListenerIp))
         {
