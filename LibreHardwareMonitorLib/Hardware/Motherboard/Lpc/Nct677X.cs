@@ -478,10 +478,12 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                if (Chip is Chip.NCT6687DR){ // For MSI AM5/LGA1851 NCT6687D functionality
+                if (Chip is Chip.NCT6687DR) // For MSI AM5/LGA1851 NCT6687D functionality
+                {
                     NCT6687DRFanCtrl(index, value.Value);
                 }
-                else{ // All other Nuvoton SIO controllers and motherboards that use NCT6683/6686/6687
+                else // All other Nuvoton SIO controllers and motherboards that use NCT6683/6686/6687
+                {
                     WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
                 }
 
@@ -994,28 +996,33 @@ internal class Nct677X : ISuperIO
         return Chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D or Chip.NCT6687DR || ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
-    public void NCT6687DRFanCtrl(int index, byte? value){
-
-        if (index > 1){ // System Fan Control
+    public void NCT6687DRFanCtrl(int index, byte? value)
+    {
+        if (index > 1) // System Fan Control
+        {
             int initFanCurveReg = FAN_PWM_COMMAND_REG[index];       // Initial Register Address for the Fan Curve
             int targetFanCurveAddr = initFanCurveReg;               // Address of the Current Fan Curve Register we're writing to
             ushort targetFanCurveReg;                               // Integer value of the current fan curve register address, not the value within
             byte currentSpeed = ReadByte(FAN_PWM_OUT_REG[index]);   // Current Speed of the target fan
         
-            //If current span duty cycle matches requested duty cycle, skip re-writing the fan curve 
-            if (currentSpeed == value.Value){
+            // If current fan duty cycle matches requested duty cycle, skip re-writing the fan curve 
+            if (currentSpeed == value.Value)
+            {
                 return;
             }
-            else{
+            else
+            {
                 // Write 7-point fan curve
-                for (int count = 0; count < 14; count = count + 2){
+                for (int count = 0; count < 14; count = count + 2)
+                {
                     targetFanCurveAddr = initFanCurveReg+count;
                     targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr);
                     WriteByte(targetFanCurveReg, value.Value);
                 }
             }
         }
-        else{ // Control CPU and Pump Fan normally
+        else // Control CPU and Pump Fan normally
+        {
             WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
         }
     }
