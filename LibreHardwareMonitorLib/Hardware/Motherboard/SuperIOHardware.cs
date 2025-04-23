@@ -3432,47 +3432,29 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.B850M_STEEL_LEGEND_WIFI: // NCT6799D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
-                        v.Add(new Voltage("Voltage #2", 1, true));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
-                        v.Add(new Voltage("Voltage #5", 4, true));
-                        v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9));
-                        v.Add(new Voltage("Voltage #11", 10, true));
-                        v.Add(new Voltage("Voltage #12", 11, true));
-                        v.Add(new Voltage("Voltage #13", 12, true));
-                        v.Add(new Voltage("Voltage #14", 13, true));
-                        v.Add(new Voltage("Voltage #15", 14, true));
 
                         t.Add(new Temperature("CPU Core", 0));
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
-                        t.Add(new Temperature("Auxillary", 3)); //Aux
-                        t.Add(new Temperature("AUXTIN1", 4)); //AuxTIN1
-                        t.Add(new Temperature("AUXTIN2", 5)); //AuxTIN2
-                        t.Add(new Temperature("AUXTIN3", 6)); //AUXTIN3
-                        t.Add(new Temperature("AUXTIN4", 8)); //AuxTIN4
-                        t.Add(new Temperature("Temperature #7", 7)); //?
                         t.Add(new Temperature("PCH TS10", 9));
-                        t.Add(new Temperature("Temperature #11", 11)); //?
-                        t.Add(new Temperature("Temperature #12", 12)); //?
-                        t.Add(new Temperature("Temperature #21", 21)); //?
                         t.Add(new Temperature("T_Sensor", 24));
 
                         f.Add(new Fan("CPU Fan #1", 1)); // CPU_FAN1
-                        f.Add(new Fan("CPU Fan #2/WP", 0)); // CPU_FAN2/WP
+                        f.Add(new Fan("CPU Fan #2 / Pump", 0)); // CPU_FAN2/PUMP
                         f.Add(new Fan("Chassis Fan #1", 3)); // CHA_FAN1
                         f.Add(new Fan("Chassis Fan #2", 4)); // CHA_FAN2
                         f.Add(new Fan("Chassis Fan #3", 6)); // CHA_FAN3
 
                         c.Add(new Control("CPU Fan #1", 1)); // CPU_FAN1
-                        c.Add(new Control("CPU Fan #2/WP", 0)); // CPU_FAN2/WP
-                        c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1/WP
-                        c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2/WP
-                        c.Add(new Control("Chassis Fan #3", 6)); // CHA_FAN3/WP
+                        c.Add(new Control("CPU Fan #2 / Pump", 0)); // CPU_FAN2/PUMP
+                        c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1
+                        c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2
+                        c.Add(new Control("Chassis Fan #3", 6)); // CHA_FAN3
                         break;
 
                     default:
