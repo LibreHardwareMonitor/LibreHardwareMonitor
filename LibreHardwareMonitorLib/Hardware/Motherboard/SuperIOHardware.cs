@@ -530,6 +530,142 @@ internal sealed class SuperIOHardware : Hardware
 
                 break;
 
+            case Chip.NCT6687DR:
+
+                // Universal Sensor and Control defaults
+                t.Add(new Temperature("CPU Core", 0));
+                t.Add(new Temperature("System", 1));
+                t.Add(new Temperature("VRM MOS", 2));
+                t.Add(new Temperature("Chipset", 3));
+
+                f.Add(new Fan("CPU Fan", 0));
+                f.Add(new Fan("Pump Fan #1", 1));
+                f.Add(new Fan("System Fan #1", 2));
+                f.Add(new Fan("System Fan #2", 3));
+                f.Add(new Fan("System Fan #3", 4));
+                f.Add(new Fan("System Fan #4", 5));
+                f.Add(new Fan("System Fan #5", 6));
+                f.Add(new Fan("System Fan #6", 7));
+                
+                c.Add(new Control("CPU Fan", 0));
+                c.Add(new Control("Pump Fan", 1));
+                c.Add(new Control("System Fan #1", 2));
+                c.Add(new Control("System Fan #2", 3));
+                c.Add(new Control("System Fan #3", 4));
+                c.Add(new Control("System Fan #4", 5));
+                c.Add(new Control("System Fan #5", 6));
+                c.Add(new Control("System Fan #6", 7));
+
+                switch (model)
+                {
+                    case Model.X870E_TOMAHAWK_WIFI:
+                    case Model.X870E_EDGE_TI_WIFI:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("DIMM", 3, 1, 1));
+                        v.Add(new Voltage("Vcore", 4, -1, 2));
+                        v.Add(new Voltage("Chipset", 5));
+                        v.Add(new Voltage("CPU System Agent", 6));
+                        //v.Add(new Voltage("Unknown_4", 7)); //"Voltage #2"
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VREF", 9));
+                        v.Add(new Voltage("+1.8V", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        t.Add(new Temperature("CPU Socket", 4));
+
+                        break;
+
+                    case Model.X870E_CARBON_WIFI:
+                    case Model.X870E_GODLIKE:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("DIMM", 3, 1, 1));
+                        v.Add(new Voltage("Vcore", 4, -1, 2));
+                        v.Add(new Voltage("Chipset", 5));
+                        v.Add(new Voltage("CPU System Agent", 6));
+                        //v.Add(new Voltage("Unknown_4", 7)); //"Voltage #2"
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VREF", 9));
+                        v.Add(new Voltage("+1.8V", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+                        
+                        t.Add(new Temperature("PCIe x1", 5));
+                        t.Add(new Temperature("M2_1", 6));
+
+                        break;
+
+                    case Model.Z890_CARBON_WIFI:
+                    case Model.Z890_TOMAHAWK_WIFI:
+                    case Model.Z890_ACE:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("Vcore", 2));
+                        v.Add(new Voltage("VIN5", 3));
+                        v.Add(new Voltage("VDIMM", 4));
+                        v.Add(new Voltage("Chipset", 5));
+                        //v.Add(new Voltage("CPU System Agent", 6));
+                        v.Add(new Voltage("VIN7", 7));
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("+1.8V", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        t.Add(new Temperature("CPU Socket", 4));
+                        t.Add(new Temperature("PCIe x1", 5));
+                        t.Add(new Temperature("M2_1", 6));
+
+                        break;
+
+                    case Model.Z890_EDGE_TI_WIFI:
+                    case Model.Z890P_PRO_WIFI:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("Vcore", 2));
+                        v.Add(new Voltage("VIN5", 3));
+                        v.Add(new Voltage("VDIMM", 4));
+                        v.Add(new Voltage("Chipset", 5));
+                        //v.Add(new Voltage("CPU System Agent", 6));
+                        v.Add(new Voltage("Unknown_3", 7));
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("+1.8V", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        break;
+
+                    default:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("DIMM", 3, 1, 1));
+                        v.Add(new Voltage("Vcore", 4, -1, 2));
+                        v.Add(new Voltage("Chipset", 5));
+                        v.Add(new Voltage("CPU System Agent", 6));
+                        //v.Add(new Voltage("Unknown_4", 7)); //"Voltage #2"
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VREF", 9));
+                        v.Add(new Voltage("+1.8V", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        break;
+
+                }
+
+                break;
+
             case Chip.IPMI:
                 Ipmi ipmi = (Ipmi)superIO;
 
@@ -2206,6 +2342,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X670E_AORUS_XTREME: // IT8689E
                     case Model.X870E_AORUS_PRO: // ITE IT8696E
                     case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
                     case Model.X870E_AORUS_XTREME_AI_TOP: // ITE IT8696E
