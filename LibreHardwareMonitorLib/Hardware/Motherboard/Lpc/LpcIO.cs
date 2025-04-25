@@ -453,7 +453,7 @@ internal class LpcIO
 
             // disable the hardware monitor i/o space lock on NCT679XD chips
             if (address == verify &&
-                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D)
+                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D or Chip.NCT6701D)
             {
                 port.NuvotonDisableIOSpaceLock();
             }
