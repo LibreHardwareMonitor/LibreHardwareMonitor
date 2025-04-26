@@ -42,6 +42,7 @@ public enum Model
     Z790_Nova_WiFi,
     B650M_C,
     H61M_DGS,
+    B850M_STEEL_LEGEND_WIFI,
 
     // ASUS
     CROSSHAIR_III_FORMULA,

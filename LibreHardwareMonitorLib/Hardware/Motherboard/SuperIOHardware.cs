@@ -3567,6 +3567,33 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #3", 6)); // CHA_FAN3/WP
                         break;
 
+                    case Model.B850M_STEEL_LEGEND_WIFI: // NCT6799D
+                        v.Add(new Voltage("Vcore", 0, 10, 10));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9));
+
+                        t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("PCH TS10", 9));
+                        t.Add(new Temperature("T_Sensor", 24));
+
+                        f.Add(new Fan("CPU Fan #1", 1)); // CPU_FAN1
+                        f.Add(new Fan("CPU Fan #2 / Pump", 0)); // CPU_FAN2/PUMP
+                        f.Add(new Fan("Chassis Fan #1", 3)); // CHA_FAN1
+                        f.Add(new Fan("Chassis Fan #2", 4)); // CHA_FAN2
+                        f.Add(new Fan("Chassis Fan #3", 6)); // CHA_FAN3
+
+                        c.Add(new Control("CPU Fan #1", 1)); // CPU_FAN1
+                        c.Add(new Control("CPU Fan #2 / Pump", 0)); // CPU_FAN2/PUMP
+                        c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1
+                        c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2
+                        c.Add(new Control("Chassis Fan #3", 6)); // CHA_FAN3
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("Voltage #2", 1, true));
