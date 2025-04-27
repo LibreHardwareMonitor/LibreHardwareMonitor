@@ -407,6 +407,7 @@ internal class LpcIO
                             case Model.Z890_TOMAHAWK_WIFI:
                             case Model.Z890_EDGE_TI_WIFI:
                             case Model.Z890P_PRO_WIFI:
+                            case Model.Z890A_PRO_WIFI:
                                 chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
                                 break;
                             default:
