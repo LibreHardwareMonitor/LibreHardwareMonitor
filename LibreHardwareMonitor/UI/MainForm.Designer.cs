@@ -117,6 +117,20 @@ namespace LibreHardwareMonitor.UI
             this.log2hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.log6hMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.storageUpdateIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.storageUpdateInterval1sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.storageUpdateInterval5sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.storageUpdateInterval10sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.storageUpdateInterval30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.storageUpdateInterval60sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ataUpdateInterval1sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateInterval5sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateInterval10sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateInterval30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateInterval60sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateInterval120sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.ataUpdateInterval300sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval250msMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval500msMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval1sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -782,6 +796,8 @@ namespace LibreHardwareMonitor.UI
             // updateIntervalMenuItem
             //
             this.updateIntervalMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.storageUpdateIntervalMenuItem,
+            this.ataUpdateIntervalMenuItem,
             this.updateInterval250msMenuItem,
             this.updateInterval500msMenuItem,
             this.updateInterval1sMenuItem,
@@ -791,6 +807,118 @@ namespace LibreHardwareMonitor.UI
             this.updateIntervalMenuItem.Name = "updateIntervalMenuItem";
             this.updateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
             this.updateIntervalMenuItem.Text = "Update Interval";
+            //
+            // storageUpdateIntervalMenuItem
+            //
+            this.storageUpdateIntervalMenuItem.Name = "storageUpdateIntervalMenuItem";
+            this.storageUpdateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.storageUpdateIntervalMenuItem.Text = "General Storage";
+            this.storageUpdateIntervalMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.storageUpdateInterval1sMenuItem,
+            this.storageUpdateInterval5sMenuItem,
+            this.storageUpdateInterval10sMenuItem,
+            this.storageUpdateInterval30sMenuItem,
+            this.storageUpdateInterval60sMenuItem
+            });
+            //
+            // storageUpdateInterval1sMenuItem
+            //
+            this.storageUpdateInterval1sMenuItem.CheckOnClick = true;
+            this.storageUpdateInterval1sMenuItem.Name = "storageUpdateInterval1sMenuItem";
+            this.storageUpdateInterval1sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.storageUpdateInterval1sMenuItem.Text = "1s";
+            //
+            // storageUpdateInterval5sMenuItem
+            //
+            this.storageUpdateInterval5sMenuItem.CheckOnClick = true;
+            this.storageUpdateInterval5sMenuItem.Name = "storageUpdateInterval5sMenuItem";
+            this.storageUpdateInterval5sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.storageUpdateInterval5sMenuItem.Text = "5s";
+            //
+            // storageUpdateInterval10sMenuItem
+            //
+            this.storageUpdateInterval10sMenuItem.CheckOnClick = true;
+            this.storageUpdateInterval10sMenuItem.Name = "storageUpdateInterval10sMenuItem";
+            this.storageUpdateInterval10sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.storageUpdateInterval10sMenuItem.Text = "10s";
+            //
+            // storageUpdateInterval30sMenuItem
+            //
+            this.storageUpdateInterval30sMenuItem.CheckOnClick = true;
+            this.storageUpdateInterval30sMenuItem.Name = "storageUpdateInterval30sMenuItem";
+            this.storageUpdateInterval30sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.storageUpdateInterval30sMenuItem.Text = "30s";
+            //
+            // storageUpdateInterval60sMenuItem
+            //
+            this.storageUpdateInterval60sMenuItem.CheckOnClick = true;
+            this.storageUpdateInterval60sMenuItem.Name = "storageUpdateInterval60sMenuItem";
+            this.storageUpdateInterval60sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.storageUpdateInterval60sMenuItem.Text = "1m";
+            //
+            // ataUpdateIntervalMenuItem
+            //
+            this.ataUpdateIntervalMenuItem.Name = "ataUpdateIntervalMenuItem";
+            this.ataUpdateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.ataUpdateIntervalMenuItem.Text = "ATA Storage";
+            this.ataUpdateIntervalMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ataUpdateInterval1sMenuItem,
+            this.ataUpdateInterval5sMenuItem,
+            this.ataUpdateInterval10sMenuItem,
+            this.ataUpdateInterval30sMenuItem,
+            this.ataUpdateInterval60sMenuItem,
+            this.ataUpdateInterval120sMenuItem,
+            this.ataUpdateInterval300sMenuItem
+            });
+            //
+            // ataUpdateInterval1sMenuItem
+            //
+            this.ataUpdateInterval1sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval1sMenuItem.Name = "ataUpdateInterval1sMenuItem";
+            this.ataUpdateInterval1sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval1sMenuItem.Text = "1s";
+            //
+            // ataUpdateInterval5sMenuItem
+            //
+            this.ataUpdateInterval5sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval5sMenuItem.Name = "ataUpdateInterval5sMenuItem";
+            this.ataUpdateInterval5sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval5sMenuItem.Text = "5s";
+            //
+            // ataUpdateInterval10sMenuItem
+            //
+            this.ataUpdateInterval10sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval10sMenuItem.Name = "ataUpdateInterval10sMenuItem";
+            this.ataUpdateInterval10sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval10sMenuItem.Text = "10s";
+            //
+            // ataUpdateInterval30sMenuItem
+            //
+            this.ataUpdateInterval30sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval30sMenuItem.Name = "ataUpdateInterval30sMenuItem";
+            this.ataUpdateInterval30sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval30sMenuItem.Text = "30s";
+            //
+            // ataUpdateInterval60sMenuItem
+            //
+            this.ataUpdateInterval60sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval60sMenuItem.Name = "ataUpdateInterval60sMenuItem";
+            this.ataUpdateInterval60sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval60sMenuItem.Text = "1m";
+            //
+            // ataUpdateInterval120sMenuItem
+            //
+            this.ataUpdateInterval120sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval120sMenuItem.Name = "ataUpdateInterval120sMenuItem";
+            this.ataUpdateInterval120sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval120sMenuItem.Text = "2m";
+            //
+            // ataUpdateInterval300sMenuItem
+            //
+            this.ataUpdateInterval300sMenuItem.CheckOnClick = true;
+            this.ataUpdateInterval300sMenuItem.Name = "ataUpdateInterval300sMenuItem";
+            this.ataUpdateInterval300sMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.ataUpdateInterval300sMenuItem.Text = "5m";
             //
             // updateInterval250msMenuItem
             //
@@ -1165,6 +1293,20 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem log2hMenuItem;
         private ToolStripRadioButtonMenuItem log6hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem updateIntervalMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem storageUpdateIntervalMenuItem;
+        private ToolStripRadioButtonMenuItem storageUpdateInterval1sMenuItem;
+        private ToolStripRadioButtonMenuItem storageUpdateInterval5sMenuItem;
+        private ToolStripRadioButtonMenuItem storageUpdateInterval10sMenuItem;
+        private ToolStripRadioButtonMenuItem storageUpdateInterval30sMenuItem;
+        private ToolStripRadioButtonMenuItem storageUpdateInterval60sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ataUpdateIntervalMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval1sMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval5sMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval10sMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval30sMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval60sMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval120sMenuItem;
+        private ToolStripRadioButtonMenuItem ataUpdateInterval300sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval250msMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval500msMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval1sMenuItem;

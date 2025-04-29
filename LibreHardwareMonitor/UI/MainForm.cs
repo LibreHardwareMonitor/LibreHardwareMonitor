@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware.Storage;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
@@ -30,6 +31,8 @@ public sealed partial class MainForm : Form
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
+    private readonly UserRadioGroup _storageUpdateInterval;
+    private readonly UserRadioGroup _ataUpdateInterval;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -370,6 +373,82 @@ public sealed partial class MainForm : Form
                     break;
                 case 5:
                     timer.Interval = 10000;
+                    break;
+            }
+        };
+
+        _storageUpdateInterval = new UserRadioGroup("storageUpdateIntervalMenuItem",
+                                            1,
+                                            new[]
+                                            {
+                                                storageUpdateInterval1sMenuItem,
+                                                storageUpdateInterval5sMenuItem,
+                                                storageUpdateInterval10sMenuItem,
+                                                storageUpdateInterval30sMenuItem,
+                                                storageUpdateInterval60sMenuItem
+                                            },
+                                            _settings);
+
+        _storageUpdateInterval.Changed += (sender, e) =>
+        {
+            switch (_storageUpdateInterval.Value)
+            {
+                case 0:
+                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(1);
+                    break;
+                case 1:
+                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(5);
+                    break;
+                case 2:
+                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(10);
+                    break;
+                case 3:
+                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(30);
+                    break;
+                case 4:
+                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(60);
+                    break;
+            }
+        };
+
+        _ataUpdateInterval = new UserRadioGroup("ataUpdateIntervalMenuItem",
+                                            4,
+                                            new[]
+                                            {
+                                                ataUpdateInterval1sMenuItem,
+                                                ataUpdateInterval5sMenuItem,
+                                                ataUpdateInterval10sMenuItem,
+                                                ataUpdateInterval30sMenuItem,
+                                                ataUpdateInterval60sMenuItem,
+                                                ataUpdateInterval120sMenuItem,
+                                                ataUpdateInterval300sMenuItem
+                                            },
+                                            _settings);
+
+        _ataUpdateInterval.Changed += (sender, e) =>
+        {
+            switch (_ataUpdateInterval.Value)
+            {
+                case 0:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(1);
+                    break;
+                case 1:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(5);
+                    break;
+                case 2:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(10);
+                    break;
+                case 3:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(30);
+                    break;
+                case 4:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(60);
+                    break;
+                case 5:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(120);
+                    break;
+                case 6:
+                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(300);
                     break;
             }
         };
