@@ -129,13 +129,16 @@ public abstract class AbstractStorage : Hardware
     public override void Update()
     {
         // Update statistics.
-        try
+        if (_storageInfo != null)
         {
-            UpdatePerformanceSensors();
-        }
-        catch
-        {
-            // Ignored.
+            try
+            {
+                UpdatePerformanceSensors();
+            }
+            catch
+            {
+                // Ignored.
+            }
         }
 
         UpdateSensors();
@@ -168,20 +171,16 @@ public abstract class AbstractStorage : Hardware
         }
     }
 
-    public void UpdatePerformanceSensors()
+    private void UpdatePerformanceSensors()
     {
-        if (_storageInfo == null)
-        {
-            return;
-        }
         if (!Kernel32.DeviceIoControl(_storageInfo.Handle,
-                                  Kernel32.IOCTL.IOCTL_DISK_PERFORMANCE,
-                                  IntPtr.Zero,
-                                  0,
-                                  out Kernel32.DISK_PERFORMANCE diskPerformance,
-                                  Marshal.SizeOf<Kernel32.DISK_PERFORMANCE>(),
-                                  out _,
-                                  IntPtr.Zero))
+                                      Kernel32.IOCTL.IOCTL_DISK_PERFORMANCE,
+                                      IntPtr.Zero,
+                                      0,
+                                      out Kernel32.DISK_PERFORMANCE diskPerformance,
+                                      Marshal.SizeOf<Kernel32.DISK_PERFORMANCE>(),
+                                      out _,
+                                      IntPtr.Zero))
         {
             return;
         }
