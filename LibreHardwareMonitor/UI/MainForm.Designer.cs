@@ -854,7 +854,7 @@ namespace LibreHardwareMonitor.UI
             this.storageUpdateInterval60sMenuItem.CheckOnClick = true;
             this.storageUpdateInterval60sMenuItem.Name = "storageUpdateInterval60sMenuItem";
             this.storageUpdateInterval60sMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.storageUpdateInterval60sMenuItem.Text = "1m";
+            this.storageUpdateInterval60sMenuItem.Text = "1min";
             //
             // ataUpdateIntervalMenuItem
             //
@@ -904,21 +904,21 @@ namespace LibreHardwareMonitor.UI
             this.ataUpdateInterval60sMenuItem.CheckOnClick = true;
             this.ataUpdateInterval60sMenuItem.Name = "ataUpdateInterval60sMenuItem";
             this.ataUpdateInterval60sMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.ataUpdateInterval60sMenuItem.Text = "1m";
+            this.ataUpdateInterval60sMenuItem.Text = "1min";
             //
             // ataUpdateInterval120sMenuItem
             //
             this.ataUpdateInterval120sMenuItem.CheckOnClick = true;
             this.ataUpdateInterval120sMenuItem.Name = "ataUpdateInterval120sMenuItem";
             this.ataUpdateInterval120sMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.ataUpdateInterval120sMenuItem.Text = "2m";
+            this.ataUpdateInterval120sMenuItem.Text = "2min";
             //
             // ataUpdateInterval300sMenuItem
             //
             this.ataUpdateInterval300sMenuItem.CheckOnClick = true;
             this.ataUpdateInterval300sMenuItem.Name = "ataUpdateInterval300sMenuItem";
             this.ataUpdateInterval300sMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.ataUpdateInterval300sMenuItem.Text = "5m";
+            this.ataUpdateInterval300sMenuItem.Text = "5min";
             //
             // updateInterval250msMenuItem
             //
