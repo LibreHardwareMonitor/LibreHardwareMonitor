@@ -31,7 +31,6 @@ public sealed partial class MainForm : Form
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
-    private readonly UserRadioGroup _storageUpdateInterval;
     private readonly UserRadioGroup _ataUpdateInterval;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
@@ -377,40 +376,6 @@ public sealed partial class MainForm : Form
             }
         };
 
-        _storageUpdateInterval = new UserRadioGroup("storageUpdateIntervalMenuItem",
-                                            1,
-                                            new[]
-                                            {
-                                                storageUpdateInterval1sMenuItem,
-                                                storageUpdateInterval5sMenuItem,
-                                                storageUpdateInterval10sMenuItem,
-                                                storageUpdateInterval30sMenuItem,
-                                                storageUpdateInterval60sMenuItem
-                                            },
-                                            _settings);
-
-        _storageUpdateInterval.Changed += (sender, e) =>
-        {
-            switch (_storageUpdateInterval.Value)
-            {
-                case 0:
-                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(1);
-                    break;
-                case 1:
-                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(5);
-                    break;
-                case 2:
-                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(10);
-                    break;
-                case 3:
-                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(30);
-                    break;
-                case 4:
-                    AbstractStorage.UpdateInterval = TimeSpan.FromSeconds(60);
-                    break;
-            }
-        };
-
         _ataUpdateInterval = new UserRadioGroup("ataUpdateIntervalMenuItem",
                                             4,
                                             new[]
@@ -430,25 +395,25 @@ public sealed partial class MainForm : Form
             switch (_ataUpdateInterval.Value)
             {
                 case 0:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(1);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(1);
                     break;
                 case 1:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(5);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(5);
                     break;
                 case 2:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(10);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(10);
                     break;
                 case 3:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(30);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
                     break;
                 case 4:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(60);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(60);
                     break;
                 case 5:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(120);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(120);
                     break;
                 case 6:
-                    AtaStorage.UpdateInterval = TimeSpan.FromSeconds(300);
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(300);
                     break;
             }
         };

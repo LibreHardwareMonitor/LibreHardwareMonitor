@@ -21,9 +21,6 @@ public abstract class AbstractStorage : Hardware
     private readonly PerformanceValue _perfRead = new();
     private readonly StorageInfo _storageInfo;
 
-    private static TimeSpan _updateInterval = TimeSpan.FromSeconds(1);
-    protected DateTime _lastUpdate = DateTime.MinValue;
-
     private ulong _lastReadCount;
     private long _lastTime;
     private ulong _lastWriteCount;
@@ -127,18 +124,6 @@ public abstract class AbstractStorage : Hardware
         ActivateSensor(_sensorDiskWriteRate);
     }
 
-    public static TimeSpan UpdateInterval
-    {
-        get
-        {
-            return _updateInterval;
-        }
-        set
-        {
-            _updateInterval = value;
-        }
-    }
-
     protected abstract void UpdateSensors();
 
     public override void Update()
@@ -155,12 +140,6 @@ public abstract class AbstractStorage : Hardware
                 // Ignored.
             }
         }
-
-        if (DateTime.UtcNow - _lastUpdate < UpdateInterval)
-        {
-            return;
-        }
-        _lastUpdate = DateTime.UtcNow;
 
         UpdateSensors();
 

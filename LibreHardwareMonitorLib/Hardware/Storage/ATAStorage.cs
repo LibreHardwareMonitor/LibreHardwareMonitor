@@ -22,8 +22,8 @@ public abstract class AtaStorage : AbstractStorage
 
     private IDictionary<SmartAttribute, Sensor> _sensors;
 
-    private static TimeSpan _updateInterval = TimeSpan.FromSeconds(1);
-    // private DateTime _lastUpdate = DateTime.MinValue;
+    private static TimeSpan _updateInterval = TimeSpan.Zero;
+    private DateTime _lastUpdate = DateTime.MinValue;
 
     /// <summary>
     /// Gets the SMART data.
@@ -190,7 +190,7 @@ public abstract class AtaStorage : AbstractStorage
         base.CreateSensors();
     }
 
-    public new static TimeSpan UpdateInterval
+    public static TimeSpan ThrottleInterval
     {
         get
         {
@@ -206,7 +206,7 @@ public abstract class AtaStorage : AbstractStorage
 
     protected override void UpdateSensors()
     {
-        if (DateTime.UtcNow - _lastUpdate < UpdateInterval)
+        if (DateTime.UtcNow - _lastUpdate < ThrottleInterval)
         {
             return;
         }
