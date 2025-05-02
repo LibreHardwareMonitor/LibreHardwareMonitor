@@ -31,7 +31,7 @@ public sealed partial class MainForm : Form
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
-    private readonly UserRadioGroup _ataUpdateInterval;
+    private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -376,44 +376,17 @@ public sealed partial class MainForm : Form
             }
         };
 
-        _ataUpdateInterval = new UserRadioGroup("ataUpdateIntervalMenuItem",
-                                            0,
-                                            new[]
-                                            {
-                                                ataUpdateInterval1sMenuItem,
-                                                ataUpdateInterval5sMenuItem,
-                                                ataUpdateInterval10sMenuItem,
-                                                ataUpdateInterval30sMenuItem,
-                                                ataUpdateInterval60sMenuItem,
-                                                ataUpdateInterval120sMenuItem,
-                                                ataUpdateInterval300sMenuItem
-                                            },
-                                            _settings);
-
-        _ataUpdateInterval.Changed += (sender, e) =>
+        _throttleAtaUpdate = new UserOption("throttleAtaUpdateMenuItem", false, throttleAtaUpdateMenuItem, _settings);
+        _throttleAtaUpdate.Changed += (sender, e) =>
         {
-            switch (_ataUpdateInterval.Value)
+            switch (_throttleAtaUpdate.Value)
             {
-                case 0:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(1);
-                    break;
-                case 1:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(5);
-                    break;
-                case 2:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(10);
-                    break;
-                case 3:
+                case true:
                     AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
                     break;
-                case 4:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(60);
-                    break;
-                case 5:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(120);
-                    break;
-                case 6:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(300);
+
+                case false:
+                    AtaStorage.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };
