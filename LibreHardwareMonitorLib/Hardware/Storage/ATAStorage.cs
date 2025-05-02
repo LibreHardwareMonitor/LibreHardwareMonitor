@@ -22,7 +22,7 @@ public abstract class AtaStorage : AbstractStorage
 
     private IDictionary<SmartAttribute, Sensor> _sensors;
 
-    private static TimeSpan _updateInterval = TimeSpan.Zero;
+    private static TimeSpan _throttleInterval = TimeSpan.Zero;
     private DateTime _lastUpdate = DateTime.MinValue;
 
     /// <summary>
@@ -194,11 +194,11 @@ public abstract class AtaStorage : AbstractStorage
     {
         get
         {
-            return _updateInterval;
+            return _throttleInterval;
         }
         set
         {
-            _updateInterval = value;
+            _throttleInterval = value;
         }
     }
 

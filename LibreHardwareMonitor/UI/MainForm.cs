@@ -377,7 +377,7 @@ public sealed partial class MainForm : Form
         };
 
         _ataUpdateInterval = new UserRadioGroup("ataUpdateIntervalMenuItem",
-                                            4,
+                                            0,
                                             new[]
                                             {
                                                 ataUpdateInterval1sMenuItem,
