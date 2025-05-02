@@ -395,6 +395,7 @@ internal class LpcIO
                             case Model.B850_GAMING_PLUS_WIFI:
                             case Model.B850P_PRO_WIFI:
                             case Model.B850_TOMAHAWK_MAX_WIFI:
+                            case Model.B850_EDGE_TI_WIFI:
                             case Model.X870_GAMING_PLUS_WIFI:
                             case Model.X870_TOMAHAWK_WIFI:
                             case Model.X870P_PRO_WIFI:
@@ -407,6 +408,7 @@ internal class LpcIO
                             case Model.Z890_TOMAHAWK_WIFI:
                             case Model.Z890_EDGE_TI_WIFI:
                             case Model.Z890P_PRO_WIFI:
+                            case Model.Z890A_PRO_WIFI:
                                 chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
                                 break;
                             default:
@@ -453,7 +455,7 @@ internal class LpcIO
 
             // disable the hardware monitor i/o space lock on NCT679XD chips
             if (address == verify &&
-                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D)
+                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D or Chip.NCT6701D)
             {
                 port.NuvotonDisableIOSpaceLock();
             }

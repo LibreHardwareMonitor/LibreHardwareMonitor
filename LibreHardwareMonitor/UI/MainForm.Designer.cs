@@ -123,6 +123,7 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval2sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval5sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval10sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.throttleAtaUpdateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sensorValuesTimeWindowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timeWindow30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.timeWindow1minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -787,7 +788,8 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval1sMenuItem,
             this.updateInterval2sMenuItem,
             this.updateInterval5sMenuItem,
-            this.updateInterval10sMenuItem});
+            this.updateInterval10sMenuItem,
+            this.throttleAtaUpdateMenuItem});
             this.updateIntervalMenuItem.Name = "updateIntervalMenuItem";
             this.updateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
             this.updateIntervalMenuItem.Text = "Update Interval";
@@ -833,6 +835,13 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval10sMenuItem.Name = "updateInterval10sMenuItem";
             this.updateInterval10sMenuItem.Size = new System.Drawing.Size(107, 22);
             this.updateInterval10sMenuItem.Text = "10s";
+            //
+            // throttleATAUpdateMenuItem
+            //
+            this.throttleAtaUpdateMenuItem.CheckOnClick = true;
+            this.throttleAtaUpdateMenuItem.Name = "throttleATAUpdateMenuItem";
+            this.throttleAtaUpdateMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.throttleAtaUpdateMenuItem.Text = "Throttle ATA Storage";
             //
             // sensorValuesTimeWindowMenuItem
             //
@@ -1171,6 +1180,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem updateInterval2sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval5sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval10sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem throttleAtaUpdateMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nicMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sensorValuesTimeWindowMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow30sMenuItem;
