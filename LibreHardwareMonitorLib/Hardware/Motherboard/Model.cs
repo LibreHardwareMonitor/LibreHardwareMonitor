@@ -154,6 +154,7 @@ public enum Model
     Z890_CARBON_WIFI,
     Z890_EDGE_TI_WIFI,
     Z890P_PRO_WIFI,
+    Z890A_PRO_WIFI,
 
     // EVGA
     X58_SLI_Classified,
