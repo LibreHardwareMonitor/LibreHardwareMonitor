@@ -1814,6 +1814,26 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B360M_H: // IT8686E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
+                        v.Add(new Voltage("+12V", 2, 10f, 2f));
+                        v.Add(new Voltage("+5V", 3, 15f, 10f));
+                        v.Add(new Voltage("VCCSA", 5));
+                        v.Add(new Voltage("DIMM A/B", 6));
+                        v.Add(new Voltage("+3V Standby", 7, 1, 1));
+                        v.Add(new Voltage("CMOS Battery", 8, 1, 1));
+                        t.Add(new Temperature("System", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan", 1));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan", 1));
+
+                        break;
+
                     case Model.B360_AORUS_GAMING_3_WIFI_CF: // IT8688E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
