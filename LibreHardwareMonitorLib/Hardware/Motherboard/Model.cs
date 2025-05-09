@@ -139,6 +139,7 @@ public enum Model
     Z68_MS7672,
     X570_Gaming_Plus,
     B850_GAMING_PLUS_WIFI,
+    B840P_PRO_WIFI,
     B850_TOMAHAWK_MAX_WIFI,
     B650M_PROJECT_ZERO,
     B850P_PRO_WIFI,
