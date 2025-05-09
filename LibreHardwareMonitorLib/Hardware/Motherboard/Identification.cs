@@ -639,6 +639,8 @@ internal class Identification
                 return Model.B850P_PRO_WIFI;
             case var _ when name.Equals("B850 GAMING PLUS WIFI (MS-7E56)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850_GAMING_PLUS_WIFI;
+            case var _ when name.Equals("MAG B850M MORTAR WIFI (MS-7E61)", StringComparison.OrdinalIgnoreCase):
+                return Model.B850M_MORTAR_WIFI;
             case var _ when name.Equals("MAG B850 TOMAHAWK MAX WIFI (MS-7E62)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850_TOMAHAWK_MAX_WIFI;
             case var _ when name.Equals("MPG B850 EDGE TI WIFI (MS-7E62)", StringComparison.OrdinalIgnoreCase):
