@@ -1013,7 +1013,7 @@ internal class Nct677X : ISuperIO
             else
             {
                 // Write 7-point fan curve
-                for (int count = 0; count < 14; count = count + 2)
+                for (int count = 0; count < 14; count += 2)
                 {
                     targetFanCurveAddr = initFanCurveReg+count;
                     targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr);
