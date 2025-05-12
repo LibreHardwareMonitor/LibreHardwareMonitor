@@ -635,6 +635,8 @@ internal class Identification
                 return Model.Z890_EDGE_TI_WIFI;
             case var _ when name.Equals("X11SWN-E", StringComparison.OrdinalIgnoreCase):
                 return Model.X11SWN_E;
+            case var _ when name.Equals("PRO B840-P WIFI (MS-7E57)", StringComparison.OrdinalIgnoreCase):
+                return Model.B840P_PRO_WIFI;
             case var _ when name.Equals("PRO B850-P WIFI (MS-7E56)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850P_PRO_WIFI;
             case var _ when name.Equals("B850 GAMING PLUS WIFI (MS-7E56)", StringComparison.OrdinalIgnoreCase):
