@@ -169,6 +169,7 @@ public enum Model
     AB350_Gaming_3,
     AX370_Gaming_5,
     AX370_Gaming_K7,
+    B360M_H,
     B360_AORUS_GAMING_3_WIFI_CF,
     B550_AORUS_MASTER,
     B550_AORUS_PRO,
