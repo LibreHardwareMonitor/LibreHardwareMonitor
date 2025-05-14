@@ -392,8 +392,10 @@ internal class LpcIO
                     case 0x92:                                
                         switch (motherboard.Model)
                         {
+                            case Model.B840P_PRO_WIFI:
                             case Model.B850_GAMING_PLUS_WIFI:
                             case Model.B850P_PRO_WIFI:
+                            case Model.B850M_MORTAR_WIFI:
                             case Model.B850_TOMAHAWK_MAX_WIFI:
                             case Model.B850_EDGE_TI_WIFI:
                             case Model.X870_GAMING_PLUS_WIFI:
