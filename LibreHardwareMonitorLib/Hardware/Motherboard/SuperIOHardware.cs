@@ -4249,6 +4249,32 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_Z790_E_GAMING_WIFI_II: //NCT6798D
+
+                        t.Add(new Temperature("CPU Package", 0));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Chipset", 12));
+                        t.Add(new Temperature("PCH", 13));
+                        t.Add(new Temperature("CPU", 22));
+
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("Chassis Fan #4", 4));
+                        f.Add(new Fan("Chassis FAN #5", 5));
+                        f.Add(new Fan("AIO Pump", 6));
+
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("Chassis Fan #4", 4));
+                        c.Add(new Control("Chassis Fan #5", 5));
+                        c.Add(new Control("AIO Pump", 6));
+
+                        break;
+
                     case Model.ROG_STRIX_B550_I_GAMING: //NCT6798D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly
