@@ -247,6 +247,7 @@ public sealed partial class MainForm : Form
 
         Server = new HttpServer(_root,
                                 _computer,
+                                _settings,
                                 _settings.GetValue("listenerIp", "?"),
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
@@ -1324,6 +1325,14 @@ public sealed partial class MainForm : Form
     private void AuthWebServerMenuItem_Click(object sender, EventArgs e)
     {
         new AuthForm(this).ShowDialog();
+    }
+
+    private void RemoteOptionsMenuItem_Click(object sender, EventArgs e)
+    {
+        using (WebServerOptionsForm webOptionsForm = new(_computer, _settings))
+        {
+            webOptionsForm.ShowDialog(this);
+        }
     }
 
     private void perSessionFileRotationMenuItem_Click(object sender, EventArgs e)

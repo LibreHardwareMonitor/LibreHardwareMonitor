@@ -31,11 +31,13 @@ public class HttpServer
     private readonly Node _root;
     private readonly IElement _rootElement;
     private Thread _listenerThread;
+    private readonly PersistentSettings _settings;
 
-    public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
+    public HttpServer(Node node, IElement rootElement, PersistentSettings settings, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
         _root = node;
         _rootElement = rootElement;
+        _settings = settings;
         ListenerIp = ip;
         ListenerPort = port;
         AuthEnabled = authEnabled;
@@ -548,7 +550,18 @@ public class HttpServer
         json["Max"] = "Max";
         json["ImageURL"] = string.Empty;
 
-        json["Children"] = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
+        // Load selected sensor IDs
+        List<string> selectedSensorIds = null;
+        string selectedSensorsString = _settings.GetValue("webServer.selectedSensors", string.Empty);
+        if (!string.IsNullOrEmpty(selectedSensorsString))
+        {
+            selectedSensorIds = new List<string>(selectedSensorsString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        // Pass selectedSensorIds to GenerateJsonForNode
+        JObject rootChildJson = GenerateJsonForNode(_root, ref nodeIndex, selectedSensorIds);
+        json["Children"] = rootChildJson != null ? new JArray { rootChildJson } : new JArray();
+
 
 #if DEBUG
         string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
@@ -621,48 +634,80 @@ public class HttpServer
         response.Close();
     }
 
-    private JObject GenerateJsonForNode(Node n, ref int nodeIndex)
+private JObject GenerateJsonForNode(Node n, ref int nodeIndex, List<string> selectedSensorIds) // Added selectedSensorIds parameter
+{
+    JObject jsonNode = new JObject
     {
-        JObject jsonNode = new()
-        {
-            ["id"] = nodeIndex++,
-            ["Text"] = n.Text,
-            ["Min"] = string.Empty,
-            ["Value"] = string.Empty,
-            ["Max"] = string.Empty
-        };
+        ["id"] = nodeIndex++, // nodeIndex is still incremented for all nodes initially
+        ["Text"] = n.Text,
+        ["Min"] = string.Empty,
+        ["Value"] = string.Empty,
+        ["Max"] = string.Empty
+    };
 
-        switch (n)
+    bool isSensorNode = n is SensorNode;
+    bool isSelected = true; // Assume selected by default
+
+    if (isSensorNode)
+    {
+        SensorNode sensorNode = (SensorNode)n;
+        jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
+        jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
+        jsonNode["Min"] = sensorNode.Min;
+        jsonNode["Value"] = sensorNode.Value;
+        jsonNode["Max"] = sensorNode.Max;
+        jsonNode["ImageURL"] = "images/transparent.png";
+
+        if (selectedSensorIds != null && selectedSensorIds.Count > 0)
         {
-            case SensorNode sensorNode:
-                jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
-                jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
-                jsonNode["Min"] = sensorNode.Min;
-                jsonNode["Value"] = sensorNode.Value;
-                jsonNode["Max"] = sensorNode.Max;
-                jsonNode["ImageURL"] = "images/transparent.png";
-                break;
-            case HardwareNode hardwareNode:
-                jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
-                break;
-            case TypeNode typeNode:
-                jsonNode["ImageURL"] = "images_icon/" + GetTypeImageFile(typeNode);
-                break;
-            default:
-                jsonNode["ImageURL"] = "images_icon/computer.png";
-                break;
+            isSelected = selectedSensorIds.Contains(sensorNode.Sensor.Identifier.ToString());
         }
-
-        JArray children = [];
-        foreach (Node child in n.Nodes)
-        {
-            children.Add(GenerateJsonForNode(child, ref nodeIndex));
-        }
-
-        jsonNode["Children"] = children;
-
-        return jsonNode;
     }
+    else if (n is HardwareNode hardwareNode)
+    {
+        jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
+    }
+    else if (n is TypeNode typeNode)
+    {
+        jsonNode["ImageURL"] = "images_icon/" + GetTypeImageFile(typeNode);
+    }
+    else // Root node
+    {
+        jsonNode["ImageURL"] = "images_icon/computer.png";
+    }
+
+    if (!isSelected) // If a sensor node is not selected, return null
+    {
+        // We decrement nodeIndex because this node won't be part of the final JSON,
+        // so its ID shouldn't be consumed from the sequence.
+        nodeIndex--;
+        return null;
+    }
+
+    JArray children = new JArray();
+    foreach (Node child in n.Nodes)
+    {
+        // Pass selectedSensorIds down
+        JObject childJsonNode = GenerateJsonForNode(child, ref nodeIndex, selectedSensorIds);
+        if (childJsonNode != null) // Only add child if it's not filtered out
+        {
+            children.Add(childJsonNode);
+        }
+    }
+
+    // If it's not a sensor node (i.e., hardware or type node),
+    // and it has no children after filtering, then this node itself should be filtered out.
+    // The root node ("Computer") should always be included.
+    if (!isSensorNode && n != _root && children.Count == 0 && selectedSensorIds != null && selectedSensorIds.Count > 0)
+    {
+        // We decrement nodeIndex because this node won't be part of the final JSON.
+        nodeIndex--;
+        return null;
+    }
+
+    jsonNode["Children"] = children;
+    return jsonNode;
+}
 
     private static string GetContentType(string extension)
     {

@@ -150,6 +150,7 @@ namespace LibreHardwareMonitor.UI
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundUpdater = new System.ComponentModel.BackgroundWorker();
+            this.remoteOptionsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -943,11 +944,20 @@ namespace LibreHardwareMonitor.UI
             this.webMenuItemSeparator.Name = "webMenuItemSeparator";
             this.webMenuItemSeparator.Size = new System.Drawing.Size(218, 6);
             //
+            // remoteOptionsMenuItem
+            //
+            this.remoteOptionsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.remoteOptionsMenuItem.Name = "remoteOptionsMenuItem";
+            this.remoteOptionsMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.remoteOptionsMenuItem.Text = "Options";
+            this.remoteOptionsMenuItem.Click += new System.EventHandler(this.RemoteOptionsMenuItem_Click);
+            //
             // webMenuItem
             //
             this.webMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.runWebServerMenuItem,
             this.serverInterfacePortMenuItem,
+            this.remoteOptionsMenuItem,
             this.authWebServerMenuItem});
             this.webMenuItem.Name = "webMenuItem";
             this.webMenuItem.Size = new System.Drawing.Size(221, 22);
@@ -1195,6 +1205,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem timeWindow12hMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem remoteOptionsMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
