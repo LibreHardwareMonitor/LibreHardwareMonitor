@@ -8,6 +8,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -100,11 +101,11 @@ internal sealed class Amd0FCpu : AmdCpu
             {
                 for (uint i = 0; i < _coreTemperatures.Length; i++)
                 {
-                    if (Ring0.WritePciConfig(_miscellaneousControlAddress,
+                    if (DriverAccess.WritePciConfig(_miscellaneousControlAddress,
                                              THERMTRIP_STATUS_REGISTER,
                                              i > 0 ? _thermSenseCoreSelCPU1 : _thermSenseCoreSelCPU0))
                     {
-                        if (Ring0.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
+                        if (DriverAccess.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
                         {
                             _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
                             ActivateSensor(_coreTemperatures[i]);
@@ -128,7 +129,7 @@ internal sealed class Amd0FCpu : AmdCpu
             {
                 Thread.Sleep(1);
 
-                if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
+                if (DriverAccess.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
                 {
                     // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
                     // 8-13 hold StartFID, we don't use that here.

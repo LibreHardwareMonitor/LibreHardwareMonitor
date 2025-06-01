@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.WinRing0;
 
 // ReSharper disable InconsistentNaming
 
@@ -714,8 +715,8 @@ internal class RyzenSMU
     {
         if (Mutexes.WaitPciBus(10))
         {
-            if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
-                Ring0.WritePciConfig(0x00, SMU_PCI_DATA_REG, data);
+            if (DriverAccess.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
+                DriverAccess.WritePciConfig(0x00, SMU_PCI_DATA_REG, data);
 
             Mutexes.ReleasePciBus();
         }
@@ -727,8 +728,8 @@ internal class RyzenSMU
 
         if (Mutexes.WaitPciBus(10))
         {
-            if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
-                read = Ring0.ReadPciConfig(0x00, SMU_PCI_DATA_REG, out data);
+            if (DriverAccess.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
+                read = DriverAccess.ReadPciConfig(0x00, SMU_PCI_DATA_REG, out data);
 
             Mutexes.ReleasePciBus();
         }

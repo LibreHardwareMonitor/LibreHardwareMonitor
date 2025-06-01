@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -194,7 +195,7 @@ public class GenericCpu : Hardware
 
     private static void AppendMsrData(StringBuilder r, uint msr, GroupAffinity affinity)
     {
-        if (Ring0.ReadMsr(msr, out uint eax, out uint edx, affinity))
+        if (DriverAccess.ReadMsr(msr, out uint eax, out uint edx, affinity))
         {
             r.Append(" ");
             r.Append(msr.ToString("X8", CultureInfo.InvariantCulture));

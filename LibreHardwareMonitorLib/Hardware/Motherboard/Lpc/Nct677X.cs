@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -907,10 +908,10 @@ internal class Nct677X : ISuperIO
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-            Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-            return Ring0.ReadIoPort(_port + DATA_REGISTER_OFFSET);
+            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
+            DriverAccess.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
+            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
+            return DriverAccess.ReadIoPort(_port + DATA_REGISTER_OFFSET);
         }
 
         byte page = (byte)(address >> 8);
@@ -923,7 +924,7 @@ internal class Nct677X : ISuperIO
         DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
         while (true)
         {
-            access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+            access = DriverAccess.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
             if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
                 break;
 
@@ -933,15 +934,15 @@ internal class Nct677X : ISuperIO
         if (access != EC_SPACE_PAGE_SELECT)
         {
             // Failed to gain access: force register access
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
         }
 
-        Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-        Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-        byte result = Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
+        DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
+        DriverAccess.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
+        byte result = DriverAccess.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
 
         //free access for other instances
-        Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+        DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
 
         return result;
     }
@@ -952,10 +953,10 @@ internal class Nct677X : ISuperIO
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-            Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-            Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, value);
+            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
+            DriverAccess.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
+            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
+            DriverAccess.WriteIoPort(_port + DATA_REGISTER_OFFSET, value);
         }
         else
         {
@@ -969,7 +970,7 @@ internal class Nct677X : ISuperIO
             DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
             while (true)
             {
-                access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+                access = DriverAccess.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
                 if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
                     break;
 
@@ -979,15 +980,15 @@ internal class Nct677X : ISuperIO
             if (access != EC_SPACE_PAGE_SELECT)
             {
                 // Failed to gain access: force register access
-                Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+                DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
             }
 
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-            Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-            Ring0.WriteIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET, value);
+            DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
+            DriverAccess.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
+            DriverAccess.WriteIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET, value);
 
             //free access for other instances
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
         }
     }
 

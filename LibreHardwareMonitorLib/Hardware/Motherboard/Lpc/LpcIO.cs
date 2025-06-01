@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.Hardware.Cpu;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -20,7 +21,7 @@ internal class LpcIO
 
     public LpcIO(Motherboard motherboard)
     {
-        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100))
+        if (!DriverAccess.IsOpen || !Mutexes.WaitIsaBus(100))
             return;
 
         Detect(motherboard);

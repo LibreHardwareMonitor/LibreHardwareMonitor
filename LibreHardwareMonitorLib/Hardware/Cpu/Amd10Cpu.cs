@@ -11,6 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -111,22 +112,22 @@ internal sealed class Amd10Cpu : AmdCpu
         GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
 
         // disable core performance boost
-        Ring0.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
+        DriverAccess.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
         if (corePerformanceBoostSupport)
-            Ring0.WriteMsr(HWCR, hwcrEax | (1 << 25), hwcrEdx);
+            DriverAccess.WriteMsr(HWCR, hwcrEax | (1 << 25), hwcrEdx);
 
-        Ring0.ReadMsr(PERF_CTL_0, out uint ctlEax, out uint ctlEdx);
-        Ring0.ReadMsr(PERF_CTR_0, out uint ctrEax, out uint ctrEdx);
+        DriverAccess.ReadMsr(PERF_CTL_0, out uint ctlEax, out uint ctlEdx);
+        DriverAccess.ReadMsr(PERF_CTR_0, out uint ctrEax, out uint ctrEdx);
 
         _timeStampCounterMultiplier = EstimateTimeStampCounterMultiplier();
 
         // restore the performance counter registers
-        Ring0.WriteMsr(PERF_CTL_0, ctlEax, ctlEdx);
-        Ring0.WriteMsr(PERF_CTR_0, ctrEax, ctrEdx);
+        DriverAccess.WriteMsr(PERF_CTL_0, ctlEax, ctlEdx);
+        DriverAccess.WriteMsr(PERF_CTR_0, ctrEax, ctrEdx);
 
         // restore core performance boost
         if (corePerformanceBoostSupport)
-            Ring0.WriteMsr(HWCR, hwcrEax, hwcrEdx);
+            DriverAccess.WriteMsr(HWCR, hwcrEax, hwcrEdx);
 
         // restore the thread affinity.
         ThreadAffinity.Set(previousAffinity);
@@ -156,10 +157,10 @@ internal sealed class Amd10Cpu : AmdCpu
             }
         }
 
-        uint addr = Ring0.GetPciAddress(0, 20, 0);
-        if (Ring0.ReadPciConfig(addr, 0, out uint dev))
+        uint addr = DriverAccess.GetPciAddress(0, 20, 0);
+        if (DriverAccess.ReadPciConfig(addr, 0, out uint dev))
         {
-            Ring0.ReadPciConfig(addr, 8, out uint rev);
+            DriverAccess.ReadPciConfig(addr, 8, out uint rev);
 
             _cStatesIoOffset = dev switch
             {
@@ -197,7 +198,7 @@ internal sealed class Amd10Cpu : AmdCpu
     private double EstimateTimeStampCounterMultiplier(double timeWindow)
     {
         // select event "076h CPU Clocks not Halted" and enable the counter
-        Ring0.WriteMsr(PERF_CTL_0,
+        DriverAccess.WriteMsr(PERF_CTL_0,
                        (1 << 22) | // enable performance counter
                        (1 << 17) | // count events in user mode
                        (1 << 16) | // count events in operating-system mode
@@ -205,7 +206,7 @@ internal sealed class Amd10Cpu : AmdCpu
                        0x00000000);
 
         // set the counter to 0
-        Ring0.WriteMsr(PERF_CTR_0, 0, 0);
+        DriverAccess.WriteMsr(PERF_CTR_0, 0, 0);
 
         long ticks = (long)(timeWindow * Stopwatch.Frequency);
 
@@ -216,13 +217,13 @@ internal sealed class Amd10Cpu : AmdCpu
         while (Stopwatch.GetTimestamp() < timeBegin)
         { }
 
-        Ring0.ReadMsr(PERF_CTR_0, out uint lsbBegin, out uint msbBegin);
+        DriverAccess.ReadMsr(PERF_CTR_0, out uint lsbBegin, out uint msbBegin);
 
         while (Stopwatch.GetTimestamp() < timeEnd)
         { }
 
-        Ring0.ReadMsr(PERF_CTR_0, out uint lsbEnd, out uint msbEnd);
-        Ring0.ReadMsr(COFVID_STATUS, out uint eax, out uint _);
+        DriverAccess.ReadMsr(PERF_CTR_0, out uint lsbEnd, out uint msbEnd);
+        DriverAccess.ReadMsr(COFVID_STATUS, out uint eax, out uint _);
         double coreMultiplier = GetCoreMultiplier(eax);
 
         ulong countBegin = ((ulong)msbBegin << 32) | lsbBegin;
@@ -248,7 +249,7 @@ internal sealed class Amd10Cpu : AmdCpu
         r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
         if (_family == 0x14)
         {
-            Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
+            DriverAccess.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
             r.Append("PCI Register D18F3xD4: ");
             r.AppendLine(value.ToString("X8", CultureInfo.InvariantCulture));
         }
@@ -299,7 +300,7 @@ internal sealed class Amd10Cpu : AmdCpu
                 // 3:0: current CPU core divisor ID least significant digit
                 uint divisorIdMsd = (cofVidEax >> 4) & 0x1F;
                 uint divisorIdLsd = cofVidEax & 0xF;
-                Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
+                DriverAccess.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
                 uint frequencyId = value & 0x1F;
                 return (frequencyId + 0x10) / (divisorIdMsd + (divisorIdLsd * 0.25) + 1);
 
@@ -338,7 +339,7 @@ internal sealed class Amd10Cpu : AmdCpu
             {
                 bool isValueValid = _hasSmuTemperatureRegister
                     ? ReadSmuRegister(SMU_REPORTED_TEMP_CTRL_OFFSET, out uint value)
-                    : Ring0.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
+                    : DriverAccess.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
 
                 if (isValueValid)
                 {
@@ -393,7 +394,7 @@ internal sealed class Amd10Cpu : AmdCpu
             {
                 Thread.Sleep(1);
 
-                if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, _cpuId[i][0].Affinity))
+                if (DriverAccess.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, _cpuId[i][0].Affinity))
                 {
                     double multiplier = GetCoreMultiplier(curEax);
 
@@ -443,8 +444,8 @@ internal sealed class Amd10Cpu : AmdCpu
         {
             for (int i = 0; i < _cStatesResidency.Length; i++)
             {
-                Ring0.WriteIoPort(CSTATES_IO_PORT, (byte)(_cStatesIoOffset + i));
-                _cStatesResidency[i].Value = Ring0.ReadIoPort(CSTATES_IO_PORT + 1) / 256f * 100;
+                DriverAccess.WriteIoPort(CSTATES_IO_PORT, (byte)(_cStatesIoOffset + i));
+                _cStatesResidency[i].Value = DriverAccess.ReadIoPort(CSTATES_IO_PORT + 1) / 256f * 100;
             }
         }
     }
@@ -453,7 +454,7 @@ internal sealed class Amd10Cpu : AmdCpu
     {
         if (Mutexes.WaitPciBus(10))
         {
-            if (!Ring0.WritePciConfig(0, 0xB8, address))
+            if (!DriverAccess.WritePciConfig(0, 0xB8, address))
             {
                 value = 0;
 
@@ -461,7 +462,7 @@ internal sealed class Amd10Cpu : AmdCpu
                 return false;
             }
 
-            bool result = Ring0.ReadPciConfig(0, 0xBC, out value);
+            bool result = DriverAccess.ReadPciConfig(0, 0xBC, out value);
 
             Mutexes.ReleasePciBus();
             return result;

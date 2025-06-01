@@ -23,6 +23,8 @@ using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.Software;
+using WinRing0Driver.Driver;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -320,14 +322,6 @@ public class Computer : IComputer
             w.WriteLine(IntPtr.Size == 4 ? "32-Bit" : "64-Bit");
             w.WriteLine();
 
-            string r = Ring0.GetReport();
-            if (r != null)
-            {
-                NewSection(w);
-                w.Write(r);
-                w.WriteLine();
-            }
-
             NewSection(w);
             w.WriteLine("Sensors");
             w.WriteLine();
@@ -489,7 +483,11 @@ public class Computer : IComputer
 
         _smbios = new SMBios();
 
-        Ring0.Open();
+        if (!Software.OperatingSystem.IsUnix)
+        {
+            DriverManager.LoadDriver();
+        }
+
         Mutexes.Open();
         OpCode.Open();
 
@@ -632,7 +630,12 @@ public class Computer : IComputer
 
         OpCode.Close();
         InpOut.Close();
-        Ring0.Close();
+
+        if (!Software.OperatingSystem.IsUnix)
+        {
+            DriverManager.UnloadDriver();
+        }
+
         Mutexes.Close();
 
         _smbios = null;

@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
@@ -156,12 +157,12 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     private byte ReadIOPort(Port port)
     {
-        return Ring0.ReadIoPort((uint)port);
+        return DriverAccess.ReadIoPort((uint)port);
     }
 
     private void WriteIOPort(Port port, byte datum)
     {
-        Ring0.WriteIoPort((uint)port, datum);
+        DriverAccess.WriteIoPort((uint)port, datum);
     }
 
     public class BusMutexLockingFailedException : EmbeddedController.IOException

@@ -20,6 +20,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RAMSPDToolkit", "RAMSPDToolkit", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinRing0Driver", "Submodules\RAMSPDToolkit\WinRing0Driver\WinRing0Driver.csproj", "{8DAE29FA-C82F-B05F-2CE3-295F7F43E69C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RAMSPDToolkit", "Submodules\RAMSPDToolkit\RAMSPDToolkit\RAMSPDToolkit.csproj", "{5D5244B6-6266-37D8-1144-5D425C543F30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,12 +44,22 @@ Global
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DAE29FA-C82F-B05F-2CE3-295F7F43E69C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DAE29FA-C82F-B05F-2CE3-295F7F43E69C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DAE29FA-C82F-B05F-2CE3-295F7F43E69C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DAE29FA-C82F-B05F-2CE3-295F7F43E69C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D5244B6-6266-37D8-1144-5D425C543F30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D5244B6-6266-37D8-1144-5D425C543F30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D5244B6-6266-37D8-1144-5D425C543F30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D5244B6-6266-37D8-1144-5D425C543F30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E73BB233-D88B-44A7-A98F-D71EE158381D} = {23F54DBD-8998-4E22-A4E4-60F4F77F9B65}
+		{8DAE29FA-C82F-B05F-2CE3-295F7F43E69C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{5D5244B6-6266-37D8-1144-5D425C543F30} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A8EF661-2BD7-498F-8FB9-28182B3B0BE5}

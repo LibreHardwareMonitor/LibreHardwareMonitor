@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
+using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -281,7 +282,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Atom:
             case MicroArchitecture.Core:
             case MicroArchitecture.NetBurst:
-                if (Ring0.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
+                if (DriverAccess.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
                     _timeStampCounterMultiplier = ((edx >> 8) & 0x1f) + (0.5 * ((edx >> 14) & 1));
 
                 break;
@@ -310,7 +311,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.SapphireRapids:
             case MicroArchitecture.ElkhartLake:
             case MicroArchitecture.Tremont:
-                if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
+                if (DriverAccess.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
 
                 break;
@@ -433,7 +434,7 @@ internal sealed class IntelCpu : GenericCpu
             _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
             _lastEnergyConsumed = new uint[_energyStatusMsrs.Length];
 
-            if (Ring0.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
+            if (DriverAccess.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
             {
                 EnergyUnitsMultiplier = _microArchitecture switch
                 {
@@ -448,7 +449,7 @@ internal sealed class IntelCpu : GenericCpu
 
                 for (int i = 0; i < _energyStatusMsrs.Length; i++)
                 {
-                    if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
+                    if (!DriverAccess.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
                         continue;
 
                     // Don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead.
@@ -468,7 +469,7 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
+        if (DriverAccess.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
         {
             _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
             ActivateSensor(_coreVoltage);
@@ -500,7 +501,7 @@ internal sealed class IntelCpu : GenericCpu
         float[] result = new float[_coreCount];
         for (int i = 0; i < _coreCount; i++)
         {
-            if (Ring0.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
+            if (DriverAccess.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
                 result[i] = (eax >> 16) & 0xFF;
             else
                 result[i] = 100;
@@ -550,7 +551,7 @@ internal sealed class IntelCpu : GenericCpu
         for (int i = 0; i < _coreTemperatures.Length; i++)
         {
             // if reading is valid
-            if (Ring0.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+            if (DriverAccess.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -582,7 +583,7 @@ internal sealed class IntelCpu : GenericCpu
         if (_packageTemperature != null)
         {
             // if reading is valid
-            if (Ring0.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
+            if (DriverAccess.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -602,7 +603,7 @@ internal sealed class IntelCpu : GenericCpu
             for (int i = 0; i < _coreClocks.Length; i++)
             {
                 System.Threading.Thread.Sleep(1);
-                if (Ring0.ReadMsr(IA32_PERF_STATUS, out eax, out _, _cpuId[i][0].Affinity))
+                if (DriverAccess.ReadMsr(IA32_PERF_STATUS, out eax, out _, _cpuId[i][0].Affinity))
                 {
                     newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                     switch (_microArchitecture)
@@ -662,7 +663,7 @@ internal sealed class IntelCpu : GenericCpu
                 if (sensor == null)
                     continue;
 
-                if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _))
+                if (!DriverAccess.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _))
                     continue;
 
                 DateTime time = DateTime.UtcNow;
@@ -677,14 +678,14 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_coreVoltage != null && Ring0.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
+        if (_coreVoltage != null && DriverAccess.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
         {
             _coreVoltage.Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
         }
 
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            if (Ring0.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
+            if (DriverAccess.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
             {
                 _coreVIDs[i].Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
                 ActivateSensor(_coreVIDs[i]);
