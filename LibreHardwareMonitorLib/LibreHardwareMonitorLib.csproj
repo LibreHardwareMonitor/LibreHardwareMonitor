@@ -39,15 +39,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
+	<PackageReference Include="RAMSPDToolkit" Version="1.0.2" />
     <PackageReference Include="System.Management" Version="9.0.6" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">
       <Pack>True</Pack>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Submodules\RAMSPDToolkit\RAMSPDToolkit\RAMSPDToolkit.csproj" />
-    <ProjectReference Include="..\Submodules\RAMSPDToolkit\WinRing0Driver\WinRing0Driver.csproj" />
   </ItemGroup>
 </Project>
