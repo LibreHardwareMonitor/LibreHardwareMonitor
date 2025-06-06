@@ -19,6 +19,11 @@ internal abstract class GenericMemory : Hardware
 {
     #region Constructor
 
+    static GenericMemory()
+    {
+        _Lock = new object();
+    }
+
     protected GenericMemory(string name, Identifier identifier, ISettings settings)
         : base(name, identifier, settings)
     {
@@ -52,7 +57,7 @@ internal abstract class GenericMemory : Hardware
     //Retry 12x (one minute)
     const int RETRY_COUNT = 12;
 
-    object _Lock = new object();
+    static object _Lock;
 
     readonly List<SPDThermalSensor> _SPDThermalSensors = new();
 
