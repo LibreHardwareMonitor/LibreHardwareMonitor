@@ -223,6 +223,7 @@ internal sealed class SuperIOHardware : Hardware
             case Chip.IT8625E:
             case Chip.IT8628E:
             case Chip.IT8631E:
+            case Chip.IT8638E:
             case Chip.IT8655E:
             case Chip.IT8665E:
             case Chip.IT8686E:
