@@ -4,8 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.WinRing0;
-
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class LpcPort
@@ -22,14 +20,14 @@ internal class LpcPort
 
     public byte ReadByte(byte register)
     {
-        DriverAccess.WriteIoPort(RegisterPort, register);
-        return DriverAccess.ReadIoPort(ValuePort);
+        DriverAccess.WriteIoPortByte(RegisterPort, register);
+        return DriverAccess.ReadIoPortByte(ValuePort);
     }
 
     public void WriteByte(byte register, byte value)
     {
-        DriverAccess.WriteIoPort(RegisterPort, register);
-        DriverAccess.WriteIoPort(ValuePort, value);
+        DriverAccess.WriteIoPortByte(RegisterPort, register);
+        DriverAccess.WriteIoPortByte(ValuePort, value);
     }
 
     public ushort ReadWord(byte register)
@@ -45,19 +43,19 @@ internal class LpcPort
 
     public void Select(byte logicalDeviceNumber)
     {
-        DriverAccess.WriteIoPort(RegisterPort, DEVICE_SELECT_REGISTER);
-        DriverAccess.WriteIoPort(ValuePort, logicalDeviceNumber);
+        DriverAccess.WriteIoPortByte(RegisterPort, DEVICE_SELECT_REGISTER);
+        DriverAccess.WriteIoPortByte(ValuePort, logicalDeviceNumber);
     }
 
     public void WinbondNuvotonFintekEnter()
     {
-        DriverAccess.WriteIoPort(RegisterPort, 0x87);
-        DriverAccess.WriteIoPort(RegisterPort, 0x87);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0x87);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0x87);
     }
 
     public void WinbondNuvotonFintekExit()
     {
-        DriverAccess.WriteIoPort(RegisterPort, 0xAA);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0xAA);
     }
 
     public void NuvotonDisableIOSpaceLock()
@@ -73,10 +71,10 @@ internal class LpcPort
 
     public void IT87Enter()
     {
-        DriverAccess.WriteIoPort(RegisterPort, 0x87);
-        DriverAccess.WriteIoPort(RegisterPort, 0x01);
-        DriverAccess.WriteIoPort(RegisterPort, 0x55);
-        DriverAccess.WriteIoPort(RegisterPort, RegisterPort == 0x4E ? (byte)0xAA : (byte)0x55);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0x87);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0x01);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0x55);
+        DriverAccess.WriteIoPortByte(RegisterPort, RegisterPort == 0x4E ? (byte)0xAA : (byte)0x55);
     }
 
     public void IT87Exit()
@@ -84,19 +82,19 @@ internal class LpcPort
         // Do not exit config mode for secondary super IO.
         if (RegisterPort != 0x4E)
         {
-            DriverAccess.WriteIoPort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
-            DriverAccess.WriteIoPort(ValuePort, 0x02);
+            DriverAccess.WriteIoPortByte(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
+            DriverAccess.WriteIoPortByte(ValuePort, 0x02);
         }
     }
 
     public void SmscEnter()
     {
-        DriverAccess.WriteIoPort(RegisterPort, 0x55);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0x55);
     }
 
     public void SmscExit()
     {
-        DriverAccess.WriteIoPort(RegisterPort, 0xAA);
+        DriverAccess.WriteIoPortByte(RegisterPort, 0xAA);
     }
 
     // ReSharper disable InconsistentNaming

@@ -8,7 +8,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 

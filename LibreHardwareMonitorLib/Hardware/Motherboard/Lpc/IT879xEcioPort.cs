@@ -5,7 +5,6 @@
 // All Rights Reserved.
 
 using System.Diagnostics;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -69,7 +68,7 @@ internal class IT879xEcioPort
             return false;
         }
 
-        DriverAccess.WriteIoPort(RegisterPort, value);
+        DriverAccess.WriteIoPortByte(RegisterPort, value);
         return true;
     }
 
@@ -80,7 +79,7 @@ internal class IT879xEcioPort
             return false;
         }
 
-        DriverAccess.WriteIoPort(ValuePort, value);
+        DriverAccess.WriteIoPortByte(ValuePort, value);
         return true;
     }
 
@@ -92,7 +91,7 @@ internal class IT879xEcioPort
             return false;
         }
 
-        value = DriverAccess.ReadIoPort(ValuePort);
+        value = DriverAccess.ReadIoPortByte(ValuePort);
         return true;
     }
 
@@ -101,7 +100,7 @@ internal class IT879xEcioPort
         Stopwatch stopwatch = Stopwatch.StartNew();
         try
         {
-            while ((DriverAccess.ReadIoPort(RegisterPort) & 2) != 0)
+            while ((DriverAccess.ReadIoPortByte(RegisterPort) & 2) != 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
                 {
@@ -121,7 +120,7 @@ internal class IT879xEcioPort
         Stopwatch stopwatch = Stopwatch.StartNew();
         try
         {
-            while ((DriverAccess.ReadIoPort(RegisterPort) & 1) == 0)
+            while ((DriverAccess.ReadIoPortByte(RegisterPort) & 1) == 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
                 {

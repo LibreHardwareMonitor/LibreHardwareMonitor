@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using LibreHardwareMonitor.WinRing0;
 using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;

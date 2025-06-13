@@ -8,7 +8,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -101,11 +100,12 @@ internal sealed class Amd0FCpu : AmdCpu
             {
                 for (uint i = 0; i < _coreTemperatures.Length; i++)
                 {
-                    if (DriverAccess.WritePciConfig(_miscellaneousControlAddress,
+                    if (DriverAccess.WritePciConfigDwordEx(_miscellaneousControlAddress,
                                              THERMTRIP_STATUS_REGISTER,
-                                             i > 0 ? _thermSenseCoreSelCPU1 : _thermSenseCoreSelCPU0))
+                                             i > 0 ? _thermSenseCoreSelCPU1 : _thermSenseCoreSelCPU0) != 0)
                     {
-                        if (DriverAccess.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
+                        uint value = 0;
+                        if (DriverAccess.ReadPciConfigDwordEx(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, ref value) != 0)
                         {
                             _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
                             ActivateSensor(_coreTemperatures[i]);

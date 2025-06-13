@@ -4,8 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.WinRing0;
-
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal abstract class AmdCpu : GenericCpu
@@ -19,7 +17,8 @@ internal abstract class AmdCpu : GenericCpu
         uint address = DriverAccess.GetPciAddress(PCI_BUS, (byte)(PCI_BASE_DEVICE + Index), function);
 
         // verify that we have the correct bus, device and function
-        if (!DriverAccess.ReadPciConfig(address, DEVICE_VENDOR_ID_REGISTER, out uint deviceVendor))
+        uint deviceVendor = 0;
+        if (DriverAccess.ReadPciConfigDwordEx(address, DEVICE_VENDOR_ID_REGISTER, ref deviceVendor) == 0)
             return Interop.Ring0.INVALID_PCI_ADDRESS;
 
         if (deviceVendor != (deviceId << 16 | AMD_VENDOR_ID))

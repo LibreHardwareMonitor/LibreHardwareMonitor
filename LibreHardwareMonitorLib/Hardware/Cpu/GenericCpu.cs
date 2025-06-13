@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 

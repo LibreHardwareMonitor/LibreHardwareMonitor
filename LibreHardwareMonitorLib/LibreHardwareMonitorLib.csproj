@@ -30,6 +30,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\inpout32.gz" />
     <EmbeddedResource Include="Resources\inpoutx64.gz" />
+    <EmbeddedResource Include="Resources\WinRing0.dll.gz" />
+    <EmbeddedResource Include="Resources\WinRing0.sys.gz" />
+    <EmbeddedResource Include="Resources\WinRing0x64.dll.gz" />
+    <EmbeddedResource Include="Resources\WinRing0x64.sys.gz" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
@@ -39,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-	<PackageReference Include="RAMSPDToolkit" Version="1.0.2" />
+    <PackageReference Include="RAMSPDToolkit" Version="1.1.0-NDD" />
     <PackageReference Include="System.Management" Version="9.0.6" />
   </ItemGroup>
   <ItemGroup>

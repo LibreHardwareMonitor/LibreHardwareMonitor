@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -181,13 +180,13 @@ internal sealed class Amd17Cpu : AmdCpu
             {
                 // THM_TCON_CUR_TMP
                 // CUR_TEMP [31:21]
-                DriverAccess.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
-                DriverAccess.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint temperature);
+                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
+                var temperature = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
 
                 // SVI0_TFN_PLANE0 [0]
                 // SVI0_TFN_PLANE1 [1]
-                DriverAccess.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
-                DriverAccess.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
+                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
+                smuSvi0Tfn = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
 
                 bool supportsPerCcdTemperatures = false;
 
@@ -225,13 +224,13 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 // SVI0_PLANE0_VDDCOR [24:16]
                 // SVI0_PLANE0_IDDCOR [7:0]
-                DriverAccess.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
-                DriverAccess.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane0);
+                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
+                smuSvi0TelPlane0 = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
 
                 // SVI0_PLANE1_VDDCOR [24:16]
                 // SVI0_PLANE1_IDDCOR [7:0]
-                DriverAccess.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
-                DriverAccess.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane1);
+                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
+                smuSvi0TelPlane1 = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
 
                 ThreadAffinity.Set(previousAffinity);
 
@@ -310,10 +309,10 @@ internal sealed class Amd17Cpu : AmdCpu
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
                         if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
-                            DriverAccess.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
+                            DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
                         else
-                            DriverAccess.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
-                        DriverAccess.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
+                            DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
+                        uint ccdRawTemp = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
 
                         ccdRawTemp &= 0xFFF;
                         float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
@@ -811,7 +810,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
     private const uint F17H_M61H_CCD1_TEMP = 0x00059b08;
     private const uint F17H_TEMP_OFFSET_FLAG = 0x80000;
-    private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
+    private const byte FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
     private const uint HWCR = 0xC0010015;
     private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
     private const uint MSR_HARDWARE_PSTATE_STATUS = 0xC0010293;

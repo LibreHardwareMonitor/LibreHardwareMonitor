@@ -23,8 +23,6 @@ using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Storage;
-using LibreHardwareMonitor.Software;
-using WinRing0Driver.Driver;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -322,6 +320,14 @@ public class Computer : IComputer
             w.WriteLine(IntPtr.Size == 4 ? "32-Bit" : "64-Bit");
             w.WriteLine();
 
+            string r = DriverAccess.GetReport();
+            if (r != null)
+            {
+                NewSection(w);
+                w.Write(r);
+                w.WriteLine();
+            }
+
             NewSection(w);
             w.WriteLine("Sensors");
             w.WriteLine();
@@ -483,11 +489,7 @@ public class Computer : IComputer
 
         _smbios = new SMBios();
 
-        if (!Software.OperatingSystem.IsUnix)
-        {
-            DriverManager.LoadDriver();
-        }
-
+        DriverAccess.Open();
         Mutexes.Open();
         OpCode.Open();
 
@@ -612,7 +614,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="Ring0.Close" />.
+    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="DriverAccess.Close" />.
     /// </summary>
     public void Close()
     {
@@ -630,12 +632,7 @@ public class Computer : IComputer
 
         OpCode.Close();
         InpOut.Close();
-
-        if (!Software.OperatingSystem.IsUnix)
-        {
-            DriverManager.UnloadDriver();
-        }
-
+        DriverAccess.Close();
         Mutexes.Close();
 
         _smbios = null;

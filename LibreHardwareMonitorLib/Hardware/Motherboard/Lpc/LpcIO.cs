@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.Hardware.Cpu;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 

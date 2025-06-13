@@ -11,7 +11,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -158,9 +157,11 @@ internal sealed class Amd10Cpu : AmdCpu
         }
 
         uint addr = DriverAccess.GetPciAddress(0, 20, 0);
-        if (DriverAccess.ReadPciConfig(addr, 0, out uint dev))
+        uint dev = 0;
+        if (DriverAccess.ReadPciConfigDwordEx(addr, 0, ref dev) != 0)
         {
-            DriverAccess.ReadPciConfig(addr, 8, out uint rev);
+            uint rev = 0;
+            DriverAccess.ReadPciConfigDwordEx(addr, 8, ref rev);
 
             _cStatesIoOffset = dev switch
             {
@@ -199,11 +200,11 @@ internal sealed class Amd10Cpu : AmdCpu
     {
         // select event "076h CPU Clocks not Halted" and enable the counter
         DriverAccess.WriteMsr(PERF_CTL_0,
-                       (1 << 22) | // enable performance counter
-                       (1 << 17) | // count events in user mode
-                       (1 << 16) | // count events in operating-system mode
-                       0x76,
-                       0x00000000);
+                              (1 << 22) | // enable performance counter
+                              (1 << 17) | // count events in user mode
+                              (1 << 16) | // count events in operating-system mode
+                              0x76,
+                              0x00000000);
 
         // set the counter to 0
         DriverAccess.WriteMsr(PERF_CTR_0, 0, 0);
@@ -249,7 +250,7 @@ internal sealed class Amd10Cpu : AmdCpu
         r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
         if (_family == 0x14)
         {
-            DriverAccess.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
+            var value = DriverAccess.ReadPciConfigDword(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER);
             r.Append("PCI Register D18F3xD4: ");
             r.AppendLine(value.ToString("X8", CultureInfo.InvariantCulture));
         }
@@ -300,7 +301,7 @@ internal sealed class Amd10Cpu : AmdCpu
                 // 3:0: current CPU core divisor ID least significant digit
                 uint divisorIdMsd = (cofVidEax >> 4) & 0x1F;
                 uint divisorIdLsd = cofVidEax & 0xF;
-                DriverAccess.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
+                var value = DriverAccess.ReadPciConfigDword(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER);
                 uint frequencyId = value & 0x1F;
                 return (frequencyId + 0x10) / (divisorIdMsd + (divisorIdLsd * 0.25) + 1);
 
@@ -337,9 +338,10 @@ internal sealed class Amd10Cpu : AmdCpu
         {
             if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
             {
+                uint value = 0;
                 bool isValueValid = _hasSmuTemperatureRegister
-                    ? ReadSmuRegister(SMU_REPORTED_TEMP_CTRL_OFFSET, out uint value)
-                    : DriverAccess.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
+                    ? ReadSmuRegister(SMU_REPORTED_TEMP_CTRL_OFFSET, out value)
+                    : DriverAccess.ReadPciConfigDwordEx(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, ref value) != 0;
 
                 if (isValueValid)
                 {
@@ -444,31 +446,30 @@ internal sealed class Amd10Cpu : AmdCpu
         {
             for (int i = 0; i < _cStatesResidency.Length; i++)
             {
-                DriverAccess.WriteIoPort(CSTATES_IO_PORT, (byte)(_cStatesIoOffset + i));
-                _cStatesResidency[i].Value = DriverAccess.ReadIoPort(CSTATES_IO_PORT + 1) / 256f * 100;
+                DriverAccess.WriteIoPortByte(CSTATES_IO_PORT, (byte)(_cStatesIoOffset + i));
+                _cStatesResidency[i].Value = DriverAccess.ReadIoPortByte(CSTATES_IO_PORT + 1) / 256f * 100;
             }
         }
     }
 
     private static bool ReadSmuRegister(uint address, out uint value)
     {
+        value = 0;
+
         if (Mutexes.WaitPciBus(10))
         {
-            if (!DriverAccess.WritePciConfig(0, 0xB8, address))
+            if (DriverAccess.WritePciConfigDwordEx(0, 0xB8, address) == 0)
             {
-                value = 0;
-
                 Mutexes.ReleasePciBus();
                 return false;
             }
 
-            bool result = DriverAccess.ReadPciConfig(0, 0xBC, out value);
+            bool result = DriverAccess.ReadPciConfigDwordEx(0, 0xBC, ref value) != 0;
 
             Mutexes.ReleasePciBus();
             return result;
         }
 
-        value = 0;
         return false;
     }
 
@@ -479,16 +480,16 @@ internal sealed class Amd10Cpu : AmdCpu
     }
 
     // ReSharper disable InconsistentNaming
-    private const uint CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
-    private const uint COFVID_STATUS = 0xC0010071;
-    private const uint CSTATES_IO_PORT = 0xCD6;
-    private const uint SMU_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
-    private const uint HWCR = 0xC0010015;
-    private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
-    private const uint P_STATE_0 = 0xC0010064;
-    private const uint PERF_CTL_0 = 0xC0010000;
-    private const uint PERF_CTR_0 = 0xC0010004;
-    private const uint REPORTED_TEMPERATURE_CONTROL_REGISTER = 0xA4;
+    private const byte   CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
+    private const uint   COFVID_STATUS = 0xC0010071;
+    private const ushort CSTATES_IO_PORT = 0xCD6;
+    private const uint   SMU_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
+    private const uint   HWCR = 0xC0010015;
+    private const byte   MISCELLANEOUS_CONTROL_FUNCTION = 3;
+    private const uint   P_STATE_0 = 0xC0010064;
+    private const uint   PERF_CTL_0 = 0xC0010000;
+    private const uint   PERF_CTR_0 = 0xC0010004;
+    private const uint   REPORTED_TEMPERATURE_CONTROL_REGISTER = 0xA4;
 
     private const ushort FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1203;
     private const ushort FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1303;

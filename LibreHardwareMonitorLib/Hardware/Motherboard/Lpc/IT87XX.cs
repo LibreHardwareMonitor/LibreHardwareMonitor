@@ -8,7 +8,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.WinRing0;
 
 // ReSharper disable once InconsistentNaming
 
@@ -267,7 +266,7 @@ internal class IT87XX : ISuperIO
         if (index >= _gpioCount)
             return null;
 
-        return DriverAccess.ReadIoPort((ushort)(_gpioAddress + index));
+        return DriverAccess.ReadIoPortByte((ushort)(_gpioAddress + index));
     }
 
     public void WriteGpio(int index, byte value)
@@ -275,7 +274,7 @@ internal class IT87XX : ISuperIO
         if (index >= _gpioCount)
             return;
 
-        DriverAccess.WriteIoPort((ushort)(_gpioAddress + index), value);
+        DriverAccess.WriteIoPortByte((ushort)(_gpioAddress + index), value);
     }
 
     public void SetControl(int index, byte? value)
@@ -529,9 +528,9 @@ internal class IT87XX : ISuperIO
 
     private byte ReadByte(byte register, out bool valid)
     {
-        DriverAccess.WriteIoPort(_addressReg, register);
-        byte value = DriverAccess.ReadIoPort(_dataReg);
-        valid = register == DriverAccess.ReadIoPort(_addressReg) || Chip == Chip.IT8688E;
+        DriverAccess.WriteIoPortByte(_addressReg, register);
+        byte value = DriverAccess.ReadIoPortByte(_dataReg);
+        valid = register == DriverAccess.ReadIoPortByte(_addressReg) || Chip == Chip.IT8688E;
         // IT8688E doesn't return the value we wrote to
         // addressReg when we read it back.
 
@@ -540,9 +539,9 @@ internal class IT87XX : ISuperIO
 
     private void WriteByte(byte register, byte value)
     {
-        DriverAccess.WriteIoPort(_addressReg, register);
-        DriverAccess.WriteIoPort(_dataReg, value);
-        DriverAccess.ReadIoPort(_addressReg);
+        DriverAccess.WriteIoPortByte(_addressReg, register);
+        DriverAccess.WriteIoPortByte(_dataReg, value);
+        DriverAccess.ReadIoPortByte(_addressReg);
     }
 
     private void SaveDefaultFanPwmControl(int index)

@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using LibreHardwareMonitor.WinRing0;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -908,10 +907,10 @@ internal class Nct677X : ISuperIO
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
-            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-            DriverAccess.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-            return DriverAccess.ReadIoPort(_port + DATA_REGISTER_OFFSET);
+            DriverAccess.WriteIoPortByte((ushort)(_port + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+            DriverAccess.WriteIoPortByte((ushort)(_port + DATA_REGISTER_OFFSET), bank);
+            DriverAccess.WriteIoPortByte((ushort)(_port + ADDRESS_REGISTER_OFFSET), register);
+            return DriverAccess.ReadIoPortByte((ushort)(_port + DATA_REGISTER_OFFSET));
         }
 
         byte page = (byte)(address >> 8);
@@ -924,7 +923,7 @@ internal class Nct677X : ISuperIO
         DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
         while (true)
         {
-            access = DriverAccess.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+            access = DriverAccess.ReadIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
             if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
                 break;
 
@@ -934,15 +933,15 @@ internal class Nct677X : ISuperIO
         if (access != EC_SPACE_PAGE_SELECT)
         {
             // Failed to gain access: force register access
-            DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
         }
 
-        DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-        DriverAccess.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-        byte result = DriverAccess.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
+        DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), page);
+        DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_INDEX_REGISTER_OFFSET), index);
+        byte result = DriverAccess.ReadIoPortByte((ushort)(_port + EC_SPACE_DATA_REGISTER_OFFSET));
 
         //free access for other instances
-        DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+        DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
 
         return result;
     }
@@ -953,10 +952,10 @@ internal class Nct677X : ISuperIO
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
-            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-            DriverAccess.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-            DriverAccess.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-            DriverAccess.WriteIoPort(_port + DATA_REGISTER_OFFSET, value);
+            DriverAccess.WriteIoPortByte((ushort)(_port + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+            DriverAccess.WriteIoPortByte((ushort)(_port + DATA_REGISTER_OFFSET), bank);
+            DriverAccess.WriteIoPortByte((ushort)(_port + ADDRESS_REGISTER_OFFSET), register);
+            DriverAccess.WriteIoPortByte((ushort)(_port + DATA_REGISTER_OFFSET), value);
         }
         else
         {
@@ -970,7 +969,7 @@ internal class Nct677X : ISuperIO
             DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
             while (true)
             {
-                access = DriverAccess.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+                access = DriverAccess.ReadIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
                 if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
                     break;
 
@@ -980,15 +979,15 @@ internal class Nct677X : ISuperIO
             if (access != EC_SPACE_PAGE_SELECT)
             {
                 // Failed to gain access: force register access
-                DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+                DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
             }
 
-            DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-            DriverAccess.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-            DriverAccess.WriteIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET, value);
+            DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), page);
+            DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_INDEX_REGISTER_OFFSET), index);
+            DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_DATA_REGISTER_OFFSET), value);
 
             //free access for other instances
-            DriverAccess.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            DriverAccess.WriteIoPortByte((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
         }
     }
 
@@ -1167,14 +1166,14 @@ internal class Nct677X : ISuperIO
     }
 
     // ReSharper disable InconsistentNaming
-    private const uint ADDRESS_REGISTER_OFFSET = 0x05;
+    private const byte ADDRESS_REGISTER_OFFSET = 0x05;
     private const byte BANK_SELECT_REGISTER = 0x4E;
-    private const uint DATA_REGISTER_OFFSET = 0x06;
+    private const byte DATA_REGISTER_OFFSET = 0x06;
 
     // NCT668X
-    private const uint EC_SPACE_PAGE_REGISTER_OFFSET = 0x04;
-    private const uint EC_SPACE_INDEX_REGISTER_OFFSET = 0x05;
-    private const uint EC_SPACE_DATA_REGISTER_OFFSET = 0x06;
+    private const byte EC_SPACE_PAGE_REGISTER_OFFSET = 0x04;
+    private const byte EC_SPACE_INDEX_REGISTER_OFFSET = 0x05;
+    private const byte EC_SPACE_DATA_REGISTER_OFFSET = 0x06;
     private const byte EC_SPACE_PAGE_SELECT = 0xFF;
 
     private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
