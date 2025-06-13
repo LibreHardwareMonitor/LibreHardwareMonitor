@@ -460,18 +460,18 @@ internal class W836XX : ISuperIO
 
     private byte ReadByte(byte bank, byte register)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+        DriverAccess.WriteIoPortByte((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+        DriverAccess.WriteIoPortByte((ushort)(_address + DATA_REGISTER_OFFSET), bank);
+        DriverAccess.WriteIoPortByte((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        return DriverAccess.ReadIoPortByte((ushort)(_address + DATA_REGISTER_OFFSET));
     }
 
     private void WriteByte(byte bank, byte register, byte value)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+        DriverAccess.WriteIoPortByte((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+        DriverAccess.WriteIoPortByte((ushort)(_address + DATA_REGISTER_OFFSET), bank);
+        DriverAccess.WriteIoPortByte((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        DriverAccess.WriteIoPortByte((ushort)(_address + DATA_REGISTER_OFFSET), value);
     }
 
     private bool IsWinbondVendor()

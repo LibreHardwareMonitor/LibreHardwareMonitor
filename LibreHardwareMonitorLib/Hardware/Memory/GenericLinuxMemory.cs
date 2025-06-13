@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace LibreHardwareMonitor.Hardware.Memory;
 
-internal sealed class GenericLinuxMemory : Hardware
+internal sealed class GenericLinuxMemory : GenericMemory
 {
     private readonly Sensor _physicalMemoryAvailable;
     private readonly Sensor _physicalMemoryLoad;
@@ -43,6 +43,8 @@ internal sealed class GenericLinuxMemory : Hardware
 
     public override void Update()
     {
+        base.Update();
+
         try
         {
             string[] memoryInfo = File.ReadAllLines("/proc/meminfo");

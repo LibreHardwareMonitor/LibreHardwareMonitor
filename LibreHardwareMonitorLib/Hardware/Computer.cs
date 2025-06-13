@@ -320,7 +320,7 @@ public class Computer : IComputer
             w.WriteLine(IntPtr.Size == 4 ? "32-Bit" : "64-Bit");
             w.WriteLine();
 
-            string r = Ring0.GetReport();
+            string r = DriverAccess.GetReport();
             if (r != null)
             {
                 NewSection(w);
@@ -489,7 +489,7 @@ public class Computer : IComputer
 
         _smbios = new SMBios();
 
-        Ring0.Open();
+        DriverAccess.Open();
         Mutexes.Open();
         OpCode.Open();
 
@@ -614,7 +614,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="Ring0.Close" />.
+    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="DriverAccess.Close" />.
     /// </summary>
     public void Close()
     {
@@ -632,7 +632,7 @@ public class Computer : IComputer
 
         OpCode.Close();
         InpOut.Close();
-        Ring0.Close();
+        DriverAccess.Close();
         Mutexes.Close();
 
         _smbios = null;
