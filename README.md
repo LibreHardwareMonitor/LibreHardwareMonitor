@@ -18,12 +18,10 @@ You can read information from devices such as:
 - Network cards
 
 ## Where can I download it?
-You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).
-
-Or using the WinGet package manager with:
+You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases). You can also install it using WinGet:
 
 ```
-winget install -e --id LibreHardwareMonitor.LibreHardwareMonitor
+winget install LibreHardwareMonitor.LibreHardwareMonitor
 ```
 
 ### Nightly builds
