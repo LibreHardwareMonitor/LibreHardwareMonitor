@@ -60,15 +60,15 @@ internal class IsaBridgeGigabyteController : IGigabyteController
 
         bool result = false;
 
-        uint intelIsaBridgeAddress = DriverAccess.GetPciAddress(0x0, 0x1F, 0x0);
+        uint intelIsaBridgeAddress = Ring0.GetPciAddress(0x0, 0x1F, 0x0);
 
-        const byte ioOrMemoryPortDecodeEnableRegister = 0xD8;
-        const byte romAddressRange2Register = 0x98;
+        const uint ioOrMemoryPortDecodeEnableRegister = 0xD8;
+        const uint romAddressRange2Register = 0x98;
 
         uint controllerFanControlAddress = _controllerBaseAddress + ControllerFanControlArea;
 
-        var originalDecodeEnableRegister = DriverAccess.ReadPciConfigDword(intelIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister);
-        var originalRomAddressRegister   = DriverAccess.ReadPciConfigDword(intelIsaBridgeAddress, romAddressRange2Register);
+        Ring0.ReadPciConfig(intelIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, out uint originalDecodeEnableRegister);
+        Ring0.ReadPciConfig(intelIsaBridgeAddress, romAddressRange2Register, out uint originalRomAddressRegister);
 
         bool originalMmIoEnabled = false;
         if (!enabled)
@@ -100,8 +100,8 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             lpcMemoryRange = Convert.ToUInt32(romAddressRange2Register & ~(uint)(1 << 0));
         }
 
-        DriverAccess.WritePciConfigDword(intelIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, lpcBiosDecodeEnable);
-        DriverAccess.WritePciConfigDword(intelIsaBridgeAddress, romAddressRange2Register, lpcMemoryRange);
+        Ring0.WritePciConfig(intelIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, lpcBiosDecodeEnable);
+        Ring0.WritePciConfig(intelIsaBridgeAddress, romAddressRange2Register, lpcMemoryRange);
 
         result = Enable(enabled, new IntPtr(controllerFanControlAddress));
 
@@ -116,12 +116,12 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             return false;
 
         // see D14F3x https://www.amd.com/system/files/TechDocs/55072_AMD_Family_15h_Models_70h-7Fh_BKDG.pdf
-        uint amdIsaBridgeAddress = DriverAccess.GetPciAddress(0x0, 0x14, 0x3);
+        uint amdIsaBridgeAddress = Ring0.GetPciAddress(0x0, 0x14, 0x3);
 
-        const byte ioOrMemoryPortDecodeEnableRegister = 0x48;
+        const uint ioOrMemoryPortDecodeEnableRegister = 0x48;
         const uint memoryRangePortEnableMask = 0x1 << 5;
-        const byte pciMemoryAddressForLpcTargetCyclesRegister = 0x60;
-        const byte romAddressRange2Register = 0x6C;
+        const uint pciMemoryAddressForLpcTargetCyclesRegister = 0x60;
+        const uint romAddressRange2Register = 0x6C;
 
         uint controllerFanControlAddress = _controllerBaseAddress + ControllerFanControlArea;
 
@@ -131,9 +131,9 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         uint enabledPciMemoryAddressRegister = pciAddressEnd << 0x10 | pciAddressStart;
         uint enabledRomAddressRegister = 0xFFFFU << 0x10 | pciAddressEnd;
 
-        var originalDecodeEnableRegister = DriverAccess.ReadPciConfigDword(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister);
-        var originalPciMemoryAddressRegister = DriverAccess.ReadPciConfigDword(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister);
-        var originalRomAddressRegister = DriverAccess.ReadPciConfigDword(amdIsaBridgeAddress, romAddressRange2Register);
+        Ring0.ReadPciConfig(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, out uint originalDecodeEnableRegister);
+        Ring0.ReadPciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, out uint originalPciMemoryAddressRegister);
+        Ring0.ReadPciConfig(amdIsaBridgeAddress, romAddressRange2Register, out uint originalRomAddressRegister);
 
         bool originalMmIoEnabled = (originalDecodeEnableRegister & memoryRangePortEnableMask) != 0 &&
                                    originalPciMemoryAddressRegister == enabledPciMemoryAddressRegister &&
@@ -141,9 +141,9 @@ internal class IsaBridgeGigabyteController : IGigabyteController
 
         if (!originalMmIoEnabled)
         {
-            DriverAccess.WritePciConfigDword(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, originalDecodeEnableRegister | memoryRangePortEnableMask);
-            DriverAccess.WritePciConfigDword(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, enabledPciMemoryAddressRegister);
-            DriverAccess.WritePciConfigDword(amdIsaBridgeAddress, romAddressRange2Register, enabledRomAddressRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, originalDecodeEnableRegister | memoryRangePortEnableMask);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, enabledPciMemoryAddressRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, romAddressRange2Register, enabledRomAddressRegister);
         }
 
         bool result = Enable(enabled, new IntPtr(controllerFanControlAddress));
@@ -151,9 +151,9 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         // Restore previous values
         if (!originalMmIoEnabled)
         {
-            DriverAccess.WritePciConfigDword(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, originalDecodeEnableRegister);
-            DriverAccess.WritePciConfigDword(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, originalPciMemoryAddressRegister);
-            DriverAccess.WritePciConfigDword(amdIsaBridgeAddress, romAddressRange2Register, originalRomAddressRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, ioOrMemoryPortDecodeEnableRegister, originalDecodeEnableRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, pciMemoryAddressForLpcTargetCyclesRegister, originalPciMemoryAddressRegister);
+            Ring0.WritePciConfig(amdIsaBridgeAddress, romAddressRange2Register, originalRomAddressRegister);
         }
 
         Mutexes.ReleasePciBus();

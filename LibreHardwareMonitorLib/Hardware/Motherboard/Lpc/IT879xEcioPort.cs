@@ -68,7 +68,7 @@ internal class IT879xEcioPort
             return false;
         }
 
-        DriverAccess.WriteIoPortByte(RegisterPort, value);
+        Ring0.WriteIoPort(RegisterPort, value);
         return true;
     }
 
@@ -79,7 +79,7 @@ internal class IT879xEcioPort
             return false;
         }
 
-        DriverAccess.WriteIoPortByte(ValuePort, value);
+        Ring0.WriteIoPort(ValuePort, value);
         return true;
     }
 
@@ -91,7 +91,7 @@ internal class IT879xEcioPort
             return false;
         }
 
-        value = DriverAccess.ReadIoPortByte(ValuePort);
+        value = Ring0.ReadIoPort(ValuePort);
         return true;
     }
 
@@ -100,7 +100,7 @@ internal class IT879xEcioPort
         Stopwatch stopwatch = Stopwatch.StartNew();
         try
         {
-            while ((DriverAccess.ReadIoPortByte(RegisterPort) & 2) != 0)
+            while ((Ring0.ReadIoPort(RegisterPort) & 2) != 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
                 {
@@ -120,7 +120,7 @@ internal class IT879xEcioPort
         Stopwatch stopwatch = Stopwatch.StartNew();
         try
         {
-            while ((DriverAccess.ReadIoPortByte(RegisterPort) & 1) == 0)
+            while ((Ring0.ReadIoPort(RegisterPort) & 1) == 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
                 {

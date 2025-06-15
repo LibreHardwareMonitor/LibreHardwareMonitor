@@ -714,8 +714,8 @@ internal class RyzenSMU
     {
         if (Mutexes.WaitPciBus(10))
         {
-            if (DriverAccess.WritePciConfigDwordEx(0x00, SMU_PCI_ADDR_REG, addr) != 0)
-                DriverAccess.WritePciConfigDword(0x00, SMU_PCI_DATA_REG, data);
+            if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
+                Ring0.WritePciConfig(0x00, SMU_PCI_DATA_REG, data);
 
             Mutexes.ReleasePciBus();
         }
@@ -727,8 +727,8 @@ internal class RyzenSMU
 
         if (Mutexes.WaitPciBus(10))
         {
-            if (DriverAccess.WritePciConfigDwordEx(0x00, SMU_PCI_ADDR_REG, addr) != 0)
-                read = DriverAccess.ReadPciConfigDwordEx(0x00, SMU_PCI_DATA_REG, ref data) != 0;
+            if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
+                read = Ring0.ReadPciConfig(0x00, SMU_PCI_DATA_REG, out data);
 
             Mutexes.ReleasePciBus();
         }

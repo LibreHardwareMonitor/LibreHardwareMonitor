@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
@@ -30,10 +30,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\inpout32.gz" />
     <EmbeddedResource Include="Resources\inpoutx64.gz" />
-    <EmbeddedResource Include="Resources\WinRing0.dll.gz" />
-    <EmbeddedResource Include="Resources\WinRing0.sys.gz" />
-    <EmbeddedResource Include="Resources\WinRing0x64.dll.gz" />
-    <EmbeddedResource Include="Resources\WinRing0x64.sys.gz" />
+    <EmbeddedResource Include="Resources\WinRing0.gz" />
+    <EmbeddedResource Include="Resources\WinRing0x64.gz" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
@@ -43,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="RAMSPDToolkit" Version="1.1.1-NDD" />
+    <PackageReference Include="RAMSPDToolkit" Version="1.1.2-NDD" />
     <PackageReference Include="System.Management" Version="9.0.6" />
   </ItemGroup>
   <ItemGroup>

@@ -160,7 +160,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            DriverAccess.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
+            Ring0.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
             double energyBaseUnit = Math.Pow(0.5,esu);
 
@@ -168,7 +168,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // MSRC001_029B
             // total_energy [31:0]
             DateTime sampleTime = DateTime.UtcNow;
-            DriverAccess.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
+            Ring0.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
 
             uint totalEnergy = eax;
 
@@ -180,13 +180,13 @@ internal sealed class Amd17Cpu : AmdCpu
             {
                 // THM_TCON_CUR_TMP
                 // CUR_TEMP [31:21]
-                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
-                var temperature = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint temperature);
 
                 // SVI0_TFN_PLANE0 [0]
                 // SVI0_TFN_PLANE1 [1]
-                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
-                smuSvi0Tfn = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
 
                 bool supportsPerCcdTemperatures = false;
 
@@ -224,13 +224,13 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 // SVI0_PLANE0_VDDCOR [24:16]
                 // SVI0_PLANE0_IDDCOR [7:0]
-                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
-                smuSvi0TelPlane0 = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane0);
 
                 // SVI0_PLANE1_VDDCOR [24:16]
                 // SVI0_PLANE1_IDDCOR [7:0]
-                DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
-                smuSvi0TelPlane1 = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane1);
 
                 ThreadAffinity.Set(previousAffinity);
 
@@ -309,10 +309,10 @@ internal sealed class Amd17Cpu : AmdCpu
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
                         if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
-                            DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
+                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
                         else
-                            DriverAccess.WritePciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
-                        uint ccdRawTemp = DriverAccess.ReadPciConfigDword(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4);
+                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
+                        Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
 
                         ccdRawTemp &= 0xFFF;
                         float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
@@ -427,7 +427,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
         private double GetTimeStampCounterMultiplier()
         {
-            DriverAccess.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
+            Ring0.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
 
             if (_cpu._family == 0x1a)
             {
@@ -560,10 +560,10 @@ internal sealed class Amd17Cpu : AmdCpu
 
             // performance counter
             // MSRC000_00E7, P0 state counter
-            DriverAccess.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
+            Ring0.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
             _mperf = edxeax;
             // MSRC000_00E8, C0 state counter
-            DriverAccess.ReadMsr(MSR_APERF_RO, out edxeax);
+            Ring0.ReadMsr(MSR_APERF_RO, out edxeax);
             _aperf = edxeax;
         }
 
@@ -671,14 +671,14 @@ internal sealed class Amd17Cpu : AmdCpu
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            DriverAccess.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
+            Ring0.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
             double energyBaseUnit = Math.Pow(0.5, esu);
 
             // MSRC001_029A
             // total_energy [31:0]
             DateTime sampleTime = DateTime.UtcNow;
-            DriverAccess.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
+            Ring0.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
             uint totalEnergy = eax;
 
             // MSRC001_0293
@@ -687,7 +687,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // CurCpuDfsId [13:8]
             // CurCpuFid [7:0] zen1..4
             // CurCpuFid [11:0] zen5
-            DriverAccess.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
+            Ring0.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 
@@ -697,7 +697,7 @@ internal sealed class Amd17Cpu : AmdCpu
             }
 
             // MSRC001_0063[P - state Status](PStateStat)
-            // DriverAccess.ReadMsr(MSR_PSTATE_STATUS, out eax, out _);
+            // Ring0.ReadMsr(MSR_PSTATE_STATUS, out eax, out _);
             // int curPstateStaus = (int)(eax & 0x7);
 
             // MSRC001_0064 + x
@@ -708,7 +708,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // CpuDfsId [13:8]
             // CpuFid [7:0] zen1..4
             // CpuFid [11:0] zen5
-            // DriverAccess.ReadMsr(MSR_PSTATE_0 + curPstateStaus, out eax, out uint edx);
+            // Ring0.ReadMsr(MSR_PSTATE_0 + curPstateStaus, out eax, out uint edx);
             // uint curPstate = eax;
             // int PstateEn = (int)(edx >> 31);
 
@@ -810,7 +810,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
     private const uint F17H_M61H_CCD1_TEMP = 0x00059b08;
     private const uint F17H_TEMP_OFFSET_FLAG = 0x80000;
-    private const byte FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
+    private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
     private const uint HWCR = 0xC0010015;
     private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
     private const uint MSR_HARDWARE_PSTATE_STATUS = 0xC0010293;

@@ -266,7 +266,7 @@ internal class IT87XX : ISuperIO
         if (index >= _gpioCount)
             return null;
 
-        return DriverAccess.ReadIoPortByte((ushort)(_gpioAddress + index));
+        return Ring0.ReadIoPort((ushort)(_gpioAddress + index));
     }
 
     public void WriteGpio(int index, byte value)
@@ -274,7 +274,7 @@ internal class IT87XX : ISuperIO
         if (index >= _gpioCount)
             return;
 
-        DriverAccess.WriteIoPortByte((ushort)(_gpioAddress + index), value);
+        Ring0.WriteIoPort((ushort)(_gpioAddress + index), value);
     }
 
     public void SetControl(int index, byte? value)
@@ -528,9 +528,9 @@ internal class IT87XX : ISuperIO
 
     private byte ReadByte(byte register, out bool valid)
     {
-        DriverAccess.WriteIoPortByte(_addressReg, register);
-        byte value = DriverAccess.ReadIoPortByte(_dataReg);
-        valid = register == DriverAccess.ReadIoPortByte(_addressReg) || Chip == Chip.IT8688E;
+        Ring0.WriteIoPort(_addressReg, register);
+        byte value = Ring0.ReadIoPort(_dataReg);
+        valid = register == Ring0.ReadIoPort(_addressReg) || Chip == Chip.IT8688E;
         // IT8688E doesn't return the value we wrote to
         // addressReg when we read it back.
 
@@ -539,9 +539,9 @@ internal class IT87XX : ISuperIO
 
     private void WriteByte(byte register, byte value)
     {
-        DriverAccess.WriteIoPortByte(_addressReg, register);
-        DriverAccess.WriteIoPortByte(_dataReg, value);
-        DriverAccess.ReadIoPortByte(_addressReg);
+        Ring0.WriteIoPort(_addressReg, register);
+        Ring0.WriteIoPort(_dataReg, value);
+        Ring0.ReadIoPort(_addressReg);
     }
 
     private void SaveDefaultFanPwmControl(int index)

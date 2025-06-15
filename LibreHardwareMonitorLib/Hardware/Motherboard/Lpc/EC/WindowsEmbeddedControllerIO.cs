@@ -156,12 +156,12 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     private byte ReadIOPort(Port port)
     {
-        return DriverAccess.ReadIoPortByte((ushort)port);
+        return Ring0.ReadIoPort((uint)port);
     }
 
     private void WriteIOPort(Port port, byte datum)
     {
-        DriverAccess.WriteIoPortByte((ushort)port, datum);
+        Ring0.WriteIoPort((uint)port, datum);
     }
 
     public class BusMutexLockingFailedException : EmbeddedController.IOException

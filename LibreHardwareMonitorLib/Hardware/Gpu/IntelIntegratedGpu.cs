@@ -45,7 +45,7 @@ internal class IntelIntegratedGpu : GenericGpu
             _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
         }
 
-        if (DriverAccess.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
+        if (Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
         {
             _energyUnitMultiplier = intelCpu.EnergyUnitsMultiplier;
             if (_energyUnitMultiplier != 0)
@@ -99,7 +99,7 @@ internal class IntelIntegratedGpu : GenericGpu
             _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
             ActivateSensor(_sharedMemoryUsage);
 
-            if (_powerSensor != null && DriverAccess.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
+            if (_powerSensor != null && Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
             {
                 DateTime time = DateTime.UtcNow;
                 float deltaTime = (float)(time - _lastEnergyTime).TotalSeconds;

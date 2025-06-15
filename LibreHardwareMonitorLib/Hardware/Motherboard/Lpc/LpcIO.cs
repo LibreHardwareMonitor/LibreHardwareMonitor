@@ -20,7 +20,7 @@ internal class LpcIO
 
     public LpcIO(Motherboard motherboard)
     {
-        if (!DriverAccess.IsOpen || !Mutexes.WaitIsaBus(100))
+        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100))
             return;
 
         Detect(motherboard);
