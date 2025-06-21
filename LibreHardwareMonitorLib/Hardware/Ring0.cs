@@ -11,19 +11,19 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using RAMSPDToolkit.Windows.Driver;
 
 namespace LibreHardwareMonitor.Hardware;
 
 internal static class Ring0
 {
     private static KernelDriver _driver;
-    private static RAMSPDToolkitDriver _ramSPDToolkitDriver;
     private static string _filePath;
 
     private static readonly StringBuilder _report = new();
 
     public static bool IsOpen => _driver != null;
+
+    internal static KernelDriver KernelDriver => _driver;
 
     public static void Open()
     {
@@ -90,11 +90,6 @@ internal static class Ring0
 
         if (!_driver.IsOpen)
             _driver = null;
-        else
-        {
-            _ramSPDToolkitDriver = new RAMSPDToolkitDriver(_driver);
-            DriverManager.Driver = _ramSPDToolkitDriver;
-        }
     }
 
     private static bool Extract(string filePath)

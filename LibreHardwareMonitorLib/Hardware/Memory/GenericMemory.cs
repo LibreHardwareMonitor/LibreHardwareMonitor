@@ -17,11 +17,24 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 
 internal abstract class GenericMemory : Hardware
 {
-    #region Constructor
+    //Retry every 5 seconds
+    private const double RetryTime = 5000;
+
+    //Retry 12x (one minute)
+    private const int RetryCount = 12;
+
+    private static object _lock;
+
+    private readonly List<SPDThermalSensor> _spdThermalSensors = new();
+
+    private Timer _timer;
+    private int _elapsedCounter = 0;
+
+    public override HardwareType HardwareType => HardwareType.Memory;
 
     static GenericMemory()
     {
-        _Lock = new object();
+        _lock = new object();
     }
 
     protected GenericMemory(string name, Identifier identifier, ISettings settings)
@@ -32,66 +45,35 @@ internal abstract class GenericMemory : Hardware
         {
             //Retry a couple of times
             //SMBus might not be detected right after boot
-            _Timer = new Timer(RETRY_TIME);
+            _timer = new Timer(RetryTime);
 
-            _Timer.Elapsed += (e, o) =>
+            _timer.Elapsed += (e, o) =>
             {
-                if (_ElapsedCounter++ >= RETRY_COUNT || DetectThermalSensors(settings))
+                if (_elapsedCounter++ >= RetryCount || DetectThermalSensors(settings))
                 {
-                    _Timer.Stop();
-                    _Timer = null;
+                    _timer.Stop();
+                    _timer = null;
                 }
             };
 
-            _Timer.Start();
+            _timer.Start();
         }
     }
 
-    #endregion
-
-    #region Fields
-
-    //Retry every 5 seconds
-    const double RETRY_TIME = 5000;
-
-    //Retry 12x (one minute)
-    const int RETRY_COUNT = 12;
-
-    static object _Lock;
-
-    readonly List<SPDThermalSensor> _SPDThermalSensors = new();
-
-    Timer _Timer;
-    int _ElapsedCounter = 0;
-
-    #endregion
-
-    #region Properties
-
-    public override HardwareType HardwareType => HardwareType.Memory;
-
-    #endregion
-
-    #region Public
-
     public override void Update()
     {
-        lock (_Lock)
+        lock (_lock)
         {
-            foreach (var sensor in _SPDThermalSensors)
+            foreach (var sensor in _spdThermalSensors)
             {
                 sensor.UpdateSensor();
             }
         }
     }
 
-    #endregion
-
-    #region Private
-
     private bool DetectThermalSensors(ISettings settings)
     {
-        lock (_Lock)
+        lock (_lock)
         {
             bool ramDetected = false;
 
@@ -153,7 +135,7 @@ internal abstract class GenericMemory : Hardware
                         //Add thermal sensor
                         if (sensor != null)
                         {
-                            _SPDThermalSensors.Add(sensor);
+                            _spdThermalSensors.Add(sensor);
 
                             ActivateSensor(sensor);
                         }
@@ -166,6 +148,4 @@ internal abstract class GenericMemory : Hardware
             return ramDetected;
         }
     }
-
-    #endregion
 }

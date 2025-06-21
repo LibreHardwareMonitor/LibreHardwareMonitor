@@ -10,22 +10,22 @@ namespace LibreHardwareMonitor.Hardware.Memory.Sensors
 {
     internal class SPDThermalSensor : Sensor
     {
-        IThermalSensor _ThermalSensor;
+        private IThermalSensor _thermalSensor;
 
         public SPDThermalSensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings, IThermalSensor thermalSensor)
             : base(name, index, sensorType, hardware, settings)
         {
-            _ThermalSensor = thermalSensor;
+            _thermalSensor = thermalSensor;
         }
 
         public bool UpdateSensor()
         {
-            if (!_ThermalSensor.UpdateTemperature())
+            if (!_thermalSensor.UpdateTemperature())
             {
                 return false;
             }
 
-            Value = _ThermalSensor.Temperature;
+            Value = _thermalSensor.Temperature;
 
             return true;
         }

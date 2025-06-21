@@ -11,98 +11,25 @@ using IOCC = LibreHardwareMonitor.Interop.Ring0;
 
 namespace LibreHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Implementation of <see cref="IDriver"/> interface for RAMSPDToolkit.
+    /// </summary>
     internal class RAMSPDToolkitDriver : IDriver
     {
-        #region Constructor
+        private KernelDriver _kernelDriver;
+
+        private const byte PCI_MAX_NUMBER_OF_BUS  = 255;
+        private const byte PCI_NUMBER_OF_DEVICE   =  32;
+        private const byte PCI_NUMBER_OF_FUNCTION =   8;
+
+        public bool IsOpen => _kernelDriver != null;
 
         public RAMSPDToolkitDriver(KernelDriver kernelDriver)
         {
             _kernelDriver = kernelDriver;
         }
 
-        #endregion
-
-        #region Fields
-
-        KernelDriver _kernelDriver;
-
-        const byte PCI_MAX_NUMBER_OF_BUS  = 255;
-        const byte PCI_NUMBER_OF_DEVICE   =  32;
-        const byte PCI_NUMBER_OF_FUNCTION =   8;
-
-        #endregion
-
-        #region Properties
-
-        public bool IsOpen => _kernelDriver != null;
-
-        #endregion
-
-        #region Structures
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct WriteIoPortInputByte
-        {
-            public uint PortNumber;
-            public byte Value;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct WriteIoPortInputWord
-        {
-            public uint PortNumber;
-            public ushort Value;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct WriteIoPortInputDword
-        {
-            public uint PortNumber;
-            public uint Value;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct ReadPciConfigInput
-        {
-            public uint PciAddress;
-            public uint RegAddress;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct WritePciConfigInputByte
-        {
-            public uint PciAddress;
-            public uint RegAddress;
-            public byte Value;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct WritePciConfigInputWord
-        {
-            public uint PciAddress;
-            public uint RegAddress;
-            public ushort Value;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct WritePciConfigInputDword
-        {
-            public uint PciAddress;
-            public uint RegAddress;
-            public uint Value;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct Conf
-        {
-            public uint A;
-            public uint B;
-            public uint C;
-        }
-
-        #endregion
-
-        #region IDriver
+        //Driver is being managed internally by other classes, so nothing to do in Load + Unload
 
         public bool Load()
         {
@@ -417,17 +344,71 @@ namespace LibreHardwareMonitor.Hardware
             return _kernelDriver.DeviceIOControl(IOCC.IOCTL_OLS_WRITE_PCI_CONFIG, input);
         }
 
-        #endregion
-
-        #region Private
-
-        bool PciConfigRead<TValue>(uint pciAddress, uint regAddress, ref TValue value)
+        private bool PciConfigRead<TValue>(uint pciAddress, uint regAddress, ref TValue value)
             where TValue : struct
         {
             var input = new ReadPciConfigInput { PciAddress = pciAddress, RegAddress = regAddress };
             return _kernelDriver.DeviceIOControl(IOCC.IOCTL_OLS_READ_PCI_CONFIG, input, ref value);
         }
 
-        #endregion
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WriteIoPortInputByte
+        {
+            public uint PortNumber;
+            public byte Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WriteIoPortInputWord
+        {
+            public uint PortNumber;
+            public ushort Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WriteIoPortInputDword
+        {
+            public uint PortNumber;
+            public uint Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct ReadPciConfigInput
+        {
+            public uint PciAddress;
+            public uint RegAddress;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WritePciConfigInputByte
+        {
+            public uint PciAddress;
+            public uint RegAddress;
+            public byte Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WritePciConfigInputWord
+        {
+            public uint PciAddress;
+            public uint RegAddress;
+            public ushort Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct WritePciConfigInputDword
+        {
+            public uint PciAddress;
+            public uint RegAddress;
+            public uint Value;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct Conf
+        {
+            public uint A;
+            public uint B;
+            public uint C;
+        }
     }
 }
