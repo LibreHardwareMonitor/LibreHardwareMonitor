@@ -9,7 +9,7 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Memory;
 
-internal sealed class GenericWindowsMemory : Hardware
+internal sealed class GenericWindowsMemory : GenericMemory
 {
     private readonly Sensor _physicalMemoryAvailable;
     private readonly Sensor _physicalMemoryLoad;
@@ -46,6 +46,8 @@ internal sealed class GenericWindowsMemory : Hardware
 
     public override void Update()
     {
+        base.Update();
+
         Kernel32.MEMORYSTATUSEX status = new() { dwLength = (uint)Marshal.SizeOf<Kernel32.MEMORYSTATUSEX>() };
 
         if (!Kernel32.GlobalMemoryStatusEx(ref status))

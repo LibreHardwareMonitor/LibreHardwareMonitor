@@ -5,12 +5,27 @@
 // All Rights Reserved.
 
 using System.Collections.Generic;
+using RAMSPDToolkit.I2CSMBus;
+using RAMSPDToolkit.Windows.Driver;
 
 namespace LibreHardwareMonitor.Hardware.Memory;
 
 internal class MemoryGroup : IGroup
 {
     private readonly Hardware[] _hardware;
+    private static RAMSPDToolkitDriver _ramSPDToolkitDriver;
+
+    static MemoryGroup()
+    {
+        if (Ring0.IsOpen)
+        {
+            //Assign implementation of IDriver
+            _ramSPDToolkitDriver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
+            DriverManager.Driver = _ramSPDToolkitDriver;
+
+            SMBusManager.UseWMI = false;
+        }
+    }
 
     public MemoryGroup(ISettings settings)
     {
