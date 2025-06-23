@@ -3207,6 +3207,40 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B450M_Pro4_R2_0:
+                        v.Add(new Voltage("Vcore", 0, 10, 10));
+                        //v.Add(new Voltage("#Unused #1", 1, 0, 1, 0, true));
+                        v.Add(new Voltage("AVCC", 2, 10, 10));
+                        v.Add(new Voltage("+3.3V", 3, 10, 10));
+                        v.Add(new Voltage("+12V", 4, 28, 5));
+                        v.Add(new Voltage("Vcore Refin", 5, 0, 1));
+                        //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
+                        //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
+                        v.Add(new Voltage("Chipset 1.05V", 11, 0, 1));
+                        v.Add(new Voltage("+5V", 12, 20, 10));
+                        //v.Add(new Voltage("#Unused #13", 13, 0, 1, 0, true));
+                        v.Add(new Voltage("+1.8V", 14, 0, 1));
+                        //t.Add(new Temperature("Temperature #1", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        //t.Add(new Temperature("Temperature #3", 3));
+                        //t.Add(new Temperature("Temperature #4", 4));
+                        //t.Add(new Temperature("Temperature #5", 5));
+                        f.Add(new Fan("Chassis #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chassis #2", 2));
+                        f.Add(new Fan("CPU Pump", 3));
+                        f.Add(new Fan("Chassis #3", 4));
+                        c.Add(new Control("Chassis #1", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis #2", 2));
+                        c.Add(new Control("CPU Pump", 3));
+                        c.Add(new Control("Chassis #3", 4));
+
+                        break;
+
                     case Model.X399_Phantom_Gaming_6: //NCT6779D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("Chipset 1.05V", 1, 0, 1));
