@@ -17,70 +17,61 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 
 internal class MemoryGroup : IGroup
 {
-    private static object _lock = new object();
-
-    //Retry every 2.5 seconds
-    private const double RetryTime = 2500;
-
     //Retry 12x
     private const int RetryCount = 12;
 
+    //Retry every 2.5 seconds
+    private const double RetryTime = 2500;
+    private static readonly object _lock = new();
+
+    private readonly List<Hardware> _hardware = [];
+    private int _elapsedCounter;
+
     private Timer _timer;
-    private int _elapsedCounter = 0;
-
-    private static RAMSPDToolkitDriver _ramSPDToolkitDriver;
-
-    private List<Hardware> _hardware = new();
-
-    public IReadOnlyList<IHardware> Hardware => _hardware;
 
     static MemoryGroup()
     {
         if (Ring0.IsOpen)
         {
             //Assign implementation of IDriver
-            _ramSPDToolkitDriver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
-            DriverManager.Driver = _ramSPDToolkitDriver;
-
+            DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
             SMBusManager.UseWMI = false;
         }
     }
 
     public MemoryGroup(ISettings settings)
     {
-        _hardware.Add(new DimmVirtualMemory(settings));
-        _hardware.Add(new DimmTotalMemory(settings));
-
-        List<SPDAccessor> accessors = null;
+        _hardware.Add(new VirtualMemory(settings));
+        _hardware.Add(new TotalMemory(settings));
 
         //No RAM detected
-        if (!DetectThermalSensors(settings, out accessors))
+        if (!DetectThermalSensors(out List<SPDAccessor> accessors))
         {
             //Retry a couple of times
             //SMBus might not be detected right after boot
             _timer = new Timer(RetryTime);
 
-            _timer.Elapsed += (e, o) =>
+            _timer.Elapsed += (_, _) =>
             {
-                if (_elapsedCounter++ >= RetryCount || DetectThermalSensors(settings, out accessors))
+                if (_elapsedCounter++ >= RetryCount || DetectThermalSensors(out accessors))
                 {
                     _timer.Stop();
                     _timer = null;
 
                     if (accessors != null)
-                    {
-                        AddDIMMs(accessors, settings);
-                    }
+                        AddDimms(accessors, settings);
                 }
             };
 
             _timer.Start();
         }
-        else //RAM detected
+        else
         {
-            AddDIMMs(accessors, settings);
+            AddDimms(accessors, settings);
         }
     }
+
+    public IReadOnlyList<IHardware> Hardware => _hardware;
 
     public string GetReport()
     {
@@ -93,7 +84,7 @@ internal class MemoryGroup : IGroup
             ram.Close();
     }
 
-    private bool DetectThermalSensors(ISettings settings, out List<SPDAccessor> accessors)
+    private static bool DetectThermalSensors(out List<SPDAccessor> accessors)
     {
         lock (_lock)
         {
@@ -116,31 +107,20 @@ internal class MemoryGroup : IGroup
                     if (detector.Accessor != null)
                     {
                         //We are only interested in modules with thermal sensor
-                        if (detector.Accessor is IThermalSensor ts
-                         && ts.HasThermalSensor)
-                        {
+                        if (detector.Accessor is IThermalSensor { HasThermalSensor: true })
                             list.Add(detector.Accessor);
-                        }
 
                         ramDetected = true;
                     }
                 }
             }
 
-            if (list.Count > 0)
-            {
-                accessors = list;
-            }
-            else
-            {
-                accessors = null;
-            }
-
+            accessors = list.Count > 0 ? list : [];
             return ramDetected;
         }
     }
 
-    private void AddDIMMs(List<SPDAccessor> accessors, ISettings settings)
+    private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
     {
         foreach (var ram in accessors)
         {
