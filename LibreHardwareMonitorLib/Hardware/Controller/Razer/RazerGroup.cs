@@ -4,6 +4,7 @@
 // All Rights Reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using HidSharp;
 
@@ -21,26 +22,33 @@ internal class RazerGroup : IGroup
 
         foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x1532))
         {
-            string productName = dev.GetProductName();
-
-            switch (dev.ProductID)
+            try
             {
-                case 0x0F3C: // Razer PWM PC fan controller
-                    if (dev.GetMaxFeatureReportLength() <= 0)
+                string productName = dev.GetProductName();
+
+                switch (dev.ProductID)
+                {
+                    case 0x0F3C: // Razer PWM PC fan controller
+                        if (dev.GetMaxFeatureReportLength() <= 0)
+                            break;
+
+                        var device = new RazerFanController(dev, settings);
+                        _report.AppendLine($"Device name: {productName}");
+                        _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
+                        _report.AppendLine($"{device.Status}");
+                        _report.AppendLine();
+                        _hardware.Add(device);
                         break;
 
-                    var device = new RazerFanController(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {device.FirmwareVersion}");
-                    _report.AppendLine($"{device.Status}");
-                    _report.AppendLine();
-                    _hardware.Add(device);
-                    break;
-
-                default:
-                    _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
-                    _report.AppendLine();
-                    break;
+                    default:
+                        _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
+                        _report.AppendLine();
+                        break;
+                }
+            }
+            catch (IOException e)
+            {
+                _report.AppendLine($"Failed to get information for USB device with id {dev.ProductID}: {e.Message} ");
             }
         }
 
