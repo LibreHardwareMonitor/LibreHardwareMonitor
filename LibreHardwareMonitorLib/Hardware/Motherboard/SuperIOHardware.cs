@@ -3207,6 +3207,40 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B450M_Pro4_R2_0:
+                        v.Add(new Voltage("Vcore", 0, 10, 10));
+                        //v.Add(new Voltage("#Unused #1", 1, 0, 1, 0, true));
+                        v.Add(new Voltage("AVCC", 2, 10, 10));
+                        v.Add(new Voltage("+3.3V", 3, 10, 10));
+                        v.Add(new Voltage("+12V", 4, 28, 5));
+                        v.Add(new Voltage("Vcore Refin", 5, 0, 1));
+                        //v.Add(new Voltage("#Unused #6", 6, 0, 1, 0, true));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
+                        //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
+                        v.Add(new Voltage("Chipset 1.05V", 11, 0, 1));
+                        v.Add(new Voltage("+5V", 12, 20, 10));
+                        //v.Add(new Voltage("#Unused #13", 13, 0, 1, 0, true));
+                        v.Add(new Voltage("+1.8V", 14, 0, 1));
+                        //t.Add(new Temperature("Temperature #1", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        //t.Add(new Temperature("Temperature #3", 3));
+                        //t.Add(new Temperature("Temperature #4", 4));
+                        //t.Add(new Temperature("Temperature #5", 5));
+                        f.Add(new Fan("Chassis #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chassis #2", 2));
+                        f.Add(new Fan("CPU Pump", 3));
+                        f.Add(new Fan("Chassis #3", 4));
+                        c.Add(new Control("Chassis #1", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis #2", 2));
+                        c.Add(new Control("CPU Pump", 3));
+                        c.Add(new Control("Chassis #3", 4));
+
+                        break;
+
                     case Model.X399_Phantom_Gaming_6: //NCT6779D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("Chipset 1.05V", 1, 0, 1));
@@ -4286,6 +4320,32 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_Z790_E_GAMING_WIFI_II: //NCT6798D
+
+                        t.Add(new Temperature("CPU Package", 0));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Chipset", 12));
+                        t.Add(new Temperature("PCH", 13));
+                        t.Add(new Temperature("CPU", 22));
+
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("Chassis Fan #2", 2));
+                        f.Add(new Fan("Chassis Fan #3", 3));
+                        f.Add(new Fan("Chassis Fan #4", 4));
+                        f.Add(new Fan("Chassis FAN #5", 5));
+                        f.Add(new Fan("AIO Pump", 6));
+
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("Chassis Fan #2", 2));
+                        c.Add(new Control("Chassis Fan #3", 3));
+                        c.Add(new Control("Chassis Fan #4", 4));
+                        c.Add(new Control("Chassis Fan #5", 5));
+                        c.Add(new Control("AIO Pump", 6));
+
+                        break;
+
                     case Model.ROG_STRIX_B550_I_GAMING: //NCT6798D
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("+5V", 1, 4, 1)); //Probably not updating properly
@@ -4297,23 +4357,9 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9));
-                        //v.Add(new Voltage("#Unused #9", 9, 0, 1, 0, true));
-                        //v.Add(new Voltage("#Unused #10", 10, 0, 1, 0, true));
-                        //v.Add(new Voltage("#Unused #11", 11, 0, 1, 0, true));
-                        //v.Add(new Voltage("#Unused #12", 12, 0, 1, 0, true));
-                        //v.Add(new Voltage("#Unused #13", 13, 0, 1, 0, true));
-                        //v.Add(new Voltage("#Unused #14", 14, 0, 1, 0, true));
 
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
-                        //t.Add(new Temperature("AUX 0", 3)); //No software from Asus reports this temperature ~82C
-                        //t.Add(new Temperature("#Unused 4", 4));
-                        //t.Add(new Temperature("#Unused 5", 5));
-                        //t.Add(new Temperature("#Unused 6", 6));
-                        //t.Add(new Temperature("#Unused 7", 7));
-                        //t.Add(new Temperature("#Unused 8", 8));
-                        //t.Add(new Temperature("#Unused 9", 9));
-                        //t.Add(new Temperature("#Unused 10", 10));
                         t.Add(new Temperature("PCH Chip CPU Max", 11));
                         t.Add(new Temperature("PCH Chip", 12));
                         t.Add(new Temperature("PCH CPU", 13));
