@@ -109,6 +109,13 @@ public interface IComputer : IElement
     bool IsStorageEnabled { get; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the Ring0 driver should be installed if user privileges is sufficient.
+    /// </summary>
+    /// <returns><see langword="true" /> if Ring0 driver installation is enabled</returns>
+    /// <remarks>Default value is <see langword="true" />. Only affects Windows.</remarks>
+    bool IsRing0Enabled { get; }
+
+    /// <summary>
     /// Generates full LibreHardwareMonitor report for devices that have been enabled.
     /// </summary>
     /// <returns>A formatted text string with library, OS and hardware information.</returns>
