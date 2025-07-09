@@ -22,10 +22,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="TaskScheduler" Version="2.12.1" />
+    <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="OxyPlot.Core" Version="2.2.0" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
-    <PackageReference Include="System.Management" Version="9.0.6" />
+    <PackageReference Include="System.Management" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Web" />
