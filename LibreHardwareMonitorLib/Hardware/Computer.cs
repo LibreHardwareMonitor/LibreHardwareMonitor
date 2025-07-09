@@ -501,9 +501,8 @@ public class Computer : IComputer
         _smbios = new SMBios();
 
         if (IsRing0Enabled)
-        {
             Ring0.Open();
-        }
+
         Mutexes.Open();
         OpCode.Open();
 
