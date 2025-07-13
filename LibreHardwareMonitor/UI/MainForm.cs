@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware.Storage;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
@@ -30,6 +31,7 @@ public sealed partial class MainForm : Form
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
+    private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -244,6 +246,8 @@ public sealed partial class MainForm : Form
         fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
         Server = new HttpServer(_root,
+                                _computer,
+                                _settings.GetValue("listenerIp", "?"),
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
                                 _settings.GetValue("authenticationUserName", ""),
@@ -368,6 +372,21 @@ public sealed partial class MainForm : Form
                     break;
                 case 5:
                     timer.Interval = 10000;
+                    break;
+            }
+        };
+
+        _throttleAtaUpdate = new UserOption("throttleAtaUpdateMenuItem", false, throttleAtaUpdateMenuItem, _settings);
+        _throttleAtaUpdate.Changed += (sender, e) =>
+        {
+            switch (_throttleAtaUpdate.Value)
+            {
+                case true:
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
+                    break;
+
+                case false:
+                    AtaStorage.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };
@@ -878,6 +897,7 @@ public sealed partial class MainForm : Form
         foreach (TreeColumn column in treeView.Columns)
             _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
 
+        _settings.SetValue("listenerIp", Server.ListenerIp);
         _settings.SetValue("listenerPort", Server.ListenerPort);
         _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
         _settings.SetValue("authenticationUserName", Server.UserName);
@@ -1296,9 +1316,9 @@ public sealed partial class MainForm : Form
         }
     }
 
-    private void ServerPortMenuItem_Click(object sender, EventArgs e)
+    private void ServerInterfacePortMenuItem_Click(object sender, EventArgs e)
     {
-        new PortForm(this).ShowDialog();
+        new InterfacePortForm(this).ShowDialog();
     }
 
     private void AuthWebServerMenuItem_Click(object sender, EventArgs e)

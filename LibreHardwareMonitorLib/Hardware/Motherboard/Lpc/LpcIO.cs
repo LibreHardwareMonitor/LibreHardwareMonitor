@@ -67,7 +67,7 @@ internal class LpcIO
         {
             var port = new LpcPort(REGISTER_PORTS[i], VALUE_PORTS[i]);
 
-            if (DetectWinbondFintek(port)) continue;
+            if (DetectWinbondFintek(port, motherboard)) continue;
 
             if (DetectIT87(port, motherboard)) continue;
 
@@ -85,7 +85,7 @@ internal class LpcIO
         return null;
     }
 
-    private bool DetectWinbondFintek(LpcPort port)
+    private bool DetectWinbondFintek(LpcPort port, Motherboard motherboard)
     {
         port.WinbondNuvotonFintekEnter();
 
@@ -389,8 +389,34 @@ internal class LpcIO
             case 0xD5:
                 switch (revision)
                 {
-                    case 0x92:
-                        chip = Chip.NCT6687D;
+                    case 0x92:                                
+                        switch (motherboard.Model)
+                        {
+                            case Model.B840P_PRO_WIFI:
+                            case Model.B850_GAMING_PLUS_WIFI:
+                            case Model.B850P_PRO_WIFI:
+                            case Model.B850M_MORTAR_WIFI:
+                            case Model.B850_TOMAHAWK_MAX_WIFI:
+                            case Model.B850_EDGE_TI_WIFI:
+                            case Model.X870_GAMING_PLUS_WIFI:
+                            case Model.X870_TOMAHAWK_WIFI:
+                            case Model.X870P_PRO_WIFI:
+                            case Model.X870E_TOMAHAWK_WIFI:
+                            case Model.X870E_CARBON_WIFI:
+                            case Model.X870E_EDGE_TI_WIFI:
+                            case Model.X870E_GODLIKE:
+                            case Model.Z890_ACE:
+                            case Model.Z890_CARBON_WIFI:
+                            case Model.Z890_TOMAHAWK_WIFI:
+                            case Model.Z890_EDGE_TI_WIFI:
+                            case Model.Z890P_PRO_WIFI:
+                            case Model.Z890A_PRO_WIFI:
+                                chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
+                                break;
+                            default:
+                                chip = Chip.NCT6687D;
+                                break;
+                        }
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
@@ -401,6 +427,10 @@ internal class LpcIO
                 {
                     case 0x02:
                         chip = Chip.NCT6799D;
+                        logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
+                        break;
+                    case 0x06:
+                        chip = Chip.NCT6701D;
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
@@ -427,7 +457,7 @@ internal class LpcIO
 
             // disable the hardware monitor i/o space lock on NCT679XD chips
             if (address == verify &&
-                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D)
+                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D or Chip.NCT6701D)
             {
                 port.NuvotonDisableIOSpaceLock();
             }
@@ -492,7 +522,9 @@ internal class LpcIO
                 case Chip.NCT6799D:
                 case Chip.NCT6686D:
                 case Chip.NCT6687D:
+                case Chip.NCT6687DR:
                 case Chip.NCT6683D:
+                case Chip.NCT6701D:
                     _superIOs.Add(new Nct677X(chip, revision, address, port));
                     break;
 
@@ -544,7 +576,7 @@ internal class LpcIO
             port.IT87Enter();
             chipId = port.ReadWord(CHIP_ID_REGISTER);
         }
-        
+
         Chip chip = chipId switch
         {
             0x8613 => Chip.IT8613E,
@@ -557,6 +589,7 @@ internal class LpcIO
             0x8686 => Chip.IT8686E,
             0x8688 => Chip.IT8688E,
             0x8689 => Chip.IT8689E,
+            0x8696 => Chip.IT8696E,
             0x8705 => Chip.IT8705F,
             0x8712 => Chip.IT8712F,
             0x8716 => Chip.IT8716F,

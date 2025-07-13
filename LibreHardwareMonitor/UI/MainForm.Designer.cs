@@ -123,6 +123,7 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval2sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval5sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval10sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.throttleAtaUpdateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sensorValuesTimeWindowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timeWindow30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.timeWindow1minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -138,7 +139,7 @@ namespace LibreHardwareMonitor.UI
             this.webMenuItemSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.webMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.serverPortMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.serverInterfacePortMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.authWebServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -787,7 +788,8 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval1sMenuItem,
             this.updateInterval2sMenuItem,
             this.updateInterval5sMenuItem,
-            this.updateInterval10sMenuItem});
+            this.updateInterval10sMenuItem,
+            this.throttleAtaUpdateMenuItem});
             this.updateIntervalMenuItem.Name = "updateIntervalMenuItem";
             this.updateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
             this.updateIntervalMenuItem.Text = "Update Interval";
@@ -833,6 +835,13 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval10sMenuItem.Name = "updateInterval10sMenuItem";
             this.updateInterval10sMenuItem.Size = new System.Drawing.Size(107, 22);
             this.updateInterval10sMenuItem.Text = "10s";
+            //
+            // throttleATAUpdateMenuItem
+            //
+            this.throttleAtaUpdateMenuItem.CheckOnClick = true;
+            this.throttleAtaUpdateMenuItem.Name = "throttleATAUpdateMenuItem";
+            this.throttleAtaUpdateMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.throttleAtaUpdateMenuItem.Text = "Throttle ATA Storage";
             //
             // sensorValuesTimeWindowMenuItem
             //
@@ -938,7 +947,7 @@ namespace LibreHardwareMonitor.UI
             //
             this.webMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.runWebServerMenuItem,
-            this.serverPortMenuItem,
+            this.serverInterfacePortMenuItem,
             this.authWebServerMenuItem});
             this.webMenuItem.Name = "webMenuItem";
             this.webMenuItem.Size = new System.Drawing.Size(221, 22);
@@ -952,10 +961,10 @@ namespace LibreHardwareMonitor.UI
             //
             // serverPortMenuItem
             //
-            this.serverPortMenuItem.Name = "serverPortMenuItem";
-            this.serverPortMenuItem.Size = new System.Drawing.Size(153, 22);
-            this.serverPortMenuItem.Text = "Port";
-            this.serverPortMenuItem.Click += new System.EventHandler(this.ServerPortMenuItem_Click);
+            this.serverInterfacePortMenuItem.Name = "serverInterfacePortMenuItem";
+            this.serverInterfacePortMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.serverInterfacePortMenuItem.Text = "Interface / Port";
+            this.serverInterfacePortMenuItem.Click += new System.EventHandler(this.ServerInterfacePortMenuItem_Click);
             //
             // authWebServerMenuItem
             //
@@ -1141,7 +1150,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem splitPanelFixedSensorScalingMenuItem;
         private System.Windows.Forms.ToolStripMenuItem webMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runWebServerMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem serverPortMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem serverInterfacePortMenuItem;
         private System.Windows.Forms.ToolStripMenuItem menuItemFileHardware;
         private System.Windows.Forms.ToolStripMenuItem mainboardMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cpuMenuItem;
@@ -1171,6 +1180,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem updateInterval2sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval5sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval10sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem throttleAtaUpdateMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nicMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sensorValuesTimeWindowMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow30sMenuItem;

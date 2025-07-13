@@ -23,6 +23,8 @@ internal static class Ring0
 
     public static bool IsOpen => _driver != null;
 
+    internal static KernelDriver KernelDriver => _driver;
+
     public static void Open()
     {
         // no implementation for unix systems
@@ -325,6 +327,20 @@ internal static class Ring0
         bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MSR, index, ref buffer);
         edx = (uint)((buffer >> 32) & 0xFFFFFFFF);
         eax = (uint)(buffer & 0xFFFFFFFF);
+        return result;
+    }
+
+    public static bool ReadMsr(uint index, out ulong edxeax)
+    {
+        if (_driver == null)
+        {
+            edxeax = 0;
+            return false;
+        }
+
+        ulong buffer = 0;
+        bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MSR, index, ref buffer);
+        edxeax = buffer;
         return result;
     }
 

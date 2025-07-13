@@ -222,8 +222,22 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
+                        case 0xC5: // Intel Core Ultra 9 200 Series ArrowLake
                         case 0xC6: // Intel Core Ultra 7 200 Series ArrowLake
                             _microArchitecture = MicroArchitecture.ArrowLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xBD: // Intel Core Ultra 5/7 200 Series LunarLake
+                            _microArchitecture = MicroArchitecture.LunarLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x8F: // Intel Xeon W5-3435X // SapphireRapids 
+                            _microArchitecture = MicroArchitecture.SapphireRapids;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x96: // Intel Celeron ElkhartLake 
+                            _microArchitecture = MicroArchitecture.ElkhartLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
@@ -284,6 +298,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.IvyBridge:
             case MicroArchitecture.JasperLake:
             case MicroArchitecture.KabyLake:
+            case MicroArchitecture.LunarLake:
             case MicroArchitecture.Nehalem:
             case MicroArchitecture.MeteorLake:
             case MicroArchitecture.RaptorLake:
@@ -292,6 +307,8 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Silvermont:
             case MicroArchitecture.Skylake:
             case MicroArchitecture.TigerLake:
+            case MicroArchitecture.SapphireRapids:
+            case MicroArchitecture.ElkhartLake:
             case MicroArchitecture.Tremont:
                 if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
@@ -303,6 +320,24 @@ internal sealed class IntelCpu : GenericCpu
         }
 
         int coreSensorId = 0;
+
+        //core temp avg and max value
+        //is only available when the cpu has more than 1 core
+        if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown && _coreCount > 1)
+        {
+            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings);
+            ActivateSensor(_coreMax);
+            coreSensorId++;
+
+            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
+            ActivateSensor(_coreAvg);
+            coreSensorId++;
+        }
+        else
+        {
+            _coreMax = null;
+            _coreAvg = null;
+        }
 
         // check if processor supports a digital thermal sensor at core level
         if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 1) != 0 && _microArchitecture != MicroArchitecture.Unknown)
@@ -360,23 +395,6 @@ internal sealed class IntelCpu : GenericCpu
         else
             _distToTjMaxTemperatures = Array.Empty<Sensor>();
 
-        //core temp avg and max value
-        //is only available when the cpu has more than 1 core
-        if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown && _coreCount > 1)
-        {
-            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings);
-            ActivateSensor(_coreMax);
-            coreSensorId++;
-
-            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
-            ActivateSensor(_coreAvg);
-        }
-        else
-        {
-            _coreMax = null;
-            _coreAvg = null;
-        }
-
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
@@ -399,6 +417,7 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.IvyBridge or
             MicroArchitecture.JasperLake or
             MicroArchitecture.KabyLake or
+            MicroArchitecture.LunarLake or
             MicroArchitecture.MeteorLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
@@ -406,6 +425,8 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.Silvermont or
             MicroArchitecture.Skylake or
             MicroArchitecture.TigerLake or
+            MicroArchitecture.SapphireRapids or
+            MicroArchitecture.ElkhartLake or
             MicroArchitecture.Tremont)
         {
             _powerSensors = new Sensor[_energyStatusMsrs.Length];
@@ -602,6 +623,7 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.IvyBridge:
                         case MicroArchitecture.JasperLake:
                         case MicroArchitecture.KabyLake:
+                        case MicroArchitecture.LunarLake:
                         case MicroArchitecture.MeteorLake:
                         case MicroArchitecture.RaptorLake:
                         case MicroArchitecture.RocketLake:
@@ -609,6 +631,8 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.Silvermont:
                         case MicroArchitecture.Skylake:
                         case MicroArchitecture.TigerLake:
+                        case MicroArchitecture.SapphireRapids:
+                        case MicroArchitecture.ElkhartLake:
                         case MicroArchitecture.Tremont:
                             _coreClocks[i].Value = (float)(((eax >> 8) & 0xff) * newBusClock);
                             break;
@@ -690,6 +714,7 @@ internal sealed class IntelCpu : GenericCpu
         IvyBridge,
         JasperLake,
         KabyLake,
+        LunarLake,
         Nehalem,
         NetBurst,
         MeteorLake,
@@ -700,6 +725,8 @@ internal sealed class IntelCpu : GenericCpu
         TigerLake,
         Tremont,
         RaptorLake,
+        SapphireRapids,
+        ElkhartLake,
         Unknown
     }
 

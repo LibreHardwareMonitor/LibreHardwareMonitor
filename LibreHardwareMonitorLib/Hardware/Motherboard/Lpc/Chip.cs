@@ -37,6 +37,7 @@ internal enum Chip : ushort
     IT8686E = 0x8686,
     IT8688E = 0x8688,
     IT8689E = 0x8689,
+    IT8696E = 0x8696,
     IT8705F = 0x8705,
     IT8712F = 0x8712,
     IT8716F = 0x8716,
@@ -67,8 +68,10 @@ internal enum Chip : ushort
     NCT6798D = 0xD42B,
     NCT6686D = 0xD440,
     NCT6687D = 0xD592,
+    NCT6687DR = 0xFFFF, // Dummy Entry for MSI AM5/LGA1851 Motherboards
     NCT6683D = 0xC732,
     NCT6799D = 0xD802,
+    NCT6701D = 0xD806,
 
     W83627DHG = 0xA020,
     W83627DHGP = 0xB070,
@@ -110,6 +113,7 @@ internal class ChipName
             case Chip.IT8686E: return "ITE IT8686E";
             case Chip.IT8688E: return "ITE IT8688E";
             case Chip.IT8689E: return "ITE IT8689E";
+            case Chip.IT8696E: return "ITE IT8696E";
             case Chip.IT8705F: return "ITE IT8705F";
             case Chip.IT8712F: return "ITE IT8712F";
             case Chip.IT8716F: return "ITE IT8716F";
@@ -141,7 +145,9 @@ internal class ChipName
             case Chip.NCT6799D: return "Nuvoton NCT6799D";
             case Chip.NCT6686D: return "Nuvoton NCT6686D";
             case Chip.NCT6687D: return "Nuvoton NCT6687D";
+            case Chip.NCT6687DR: return "Nuvoton NCT6687D-R";
             case Chip.NCT6683D: return "Nuvoton NCT6683D";
+            case Chip.NCT6701D: return "Nuvoton NCT6701D";
 
             case Chip.W83627DHG: return "Winbond W83627DHG";
             case Chip.W83627DHGP: return "Winbond W83627DHG-P";

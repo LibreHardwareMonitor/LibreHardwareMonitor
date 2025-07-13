@@ -8,7 +8,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 // ReSharper disable once InconsistentNaming
 
@@ -160,8 +159,15 @@ internal class IT87XX : ISuperIO
                 Controls = new float?[6];
                 break;
 
+            case Chip.IT8696E:
+                Voltages = new float?[10];
+                Temperatures = new float?[6];
+                Fans = new float?[6];
+                Controls = new float?[6];
+                break;
+
             case Chip.IT87952E:
-                Voltages = new float?[6];
+                Voltages = new float?[9];
                 Temperatures = new float?[3];
                 Fans = new float?[3];
                 Controls = new float?[3];
@@ -195,7 +201,7 @@ internal class IT87XX : ISuperIO
                 Fans = new float?[3];
                 Controls = new float?[3];
                 break;
-            
+
             case Chip.IT8620E:
                 Voltages = new float?[9];
                 Temperatures = new float?[3];
@@ -217,7 +223,7 @@ internal class IT87XX : ISuperIO
         // Conflicting reports on IT8792E: either 0.0109 in linux drivers or 0.011 comparing with Gigabyte board & SIV SW.
         _voltageGain = chip switch
         {
-            Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E => 0.012f,
+            Chip.IT8613E or Chip.IT8620E or Chip.IT8628E or Chip.IT8631E or Chip.IT8721F or Chip.IT8728F or Chip.IT8771E or Chip.IT8772E or Chip.IT8686E or Chip.IT8688E or Chip.IT8689E or Chip.IT8696E => 0.012f,
             Chip.IT8625E or Chip.IT8792E or Chip.IT87952E => 0.011f,
             Chip.IT8655E or Chip.IT8665E => 0.0109f,
             _ => 0.016f
@@ -429,7 +435,7 @@ internal class IT87XX : ISuperIO
 
         for (int i = 0; i < Voltages.Length; i++)
         {
-            float value = _voltageGain * ReadByte((byte)(VOLTAGE_BASE_REG + i), out bool valid);
+            float value = _voltageGain * ReadByte(IT87_REG_VIN[i], out bool valid);
 
             if (!valid)
                 continue;
@@ -603,7 +609,9 @@ internal class IT87XX : ISuperIO
 
     private const byte TEMPERATURE_BASE_REG = 0x29;
     private const byte VENDOR_ID_REGISTER = 0x58;
-    private const byte VOLTAGE_BASE_REG = 0x20;
+
+    // https://github.com/torvalds/linux/blob/master/drivers/hwmon/it87.c
+    private readonly byte[] IT87_REG_VIN = { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2f, 0x2c, 0x2d, 0x2e };
 
     private readonly byte[] FAN_PWM_CTRL_REG;
     private readonly byte[] FAN_PWM_CTRL_EXT_REG = { 0x63, 0x6b, 0x73, 0x7b, 0xa3, 0xab };
