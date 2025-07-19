@@ -4731,6 +4731,34 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_X870_I_GAMING_WIFI: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4.02f, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 10.98f, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("CPU VDDIO / MC Voltage", 10, 34, 34));
+                        v.Add(new Voltage("VMISC", 11, 34, 34));
+                        v.Add(new Voltage("1,8V Standby", 12, 7.66f, 10));
+
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Motherboard", 2));
+
+                        f.Add(new Fan("Chassis", 0));
+                        f.Add(new Fan("CPU", 1));
+                        f.Add(new Fan("Chipset/Disk", 5));
+                        f.Add(new Fan("AIO Pump", 6));
+
+                        c.Add(new Control("Chassis", 0));
+                        c.Add(new Control("CPU", 1));
+                        c.Add(new Control("Chipset/Disk", 5));
+                        c.Add(new Control("AIO Pump", 6));
+
+                        break;
+
                     case Model.ROG_CROSSHAIR_X870E_HERO: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));

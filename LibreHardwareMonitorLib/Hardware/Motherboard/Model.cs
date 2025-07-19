@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -116,6 +116,7 @@ public enum Model
     ROG_MAXIMUS_Z790_FORMULA,
     ROG_MAXIMUS_XII_HERO_WIFI,
     PRIME_X870_P,
+    ROG_STRIX_X870_I_GAMING_WIFI,
     ROG_CROSSHAIR_X870E_HERO,
     ROG_STRIX_X870E_E_GAMING_WIFI,
     PROART_X870E_CREATOR_WIFI,
