@@ -37,6 +37,13 @@ internal class MemoryGroup : IGroup
             DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
             SMBusManager.UseWMI = false;
         }
+        else
+        {
+            // Still need to set Driver if Ring0 is absent. RAMSPDToolkitDriver.IsOpen
+            // returns false when the given kernel driver is null.
+            DriverManager.Driver = new RAMSPDToolkitDriver(null);
+            SMBusManager.UseWMI = true;
+        }
     }
 
     public MemoryGroup(ISettings settings)
