@@ -279,6 +279,12 @@ public abstract class EmbeddedController : Hardware
             ECSensor.CurrCPU,
             ECSensor.FanCPUOpt,
             ECSensor.FanWaterFlow),
+        new(Model.ROG_STRIX_X870_I_GAMING_WIFI,
+            BoardFamily.Amd800,
+            ECSensor.TempCPU,
+            ECSensor.TempCPUPackage,
+            ECSensor.TempMB,
+            ECSensor.TempVrm),
     };
 
     private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors = new()
@@ -325,6 +331,17 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) }
+            }
+        },
+        {
+            BoardFamily.Amd800, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x0030) },
+                { ECSensor.TempCPUPackage, new EmbeddedControllerSource("CPU Package", SensorType.Temperature, 0x0031) },
+                { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x0032) },
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0036, blank: -40) },
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
             }
         },
         {
@@ -537,6 +554,9 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>CPU temperature [℃]</summary>
         TempCPU,
+		
+        /// <summary>CPU Package temperature [℃]</summary>
+        TempCPUPackage,
 
         /// <summary>motherboard temperature [℃]</summary>
         TempMB,
@@ -587,6 +607,7 @@ public abstract class EmbeddedController : Hardware
         Amd400,
         Amd500,
         Amd600,
+		Amd800,
         Intel100,
         Intel300,
         Intel400,
