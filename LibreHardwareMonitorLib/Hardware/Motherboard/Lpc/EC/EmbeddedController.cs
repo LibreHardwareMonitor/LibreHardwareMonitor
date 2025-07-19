@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
@@ -554,6 +554,9 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>CPU temperature [℃]</summary>
         TempCPU,
+		
+        /// <summary>CPU Package temperature [℃]</summary>
+        TempCPUPackage,
 
         /// <summary>CPU Package temperature [℃]</summary>
         TempCPUPackage,
@@ -607,7 +610,7 @@ public abstract class EmbeddedController : Hardware
         Amd400,
         Amd500,
         Amd600,
-        Amd800,
+		Amd800,
         Intel100,
         Intel300,
         Intel400,
