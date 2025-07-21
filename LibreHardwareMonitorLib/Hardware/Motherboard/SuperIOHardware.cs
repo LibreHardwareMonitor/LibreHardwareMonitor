@@ -4742,7 +4742,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VTT", 9, 34, 34));
                         v.Add(new Voltage("CPU VDDIO / MC Voltage", 10, 34, 34));
                         v.Add(new Voltage("VMISC", 11, 34, 34));
-                        v.Add(new Voltage("1,8V Standby", 12, 7.66f, 10));
+                        v.Add(new Voltage("1.8V Standby", 12, 7.66f, 10));
 
                         t.Add(new Temperature("CPU", 22));
                         t.Add(new Temperature("Motherboard", 2));
