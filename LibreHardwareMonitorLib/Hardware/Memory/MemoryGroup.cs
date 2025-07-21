@@ -58,10 +58,11 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     private void StartRetryTask(ISettings settings)
     {
         _cancellationTokenSource = new CancellationTokenSource();
+
         Task.Run(async () =>
         {
-            _cancellationTokenSource = new CancellationTokenSource();
             int retryRemaining = 5;
+
             while (!_cancellationTokenSource.IsCancellationRequested && --retryRemaining > 0)
             {
                 await Task.Delay(TimeSpan.FromSeconds(2.5), _cancellationTokenSource.Token);
