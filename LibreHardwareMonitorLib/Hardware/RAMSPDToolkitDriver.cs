@@ -22,7 +22,7 @@ namespace LibreHardwareMonitor.Hardware
         private const byte PCI_NUMBER_OF_DEVICE = 32;
         private const byte PCI_NUMBER_OF_FUNCTION = 8;
 
-        public bool IsOpen => _kernelDriver != null || !_kernelDriver.IsOpen;
+        public bool IsOpen => _kernelDriver?.IsOpen ?? false;
 
         public RAMSPDToolkitDriver(KernelDriver kernelDriver)
         {
