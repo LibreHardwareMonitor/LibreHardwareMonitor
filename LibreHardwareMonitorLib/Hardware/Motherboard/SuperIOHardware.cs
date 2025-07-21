@@ -4754,7 +4754,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         c.Add(new Control("Chassis", 0));
                         c.Add(new Control("CPU", 1));
-                        c.Add(new Control("Chipset/Disk", 5));
+                        c.Add(new Control("Chipset / Disk", 5));
                         c.Add(new Control("AIO Pump", 6));
 
                         break;
