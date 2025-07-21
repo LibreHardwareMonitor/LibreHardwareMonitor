@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using RAMSPDToolkit.I2CSMBus;
@@ -58,7 +59,27 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
-    public string GetReport() => _lastException?.ToString() ?? null;
+    public string GetReport()
+    {
+        StringBuilder report = new();
+        report.AppendLine("Memory Report:");
+        if (_lastException != null)
+        {
+            report.AppendLine($"Error while detecting memory: {_lastException.Message}");
+        }
+
+        foreach (Hardware hardware in _hardware)
+        {
+            report.AppendLine($"{hardware.Name} ({hardware.Identifier}):");
+            report.AppendLine();
+            foreach (ISensor sensor in hardware.Sensors)
+            {
+                report.AppendLine($"{sensor.Name}: {sensor.Value?.ToString() ?? "No value"}");
+            }
+        }
+
+        return report.ToString();
+    }
 
     public void Close()
     {
@@ -113,7 +134,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
             while (!_cancellationTokenSource.IsCancellationRequested && --retryRemaining > 0)
             {
-                await Task.Delay(TimeSpan.FromSeconds(2.5), _cancellationTokenSource.Token);
+                await Task.Delay(TimeSpan.FromSeconds(2.5), _cancellationTokenSource.Token).ConfigureAwait(false);
 
                 if (TryAddDimms(settings))
                 {
@@ -137,7 +158,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
                 }
             }
-        }, _cancellationTokenSource.Token).ConfigureAwait(false);
+        }, _cancellationTokenSource.Token);
     }
 
     private static bool DetectThermalSensors(out List<SPDAccessor> accessors)
