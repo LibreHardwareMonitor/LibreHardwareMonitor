@@ -4749,7 +4749,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         f.Add(new Fan("Chassis", 0));
                         f.Add(new Fan("CPU", 1));
-                        f.Add(new Fan("Chipset/Disk", 5));
+                        f.Add(new Fan("Chipset / Disk", 5));
                         f.Add(new Fan("AIO Pump", 6));
 
                         c.Add(new Control("Chassis", 0));
