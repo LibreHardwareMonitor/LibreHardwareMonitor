@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RAMSPDToolkit.I2CSMBus;
@@ -21,10 +22,7 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 internal class MemoryGroup : IGroup, IHardwareChanged
 {
     private static readonly object _lock = new();
-    private readonly List<Hardware> _hardware = [];
-
-    public event HardwareEventHandler HardwareAdded;
-    public event HardwareEventHandler HardwareRemoved;
+    private List<Hardware> _hardware = [];
 
     private CancellationTokenSource _cancellationTokenSource;
     private Exception _lastException;
@@ -55,49 +53,12 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         _opened = true;
     }
 
-    private void StartRetryTask(ISettings settings)
-    {
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        Task.Run(async () =>
-        {
-            int retryRemaining = 5;
-
-            while (!_cancellationTokenSource.IsCancellationRequested && --retryRemaining > 0)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(2.5), _cancellationTokenSource.Token);
-
-                if (TryAddDimms(settings))
-                {
-                    lock (_lock)
-                    {
-                        if (!_opened)
-                        {
-                            return;
-                        }
-
-                        foreach (Hardware hardware in _hardware)
-                        {
-                            HardwareAdded?.Invoke(hardware);
-                        }
-
-                        _cancellationTokenSource.Dispose();
-                        _cancellationTokenSource = null;
-
-                        break;
-                    }
-
-                }
-            }
-        }, _cancellationTokenSource.Token);
-    }
+    public event HardwareEventHandler HardwareAdded;
+    public event HardwareEventHandler HardwareRemoved;
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
-    public string GetReport()
-    {
-        return _lastException?.ToString() ?? null;
-    }
+    public string GetReport() => _lastException?.ToString() ?? null;
 
     public void Close()
     {
@@ -142,6 +103,43 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         return false;
     }
 
+    private void StartRetryTask(ISettings settings)
+    {
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        Task.Run(async () =>
+        {
+            int retryRemaining = 5;
+
+            while (!_cancellationTokenSource.IsCancellationRequested && --retryRemaining > 0)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2.5), _cancellationTokenSource.Token);
+
+                if (TryAddDimms(settings))
+                {
+                    lock (_lock)
+                    {
+                        if (!_opened)
+                        {
+                            return;
+                        }
+
+                        foreach (Hardware hardware in _hardware.OfType<DimmMemory>())
+                        {
+                            HardwareAdded?.Invoke(hardware);
+                        }
+
+                        _cancellationTokenSource.Dispose();
+                        _cancellationTokenSource = null;
+
+                        break;
+                    }
+
+                }
+            }
+        }, _cancellationTokenSource.Token).ConfigureAwait(false);
+    }
+
     private static bool DetectThermalSensors(out List<SPDAccessor> accessors)
     {
         accessors = [];
@@ -176,6 +174,8 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
     {
+        List<Hardware> newHardwareList = [.. _hardware];
+
         foreach (SPDAccessor ram in accessors)
         {
             //Default value
@@ -186,7 +186,9 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
 
             DimmMemory memory = new(ram, name, new Identifier($"memory/dimm/{ram.Index}"), settings);
-            _hardware.Add(memory);
+            newHardwareList.Add(memory);
         }
+
+        _hardware = newHardwareList;
     }
 }
