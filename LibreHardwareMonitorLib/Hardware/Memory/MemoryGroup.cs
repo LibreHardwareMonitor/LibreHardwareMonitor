@@ -33,8 +33,14 @@ internal class MemoryGroup : IGroup
     {
         if (Ring0.IsOpen)
         {
-            //Assign implementation of IDriver
+            // Assign implementation of IDriver.
             DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
+            SMBusManager.UseWMI = false;
+        }
+        else
+        {
+            // Still need to set Driver if Ring0 is absent.
+            DriverManager.Driver = new RAMSPDToolkitDriver(null);
             SMBusManager.UseWMI = false;
         }
     }
