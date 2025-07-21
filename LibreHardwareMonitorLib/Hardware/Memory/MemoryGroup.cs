@@ -34,7 +34,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     {
         if (Ring0.IsOpen && (DriverManager.Driver is null || !DriverManager.Driver.IsOpen))
         {
-            //Assign implementation of IDriver
+            // Assign implementation of IDriver.
             DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
             SMBusManager.UseWMI = false;
         }
