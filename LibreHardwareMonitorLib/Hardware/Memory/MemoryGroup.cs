@@ -5,7 +5,6 @@
 // All Rights Reserved.
 
 using System.Collections.Generic;
-using System.Timers;
 using RAMSPDToolkit.I2CSMBus;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Enums;
@@ -17,17 +16,8 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 
 internal class MemoryGroup : IGroup
 {
-    //Retry 12x
-    private const int RetryCount = 12;
-
-    //Retry every 2.5 seconds
-    private const double RetryTime = 2500;
     private static readonly object _lock = new();
-
     private readonly List<Hardware> _hardware = [];
-    private int _elapsedCounter;
-
-    private Timer _timer;
 
     static MemoryGroup()
     {
@@ -45,27 +35,7 @@ internal class MemoryGroup : IGroup
         _hardware.Add(new TotalMemory(settings));
 
         //No RAM detected
-        if (!DetectThermalSensors(out List<SPDAccessor> accessors))
-        {
-            //Retry a couple of times
-            //SMBus might not be detected right after boot
-            _timer = new Timer(RetryTime);
-
-            _timer.Elapsed += (_, _) =>
-            {
-                if (_elapsedCounter++ >= RetryCount || DetectThermalSensors(out accessors))
-                {
-                    _timer.Stop();
-                    _timer = null;
-
-                    if (accessors != null)
-                        AddDimms(accessors, settings);
-                }
-            };
-
-            _timer.Start();
-        }
-        else
+        if (DetectThermalSensors(out List<SPDAccessor> accessors))
         {
             AddDimms(accessors, settings);
         }
@@ -133,7 +103,7 @@ internal class MemoryGroup : IGroup
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
             }
 
-            var memory = new DimmMemory(ram, name, new Identifier("ram"), settings);
+            var memory = new DimmMemory(ram, name, new Identifier($"memory/dimm/{ram.Index}/temperature"), settings);
 
             _hardware.Add(memory);
         }
