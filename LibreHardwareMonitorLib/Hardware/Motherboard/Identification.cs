@@ -109,6 +109,8 @@ internal class Identification
     {
         switch (name)
         {
+            case var _ when name.Equals("X870 AORUS ELITE WIFI7", StringComparison.OrdinalIgnoreCase):
+                return Model.X870_AORUS_ELITE_WIFI7;
             case var _ when name.Equals("880GMH/USB3", StringComparison.OrdinalIgnoreCase):
                 return Model._880GMH_USB3;
             case var _ when name.Equals("B85M-DGS", StringComparison.OrdinalIgnoreCase):
@@ -623,12 +625,16 @@ internal class Identification
                 return Model.X870E_AORUS_PRO;
             case var _ when name.Equals("X870E AORUS PRO ICE", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_AORUS_PRO_ICE;
+            case var _ when name.Equals("ROG STRIX X870-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X870_I_GAMING_WIFI;
             case var _ when name.Equals("X870E AORUS XTREME AI TOP", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_AORUS_XTREME_AI_TOP;
             case var _ when name.Equals("PROART X870E-CREATOR WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.PROART_X870E_CREATOR_WIFI;
             case var _ when name.Equals("PRIME X870-P", StringComparison.OrdinalIgnoreCase):
                 return Model.PRIME_X870_P;
+            case var _ when name.Equals("ROG STRIX X870-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X870_I_GAMING_WIFI;
             case var _ when name.Equals("ROG CROSSHAIR X870E HERO", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X870E_HERO;
             case var _ when name.Equals("MAG X870 TOMAHAWK WIFI (MS-7E51)", StringComparison.OrdinalIgnoreCase):

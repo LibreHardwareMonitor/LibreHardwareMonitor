@@ -4,8 +4,13 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Timers;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using RAMSPDToolkit.I2CSMBus;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Enums;
@@ -15,127 +20,196 @@ using RAMSPDToolkit.Windows.Driver;
 
 namespace LibreHardwareMonitor.Hardware.Memory;
 
-internal class MemoryGroup : IGroup
+internal class MemoryGroup : IGroup, IHardwareChanged
 {
-    //Retry 12x
-    private const int RetryCount = 12;
-
-    //Retry every 2.5 seconds
-    private const double RetryTime = 2500;
     private static readonly object _lock = new();
+    private List<Hardware> _hardware = [];
 
-    private readonly List<Hardware> _hardware = [];
-    private int _elapsedCounter;
-
-    private Timer _timer;
-
-    static MemoryGroup()
-    {
-        if (Ring0.IsOpen)
-        {
-            //Assign implementation of IDriver
-            DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
-            SMBusManager.UseWMI = false;
-        }
-    }
+    private CancellationTokenSource _cancellationTokenSource;
+    private Exception _lastException;
+    private bool _opened = false;
 
     public MemoryGroup(ISettings settings)
     {
+        if (Ring0.IsOpen && (DriverManager.Driver is null || !DriverManager.Driver.IsOpen))
+        {
+            // Assign implementation of IDriver.
+            DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
+            SMBusManager.UseWMI = false;
+        }
+
         _hardware.Add(new VirtualMemory(settings));
         _hardware.Add(new TotalMemory(settings));
 
-        //No RAM detected
-        if (!DetectThermalSensors(out List<SPDAccessor> accessors))
+        if (DriverManager.Driver == null)
         {
-            //Retry a couple of times
-            //SMBus might not be detected right after boot
-            _timer = new Timer(RetryTime);
-
-            _timer.Elapsed += (_, _) =>
-            {
-                if (_elapsedCounter++ >= RetryCount || DetectThermalSensors(out accessors))
-                {
-                    _timer.Stop();
-                    _timer = null;
-
-                    if (accessors != null)
-                        AddDimms(accessors, settings);
-                }
-            };
-
-            _timer.Start();
+            return;
         }
-        else
+
+        if (!TryAddDimms(settings))
         {
-            AddDimms(accessors, settings);
+            StartRetryTask(settings);
         }
+
+        _opened = true;
     }
+
+    public event HardwareEventHandler HardwareAdded;
+    public event HardwareEventHandler HardwareRemoved;
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
     public string GetReport()
     {
-        return null;
+        StringBuilder report = new();
+        report.AppendLine("Memory Report:");
+        if (_lastException != null)
+        {
+            report.AppendLine($"Error while detecting memory: {_lastException.Message}");
+        }
+
+        foreach (Hardware hardware in _hardware)
+        {
+            report.AppendLine($"{hardware.Name} ({hardware.Identifier}):");
+            report.AppendLine();
+            foreach (ISensor sensor in hardware.Sensors)
+            {
+                report.AppendLine($"{sensor.Name}: {sensor.Value?.ToString() ?? "No value"}");
+            }
+        }
+
+        return report.ToString();
     }
 
     public void Close()
     {
-        foreach (Hardware ram in _hardware)
-            ram.Close();
+        lock (_lock)
+        {
+            _opened = false;
+            foreach (Hardware ram in _hardware)
+                ram.Close();
+
+            _hardware.Clear();
+
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+        }
+    }
+
+    private bool TryAddDimms(ISettings settings)
+    {
+        try
+        {
+            lock (_lock)
+            {
+                if (!_opened)
+                {
+                    return true;
+                }
+
+                if (DetectThermalSensors(out List<SPDAccessor> accessors))
+                {
+                    AddDimms(accessors, settings);
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _lastException = ex;
+            Debug.Assert(false, "Exception while detecting RAM: " + ex.Message);
+        }
+
+        return false;
+    }
+
+    private void StartRetryTask(ISettings settings)
+    {
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        Task.Run(async () =>
+        {
+            int retryRemaining = 5;
+
+            while (!_cancellationTokenSource.IsCancellationRequested && --retryRemaining > 0)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2.5), _cancellationTokenSource.Token).ConfigureAwait(false);
+
+                if (TryAddDimms(settings))
+                {
+                    lock (_lock)
+                    {
+                        if (!_opened)
+                        {
+                            return;
+                        }
+
+                        foreach (Hardware hardware in _hardware.OfType<DimmMemory>())
+                        {
+                            HardwareAdded?.Invoke(hardware);
+                        }
+
+                        _cancellationTokenSource.Dispose();
+                        _cancellationTokenSource = null;
+
+                        break;
+                    }
+
+                }
+            }
+        }, _cancellationTokenSource.Token);
     }
 
     private static bool DetectThermalSensors(out List<SPDAccessor> accessors)
     {
-        lock (_lock)
+        accessors = [];
+
+        bool ramDetected = false;
+
+        SMBusManager.DetectSMBuses();
+
+        //Go through detected SMBuses
+        foreach (SMBusInterface smbus in SMBusManager.RegisteredSMBuses)
         {
-            var list = new List<SPDAccessor>();
-
-            bool ramDetected = false;
-
-            SMBusManager.DetectSMBuses();
-
-            //Go through detected SMBuses
-            foreach (var smbus in SMBusManager.RegisteredSMBuses)
+            //Go through possible RAM slots
+            for (byte i = SPDConstants.SPD_BEGIN; i <= SPDConstants.SPD_END; ++i)
             {
-                //Go through possible RAM slots
-                for (byte i = SPDConstants.SPD_BEGIN; i <= SPDConstants.SPD_END; ++i)
+                //Detect type of RAM, if available
+                SPDDetector detector = new(smbus, i);
+
+                //RAM available and detected
+                if (detector.Accessor != null)
                 {
-                    //Detect type of RAM, if available
-                    var detector = new SPDDetector(smbus, i);
+                    //We are only interested in modules with thermal sensor
+                    if (detector.Accessor is IThermalSensor { HasThermalSensor: true })
+                        accessors.Add(detector.Accessor);
 
-                    //RAM available and detected
-                    if (detector.Accessor != null)
-                    {
-                        //We are only interested in modules with thermal sensor
-                        if (detector.Accessor is IThermalSensor { HasThermalSensor: true })
-                            list.Add(detector.Accessor);
-
-                        ramDetected = true;
-                    }
+                    ramDetected = true;
                 }
             }
-
-            accessors = list.Count > 0 ? list : [];
-            return ramDetected;
         }
+
+        return ramDetected;
     }
 
     private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
     {
-        foreach (var ram in accessors)
+        List<Hardware> newHardwareList = [.. _hardware];
+
+        foreach (SPDAccessor ram in accessors)
         {
             //Default value
             string name = $"DIMM #{ram.Index}";
 
             //Check if we can switch to the correct page
             if (ram.ChangePage(PageData.ModulePartNumber))
-            {
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
-            }
 
-            var memory = new DimmMemory(ram, name, new Identifier("ram"), settings);
-
-            _hardware.Add(memory);
+            DimmMemory memory = new(ram, name, new Identifier($"memory/dimm/{ram.Index}"), settings);
+            newHardwareList.Add(memory);
         }
+
+        _hardware = newHardwareList;
     }
 }
