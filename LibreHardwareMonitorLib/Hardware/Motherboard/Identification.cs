@@ -687,6 +687,8 @@ internal class Identification
                 return Model.Z890P_PRO_WIFI;
             case var _ when name.Equals("PRO Z890-A WIFI (MS-7E32)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z890A_PRO_WIFI;
+            case var _ when name.Equals("PRO Z890-S WIFI (MS-7E54)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890S_PRO_WIFI;
             case var _ when name.Equals("Z890 GAMING PLUS WIFI (MS-7E34)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z890_GAMING_PLUS_WIFI;
             case var _ when name.Equals("PRO Z890-S WIFI PZ (MS-7E58)", StringComparison.OrdinalIgnoreCase):
