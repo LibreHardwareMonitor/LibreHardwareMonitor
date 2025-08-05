@@ -628,6 +628,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z890_EDGE_TI_WIFI:
                     case Model.Z890P_PRO_WIFI:
                     case Model.Z890A_PRO_WIFI:
+                    case Model.Z890S_PRO_WIFI:
                     case Model.Z890_GAMING_PLUS_WIFI:
                     case Model.Z890S_PRO_WIFI_PROJECT_ZERO:
                         v.Add(new Voltage("+12V", 0));
