@@ -75,7 +75,7 @@ internal class IT87XX : ISuperIO
         {
             Chip.IT8665E or Chip.IT8625E => new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
             Chip.IT8792E => new byte[] { 0x15, 0x16, 0x17 },
-            Chip.IT8696E => new byte[] { 0, 0, 0, 0, 0 },
+            Chip.IT8696E when motherboard.Model == Model.X870_AORUS_ELITE_WIFI7 => new byte[] { 0, 0, 0, 0, 0, 0 },
             _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
         };
 
@@ -162,8 +162,8 @@ internal class IT87XX : ISuperIO
             case Chip.IT8696E:
                 Voltages = new float?[10];
                 Temperatures = new float?[6];
-                Fans = new float?[5];
-                Controls = new float?[5];
+                Fans = new float?[6];
+                Controls = new float?[6];
                 break;
 
             case Chip.IT87952E:
