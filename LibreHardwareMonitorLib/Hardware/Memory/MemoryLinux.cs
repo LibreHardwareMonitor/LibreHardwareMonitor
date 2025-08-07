@@ -11,12 +11,13 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 
 internal static class MemoryLinux
 {
-    public static void Update(TotalMemory memory)
+    public static void Update(GenericMemory memory)
     {
         try
         {
             string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
 
+            // Update Physical Memory Sensors
             {
                 float totalMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
                 float freeMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
@@ -28,21 +29,8 @@ internal static class MemoryLinux
                 memory.PhysicalMemoryAvailable.Value = totalMemoryGb;
                 memory.PhysicalMemoryLoad.Value = 100.0f * (usedMemoryGb / totalMemoryGb);
             }
-        }
-        catch
-        {
-            memory.PhysicalMemoryUsed.Value = null;
-            memory.PhysicalMemoryAvailable.Value = null;
-            memory.PhysicalMemoryLoad.Value = null;
-        }
-    }
 
-    public static void Update(VirtualMemory memory)
-    {
-        try
-        {
-            string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
-
+            // Update Virtual Memory Sensors
             {
                 float totalSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
                 float freeSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
@@ -55,6 +43,10 @@ internal static class MemoryLinux
         }
         catch
         {
+            // Set all sensors to null on error
+            memory.PhysicalMemoryUsed.Value = null;
+            memory.PhysicalMemoryAvailable.Value = null;
+            memory.PhysicalMemoryLoad.Value = null;
             memory.VirtualMemoryUsed.Value = null;
             memory.VirtualMemoryAvailable.Value = null;
             memory.VirtualMemoryLoad.Value = null;
