@@ -38,8 +38,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
             SMBusManager.UseWMI = false;
         }
 
-        _hardware.Add(new VirtualMemory(settings));
-        _hardware.Add(new TotalMemory(settings));
+        _hardware.Add(new GenericMemory(settings));
 
         if (DriverManager.Driver == null)
         {
