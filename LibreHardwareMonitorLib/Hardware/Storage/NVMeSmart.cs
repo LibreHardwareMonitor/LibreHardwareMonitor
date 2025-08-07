@@ -21,6 +21,16 @@ public class NVMeSmart : IDisposable
         NVMeDrive = null;
         string name = storageInfo.Name;
 
+        // Test Windows generic driver protocol.
+        if (NVMeDrive == null)
+        {
+            _handle = NVMeWindows.IdentifyDevice(storageInfo);
+            if (_handle != null)
+            {
+                NVMeDrive = new NVMeWindows();
+            }
+        }
+
         // Test Samsung protocol.
         if (NVMeDrive == null && name.IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) > -1)
         {
@@ -52,16 +62,6 @@ public class NVMeSmart : IDisposable
             if (_handle != null)
             {
                 NVMeDrive = new NVMeIntelRst();
-            }
-        }
-
-        // Test Windows generic driver protocol.
-        if (NVMeDrive == null)
-        {
-            _handle = NVMeWindows.IdentifyDevice(storageInfo);
-            if (_handle != null)
-            {
-                NVMeDrive = new NVMeWindows();
             }
         }
     }

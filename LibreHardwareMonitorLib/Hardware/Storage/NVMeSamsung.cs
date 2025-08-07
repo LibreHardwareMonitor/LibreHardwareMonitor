@@ -36,7 +36,6 @@ internal class NVMeSamsung : INVMeDrive
         buffers.Spt.TargetId = 0;
         buffers.Spt.Lun = 0;
         buffers.Spt.SenseInfoLength = 24;
-        buffers.Spt.DataIn = 1;
         buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
         buffers.Spt.TimeOutValue = 2;
         buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
@@ -67,7 +66,6 @@ internal class NVMeSamsung : INVMeDrive
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
             buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
-            buffers.Spt.DataIn = 1;
             buffers.Spt.TimeOutValue = 2;
             buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
