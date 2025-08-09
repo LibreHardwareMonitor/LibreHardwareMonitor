@@ -23,6 +23,8 @@ internal static class Ring0
 
     public static bool IsOpen => _driver != null;
 
+    internal static KernelDriver KernelDriver => _driver;
+
     public static void Open()
     {
         // no implementation for unix systems

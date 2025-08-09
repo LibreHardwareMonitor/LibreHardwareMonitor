@@ -41,6 +41,7 @@ internal class NzxtGroup : IGroup
                 case 0x3008: // Kraken Z3
                 case 0x300C: // Kraken 2023 elite
                 case 0x300E: // Kraken 2023 standard
+                case 0x3012: // Kraken elite v2
                     // NZXT KrakenV3 Devices
                     var krakenV3 = new KrakenV3(dev, settings);
                     _report.AppendLine($"Device name: {productName}");

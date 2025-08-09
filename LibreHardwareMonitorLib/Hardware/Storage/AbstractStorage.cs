@@ -20,11 +20,9 @@ public abstract class AbstractStorage : Hardware
     private readonly PerformanceValue _perfWrite = new();
     private readonly PerformanceValue _perfRead = new();
     private readonly StorageInfo _storageInfo;
-    private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(60);
 
     private ulong _lastReadCount;
     private long _lastTime;
-    private DateTime _lastUpdate = DateTime.MinValue;
     private ulong _lastWriteCount;
     private Sensor _sensorDiskReadRate;
     private Sensor _sensorDiskTotalActivity;
@@ -143,40 +141,33 @@ public abstract class AbstractStorage : Hardware
             }
         }
 
-        // Read out at update interval.
-        TimeSpan tDiff = DateTime.UtcNow - _lastUpdate;
-        if (tDiff > _updateInterval)
+        UpdateSensors();
+
+        if (_usageSensor != null)
         {
-            _lastUpdate = DateTime.UtcNow;
+            long totalSize = 0;
+            long totalFreeSpace = 0;
 
-            UpdateSensors();
-
-            if (_usageSensor != null)
+            for (int i = 0; i < DriveInfos.Length; i++)
             {
-                long totalSize = 0;
-                long totalFreeSpace = 0;
+                if (!DriveInfos[i].IsReady)
+                    continue;
 
-                for (int i = 0; i < DriveInfos.Length; i++)
+                try
                 {
-                    if (!DriveInfos[i].IsReady)
-                        continue;
-
-                    try
-                    {
-                        totalSize += DriveInfos[i].TotalSize;
-                        totalFreeSpace += DriveInfos[i].TotalFreeSpace;
-                    }
-                    catch (IOException)
-                    { }
-                    catch (UnauthorizedAccessException)
-                    { }
+                    totalSize += DriveInfos[i].TotalSize;
+                    totalFreeSpace += DriveInfos[i].TotalFreeSpace;
                 }
-
-                if (totalSize > 0)
-                    _usageSensor.Value = 100.0f - (100.0f * totalFreeSpace / totalSize);
-                else
-                    _usageSensor.Value = null;
+                catch (IOException)
+                { }
+                catch (UnauthorizedAccessException)
+                { }
             }
+
+            if (totalSize > 0)
+                _usageSensor.Value = 100.0f - (100.0f * totalFreeSpace / totalSize);
+            else
+                _usageSensor.Value = null;
         }
     }
 

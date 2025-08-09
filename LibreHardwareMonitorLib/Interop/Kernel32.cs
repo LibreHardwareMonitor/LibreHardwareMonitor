@@ -1009,9 +1009,7 @@ public class Kernel32
     {
         public SCSI_PASS_THROUGH Spt;
 
-        public uint Filler;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
         public byte[] SenseBuf;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
