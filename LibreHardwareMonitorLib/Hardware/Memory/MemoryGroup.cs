@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -27,7 +27,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     private CancellationTokenSource _cancellationTokenSource;
     private Exception _lastException;
-    private bool _opened = false;
+    private bool _disposed = false;
 
     public MemoryGroup(ISettings settings)
     {
@@ -50,8 +50,6 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         {
             StartRetryTask(settings);
         }
-
-        _opened = true;
     }
 
     public event HardwareEventHandler HardwareAdded;
@@ -83,17 +81,17 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public void Close()
     {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
+
         lock (_lock)
         {
-            _opened = false;
             foreach (Hardware ram in _hardware)
                 ram.Close();
 
             _hardware.Clear();
-
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
+            _disposed = true;
         }
     }
 
@@ -103,9 +101,9 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         {
             lock (_lock)
             {
-                if (!_opened)
+                if (_disposed)
                 {
-                    return true;
+                    return false;
                 }
 
                 if (DetectThermalSensors(out List<SPDAccessor> accessors))
@@ -138,24 +136,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
                 if (TryAddDimms(settings))
                 {
-                    lock (_lock)
-                    {
-                        if (!_opened)
-                        {
-                            return;
-                        }
-
-                        foreach (Hardware hardware in _hardware.OfType<DimmMemory>())
-                        {
-                            HardwareAdded?.Invoke(hardware);
-                        }
-
-                        _cancellationTokenSource.Dispose();
-                        _cancellationTokenSource = null;
-
-                        break;
-                    }
-
+                    break;
                 }
             }
         }, _cancellationTokenSource.Token);
@@ -195,8 +176,6 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
     {
-        List<Hardware> newHardwareList = [.. _hardware];
-
         foreach (SPDAccessor ram in accessors)
         {
             //Default value
@@ -207,9 +186,9 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
 
             DimmMemory memory = new(ram, name, new Identifier($"memory/dimm/{ram.Index}"), settings);
-            newHardwareList.Add(memory);
-        }
 
-        _hardware = newHardwareList;
+            _hardware.Add(memory);
+            HardwareAdded?.Invoke(memory);
+        }
     }
 }
