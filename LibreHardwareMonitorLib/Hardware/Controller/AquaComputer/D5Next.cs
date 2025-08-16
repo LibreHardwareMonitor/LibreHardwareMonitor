@@ -24,7 +24,7 @@ internal sealed class D5Next : Hardware
     private readonly Sensor[] _rpmSensors = new Sensor[2];
     private readonly HidStream _stream;
     private readonly Sensor[] _temperatures = new Sensor[1];
-    private readonly Sensor[] _voltages = new Sensor[10];
+    private readonly Sensor[] _voltages = new Sensor[4];
     private readonly Sensor[] _powers = new Sensor[2];
     private readonly Sensor[] _flows = new Sensor[1];
     private readonly Sensor[] _fanControl = new Sensor[2];
@@ -92,8 +92,9 @@ internal sealed class D5Next : Hardware
     public override void Update()
     {
         //Reading output report instead of feature report, as the measurements are in the output report
-        _temperatures[0].Value = ReadUInt16BE(_rawData, 87) / 100f; //Water Temperature
-        _rpmSensors[0].Value = ReadUInt16BE(_rawData, 116); //Pump RPM
+        _stream.Read(_rawData);
+        _temperatures[0].Value = (_rawData[88] | (_rawData[87] << 8)) / 100f; //Water Temp
+        _rpmSensors[0].Value = _rawData[117] | (_rawData[116] << 8); //Pump RPM
         _rpmSensors[1].Value = ReadUInt16BE(_rawData, 103); //Fan RPM
         _voltages[0].Value = ReadUInt16BE(_rawData, 97) / 100f; //Fan Voltage
         _voltages[1].Value = ReadUInt16BE(_rawData, 110) / 100f; //Pump Voltage
