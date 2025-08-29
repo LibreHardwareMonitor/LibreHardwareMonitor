@@ -159,11 +159,10 @@ public sealed partial class MainForm : Form
         nodeTextBoxText.ToolTipProvider = tooltipProvider;
         nodeTextBoxValue.ToolTipProvider = tooltipProvider;
         _logger = new Logger(_computer);
-        var saved = _settings.GetValue("logger.fileRotation", 0); // 0=PerSession, 1=Daily
+        var saved = _settings.GetValue("logger.fileRotation", 0); // 0 = PerSession, 1 = Daily.
         _logger.FileRotationMethod = (LoggerFileRotation)Math.Max(0, Math.Min(saved, 1));
         perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
-        dailyFileRotationMenuItem.Checked      = _logger.FileRotationMethod == LoggerFileRotation.Daily;
-
+        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
 
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
