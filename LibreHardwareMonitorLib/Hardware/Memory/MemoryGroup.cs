@@ -90,7 +90,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
             foreach (Hardware ram in _hardware)
                 ram.Close();
 
-            _hardware.Clear();
+            _hardware = [];
             _disposed = true;
         }
     }
