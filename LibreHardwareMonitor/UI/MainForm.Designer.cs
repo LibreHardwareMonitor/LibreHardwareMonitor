@@ -64,6 +64,8 @@ namespace LibreHardwareMonitor.UI
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetMinMaxMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.expandAllNodesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.collpaseAllNodesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetPlotMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.hiddenMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -123,6 +125,7 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval2sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval5sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval10sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
+            this.throttleAtaUpdateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sensorValuesTimeWindowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timeWindow30sMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.timeWindow1minMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -362,6 +365,8 @@ namespace LibreHardwareMonitor.UI
             //
             this.viewMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.resetMinMaxMenuItem,
+            this.expandAllNodesMenuItem,
+            this.collpaseAllNodesMenuItem,
             this.resetPlotMenuItem,
             this.MenuItem3,
             this.hiddenMenuItem,
@@ -379,6 +384,20 @@ namespace LibreHardwareMonitor.UI
             this.resetMinMaxMenuItem.Size = new System.Drawing.Size(188, 22);
             this.resetMinMaxMenuItem.Text = "Reset Min/Max";
             this.resetMinMaxMenuItem.Click += new System.EventHandler(this.ResetMinMaxMenuItem_Click);
+            //
+            // expandAllNodesMenuItem
+            //
+            this.expandAllNodesMenuItem.Name = "expandAllNodesMenuItem";
+            this.expandAllNodesMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.expandAllNodesMenuItem.Text = "Expand All Nodes";
+            this.expandAllNodesMenuItem.Click += new System.EventHandler(this.ExpandAllNodes_Click);
+            //
+            // collpaseAllNodesMenuItem
+            //
+            this.collpaseAllNodesMenuItem.Name = "collpaseAllNodesMenuItem";
+            this.collpaseAllNodesMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.collpaseAllNodesMenuItem.Text = "Collapse All Nodes";
+            this.collpaseAllNodesMenuItem.Click += new System.EventHandler(this.CollapsepAllNodes_Click);
             //
             // resetPlotMenuItem
             //
@@ -787,7 +806,8 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval1sMenuItem,
             this.updateInterval2sMenuItem,
             this.updateInterval5sMenuItem,
-            this.updateInterval10sMenuItem});
+            this.updateInterval10sMenuItem,
+            this.throttleAtaUpdateMenuItem});
             this.updateIntervalMenuItem.Name = "updateIntervalMenuItem";
             this.updateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
             this.updateIntervalMenuItem.Text = "Update Interval";
@@ -833,6 +853,13 @@ namespace LibreHardwareMonitor.UI
             this.updateInterval10sMenuItem.Name = "updateInterval10sMenuItem";
             this.updateInterval10sMenuItem.Size = new System.Drawing.Size(107, 22);
             this.updateInterval10sMenuItem.Text = "10s";
+            //
+            // throttleATAUpdateMenuItem
+            //
+            this.throttleAtaUpdateMenuItem.CheckOnClick = true;
+            this.throttleAtaUpdateMenuItem.Name = "throttleATAUpdateMenuItem";
+            this.throttleAtaUpdateMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.throttleAtaUpdateMenuItem.Text = "Throttle ATA Storage";
             //
             // sensorValuesTimeWindowMenuItem
             //
@@ -1125,6 +1152,8 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem fahrenheitMenuItem;
         private System.Windows.Forms.ToolStripSeparator MenuItem2;
         private System.Windows.Forms.ToolStripMenuItem resetMinMaxMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem expandAllNodesMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem collpaseAllNodesMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetPlotMenuItem;
         private System.Windows.Forms.ToolStripSeparator MenuItem3;
         private System.Windows.Forms.ToolStripMenuItem gadgetMenuItem;
@@ -1171,6 +1200,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem updateInterval2sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval5sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval10sMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem throttleAtaUpdateMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nicMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sensorValuesTimeWindowMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow30sMenuItem;

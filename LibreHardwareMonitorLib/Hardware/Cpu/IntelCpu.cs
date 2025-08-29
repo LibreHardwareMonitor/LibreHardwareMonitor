@@ -222,6 +222,7 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
+                        case 0xC5: // Intel Core Ultra 9 200 Series ArrowLake
                         case 0xC6: // Intel Core Ultra 7 200 Series ArrowLake
                             _microArchitecture = MicroArchitecture.ArrowLake;
                             tjMax = GetTjMaxFromMsr();
@@ -229,6 +230,14 @@ internal sealed class IntelCpu : GenericCpu
 
                         case 0xBD: // Intel Core Ultra 5/7 200 Series LunarLake
                             _microArchitecture = MicroArchitecture.LunarLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x8F: // Intel Xeon W5-3435X // SapphireRapids 
+                            _microArchitecture = MicroArchitecture.SapphireRapids;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+                        case 0x96: // Intel Celeron ElkhartLake 
+                            _microArchitecture = MicroArchitecture.ElkhartLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
@@ -298,6 +307,8 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Silvermont:
             case MicroArchitecture.Skylake:
             case MicroArchitecture.TigerLake:
+            case MicroArchitecture.SapphireRapids:
+            case MicroArchitecture.ElkhartLake:
             case MicroArchitecture.Tremont:
                 if (Ring0.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
@@ -414,6 +425,8 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.Silvermont or
             MicroArchitecture.Skylake or
             MicroArchitecture.TigerLake or
+            MicroArchitecture.SapphireRapids or
+            MicroArchitecture.ElkhartLake or
             MicroArchitecture.Tremont)
         {
             _powerSensors = new Sensor[_energyStatusMsrs.Length];
@@ -618,6 +631,8 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.Silvermont:
                         case MicroArchitecture.Skylake:
                         case MicroArchitecture.TigerLake:
+                        case MicroArchitecture.SapphireRapids:
+                        case MicroArchitecture.ElkhartLake:
                         case MicroArchitecture.Tremont:
                             _coreClocks[i].Value = (float)(((eax >> 8) & 0xff) * newBusClock);
                             break;
@@ -710,6 +725,8 @@ internal sealed class IntelCpu : GenericCpu
         TigerLake,
         Tremont,
         RaptorLake,
+        SapphireRapids,
+        ElkhartLake,
         Unknown
     }
 

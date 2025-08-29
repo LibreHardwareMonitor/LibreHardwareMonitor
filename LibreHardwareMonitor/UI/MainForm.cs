@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware.Storage;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
@@ -30,6 +31,7 @@ public sealed partial class MainForm : Form
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
+    private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -244,6 +246,7 @@ public sealed partial class MainForm : Form
         fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
         Server = new HttpServer(_root,
+                                _computer,
                                 _settings.GetValue("listenerIp", "?"),
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
@@ -369,6 +372,21 @@ public sealed partial class MainForm : Form
                     break;
                 case 5:
                     timer.Interval = 10000;
+                    break;
+            }
+        };
+
+        _throttleAtaUpdate = new UserOption("throttleAtaUpdateMenuItem", false, throttleAtaUpdateMenuItem, _settings);
+        _throttleAtaUpdate.Changed += (sender, e) =>
+        {
+            switch (_throttleAtaUpdate.Value)
+            {
+                case true:
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
+                    break;
+
+                case false:
+                    AtaStorage.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };
@@ -1219,6 +1237,16 @@ public sealed partial class MainForm : Form
             sensorClick.ResetMin();
             sensorClick.ResetMax();
         }));
+    }
+
+    private void ExpandAllNodes_Click(object sender, EventArgs e)
+    {
+        treeView.ExpandAll();
+    }
+
+    private void CollapsepAllNodes_Click(object sender, EventArgs e)
+    {
+        treeView.CollapseAll();
     }
 
     private void resetPlotMenuItem_Click(object sender, EventArgs e)
