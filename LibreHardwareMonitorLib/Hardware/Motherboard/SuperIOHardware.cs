@@ -4818,27 +4818,25 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("CPU VDDIO / MC", 13, 9, 82));
                             v.Add(new Voltage("1.8V PLL", 14, 17, 36));
 
-                            // The following mappings represent when FanXpert is off in Armoury Crate.
-                            Dictionary<string, int> tempMap = new Dictionary<string, int>()
-                        {
-                            { "CPU Package", 0 },
-                            { "CPU", 1 },
-                            { "Motherboard", 2 },
-                            { "VRM", 22 }
-                        };
-
-                            HashSet<int> mappedTempIndex = [.. tempMap.Values];
-
-                            foreach (KeyValuePair<string, int> kvp in tempMap)
+                            // The following mappings only applies when FanXpert is off in Armoury Crate.
+                            // Temp Index -> Sensor Name
+                            Dictionary<int, string> tempMap = new()
                             {
-                                t.Add(new Temperature(kvp.Key, kvp.Value));
-                            }
+                                { 0, "CPU Package" },
+                                { 1, "CPU" },
+                                { 2, "Motherboard" },
+                                { 22, "VRM" }
+                            };
 
-                            for (int i = 0; i < superIO.Temperatures.Length; i++)
+                            for (int tempIndex = 0; tempIndex < superIO.Temperatures.Length; tempIndex++)
                             {
-                                if (!mappedTempIndex.Contains(i))
+                                if (tempMap.TryGetValue(tempIndex, out string tempSensorName))
                                 {
-                                    t.Add(new Temperature($"Temperature #{i}", i));
+                                    t.Add(new Temperature(tempSensorName, tempIndex));
+                                }
+                                else
+                                {
+                                    t.Add(new Temperature($"Temperature #{tempIndex}", tempIndex));
                                 }
                             }
 
