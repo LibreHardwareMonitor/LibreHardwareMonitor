@@ -122,6 +122,6 @@
     <Compile Remove="Tree\NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.8" />
   </ItemGroup>
 </Project>
