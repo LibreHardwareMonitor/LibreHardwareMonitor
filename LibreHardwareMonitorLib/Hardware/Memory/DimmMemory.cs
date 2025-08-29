@@ -78,23 +78,23 @@ internal sealed class DimmMemory : Hardware
         }
 
         //Timings
-        AddSensor("Minimum Cycle Time (tCKAVGmin)"                       ,  1, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCycleTime                        );
-        AddSensor("Maximum Cycle Time (tCKAVGmax)"                       ,  2, false, SensorType.Timing, (float)accessor.SDRAMTimings.MaximumCycleTime                        );
-        AddSensor("Minimum CAS Latency Time (tAA min)"                   ,  3, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCASLatencyTime                   );
-        AddSensor("Minimum RAS to CAS Delay Time (tRCD min)"             ,  4, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRASToCASDelayTime                );
-        AddSensor("Minimum Row Precharge Delay Time (tRP min)"           ,  5, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRowPrechargeDelayTime            );
-        AddSensor("Minimum Active to Precharge Delay Time (tRAS min)"    ,  6, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToPrechargeDelayTime       );
-        AddSensor("Minimum Active to Active/Refresh Delay Time (tRC min)",  7, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToActiveRefreshDelayTime   );
-        AddSensor("Minimum Refresh Recovery Delay Time (tRFC1 min)"      ,  8, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRefreshRecoveryDelayTime1        );
-        AddSensor("Minimum Refresh Recovery Delay Time (tRFC2 min)"      ,  9, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRefreshRecoveryDelayTime2        );
-        AddSensor("Minimum Refresh Recovery Delay Time (tRFC4 min)"      , 10, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRefreshRecoveryDelayTime4        );
-        AddSensor("Minimum Four Activate Window Time (tFAW min)"         , 11, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumFourActivateWindowTime           );
-        AddSensor("Minimum Activate to Activate Delay Time (tRRD_S min)" , 12, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActivateToActivateDelay_DiffGroup);
-        AddSensor("Minimum Activate to Activate Delay Time (tRRD_L min)" , 13, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActivateToActivateDelay_SameGroup);
-        AddSensor("Minimum CAS to CAS Delay Time (tCCD_L min)"           , 14, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCASToCASDelay_SameGroup          );
-        AddSensor("Minimum Write Recovery Time (tWR min)"                , 15, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteRecoveryTime                );
-        AddSensor("Minimum Write to Read Time (tWTR smin)"               , 16, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteToReadTime_DiffGroup        );
-        AddSensor("Minimum Write to Read Time (tWTR lmin)"               , 17, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteToReadTime_SameGroup        );
+        AddSensor("tCKAVGmin (Minimum Cycle Time)"                       ,  1, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCycleTime                        );
+        AddSensor("tCKAVGmax (Maximum Cycle Time)"                       ,  2, false, SensorType.Timing, (float)accessor.SDRAMTimings.MaximumCycleTime                        );
+        AddSensor("tAA min (Minimum CAS Latency Time)"                   ,  3, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCASLatencyTime                   );
+        AddSensor("tRCD min (Minimum RAS to CAS Delay Time)"             ,  4, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRASToCASDelayTime                );
+        AddSensor("tRP min (Minimum Row Precharge Delay Time)"           ,  5, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRowPrechargeDelayTime            );
+        AddSensor("tRAS min (Minimum Active to Precharge Delay Time)"    ,  6, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToPrechargeDelayTime       );
+        AddSensor("tRC min (Minimum Active to Active/Refresh Delay Time)",  7, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToActiveRefreshDelayTime   );
+        AddSensor("tRFC1 min (Minimum Refresh Recovery Delay Time)"      ,  8, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRefreshRecoveryDelayTime1        );
+        AddSensor("tRFC2 min (Minimum Refresh Recovery Delay Time)"      ,  9, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRefreshRecoveryDelayTime2        );
+        AddSensor("tRFC4 min (Minimum Refresh Recovery Delay Time)"      , 10, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRefreshRecoveryDelayTime4        );
+        AddSensor("tFAW min (Minimum Four Activate Window Time)"         , 11, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumFourActivateWindowTime           );
+        AddSensor("tRRD_S min (Minimum Activate to Activate Delay Time)" , 12, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActivateToActivateDelay_DiffGroup);
+        AddSensor("tRRD_L min (Minimum Activate to Activate Delay Time)" , 13, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActivateToActivateDelay_SameGroup);
+        AddSensor("tCCD_L min (Minimum CAS to CAS Delay Time)"           , 14, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCASToCASDelay_SameGroup          );
+        AddSensor("tWR min (Minimum Write Recovery Time)"                , 15, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteRecoveryTime                );
+        AddSensor("tWTR smin (Minimum Write to Read Time)"               , 16, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteToReadTime_DiffGroup        );
+        AddSensor("tWTR lmin (Minimum Write to Read Time)"               , 17, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteToReadTime_SameGroup        );
 
     }
 
@@ -107,20 +107,20 @@ internal sealed class DimmMemory : Hardware
         }
 
         //Timings
-        AddSensor("Minimum Cycle Time (tCKAVGmin)"                        ,  1, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCycleTime                                          );
-        AddSensor("Maximum Cycle Time (tCKAVGmax)"                        ,  2, false, SensorType.Timing, (float)accessor.SDRAMTimings.MaximumCycleTime                                          );
-        AddSensor("Minimum CAS Latency Time (tAA min)"                    ,  3, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCASLatencyTime                                     );
-        AddSensor("Minimum RAS to CAS Delay Time (tRCD min)"              ,  4, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRASToCASDelayTime                                  );
-        AddSensor("Minimum Row Precharge Delay Time (tRP min)"            ,  5, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRowPrechargeDelayTime                              );
-        AddSensor("Minimum Active to Precharge Delay Time (tRAS min)"     ,  6, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToPrechargeDelayTime                         );
-        AddSensor("Minimum Active to Active/Refresh Delay Time (tRC min)" ,  7, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToActiveRefreshDelayTime                     );
-        AddSensor("Minimum Write Recovery Time (tWR min)"                 ,  8, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteRecoveryTime                                  );
-        AddSensor("Normal Refresh Recovery Time (tRFC1 min)"              ,  9, false, SensorType.Timing, (float)accessor.SDRAMTimings.NormalRefreshRecoveryTime                                 );
-        AddSensor("Fine Granularity Refresh Recovery Time (tRFC2 min)"    , 10, false, SensorType.Timing, (float)accessor.SDRAMTimings.FineGranularityRefreshRecoveryTime                        );
-        AddSensor("Same Bank Refresh Recovery Time (tRFCsb min)"          , 11, false, SensorType.Timing, (float)accessor.SDRAMTimings.SameBankRefreshRecoveryTime                               );
-        AddSensor("Normal Refresh Recovery Time 3DS (tRFC1_dlr)"          , 12, false, SensorType.Timing, (float)accessor.SDRAMTimings.NormalRefreshRecoveryTime_3DSDifferentLogicalRank         );
-        AddSensor("Fine Granularity Refresh Recovery Time 3DS (tRFC2_dlr)", 13, false, SensorType.Timing, (float)accessor.SDRAMTimings.FineGranularityRefreshRecoveryTime_3DSDifferentLogicalRank);
-        AddSensor("Same Bank Refresh Recovery Time 3DS (tRFCsb_dlr)"      , 14, false, SensorType.Timing, (float)accessor.SDRAMTimings.SameBankRefreshRecoveryTime_3DSDifferentLogicalRank       );
+        AddSensor("tCKAVGmin (Minimum Cycle Time)"                        ,  1, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCycleTime                                          );
+        AddSensor("tCKAVGmax (Maximum Cycle Time)"                        ,  2, false, SensorType.Timing, (float)accessor.SDRAMTimings.MaximumCycleTime                                          );
+        AddSensor("tAA min (Minimum CAS Latency Time)"                    ,  3, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumCASLatencyTime                                     );
+        AddSensor("tRCD min (Minimum RAS to CAS Delay Time)"              ,  4, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRASToCASDelayTime                                  );
+        AddSensor("tRP min (Minimum Row Precharge Delay Time)"            ,  5, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumRowPrechargeDelayTime                              );
+        AddSensor("tRAS min (Minimum Active to Precharge Delay Time)"     ,  6, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToPrechargeDelayTime                         );
+        AddSensor("tRC min (Minimum Active to Active/Refresh Delay Time)" ,  7, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumActiveToActiveRefreshDelayTime                     );
+        AddSensor("tWR min (Minimum Write Recovery Time)"                 ,  8, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteRecoveryTime                                  );
+        AddSensor("tRFC1 min (Normal Refresh Recovery Time)"              ,  9, false, SensorType.Timing, (float)accessor.SDRAMTimings.NormalRefreshRecoveryTime                                 );
+        AddSensor("tRFC2 min (Fine Granularity Refresh Recovery Time)"    , 10, false, SensorType.Timing, (float)accessor.SDRAMTimings.FineGranularityRefreshRecoveryTime                        );
+        AddSensor("tRFCsb min (Same Bank Refresh Recovery Time)"          , 11, false, SensorType.Timing, (float)accessor.SDRAMTimings.SameBankRefreshRecoveryTime                               );
+        AddSensor("tRFC1_dlr (Normal Refresh Recovery Time 3DS)"          , 12, false, SensorType.Timing, (float)accessor.SDRAMTimings.NormalRefreshRecoveryTime_3DSDifferentLogicalRank         );
+        AddSensor("tRFC2_dlr (Fine Granularity Refresh Recovery Time 3DS)", 13, false, SensorType.Timing, (float)accessor.SDRAMTimings.FineGranularityRefreshRecoveryTime_3DSDifferentLogicalRank);
+        AddSensor("tRFCsb_dlr (Same Bank Refresh Recovery Time 3DS)"      , 14, false, SensorType.Timing, (float)accessor.SDRAMTimings.SameBankRefreshRecoveryTime_3DSDifferentLogicalRank       );
     }
 
     private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, float value)
