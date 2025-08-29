@@ -176,6 +176,8 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
     {
+        List<Hardware> additions = [];
+
         foreach (SPDAccessor ram in accessors)
         {
             //Default value
@@ -186,9 +188,11 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
 
             DimmMemory memory = new(ram, name, new Identifier($"memory/dimm/{ram.Index}"), settings);
-
-            _hardware.Add(memory);
-            HardwareAdded?.Invoke(memory);
+            additions.Add(memory);
         }
+
+        _hardware = [.. _hardware, .. additions];
+        foreach (Hardware hardware in additions)
+            HardwareAdded?.Invoke(hardware);
     }
 }
