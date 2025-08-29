@@ -165,6 +165,8 @@ public class SensorNotifyIcon : IDisposable
                 return _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit ? $"{UnitManager.CelsiusToFahrenheit(Sensor.Value):F0}" : $"{Sensor.Value:F0}";
             case SensorType.TimeSpan:
                 return $"{TimeSpan.FromSeconds(Sensor.Value.Value):g}";
+            case SensorType.Timing:
+                return $"{Sensor.Value.Value:F3}";
             case SensorType.Clock:
             case SensorType.Fan:
             case SensorType.Flow:
@@ -289,6 +291,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
             case SensorType.Conductivity: format = "\n{0}: {0:F1} µS/cm"; break;
             case SensorType.Humidity: format = "\n{0}: {0:F0} %"; break;
+            case SensorType.Timing: format = "\n{0}: {0:F3} ns"; break;
         }
 
         string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
