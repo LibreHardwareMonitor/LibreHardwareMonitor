@@ -4823,9 +4823,9 @@ internal sealed class SuperIOHardware : Hardware
                             Dictionary<int, string> tempMap = new()
                             {
                                 { 0, "CPU Package" },
-                                { 1, "CPU" },
+                                { 1, "VRM" },
                                 { 2, "Motherboard" },
-                                { 22, "VRM" }
+                                { 22, "CPU" },
                             };
 
                             for (int tempIndex = 0; tempIndex < superIO.Temperatures.Length; tempIndex++)
