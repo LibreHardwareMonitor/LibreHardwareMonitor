@@ -4800,6 +4800,64 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_CROSSHAIR_X870E_APEX: // NCT6701D
+                        {
+                            v.Add(new Voltage("Vcore", 0, 15, 136));
+                            v.Add(new Voltage("+5V", 1, 4, 1));
+                            v.Add(new Voltage("AVSB", 2, 34, 34));
+                            v.Add(new Voltage("+3.3V", 3, 34, 34));
+                            v.Add(new Voltage("+12V", 4, 11, 1));
+                            v.Add(new Voltage("VMISC", 5, 9, 82));
+                            v.Add(new Voltage("CPU SOC", 6, 9, 82));
+                            v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                            v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                            v.Add(new Voltage("VTT", 9, 34, 34));
+                            v.Add(new Voltage("Chipset 0 VDD", 10, 1, 1));
+                            v.Add(new Voltage("Chipset 1 VDD", 11, 1, 1));
+                            v.Add(new Voltage("Chipset Standby", 12));
+                            v.Add(new Voltage("CPU VDDIO / MC", 13, 9, 82));
+                            v.Add(new Voltage("1.8V PLL", 14, 17, 36));
+
+                            // The following mappings only applies when FanXpert is off in Armoury Crate.
+                            // Temp Index -> Sensor Name
+                            Dictionary<int, string> tempMap = new()
+                            {
+                                { 0, "CPU Package" },
+                                { 1, "VRM" },
+                                { 2, "Motherboard" },
+                                { 22, "CPU" },
+                            };
+
+                            for (int tempIndex = 0; tempIndex < superIO.Temperatures.Length; tempIndex++)
+                            {
+                                if (tempMap.TryGetValue(tempIndex, out string tempSensorName))
+                                {
+                                    t.Add(new Temperature(tempSensorName, tempIndex));
+                                }
+                                else
+                                {
+                                    t.Add(new Temperature($"Temperature #{tempIndex}", tempIndex));
+                                }
+                            }
+
+                            fanControlNames = ["Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Extra Flow Fan", "Unused", "Water Pump", "AIO Pump"];
+
+                            System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length, $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+                            System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length, "Expected counts of fan controls and fan speed registers to be equal");
+
+                            for (int i = 0; i < fanControlNames.Length; i++)
+                            {
+                                f.Add(new Fan(fanControlNames[i], i));
+                            }
+
+                            for (int i = 0; i < fanControlNames.Length; i++)
+                            {
+                                c.Add(new Control(fanControlNames[i], i));
+                            }
+                        }
+
+                        break;
+
                     case Model.ROG_CROSSHAIR_X870E_HERO: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
