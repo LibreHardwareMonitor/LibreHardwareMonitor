@@ -9,7 +9,7 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 internal sealed class VirtualMemory : Hardware
 {
     public VirtualMemory(ISettings settings)
-        : base("Virtual Memory", new Identifier("ram"), settings)
+        : base("Virtual Memory", new Identifier("vram"), settings)
     {
         VirtualMemoryUsed = new Sensor("Memory Used", 2, SensorType.Data, this, settings);
         ActivateSensor(VirtualMemoryUsed);
