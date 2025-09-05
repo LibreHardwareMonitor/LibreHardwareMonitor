@@ -646,6 +646,9 @@ public class SensorGadget : Gadget
                                 case SensorType.TimeSpan:
                                     format = "{0:g}";
                                     break;
+                                case SensorType.Timing:
+                                    format = "{0:F3} ns";
+                                    break;
                                 case SensorType.Energy:
                                     format = "{0:F0} mWh";
                                     break;
