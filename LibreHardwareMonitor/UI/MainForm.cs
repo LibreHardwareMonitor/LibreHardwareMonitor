@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware.Storage;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
@@ -30,6 +31,7 @@ public sealed partial class MainForm : Form
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
+    private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -157,6 +159,10 @@ public sealed partial class MainForm : Form
         nodeTextBoxText.ToolTipProvider = tooltipProvider;
         nodeTextBoxValue.ToolTipProvider = tooltipProvider;
         _logger = new Logger(_computer);
+        var saved = _settings.GetValue("logger.fileRotation", 0); // 0 = PerSession, 1 = Daily.
+        _logger.FileRotationMethod = (LoggerFileRotation)Math.Max(0, Math.Min(saved, 1));
+        perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
+        dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
 
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
@@ -244,6 +250,7 @@ public sealed partial class MainForm : Form
         fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
         Server = new HttpServer(_root,
+                                _computer,
                                 _settings.GetValue("listenerIp", "?"),
                                 _settings.GetValue("listenerPort", 8085),
                                 _settings.GetValue("authenticationEnabled", false),
@@ -369,6 +376,21 @@ public sealed partial class MainForm : Form
                     break;
                 case 5:
                     timer.Interval = 10000;
+                    break;
+            }
+        };
+
+        _throttleAtaUpdate = new UserOption("throttleAtaUpdateMenuItem", false, throttleAtaUpdateMenuItem, _settings);
+        _throttleAtaUpdate.Changed += (sender, e) =>
+        {
+            switch (_throttleAtaUpdate.Value)
+            {
+                case true:
+                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
+                    break;
+
+                case false:
+                    AtaStorage.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };
@@ -1221,6 +1243,16 @@ public sealed partial class MainForm : Form
         }));
     }
 
+    private void ExpandAllNodes_Click(object sender, EventArgs e)
+    {
+        treeView.ExpandAll();
+    }
+
+    private void CollapsepAllNodes_Click(object sender, EventArgs e)
+    {
+        treeView.CollapseAll();
+    }
+
     private void resetPlotMenuItem_Click(object sender, EventArgs e)
     {
         _computer.Accept(new SensorVisitor(delegate (ISensor sensorClick)
@@ -1313,6 +1345,7 @@ public sealed partial class MainForm : Form
         dailyFileRotationMenuItem.Checked = false;
         perSessionFileRotationMenuItem.Checked = true;
         _logger.FileRotationMethod = LoggerFileRotation.PerSession;
+        _settings.SetValue("logger.fileRotation", (int)LoggerFileRotation.PerSession);
     }
 
     private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
@@ -1320,5 +1353,6 @@ public sealed partial class MainForm : Form
         dailyFileRotationMenuItem.Checked = true;
         perSessionFileRotationMenuItem.Checked = false;
         _logger.FileRotationMethod = LoggerFileRotation.Daily;
+        _settings.SetValue("logger.fileRotation", (int)LoggerFileRotation.Daily);
     }
 }

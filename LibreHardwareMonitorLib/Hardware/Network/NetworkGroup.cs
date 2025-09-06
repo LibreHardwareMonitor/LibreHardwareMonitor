@@ -16,10 +16,9 @@ internal class NetworkGroup : IGroup, IHardwareChanged
     public event HardwareEventHandler HardwareAdded;
     public event HardwareEventHandler HardwareRemoved;
 
-    private readonly Dictionary<string, Network> _networks = new();
-    private readonly object _scanLock = new();
+    private readonly object _updateLock = new();
     private readonly ISettings _settings;
-    private readonly List<Network> _hardware = new();
+    private List<Network> _hardware = [];
 
     public NetworkGroup(ISettings settings)
     {
@@ -66,48 +65,50 @@ internal class NetworkGroup : IGroup, IHardwareChanged
     {
         // When multiple events fire concurrently, we don't want threads interfering
         // with others as they manipulate non-thread safe state.
-        lock (_scanLock)
+        lock (_updateLock)
         {
-            IOrderedEnumerable<NetworkInterface> networkInterfaces = GetNetworkInterfaces();
+            List<NetworkInterface> networkInterfaces = GetNetworkInterfaces();
             if (networkInterfaces == null)
                 return;
 
-            var foundNetworkInterfaces = networkInterfaces.ToDictionary(x => x.Id, x => x);
+            List<Network> removables = [];
+            List<Network> additions = [];
+
+            List<Network> hardware = [.. _hardware];
 
             // Remove network interfaces that no longer exist.
-            List<string> removeKeys = new();
-            foreach (KeyValuePair<string, Network> networkInterfacePair in _networks)
+            for (int i = 0; i < hardware.Count; i++)
             {
-                if (foundNetworkInterfaces.ContainsKey(networkInterfacePair.Key))
+                Network network = hardware[i];
+                if (networkInterfaces.Any(x => x.Id == network.NetworkInterface.Id))
                     continue;
 
-                removeKeys.Add(networkInterfacePair.Key);
+                hardware.RemoveAt(i--);
+                removables.Add(network);
             }
 
-            foreach (string key in removeKeys)
+            // Add new ones.
+            foreach (NetworkInterface networkInterface in networkInterfaces)
             {
-                Network network = _networks[key];
-                network.Close();
-                _networks.Remove(key);
-
-                _hardware.Remove(network);
-                HardwareRemoved?.Invoke(network);
-            }
-
-            // Add new network interfaces.
-            foreach (KeyValuePair<string, NetworkInterface> networkInterfacePair in foundNetworkInterfaces)
-            {
-                if (!_networks.ContainsKey(networkInterfacePair.Key))
+                if (hardware.All(x => x.NetworkInterface.Id != networkInterface.Id))
                 {
-                    _networks.Add(networkInterfacePair.Key, new Network(networkInterfacePair.Value, settings));
-                    _hardware.Add(_networks[networkInterfacePair.Key]);
-                    HardwareAdded?.Invoke(_networks[networkInterfacePair.Key]);
+                    Network network = new(networkInterface, settings);
+                    hardware.Add(network);
+                    additions.Add(network);
                 }
             }
+
+            _hardware = hardware;
+
+            foreach (Network removable in removables)
+                HardwareRemoved?.Invoke(removable);
+
+            foreach (Network addition in additions)
+                HardwareAdded?.Invoke(addition);
         }
     }
 
-    private static IOrderedEnumerable<NetworkInterface> GetNetworkInterfaces()
+    private static List<NetworkInterface> GetNetworkInterfaces()
     {
         int retry = 0;
 
@@ -116,8 +117,9 @@ internal class NetworkGroup : IGroup, IHardwareChanged
             try
             {
                 return NetworkInterface.GetAllNetworkInterfaces()
-                                       .Where(DesiredNetworkType)
-                                       .OrderBy(x => x.Name);
+                                       .Where(IsDesiredNetworkType)
+                                       .OrderBy(static x => x.Name)
+                                       .ToList();
             }
             catch (NetworkInformationException)
             {
@@ -134,7 +136,7 @@ internal class NetworkGroup : IGroup, IHardwareChanged
         UpdateNetworkInterfaces(_settings);
     }
 
-    private static bool DesiredNetworkType(NetworkInterface nic)
+    private static bool IsDesiredNetworkType(NetworkInterface nic)
     {
         switch (nic.NetworkInterfaceType)
         {
