@@ -389,7 +389,7 @@ internal class LpcIO
             case 0xD5:
                 switch (revision)
                 {
-                    case 0x92:                                
+                    case 0x92:
                         switch (motherboard.Model)
                         {
                             case Model.B840P_PRO_WIFI:
@@ -411,14 +411,14 @@ internal class LpcIO
                             case Model.Z890_EDGE_TI_WIFI:
                             case Model.Z890P_PRO_WIFI:
                             case Model.Z890A_PRO_WIFI:
-                            case Model.Z890_GAMING_PLUS_WIFI:
-                            case Model.Z890S_PRO_WIFI_PROJECT_ZERO:
+                            case Model.Z890S_PRO_WIFI:
                                 chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
                                 break;
                             default:
                                 chip = Chip.NCT6687D;
                                 break;
                         }
+
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                 }
@@ -780,6 +780,7 @@ internal class LpcIO
     private const byte IT87_LD_ACTIVE_REGISTER = 0x30;
 
     private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };
+
     private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };
     // ReSharper restore InconsistentNaming
 }

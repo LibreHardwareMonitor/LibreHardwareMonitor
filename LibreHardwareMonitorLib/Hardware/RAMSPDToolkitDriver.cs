@@ -18,11 +18,11 @@ namespace LibreHardwareMonitor.Hardware
     {
         private KernelDriver _kernelDriver;
 
-        private const byte PCI_MAX_NUMBER_OF_BUS  = 255;
-        private const byte PCI_NUMBER_OF_DEVICE   =  32;
-        private const byte PCI_NUMBER_OF_FUNCTION =   8;
+        private const byte PCI_MAX_NUMBER_OF_BUS = 255;
+        private const byte PCI_NUMBER_OF_DEVICE = 32;
+        private const byte PCI_NUMBER_OF_FUNCTION = 8;
 
-        public bool IsOpen => _kernelDriver != null;
+        public bool IsOpen => _kernelDriver?.IsOpen ?? false;
 
         public RAMSPDToolkitDriver(KernelDriver kernelDriver)
         {

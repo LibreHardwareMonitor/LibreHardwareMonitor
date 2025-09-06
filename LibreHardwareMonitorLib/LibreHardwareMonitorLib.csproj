@@ -35,14 +35,14 @@
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="9.0.7" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.8" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.1.4" />
-    <PackageReference Include="System.Management" Version="9.0.7" />
+    <PackageReference Include="System.Management" Version="9.0.8" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">
