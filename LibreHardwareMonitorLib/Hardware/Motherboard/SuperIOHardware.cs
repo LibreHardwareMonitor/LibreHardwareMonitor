@@ -4818,25 +4818,18 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("CPU VDDIO / MC", 13, 9, 82));
                             v.Add(new Voltage("1.8V PLL", 14, 17, 36));
 
-                            // The following mappings only applies when FanXpert is off in Armoury Crate.
-                            // Temp Index -> Sensor Name
-                            Dictionary<int, string> tempMap = new()
-                            {
-                                { 0, "CPU Package" },
-                                { 1, "VRM" },
-                                { 2, "Motherboard" },
-                                { 22, "CPU" },
-                            };
+                            // The following mappings only apply when FanXpert is off in Armoury Crate.
+                            t.Add(new Temperature("CPU Package", 0));
+                            t.Add(new Temperature("VRM", 1));
+                            t.Add(new Temperature("Motherboard", 2));
+                            t.Add(new Temperature("CPU", 22));
 
-                            for (int tempIndex = 0; tempIndex < superIO.Temperatures.Length; tempIndex++)
+                            // Add all unmapped temperature sensors
+                            for (int i = 3; i < superIO.Temperatures.Length; i++)
                             {
-                                if (tempMap.TryGetValue(tempIndex, out string tempSensorName))
+                                if (i != 22)
                                 {
-                                    t.Add(new Temperature(tempSensorName, tempIndex));
-                                }
-                                else
-                                {
-                                    t.Add(new Temperature($"Temperature #{tempIndex}", tempIndex));
+                                    t.Add(new Temperature($"Temperature #{i}", i));
                                 }
                             }
 
