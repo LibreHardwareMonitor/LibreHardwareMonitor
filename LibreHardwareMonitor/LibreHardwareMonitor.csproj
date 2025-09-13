@@ -16,6 +16,7 @@
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
 	  <LangVersion>latest</LangVersion>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
