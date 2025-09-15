@@ -112,6 +112,7 @@ public unsafe class PawnIo
     {
         try
         {
+            TryLoadDll();
             pawnio_version(out uint version);
 
             return new Version((int)((version >> 16) & 0xFF),
