@@ -4,7 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Threading;
 using LibreHardwareMonitor.PawnIo;
 
@@ -17,6 +16,13 @@ internal sealed class Amd0FCpu : AmdCpu
     private readonly Sensor[] _coreTemperatures;
 
     private readonly AmdFamily0F _pawnModule;
+
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
+    }
 
     public Amd0FCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -39,13 +45,13 @@ internal sealed class Amd0FCpu : AmdCpu
                                                   i,
                                                   SensorType.Temperature,
                                                   this,
-                                                  new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset) },
+                                                  [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset)],
                                                   settings);
             }
         }
         else
         {
-            _coreTemperatures = Array.Empty<Sensor>();
+            _coreTemperatures = [];
         }
 
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
@@ -68,7 +74,8 @@ internal sealed class Amd0FCpu : AmdCpu
         {
             for (uint i = 0; i < _coreTemperatures.Length; i++)
             {
-                uint value = 0;
+                uint value;
+
                 try
                 {
                     value = _pawnModule.GetThermtrip(Index, i);

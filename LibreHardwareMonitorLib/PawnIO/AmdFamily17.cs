@@ -1,31 +1,29 @@
-﻿using LibreHardwareMonitor.Hardware;
-
-namespace LibreHardwareMonitor.PawnIo;
+﻿namespace LibreHardwareMonitor.PawnIo;
 
 public class AmdFamily17
 {
-    private readonly PawnIO _pawnIo;
+    private readonly PawnIo _pawnIo;
 
     public AmdFamily17()
     {
-        _pawnIo = PawnIO.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily17.bin");
+        _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily17.bin");
     }
 
     public uint ReadSmn(uint offset)
     {
-        var result = _pawnIo.Execute("ioctl_read_smn", [offset], 1);
+        long[] result = _pawnIo.Execute("ioctl_read_smn", [offset], 1);
         return (uint)result[0];
     }
 
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
-        var inArray = new long[1];
-        inArray[0] = (long)index;
+        long[] inArray = new long[1];
+        inArray[0] = index;
         eax = 0;
         edx = 0;
         try
         {
-            var outArray = _pawnIo.Execute("ioctl_read_msr", inArray, 1);
+            long[] outArray = _pawnIo.Execute("ioctl_read_msr", inArray, 1);
             eax = (uint)outArray[0];
             edx = (uint)(outArray[0] >> 32);
         }
@@ -33,23 +31,27 @@ public class AmdFamily17
         {
             return false;
         }
+
         return true;
     }
 
     public bool ReadMsr(uint index, out ulong eaxedx)
     {
-        var inArray = new long[1];
-        inArray[0] = (long)index;
+        long[] inArray = new long[1];
+        inArray[0] = index;
         eaxedx = 0;
         try
         {
-            var outArray = _pawnIo.Execute("ioctl_read_msr", inArray, 1);
+            long[] outArray = _pawnIo.Execute("ioctl_read_msr", inArray, 1);
             eaxedx = (ulong)outArray[0];
         }
         catch
         {
             return false;
         }
+
         return true;
     }
+
+    public void Close() => _pawnIo.Close();
 }

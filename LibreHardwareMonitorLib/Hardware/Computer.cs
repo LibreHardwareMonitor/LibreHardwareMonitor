@@ -455,7 +455,7 @@ public class Computer : IComputer
 
     private void RemoveType<T>() where T : IGroup
     {
-        List<T> list = new();
+        List<T> list = [];
 
         lock (_lock)
         {
@@ -471,7 +471,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If hasn't been opened before, opens <see cref="SMBios" />, <see cref="PawnIO" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
+    /// If hasn't been opened before, opens <see cref="SMBios" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
     /// enabled.
     /// </summary>
     public void Open()
@@ -481,7 +481,6 @@ public class Computer : IComputer
 
         _smbios = new SMBios();
 
-        PawnIo.PawnIO.Open();
         Mutexes.Open();
         OpCode.Open();
 
@@ -606,7 +605,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" /> and <see cref="PawnIO.Close" />.
+    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />.
     /// </summary>
     public void Close()
     {
@@ -623,7 +622,6 @@ public class Computer : IComputer
         }
 
         OpCode.Close();
-        PawnIo.PawnIO.Close();
         Mutexes.Close();
 
         _smbios = null;

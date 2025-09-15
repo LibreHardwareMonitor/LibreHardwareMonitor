@@ -1,21 +1,20 @@
-﻿using System;
-using LibreHardwareMonitor.Hardware;
+﻿using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.PawnIo;
 
 public class AmdFamily0F
 {
-    private readonly PawnIO _pawnIO;
+    private readonly PawnIo _pawnIO;
 
     public AmdFamily0F()
     {
-        _pawnIO = PawnIO.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily0F.bin");
+        _pawnIO = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily0F.bin");
     }
 
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
         long[] inArray = new long[1];
-        inArray[0] = (long)index;
+        inArray[0] = index;
         eax = 0;
         edx = 0;
         try
@@ -28,6 +27,7 @@ public class AmdFamily0F
         {
             return false;
         }
+
         return true;
     }
 
@@ -42,9 +42,11 @@ public class AmdFamily0F
     public uint GetThermtrip(int cpuIndex, uint coreIndex)
     {
         long[] inArray = new long[2];
-        inArray[0] = (long)cpuIndex;
-        inArray[1] = (long)coreIndex;
+        inArray[0] = cpuIndex;
+        inArray[1] = coreIndex;
         long[] outArray = _pawnIO.Execute("ioctl_get_thermtrip", inArray, 1);
         return (uint)outArray[0];
     }
+
+    public void Close() => _pawnIO.Close();
 }

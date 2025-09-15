@@ -526,6 +526,13 @@ internal sealed class IntelCpu : GenericCpu
         return r.ToString();
     }
 
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
+    }
+
     public override void Update()
     {
         base.Update();

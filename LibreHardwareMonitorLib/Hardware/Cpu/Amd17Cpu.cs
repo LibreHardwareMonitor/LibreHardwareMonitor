@@ -77,6 +77,14 @@ internal sealed class Amd17Cpu : AmdCpu
         return r.ToString();
     }
 
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
+        _smu.Close();
+    }
+
     public override void Update()
     {
         base.Update();

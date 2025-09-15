@@ -529,6 +529,8 @@ internal class IT87XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    public void Close() => _port.Close();
+
     private byte ReadByte(byte register, out bool valid)
     {
         _port.WriteIoPort(_addressReg, register);

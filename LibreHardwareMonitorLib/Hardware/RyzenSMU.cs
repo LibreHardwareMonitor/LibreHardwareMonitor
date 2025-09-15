@@ -172,6 +172,8 @@ internal class RyzenSMU
         }
     }
 
+    public void Close() => _ryzenSmu.Close();
+
     public string GetReport()
     {
         StringBuilder r = new();

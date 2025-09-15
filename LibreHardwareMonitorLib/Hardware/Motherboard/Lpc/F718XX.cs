@@ -206,6 +206,12 @@ internal class F718XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    /// <inheritdoc />
+    public void Close()
+    {
+        _port.Close();
+    }
+
     private void SaveDefaultFanPwmControl(int index)
     {
         if (!_restoreDefaultFanPwmControlRequired[index])

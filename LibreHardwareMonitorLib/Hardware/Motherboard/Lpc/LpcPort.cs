@@ -113,6 +113,8 @@ internal class LpcPort
         _pawnModule.WritePort(RegisterPort, 0xAA);
     }
 
+    public void Close() => _pawnModule.Close();
+
     // ReSharper disable InconsistentNaming
     private const byte CONFIGURATION_CONTROL_REGISTER = 0x02;
     private const byte DEVICE_SELECT_REGISTER = 0x07;

@@ -3,68 +3,58 @@ using LibreHardwareMonitor.PawnIo;
 using RAMSPDToolkit.I2CSMBus.Interop.PawnIO;
 using RAMSPDToolkit.Windows.Driver.Interfaces;
 
-namespace LibreHardwareMonitor
+namespace LibreHardwareMonitor;
+
+internal class RAMSPDToolkitDriver : IPawnIODriver
 {
-    internal class RAMSPDToolkitDriver : IPawnIODriver
+    const string I801ModuleFilename = "SmbusI801.bin";
+    const string Piix4ModuleFilename = "SmbusPIIX4.bin";
+    const string Nct6793ModuleFilename = "SmbusNCT6793.bin";
+
+    private PawnIo.PawnIo _pawnIO;
+
+    public bool IsOpen => true;
+
+    public int Execute(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
     {
-        const string I801ModuleFilename = "SmbusI801.bin";
-        const string Piix4ModuleFilename = "SmbusPIIX4.bin";
-        const string NCT6793ModuleFilename = "SmbusNCT6793.bin";
+        return _pawnIO.ExecuteHr(name, inBuffer, inSize, outBuffer, outSize, out returnSize);
+    }
 
-        private PawnIO _pawnIO;
+    public bool Load()
+    {
+        //Not required
+        return true;
+    }
 
-        public bool IsOpen => true;
-
-        public int Execute(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
+    public bool LoadModule(PawnIOSMBusIdentifier pawnIOSMBusIdentifier)
+    {
+        string moduleResourceFilename = pawnIOSMBusIdentifier switch
         {
-            return _pawnIO.ExecuteHr(name, inBuffer, inSize, outBuffer, outSize, out returnSize);
+            PawnIOSMBusIdentifier.I801 => I801ModuleFilename,
+            PawnIOSMBusIdentifier.Piix4 => Piix4ModuleFilename,
+            PawnIOSMBusIdentifier.NCT6793 => Nct6793ModuleFilename,
+            _ => null
+        };
+
+        if (moduleResourceFilename == null)
+        {
+            return false;
         }
 
-        public bool Load()
+        try
         {
-            //Not required
-            return true;
+            _pawnIO = PawnIo.PawnIo.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.{moduleResourceFilename}");
+        }
+        catch
+        {
+            return false;
         }
 
-        public bool LoadModule(PawnIOSMBusIdentifier pawnIOSMBusIdentifier)
-        {
-            string moduleResourceFilename = null;
+        return _pawnIO != null;
+    }
 
-            switch (pawnIOSMBusIdentifier)
-            {
-                case PawnIOSMBusIdentifier.I801:
-                    moduleResourceFilename = I801ModuleFilename;
-                    break;
-                case PawnIOSMBusIdentifier.Piix4:
-                    moduleResourceFilename = Piix4ModuleFilename;
-                    break;
-                case PawnIOSMBusIdentifier.NCT6793:
-                    moduleResourceFilename = NCT6793ModuleFilename;
-                    break;
-                default:
-                    break;
-            }
-
-            if (moduleResourceFilename == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                _pawnIO = PawnIO.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.{moduleResourceFilename}");
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return _pawnIO != null;
-        }
-
-        public void Unload()
-        {
-            //Empty
-        }
+    public void Unload()
+    {
+        _pawnIO.Close();
     }
 }

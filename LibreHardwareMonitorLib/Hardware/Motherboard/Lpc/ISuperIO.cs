@@ -30,4 +30,6 @@ internal interface ISuperIO
     string GetReport();
 
     void Update();
+
+    void Close();
 }

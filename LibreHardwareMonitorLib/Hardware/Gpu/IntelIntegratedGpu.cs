@@ -132,6 +132,13 @@ internal class IntelIntegratedGpu : GenericGpu
         }
     }
 
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
+    }
+
     private static string GetName(string deviceId)
     {
         string path = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\" + D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);

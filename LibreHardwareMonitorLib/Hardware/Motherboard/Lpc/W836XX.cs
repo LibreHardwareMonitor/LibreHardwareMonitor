@@ -402,6 +402,12 @@ internal class W836XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    /// <inheritdoc />
+    public void Close()
+    {
+        _port.Close();
+    }
+
     public string GetReport()
     {
         StringBuilder r = new();

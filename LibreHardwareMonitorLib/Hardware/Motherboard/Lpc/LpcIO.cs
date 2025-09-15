@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using LibreHardwareMonitor.Hardware.Cpu;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -68,11 +67,16 @@ internal class LpcIO
         {
             var port = new LpcPort(REGISTER_PORTS[i], VALUE_PORTS[i]);
 
-            if (DetectWinbondFintek(port, motherboard)) continue;
+            if (DetectWinbondFintek(port, motherboard))
+                continue;
 
-            if (DetectIT87(port, motherboard)) continue;
+            if (DetectIT87(port, motherboard))
+                continue;
 
-            if (DetectSmsc(port)) continue;
+            if (DetectSmsc(port))
+                continue;
+
+            port.Close();
         }
     }
 
@@ -84,6 +88,12 @@ internal class LpcIO
         }
 
         return null;
+    }
+
+    public void Close()
+    {
+        foreach (ISuperIO superIO in _superIOs)
+            superIO.Close();
     }
 
     private bool DetectWinbondFintek(LpcPort port, Motherboard motherboard)

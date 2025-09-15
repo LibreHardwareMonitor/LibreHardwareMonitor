@@ -84,6 +84,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         {
             _disposed = true;
             Mutexes.ReleaseEc();
+            _pawnModule.Close();
         }
     }
 

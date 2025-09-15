@@ -4,16 +4,16 @@ namespace LibreHardwareMonitor.PawnIo;
 
 public class AmdFamily10
 {
-    private readonly PawnIO _pawnIo;
+    private readonly PawnIo _pawnIo;
 
     public AmdFamily10()
     {
-        _pawnIo = PawnIO.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily10.bin");
+        _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily10.bin");
     }
 
     public void MeasureTscMultiplier(out long ctrPerTick, out long cofVid)
     {
-        var result = _pawnIo.Execute("ioctl_measure_tsc_multiplier", [], 2);
+        long[] result = _pawnIo.Execute("ioctl_measure_tsc_multiplier", [], 2);
         ctrPerTick = result[0];
         cofVid = result[1];
     }
@@ -34,32 +34,32 @@ public class AmdFamily10
 
     public byte[] ReadCstateResidency()
     {
-        var result = _pawnIo.Execute("ioctl_read_cstate_residency", [], 2);
+        long[] result = _pawnIo.Execute("ioctl_read_cstate_residency", [], 2);
         return [(byte)result[0], (byte)result[1]];
     }
 
     public uint ReadMiscCtl(int cpu, uint offset)
     {
-        var result = _pawnIo.Execute("ioctl_read_miscctl", [cpu, offset], 1);
+        long[] result = _pawnIo.Execute("ioctl_read_miscctl", [cpu, offset], 1);
         return (uint)result[0];
     }
 
     public uint ReadSmu(uint offset)
     {
-        var result = _pawnIo.Execute("ioctl_read_smu", [offset], 1);
+        long[] result = _pawnIo.Execute("ioctl_read_smu", [offset], 1);
         return (uint)result[0];
     }
 
 
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
-        var inArray = new long[1];
-        inArray[0] = (long)index;
+        long[] inArray = new long[1];
+        inArray[0] = index;
         eax = 0;
         edx = 0;
         try
         {
-            var outArray = _pawnIo.Execute("ioctl_read_msr", inArray, 1);
+            long[] outArray = _pawnIo.Execute("ioctl_read_msr", inArray, 1);
             eax = (uint)outArray[0];
             edx = (uint)(outArray[0] >> 32);
         }
@@ -77,4 +77,6 @@ public class AmdFamily10
         ThreadAffinity.Set(previousAffinity);
         return result;
     }
+
+    public void Close() => _pawnIo.Close();
 }

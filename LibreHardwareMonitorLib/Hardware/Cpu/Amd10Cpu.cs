@@ -353,8 +353,9 @@ internal sealed class Amd10Cpu : AmdCpu
 
     public override void Close()
     {
-        _temperatureStream?.Close();
         base.Close();
+        _temperatureStream?.Close();
+        _pawnModule.Close();
     }
 
     // ReSharper disable InconsistentNaming

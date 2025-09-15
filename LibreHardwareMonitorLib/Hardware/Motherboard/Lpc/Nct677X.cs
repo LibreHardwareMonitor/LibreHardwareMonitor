@@ -734,6 +734,12 @@ internal class Nct677X : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    /// <inheritdoc />
+    public void Close()
+    {
+        _lpcPort.Close();
+    }
+
     public string GetReport()
     {
         StringBuilder r = new();

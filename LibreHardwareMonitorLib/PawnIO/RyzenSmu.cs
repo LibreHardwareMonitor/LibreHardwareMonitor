@@ -5,11 +5,11 @@ namespace LibreHardwareMonitor.PawnIo;
 
 public class RyzenSmu
 {
-    private readonly PawnIO _pawnIO;
+    private readonly PawnIo _pawnIO;
 
     public RyzenSmu()
     {
-        _pawnIO = PawnIO.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.RyzenSMU.bin");
+        _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.RyzenSMU.bin");
     }
 
     public uint GetSmuVersion()
@@ -73,4 +73,6 @@ public class RyzenSmu
             Mutexes.ReleasePciBus();
         }
     }
+
+    public void Close() => _pawnIO.Close();
 }

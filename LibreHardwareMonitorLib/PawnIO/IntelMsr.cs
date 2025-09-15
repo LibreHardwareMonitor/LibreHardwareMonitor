@@ -1,21 +1,20 @@
-﻿using System;
-using LibreHardwareMonitor.Hardware;
+﻿using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.PawnIo;
 
 public class IntelMsr
 {
     private readonly long[] _inArray = new long[1];
-    private readonly PawnIO _pawnIO;
+    private readonly PawnIo _pawnIO;
 
     public IntelMsr()
     {
-        _pawnIO = PawnIO.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IntelMSR.bin");
+        _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IntelMSR.bin");
     }
 
     public bool ReadMsr(uint index, out ulong value)
     {
-        _inArray[0] = (long)index;
+        _inArray[0] = index;
         value = 0;
         try
         {
@@ -26,12 +25,13 @@ public class IntelMsr
         {
             return false;
         }
+
         return true;
     }
 
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
-        _inArray[0] = (long)index;
+        _inArray[0] = index;
         eax = 0;
         edx = 0;
         try
@@ -44,6 +44,7 @@ public class IntelMsr
         {
             return false;
         }
+
         return true;
     }
 
@@ -54,4 +55,6 @@ public class IntelMsr
         ThreadAffinity.Set(previousAffinity);
         return result;
     }
+
+    public void Close() => _pawnIO.Close();
 }
