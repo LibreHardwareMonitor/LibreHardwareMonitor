@@ -29,11 +29,11 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     private int _waitReadFailures;
 
-    private readonly LpcACPIEC _pawnModule;
+    private readonly LpcAcpiEc _pawnModule;
 
     public WindowsEmbeddedControllerIO()
     {
-        _pawnModule = new LpcACPIEC();
+        _pawnModule = new LpcAcpiEc();
 
         if (!Mutexes.WaitEc(10))
         {

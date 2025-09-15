@@ -1,13 +1,8 @@
 ﻿namespace LibreHardwareMonitor.PawnIo;
 
-public class LpcACPIEC
+public class LpcAcpiEc
 {
-    private readonly PawnIo _pawnIO;
-
-    public LpcACPIEC()
-    {
-        _pawnIO = PawnIo. LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.LpcACPIEC.bin");
-    }
+    private readonly PawnIo _pawnIO = PawnIo. LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.LpcACPIEC.bin");
 
     public byte ReadPort(byte port)
     {

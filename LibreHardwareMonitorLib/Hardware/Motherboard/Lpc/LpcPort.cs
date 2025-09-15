@@ -8,13 +8,13 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class LpcPort
 {
-    private PawnIo.LpcIO _pawnModule;
+    private PawnIo.LpcIo _pawnModule;
 
     public LpcPort(ushort registerPort, ushort valuePort)
     {
         RegisterPort = registerPort;
         ValuePort = valuePort;
-        _pawnModule = new PawnIo.LpcIO();
+        _pawnModule = new PawnIo.LpcIo();
         _pawnModule.SelectSlot(registerPort == 0x2e ? 0 : 1);
     }
 

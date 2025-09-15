@@ -4,12 +4,7 @@ namespace LibreHardwareMonitor.PawnIo;
 
 public class AmdFamily10
 {
-    private readonly PawnIo _pawnIo;
-
-    public AmdFamily10()
-    {
-        _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily10.bin");
-    }
+    private readonly PawnIo _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily10.bin");
 
     public void MeasureTscMultiplier(out long ctrPerTick, out long cofVid)
     {
@@ -29,6 +24,7 @@ public class AmdFamily10
         {
             // ignored
         }
+
         return false;
     }
 
@@ -50,7 +46,6 @@ public class AmdFamily10
         return (uint)result[0];
     }
 
-
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
         long[] inArray = new long[1];
@@ -67,6 +62,7 @@ public class AmdFamily10
         {
             return false;
         }
+
         return true;
     }
 

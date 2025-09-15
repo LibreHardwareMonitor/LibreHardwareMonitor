@@ -2,12 +2,7 @@
 
 public class AmdFamily17
 {
-    private readonly PawnIo _pawnIo;
-
-    public AmdFamily17()
-    {
-        _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily17.bin");
-    }
+    private readonly PawnIo _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily17.bin");
 
     public uint ReadSmn(uint offset)
     {

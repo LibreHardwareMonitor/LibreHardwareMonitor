@@ -105,11 +105,13 @@ public unsafe class PawnIo
         }
     }
 
+    /// <summary>
+    /// Retrieves the version information for the underlying PawnIO library.
+    /// </summary>
     public static Version Version()
     {
         try
         {
-
             pawnio_version(out uint version);
 
             return new Version((int)((version >> 16) & 0xFF),

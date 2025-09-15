@@ -2,24 +2,36 @@
 
 namespace LibreHardwareMonitor.PawnIo;
 
-public class AmdFamily0F
+public class IntelMsr
 {
-    private readonly PawnIo _pawnIO;
+    private readonly long[] _inArray = new long[1];
+    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IntelMSR.bin");
 
-    public AmdFamily0F()
+    public bool ReadMsr(uint index, out ulong value)
     {
-        _pawnIO = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily0F.bin");
+        _inArray[0] = index;
+        value = 0;
+        try
+        {
+            long[] outArray = _pawnIO.Execute("ioctl_read_msr", _inArray, 1);
+            value = (ulong)outArray[0];
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
-        long[] inArray = new long[1];
-        inArray[0] = index;
+        _inArray[0] = index;
         eax = 0;
         edx = 0;
         try
         {
-            long[] outArray = _pawnIO.Execute("ioctl_read_msr", inArray, 1);
+            long[] outArray = _pawnIO.Execute("ioctl_read_msr", _inArray, 1);
             eax = (uint)outArray[0];
             edx = (uint)(outArray[0] >> 32);
         }
@@ -37,15 +49,6 @@ public class AmdFamily0F
         bool result = ReadMsr(index, out eax, out edx);
         ThreadAffinity.Set(previousAffinity);
         return result;
-    }
-
-    public uint GetThermtrip(int cpuIndex, uint coreIndex)
-    {
-        long[] inArray = new long[2];
-        inArray[0] = cpuIndex;
-        inArray[1] = coreIndex;
-        long[] outArray = _pawnIO.Execute("ioctl_get_thermtrip", inArray, 1);
-        return (uint)outArray[0];
     }
 
     public void Close() => _pawnIO.Close();
