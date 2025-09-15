@@ -13,7 +13,7 @@ public unsafe class PawnIo
 
     private PawnIo()
     {
-        TryLoadDll();
+        TryLoadLibrary();
         pawnio_open(out _handle);
     }
 
@@ -81,7 +81,7 @@ public unsafe class PawnIo
     [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
     private static extern void pawnio_close(IntPtr handle);
 
-    private static void TryLoadDll()
+    private static void TryLoadLibrary()
     {
         try
         {
@@ -112,7 +112,7 @@ public unsafe class PawnIo
     {
         try
         {
-            TryLoadDll();
+            TryLoadLibrary();
             pawnio_version(out uint version);
 
             return new Version((int)((version >> 16) & 0xFF),
