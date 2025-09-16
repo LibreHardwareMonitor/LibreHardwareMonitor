@@ -29,17 +29,17 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public MemoryGroup(ISettings settings)
     {
-        if (Ring0.IsOpen && (DriverManager.Driver is null || !DriverManager.Driver.IsOpen))
+        if (DriverManager.Driver is null || !DriverManager.Driver.IsOpen)
         {
             // Assign implementation of IDriver.
-            DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
+            DriverManager.Driver = new RAMSPDToolkitDriver();
             SMBusManager.UseWMI = false;
         }
 
         _hardware.Add(new VirtualMemory(settings));
         _hardware.Add(new TotalMemory(settings));
 
-        if (DriverManager.Driver == null)
+        if (DriverManager.Driver == null || !DriverManager.LoadDriver())
         {
             return;
         }

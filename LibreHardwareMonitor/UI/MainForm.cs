@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.PawnIo;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 using LibreHardwareMonitor.Wmi;
@@ -166,7 +168,55 @@ public sealed partial class MainForm : Form
 
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
+
+        if (PawnIo.PawnIo.IsInstalled)
+        {
+            if (PawnIo.PawnIo.Version() < new Version(2, 0, 0, 0))
+            {
+                DialogResult result = MessageBox.Show("PawnIO is outdated, do you want to update it?", nameof(LibreHardwareMonitor), MessageBoxButtons.OKCancel);
+                if (result == DialogResult.OK)
+                    InstallPawnIO();
+            }
+        }
+        else
+        {
+            DialogResult result = MessageBox.Show("PawnIO is not installed, do you want to install it?", nameof(LibreHardwareMonitor), MessageBoxButtons.OKCancel);
+            if (result == DialogResult.OK)
+                InstallPawnIO();
+        }
+
         _computer.Open();
+
+        static void InstallPawnIO()
+        {
+            string path = ExtractPawnIO();
+            if (!string.IsNullOrEmpty(path))
+            {
+                var process = Process.Start(new ProcessStartInfo(path, "-install"));
+                process?.WaitForExit();
+
+                File.Delete(path);
+            }
+        }
+
+        static string ExtractPawnIO()
+        {
+            string destination = Path.Combine(Directory.GetCurrentDirectory(), "PawnIO_setup.exe");
+
+            try
+            {
+
+                using Stream resourceStream = typeof(MainForm).Assembly.GetManifestResourceStream("LibreHardwareMonitor.Resources.PawnIO_setup.exe");
+                using FileStream fileStream = new(destination, FileMode.Create, FileAccess.Write);
+                resourceStream.CopyTo(fileStream);
+
+                return destination;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         backgroundUpdater.DoWork += BackgroundUpdater_DoWork;
         timer.Enabled = true;
@@ -183,7 +233,7 @@ public sealed partial class MainForm : Form
         UserOption showMax = new("maxMenuItem", true, maxMenuItem, _settings);
         showMax.Changed += delegate { treeView.Columns[3].IsVisible = showMax.Value; };
 
-        var _ = new UserOption("startMinMenuItem", false, startMinMenuItem, _settings);
+        _ = new UserOption("startMinMenuItem", false, startMinMenuItem, _settings);
         _minimizeToTray = new UserOption("minTrayMenuItem", true, minTrayMenuItem, _settings);
         _minimizeToTray.Changed += delegate { _systemTray.IsMainIconEnabled = _minimizeToTray.Value; };
 

@@ -34,7 +34,7 @@ public class Computer : IComputer
     private readonly List<IGroup> _groups = new();
     private readonly object _lock = new();
     private readonly ISettings _settings;
-        
+
     private bool _batteryEnabled;
     private bool _controllerEnabled;
     private bool _cpuEnabled;
@@ -46,7 +46,6 @@ public class Computer : IComputer
     private bool _psuEnabled;
     private SMBios _smbios;
     private bool _storageEnabled;
-    private bool _ring0Enabled = true;
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
@@ -280,16 +279,6 @@ public class Computer : IComputer
         }
     }
 
-    /// <inheritdoc />
-    public bool IsRing0Enabled
-    {
-        get { return _ring0Enabled; }
-        set
-        {
-            _ring0Enabled = value;
-        }
-    }
-
     /// <summary>
     /// Contains computer information table read in accordance with <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
     /// </summary>
@@ -330,14 +319,6 @@ public class Computer : IComputer
             w.Write("Process Type: ");
             w.WriteLine(IntPtr.Size == 4 ? "32-Bit" : "64-Bit");
             w.WriteLine();
-
-            string r = Ring0.GetReport();
-            if (r != null)
-            {
-                NewSection(w);
-                w.Write(r);
-                w.WriteLine();
-            }
 
             NewSection(w);
             w.WriteLine("Sensors");
@@ -474,7 +455,7 @@ public class Computer : IComputer
 
     private void RemoveType<T>() where T : IGroup
     {
-        List<T> list = new();
+        List<T> list = [];
 
         lock (_lock)
         {
@@ -490,7 +471,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If hasn't been opened before, opens <see cref="SMBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
+    /// If hasn't been opened before, opens <see cref="SMBios" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
     /// enabled.
     /// </summary>
     public void Open()
@@ -499,9 +480,6 @@ public class Computer : IComputer
             return;
 
         _smbios = new SMBios();
-
-        if (IsRing0Enabled)
-            Ring0.Open();
 
         Mutexes.Open();
         OpCode.Open();
@@ -627,7 +605,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="Ring0.Close" />.
+    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />.
     /// </summary>
     public void Close()
     {
@@ -644,8 +622,6 @@ public class Computer : IComputer
         }
 
         OpCode.Close();
-        InpOut.Close();
-        Ring0.Close();
         Mutexes.Close();
 
         _smbios = null;

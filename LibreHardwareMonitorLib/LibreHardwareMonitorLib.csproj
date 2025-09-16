@@ -17,6 +17,7 @@
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
     <LangVersion>latest</LangVersion>
     <PackageIcon>packageicon.png</PackageIcon>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>
@@ -28,10 +29,16 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\inpout32.gz" />
-    <EmbeddedResource Include="Resources\inpoutx64.gz" />
-    <EmbeddedResource Include="Resources\WinRing0.gz" />
-    <EmbeddedResource Include="Resources\WinRing0x64.gz" />
+    <EmbeddedResource Include="Resources\PawnIO\LpcIO.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\RyzenSMU.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\AMDFamily17.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusI801.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusNCT6793.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusPIIX4.bin" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
@@ -41,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.2.2" />
+    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.3.1" />
     <PackageReference Include="System.Management" Version="9.0.9" />
   </ItemGroup>
   <ItemGroup>
