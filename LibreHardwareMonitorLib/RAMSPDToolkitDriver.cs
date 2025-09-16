@@ -1,6 +1,4 @@
-﻿using System;
-using LibreHardwareMonitor.PawnIo;
-using RAMSPDToolkit.I2CSMBus.Interop.PawnIO;
+﻿using RAMSPDToolkit.I2CSMBus.Interop.PawnIO;
 using RAMSPDToolkit.Windows.Driver.Interfaces;
 
 namespace LibreHardwareMonitor;

@@ -9,13 +9,7 @@ namespace LibreHardwareMonitor.PawnIo;
 
 public unsafe class PawnIo
 {
-    private readonly IntPtr _handle;
-
-    private PawnIo()
-    {
-        TryLoadLibrary();
-        pawnio_open(out _handle);
-    }
+    private IntPtr _handle;
 
     /// <summary>
     /// Gets the installation path of PawnIO, if it is installed on the system.
@@ -128,36 +122,52 @@ public unsafe class PawnIo
 
     public void Close()
     {
-        pawnio_close(_handle);
+        if (_handle != IntPtr.Zero)
+            pawnio_close(_handle);
     }
 
     public static PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
+        var pawnIO = new PawnIo();
+
         using Stream s = assembly.GetManifestResourceStream(resourceName);
 
-        if (s is not UnmanagedMemoryStream ums)
-            throw new InvalidOperationException();
+        if (s is UnmanagedMemoryStream ums)
+        {
+            TryLoadLibrary();
 
-        var pawnIO = new PawnIo();
-        pawnio_load(pawnIO._handle, ums.PositionPointer, (IntPtr)ums.Length);
+            try
+            {
+                pawnio_open(out IntPtr handle);
+                pawnio_load(handle, ums.PositionPointer, (IntPtr)ums.Length);
+                pawnIO._handle = handle;
+            }
+            catch
+            {
+                // PawnIO is not available.
+            }
+        }
 
         return pawnIO;
     }
 
     public long[] Execute(string name, long[] input, int outLength)
     {
-        long[] outArray = new long[outLength];
+        long[] result = new long[outLength];
+
+        if (_handle == IntPtr.Zero)
+            return result;
 
         pawnio_execute(_handle,
                        name,
                        input,
                        (IntPtr)input.Length,
-                       outArray,
-                       (IntPtr)outArray.Length,
+                       result,
+                       (IntPtr)result.Length,
                        out nint returnLength);
 
-        Array.Resize(ref outArray, (int)returnLength);
-        return outArray;
+        Array.Resize(ref result, (int)returnLength);
+        return result;
     }
 
     public int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
@@ -167,6 +177,12 @@ public unsafe class PawnIo
 
         if (outBuffer.Length < outSize)
             throw new ArgumentOutOfRangeException(nameof(outSize));
+
+        if (_handle == IntPtr.Zero)
+        {
+            returnSize = 0;
+            return 0;
+        }
 
         int ret = pawnio_execute_hr(_handle, name, inBuffer, (IntPtr)inSize, outBuffer, (IntPtr)outSize, out IntPtr retSize);
 
