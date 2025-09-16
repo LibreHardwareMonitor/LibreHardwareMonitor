@@ -192,7 +192,7 @@ public sealed partial class MainForm : Form
             string path = ExtractPawnIO();
             if (!string.IsNullOrEmpty(path))
             {
-                var process = Process.Start(new ProcessStartInfo(path, "-install -silent"));
+                var process = Process.Start(new ProcessStartInfo(path, "-install"));
                 process?.WaitForExit();
 
                 File.Delete(path);
