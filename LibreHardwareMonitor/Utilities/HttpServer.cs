@@ -625,7 +625,7 @@ public class HttpServer
     {
         JObject jsonNode = new()
         {
-            ["id"] = nodeIndex++,
+            ["Id"] = nodeIndex++,
             ["Text"] = n.Text,
             ["Min"] = string.Empty,
             ["Value"] = string.Empty,
@@ -643,6 +643,7 @@ public class HttpServer
                 jsonNode["ImageURL"] = "images/transparent.png";
                 break;
             case HardwareNode hardwareNode:
+                jsonNode["HardwareId"] = hardwareNode.Hardware.Identifier.ToString();
                 jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
                 break;
             case TypeNode typeNode:
