@@ -625,7 +625,7 @@ public class HttpServer
     {
         JObject jsonNode = new()
         {
-            ["id"] = nodeIndex++,
+            ["Id"] = nodeIndex++,
             ["Text"] = n.Text,
             ["Min"] = string.Empty,
             ["Value"] = string.Empty,
