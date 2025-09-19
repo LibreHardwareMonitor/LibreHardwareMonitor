@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -15,9 +16,12 @@ internal sealed class Amd17Cpu : AmdCpu
     private readonly Processor _processor;
     private readonly Dictionary<SensorType, int> _sensorTypeIndex;
     private readonly RyzenSMU _smu;
+    private readonly AmdFamily17 _pawnModule;
 
     public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
+        _pawnModule = new AmdFamily17();
+
         _sensorTypeIndex = new Dictionary<SensorType, int>();
         foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
         {
@@ -26,7 +30,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
         _sensorTypeIndex[SensorType.Load] = _active.Count(x => x.SensorType == SensorType.Load);
 
-        _smu = new RyzenSMU(_family, _model, _packageType);
+        _smu = new RyzenSMU();
 
         // Add all numa nodes.
         // Register ..1E_2, [10:8] + 1
@@ -65,17 +69,20 @@ internal sealed class Amd17Cpu : AmdCpu
         Update();
     }
 
-    protected override uint[] GetMsrs()
-    {
-        return new[] { PERF_CTL_0, PERF_CTR_0, HWCR, MSR_PSTATE_0, COFVID_STATUS };
-    }
-
     public override string GetReport()
     {
         StringBuilder r = new();
         r.Append(base.GetReport());
         r.Append(_smu.GetReport());
         return r.ToString();
+    }
+
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
+        _smu.Close();
     }
 
     public override void Update()
@@ -160,7 +167,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            Ring0.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
+            _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
             double energyBaseUnit = Math.Pow(0.5,esu);
 
@@ -168,7 +175,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // MSRC001_029B
             // total_energy [31:0]
             DateTime sampleTime = DateTime.UtcNow;
-            Ring0.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
+            _cpu._pawnModule.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
 
             uint totalEnergy = eax;
 
@@ -180,13 +187,11 @@ internal sealed class Amd17Cpu : AmdCpu
             {
                 // THM_TCON_CUR_TMP
                 // CUR_TEMP [31:21]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_THM_TCON_CUR_TMP);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint temperature);
+                uint temperature = _cpu._pawnModule.ReadSmn(F17H_M01H_THM_TCON_CUR_TMP);
 
                 // SVI0_TFN_PLANE0 [0]
                 // SVI0_TFN_PLANE1 [1]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
+                smuSvi0Tfn = _cpu._pawnModule.ReadSmn(F17H_M01H_SVI + 0x8);
 
                 bool supportsPerCcdTemperatures = false;
 
@@ -224,13 +229,11 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 // SVI0_PLANE0_VDDCOR [24:16]
                 // SVI0_PLANE0_IDDCOR [7:0]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane0);
+                smuSvi0TelPlane0 = _cpu._pawnModule.ReadSmn(sviPlane0Offset);
 
                 // SVI0_PLANE1_VDDCOR [24:16]
                 // SVI0_PLANE1_IDDCOR [7:0]
-                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
-                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane1);
+                smuSvi0TelPlane1 = _cpu._pawnModule.ReadSmn(sviPlane1Offset);
 
                 ThreadAffinity.Set(previousAffinity);
 
@@ -241,7 +244,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     _lastSampleTime = sampleTime;
                     _lastPwrValue = totalEnergy;
                 }
-                
+
                 _lastSampleTime = sampleTime;
 
                 // ticks diff
@@ -308,11 +311,12 @@ internal sealed class Amd17Cpu : AmdCpu
                 {
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
+                        uint ccd1Offset = 0;
                         if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
-                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M61H_CCD1_TEMP + (i * 0x4));
+                            ccd1Offset = F17H_M61H_CCD1_TEMP + i * 0x4;
                         else
-                            Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M70H_CCD1_TEMP + (i * 0x4));
-                        Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
+                            ccd1Offset = F17H_M70H_CCD1_TEMP + i * 0x4;
+                        uint ccdRawTemp = _cpu._pawnModule.ReadSmn(ccd1Offset);
 
                         ccdRawTemp &= 0xFFF;
                         float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
@@ -410,7 +414,7 @@ internal sealed class Amd17Cpu : AmdCpu
                             _cpu.ActivateSensor(sensor.Value);
                     }
                 }
-            }            
+            }
         }
 
         public void UpdateVirtualSensor()
@@ -427,7 +431,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
         private double GetTimeStampCounterMultiplier()
         {
-            Ring0.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
+            _cpu._pawnModule.ReadMsr(MSR_PSTATE_0, out uint eax, out _);
 
             if (_cpu._family == 0x1a)
             {
@@ -538,8 +542,9 @@ internal sealed class Amd17Cpu : AmdCpu
         private ulong _mperfDelta = 0;
         private ulong _aperfDelta = 0;
 
-        private CpuId _cpu;
-        public CpuId Cpu { get { return _cpu; } }
+        private CpuId _cpuId;
+        private Amd17Cpu _cpu;
+        public CpuId Cpu { get { return _cpuId; } }
 
         public TimeSpan SampleDuration { get; private set; }= TimeSpan.Zero;
         public double EffectiveClock { get; private set; } = 0;
@@ -547,9 +552,10 @@ internal sealed class Amd17Cpu : AmdCpu
         public ulong MperfDelta { get {  return _mperfDelta; } }
         public ulong AperfDelta { get { return _aperfDelta; } }
 
-        public CpuThread(CpuId cpu)
+        public CpuThread(Amd17Cpu cpu, CpuId cpuId)
         {
             _cpu = cpu;
+            _cpuId = cpuId;
         }
 
         public void ReadPerformanceCounter()
@@ -560,10 +566,10 @@ internal sealed class Amd17Cpu : AmdCpu
 
             // performance counter
             // MSRC000_00E7, P0 state counter
-            Ring0.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
+            _cpu._pawnModule.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
             _mperf = edxeax;
             // MSRC000_00E8, C0 state counter
-            Ring0.ReadMsr(MSR_APERF_RO, out edxeax);
+            _cpu._pawnModule.ReadMsr(MSR_APERF_RO, out edxeax);
             _aperf = edxeax;
         }
 
@@ -653,9 +659,9 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public List<CpuThread> Threads { get; } = new List<CpuThread>();
 
-        public void AppedThread(CpuId cpu)
+        public void AppedThread(CpuId cpuId)
         {
-            CpuThread t = new CpuThread(cpu);
+            CpuThread t = new CpuThread(_cpu, cpuId);
             Threads.Add(t);
         }
 
@@ -671,14 +677,14 @@ internal sealed class Amd17Cpu : AmdCpu
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            Ring0.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
+            _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
             double energyBaseUnit = Math.Pow(0.5, esu);
 
             // MSRC001_029A
             // total_energy [31:0]
             DateTime sampleTime = DateTime.UtcNow;
-            Ring0.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
+            _cpu._pawnModule.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
             uint totalEnergy = eax;
 
             // MSRC001_0293
@@ -687,7 +693,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // CurCpuDfsId [13:8]
             // CurCpuFid [7:0] zen1..4
             // CurCpuFid [11:0] zen5
-            Ring0.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
+            _cpu._pawnModule.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -23,11 +24,15 @@ internal class IntelIntegratedGpu : GenericGpu
     private uint _lastEnergyConsumed;
     private DateTime _lastEnergyTime;
 
+    private readonly IntelMsr _pawnModule;
+
     public IntelIntegratedGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
                new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
                settings)
     {
+        _pawnModule = new IntelMsr();
+
         _deviceId = deviceId;
 
         int memorySensorIndex = 0;
@@ -45,7 +50,7 @@ internal class IntelIntegratedGpu : GenericGpu
             _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
         }
 
-        if (Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
+        if (_pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
         {
             _energyUnitMultiplier = intelCpu.EnergyUnitsMultiplier;
             if (_energyUnitMultiplier != 0)
@@ -99,7 +104,7 @@ internal class IntelIntegratedGpu : GenericGpu
             _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
             ActivateSensor(_sharedMemoryUsage);
 
-            if (_powerSensor != null && Ring0.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
+            if (_powerSensor != null && _pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
             {
                 DateTime time = DateTime.UtcNow;
                 float deltaTime = (float)(time - _lastEnergyTime).TotalSeconds;
@@ -125,6 +130,13 @@ internal class IntelIntegratedGpu : GenericGpu
                 }
             }
         }
+    }
+
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
     }
 
     private static string GetName(string deviceId)

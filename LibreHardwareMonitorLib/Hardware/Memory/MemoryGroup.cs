@@ -7,14 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using RAMSPDToolkit.I2CSMBus;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Enums;
-using RAMSPDToolkit.SPD.Interfaces;
 using RAMSPDToolkit.SPD.Interop.Shared;
 using RAMSPDToolkit.Windows.Driver;
 
@@ -31,17 +29,17 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public MemoryGroup(ISettings settings)
     {
-        if (Ring0.IsOpen && (DriverManager.Driver is null || !DriverManager.Driver.IsOpen))
+        if (DriverManager.Driver is null || !DriverManager.Driver.IsOpen)
         {
             // Assign implementation of IDriver.
-            DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
+            DriverManager.Driver = new RAMSPDToolkitDriver();
             SMBusManager.UseWMI = false;
         }
 
         _hardware.Add(new VirtualMemory(settings));
         _hardware.Add(new TotalMemory(settings));
 
-        if (DriverManager.Driver == null)
+        if (DriverManager.Driver == null || !DriverManager.LoadDriver())
         {
             return;
         }
@@ -162,9 +160,8 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 //RAM available and detected
                 if (detector.Accessor != null)
                 {
-                    //We are only interested in modules with thermal sensor
-                    if (detector.Accessor is IThermalSensor { HasThermalSensor: true })
-                        accessors.Add(detector.Accessor);
+                    //Add all detected modules
+                    accessors.Add(detector.Accessor);
 
                     ramDetected = true;
                 }

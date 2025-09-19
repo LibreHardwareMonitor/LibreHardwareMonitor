@@ -14,12 +14,14 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class F718XX : ISuperIO
 {
+    private readonly LpcPort _port;
     private readonly ushort _address;
     private readonly byte[] _initialFanPwmControl = new byte[4];
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[4];
 
-    public F718XX(Chip chip, ushort address)
+    public F718XX(LpcPort port, Chip chip, ushort address)
     {
+        _port = port;
         _address = address;
         Chip = chip;
 
@@ -204,6 +206,12 @@ internal class F718XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    /// <inheritdoc />
+    public void Close()
+    {
+        _port.Close();
+    }
+
     private void SaveDefaultFanPwmControl(int index)
     {
         if (!_restoreDefaultFanPwmControlRequired[index])
@@ -224,14 +232,14 @@ internal class F718XX : ISuperIO
 
     private byte ReadByte(byte register)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+        _port.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        return _port.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
     }
 
     private void WriteByte(byte register, byte value)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+        _port.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        _port.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
     }
 
     // ReSharper disable InconsistentNaming

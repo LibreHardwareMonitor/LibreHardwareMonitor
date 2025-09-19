@@ -8,31 +8,43 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class LpcPort
 {
+    private PawnIo.LpcIo _pawnModule;
+
     public LpcPort(ushort registerPort, ushort valuePort)
     {
         RegisterPort = registerPort;
         ValuePort = valuePort;
+        _pawnModule = new PawnIo.LpcIo();
+        _pawnModule.SelectSlot(registerPort == 0x2e ? 0 : 1);
     }
 
     public ushort RegisterPort { get; }
 
     public ushort ValuePort { get; }
 
+    public byte ReadIoPort(ushort port)
+    {
+        return _pawnModule.ReadPort(port);
+    }
+
+    public void WriteIoPort(ushort port, byte value)
+    {
+        _pawnModule.WritePort(port, value);
+    }
+
     public byte ReadByte(byte register)
     {
-        Ring0.WriteIoPort(RegisterPort, register);
-        return Ring0.ReadIoPort(ValuePort);
+        return _pawnModule.ReadByte(register);
     }
 
     public void WriteByte(byte register, byte value)
     {
-        Ring0.WriteIoPort(RegisterPort, register);
-        Ring0.WriteIoPort(ValuePort, value);
+        _pawnModule.WriteByte(register, value);
     }
 
     public ushort ReadWord(byte register)
     {
-        return (ushort)((ReadByte(register) << 8) | ReadByte((byte)(register + 1)));
+        return _pawnModule.ReadWord(register);
     }
 
     public bool TryReadWord(byte register, out ushort value)
@@ -41,21 +53,25 @@ internal class LpcPort
         return value != 0xFFFF;
     }
 
+    public void FindBars()
+    {
+        _pawnModule.FindBars();
+    }
+
     public void Select(byte logicalDeviceNumber)
     {
-        Ring0.WriteIoPort(RegisterPort, DEVICE_SELECT_REGISTER);
-        Ring0.WriteIoPort(ValuePort, logicalDeviceNumber);
+        WriteByte(DEVICE_SELECT_REGISTER, logicalDeviceNumber);
     }
 
     public void WinbondNuvotonFintekEnter()
     {
-        Ring0.WriteIoPort(RegisterPort, 0x87);
-        Ring0.WriteIoPort(RegisterPort, 0x87);
+        _pawnModule.WritePort(RegisterPort, 0x87);
+        _pawnModule.WritePort(RegisterPort, 0x87);
     }
 
     public void WinbondNuvotonFintekExit()
     {
-        Ring0.WriteIoPort(RegisterPort, 0xAA);
+        _pawnModule.WritePort(RegisterPort, 0xAA);
     }
 
     public void NuvotonDisableIOSpaceLock()
@@ -71,10 +87,10 @@ internal class LpcPort
 
     public void IT87Enter()
     {
-        Ring0.WriteIoPort(RegisterPort, 0x87);
-        Ring0.WriteIoPort(RegisterPort, 0x01);
-        Ring0.WriteIoPort(RegisterPort, 0x55);
-        Ring0.WriteIoPort(RegisterPort, RegisterPort == 0x4E ? (byte)0xAA : (byte)0x55);
+        _pawnModule.WritePort(RegisterPort, 0x87);
+        _pawnModule.WritePort(RegisterPort, 0x01);
+        _pawnModule.WritePort(RegisterPort, 0x55);
+        _pawnModule.WritePort(RegisterPort, RegisterPort == 0x4E ? (byte)0xAA : (byte)0x55);
     }
 
     public void IT87Exit()
@@ -82,20 +98,22 @@ internal class LpcPort
         // Do not exit config mode for secondary super IO.
         if (RegisterPort != 0x4E)
         {
-            Ring0.WriteIoPort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
-            Ring0.WriteIoPort(ValuePort, 0x02);
+            _pawnModule.WritePort(RegisterPort, CONFIGURATION_CONTROL_REGISTER);
+            _pawnModule.WritePort(ValuePort, 0x02);
         }
     }
 
     public void SmscEnter()
     {
-        Ring0.WriteIoPort(RegisterPort, 0x55);
+        _pawnModule.WritePort(RegisterPort, 0x55);
     }
 
     public void SmscExit()
     {
-        Ring0.WriteIoPort(RegisterPort, 0xAA);
+        _pawnModule.WritePort(RegisterPort, 0xAA);
     }
+
+    public void Close() => _pawnModule.Close();
 
     // ReSharper disable InconsistentNaming
     private const byte CONFIGURATION_CONTROL_REGISTER = 0x02;

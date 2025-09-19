@@ -124,6 +124,10 @@ internal class Ipmi : ISuperIO
         Update(null);
     }
 
+    /// <inheritdoc />
+    public void Close()
+    { }
+
     private unsafe void Update(StringBuilder stringBuilder)
     {
         _fans.Clear();

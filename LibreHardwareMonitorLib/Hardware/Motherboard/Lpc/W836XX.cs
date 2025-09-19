@@ -14,6 +14,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class W836XX : ISuperIO
 {
+    private readonly LpcPort _port;
     private readonly ushort _address;
     private readonly byte _revision;
     private readonly bool[] _peciTemperature = Array.Empty<bool>();
@@ -35,8 +36,9 @@ internal class W836XX : ISuperIO
     private readonly byte[] _initialFanTertiaryControlValue = Array.Empty<byte>();
     private readonly bool[] _restoreDefaultFanPwmControlRequired = Array.Empty<bool>();
 
-    public W836XX(Chip chip, byte revision, ushort address)
+    public W836XX(LpcPort port, Chip chip, byte revision, ushort address)
     {
+        _port = port;
         _address = address;
         _revision = revision;
         Chip = chip;
@@ -400,6 +402,12 @@ internal class W836XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    /// <inheritdoc />
+    public void Close()
+    {
+        _port.Close();
+    }
+
     public string GetReport()
     {
         StringBuilder r = new();
@@ -460,18 +468,18 @@ internal class W836XX : ISuperIO
 
     private byte ReadByte(byte bank, byte register)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+        _port.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+        _port.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
+        _port.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        return _port.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
     }
 
     private void WriteByte(byte bank, byte register, byte value)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+        _port.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+        _port.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
+        _port.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
+        _port.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
     }
 
     private bool IsWinbondVendor()

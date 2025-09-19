@@ -91,6 +91,10 @@ public sealed class TypeNode : Node, IExpandPersistNode
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
                 Text = "Times";
                 break;
+            case SensorType.Timing:
+                Image = Utilities.EmbeddedResources.GetImage("time.png");
+                Text = "Timings";
+                break;
             case SensorType.Noise:
                 Image = Utilities.EmbeddedResources.GetImage("loudspeaker.png");
                 Text = "Noise Levels";

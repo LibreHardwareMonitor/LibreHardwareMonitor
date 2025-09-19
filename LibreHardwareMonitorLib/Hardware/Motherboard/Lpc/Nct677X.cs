@@ -51,7 +51,7 @@ internal class Nct677X : ISuperIO
     private readonly ushort[] _voltageRegisters;
     private readonly ushort _voltageVBatRegister;
 
-    public Nct677X(Chip chip, byte revision, ushort port, LpcPort lpcPort)
+    public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
     {
         Chip = chip;
         _revision = revision;
@@ -71,7 +71,7 @@ internal class Nct677X : ISuperIO
         }
         else if (chip is Chip.NCT6683D or Chip.NCT6686D or Chip.NCT6687D) //These work on older NCT6687D boards, but only fans 0, 1 and 3 on newer (X870 and Z890) motherboards. Unsure of controls for "next pack of 8".
         {
-            FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 }; // Next 8 fans will be 0xE00, 0xE01, 0xE02, 0xE03, 0xE04, 0xE05, 0xE06, 0xE07 
+            FAN_PWM_OUT_REG = new ushort[] { 0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167 }; // Next 8 fans will be 0xE00, 0xE01, 0xE02, 0xE03, 0xE04, 0xE05, 0xE06, 0xE07
             FAN_PWM_COMMAND_REG = new ushort[] { 0xA28, 0xA29, 0xA2A, 0xA2B, 0xA2C, 0xA2D, 0xA2E, 0xA2F }; // Possibly 0X260, 0X261, 0X262, 0X263, 0X264, 0X265, 0X266, 0X267 but can't confirm
             FAN_CONTROL_MODE_REG = new ushort[] { 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00 }; // Not sure of next 8, MSI won't provide info
             FAN_PWM_REQUEST_REG = new ushort[] { 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01 }; // Not sure of next 8, MSI won't provide info
@@ -734,6 +734,12 @@ internal class Nct677X : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    /// <inheritdoc />
+    public void Close()
+    {
+        _lpcPort.Close();
+    }
+
     public string GetReport()
     {
         StringBuilder r = new();
@@ -907,10 +913,10 @@ internal class Nct677X : ISuperIO
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-            Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-            return Ring0.ReadIoPort(_port + DATA_REGISTER_OFFSET);
+            _lpcPort.WriteIoPort((ushort)(_port + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+            _lpcPort.WriteIoPort((ushort)(_port + DATA_REGISTER_OFFSET), bank);
+            _lpcPort.WriteIoPort((ushort)(_port + ADDRESS_REGISTER_OFFSET), register);
+            return _lpcPort.ReadIoPort((ushort)(_port + DATA_REGISTER_OFFSET));
         }
 
         byte page = (byte)(address >> 8);
@@ -923,25 +929,25 @@ internal class Nct677X : ISuperIO
         DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
         while (true)
         {
-            access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+            access = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
             if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
                 break;
 
-            System.Threading.Thread.Sleep(1);
+            Thread.Sleep(1);
         }
 
         if (access != EC_SPACE_PAGE_SELECT)
         {
             // Failed to gain access: force register access
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
         }
 
-        Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-        Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-        byte result = Ring0.ReadIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET);
+        _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), page);
+        _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_INDEX_REGISTER_OFFSET), index);
+        byte result = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_DATA_REGISTER_OFFSET));
 
         //free access for other instances
-        Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+        _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
 
         return result;
     }
@@ -952,10 +958,10 @@ internal class Nct677X : ISuperIO
         {
             byte bank = (byte)(address >> 8);
             byte register = (byte)(address & 0xFF);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, BANK_SELECT_REGISTER);
-            Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, bank);
-            Ring0.WriteIoPort(_port + ADDRESS_REGISTER_OFFSET, register);
-            Ring0.WriteIoPort(_port + DATA_REGISTER_OFFSET, value);
+            _lpcPort.WriteIoPort((ushort)(_port + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
+            _lpcPort.WriteIoPort((ushort)(_port + DATA_REGISTER_OFFSET), bank);
+            _lpcPort.WriteIoPort((ushort)(_port + ADDRESS_REGISTER_OFFSET), register);
+            _lpcPort.WriteIoPort((ushort)(_port + DATA_REGISTER_OFFSET), value);
         }
         else
         {
@@ -969,7 +975,7 @@ internal class Nct677X : ISuperIO
             DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
             while (true)
             {
-                access = Ring0.ReadIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET);
+                access = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
                 if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
                     break;
 
@@ -979,15 +985,15 @@ internal class Nct677X : ISuperIO
             if (access != EC_SPACE_PAGE_SELECT)
             {
                 // Failed to gain access: force register access
-                Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+                _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
             }
 
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, page);
-            Ring0.WriteIoPort(_port + EC_SPACE_INDEX_REGISTER_OFFSET, index);
-            Ring0.WriteIoPort(_port + EC_SPACE_DATA_REGISTER_OFFSET, value);
+            _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), page);
+            _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_INDEX_REGISTER_OFFSET), index);
+            _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_DATA_REGISTER_OFFSET), value);
 
             //free access for other instances
-            Ring0.WriteIoPort(_port + EC_SPACE_PAGE_REGISTER_OFFSET, EC_SPACE_PAGE_SELECT);
+            _lpcPort.WriteIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET), EC_SPACE_PAGE_SELECT);
         }
     }
 
@@ -1004,8 +1010,8 @@ internal class Nct677X : ISuperIO
             int targetFanCurveAddr = initFanCurveReg;               // Address of the Current Fan Curve Register we're writing to
             ushort targetFanCurveReg;                               // Integer value of the current fan curve register address, not the value within
             byte currentSpeed = ReadByte(FAN_PWM_OUT_REG[index]);   // Current Speed of the target fan
-        
-            // If current fan duty cycle matches requested duty cycle, skip re-writing the fan curve 
+
+            // If current fan duty cycle matches requested duty cycle, skip re-writing the fan curve
             if (currentSpeed == value.Value)
             {
                 return;
@@ -1166,7 +1172,7 @@ internal class Nct677X : ISuperIO
     }
 
     // ReSharper disable InconsistentNaming
-    private const uint ADDRESS_REGISTER_OFFSET = 0x05;
+    private const ushort ADDRESS_REGISTER_OFFSET = 0x05;
     private const byte BANK_SELECT_REGISTER = 0x4E;
     private const uint DATA_REGISTER_OFFSET = 0x06;
 

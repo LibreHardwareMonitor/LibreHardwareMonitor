@@ -192,24 +192,6 @@ public class GenericCpu : Hardware
         error = beginError + endError;
     }
 
-    private static void AppendMsrData(StringBuilder r, uint msr, GroupAffinity affinity)
-    {
-        if (Ring0.ReadMsr(msr, out uint eax, out uint edx, affinity))
-        {
-            r.Append(" ");
-            r.Append(msr.ToString("X8", CultureInfo.InvariantCulture));
-            r.Append("  ");
-            r.Append(edx.ToString("X8", CultureInfo.InvariantCulture));
-            r.Append("  ");
-            r.Append(eax.ToString("X8", CultureInfo.InvariantCulture));
-            r.AppendLine();
-        }
-    }
-
-    protected virtual uint[] GetMsrs()
-    {
-        return null;
-    }
 
     public override string GetReport()
     {
@@ -241,21 +223,6 @@ public class GenericCpu : Hardware
 
         r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Time Stamp Counter Frequency: {0} MHz", Math.Round(TimeStampCounterFrequency * 100) * 0.01));
         r.AppendLine();
-
-        uint[] msrArray = GetMsrs();
-        if (msrArray is { Length: > 0 })
-        {
-            for (int i = 0; i < _cpuId.Length; i++)
-            {
-                r.AppendLine("MSR Core #" + (i + 1));
-                r.AppendLine();
-                r.AppendLine(" MSR       EDX       EAX");
-                foreach (uint msr in msrArray)
-                    AppendMsrData(r, msr, _cpuId[i][0].Affinity);
-
-                r.AppendLine();
-            }
-        }
 
         return r.ToString();
     }

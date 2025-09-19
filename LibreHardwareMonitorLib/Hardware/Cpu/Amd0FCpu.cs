@@ -4,10 +4,8 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
-using System.Globalization;
-using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -16,32 +14,26 @@ internal sealed class Amd0FCpu : AmdCpu
     private readonly Sensor _busClock;
     private readonly Sensor[] _coreClocks;
     private readonly Sensor[] _coreTemperatures;
-    private readonly uint _miscellaneousControlAddress;
 
-    private readonly byte _thermSenseCoreSelCPU0;
-    private readonly byte _thermSenseCoreSelCPU1;
+    private readonly AmdFamily0F _pawnModule;
+
+    /// <inheritdoc />
+    public override void Close()
+    {
+        base.Close();
+        _pawnModule.Close();
+    }
 
     public Amd0FCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
+        _pawnModule = new AmdFamily0F();
+
         float offset = -49.0f;
 
         // AM2+ 65nm +21 offset
         uint model = cpuId[0][0].Model;
         if (model is >= 0x69 and not 0xc1 and not 0x6c and not 0x7c)
             offset += 21;
-
-        if (model < 40)
-        {
-            // AMD Athlon 64 Processors
-            _thermSenseCoreSelCPU0 = 0x0;
-            _thermSenseCoreSelCPU1 = 0x4;
-        }
-        else
-        {
-            // AMD NPT Family 0Fh Revision F, G have the core selection swapped
-            _thermSenseCoreSelCPU0 = 0x4;
-            _thermSenseCoreSelCPU1 = 0x0;
-        }
 
         // check if processor supports a digital thermal sensor
         if (cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 1) != 0)
@@ -53,16 +45,15 @@ internal sealed class Amd0FCpu : AmdCpu
                                                   i,
                                                   SensorType.Temperature,
                                                   this,
-                                                  new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset) },
+                                                  [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset)],
                                                   settings);
             }
         }
         else
         {
-            _coreTemperatures = Array.Empty<Sensor>();
+            _coreTemperatures = [];
         }
 
-        _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, MISCELLANEOUS_CONTROL_DEVICE_ID);
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
@@ -75,46 +66,28 @@ internal sealed class Amd0FCpu : AmdCpu
         Update();
     }
 
-    protected override uint[] GetMsrs()
-    {
-        return new[] { FIDVID_STATUS };
-    }
-
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-        r.Append(base.GetReport());
-        r.Append("Miscellaneous Control Address: 0x");
-        r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
-        r.AppendLine();
-        return r.ToString();
-    }
-
     public override void Update()
     {
         base.Update();
 
         if (Mutexes.WaitPciBus(10))
         {
-            if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
+            for (uint i = 0; i < _coreTemperatures.Length; i++)
             {
-                for (uint i = 0; i < _coreTemperatures.Length; i++)
+                uint value;
+
+                try
                 {
-                    if (Ring0.WritePciConfig(_miscellaneousControlAddress,
-                                             THERMTRIP_STATUS_REGISTER,
-                                             i > 0 ? _thermSenseCoreSelCPU1 : _thermSenseCoreSelCPU0))
-                    {
-                        if (Ring0.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
-                        {
-                            _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
-                            ActivateSensor(_coreTemperatures[i]);
-                        }
-                        else
-                        {
-                            DeactivateSensor(_coreTemperatures[i]);
-                        }
-                    }
+                    value = _pawnModule.GetThermtrip(Index, i);
                 }
+                catch
+                {
+                    DeactivateSensor(_coreTemperatures[i]);
+                    continue;
+                }
+
+                _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
+                ActivateSensor(_coreTemperatures[i]);
             }
 
             Mutexes.ReleasePciBus();
@@ -128,7 +101,7 @@ internal sealed class Amd0FCpu : AmdCpu
             {
                 Thread.Sleep(1);
 
-                if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
+                if (_pawnModule.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, _cpuId[i][0].Affinity))
                 {
                     // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
                     // 8-13 hold StartFID, we don't use that here.
@@ -154,8 +127,5 @@ internal sealed class Amd0FCpu : AmdCpu
 
     // ReSharper disable InconsistentNaming
     private const uint FIDVID_STATUS = 0xC0010042;
-    private const ushort MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1103;
-    private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
-    private const uint THERMTRIP_STATUS_REGISTER = 0xE4;
     // ReSharper restore InconsistentNaming
 }
