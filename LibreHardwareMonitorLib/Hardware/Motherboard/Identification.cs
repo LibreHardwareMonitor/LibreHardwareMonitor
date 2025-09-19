@@ -697,6 +697,8 @@ internal class Identification
                 return Model.Z890S_PRO_WIFI_PROJECT_ZERO;
             case var _ when name.Equals("B850M Steel Legend WiFi", StringComparison.OrdinalIgnoreCase):
                 return Model.B850M_STEEL_LEGEND_WIFI;
+            case var _ when name.Equals("TUF GAMING B450-PLUS II", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_B450_PLUS_II;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
