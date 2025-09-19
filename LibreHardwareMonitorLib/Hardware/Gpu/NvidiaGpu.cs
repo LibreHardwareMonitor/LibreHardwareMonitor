@@ -481,8 +481,17 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (status == NvApi.NvStatus.OK)
             {
-                _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                // 50xx series
+                if (thermalSensors.Temperatures[9] / 256.0f == 255)
+                {
+                    _hotSpotTemperature.Value = 0;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                }
+                else
+                {
+                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                }
             }
 
             if (_hotSpotTemperature.Value != 0)
