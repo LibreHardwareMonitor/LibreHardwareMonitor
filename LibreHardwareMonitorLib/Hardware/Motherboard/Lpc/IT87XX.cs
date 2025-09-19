@@ -33,12 +33,14 @@ internal class IT87XX : ISuperIO
     private readonly byte _version;
     private readonly float _voltageGain;
     private IGigabyteController _gigabyteController;
+    private readonly LpcPort _port;
     private readonly bool _requiresBankSelect;  // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
 
     private bool SupportsMultipleBanks => _bankCount > 1;
 
-    public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, IGigabyteController gigabyteController)
+    public IT87XX(LpcPort port, Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, IGigabyteController gigabyteController)
     {
+        _port = port;
         _address = address;
         _version = version;
         _addressReg = (ushort)(address + ADDRESS_REGISTER_OFFSET);
@@ -270,7 +272,7 @@ internal class IT87XX : ISuperIO
         if (index >= _gpioCount)
             return null;
 
-        return Ring0.ReadIoPort((ushort)(_gpioAddress + index));
+        return _port.ReadIoPort((ushort)(_gpioAddress + index));
     }
 
     public void WriteGpio(int index, byte value)
@@ -278,7 +280,7 @@ internal class IT87XX : ISuperIO
         if (index >= _gpioCount)
             return;
 
-        Ring0.WriteIoPort((ushort)(_gpioAddress + index), value);
+        _port.WriteIoPort((ushort)(_gpioAddress + index), value);
     }
 
     public void SetControl(int index, byte? value)
@@ -530,11 +532,13 @@ internal class IT87XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
+    public void Close() => _port.Close();
+
     private byte ReadByte(byte register, out bool valid)
     {
-        Ring0.WriteIoPort(_addressReg, register);
-        byte value = Ring0.ReadIoPort(_dataReg);
-        valid = register == Ring0.ReadIoPort(_addressReg) || Chip == Chip.IT8688E;
+        _port.WriteIoPort(_addressReg, register);
+        byte value = _port.ReadIoPort(_dataReg);
+        valid = register == _port.ReadIoPort(_addressReg) || Chip == Chip.IT8688E;
         // IT8688E doesn't return the value we wrote to
         // addressReg when we read it back.
 
@@ -543,9 +547,9 @@ internal class IT87XX : ISuperIO
 
     private void WriteByte(byte register, byte value)
     {
-        Ring0.WriteIoPort(_addressReg, register);
-        Ring0.WriteIoPort(_dataReg, value);
-        Ring0.ReadIoPort(_addressReg);
+        _port.WriteIoPort(_addressReg, register);
+        _port.WriteIoPort(_dataReg, value);
+        _port.ReadIoPort(_addressReg);
     }
 
     private void SaveDefaultFanPwmControl(int index)

@@ -197,6 +197,8 @@ public class Motherboard : IHardware
     public void Close()
     {
         _lmSensors?.Close();
+        _lpcIO?.Close();
+
         foreach (IHardware iHardware in SubHardware)
         {
             if (iHardware is Hardware hardware)
