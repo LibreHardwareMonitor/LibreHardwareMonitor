@@ -419,13 +419,13 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("PCIe x1", 5));
                         t.Add(new Temperature("M2_1", 6));
 
-                        f.Add(new Fan("W Pump", 0));
-                        f.Add(new Fan("Chassis Fan #3", 1));
-                        f.Add(new Fan("Chassis Fan #4", 2));
+                        f.Add(new Fan("Water Pump", 0)); // W_PUMP
+                        f.Add(new Fan("Chassis Fan #3", 1)); // CHA_FAN3
+                        f.Add(new Fan("Chassis Fan #4", 2)); // CHA_FAN4
 
-                        c.Add(new Control("W Pump", 0));
-                        c.Add(new Control("Chassis Fan #3", 1));
-                        c.Add(new Control("Chassis Fan #4", 2));
+                        c.Add(new Control("Water Pump", 0)); // W_PUMP
+                        c.Add(new Control("Chassis Fan #3", 1)); // CHA_FAN3
+                        c.Add(new Control("Chassis Fan #4", 2)); // CHA_FAN4
                         break;
                     case Manufacturer.MSI when model == Model.B550A_PRO:
                         v.Add(new Voltage("+12V", 0));
@@ -3724,9 +3724,9 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Auxiliary", 3));
                         t.Add(new Temperature("AUXTIN #1", 4));
 
-                        t.Add(new Temperature("T_Sensor #1", 5));
-                        t.Add(new Temperature("T_Sensor #2", 6));
-                        t.Add(new Temperature("T_Sensor #3", 8));
+                        t.Add(new Temperature("Thermistor Sensor #1", 5)); // T_SENSOR 1
+                        t.Add(new Temperature("Thermistor Sensor #2", 6)); // T_SENSOR 2
+                        t.Add(new Temperature("Thermistor Sensor #3", 8)); // T_SENSOR 3
 
                         f.Add(new Fan("CPU Fan #1", 1)); // CPU_FAN1
                         f.Add(new Fan("CPU Fan #2", 2)); // CPU_FAN2
