@@ -410,6 +410,23 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #1", 4));
                         c.Add(new Control("MOS Fan #1", 5));
                         break;
+                    case Manufacturer.ASRock when model == Model.X870E_TAICHI:
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("VRM MOS", 2));
+                        t.Add(new Temperature("PCH", 3));
+                        t.Add(new Temperature("CPU Socket", 4));
+                        t.Add(new Temperature("PCIe x1", 5));
+                        t.Add(new Temperature("M2_1", 6));
+
+                        f.Add(new Fan("Water Pump", 0)); // W_PUMP
+                        f.Add(new Fan("Chassis Fan #3", 1)); // CHA_FAN3
+                        f.Add(new Fan("Chassis Fan #4", 2)); // CHA_FAN4
+
+                        c.Add(new Control("Water Pump", 0)); // W_PUMP
+                        c.Add(new Control("Chassis Fan #3", 1)); // CHA_FAN3
+                        c.Add(new Control("Chassis Fan #4", 2)); // CHA_FAN4
+                        break;
                     case Manufacturer.MSI when model == Model.B550A_PRO:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
@@ -3690,6 +3707,39 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #1", 3)); // CHA_FAN1
                         c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2
                         c.Add(new Control("Chassis Fan #3", 6)); // CHA_FAN3
+                        break;
+
+                    case Model.X870E_TAICHI: // NCT6799D
+                        v.Add(new Voltage("Vcore", 0, 10, 10));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9));
+
+                        t.Add(new Temperature("CPU", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("PCH TS10", 9));
+
+                        t.Add(new Temperature("Auxiliary", 3));
+                        t.Add(new Temperature("AUXTIN #1", 4));
+
+                        t.Add(new Temperature("Thermistor Sensor #1", 5)); // T_SENSOR 1
+                        t.Add(new Temperature("Thermistor Sensor #2", 6)); // T_SENSOR 2
+                        t.Add(new Temperature("Thermistor Sensor #3", 8)); // T_SENSOR 3
+
+                        f.Add(new Fan("CPU Fan #1", 1)); // CPU_FAN1
+                        f.Add(new Fan("CPU Fan #2", 2)); // CPU_FAN2
+                        f.Add(new Fan("AIO Pump", 3)); // AIO_PUMP
+                        f.Add(new Fan("Chassis Fan #1", 0)); // CHA_FAN1
+                        f.Add(new Fan("Chassis Fan #2", 4)); // CHA_FAN2
+
+                        c.Add(new Control("CPU Fan #1", 1)); // CPU_FAN1
+                        c.Add(new Control("CPU Fan #2", 2)); // CPU_FAN2
+                        c.Add(new Control("AIO Pump", 3)); // AIO_PUMP
+                        c.Add(new Control("Chassis Fan #1", 0)); // CHA_FAN1
+                        c.Add(new Control("Chassis Fan #2", 4)); // CHA_FAN2
+
                         break;
 
                     default:
