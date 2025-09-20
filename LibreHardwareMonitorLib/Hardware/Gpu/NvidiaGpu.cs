@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 
@@ -481,8 +482,17 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (status == NvApi.NvStatus.OK)
             {
-                _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                // RTX 50xx series
+                if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+                {
+                    _hotSpotTemperature.Value = 0;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                }
+                else
+                {
+                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                }
             }
 
             if (_hotSpotTemperature.Value != 0)
