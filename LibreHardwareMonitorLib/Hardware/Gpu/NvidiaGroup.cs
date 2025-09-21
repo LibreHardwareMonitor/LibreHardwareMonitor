@@ -18,6 +18,8 @@ internal class NvidiaGroup : IGroup
 
     public NvidiaGroup(ISettings settings)
     {
+        NvApi.Reinitialize();
+
         if (!NvApi.IsAvailable)
             return;
 

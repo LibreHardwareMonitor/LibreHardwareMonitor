@@ -4,7 +4,7 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Interop;
 
-internal static class NvApi
+public static class NvApi
 {
     public const int MAX_CLOCKS_PER_GPU = 0x120;
     public const int MAX_COOLERS_PER_GPU = 20;
@@ -25,32 +25,39 @@ internal static class NvApi
     private const string DllName = "nvapi.dll";
     private const string DllName64 = "nvapi64.dll";
 
-    public static readonly NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle;
-    public static readonly NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs;
-    public static readonly NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion;
-    public static readonly NvAPI_GetPhysicalGPUsFromDisplayDelegate NvAPI_GetPhysicalGPUsFromDisplay;
-    public static readonly NvAPI_GPU_ClientFanCoolersGetControlDelegate NvAPI_GPU_ClientFanCoolersGetControl;
-    public static readonly NvAPI_GPU_ClientFanCoolersGetStatusDelegate NvAPI_GPU_ClientFanCoolersGetStatus;
-    public static readonly NvAPI_GPU_ClientFanCoolersSetControlDelegate NvAPI_GPU_ClientFanCoolersSetControl;
-    public static readonly NvAPI_GPU_ClientPowerTopologyGetStatusDelegate NvAPI_GPU_ClientPowerTopologyGetStatus;
-    public static readonly NvAPI_GPU_GetAllClockFrequenciesDelegate NvAPI_GPU_GetAllClockFrequencies;
-    public static readonly NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks;
-    public static readonly NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId;
-    public static readonly NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings;
-    public static readonly NvAPI_GPU_GetDynamicPstatesInfoExDelegate NvAPI_GPU_GetDynamicPstatesInfoEx;
-    public static readonly NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo;
-    public static readonly NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers;
-    public static readonly NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading;
-    public static readonly NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
-    public static readonly NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
-    public static readonly NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels;
-    public static readonly NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_ThermalGetSensors;
+    public static NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle;
+    public static NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs;
+    public static NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion;
+    public static NvAPI_GetPhysicalGPUsFromDisplayDelegate NvAPI_GetPhysicalGPUsFromDisplay;
+    public static NvAPI_GPU_ClientFanCoolersGetControlDelegate NvAPI_GPU_ClientFanCoolersGetControl;
+    public static NvAPI_GPU_ClientFanCoolersGetStatusDelegate NvAPI_GPU_ClientFanCoolersGetStatus;
+    public static NvAPI_GPU_ClientFanCoolersSetControlDelegate NvAPI_GPU_ClientFanCoolersSetControl;
+    public static NvAPI_GPU_ClientPowerTopologyGetStatusDelegate NvAPI_GPU_ClientPowerTopologyGetStatus;
+    public static NvAPI_GPU_GetAllClockFrequenciesDelegate NvAPI_GPU_GetAllClockFrequencies;
+    public static NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks;
+    public static NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId;
+    public static NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings;
+    public static NvAPI_GPU_GetDynamicPstatesInfoExDelegate NvAPI_GPU_GetDynamicPstatesInfoEx;
+    public static NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo;
+    public static NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers;
+    public static NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading;
+    public static NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
+    public static NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
+    public static NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels;
+    public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_ThermalGetSensors;
 
-    private static readonly NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
-    private static readonly NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
+    private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
+    private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
 
-    static NvApi()
+    public static bool IsInitialized { get; private set; } = false;
+
+    public static void Initialize()
     {
+        if (IsInitialized)
+        {
+            return;
+        }
+
         NvAPI_InitializeDelegate nvApiInitialize;
 
         try
@@ -92,6 +99,12 @@ internal static class NvApi
 
             IsAvailable = true;
         }
+    }
+
+    public static void Reinitialize()
+    {
+        IsInitialized = false;
+        Initialize();
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -188,7 +201,7 @@ internal static class NvApi
         BusInterface // Bus
     }
 
-    public static bool IsAvailable { get; }
+    public static bool IsAvailable { get; private set; }
 
     [DllImport(DllName, EntryPoint = "nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -236,13 +249,13 @@ internal static class NvApi
         return true;
     }
 
-    internal static int MAKE_NVAPI_VERSION<T>(int ver)
+    public static int MAKE_NVAPI_VERSION<T>(int ver)
     {
         return Marshal.SizeOf<T>() | (ver << 16);
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvFanCoolerControl
+    public struct NvFanCoolerControl
     {
         public uint Version;
         private readonly uint _reserved;
@@ -256,7 +269,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvFanCoolerControlItem
+    public struct NvFanCoolerControlItem
     {
         public uint CoolerId;
         public uint Level;
@@ -267,7 +280,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvPowerTopology
+    public struct NvPowerTopology
     {
         public int Version;
         public uint Count;
@@ -277,7 +290,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvPowerTopologyEntry
+    public struct NvPowerTopologyEntry
     {
         public NvPowerTopologyDomain Domain;
         private readonly uint _reserved;
@@ -285,7 +298,7 @@ internal static class NvApi
         private readonly uint _reserved1;
     }
 
-    internal enum NvStatus
+    public enum NvStatus
     {
         OK = 0,
         Error = -1,
@@ -340,7 +353,7 @@ internal static class NvApi
         FunctionNotFound = -136
     }
 
-    internal enum NvThermalController
+    public enum NvThermalController
     {
         None = 0,
         GpuInternal,
@@ -357,7 +370,7 @@ internal static class NvApi
         Unknown = -1
     }
 
-    internal enum NvThermalTarget
+    public enum NvThermalTarget
     {
         None = 0,
         Gpu = 1,
@@ -372,7 +385,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvSensor
+    public struct NvSensor
     {
         public NvThermalController Controller;
         public uint DefaultMinTemp;
@@ -382,7 +395,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvThermalSettings
+    public struct NvThermalSettings
     {
         public uint Version;
         public uint Count;
@@ -392,19 +405,19 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NvDisplayHandle
+    public struct NvDisplayHandle
     {
         private readonly IntPtr ptr;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NvPhysicalGpuHandle
+    public struct NvPhysicalGpuHandle
     {
         private readonly IntPtr ptr;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvClocks
+    public struct NvClocks
     {
         public uint Version;
 
@@ -413,7 +426,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvDynamicPStatesInfo
+    public struct NvDynamicPStatesInfo
     {
         public uint Version;
         public uint Flags;
@@ -423,14 +436,14 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvDynamicPState
+    public struct NvDynamicPState
     {
         public bool IsPresent;
         public int Percentage;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvUsages
+    public struct NvUsages
     {
         public uint Version;
         private readonly uint _reserved;
@@ -440,7 +453,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvUsagesEntry
+    public struct NvUsagesEntry
     {
         public uint IsPresent;
         public uint Percentage;
@@ -449,7 +462,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvCooler
+    public struct NvCooler
     {
         public int Type;
         public int Controller;
@@ -466,7 +479,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvFanCoolersStatus
+    public struct NvFanCoolersStatus
     {
         public uint Version;
         public uint Count;
@@ -481,7 +494,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvFanCoolersStatusItem
+    public struct NvFanCoolersStatusItem
     {
         public uint CoolerId;
         public uint CurrentRpm;
@@ -494,7 +507,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvCoolerSettings
+    public struct NvCoolerSettings
     {
         public uint Version;
         public uint Count;
@@ -504,14 +517,14 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvLevel
+    public struct NvLevel
     {
         public int Level;
         public NvLevelPolicy Policy;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvCoolerLevels
+    public struct NvCoolerLevels
     {
         public uint Version;
 
@@ -533,7 +546,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvMemoryInfo
+    public struct NvMemoryInfo
     {
         public uint Version;
 
@@ -549,7 +562,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvDisplayDriverVersion
+    public struct NvDisplayDriverVersion
     {
         public uint Version;
         public uint DriverVersion;
@@ -563,7 +576,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvGpuClockFrequencies
+    public struct NvGpuClockFrequencies
     {
         public uint Version;
         private readonly uint _reserved;
@@ -572,7 +585,7 @@ internal static class NvApi
         public NvGpuClockFrequenciesDomain[] Clocks;
     }
 
-    internal enum NvGpuPublicClockId
+    public enum NvGpuPublicClockId
     {
         Graphics = 0,
         Memory = 4,
@@ -581,7 +594,7 @@ internal static class NvApi
         Undefined = MAX_CLOCKS_PER_GPU
     }
 
-    internal enum NvGpuClockFrequenciesClockType
+    public enum NvGpuClockFrequenciesClockType
     {
         CurrentFrequency,
         BaseClock,
@@ -589,7 +602,7 @@ internal static class NvApi
         ClockTypeNumber
     }
 
-    internal enum NvCoolerTarget
+    public enum NvCoolerTarget
     {
         None = 0,
         Gpu,
@@ -599,7 +612,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvGpuClockFrequenciesDomain
+    public struct NvGpuClockFrequenciesDomain
     {
         private readonly uint _isPresent;
         public uint Frequency;
@@ -608,8 +621,8 @@ internal static class NvApi
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate NvStatus NvAPI_InitializeDelegate();
+    public delegate NvStatus NvAPI_InitializeDelegate();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate NvStatus NvAPI_GPU_GetFullNameDelegate(NvPhysicalGpuHandle gpuHandle, StringBuilder name);
+    public delegate NvStatus NvAPI_GPU_GetFullNameDelegate(NvPhysicalGpuHandle gpuHandle, StringBuilder name);
 }
