@@ -44,6 +44,7 @@ public enum Model
     B650M_C,
     H61M_DGS,
     B850M_STEEL_LEGEND_WIFI,
+    X870E_TAICHI,
 
     // ASUS
     CROSSHAIR_III_FORMULA,
