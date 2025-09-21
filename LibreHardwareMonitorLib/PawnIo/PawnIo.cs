@@ -41,6 +41,8 @@ public unsafe class PawnIo
         get { return !string.IsNullOrEmpty(InstallPath); }
     }
 
+    public bool IsValid => _handle != IntPtr.Zero;
+
     [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
     private static extern void pawnio_version(out uint version);
 
@@ -145,7 +147,6 @@ public unsafe class PawnIo
             catch
             {
                 // PawnIO is not available.
-                return null;
             }
         }
 

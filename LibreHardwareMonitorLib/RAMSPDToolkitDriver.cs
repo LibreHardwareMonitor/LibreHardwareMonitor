@@ -48,7 +48,7 @@ internal class RAMSPDToolkitDriver : IPawnIODriver
             return false;
         }
 
-        return _pawnIO != null;
+        return _pawnIO?.IsValid == true;
     }
 
     public void Unload()
