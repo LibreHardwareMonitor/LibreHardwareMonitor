@@ -21,7 +21,6 @@ using System.Threading;
 using System.Web;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
-using Newtonsoft.Json.Linq;
 
 namespace LibreHardwareMonitor.Utilities;
 
@@ -228,7 +227,7 @@ public class HttpServer
     //{"result":"fail","message":"Some error message"}
     //or:
     //{"result":"ok"}
-    private void HandleSensorRequest(HttpListenerRequest request, JObject result)
+    private void HandleSensorRequest(HttpListenerRequest request, Dictionary<string, object> result)
     {
         IDictionary<string, string> dict = ToDictionary(HttpUtility.ParseQueryString(request.Url.Query));
 
@@ -283,7 +282,7 @@ public class HttpServer
     //Currently the only supported base URL is http://localhost:8085/Sensor.
     private string HandlePostRequest(HttpListenerRequest request)
     {
-        JObject result = new() { ["result"] = "ok" };
+        var result = new Dictionary<string, object> { ["result"] = "ok" };
 
         try
         {
@@ -306,11 +305,7 @@ public class HttpServer
             result["result"] = "fail";
             result["message"] = e.ToString();
         }
-#if DEBUG
-        return result.ToString(Newtonsoft.Json.Formatting.Indented);
-#else
-        return result.ToString(Newtonsoft.Json.Formatting.None);
-#endif
+        return System.Text.Json.JsonSerializer.Serialize(result);
     }
 
     private void ListenerCallback(IAsyncResult result)
@@ -391,7 +386,7 @@ public class HttpServer
 
                         if (requestedFile.Contains("Sensor"))
                         {
-                            JObject sensorResult = new();
+                            var sensorResult = new Dictionary<string, object>();
                             HandleSensorRequest(request, sensorResult);
                             SendJsonSensor(context.Response, sensorResult);
                             return;
@@ -537,7 +532,7 @@ public class HttpServer
 
     private void SendJson(HttpListenerResponse response, HttpListenerRequest request = null)
     {
-        JObject json = new();
+        Dictionary<string, object> json = new();
 
         int nodeIndex = 0;
 
@@ -548,14 +543,9 @@ public class HttpServer
         json["Max"] = "Max";
         json["ImageURL"] = string.Empty;
 
-        json["Children"] = new JArray { GenerateJsonForNode(_root, ref nodeIndex) };
+        json["Children"] = new List<object> { GenerateJsonForNode(_root, ref nodeIndex) };
 
-#if DEBUG
-        string responseContent = json.ToString(Newtonsoft.Json.Formatting.Indented);
-#else
-        string responseContent = json.ToString(Newtonsoft.Json.Formatting.None);
-#endif
-        byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
+        byte[] buffer = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(json));
 
         bool acceptGzip;
         try
@@ -595,10 +585,10 @@ public class HttpServer
         response.Close();
     }
 
-    private void SendJsonSensor(HttpListenerResponse response, JObject sensorData)
+    private void SendJsonSensor(HttpListenerResponse response, Dictionary<string, object> sensorData)
     {
         // Convert the JObject to a JSON string
-        string responseContent = sensorData.ToString(Newtonsoft.Json.Formatting.None);
+        string responseContent = System.Text.Json.JsonSerializer.Serialize(sensorData);
         byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
         // Add headers and set content type
@@ -621,9 +611,9 @@ public class HttpServer
         response.Close();
     }
 
-    private JObject GenerateJsonForNode(Node n, ref int nodeIndex)
+    private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
-        JObject jsonNode = new()
+        Dictionary<string, object> jsonNode = new()
         {
             ["id"] = nodeIndex++,
             ["Text"] = n.Text,
@@ -643,6 +633,7 @@ public class HttpServer
                 jsonNode["ImageURL"] = "images/transparent.png";
                 break;
             case HardwareNode hardwareNode:
+                jsonNode["HardwareId"] = hardwareNode.Hardware.Identifier.ToString();
                 jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
                 break;
             case TypeNode typeNode:
@@ -653,7 +644,7 @@ public class HttpServer
                 break;
         }
 
-        JArray children = [];
+        List<object> children = new();
         foreach (Node child in n.Nodes)
         {
             children.Add(GenerateJsonForNode(child, ref nodeIndex));

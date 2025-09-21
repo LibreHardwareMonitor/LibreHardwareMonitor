@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
@@ -22,14 +23,18 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
     private const int FailuresBeforeSkip = 20;
     private const int MaxRetries = 5;
 
-    // implementation 
+    // implementation
     private const int WaitSpins = 50;
     private bool _disposed;
 
     private int _waitReadFailures;
 
+    private readonly LpcAcpiEc _pawnModule;
+
     public WindowsEmbeddedControllerIO()
     {
+        _pawnModule = new LpcAcpiEc();
+
         if (!Mutexes.WaitEc(10))
         {
             throw new BusMutexLockingFailedException();
@@ -38,7 +43,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     public void Read(ushort[] registers, byte[] data)
     {
-        Trace.Assert(registers.Length <= data.Length, 
+        Trace.Assert(registers.Length <= data.Length,
                      "data buffer length has to be greater or equal to the registers array length");
 
         byte bank = 0;
@@ -79,6 +84,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         {
             _disposed = true;
             Mutexes.ReleaseEc();
+            _pawnModule.Close();
         }
     }
 
@@ -156,12 +162,12 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     private byte ReadIOPort(Port port)
     {
-        return Ring0.ReadIoPort((uint)port);
+        return _pawnModule.ReadPort((byte)port);
     }
 
     private void WriteIOPort(Port port, byte datum)
     {
-        Ring0.WriteIoPort((uint)port, datum);
+        _pawnModule.WritePort((byte)port, datum);
     }
 
     public class BusMutexLockingFailedException : EmbeddedController.IOException
