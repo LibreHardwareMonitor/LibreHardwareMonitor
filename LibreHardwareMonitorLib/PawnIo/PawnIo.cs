@@ -145,6 +145,7 @@ public unsafe class PawnIo
             catch
             {
                 // PawnIO is not available.
+                return null;
             }
         }
 
