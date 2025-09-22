@@ -64,7 +64,7 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
         {
             var pawnIO = PawnIo.PawnIo.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.{moduleResourceFilename}");
 
-            if (pawnIO.IsValid)
+            if (pawnIO.IsLoaded)
             {
                 pawnIOModule = new PawnIOModule(pawnIO);
             }
