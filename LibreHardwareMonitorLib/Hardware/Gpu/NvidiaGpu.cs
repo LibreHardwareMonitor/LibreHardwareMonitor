@@ -488,7 +488,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
                 }
                 // RTX 40xx series
-                if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
+                else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
                 {
                     _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
                     _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
