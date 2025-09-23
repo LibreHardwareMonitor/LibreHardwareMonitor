@@ -634,9 +634,9 @@ public class HttpServer
                 jsonNode["Max"] = sensorNode.Max;
 
                 // Unformatted values for external systems to have consistent readings, e.g. Throughput will always be measured in B/s 
-                jsonNode["_RawMin"] = string.Format(sensorNode.Format, sensorNode.Sensor.Min);
-                jsonNode["_RawValue"] = string.Format(sensorNode.Format, sensorNode.Sensor.Value);
-                jsonNode["_RawMax"] = string.Format(sensorNode.Format, sensorNode.Sensor.Max);
+                jsonNode["RawMin"] = string.Format(sensorNode.Format, sensorNode.Sensor.Min);
+                jsonNode["RawValue"] = string.Format(sensorNode.Format, sensorNode.Sensor.Value);
+                jsonNode["RawMax"] = string.Format(sensorNode.Format, sensorNode.Sensor.Max);
 
                 jsonNode["ImageURL"] = "images/transparent.png";
                 break;
