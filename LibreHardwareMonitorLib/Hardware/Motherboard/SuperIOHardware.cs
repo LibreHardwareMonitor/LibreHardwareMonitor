@@ -5011,14 +5011,14 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 2)); // SYSTIN, MOTHERBOARD
                         t.Add(new Temperature("T Sensor", 8)); // TSENSOR
                         t.Add(new Temperature("PCH", 13)); // PCH_CHIP_TEMP
-                        t.Add(new Temperature("PECI_0_CAL", 22)); // PECI_0_CAL, CPU
+                        t.Add(new Temperature("PECI 0 Calibrated", 22)); // PECI_0_CAL, CPU
                         
                         f.Add(new Fan("Chassis Fan #1", 0)); // CHA_FAN_1
                         f.Add(new Fan("CPU Fan", 1)); // CPU_FAN
                         f.Add(new Fan("Chassis Fan #2", 2)); // CHA_FAN_2
                         f.Add(new Fan("Chassis Fan #3", 3)); // CHA_FAN_3
                         f.Add(new Fan("Chassis Fan #4", 4)); // CHA_FAN_4
-                        f.Add(new Fan("CPU Opt Fan", 5)); // CPU_OPT
+                        f.Add(new Fan("CPU Optional Fan", 5)); // CPU_OPT
                         f.Add(new Fan("AIO Pump", 6)); // AIO_PUMP
 
                         c.Add(new Control("Chassis Fan #1", 0)); // CHA_FAN_1
@@ -5026,7 +5026,7 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #2", 2)); // CHA_FAN_2
                         c.Add(new Control("Chassis Fan #3", 3)); // CHA_FAN_3
                         c.Add(new Control("Chassis Fan #4", 4)); // CHA_FAN_4
-                        c.Add(new Control("CPU Opt Fan", 5)); // CPU_OPT
+                        c.Add(new Control("CPU Optional Fan", 5)); // CPU_OPT
                         c.Add(new Control("AIO Pump", 6)); // AIO_PUMP
                         
                         break;
