@@ -5244,6 +5244,50 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X570_MS7C35:
+                        // NCT6797D
+                        // NCT7802Y (on SMBus): SYS_FAN5, CPU 1.8V, Chipset SOC, Chipset CLDO - not supported
+                        // Unknown: PCIE 1, PCIE 3, M.2_1
+
+                        v.Add(new Voltage("Vcore", 0));           // CPUVCORE
+                        v.Add(new Voltage("+5V", 1, 12, 3));      // VIN1
+                        v.Add(new Voltage("AVCC", 2, 34, 34));    // AVSB, +3.3V analog power
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));   // 3VCC
+                        v.Add(new Voltage("+12V", 4, 220, 20));  // VIN0
+                        v.Add(new Voltage("VRM MOS", 6, true)); // VIN4, temperature input
+                        v.Add(new Voltage("+3.3V Standby", 7, 34, 34));   // 3VSB, +3.3V digital power
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34, 0)); // VBAT
+                        v.Add(new Voltage("CPU 1.8V", 9));        // VTT, CPU_1P8
+                        v.Add(new Voltage("CPU VDDP", 10));       // VIN5  
+                        v.Add(new Voltage("Voltage #6", 11, true));    // VIN6, temperature input
+                        v.Add(new Voltage("CPU NB/SoC", 12));     // VIN2, VCCP_NB
+                        v.Add(new Voltage("DIMM", 13, 1, 1));     // VIN3
+                        v.Add(new Voltage("+5V Standby", 14, 768, 330));  // VIN7, ATX_5VSB
+
+                        t.Add(new Temperature("CPU Socket", 1));  // CPUTIN, 10k at top side of the socket
+                        t.Add(new Temperature("System", 2));      // SYSTIN, P-3906
+                        t.Add(new Temperature("VRM MOS", 3));     // AUXTIN0, CPUMOSTIN, 10k at left side of cpu vrm
+                        t.Add(new Temperature("Chipset", 5));     // AUXTIN2, 10k at back side of the chipset
+                        t.Add(new Temperature("CPU", 24));
+
+                        f.Add(new Fan("Pump Fan", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+                        f.Add(new Fan("System Fan #4", 5));
+                        f.Add(new Fan("Chipset Fan", 6));
+
+                        c.Add(new Control("Pump Fan", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("System Fan #1", 2));
+                        c.Add(new Control("System Fan #2", 3));
+                        c.Add(new Control("System Fan #3", 4));
+                        c.Add(new Control("System Fan #4", 5));
+                        c.Add(new Control("Chipset Fan", 6));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));

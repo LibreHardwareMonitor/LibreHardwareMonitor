@@ -605,6 +605,11 @@ internal class Identification
                 return Model.B660_DS3H_AC_DDR4;
             case var _ when name.Equals("B660M DS3H AX DDR4",StringComparison.OrdinalIgnoreCase):
                 return Model.B660M_DS3H_AX_DDR4;
+            case var _ when name.Equals("MEG X570 UNIFY", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X570 UNIFY (MS-7C35)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X570 ACE", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X570 ACE (MS-7C35)", StringComparison.OrdinalIgnoreCase):
+                return Model.X570_MS7C35;
             case var _ when name.Equals("ROG STRIX Z790-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_Z790_I_GAMING_WIFI;
             case var _ when name.Equals("ROG STRIX Z790-E GAMING WIFI", StringComparison.OrdinalIgnoreCase):
