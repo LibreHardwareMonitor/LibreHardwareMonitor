@@ -2463,7 +2463,6 @@ internal sealed class SuperIOHardware : Hardware
 
                        break;
 
-
                     default:
                         v.Add(new Voltage("Voltage #1", 0, true));
                         v.Add(new Voltage("Voltage #2", 1, true));
