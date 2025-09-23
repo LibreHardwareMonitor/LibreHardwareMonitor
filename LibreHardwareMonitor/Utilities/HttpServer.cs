@@ -627,9 +627,17 @@ public class HttpServer
             case SensorNode sensorNode:
                 jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
                 jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
+
+                // Formatted values, e.g. Throughput will be measured in KB/s or MB/s depending on the value
                 jsonNode["Min"] = sensorNode.Min;
                 jsonNode["Value"] = sensorNode.Value;
                 jsonNode["Max"] = sensorNode.Max;
+
+                // Unformatted values for external systems to have consistent readings, e.g. Throughput will always be measured in B/s 
+                jsonNode["RawMin"] = string.Format(sensorNode.Format, sensorNode.Sensor.Min);
+                jsonNode["RawValue"] = string.Format(sensorNode.Format, sensorNode.Sensor.Value);
+                jsonNode["RawMax"] = string.Format(sensorNode.Format, sensorNode.Sensor.Max);
+
                 jsonNode["ImageURL"] = "images/transparent.png";
                 break;
             case HardwareNode hardwareNode:
