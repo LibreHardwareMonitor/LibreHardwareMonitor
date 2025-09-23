@@ -41,6 +41,8 @@ public unsafe class PawnIo
         get { return !string.IsNullOrEmpty(InstallPath); }
     }
 
+    public bool IsLoaded => _handle != IntPtr.Zero;
+
     [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
     private static extern void pawnio_version(out uint version);
 

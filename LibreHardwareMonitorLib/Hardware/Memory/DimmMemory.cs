@@ -96,6 +96,8 @@ internal sealed class DimmMemory : Hardware
         AddSensor("tWTR_S (Write to Read Time)", 16, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteToReadTime_DiffGroup);
         AddSensor("tWTR_L (Write to Read Time)", 17, false, SensorType.Timing, (float)accessor.SDRAMTimings.MinimumWriteToReadTime_SameGroup);
 
+        //Data
+        AddSensor("Capacity", 18, false, SensorType.Data, accessor.GetCapacity());
     }
 
     private void CreateSensorsDDR5(DDR5Accessor accessor, bool hasThermalSensor)
@@ -121,6 +123,9 @@ internal sealed class DimmMemory : Hardware
         AddSensor("tRFC1_dlr (Normal Refresh Recovery Time 3DS)", 12, false, SensorType.Timing, (float)accessor.SDRAMTimings.NormalRefreshRecoveryTime_3DSDifferentLogicalRank);
         AddSensor("tRFC2_dlr (Fine Granularity Refresh Recovery Time 3DS)", 13, false, SensorType.Timing, (float)accessor.SDRAMTimings.FineGranularityRefreshRecoveryTime_3DSDifferentLogicalRank);
         AddSensor("tRFCsb_dlr (Same Bank Refresh Recovery Time 3DS)", 14, false, SensorType.Timing, (float)accessor.SDRAMTimings.SameBankRefreshRecoveryTime_3DSDifferentLogicalRank);
+
+        //Data
+        AddSensor("Capacity", 15, false, SensorType.Data, accessor.GetCapacity());
     }
 
     private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, float value)
