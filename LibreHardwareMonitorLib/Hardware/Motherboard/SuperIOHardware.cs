@@ -4648,7 +4648,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9));
-                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 1, 1));
 
                         t.Add(new Temperature("CPU", 22));
                         t.Add(new Temperature("Motherboard", 2));
@@ -4748,7 +4748,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, true)); // Value does not match any in hwmonnitor
-                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 1, 1));
 
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU", 22));
@@ -4799,7 +4799,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, 34, 34));
-                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 1, 1));
                         v.Add(new Voltage("Voltage #12", 11, true));
                         v.Add(new Voltage("+1.8V Standby", 12, true)); // Uknown values needed for tuning, hidden for now
                         v.Add(new Voltage("Voltage #14", 13, true));
@@ -4830,7 +4830,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9, 34, 34));
-                        v.Add(new Voltage("CPU VDDIO / MC Voltage", 10, 34, 34));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 34, 34));
                         v.Add(new Voltage("VMISC", 11, 34, 34));
                         v.Add(new Voltage("1.8V Standby", 12, 7.66f, 10));
 
@@ -4864,7 +4864,7 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("Chipset 0 VDD", 10, 1, 1));
                             v.Add(new Voltage("Chipset 1 VDD", 11, 1, 1));
                             v.Add(new Voltage("Chipset Standby", 12));
-                            v.Add(new Voltage("CPU VDDIO / MC", 13, 9, 82));
+                            v.Add(new Voltage("CPU VDDIO Memory", 13, 9, 82));
                             v.Add(new Voltage("1.8V PLL", 14, 17, 36));
 
                             // The following mappings only apply when FanXpert is off in Armoury Crate.
@@ -4911,7 +4911,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("CPU Termination", 9, true)); // Value does not match any in hwmonitor
-                        v.Add(new Voltage("CPU VDDIO / MC", 10, 1, 1));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 1, 1));
 
                         t.Add(new Temperature("CPU Package", 0));
                         t.Add(new Temperature("Motherboard", 2));
@@ -4969,7 +4969,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9, 34, 34));
-                        v.Add(new Voltage("CPU VDDIO / MC Voltage", 10, 34, 34));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 34, 34));
                         v.Add(new Voltage("VMISC", 11, 34, 34));
                         v.Add(new Voltage("1,8V Standby", 12, 7.66f, 10));
                         v.Add(new Voltage("Voltage #14", 13, true));
