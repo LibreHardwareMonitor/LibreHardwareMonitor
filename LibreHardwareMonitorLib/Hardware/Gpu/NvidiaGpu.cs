@@ -485,6 +485,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
                 {
                     _hotSpotTemperature.Value = 0;
+                    _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
                     _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
                 }
                 // RTX 40xx series
@@ -1011,7 +1012,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
         NvApi.NvThermalSettings settings = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(1),
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(2),
             Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU
         };
 
