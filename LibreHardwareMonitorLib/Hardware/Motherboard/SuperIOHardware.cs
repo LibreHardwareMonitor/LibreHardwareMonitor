@@ -4702,6 +4702,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.ROG_CROSSHAIR_X670E_GENE: // NCT6799D
+                    case Model.ROG_CROSSHAIR_X670E_HERO:
                         v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
@@ -4718,12 +4719,14 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
                         t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1));
-                        t.Add(new Temperature("Temperature #2", 2));
-                        t.Add(new Temperature("Temperature #3", 3));
-                        t.Add(new Temperature("Temperature #4", 4));
-                        t.Add(new Temperature("Temperature #5", 5));
-                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("Temperature #1", 1)); // No matching temp value
+                        t.Add(new Temperature("Motherboard", 2)); // Matches MB in HWinfo
+                        t.Add(new Temperature("Temperature #3", 3)); // No matching temp value
+                        t.Add(new Temperature("Temperature #4", 4)); // No matching temp value
+                        t.Add(new Temperature("Temperature #5", 5)); // No matching temp value
+                        t.Add(new Temperature("Temperature #6", 6)); // No matching temp value
+                        t.Add(new Temperature("Temperature #7", 8)); // Matches MB in HWinfo
+                        t.Add(new Temperature("CPU", 22)); // Matches MB in HWinfo
                         t.Add(new Temperature("T Sensor", 24));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
