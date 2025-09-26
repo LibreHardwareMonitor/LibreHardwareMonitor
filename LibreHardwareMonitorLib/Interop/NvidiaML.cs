@@ -350,7 +350,7 @@ internal static class NvidiaML
                     if (_windowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
                         return powerUsage;
                 }
-                catch (AccessViolationException) { }
+                catch { }
             }
         }
 
@@ -400,6 +400,7 @@ internal static class NvidiaML
                         return pci;
                 }
                 catch { }
+
             }
         }
 
