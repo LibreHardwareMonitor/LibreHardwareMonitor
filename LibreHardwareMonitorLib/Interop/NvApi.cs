@@ -49,15 +49,8 @@ internal static class NvApi
     private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
     private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
 
-    public static bool IsInitialized { get; private set; } = false;
-
     public static void Initialize()
     {
-        if (IsInitialized)
-        {
-            return;
-        }
-
         NvAPI_InitializeDelegate nvApiInitialize;
 
         try
@@ -99,12 +92,6 @@ internal static class NvApi
 
             IsAvailable = true;
         }
-    }
-
-    public static void Reinitialize()
-    {
-        IsInitialized = false;
-        Initialize();
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -195,10 +182,10 @@ internal static class NvApi
 
     public enum NvUtilizationDomain
     {
-        Gpu,
-        FrameBuffer,
-        VideoEngine,
-        BusInterface
+        Gpu, // Core
+        FrameBuffer, // Memory Controller
+        VideoEngine, // Video Engine
+        BusInterface // Bus
     }
 
     public static bool IsAvailable { get; private set; }
@@ -537,7 +524,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvThermalSensors
+    public struct NvThermalSensors
     {
         internal uint Version;
         internal uint Mask;
@@ -612,7 +599,7 @@ internal static class NvApi
         Gpu,
         Memory,
         PowerSupply = 4,
-        All = 7
+        All = 7 // This cooler cools all of the components related to its target gpu.
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -625,8 +612,8 @@ internal static class NvApi
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate NvStatus NvAPI_InitializeDelegate();
+    private delegate NvStatus NvAPI_InitializeDelegate();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate NvStatus NvAPI_GPU_GetFullNameDelegate(NvPhysicalGpuHandle gpuHandle, StringBuilder name);
+    private delegate NvStatus NvAPI_GPU_GetFullNameDelegate(NvPhysicalGpuHandle gpuHandle, StringBuilder name);
 }
