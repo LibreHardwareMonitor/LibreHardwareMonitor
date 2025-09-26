@@ -1022,7 +1022,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
     private NvApi.NvThermalSensors GetThermalSensors(uint mask, out NvApi.NvStatus status)
     {
-        if (NvApi.NvAPI_GPU_ThermalGetSensors == null)
+        if (NvApi.NvAPI_GPU_GetThermalSensors == null)
         {
             status = NvApi.NvStatus.Error;
             return default;
@@ -1034,7 +1034,7 @@ internal sealed class NvidiaGpu : GenericGpu
             Mask = mask
         };
 
-        status = NvApi.NvAPI_GPU_ThermalGetSensors(_handle, ref thermalSensors);
+        status = NvApi.NvAPI_GPU_GetThermalSensors(_handle, ref thermalSensors);
         return status == NvApi.NvStatus.OK ? thermalSensors : default;
     }
 
