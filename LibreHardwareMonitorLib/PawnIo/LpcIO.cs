@@ -1,6 +1,6 @@
 ﻿namespace LibreHardwareMonitor.PawnIo;
 
-internal class LpcIo
+class LpcIo
 {
     private readonly long[] _doubleArgArray = new long[2];
     private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(LpcIo).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.LpcIO.bin");
