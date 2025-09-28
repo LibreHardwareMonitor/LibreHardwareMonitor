@@ -306,6 +306,20 @@ public class Kernel32
         out uint lpBytesReturned,
         IntPtr lpOverlapped);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DeviceIoControl
+    (
+        SafeFileHandle hDevice,
+        uint dwIoControlCode,
+        [In] byte[] lpInBuffer,
+        uint nInBufferSize,
+        [Out] byte[] lpOutBuffer,
+        uint nOutBufferSize,
+        ref uint lpBytesReturned,
+        [In][Optional] IntPtr lpOverlapped);
+
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
