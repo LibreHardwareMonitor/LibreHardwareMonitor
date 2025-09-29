@@ -82,8 +82,7 @@ internal class CpuLoad
                 perfInformation = new SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[perfItemsCount];
                 for (int i = 0; i < perfItemsCount; i++)
                 {
-                    if (perfInformationPtr != null)
-                        perfInformation[i] = perfInformationPtr[i];
+                    perfInformation[i] = perfInformationPtr[i];
                 }
 
                 Marshal.FreeHGlobal(handle);
