@@ -68,7 +68,11 @@ public class PawnIo
         return new PawnIo(null);
     }
 
-    public void Close() => _handle.Close();
+    public void Close()
+    {
+        if (IsLoaded)
+            _handle.Close();
+    }
 
     public long[] Execute(string name, long[] input, int outLength)
     {
