@@ -84,6 +84,18 @@ public class Kernel32
         return result;
     }
 
+    /// <summary>
+    /// Convert Win32 error code to HRESULT.
+    /// </summary>
+    /// <remarks>
+    /// HRESULT_FROM_WIN32 macro equivalent.
+    /// </remarks>
+    /// <param name="errorCode">Win32 error code</param>
+    /// <returns>HRESULT</returns>
+    internal static int HResultFromWin32(int errorCode) => errorCode <= 0
+        ? errorCode
+        : (int)((errorCode & 0x0000FFFF) | 0x80070000);
+
     internal static SafeFileHandle OpenDevice(string devicePath)
     {
         SafeFileHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);

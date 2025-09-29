@@ -76,7 +76,7 @@ public class PawnIo
 
     public long[] Execute(string name, long[] input, int outLength)
     {
-        if (_handle is not { IsInvalid: false, IsClosed: false })
+        if (!IsLoaded)
             return [];
 
         uint read = 0;
@@ -104,7 +104,7 @@ public class PawnIo
         if (outBuffer.Length < outSize)
             throw new ArgumentOutOfRangeException(nameof(outSize));
 
-        if (_handle is not { IsInvalid: false, IsClosed: false })
+        if (!IsLoaded)
         {
             returnSize = 0;
             return 0;
@@ -126,6 +126,6 @@ public class PawnIo
 
         returnSize = 0;
 
-        return Marshal.GetLastWin32Error();
+        return Kernel32.HResultFromWin32(Marshal.GetLastWin32Error());
     }
 }
