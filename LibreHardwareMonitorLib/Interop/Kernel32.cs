@@ -84,18 +84,6 @@ public class Kernel32
         return result;
     }
 
-    /// <summary>
-    /// Convert Win32 error code to HRESULT.
-    /// </summary>
-    /// <remarks>
-    /// HRESULT_FROM_WIN32 macro equivalent.
-    /// </remarks>
-    /// <param name="errorCode">Win32 error code</param>
-    /// <returns>HRESULT</returns>
-    internal static int HResultFromWin32(int errorCode) => errorCode <= 0
-        ? errorCode
-        : (int)((errorCode & 0x0000FFFF) | 0x80070000);
-
     internal static SafeFileHandle OpenDevice(string devicePath)
     {
         SafeFileHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
@@ -104,11 +92,6 @@ public class Kernel32
 
         return hDevice;
     }
-
-    [DllImport(DllName, CharSet = CharSet.Auto, SetLastError = true)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -332,14 +315,6 @@ public class Kernel32
         ref uint lpBytesReturned,
         [In][Optional] IntPtr lpOverlapped);
 
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr LocalFree(IntPtr hMem);
-
     [DllImport(DllName, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
@@ -363,14 +338,6 @@ public class Kernel32
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr GetCurrentThread();
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern ushort GetActiveProcessorGroupCount();
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern bool SetThreadGroupAffinity(IntPtr thread, ref GROUP_AFFINITY groupAffinity, out GROUP_AFFINITY previousGroupAffinity);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
@@ -380,31 +347,6 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, MEM dwFreeType);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern bool DeviceIoControl
-    (
-        SafeFileHandle device,
-        IOControlCode ioControlCode,
-        [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
-        uint inBufferSize,
-        [MarshalAs(UnmanagedType.AsAny)] [Out] object outBuffer,
-        uint nOutBufferSize,
-        out uint bytesReturned,
-        IntPtr overlapped);
-
-    [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr CreateFile
-    (
-        string lpFileName,
-        uint dwDesiredAccess,
-        FileShare dwShareMode,
-        IntPtr lpSecurityAttributes,
-        FileMode dwCreationDisposition,
-        FileAttributes dwFlagsAndAttributes,
-        IntPtr hTemplateFile);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -712,20 +654,6 @@ public class Kernel32
         PropertyExistsQuery,
         PropertyMaskQuery,
         PropertyQueryMaxDefined
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct MEMORYSTATUSEX
-    {
-        public uint dwLength;
-        public uint dwMemoryLoad;
-        public ulong ullTotalPhys;
-        public ulong ullAvailPhys;
-        public ulong ullTotalPageFile;
-        public ulong ullAvailPageFile;
-        public ulong ullTotalVirtual;
-        public ulong ullAvailVirtual;
-        public ulong ullAvailExtendedVirtual;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

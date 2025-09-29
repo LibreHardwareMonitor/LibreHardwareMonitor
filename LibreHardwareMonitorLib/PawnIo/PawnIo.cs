@@ -3,34 +3,20 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32.Foundation;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
+using PInvoke = Windows.Win32.PInvoke;
 
 namespace LibreHardwareMonitor.PawnIo;
 
 public class PawnIo
 {
     private const uint DEVICE_TYPE = 41394u << 16;
-    private const uint IOCTL_PIO_LOAD_BINARY = 0x821 << 2;
-    private const uint IOCTL_PIO_EXECUTE_FN = 0x841 << 2;
     private const int FN_NAME_LENGTH = 32;
-
-    private enum ControlCode : uint
-    {
-        LoadBinary = DEVICE_TYPE | IOCTL_PIO_LOAD_BINARY,
-        Execute = DEVICE_TYPE | IOCTL_PIO_EXECUTE_FN
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether PawnIO is installed on the system.
-    /// </summary>
-    public static bool IsInstalled => Version is not null;
-
-    /// <summary>
-    /// Retrieves the version information for the installed PawnIO.
-    /// </summary>
-    public static Version Version { get; } = null;
+    private const uint IOCTL_PIO_EXECUTE_FN = 0x841 << 2;
+    private const uint IOCTL_PIO_LOAD_BINARY = 0x821 << 2;
 
     private readonly SafeFileHandle _handle;
 
@@ -46,12 +32,28 @@ public class PawnIo
 
     private PawnIo(SafeFileHandle handle) => _handle = handle;
 
+    /// <summary>
+    /// Gets a value indicating whether PawnIO is installed on the system.
+    /// </summary>
+    public static bool IsInstalled => Version is not null;
+
+    /// <summary>
+    /// Retrieves the version information for the installed PawnIO.
+    /// </summary>
+    public static Version Version { get; }
+
+    public bool IsLoaded => _handle is
+    {
+        IsInvalid: false,
+        IsClosed: false
+    };
+
     internal static PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
         SafeFileHandle handle = Kernel32.CreateFile(@"\\.\PawnIO", FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
 
         if (handle.IsInvalid)
-            return new(null);
+            return new PawnIo(null);
 
         uint read = 0;
 
@@ -61,16 +63,10 @@ public class PawnIo
         byte[] bin = memory.ToArray();
 
         if (Kernel32.DeviceIoControl(handle, (uint)ControlCode.LoadBinary, bin, (uint)bin.Length, null, 0u, ref read, IntPtr.Zero))
-            return new(handle);
+            return new PawnIo(handle);
 
-        return new(null);
+        return new PawnIo(null);
     }
-
-    public bool IsLoaded => _handle is
-    {
-        IsInvalid: false,
-        IsClosed: false
-    };
 
     public void Close() => _handle.Close();
 
@@ -125,7 +121,12 @@ public class PawnIo
         }
 
         returnSize = 0;
+        return PInvoke.HRESULT_FROM_WIN32((WIN32_ERROR)Marshal.GetLastWin32Error());
+    }
 
-        return Kernel32.HResultFromWin32(Marshal.GetLastWin32Error());
+    private enum ControlCode : uint
+    {
+        LoadBinary = DEVICE_TYPE | IOCTL_PIO_LOAD_BINARY,
+        Execute = DEVICE_TYPE | IOCTL_PIO_EXECUTE_FN
     }
 }

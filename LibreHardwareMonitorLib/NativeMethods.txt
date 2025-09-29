@@ -20,3 +20,7 @@ SetupDiEnumDeviceInterfaces
 SetupDiGetClassDevs
 GUID_DEVICE_BATTERY
 WIN32_ERROR
+HRESULT_FROM_WIN32
+GlobalMemoryStatusEx
+GetCurrentThread
+GetActiveProcessorGroupCount

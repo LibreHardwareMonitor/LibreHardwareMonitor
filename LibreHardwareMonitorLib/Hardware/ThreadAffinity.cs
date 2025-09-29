@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using Windows.Win32;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware;
@@ -16,7 +17,7 @@ internal static class ThreadAffinity
     /// </summary>
     static ThreadAffinity()
     {
-        ProcessorGroupCount = Software.OperatingSystem.IsUnix ? 1 : Kernel32.GetActiveProcessorGroupCount();
+        ProcessorGroupCount = Software.OperatingSystem.IsUnix ? 1 : PInvoke.GetActiveProcessorGroupCount();
 
         if (ProcessorGroupCount < 1)
             ProcessorGroupCount = 1;
@@ -58,7 +59,7 @@ internal static class ThreadAffinity
 
         var groupAffinity = new Kernel32.GROUP_AFFINITY { Group = affinity.Group, Mask = (UIntPtr)affinity.Mask };
 
-        IntPtr currentThread = Kernel32.GetCurrentThread();
+        IntPtr currentThread = PInvoke.GetCurrentThread();
 
         return Kernel32.SetThreadGroupAffinity(currentThread,
                                                ref groupAffinity,
