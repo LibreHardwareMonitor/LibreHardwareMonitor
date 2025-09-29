@@ -87,7 +87,7 @@ internal class BatteryGroup : IGroup
                     {
                         IntPtr buffer = Marshal.AllocHGlobal((int)cbRequired);
                         SP_DEVICE_INTERFACE_DETAIL_DATA_W* pData = (SP_DEVICE_INTERFACE_DETAIL_DATA_W*) buffer;
-                        pData->cbSize = cbRequired;
+                        pData->cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
 
                         if (PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
                                                                      data,
