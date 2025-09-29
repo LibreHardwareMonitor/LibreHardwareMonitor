@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -15,13 +16,12 @@
     <UseWindowsForms>true</UseWindowsForms>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
 	  <LangVersion>latest</LangVersion>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebugType>full</DebugType>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>

@@ -34,7 +34,6 @@ internal sealed class Amd10Cpu : AmdCpu
         _pawnModule = new AmdFamily10();
 
         // AMD family 1Xh processors support only one temperature sensor
-        ushort miscellaneousControlDeviceId;
         _coreTemperature = new Sensor("CPU Cores", 0, SensorType.Temperature, this, new[] { new ParameterDescription("Offset [°C]", "Temperature offset.", 0) }, settings);
         _coreVoltage = new Sensor("CPU Cores", 0, SensorType.Voltage, this, settings);
         ActivateSensor(_coreVoltage);
