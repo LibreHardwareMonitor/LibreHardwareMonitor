@@ -72,24 +72,23 @@ public class PawnIo
 
     public long[] Execute(string name, long[] input, int outLength)
     {
-        if (!IsLoaded)
-            return [];
-
-        uint read = 0;
-
-        byte[] output = new byte[outLength * sizeof(long)];
-        byte[] inp = new byte[input.Length * sizeof(long) + FN_NAME_LENGTH];
-        Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
-        Buffer.BlockCopy(input, 0, inp, FN_NAME_LENGTH, input.Length * sizeof(long));
-
-        if (Kernel32.DeviceIoControl(_handle, (uint)ControlCode.Execute, inp, (uint)inp.Length, output, (uint)output.Length, ref read))
+        if (IsLoaded)
         {
-            long[] outp = new long[read / sizeof(long)];
-            Buffer.BlockCopy(output, 0, outp, 0, (int)read);
-            return outp;
+            byte[] output = new byte[outLength * sizeof(long)];
+            byte[] inp = new byte[(input.Length * sizeof(long)) + FN_NAME_LENGTH];
+            Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
+            Buffer.BlockCopy(input, 0, inp, FN_NAME_LENGTH, input.Length * sizeof(long));
+
+            uint read = 0;
+            if (Kernel32.DeviceIoControl(_handle, (uint)ControlCode.Execute, inp, (uint)inp.Length, output, (uint)output.Length, ref read))
+            {
+                long[] outp = new long[read / sizeof(long)];
+                Buffer.BlockCopy(output, 0, outp, 0, (int)read);
+                return outp;
+            }
         }
 
-        return [];
+        return new long[outLength];
     }
 
     public int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
@@ -109,7 +108,7 @@ public class PawnIo
         uint read = 0;
 
         byte[] output = new byte[outSize * sizeof(long)];
-        byte[] inp = new byte[inSize * sizeof(long) + FN_NAME_LENGTH];
+        byte[] inp = new byte[(inSize * sizeof(long)) + FN_NAME_LENGTH];
         Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
         Buffer.BlockCopy(inBuffer, 0, inp, FN_NAME_LENGTH, inBuffer.Length * sizeof(long));
 
