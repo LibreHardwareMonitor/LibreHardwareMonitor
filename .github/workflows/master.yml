@@ -31,10 +31,10 @@ jobs:
           } | Set-Content Directory.Build.props
 
       - name: NuGet restore
-        run: nuget restore LibreHardwareMonitor.sln
+        run: dotnet restore LibreHardwareMonitor.sln
 
       - name: Build
-        run: msbuild LibreHardwareMonitor.sln -p:Configuration=Release -m
+        run: dotnet build LibreHardwareMonitor.sln --configuration Release --no-restore
 
       - name: Publish net472
         uses: actions/upload-artifact@v4
