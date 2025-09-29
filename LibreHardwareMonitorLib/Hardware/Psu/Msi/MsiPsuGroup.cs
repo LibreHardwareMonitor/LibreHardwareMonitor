@@ -4,6 +4,7 @@
 // All Rights Reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using HidSharp;
 
@@ -11,30 +12,30 @@ namespace LibreHardwareMonitor.Hardware.Psu.Msi;
 
 public class MsiPsuGroup : IGroup
 {
-    private readonly List<IHardware> _hardware = new();
-    private readonly StringBuilder _report = new();
+    private static readonly int[] _productIds =
+    {
+        0x56d4, // MEG Ai1300P
+    };
+
+    private static readonly ushort _vendorId = 0x0db0;
+    private readonly List<IHardware> _hardware;
+    private readonly StringBuilder _report;
 
     public MsiPsuGroup(ISettings settings)
     {
+        _report = new StringBuilder();
         _report.AppendLine("MSI Ai series PSU Hardware");
         _report.AppendLine();
 
-        foreach (HidDevice dev in DeviceList.Local.GetHidDevices(0x0db0))
+        _hardware = new List<IHardware>();
+        foreach (HidDevice dev in DeviceList.Local.GetHidDevices(_vendorId))
         {
-            switch (dev.ProductID)
+            if (_productIds.Contains(dev.ProductID))
             {
-                case 0x56d4: // MSI PSUMEG Ai1300P
-                    var device = new MsiPsu(dev, settings);
-                    _report.AppendLine($"Device name: {device.Name}");
-                    _report.AppendLine();
-                    _hardware.Add(device);
-                    break;
-
-                default:
-                    string productName = dev.GetProductName();
-                    _report.AppendLine($"Unknown Hardware PID: {dev.ProductID} Name: {productName}");
-                    _report.AppendLine();
-                    break;
+                var device = new MsiPsu(dev, settings, _hardware.Count);
+                _hardware.Add(device);
+                _report.AppendLine($"Device name: {device.Name}");
+                _report.AppendLine();
             }
         }
 
