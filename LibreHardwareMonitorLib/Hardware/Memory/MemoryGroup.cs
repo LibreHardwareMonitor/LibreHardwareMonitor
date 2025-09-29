@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -7,14 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using RAMSPDToolkit.I2CSMBus;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Enums;
-using RAMSPDToolkit.SPD.Interfaces;
 using RAMSPDToolkit.SPD.Interop.Shared;
 using RAMSPDToolkit.Windows.Driver;
 
@@ -27,21 +25,21 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     private CancellationTokenSource _cancellationTokenSource;
     private Exception _lastException;
-    private bool _opened = false;
+    private bool _disposed = false;
 
     public MemoryGroup(ISettings settings)
     {
-        if (Ring0.IsOpen && (DriverManager.Driver is null || !DriverManager.Driver.IsOpen))
+        if (DriverManager.Driver is null || !DriverManager.Driver.IsOpen)
         {
             // Assign implementation of IDriver.
-            DriverManager.Driver = new RAMSPDToolkitDriver(Ring0.KernelDriver);
+            DriverManager.Driver = new RAMSPDToolkitDriver();
             SMBusManager.UseWMI = false;
         }
 
         _hardware.Add(new VirtualMemory(settings));
         _hardware.Add(new TotalMemory(settings));
 
-        if (DriverManager.Driver == null)
+        if (DriverManager.Driver == null || !DriverManager.LoadDriver())
         {
             return;
         }
@@ -50,8 +48,6 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         {
             StartRetryTask(settings);
         }
-
-        _opened = true;
     }
 
     public event HardwareEventHandler HardwareAdded;
@@ -83,17 +79,17 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public void Close()
     {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
+
         lock (_lock)
         {
-            _opened = false;
             foreach (Hardware ram in _hardware)
                 ram.Close();
 
-            _hardware.Clear();
-
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
+            _hardware = [];
+            _disposed = true;
         }
     }
 
@@ -103,9 +99,9 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         {
             lock (_lock)
             {
-                if (!_opened)
+                if (_disposed)
                 {
-                    return true;
+                    return false;
                 }
 
                 if (DetectThermalSensors(out List<SPDAccessor> accessors))
@@ -138,24 +134,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
                 if (TryAddDimms(settings))
                 {
-                    lock (_lock)
-                    {
-                        if (!_opened)
-                        {
-                            return;
-                        }
-
-                        foreach (Hardware hardware in _hardware.OfType<DimmMemory>())
-                        {
-                            HardwareAdded?.Invoke(hardware);
-                        }
-
-                        _cancellationTokenSource.Dispose();
-                        _cancellationTokenSource = null;
-
-                        break;
-                    }
-
+                    break;
                 }
             }
         }, _cancellationTokenSource.Token);
@@ -181,9 +160,8 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 //RAM available and detected
                 if (detector.Accessor != null)
                 {
-                    //We are only interested in modules with thermal sensor
-                    if (detector.Accessor is IThermalSensor { HasThermalSensor: true })
-                        accessors.Add(detector.Accessor);
+                    //Add all detected modules
+                    accessors.Add(detector.Accessor);
 
                     ramDetected = true;
                 }
@@ -195,7 +173,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
     {
-        List<Hardware> newHardwareList = [.. _hardware];
+        List<Hardware> additions = [];
 
         foreach (SPDAccessor ram in accessors)
         {
@@ -207,9 +185,11 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
 
             DimmMemory memory = new(ram, name, new Identifier($"memory/dimm/{ram.Index}"), settings);
-            newHardwareList.Add(memory);
+            additions.Add(memory);
         }
 
-        _hardware = newHardwareList;
+        _hardware = [.. _hardware, .. additions];
+        foreach (Hardware hardware in additions)
+            HardwareAdded?.Invoke(hardware);
     }
 }

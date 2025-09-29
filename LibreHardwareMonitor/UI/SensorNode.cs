@@ -76,6 +76,9 @@ public class SensorNode : Node
             case SensorType.TimeSpan:
                 Format = "{0:g}";
                 break;
+            case SensorType.Timing:
+                Format = "{0:F3} ns";
+                break;
             case SensorType.Energy:
                 Format = "{0:F0} mWh";
                 break;
@@ -240,7 +243,7 @@ public class SensorNode : Node
                     }
                 case SensorType.TimeSpan:
                     {
-                        return value.HasValue ? string.Format(Format, TimeSpan.FromSeconds(value.Value)) : "-";
+                        return string.Format(Format, TimeSpan.FromSeconds(value.Value));
                     }
                 default:
                     {

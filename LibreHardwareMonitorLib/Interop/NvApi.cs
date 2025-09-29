@@ -25,31 +25,31 @@ internal static class NvApi
     private const string DllName = "nvapi.dll";
     private const string DllName64 = "nvapi64.dll";
 
-    public static readonly NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle;
-    public static readonly NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs;
-    public static readonly NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion;
-    public static readonly NvAPI_GetPhysicalGPUsFromDisplayDelegate NvAPI_GetPhysicalGPUsFromDisplay;
-    public static readonly NvAPI_GPU_ClientFanCoolersGetControlDelegate NvAPI_GPU_ClientFanCoolersGetControl;
-    public static readonly NvAPI_GPU_ClientFanCoolersGetStatusDelegate NvAPI_GPU_ClientFanCoolersGetStatus;
-    public static readonly NvAPI_GPU_ClientFanCoolersSetControlDelegate NvAPI_GPU_ClientFanCoolersSetControl;
-    public static readonly NvAPI_GPU_ClientPowerTopologyGetStatusDelegate NvAPI_GPU_ClientPowerTopologyGetStatus;
-    public static readonly NvAPI_GPU_GetAllClockFrequenciesDelegate NvAPI_GPU_GetAllClockFrequencies;
-    public static readonly NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks;
-    public static readonly NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId;
-    public static readonly NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings;
-    public static readonly NvAPI_GPU_GetDynamicPstatesInfoExDelegate NvAPI_GPU_GetDynamicPstatesInfoEx;
-    public static readonly NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo;
-    public static readonly NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers;
-    public static readonly NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading;
-    public static readonly NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings;
-    public static readonly NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages;
-    public static readonly NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels;
-    public static readonly NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_ThermalGetSensors;
+    public static NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle { get; internal set; }
+    public static NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs { get; internal set; }
+    public static NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion { get; internal set; }
+    public static NvAPI_GetPhysicalGPUsFromDisplayDelegate NvAPI_GetPhysicalGPUsFromDisplay { get; internal set; }
+    public static NvAPI_GPU_ClientFanCoolersGetControlDelegate NvAPI_GPU_ClientFanCoolersGetControl { get; internal set; }
+    public static NvAPI_GPU_ClientFanCoolersGetStatusDelegate NvAPI_GPU_ClientFanCoolersGetStatus { get; internal set; }
+    public static NvAPI_GPU_ClientFanCoolersSetControlDelegate NvAPI_GPU_ClientFanCoolersSetControl { get; internal set; }
+    public static NvAPI_GPU_ClientPowerTopologyGetStatusDelegate NvAPI_GPU_ClientPowerTopologyGetStatus { get; internal set; }
+    public static NvAPI_GPU_GetAllClockFrequenciesDelegate NvAPI_GPU_GetAllClockFrequencies { get; internal set; }
+    public static NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks { get; internal set; }
+    public static NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId { get; internal set; }
+    public static NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings { get; internal set; }
+    public static NvAPI_GPU_GetDynamicPstatesInfoExDelegate NvAPI_GPU_GetDynamicPstatesInfoEx { get; internal set; }
+    public static NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo { get; internal set; }
+    public static NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers { get; internal set; }
+    public static NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading { get; internal set; }
+    public static NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings { get; internal set; }
+    public static NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages { get; internal set; }
+    public static NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels { get; internal set; }
+    public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
 
-    private static readonly NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
-    private static readonly NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
+    private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
+    private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
 
-    static NvApi()
+    public static void Initialize()
     {
         NvAPI_InitializeDelegate nvApiInitialize;
 
@@ -58,7 +58,7 @@ internal static class NvApi
             if (!DllExists())
                 return;
 
-            GetDelegate(0x0150E828, out nvApiInitialize);
+            nvApiInitialize = GetDelegate<NvAPI_InitializeDelegate>(0x0150E828);
         }
         catch (Exception e) when (e is DllNotFoundException or ArgumentNullException or EntryPointNotFoundException or BadImageFormatException)
         {
@@ -67,28 +67,28 @@ internal static class NvApi
 
         if (nvApiInitialize() == NvStatus.OK)
         {
-            GetDelegate(0xE3640A56, out NvAPI_GPU_GetThermalSettings);
-            GetDelegate(0xCEEE8E9F, out _nvAPI_GPU_GetFullName);
-            GetDelegate(0x9ABDD40D, out NvAPI_EnumNvidiaDisplayHandle);
-            GetDelegate(0x34EF9506, out NvAPI_GetPhysicalGPUsFromDisplay);
-            GetDelegate(0xE5AC921F, out NvAPI_EnumPhysicalGPUs);
-            GetDelegate(0x5F608315, out NvAPI_GPU_GetTachReading);
-            GetDelegate(0x1BD69F49, out NvAPI_GPU_GetAllClocks);
-            GetDelegate(0x60DED2ED, out NvAPI_GPU_GetDynamicPstatesInfoEx);
-            GetDelegate(0x189A1FDF, out NvAPI_GPU_GetUsages);
-            GetDelegate(0xDA141340, out NvAPI_GPU_GetCoolerSettings);
-            GetDelegate(0x891FA0AE, out NvAPI_GPU_SetCoolerLevels);
-            GetDelegate(0x774AA982, out NvAPI_GPU_GetMemoryInfo);
-            GetDelegate(0xF951A4D1, out NvAPI_GetDisplayDriverVersion);
-            GetDelegate(0x01053FA5, out _nvAPI_GetInterfaceVersionString);
-            GetDelegate(0x2DDFB66E, out NvAPI_GPU_GetPCIIdentifiers);
-            GetDelegate(0x1BE0B8E5, out NvAPI_GPU_GetBusId);
-            GetDelegate(0x35AED5E8, out NvAPI_GPU_ClientFanCoolersGetStatus);
-            GetDelegate(0xDCB616C3, out NvAPI_GPU_GetAllClockFrequencies);
-            GetDelegate(0x814B209F, out NvAPI_GPU_ClientFanCoolersGetControl);
-            GetDelegate(0xA58971A5, out NvAPI_GPU_ClientFanCoolersSetControl);
-            GetDelegate(0x0EDCF624E, out NvAPI_GPU_ClientPowerTopologyGetStatus);
-            GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetSensors);
+            NvAPI_GPU_GetThermalSettings = GetDelegate<NvAPI_GPU_GetThermalSettingsDelegate>(0xE3640A56);
+            _nvAPI_GPU_GetFullName = GetDelegate<NvAPI_GPU_GetFullNameDelegate>(0xCEEE8E9F);
+            NvAPI_EnumNvidiaDisplayHandle = GetDelegate<NvAPI_EnumNvidiaDisplayHandleDelegate>(0x9ABDD40D);
+            NvAPI_GetPhysicalGPUsFromDisplay = GetDelegate<NvAPI_GetPhysicalGPUsFromDisplayDelegate>(0x34EF9506);
+            NvAPI_EnumPhysicalGPUs = GetDelegate<NvAPI_EnumPhysicalGPUsDelegate>(0xE5AC921F);
+            NvAPI_GPU_GetTachReading = GetDelegate<NvAPI_GPU_GetTachReadingDelegate>(0x5F608315);
+            NvAPI_GPU_GetAllClocks = GetDelegate<NvAPI_GPU_GetAllClocksDelegate>(0x1BD69F49);
+            NvAPI_GPU_GetDynamicPstatesInfoEx = GetDelegate<NvAPI_GPU_GetDynamicPstatesInfoExDelegate>(0x60DED2ED);
+            NvAPI_GPU_GetUsages = GetDelegate<NvAPI_GPU_GetUsagesDelegate>(0x189A1FDF);
+            NvAPI_GPU_GetCoolerSettings = GetDelegate<NvAPI_GPU_GetCoolerSettingsDelegate>(0xDA141340);
+            NvAPI_GPU_SetCoolerLevels = GetDelegate<NvAPI_GPU_SetCoolerLevelsDelegate>(0x891FA0AE);
+            NvAPI_GPU_GetMemoryInfo = GetDelegate<NvAPI_GPU_GetMemoryInfoDelegate>(0x774AA982);
+            NvAPI_GetDisplayDriverVersion = GetDelegate<NvAPI_GetDisplayDriverVersionDelegate>(0xF951A4D1);
+            _nvAPI_GetInterfaceVersionString = GetDelegate<NvAPI_GetInterfaceVersionStringDelegate>(0x01053FA5);
+            NvAPI_GPU_GetPCIIdentifiers = GetDelegate<NvAPI_GPU_GetPCIIdentifiersDelegate>(0x2DDFB66E);
+            NvAPI_GPU_GetBusId = GetDelegate<NvAPI_GPU_GetBusIdDelegate>(0x1BE0B8E5);
+            NvAPI_GPU_ClientFanCoolersGetStatus = GetDelegate<NvAPI_GPU_ClientFanCoolersGetStatusDelegate>(0x35AED5E8);
+            NvAPI_GPU_GetAllClockFrequencies = GetDelegate<NvAPI_GPU_GetAllClockFrequenciesDelegate>(0xDCB616C3);
+            NvAPI_GPU_ClientFanCoolersGetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersGetControlDelegate>(0x814B209F);
+            NvAPI_GPU_ClientFanCoolersSetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersSetControlDelegate>(0xA58971A5);
+            NvAPI_GPU_ClientPowerTopologyGetStatus = GetDelegate<NvAPI_GPU_ClientPowerTopologyGetStatusDelegate>(0x0EDCF624E);
+            NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
 
             IsAvailable = true;
         }
@@ -188,7 +188,7 @@ internal static class NvApi
         BusInterface // Bus
     }
 
-    public static bool IsAvailable { get; }
+    public static bool IsAvailable { get; private set; }
 
     [DllImport(DllName, EntryPoint = "nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -216,14 +216,18 @@ internal static class NvApi
         return status;
     }
 
-    private static void GetDelegate<T>(uint id, out T newDelegate) where T : class
+    private static T GetDelegate<T>(uint id) where T : class
     {
         IntPtr ptr = Environment.Is64BitProcess ? NvAPI64_QueryInterface(id) : NvAPI32_QueryInterface(id);
 
         if (ptr != IntPtr.Zero)
-            newDelegate = Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
+        {
+            return Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
+        }
         else
-            newDelegate = null;
+        {
+            return null;
+        }
     }
 
     public static bool DllExists()

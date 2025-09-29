@@ -481,8 +481,24 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (status == NvApi.NvStatus.OK)
             {
-                _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                // RTX 50xx series
+                if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+                {
+                    _hotSpotTemperature.Value = 0;
+                    _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                }
+                // RTX 40xx series
+                else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
+                {
+                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
+                }
+                else
+                {
+                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                }
             }
 
             if (_hotSpotTemperature.Value != 0)
@@ -996,7 +1012,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
         NvApi.NvThermalSettings settings = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(1),
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(2),
             Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU
         };
 
@@ -1006,7 +1022,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
     private NvApi.NvThermalSensors GetThermalSensors(uint mask, out NvApi.NvStatus status)
     {
-        if (NvApi.NvAPI_GPU_ThermalGetSensors == null)
+        if (NvApi.NvAPI_GPU_GetThermalSensors == null)
         {
             status = NvApi.NvStatus.Error;
             return default;
@@ -1018,7 +1034,7 @@ internal sealed class NvidiaGpu : GenericGpu
             Mask = mask
         };
 
-        status = NvApi.NvAPI_GPU_ThermalGetSensors(_handle, ref thermalSensors);
+        status = NvApi.NvAPI_GPU_GetThermalSensors(_handle, ref thermalSensors);
         return status == NvApi.NvStatus.OK ? thermalSensors : default;
     }
 
