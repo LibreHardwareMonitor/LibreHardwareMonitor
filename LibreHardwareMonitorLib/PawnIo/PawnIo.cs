@@ -2,174 +2,98 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.PawnIo;
 
-public unsafe class PawnIo
+public class PawnIo
 {
-    private IntPtr _handle;
+    private const uint DEVICE_TYPE = 41394u << 16;
+    private const uint IOCTL_PIO_LOAD_BINARY = 0x821 << 2;
+    private const uint IOCTL_PIO_EXECUTE_FN = 0x841 << 2;
+    private const int FN_NAME_LENGTH = 32;
 
-    /// <summary>
-    /// Gets the installation path of PawnIO, if it is installed on the system.
-    /// </summary>
-    public static string InstallPath
+    private enum ControlCode : uint
     {
-        get
-        {
-            if ((Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO", "InstallLocation", null) ??
-                 Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\PawnIO", "Install_Dir", null) ??
-                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + Path.DirectorySeparatorChar + "PawnIO") is string
-                {
-                    Length: > 0
-                } path)
-            {
-                if (Directory.Exists(path))
-                    return path;
-            }
-
-            return null;
-        }
+        LoadBinary = DEVICE_TYPE | IOCTL_PIO_LOAD_BINARY,
+        Execute = DEVICE_TYPE | IOCTL_PIO_EXECUTE_FN
     }
 
     /// <summary>
     /// Gets a value indicating whether PawnIO is installed on the system.
     /// </summary>
-    public static bool IsInstalled
-    {
-        get { return !string.IsNullOrEmpty(InstallPath); }
-    }
-
-    public bool IsLoaded => _handle != IntPtr.Zero;
-
-    [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
-    private static extern void pawnio_version(out uint version);
-
-    [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
-    private static extern void pawnio_open(out IntPtr handle);
-
-    [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
-    private static extern void pawnio_load(IntPtr handle, byte* blob, IntPtr size);
-
-    [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
-    private static extern void pawnio_execute
-    (
-        IntPtr handle,
-        [MarshalAs(UnmanagedType.LPStr)] string name,
-        long[] inArray,
-        IntPtr inSize,
-        long[] outArray,
-        IntPtr outSize,
-        out IntPtr returnSize);
-
-    [DllImport("PawnIOLib", ExactSpelling = true, EntryPoint = "pawnio_execute")]
-    private static extern int pawnio_execute_hr
-    (
-        IntPtr handle,
-        [MarshalAs(UnmanagedType.LPStr)] string name,
-        long[] inArray,
-        IntPtr inSize,
-        long[] outArray,
-        IntPtr outSize,
-        out IntPtr returnSize);
-
-    [DllImport("PawnIOLib", ExactSpelling = true, PreserveSig = false)]
-    private static extern void pawnio_close(IntPtr handle);
-
-    private static void TryLoadLibrary()
-    {
-        try
-        {
-            // If already loaded, return immediately.
-            pawnio_version(out uint _);
-            return;
-        }
-        catch
-        {
-            // ignored
-        }
-
-        try
-        {
-            if (IsInstalled)
-                Kernel32.LoadLibrary(InstallPath + Path.DirectorySeparatorChar + "PawnIOLib");
-        }
-        catch
-        {
-            // ignored
-        }
-    }
+    public static bool IsInstalled => Version is not null;
 
     /// <summary>
-    /// Retrieves the version information for the underlying PawnIO library.
+    /// Retrieves the version information for the installed PawnIO.
     /// </summary>
-    public static Version Version()
-    {
-        try
-        {
-            TryLoadLibrary();
-            pawnio_version(out uint version);
+    public static Version Version { get; } = null;
 
-            return new Version((int)((version >> 16) & 0xFF),
-                               (int)((version >> 8) & 0xFF),
-                               (int)(version & 0xFF),
-                               0);
-        }
-        catch
+    private readonly SafeFileHandle _handle;
+
+    static PawnIo()
+    {
+        using RegistryKey subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO");
+
+        if (Version.TryParse(subKey?.GetValue("DisplayVersion") as string, out Version version))
         {
-            return new Version();
+            Version = version;
         }
     }
 
-    public void Close()
+    private PawnIo(SafeFileHandle handle) => _handle = handle;
+
+    internal static PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
-        if (_handle != IntPtr.Zero)
-            pawnio_close(_handle);
+        SafeFileHandle handle = Kernel32.CreateFile(@"\\.\PawnIO", FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+
+        if (handle.IsInvalid)
+            return new(null);
+
+        uint read = 0;
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        using MemoryStream memory = new();
+        stream.CopyTo(memory);
+        byte[] bin = memory.ToArray();
+
+        if (Kernel32.DeviceIoControl(handle, (uint)ControlCode.LoadBinary, bin, (uint)bin.Length, null, 0u, ref read, IntPtr.Zero))
+            return new(handle);
+
+        return new(null);
     }
 
-    public static PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
+    public bool IsLoaded => _handle is
     {
-        var pawnIO = new PawnIo();
+        IsInvalid: false,
+        IsClosed: false
+    };
 
-        using Stream s = assembly.GetManifestResourceStream(resourceName);
-
-        if (s is UnmanagedMemoryStream ums)
-        {
-            TryLoadLibrary();
-
-            try
-            {
-                pawnio_open(out IntPtr handle);
-                pawnio_load(handle, ums.PositionPointer, (IntPtr)ums.Length);
-                pawnIO._handle = handle;
-            }
-            catch
-            {
-                // PawnIO is not available.
-            }
-        }
-
-        return pawnIO;
-    }
+    public void Close() => _handle.Close();
 
     public long[] Execute(string name, long[] input, int outLength)
     {
-        long[] result = new long[outLength];
+        if (!IsLoaded)
+            return [];
 
-        if (_handle == IntPtr.Zero)
-            return result;
+        uint read = 0;
 
-        pawnio_execute(_handle,
-                       name,
-                       input,
-                       (IntPtr)input.Length,
-                       result,
-                       (IntPtr)result.Length,
-                       out nint returnLength);
+        byte[] output = new byte[outLength * sizeof(long)];
+        byte[] inp = new byte[input.Length * sizeof(long) + FN_NAME_LENGTH];
+        Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
+        Buffer.BlockCopy(input, 0, inp, FN_NAME_LENGTH, input.Length * sizeof(long));
 
-        Array.Resize(ref result, (int)returnLength);
-        return result;
+        if (Kernel32.DeviceIoControl(_handle, (uint)ControlCode.Execute, inp, (uint)inp.Length, output, (uint)output.Length, ref read))
+        {
+            long[] outp = new long[read / sizeof(long)];
+            Buffer.BlockCopy(output, 0, outp, 0, (int)read);
+            return outp;
+        }
+
+        return [];
     }
 
     public int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
@@ -180,16 +104,28 @@ public unsafe class PawnIo
         if (outBuffer.Length < outSize)
             throw new ArgumentOutOfRangeException(nameof(outSize));
 
-        if (_handle == IntPtr.Zero)
+        if (!IsLoaded)
         {
             returnSize = 0;
             return 0;
         }
 
-        int ret = pawnio_execute_hr(_handle, name, inBuffer, (IntPtr)inSize, outBuffer, (IntPtr)outSize, out IntPtr retSize);
+        uint read = 0;
 
-        returnSize = (uint)retSize;
+        byte[] output = new byte[outSize * sizeof(long)];
+        byte[] inp = new byte[inSize * sizeof(long) + FN_NAME_LENGTH];
+        Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
+        Buffer.BlockCopy(inBuffer, 0, inp, FN_NAME_LENGTH, inBuffer.Length * sizeof(long));
 
-        return ret;
+        if (Kernel32.DeviceIoControl(_handle, (uint)ControlCode.Execute, inp, (uint)inp.Length, output, (uint)output.Length, ref read))
+        {
+            Buffer.BlockCopy(output, 0, outBuffer, 0, Math.Min((int)read, outBuffer.Length * sizeof(long)));
+            returnSize = read / sizeof(long);
+            return 0;
+        }
+
+        returnSize = 0;
+
+        return Kernel32.HResultFromWin32(Marshal.GetLastWin32Error());
     }
 }

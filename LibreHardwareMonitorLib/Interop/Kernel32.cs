@@ -84,6 +84,18 @@ public class Kernel32
         return result;
     }
 
+    /// <summary>
+    /// Convert Win32 error code to HRESULT.
+    /// </summary>
+    /// <remarks>
+    /// HRESULT_FROM_WIN32 macro equivalent.
+    /// </remarks>
+    /// <param name="errorCode">Win32 error code</param>
+    /// <returns>HRESULT</returns>
+    internal static int HResultFromWin32(int errorCode) => errorCode <= 0
+        ? errorCode
+        : (int)((errorCode & 0x0000FFFF) | 0x80070000);
+
     internal static SafeFileHandle OpenDevice(string devicePath)
     {
         SafeFileHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
@@ -305,6 +317,20 @@ public class Kernel32
         int nOutBufferSize,
         out uint lpBytesReturned,
         IntPtr lpOverlapped);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DeviceIoControl
+    (
+        SafeFileHandle hDevice,
+        uint dwIoControlCode,
+        [In] byte[] lpInBuffer,
+        uint nInBufferSize,
+        [Out] byte[] lpOutBuffer,
+        uint nOutBufferSize,
+        ref uint lpBytesReturned,
+        [In][Optional] IntPtr lpOverlapped);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
