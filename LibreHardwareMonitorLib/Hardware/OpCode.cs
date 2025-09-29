@@ -31,7 +31,7 @@ internal static class OpCode
     // }
 
     private static readonly byte[] CpuId32 =
-    {
+    [
         0x55, // push ebp
         0x8B,
         0xEC, // mov ebp, esp
@@ -100,10 +100,10 @@ internal static class OpCode
         0xC2,
         0x18,
         0x00 // ret 18h
-    };
+    ];
 
     private static readonly byte[] CpuId64Linux =
-    {
+    [
         0x49,
         0x89,
         0xD2, // mov r10, rdx
@@ -131,10 +131,10 @@ internal static class OpCode
         0x11, // mov dword ptr [r9], edx
         0x5B, // pop rbx
         0xC3 // ret
-    };
+    ];
 
     private static readonly byte[] CpuId64Windows =
-    {
+    [
         0x48,
         0x89,
         0x5C,
@@ -172,21 +172,21 @@ internal static class OpCode
         0x89,
         0x10, // mov dword ptr [rax], edx
         0xC3 // ret
-    };
+    ];
 
     // unsigned __int64 __stdcall rdtsc() {
     //   return __rdtsc();
     // }
 
     private static readonly byte[] Rdtsc32 =
-    {
+    [
         0x0F,
         0x31, // rdtsc
         0xC3 // ret
-    };
+    ];
 
     private static readonly byte[] Rdtsc64 =
-    {
+    [
         0x0F,
         0x31, // rdtsc
         0x48,
@@ -197,7 +197,7 @@ internal static class OpCode
         0x0B,
         0xC2, // or rax, rdx
         0xC3 // ret
-    };
+    ];
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate bool CpuidDelegate(uint index, uint ecxValue, out uint eax, out uint ebx, out uint ecx, out uint edx);
@@ -245,7 +245,7 @@ internal static class OpCode
                                                   (int)mmapFlags.GetField("MAP_PRIVATE").GetValue(null));
 
             if (mmap != null)
-                _codeBuffer = (IntPtr)mmap.Invoke(null, new[] { IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0 });
+                _codeBuffer = (IntPtr)mmap.Invoke(null, [IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0]);
         }
         else
         {
@@ -272,30 +272,16 @@ internal static class OpCode
 #if NETFRAMEWORK
             Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
 #else
-                Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
+            Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
 #endif
 
             Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
             MethodInfo method = sysCall.GetMethod("munmap");
-            method?.Invoke(null, new object[] { _codeBuffer, _size });
+            method?.Invoke(null, [_codeBuffer, _size]);
         }
         else
         {
             Interop.Kernel32.VirtualFree(_codeBuffer, UIntPtr.Zero, Interop.Kernel32.MEM.MEM_RELEASE);
         }
-    }
-
-    public static bool CpuIdTx(uint index, uint ecxValue, out uint eax, out uint ebx, out uint ecx, out uint edx, GroupAffinity affinity)
-    {
-        GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
-        if (previousAffinity == GroupAffinity.Undefined)
-        {
-            eax = ebx = ecx = edx = 0;
-            return false;
-        }
-
-        CpuId(index, ecxValue, out eax, out ebx, out ecx, out edx);
-        ThreadAffinity.Set(previousAffinity);
-        return true;
     }
 }

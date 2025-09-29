@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using Windows.Win32.Foundation;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 
@@ -52,45 +55,48 @@ internal class BatteryGroup : IGroup
         if (Software.OperatingSystem.IsUnix)
             return;
 
-        IntPtr hdev = SetupApi.SetupDiGetClassDevs(ref SetupApi.GUID_DEVICE_BATTERY, IntPtr.Zero, IntPtr.Zero, SetupApi.DIGCF_PRESENT | SetupApi.DIGCF_DEVICEINTERFACE);
-        if (hdev != SetupApi.INVALID_HANDLE_VALUE)
+        SetupDiDestroyDeviceInfoListSafeHandle hdev = PInvoke.SetupDiGetClassDevs(PInvoke.GUID_DEVICE_BATTERY, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT | SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_DEVICEINTERFACE);
+        if (!hdev.IsInvalid)
         {
             for (uint i = 0; ; i++)
             {
-                SetupApi.SP_DEVICE_INTERFACE_DATA did = default;
-                did.cbSize = (uint)Marshal.SizeOf(typeof(SetupApi.SP_DEVICE_INTERFACE_DATA));
+                SP_DEVICE_INTERFACE_DATA data = default;
+                data.cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DATA);
 
-                if (!SetupApi.SetupDiEnumDeviceInterfaces(hdev,
-                                                          IntPtr.Zero,
-                                                          ref SetupApi.GUID_DEVICE_BATTERY,
+                if (!PInvoke.SetupDiEnumDeviceInterfaces(hdev,
+                                                          null,
+                                                          PInvoke.GUID_DEVICE_BATTERY,
                                                           i,
-                                                          ref did))
+                                                          ref data))
                 {
-                    if (Marshal.GetLastWin32Error() == SetupApi.ERROR_NO_MORE_ITEMS)
+                    if (Marshal.GetLastWin32Error() == (int) WIN32_ERROR.ERROR_NO_MORE_ITEMS)
                         break;
                 }
                 else
                 {
-                    SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                             did,
-                                                             IntPtr.Zero,
+                    uint cbRequired = 0;
+
+                    PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
+                                                             data,
+                                                             null,
                                                              0,
-                                                             out uint cbRequired,
-                                                             IntPtr.Zero);
+                                                             &cbRequired,
+                                                             null);
 
-                    if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
+                    if (Marshal.GetLastWin32Error() == (int) WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                     {
-                        IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                        Marshal.WriteInt32(pdidd, Environment.Is64BitProcess ? 8 : 4 + Marshal.SystemDefaultCharSize); // cbSize.
+                        IntPtr buffer = Marshal.AllocHGlobal((int)cbRequired);
+                        SP_DEVICE_INTERFACE_DETAIL_DATA_W* pData = (SP_DEVICE_INTERFACE_DETAIL_DATA_W*) buffer;
+                        pData->cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
 
-                        if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                                     did,
-                                                                     pdidd,
+                        if (PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
+                                                                     data,
+                                                                     pData,
                                                                      cbRequired,
-                                                                     out _,
-                                                                     IntPtr.Zero))
+                                                                     &cbRequired,
+                                                                     null) )
                         {
-                            string devicePath = new((char*)(pdidd + 4));
+                            string devicePath = pData->DevicePath.ToString();
 
                             SafeFileHandle battery = Kernel32.CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
                             if (!battery.IsInvalid)
@@ -134,12 +140,12 @@ internal class BatteryGroup : IGroup
                             }
                         }
 
-                        Kernel32.LocalFree(pdidd);
+                        Marshal.FreeHGlobal(buffer);
                     }
                 }
             }
 
-            SetupApi.SetupDiDestroyDeviceInfoList(hdev);
+            hdev.Dispose();
         }
     }
 
