@@ -34,7 +34,7 @@ jobs:
         run: dotnet restore LibreHardwareMonitor.sln
 
       - name: Build
-        run: dotnet LibreHardwareMonitor.sln --configuration Release --no-restore
+        run: dotnet build LibreHardwareMonitor.sln --configuration Release --no-restore
 
       - name: Publish net472
         uses: actions/upload-artifact@v4
