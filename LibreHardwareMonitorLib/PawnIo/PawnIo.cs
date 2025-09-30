@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -42,28 +43,38 @@ public class PawnIo
     /// </summary>
     public static Version Version { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the underlying handle is currently valid and open.
+    /// </summary>
     public bool IsLoaded => _handle is
     {
         IsInvalid: false,
         IsClosed: false
     };
 
-    internal static PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
+    internal static unsafe PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
-        SafeFileHandle handle = Kernel32.CreateFile(@"\\.\PawnIO", FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+        SafeFileHandle handle = PInvoke.CreateFile(@"\\.\PawnIO",
+                                                   (uint)FileAccess.ReadWrite,
+                                                   FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                                   null,
+                                                   FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                                   FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+                                                   null);
 
         if (handle.IsInvalid)
             return new PawnIo(null);
 
-        uint read = 0;
-
-        using var stream = assembly.GetManifestResourceStream(resourceName);
+        using Stream stream = assembly.GetManifestResourceStream(resourceName);
         using MemoryStream memory = new();
         stream.CopyTo(memory);
         byte[] bin = memory.ToArray();
 
-        if (Kernel32.DeviceIoControl(handle, (uint)ControlCode.LoadBinary, bin, (uint)bin.Length, null, 0u, ref read, IntPtr.Zero))
-            return new PawnIo(handle);
+        fixed (byte* pIn = bin)
+        {
+            if (PInvoke.DeviceIoControl(handle, (uint)ControlCode.LoadBinary, pIn, (uint)bin.Length, null, 0u, null, null))
+                return new PawnIo(handle);
+        }
 
         return new PawnIo(null);
     }
@@ -74,28 +85,32 @@ public class PawnIo
             _handle.Close();
     }
 
-    public long[] Execute(string name, long[] input, int outLength)
+    public unsafe long[] Execute(string name, long[] input, int outLength)
     {
         if (IsLoaded)
         {
             byte[] output = new byte[outLength * sizeof(long)];
-            byte[] inp = new byte[(input.Length * sizeof(long)) + FN_NAME_LENGTH];
-            Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
-            Buffer.BlockCopy(input, 0, inp, FN_NAME_LENGTH, input.Length * sizeof(long));
+            byte[] totalInput = new byte[(input.Length * sizeof(long)) + FN_NAME_LENGTH];
+            Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, totalInput, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
+            Buffer.BlockCopy(input, 0, totalInput, FN_NAME_LENGTH, input.Length * sizeof(long));
 
             uint read = 0;
-            if (Kernel32.DeviceIoControl(_handle, (uint)ControlCode.Execute, inp, (uint)inp.Length, output, (uint)output.Length, ref read))
+
+            fixed (byte* pIn = totalInput, pOut = output)
             {
-                long[] outp = new long[read / sizeof(long)];
-                Buffer.BlockCopy(output, 0, outp, 0, (int)read);
-                return outp;
+                if (PInvoke.DeviceIoControl(_handle, (uint)ControlCode.Execute, pIn, (uint)totalInput.Length, pOut, (uint)output.Length, &read, null))
+                {
+                    long[] outp = new long[read / sizeof(long)];
+                    Buffer.BlockCopy(output, 0, outp, 0, (int)read);
+                    return outp;
+                }
             }
         }
 
         return new long[outLength];
     }
 
-    public int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
+    public unsafe int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
     {
         if (inBuffer.Length < inSize)
             throw new ArgumentOutOfRangeException(nameof(inSize));
@@ -112,15 +127,18 @@ public class PawnIo
         uint read = 0;
 
         byte[] output = new byte[outSize * sizeof(long)];
-        byte[] inp = new byte[(inSize * sizeof(long)) + FN_NAME_LENGTH];
-        Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, inp, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
-        Buffer.BlockCopy(inBuffer, 0, inp, FN_NAME_LENGTH, inBuffer.Length * sizeof(long));
+        byte[] totalInput = new byte[(inSize * sizeof(long)) + FN_NAME_LENGTH];
+        Buffer.BlockCopy(Encoding.ASCII.GetBytes(name), 0, totalInput, 0, Math.Min(FN_NAME_LENGTH - 1, name.Length));
+        Buffer.BlockCopy(inBuffer, 0, totalInput, FN_NAME_LENGTH, inBuffer.Length * sizeof(long));
 
-        if (Kernel32.DeviceIoControl(_handle, (uint)ControlCode.Execute, inp, (uint)inp.Length, output, (uint)output.Length, ref read))
+        fixed (byte* pIn = totalInput, pOut = output)
         {
-            Buffer.BlockCopy(output, 0, outBuffer, 0, Math.Min((int)read, outBuffer.Length * sizeof(long)));
-            returnSize = read / sizeof(long);
-            return 0;
+            if (PInvoke.DeviceIoControl(_handle, (uint)ControlCode.Execute, pIn, (uint)totalInput.Length, pOut, (uint)output.Length, &read, null))
+            {
+                Buffer.BlockCopy(output, 0, outBuffer, 0, Math.Min((int)read, outBuffer.Length * sizeof(long)));
+                returnSize = read / sizeof(long);
+                return 0;
+            }
         }
 
         returnSize = 0;

@@ -4,7 +4,6 @@
 // All Rights Reserved.
 
 using System;
-using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.System.Power;
 using LibreHardwareMonitor.Interop;
@@ -85,8 +84,8 @@ internal sealed class Battery : Hardware
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
         _temperature = new Sensor("Battery Temperature", 0, SensorType.Temperature, this, settings);
 
-        if (batteryInfo.FullChargedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY &&
-            batteryInfo.DesignedCapacity is not Kernel32.BATTERY_UNKNOWN_CAPACITY)
+        if (batteryInfo.FullChargedCapacity is not PInvoke.BATTERY_UNKNOWN_CAPACITY &&
+            batteryInfo.DesignedCapacity is not PInvoke.BATTERY_UNKNOWN_CAPACITY)
         {
             _designedCapacity.Value = batteryInfo.DesignedCapacity;
             _fullChargedCapacity.Value = batteryInfo.FullChargedCapacity;
@@ -148,19 +147,19 @@ internal sealed class Battery : Hardware
                                     null,
                                     null))
         {
-            if (batteryStatus.Capacity != Kernel32.BATTERY_UNKNOWN_CAPACITY)
+            if (batteryStatus.Capacity != PInvoke.BATTERY_UNKNOWN_CAPACITY)
                 _remainingCapacity.Value = batteryStatus.Capacity;
             else
                 _remainingCapacity.Value = null;
 
             _chargeLevel.Value = _remainingCapacity.Value * 100f / _fullChargedCapacity.Value;
 
-            if (batteryStatus.Voltage is not Kernel32.BATTERY_UNKNOWN_VOLTAGE)
+            if (batteryStatus.Voltage is not PInvoke.BATTERY_UNKNOWN_VOLTAGE)
                 _voltage.Value = batteryStatus.Voltage / 1000f;
             else
                 _voltage.Value = null;
 
-            if (batteryStatus.Rate is Kernel32.BATTERY_UNKNOWN_RATE)
+            if ((uint)batteryStatus.Rate is PInvoke.BATTERY_UNKNOWN_RATE)
             {
                 ChargeDischargeCurrent = null;
                 _chargeDischargeCurrent.Value = null;
@@ -212,7 +211,7 @@ internal sealed class Battery : Hardware
                                      null,
                                      null))
         {
-            if (estimatedRunTime != Kernel32.BATTERY_UNKNOWN_TIME)
+            if (estimatedRunTime != PInvoke.BATTERY_UNKNOWN_TIME)
                 _remainingTime.Value = estimatedRunTime;
             else
                 _remainingTime.Value = null;

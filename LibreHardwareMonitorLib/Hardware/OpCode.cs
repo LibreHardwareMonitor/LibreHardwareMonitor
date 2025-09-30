@@ -251,7 +251,7 @@ internal static class OpCode
         }
         else
         {
-            _codeBuffer = (IntPtr)PInvoke.VirtualAlloc((void*)0,
+            _codeBuffer = (IntPtr)PInvoke.VirtualAlloc(null,
                                                        (UIntPtr)_size,
                                                        VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE,
                                                        PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);

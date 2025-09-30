@@ -17,9 +17,9 @@ public interface ISmart : IDisposable
 
     bool EnableSmart();
 
-    Kernel32.SMART_ATTRIBUTE[] ReadSmartData();
+    AtaSmart.SMART_ATTRIBUTE[] ReadSmartData();
 
-    Kernel32.SMART_THRESHOLD[] ReadSmartThresholds();
+    AtaSmart.SMART_THRESHOLD[] ReadSmartThresholds();
 
     bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision);
 }
