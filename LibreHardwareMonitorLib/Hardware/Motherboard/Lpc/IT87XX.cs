@@ -239,7 +239,7 @@ internal class IT87XX : ISuperIO
         _has16BitFanCounter = (chip != Chip.IT8705F || version >= 3) && (chip != Chip.IT8712F || version >= 8);
 
         // Disable any fans that aren't set with 16-bit fan counters
-        if (motherboard.Model == Model.Unknown && _has16BitFanCounter)
+        if (_has16BitFanCounter)
         {
             int modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER, out valid);
 
@@ -253,7 +253,16 @@ internal class IT87XX : ISuperIO
             }
 
             if (Fans.Length >= 6)
-                _fansDisabled[5] = (modes & (1 << 2)) == 0;
+            {
+                if (chip == Chip.IT8665E)
+                {
+                    modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER_ALT, out valid);
+                    if (valid)
+                        _fansDisabled[5] = (modes & (1 << 3)) == 0;
+                }
+                else
+                    _fansDisabled[5] = (modes & (1 << 2)) == 0;
+            }
         }
 
         // Set the number of GPIO sets
@@ -611,6 +620,7 @@ internal class IT87XX : ISuperIO
     private const byte DATA_REGISTER_OFFSET = 0x06;
     private const byte BANK_REGISTER = 0x06; // bit 5-6 define selected bank
     private const byte FAN_TACHOMETER_16BIT_REGISTER = 0x0C;
+    private const byte FAN_TACHOMETER_16BIT_REGISTER_ALT = 0x0B;
     private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
 
     private readonly byte[] ITE_VENDOR_IDS = { 0x90, 0x7F };
