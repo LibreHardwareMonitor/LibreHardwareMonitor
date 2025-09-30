@@ -4,8 +4,9 @@
 // All Rights Reserved.
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.System.Power;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 
@@ -14,7 +15,6 @@ namespace LibreHardwareMonitor.Hardware.Battery;
 internal sealed class Battery : Hardware
 {
     private readonly SafeFileHandle _batteryHandle;
-    private readonly Kernel32.BATTERY_INFORMATION _batteryInformation;
     private readonly uint _batteryTag;
     private readonly Sensor _chargeDischargeCurrent;
     private readonly Sensor _chargeDischargeRate;
@@ -32,7 +32,7 @@ internal sealed class Battery : Hardware
         string name,
         string manufacturer,
         SafeFileHandle batteryHandle,
-        Kernel32.BATTERY_INFORMATION batteryInfo,
+        BATTERY_INFORMATION batteryInfo,
         uint batteryTag,
         ISettings settings) :
         base(name, new Identifier("battery", $"{name.Replace(' ', '-')}_{batteryTag}"), settings)
@@ -42,29 +42,30 @@ internal sealed class Battery : Hardware
 
         _batteryTag = batteryTag;
         _batteryHandle = batteryHandle;
-        _batteryInformation = batteryInfo;
 
-        if (batteryInfo.Chemistry.SequenceEqual(new[] { 'P', 'b', 'A', 'c' }))
+        byte[] chemistry = batteryInfo.Chemistry.ToArray();
+
+        if ("PbAc"u8.SequenceEqual(chemistry))
         {
             Chemistry = BatteryChemistry.LeadAcid;
         }
-        else if (batteryInfo.Chemistry.SequenceEqual(new[] { 'L', 'I', 'O', 'N' }) || batteryInfo.Chemistry.SequenceEqual(new[] { 'L', 'i', '-', 'I' }))
+        else if ("LION"u8.SequenceEqual(chemistry) || "Li-I"u8.SequenceEqual(chemistry))
         {
             Chemistry = BatteryChemistry.LithiumIon;
         }
-        else if (batteryInfo.Chemistry.SequenceEqual(new[] { 'N', 'i', 'C', 'd' }))
+        else if ("NiCd"u8.SequenceEqual(chemistry))
         {
             Chemistry = BatteryChemistry.NickelCadmium;
         }
-        else if (batteryInfo.Chemistry.SequenceEqual(new[] { 'N', 'i', 'M', 'H' }))
+        else if ("NiMH"u8.SequenceEqual(chemistry))
         {
             Chemistry = BatteryChemistry.NickelMetalHydride;
         }
-        else if (batteryInfo.Chemistry.SequenceEqual(new[] { 'N', 'i', 'Z', 'n' }))
+        else if ("NiZn"u8.SequenceEqual(chemistry))
         {
             Chemistry = BatteryChemistry.NickelZinc;
         }
-        else if (batteryInfo.Chemistry.SequenceEqual(new[] { 'R', 'A', 'M', '\x00' }))
+        else if ("RAM"u8.SequenceEqual(chemistry))
         {
             Chemistry = BatteryChemistry.AlkalineManganese;
         }
@@ -133,19 +134,19 @@ internal sealed class Battery : Hardware
             DeactivateSensor(sensor);
     }
 
-    public override void Update()
+    public override unsafe void Update()
     {
-        Kernel32.BATTERY_WAIT_STATUS bws = default;
+        BATTERY_WAIT_STATUS bws = default;
         bws.BatteryTag = _batteryTag;
-        Kernel32.BATTERY_STATUS batteryStatus = default;
-        if (Kernel32.DeviceIoControl(_batteryHandle,
-                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_STATUS,
-                                     ref bws,
-                                     Marshal.SizeOf(bws),
-                                     ref batteryStatus,
-                                     Marshal.SizeOf(batteryStatus),
-                                     out _,
-                                     IntPtr.Zero))
+        BATTERY_STATUS batteryStatus = default;
+        if (PInvoke.DeviceIoControl(_batteryHandle,
+                                    PInvoke.IOCTL_BATTERY_QUERY_STATUS,
+                                    &bws,
+                                    (uint)sizeof(BATTERY_WAIT_STATUS),
+                                    &batteryStatus,
+                                    (uint)sizeof(BATTERY_STATUS),
+                                    null,
+                                    null))
         {
             if (batteryStatus.Capacity != Kernel32.BATTERY_UNKNOWN_CAPACITY)
                 _remainingCapacity.Value = batteryStatus.Capacity;
@@ -199,17 +200,17 @@ internal sealed class Battery : Hardware
         }
 
         uint estimatedRunTime = 0;
-        Kernel32.BATTERY_QUERY_INFORMATION bqi = default;
+        BATTERY_QUERY_INFORMATION bqi = default;
         bqi.BatteryTag = _batteryTag;
-        bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryEstimatedTime;
-        if (Kernel32.DeviceIoControl(_batteryHandle,
-                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                     ref bqi,
-                                     Marshal.SizeOf(bqi),
-                                     ref estimatedRunTime,
-                                     Marshal.SizeOf<uint>(),
-                                     out _,
-                                     IntPtr.Zero))
+        bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryEstimatedTime;
+        if (PInvoke.DeviceIoControl(_batteryHandle,
+                                     PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
+                                     &bqi,
+                                     (uint)sizeof(BATTERY_QUERY_INFORMATION),
+                                     &estimatedRunTime,
+                                     sizeof(uint),
+                                     null,
+                                     null))
         {
             if (estimatedRunTime != Kernel32.BATTERY_UNKNOWN_TIME)
                 _remainingTime.Value = estimatedRunTime;
@@ -222,15 +223,15 @@ internal sealed class Battery : Hardware
         }
 
         uint temperature = 0;
-        bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryTemperature;
-        if (Kernel32.DeviceIoControl(_batteryHandle,
-                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                     ref bqi,
-                                     Marshal.SizeOf(bqi),
-                                     ref temperature,
-                                     Marshal.SizeOf<uint>(),
-                                     out _,
-                                     IntPtr.Zero))
+        bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryTemperature;
+        if (PInvoke.DeviceIoControl(_batteryHandle,
+                                    PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
+                                    &bqi,
+                                    (uint)sizeof(BATTERY_QUERY_INFORMATION),
+                                    &temperature,
+                                    sizeof(uint),
+                                    null,
+                                    null))
         {
             _temperature.Value = (temperature / 10f) - 273.15f;
         }

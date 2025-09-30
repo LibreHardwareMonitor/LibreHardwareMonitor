@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32.Storage.Nvme;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -116,7 +117,7 @@ public class NVMeSmart : IDisposable
             return null;
 
         bool valid = false;
-        var data = new Kernel32.NVME_IDENTIFY_CONTROLLER_DATA();
+        var data = new NVME_IDENTIFY_CONTROLLER_DATA();
         if (NVMeDrive != null)
             valid = NVMeDrive.IdentifyController(_handle, out data);
 
@@ -132,7 +133,7 @@ public class NVMeSmart : IDisposable
             return null;
 
         bool valid = false;
-        var data = new Kernel32.NVME_HEALTH_INFO_LOG();
+        var data = new NVME_HEALTH_INFO_LOG();
         if (NVMeDrive != null)
             valid = NVMeDrive.HealthInfoLog(_handle, out data);
 
@@ -144,17 +145,17 @@ public class NVMeSmart : IDisposable
 
     private class NVMeInfo : Storage.NVMeInfo
     {
-        public NVMeInfo(int index, Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
+        public NVMeInfo(int index, NVME_IDENTIFY_CONTROLLER_DATA data)
         {
             Index = index;
             VID = data.VID;
             SSVID = data.SSVID;
-            Serial = GetString(data.SN);
-            Model = GetString(data.MN);
-            Revision = GetString(data.FR);
-            IEEE = data.IEEE;
-            TotalCapacity = BitConverter.ToUInt64(data.TNVMCAP, 0); // 128bit little endian
-            UnallocatedCapacity = BitConverter.ToUInt64(data.UNVMCAP, 0);
+            Serial = GetString(data.SN.ToArray());
+            Model = GetString(data.MN.ToArray());
+            Revision = GetString(data.FR.ToArray());
+            IEEE = data.IEEE.ToArray();
+            TotalCapacity = BitConverter.ToUInt64(data.TNVMCAP.ToArray(), 0); // 128bit little endian
+            UnallocatedCapacity = BitConverter.ToUInt64(data.UNVMCAP.ToArray(), 0);
             ControllerId = data.CNTLID;
             NumberNamespaces = data.NN;
         }
@@ -162,29 +163,34 @@ public class NVMeSmart : IDisposable
 
     private class NVMeHealthInfo : Storage.NVMeHealthInfo
     {
-        public NVMeHealthInfo(Kernel32.NVME_HEALTH_INFO_LOG log)
+        public NVMeHealthInfo(NVME_HEALTH_INFO_LOG log)
         {
-            CriticalWarning = (Kernel32.NVME_CRITICAL_WARNING)log.CriticalWarning;
-            Temperature = KelvinToCelsius(log.CompositeTemp);
+            Temperature = KelvinToCelsius(log.Temperature.ToArray());
             AvailableSpare = log.AvailableSpare;
             AvailableSpareThreshold = log.AvailableSpareThreshold;
             PercentageUsed = log.PercentageUsed;
-            DataUnitRead = BitConverter.ToUInt64(log.DataUnitRead, 0);
-            DataUnitWritten = BitConverter.ToUInt64(log.DataUnitWritten, 0);
-            HostReadCommands = BitConverter.ToUInt64(log.HostReadCommands, 0);
-            HostWriteCommands = BitConverter.ToUInt64(log.HostWriteCommands, 0);
-            ControllerBusyTime = BitConverter.ToUInt64(log.ControllerBusyTime, 0);
-            PowerCycle = BitConverter.ToUInt64(log.PowerCycles, 0);
-            PowerOnHours = BitConverter.ToUInt64(log.PowerOnHours, 0);
-            UnsafeShutdowns = BitConverter.ToUInt64(log.UnsafeShutdowns, 0);
-            MediaErrors = BitConverter.ToUInt64(log.MediaAndDataIntegrityErrors, 0);
-            ErrorInfoLogEntryCount = BitConverter.ToUInt64(log.NumberErrorInformationLogEntries, 0);
+            DataUnitRead = BitConverter.ToUInt64(log.DataUnitRead.ToArray(), 0);
+            DataUnitWritten = BitConverter.ToUInt64(log.DataUnitWritten.ToArray(), 0);
+            HostReadCommands = BitConverter.ToUInt64(log.HostReadCommands.ToArray(), 0);
+            HostWriteCommands = BitConverter.ToUInt64(log.HostWrittenCommands.ToArray(), 0);
+            ControllerBusyTime = BitConverter.ToUInt64(log.ControllerBusyTime.ToArray(), 0);
+            PowerCycle = BitConverter.ToUInt64(log.PowerCycle.ToArray(), 0);
+            PowerOnHours = BitConverter.ToUInt64(log.PowerOnHours.ToArray(), 0);
+            UnsafeShutdowns = BitConverter.ToUInt64(log.UnsafeShutdowns.ToArray(), 0);
+            MediaErrors = BitConverter.ToUInt64(log.MediaErrors.ToArray(), 0);
+            ErrorInfoLogEntryCount = BitConverter.ToUInt64(log.ErrorInfoLogEntryCount.ToArray(), 0);
             WarningCompositeTemperatureTime = log.WarningCompositeTemperatureTime;
             CriticalCompositeTemperatureTime = log.CriticalCompositeTemperatureTime;
 
-            TemperatureSensors = new short[log.TemperatureSensor.Length];
-            for (int i = 0; i < TemperatureSensors.Length; i++)
-                TemperatureSensors[i] = KelvinToCelsius(log.TemperatureSensor[i]);
+            TemperatureSensors = new short[8];
+            TemperatureSensors[0] = KelvinToCelsius(log.TemperatureSensor1);
+            TemperatureSensors[1] = KelvinToCelsius(log.TemperatureSensor2);
+            TemperatureSensors[2] = KelvinToCelsius(log.TemperatureSensor3);
+            TemperatureSensors[3] = KelvinToCelsius(log.TemperatureSensor4);
+            TemperatureSensors[4] = KelvinToCelsius(log.TemperatureSensor5);
+            TemperatureSensors[5] = KelvinToCelsius(log.TemperatureSensor6);
+            TemperatureSensors[6] = KelvinToCelsius(log.TemperatureSensor7);
+            TemperatureSensors[7] = KelvinToCelsius(log.TemperatureSensor8);
         }
     }
 }

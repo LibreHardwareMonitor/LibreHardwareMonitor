@@ -113,26 +113,6 @@ public sealed class NVMeGeneric : AbstractStorage
         if (health == null)
             return;
 
-        if (health.CriticalWarning == Kernel32.NVME_CRITICAL_WARNING.None)
-            r.AppendLine("Critical Warning: -");
-        else
-        {
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.AvailableSpaceLow) != 0)
-                r.AppendLine("Critical Warning: the available spare space has fallen below the threshold.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.TemperatureThreshold) != 0)
-                r.AppendLine("Critical Warning: a temperature is above an over temperature threshold or below an under temperature threshold.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.ReliabilityDegraded) != 0)
-                r.AppendLine("Critical Warning: the device reliability has been degraded due to significant media related errors or any internal error that degrades device reliability.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.ReadOnly) != 0)
-                r.AppendLine("Critical Warning: the media has been placed in read only mode.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.VolatileMemoryBackupDeviceFailed) != 0)
-                r.AppendLine("Critical Warning: the volatile memory backup device has failed.");
-        }
-
         r.AppendLine("Temperature: " + health.Temperature + " Celsius");
         r.AppendLine("Available Spare: " + health.AvailableSpare + "%");
         r.AppendLine("Available Spare Threshold: " + health.AvailableSpareThreshold + "%");

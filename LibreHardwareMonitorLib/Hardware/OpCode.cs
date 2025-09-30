@@ -7,6 +7,8 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.System.Memory;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -205,7 +207,7 @@ internal static class OpCode
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate ulong RdtscDelegate();
 
-    public static void Open()
+    public static unsafe void Open()
     {
         byte[] rdTscCode;
         byte[] cpuidCode;
@@ -227,7 +229,7 @@ internal static class OpCode
 #if NETFRAMEWORK
             Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
 #else
-                Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
+            Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
 #endif
 
             Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
@@ -249,10 +251,10 @@ internal static class OpCode
         }
         else
         {
-            _codeBuffer = Interop.Kernel32.VirtualAlloc(IntPtr.Zero,
-                                                        (UIntPtr)_size,
-                                                        Interop.Kernel32.MEM.MEM_COMMIT | Interop.Kernel32.MEM.MEM_RESERVE,
-                                                        Interop.Kernel32.PAGE.PAGE_EXECUTE_READWRITE);
+            _codeBuffer = (IntPtr)PInvoke.VirtualAlloc((void*)0,
+                                                       (UIntPtr)_size,
+                                                       VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE,
+                                                       PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
         }
 
         Marshal.Copy(rdTscCode, 0, _codeBuffer, rdTscCode.Length);
@@ -262,7 +264,7 @@ internal static class OpCode
         CpuId = Marshal.GetDelegateForFunctionPointer(cpuidAddress, typeof(CpuidDelegate)) as CpuidDelegate;
     }
 
-    public static void Close()
+    public static unsafe void Close()
     {
         Rdtsc = null;
         CpuId = null;
@@ -281,7 +283,7 @@ internal static class OpCode
         }
         else
         {
-            Interop.Kernel32.VirtualFree(_codeBuffer, UIntPtr.Zero, Interop.Kernel32.MEM.MEM_RELEASE);
+            PInvoke.VirtualFree((void*)_codeBuffer, UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
         }
     }
 }
