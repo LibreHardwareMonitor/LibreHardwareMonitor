@@ -4,14 +4,14 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Interop;
+using Windows.Win32.Storage.FileSystem;
 using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
 internal abstract class StorageInfo
 {
-    public Kernel32.STORAGE_BUS_TYPE BusType { get; protected set; }
+    public STORAGE_BUS_TYPE BusType { get; protected set; }
 
     public string DeviceId { get; set; }
 

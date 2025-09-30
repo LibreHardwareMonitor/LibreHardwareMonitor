@@ -6,6 +6,8 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Windows.Win32.Storage.IscsiDisc;
+using Windows.Win32.Storage.Nvme;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 
@@ -22,23 +24,22 @@ internal class NVMeSamsung : INVMeDrive
         return NVMeWindows.IdentifyDevice(storageInfo);
     }
 
-    public bool IdentifyController(SafeHandle hDevice, out Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
+    public unsafe bool IdentifyController(SafeHandle hDevice, out NVME_IDENTIFY_CONTROLLER_DATA data)
     {
-        data = Kernel32.CreateStruct<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>();
+        data = new NVME_IDENTIFY_CONTROLLER_DATA();
         if (hDevice?.IsInvalid != false)
             return false;
 
-        bool result = false;
-        Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
+        Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = new();
 
-        buffers.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
+        buffers.Spt.Length = (ushort)sizeof(SCSI_PASS_THROUGH);
         buffers.Spt.PathId = 0;
         buffers.Spt.TargetId = 0;
         buffers.Spt.Lun = 0;
         buffers.Spt.SenseInfoLength = 24;
-        buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+        buffers.Spt.DataTransferLength = Kernel32.IOCTL_BUFFER_SIZE;
         buffers.Spt.TimeOutValue = 2;
-        buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+        buffers.Spt.DataBufferOffset = new UIntPtr((ulong)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf)));
         buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
 
         buffers.Spt.CdbLength = 16;
@@ -56,18 +57,20 @@ internal class NVMeSamsung : INVMeDrive
         bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, IntPtr.Zero);
         Marshal.FreeHGlobal(buffer);
 
+        bool result = false;
+
         if (validTransfer)
         {
             //read data from samsung SSD
-            buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
-            buffers.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
+            buffers = new Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS();
+            buffers.Spt.Length = (ushort)sizeof(SCSI_PASS_THROUGH);
             buffers.Spt.PathId = 0;
             buffers.Spt.TargetId = 0;
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
-            buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+            buffers.Spt.DataTransferLength = Kernel32.IOCTL_BUFFER_SIZE;
             buffers.Spt.TimeOutValue = 2;
-            buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+            buffers.Spt.DataBufferOffset = new UIntPtr((ulong)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf)));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
 
             buffers.Spt.CdbLength = 16;
@@ -85,37 +88,37 @@ internal class NVMeSamsung : INVMeDrive
 
             buffers = Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
 
-            if (validTransfer && buffers.DataBuf.Any(x => x != 0))
+            if (validTransfer && !IsAllZero(buffers.DataBuf, Kernel32.IOCTL_BUFFER_SIZE))
             {
                 IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                 IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                data = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
+                data = Marshal.PtrToStructure<NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
                 result = true;
-            }
 
-            Marshal.FreeHGlobal(buffer);
+                Marshal.FreeHGlobal(buffer);
+            }
         }
 
         return result;
     }
 
-    public bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVME_HEALTH_INFO_LOG data)
+    public unsafe bool HealthInfoLog(SafeHandle hDevice, out NVME_HEALTH_INFO_LOG data)
     {
-        data = Kernel32.CreateStruct<Kernel32.NVME_HEALTH_INFO_LOG>();
+        data = new NVME_HEALTH_INFO_LOG();
         if (hDevice?.IsInvalid != false)
             return false;
 
         bool result = false;
-        Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
+        Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = new Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS();
 
-        buffers.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
+        buffers.Spt.Length = (ushort)sizeof(SCSI_PASS_THROUGH);
         buffers.Spt.PathId = 0;
         buffers.Spt.TargetId = 0;
         buffers.Spt.Lun = 0;
         buffers.Spt.SenseInfoLength = 24;
-        buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+        buffers.Spt.DataTransferLength = Kernel32.IOCTL_BUFFER_SIZE;
         buffers.Spt.TimeOutValue = 2;
-        buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+        buffers.Spt.DataBufferOffset = new UIntPtr((ulong)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf)));
         buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
         buffers.Spt.CdbLength = 16;
         buffers.Spt.Cdb[0] = 0xB5; // SECURITY PROTOCOL IN
@@ -139,15 +142,15 @@ internal class NVMeSamsung : INVMeDrive
         if (validTransfer)
         {
             //read data from samsung SSD
-            buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
-            buffers.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
+            buffers = new Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS();
+            buffers.Spt.Length = (ushort)sizeof(SCSI_PASS_THROUGH);
             buffers.Spt.PathId = 0;
             buffers.Spt.TargetId = 0;
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
-            buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+            buffers.Spt.DataTransferLength = Kernel32.IOCTL_BUFFER_SIZE;
             buffers.Spt.TimeOutValue = 2;
-            buffers.Spt.DataBufferOffset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+            buffers.Spt.DataBufferOffset = new UIntPtr((ulong)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf)));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
             buffers.Spt.CdbLength = 16;
             buffers.Spt.Cdb[0] = 0xA2; // SECURITY PROTOCOL IN
@@ -166,7 +169,7 @@ internal class NVMeSamsung : INVMeDrive
             {
                 IntPtr offset = Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
                 IntPtr newPtr = IntPtr.Add(buffer, offset.ToInt32());
-                data = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
+                data = Marshal.PtrToStructure<NVME_HEALTH_INFO_LOG>(newPtr);
                 Marshal.FreeHGlobal(buffer);
                 result = true;
             }
@@ -179,22 +182,22 @@ internal class NVMeSamsung : INVMeDrive
         return result;
     }
 
-    public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
+    public static unsafe SafeHandle IdentifyDevice(StorageInfo storageInfo)
     {
         SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
         if (handle?.IsInvalid != false)
             return null;
 
-        Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
+        Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS buffers = new();
 
-        buffers.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
+        buffers.Spt.Length = (ushort)sizeof(SCSI_PASS_THROUGH);
         buffers.Spt.PathId = 0;
         buffers.Spt.TargetId = 0;
         buffers.Spt.Lun = 0;
         buffers.Spt.SenseInfoLength = 24;
-        buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+        buffers.Spt.DataTransferLength = Kernel32.IOCTL_BUFFER_SIZE;
         buffers.Spt.TimeOutValue = 2;
-        buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+        buffers.Spt.DataBufferOffset = new UIntPtr((ulong)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf)));
         buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
         buffers.Spt.CdbLength = 16;
         buffers.Spt.Cdb[0] = 0xB5; // SECURITY PROTOCOL IN
@@ -214,15 +217,15 @@ internal class NVMeSamsung : INVMeDrive
         if (validTransfer)
         {
             //read data from samsung SSD
-            buffers = Kernel32.CreateStruct<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>();
-            buffers.Spt.Length = (ushort)Marshal.SizeOf<Kernel32.SCSI_PASS_THROUGH>();
+            buffers = new Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS();
+            buffers.Spt.Length = (ushort)sizeof(SCSI_PASS_THROUGH);
             buffers.Spt.PathId = 0;
             buffers.Spt.TargetId = 0;
             buffers.Spt.Lun = 0;
             buffers.Spt.SenseInfoLength = 24;
-            buffers.Spt.DataTransferLength = (uint)buffers.DataBuf.Length;
+            buffers.Spt.DataTransferLength = Kernel32.IOCTL_BUFFER_SIZE;
             buffers.Spt.TimeOutValue = 2;
-            buffers.Spt.DataBufferOffset = Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf));
+            buffers.Spt.DataBufferOffset = new UIntPtr((ulong)Marshal.OffsetOf<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.DataBuf)));
             buffers.Spt.SenseInfoOffset = (uint)Marshal.OffsetOf(typeof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS), nameof(Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS.SenseBuf));
             buffers.Spt.CdbLength = 16;
             buffers.Spt.Cdb[0] = 0xA2; // SECURITY PROTOCOL IN
@@ -241,7 +244,7 @@ internal class NVMeSamsung : INVMeDrive
             {
                 Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS result = Marshal.PtrToStructure<Kernel32.SCSI_PASS_THROUGH_WITH_BUFFERS>(buffer);
 
-                if (result.DataBuf.All(x => x == 0))
+                if (IsAllZero(result.DataBuf, Kernel32.IOCTL_BUFFER_SIZE))
                 {
                     handle.Close();
                     handle = null;
@@ -257,5 +260,15 @@ internal class NVMeSamsung : INVMeDrive
         }
 
         return handle;
+    }
+
+    private static unsafe bool IsAllZero(byte* bytes, int length)
+    {
+        for (int i = 0; i < length; i++)
+        {
+            if (bytes[i] != 0)
+                return false;
+        }
+        return true;
     }
 }

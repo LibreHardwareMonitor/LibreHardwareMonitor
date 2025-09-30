@@ -7,24 +7,26 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32;
+using Windows.Win32.System.SystemInformation;
 
 namespace LibreHardwareMonitor.Hardware;
 
 internal static class FirmwareTable
 {
-    public static byte[] GetTable(Interop.Kernel32.Provider provider, string table)
+    public static byte[] GetTable(FIRMWARE_TABLE_PROVIDER provider, string table)
     {
-        int id = table[3] << 24 | table[2] << 16 | table[1] << 8 | table[0];
+        uint id = (uint)((table[3] << 24) | (table[2] << 16) | (table[1] << 8) | table[0]);
         return GetTable(provider, id);
     }
 
-    public static byte[] GetTable(Interop.Kernel32.Provider provider, int table)
+    public static byte[] GetTable(FIRMWARE_TABLE_PROVIDER provider, uint table)
     {
-        int size;
+        uint size;
 
         try
         {
-            size = Interop.Kernel32.GetSystemFirmwareTable(provider, table, IntPtr.Zero, 0);
+            size = PInvoke.GetSystemFirmwareTable(provider, table, null);
         }
         catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
         {
@@ -34,62 +36,36 @@ internal static class FirmwareTable
         if (size <= 0)
             return null;
 
-        IntPtr allocatedBuffer = IntPtr.Zero;
+        byte[] buffer = new byte[size];
 
-        try
-        {
-            allocatedBuffer = Marshal.AllocHGlobal(size);
+        PInvoke.GetSystemFirmwareTable(provider, table, buffer.AsSpan());
+        if (Marshal.GetLastWin32Error() != 0)
+            return null;
 
-            Interop.Kernel32.GetSystemFirmwareTable(provider, table, allocatedBuffer, size);
-            if (Marshal.GetLastWin32Error() != 0)
-                return null;
-
-            byte[] buffer = new byte[size];
-            Marshal.Copy(allocatedBuffer, buffer, 0, size);
-            return buffer;
-        }
-        finally
-        {
-            if (allocatedBuffer != IntPtr.Zero)
-                Marshal.FreeHGlobal(allocatedBuffer);
-        }
+        return buffer;
     }
 
-    public static string[] EnumerateTables(Interop.Kernel32.Provider provider)
+    public static unsafe string[] EnumerateTables(FIRMWARE_TABLE_PROVIDER provider)
     {
-        int size;
+        uint size;
 
         try
         {
-            size = Interop.Kernel32.EnumSystemFirmwareTables(provider, IntPtr.Zero, 0);
+            size = PInvoke.EnumSystemFirmwareTables(provider, (byte*)IntPtr.Zero, 0);
         }
         catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
         {
             return null;
         }
 
-        IntPtr allocatedBuffer = IntPtr.Zero;
+        byte[] buffer = new byte[size];
+        PInvoke.EnumSystemFirmwareTables(provider, buffer.AsSpan());
 
-        try
-        {
-            allocatedBuffer = Marshal.AllocHGlobal(size);
+        string[] result = new string[size / 4];
 
-            Interop.Kernel32.EnumSystemFirmwareTables(provider, allocatedBuffer, size);
+        for (int i = 0; i < result.Length; i++)
+            result[i] = Encoding.ASCII.GetString(buffer, 4 * i, 4);
 
-            byte[] buffer = new byte[size];
-            Marshal.Copy(allocatedBuffer, buffer, 0, size);
-
-            string[] result = new string[size / 4];
-
-            for (int i = 0; i < result.Length; i++)
-                result[i] = Encoding.ASCII.GetString(buffer, 4 * i, 4);
-
-            return result;
-        }
-        finally
-        {
-            if (allocatedBuffer != IntPtr.Zero)
-                Marshal.FreeHGlobal(allocatedBuffer);
-        }
+        return result;
     }
 }

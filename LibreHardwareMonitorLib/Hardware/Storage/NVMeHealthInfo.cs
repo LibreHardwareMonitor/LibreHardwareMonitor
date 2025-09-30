@@ -3,6 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using Windows.Win32.Storage.Nvme;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -16,8 +17,6 @@ public abstract class NVMeHealthInfo
     public ulong ControllerBusyTime { get; protected set; }
 
     public uint CriticalCompositeTemperatureTime { get; protected set; }
-
-    public Kernel32.NVME_CRITICAL_WARNING CriticalWarning { get; protected set; }
 
     public ulong DataUnitRead { get; protected set; }
 
