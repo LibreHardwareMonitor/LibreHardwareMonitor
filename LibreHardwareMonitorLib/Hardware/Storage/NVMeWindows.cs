@@ -4,11 +4,14 @@
 // All Rights Reserved.
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
-using Windows.Win32.Storage.Nvme;
-using Windows.Win32.System.Ioctl;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
+using Windows.Win32;
+using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.Storage.Nvme;
+using Windows.Win32.System.Ioctl;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -30,7 +33,7 @@ internal class NVMeWindows : INVMeDrive
 
         int cb = sizeof(STORAGE_PROPERTY_QUERY) + sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA) + sizeof(NVME_IDENTIFY_CONTROLLER_DATA);
         IntPtr ptr = Marshal.AllocHGlobal(cb);
-        Kernel32.RtlZeroMemory(ptr, cb);
+        Marshal.Copy(new byte[cb], 0, ptr, cb); // Zero memory.
 
         STORAGE_PROPERTY_QUERY* query = (STORAGE_PROPERTY_QUERY*)ptr;
         query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
@@ -39,11 +42,11 @@ internal class NVMeWindows : INVMeDrive
         STORAGE_PROTOCOL_SPECIFIC_DATA* protocolData = (STORAGE_PROTOCOL_SPECIFIC_DATA*)(&query->AdditionalParameters);
         protocolData->ProtocolType = STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
         protocolData->DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
-        protocolData->ProtocolDataRequestValue = (uint)Kernel32.STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE.NVMeIdentifyCnsController;
+        protocolData->ProtocolDataRequestValue = 1;
         protocolData->ProtocolDataOffset = (uint)sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA);
         protocolData->ProtocolDataLength = (uint)sizeof(NVME_IDENTIFY_CONTROLLER_DATA);
 
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ptr, cb, ptr, cb, out _, IntPtr.Zero);
+        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, (void*)ptr, (uint)cb, (void*)ptr, (uint)cb, null, null);
         if (validTransfer)
         {
             var dataDescriptor = (STORAGE_PROTOCOL_DATA_DESCRIPTOR*)ptr;
@@ -70,7 +73,7 @@ internal class NVMeWindows : INVMeDrive
 
         int cb = sizeof(STORAGE_PROPERTY_QUERY) + sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA) + sizeof(NVME_HEALTH_INFO_LOG);
         IntPtr ptr = Marshal.AllocHGlobal(cb);
-        Kernel32.RtlZeroMemory(ptr, cb);
+        Marshal.Copy(new byte[cb], 0, ptr, cb); // Zero memory.
 
         STORAGE_PROPERTY_QUERY* query = (STORAGE_PROPERTY_QUERY*)ptr;
         query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
@@ -83,7 +86,7 @@ internal class NVMeWindows : INVMeDrive
         protocolData->ProtocolDataOffset = (uint)sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA);
         protocolData->ProtocolDataLength = (uint)sizeof(NVME_HEALTH_INFO_LOG);
 
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ptr, cb, ptr, cb, out _, IntPtr.Zero);
+        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, (void*)ptr, (uint)cb, (void*)ptr, (uint)cb, null, null);
         if (validTransfer)
         {
             var dataDescriptor = (STORAGE_PROTOCOL_DATA_DESCRIPTOR*)ptr;
@@ -103,7 +106,13 @@ internal class NVMeWindows : INVMeDrive
 
     public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
     {
-        SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
+        SafeFileHandle handle = PInvoke.CreateFile(storageInfo.DeviceId,
+                                                   (uint)FileAccess.ReadWrite,
+                                                   FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                                   null,
+                                                   FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                                   FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+                                                   null);
         if (handle?.IsInvalid != false)
             return null;
 

@@ -5,11 +5,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Management;
 using System.Runtime.InteropServices;
 using Windows.Win32;
+using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
-using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -18,7 +19,13 @@ internal static class WindowsStorage
 {
     public static unsafe Storage.StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
     {
-        using SafeFileHandle handle = Kernel32.OpenDevice(deviceId);
+        using SafeFileHandle handle = PInvoke.CreateFile(deviceId,
+                                                         (uint)FileAccess.ReadWrite,
+                                                         FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                                         null,
+                                                         FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                                         FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+                                                         null);
 
         if (handle?.IsInvalid != false)
             return null;

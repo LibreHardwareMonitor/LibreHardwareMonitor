@@ -11,6 +11,7 @@ using System.Text;
 using Windows.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Power;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
@@ -74,7 +75,7 @@ internal class BatteryGroup : IGroup
                         {
                             string devicePath = pData->DevicePath.ToString();
 
-                            SafeFileHandle battery = Kernel32.CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+                            SafeFileHandle battery = PInvoke.CreateFile(devicePath, (uint)FileAccess.ReadWrite, FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL, null);
                             if (!battery.IsInvalid)
                             {
                                 BATTERY_QUERY_INFORMATION bqi = default;

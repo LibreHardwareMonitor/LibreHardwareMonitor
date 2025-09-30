@@ -4,7 +4,9 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -93,10 +95,12 @@ public class SmartAttribute
 
     public SensorType? SensorType { get; }
 
-    internal float ConvertValue(Kernel32.SMART_ATTRIBUTE value, IReadOnlyList<IParameter> parameters)
+    internal unsafe float ConvertValue(AtaSmart.SMART_ATTRIBUTE value, IReadOnlyList<IParameter> parameters)
     {
         if (_rawValueConversion == null)
             return value.CurrentValue;
-        return _rawValueConversion(value.RawValue, value.CurrentValue, parameters);
+
+        Span<byte> rawValue = new(value.RawValue, 6);
+        return _rawValueConversion(rawValue.ToArray(), value.CurrentValue, parameters);
     }
 }

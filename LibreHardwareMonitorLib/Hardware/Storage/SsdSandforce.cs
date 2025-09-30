@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Interop;
 
@@ -50,17 +51,19 @@ internal class SsdSandforce : AtaStorage
         _writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
     }
 
-    protected override void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values)
+    protected override unsafe void UpdateAdditionalSensors(AtaSmart.SMART_ATTRIBUTE[] values)
     {
         float? controllerWritesToNand = null;
         float? hostWritesToController = null;
-        foreach (Kernel32.SMART_ATTRIBUTE value in values)
+        foreach (AtaSmart.SMART_ATTRIBUTE value in values)
         {
+            byte[] rawValue = new Span<byte>(value.RawValue, 6).ToArray();
+
             if (value.Id == 0xE9)
-                controllerWritesToNand = RawToInt(value.RawValue, value.CurrentValue, null);
+                controllerWritesToNand = RawToInt(rawValue, value.CurrentValue, null);
 
             if (value.Id == 0xEA)
-                hostWritesToController = RawToInt(value.RawValue, value.CurrentValue, null);
+                hostWritesToController = RawToInt(rawValue, value.CurrentValue, null);
         }
 
         if (controllerWritesToNand.HasValue && hostWritesToController.HasValue)

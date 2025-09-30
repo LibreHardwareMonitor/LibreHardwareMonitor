@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Interop;
 
@@ -82,24 +83,26 @@ internal class SsdMicron : AtaStorage
     }
 
     /// <inheritdoc />
-    protected override void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values)
+    protected override unsafe void UpdateAdditionalSensors(AtaSmart.SMART_ATTRIBUTE[] values)
     {
         float? hostProgramPagesCount = null;
         float? ftlProgramPagesCount = null;
 
-        foreach (Kernel32.SMART_ATTRIBUTE value in values)
+        foreach (AtaSmart.SMART_ATTRIBUTE value in values)
         {
+            byte[] rawValue = new Span<byte>(value.RawValue, 6).ToArray();
+
             if (value.Id == 0xF7)
-                hostProgramPagesCount = RawToInt(value.RawValue, value.CurrentValue, null);
+                hostProgramPagesCount = RawToInt(rawValue, value.CurrentValue, null);
 
             if (value.Id == 0xF8)
-                ftlProgramPagesCount = RawToInt(value.RawValue, value.CurrentValue, null);
+                ftlProgramPagesCount = RawToInt(rawValue, value.CurrentValue, null);
 
             if (value.Id == 0xC2)
             {
-                _temperature.Value = value.RawValue[0] + _temperature.Parameters[0].Value;
+                _temperature.Value = rawValue[0] + _temperature.Parameters[0].Value;
 
-                if (value.RawValue[0] != 0)
+                if (rawValue[0] != 0)
                     ActivateSensor(_temperature);
             }
         }

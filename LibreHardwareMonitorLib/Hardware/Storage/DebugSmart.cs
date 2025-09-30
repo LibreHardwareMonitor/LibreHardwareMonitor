@@ -13,7 +13,8 @@ namespace LibreHardwareMonitor.Hardware.Storage
 {
     internal class DebugSmart : ISmart
     {
-        private readonly Drive[] _drives = {
+        private readonly Drive[] _drives =
+        [
             new("KINGSTON SNV425S264GB", null, 16,
                 @" 01 000000000000 100 100      
                 02 000000000000 100 100      
@@ -312,7 +313,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 C7 020000000000 99  99  0  
                 EB 690000000000 99  99  0  
                 F1 A56AA1F60200 99  99  0")
-        };
+        ];
 
         private int _driveNumber;
 
@@ -336,14 +337,14 @@ namespace LibreHardwareMonitor.Hardware.Storage
             return true;
         }
 
-        public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
+        public AtaSmart.SMART_ATTRIBUTE[] ReadSmartData()
         {
             if (_driveNumber < 0)
                 throw new ObjectDisposedException(nameof(DebugSmart));
             return _drives[_driveNumber].DriveAttributeValues;
         }
 
-        public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
+        public AtaSmart.SMART_THRESHOLD[] ReadSmartThresholds()
         {
             if (_driveNumber < 0)
                 throw new ObjectDisposedException(nameof(DebugSmart));
@@ -372,23 +373,23 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         private class Drive
         {
-            public Drive(string name, string firmware, int idBase, string value)
+            public unsafe Drive(string name, string firmware, int idBase, string value)
             {
                 Name = name;
                 FirmwareVersion = firmware;
 
-                string[] lines = value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                DriveAttributeValues = new Kernel32.SMART_ATTRIBUTE[lines.Length];
-                var thresholds = new System.Collections.Generic.List<Kernel32.SMART_THRESHOLD>();
+                string[] lines = value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+                DriveAttributeValues = new AtaSmart.SMART_ATTRIBUTE[lines.Length];
+                var thresholds = new System.Collections.Generic.List<AtaSmart.SMART_THRESHOLD>();
 
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    string[] array = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] array = lines[i].Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
                     if (array.Length is not 4 and not 5)
                         throw new Exception();
 
-                    var v = new Kernel32.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
+                    var v = new AtaSmart.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase) };
 
                     for (int j = 0; j < 6; j++)
                     {
@@ -402,7 +403,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
                     if (array.Length == 5)
                     {
-                        var t = new Kernel32.SMART_THRESHOLD { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
+                        var t = new AtaSmart.SMART_THRESHOLD { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
                         thresholds.Add(t);
                     }
                 }
@@ -410,9 +411,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
                 DriveThresholdValues = thresholds.ToArray();
             }
 
-            public Kernel32.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
+            public AtaSmart.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
 
-            public Kernel32.SMART_THRESHOLD[] DriveThresholdValues { get; }
+            public AtaSmart.SMART_THRESHOLD[] DriveThresholdValues { get; }
 
             public string FirmwareVersion { get; }
 

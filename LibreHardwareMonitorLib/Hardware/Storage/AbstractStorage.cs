@@ -85,7 +85,13 @@ public abstract class AbstractStorage : Hardware
 
         info.DiskSize = diskSize;
         info.DeviceId = deviceId;
-        info.Handle = Kernel32.OpenDevice(deviceId);
+        info.Handle = PInvoke.CreateFile(deviceId,
+                                         (uint)FileAccess.ReadWrite,
+                                         FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                         null,
+                                         FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                         FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+                                         null);
         info.Scsi = $@"\\.\SCSI{scsiPort}:";
 
         //fallback, when it is not possible to read out with the nvme implementation,
