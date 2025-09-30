@@ -7,33 +7,11 @@ namespace LibreHardwareMonitor;
 
 internal sealed class RAMSPDToolkitDriver : IPawnIODriver
 {
-    internal class PawnIOModule : IPawnIOModule, IDisposable
-    {
-        public PawnIOModule(PawnIo.PawnIo pawnIO)
-        {
-            _pawnIO = pawnIO;
-        }
-
-        PawnIo.PawnIo _pawnIO;
-
-        public int Execute(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
-            => _pawnIO.ExecuteHr(name, inBuffer, inSize, outBuffer, outSize, out returnSize);
-
-        public void Dispose()
-        {
-            if (_pawnIO != null)
-            {
-                _pawnIO.Close();
-                _pawnIO = null;
-            }
-        }
-    }
-
     const string I801ModuleFilename = "SmbusI801.bin";
-    const string Piix4ModuleFilename = "SmbusPIIX4.bin";
     const string Nct6793ModuleFilename = "SmbusNCT6793.bin";
+    const string Piix4ModuleFilename = "SmbusPIIX4.bin";
 
-    private List<PawnIOModule> _pawnIOModules = new();
+    private readonly List<PawnIOModule> _pawnIOModules = new();
 
     public bool IsOpen => true;
 
@@ -79,15 +57,35 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
             _pawnIOModules.Add(pawnIOModule);
             return pawnIOModule;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public void Unload()
     {
         _pawnIOModules.ForEach(p => p.Dispose());
         _pawnIOModules.Clear();
+    }
+
+    internal class PawnIOModule : IPawnIOModule, IDisposable
+    {
+        private PawnIo.PawnIo _pawnIO;
+
+        public PawnIOModule(PawnIo.PawnIo pawnIO)
+        {
+            _pawnIO = pawnIO;
+        }
+
+        public int Execute(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
+            => _pawnIO.ExecuteHr(name, inBuffer, inSize, outBuffer, outSize, out returnSize);
+
+        public void Dispose()
+        {
+            if (_pawnIO != null)
+            {
+                _pawnIO.Close();
+                _pawnIO = null;
+            }
+        }
     }
 }

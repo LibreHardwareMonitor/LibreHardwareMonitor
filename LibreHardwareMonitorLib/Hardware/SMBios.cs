@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Windows.Win32.System.SystemInformation;
 using LibreHardwareMonitor.Interop;
 
 // ReSharper disable CommentTypo
@@ -1188,10 +1189,10 @@ public class SMBios
             List<CacheInformation> processorCacheList = new();
             List<ProcessorInformation> processorInformationList = new();
 
-            string[] tables = FirmwareTable.EnumerateTables(Kernel32.Provider.RSMB);
+            string[] tables = FirmwareTable.EnumerateTables(FIRMWARE_TABLE_PROVIDER.RSMB);
             if (tables is { Length: > 0 })
             {
-                _raw = FirmwareTable.GetTable(Kernel32.Provider.RSMB, tables[0]);
+                _raw = FirmwareTable.GetTable(FIRMWARE_TABLE_PROVIDER.RSMB, tables[0]);
                 if (_raw == null || _raw.Length == 0)
                     return;
 

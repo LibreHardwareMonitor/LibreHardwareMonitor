@@ -13,6 +13,7 @@ public class RyzenSmu
             throw new TimeoutException("Timeout waiting for PCI bus mutex");
 
         uint version;
+
         try
         {
             long[] outArray = _pawnIO.Execute("ioctl_get_smu_version", [], 1);
@@ -34,8 +35,18 @@ public class RyzenSmu
 
     public long[] ReadPmTable(int size)
     {
-        long[] outArray = _pawnIO.Execute("ioctl_read_pm_table", [], size);
-        return outArray;
+        if (!Mutexes.WaitPciBus(5000))
+            throw new TimeoutException("Timeout waiting for PCI bus mutex");
+
+        try
+        {
+            long[] outArray = _pawnIO.Execute("ioctl_read_pm_table", [], size);
+            return outArray;
+        }
+        finally
+        {
+            Mutexes.ReleasePciBus();
+        }
     }
 
     public void UpdatePmTable()

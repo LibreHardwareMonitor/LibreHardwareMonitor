@@ -6,6 +6,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Windows.Win32;
 
 namespace LibreHardwareMonitor.Interop;
 
@@ -16,7 +17,7 @@ internal static class NvidiaML
 
     private static readonly object _syncRoot = new();
 
-    private static IntPtr _windowsDll;
+    private static FreeLibrarySafeHandle _windowsDll;
 
     private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
     private static WindowsNvmlGetHandleByPciBusIdDelegate _windowsNvmlDeviceGetHandleByPciBusId;
@@ -170,19 +171,19 @@ internal static class NvidiaML
                 // windows standard search order for applications. This will
                 // help installations that either have the library in
                 // %windir%/system32 or provide their own library
-                _windowsDll = Kernel32.LoadLibrary(WindowsDllName);
+                _windowsDll = PInvoke.LoadLibrary(WindowsDllName);
 
                 // If there is no dll in the path, then attempt to load it
                 // from program files
-                if (_windowsDll == IntPtr.Zero)
+                if (_windowsDll.IsInvalid)
                 {
                     string programFilesDirectory = Environment.ExpandEnvironmentVariables("%ProgramW6432%");
                     string dllPath = Path.Combine(programFilesDirectory, @"NVIDIA Corporation\NVSMI", WindowsDllName);
 
-                    _windowsDll = Kernel32.LoadLibrary(dllPath);
+                    _windowsDll = PInvoke.LoadLibrary(dllPath);
                 }
 
-                IsAvailable = (_windowsDll != IntPtr.Zero) && InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
+                IsAvailable = !_windowsDll.IsInvalid && InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
             }
 
             return IsAvailable;
@@ -196,7 +197,7 @@ internal static class NvidiaML
 
     private static bool InitialiseDelegates()
     {
-        IntPtr nvmlInit = Kernel32.GetProcAddress(_windowsDll, "nvmlInit_v2");
+        IntPtr nvmlInit = PInvoke.GetProcAddress(_windowsDll, "nvmlInit_v2");
 
         if (nvmlInit != IntPtr.Zero)
         {
@@ -204,50 +205,50 @@ internal static class NvidiaML
         }
         else
         {
-            nvmlInit = Kernel32.GetProcAddress(_windowsDll, "nvmlInit");
+            nvmlInit = PInvoke.GetProcAddress(_windowsDll, "nvmlInit");
             if (nvmlInit != IntPtr.Zero)
                 _windowsNvmlInit = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlInit, typeof(WindowsNvmlDelegate));
             else
                 return false;
         }
 
-        IntPtr nvmlShutdown = Kernel32.GetProcAddress(_windowsDll, "nvmlShutdown");
+        IntPtr nvmlShutdown = PInvoke.GetProcAddress(_windowsDll, "nvmlShutdown");
         if (nvmlShutdown != IntPtr.Zero)
             _windowsNvmlShutdown = (WindowsNvmlDelegate)Marshal.GetDelegateForFunctionPointer(nvmlShutdown, typeof(WindowsNvmlDelegate));
         else
             return false;
 
-        IntPtr nvmlGetHandle = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex_v2");
+        IntPtr nvmlGetHandle = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex_v2");
         if (nvmlGetHandle != IntPtr.Zero)
             _windowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
         else
         {
-            nvmlGetHandle = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex");
+            nvmlGetHandle = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByIndex");
             if (nvmlGetHandle != IntPtr.Zero)
                 _windowsNvmlDeviceGetHandleByIndex = (WindowsNvmlGetHandleDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandle, typeof(WindowsNvmlGetHandleDelegate));
             else
                 return false;
         }
 
-        IntPtr nvmlGetPowerUsage = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetPowerUsage");
+        IntPtr nvmlGetPowerUsage = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetPowerUsage");
         if (nvmlGetPowerUsage != IntPtr.Zero)
             _windowsNvmlDeviceGetPowerUsage = (WindowsNvmlGetPowerUsageDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPowerUsage, typeof(WindowsNvmlGetPowerUsageDelegate));
         else
             return false;
 
-        IntPtr nvmlGetPcieThroughput = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetPcieThroughput");
+        IntPtr nvmlGetPcieThroughput = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetPcieThroughput");
         if (nvmlGetPcieThroughput != IntPtr.Zero)
             _windowsNvmlDeviceGetPcieThroughputDelegate = (WindowsNvmlDeviceGetPcieThroughputDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPcieThroughput, typeof(WindowsNvmlDeviceGetPcieThroughputDelegate));
         else
             return false;
 
-        IntPtr nvmlGetHandlePciBus = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByPciBusId_v2");
+        IntPtr nvmlGetHandlePciBus = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetHandleByPciBusId_v2");
         if (nvmlGetHandlePciBus != IntPtr.Zero)
             _windowsNvmlDeviceGetHandleByPciBusId = (WindowsNvmlGetHandleByPciBusIdDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetHandlePciBus, typeof(WindowsNvmlGetHandleByPciBusIdDelegate));
         else
             return false;
 
-        IntPtr nvmlDeviceGetPciInfo = Kernel32.GetProcAddress(_windowsDll, "nvmlDeviceGetPciInfo_v2");
+        IntPtr nvmlDeviceGetPciInfo = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetPciInfo_v2");
         if (nvmlDeviceGetPciInfo != IntPtr.Zero)
             _windowsNvmlDeviceGetPciInfo = (WindowsNvmlDeviceGetPciInfo)Marshal.GetDelegateForFunctionPointer(nvmlDeviceGetPciInfo, typeof(WindowsNvmlDeviceGetPciInfo));
         else
@@ -266,10 +267,10 @@ internal static class NvidiaML
                 {
                     nvmlShutdown();
                 }
-                else if (_windowsDll != IntPtr.Zero)
+                else if (!_windowsDll.IsInvalid)
                 {
                     _windowsNvmlShutdown();
-                    Kernel32.FreeLibrary(_windowsDll);
+                    _windowsDll.Dispose();
                 }
 
                 IsAvailable = false;

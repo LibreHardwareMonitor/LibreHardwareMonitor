@@ -8,26 +8,28 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32;
+using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.System.Ioctl;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
 public abstract class AbstractStorage : Hardware
 {
+    private readonly PerformanceValue _perfRead = new();
     private readonly PerformanceValue _perfTotal = new();
     private readonly PerformanceValue _perfWrite = new();
-    private readonly PerformanceValue _perfRead = new();
     private readonly StorageInfo _storageInfo;
 
-    private ulong _lastReadCount;
+    private long _lastReadCount;
     private long _lastTime;
-    private ulong _lastWriteCount;
+    private long _lastWriteCount;
+    private Sensor _sensorDiskReadActivity;
     private Sensor _sensorDiskReadRate;
     private Sensor _sensorDiskTotalActivity;
     private Sensor _sensorDiskWriteActivity;
-    private Sensor _sensorDiskReadActivity;
     private Sensor _sensorDiskWriteRate;
     private Sensor _usageSensor;
 
@@ -78,24 +80,30 @@ public abstract class AbstractStorage : Hardware
     public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
     {
         StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
-        if (info == null || info.Removable || info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
+        if (info == null || info.Removable || info.BusType is STORAGE_BUS_TYPE.BusTypeVirtual or STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
             return null;
 
         info.DiskSize = diskSize;
         info.DeviceId = deviceId;
-        info.Handle = Kernel32.OpenDevice(deviceId);
+        info.Handle = PInvoke.CreateFile(deviceId,
+                                         (uint)FileAccess.ReadWrite,
+                                         FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                         null,
+                                         FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                         FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+                                         null);
         info.Scsi = $@"\\.\SCSI{scsiPort}:";
-        
+
         //fallback, when it is not possible to read out with the nvme implementation,
         //try it with the sata smart implementation
-        if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
+        if (info.BusType == STORAGE_BUS_TYPE.BusTypeNvme)
         {
             AbstractStorage x = NVMeGeneric.CreateInstance(info, settings);
             if (x != null)
                 return x;
         }
 
-        return info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeAta or Kernel32.STORAGE_BUS_TYPE.BusTypeSata or Kernel32.STORAGE_BUS_TYPE.BusTypeNvme
+        return info.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata or STORAGE_BUS_TYPE.BusTypeNvme
             ? AtaStorage.CreateInstance(info, settings)
             : StorageGeneric.CreateInstance(info, settings);
     }
@@ -171,16 +179,12 @@ public abstract class AbstractStorage : Hardware
         }
     }
 
-    private void UpdatePerformanceSensors()
+    private unsafe void UpdatePerformanceSensors()
     {
-        if (!Kernel32.DeviceIoControl(_storageInfo.Handle,
-                                      Kernel32.IOCTL.IOCTL_DISK_PERFORMANCE,
-                                      IntPtr.Zero,
-                                      0,
-                                      out Kernel32.DISK_PERFORMANCE diskPerformance,
-                                      Marshal.SizeOf<Kernel32.DISK_PERFORMANCE>(),
-                                      out _,
-                                      IntPtr.Zero))
+        DISK_PERFORMANCE diskPerformance = new();
+
+        uint bytesReturned;
+        if (!PInvoke.DeviceIoControl(_storageInfo.Handle, PInvoke.IOCTL_DISK_PERFORMANCE, null, 0, &diskPerformance, (uint)sizeof(DISK_PERFORMANCE), &bytesReturned, null))
         {
             return;
         }
@@ -194,12 +198,12 @@ public abstract class AbstractStorage : Hardware
         _perfTotal.Update(diskPerformance.IdleTime, diskPerformance.QueryTime);
         _sensorDiskTotalActivity.Value = (float)(100 - _perfTotal.Result);
 
-        ulong readCount = diskPerformance.BytesRead;
-        ulong readDiff = readCount - _lastReadCount;
+        long readCount = diskPerformance.BytesRead;
+        long readDiff = readCount - _lastReadCount;
         _lastReadCount = readCount;
 
-        ulong writeCount = diskPerformance.BytesWritten;
-        ulong writeDiff = writeCount - _lastWriteCount;
+        long writeCount = diskPerformance.BytesWritten;
+        long writeDiff = writeCount - _lastWriteCount;
         _lastWriteCount = writeCount;
 
         long currentTime = Stopwatch.GetTimestamp();
@@ -265,14 +269,14 @@ public abstract class AbstractStorage : Hardware
     {
         public double Result { get; private set; }
 
-        private ulong Time { get; set; }
+        private long Time { get; set; }
 
-        private ulong Value { get; set; }
+        private long Value { get; set; }
 
-        public void Update(ulong val, ulong valBase)
+        public void Update(long val, long valBase)
         {
-            ulong diffValue = val - Value;
-            ulong diffTime = valBase - Time;
+            long diffValue = val - Value;
+            long diffTime = valBase - Time;
 
             Value = val;
             Time = valBase;

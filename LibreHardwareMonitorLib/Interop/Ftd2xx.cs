@@ -5,6 +5,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Windows.Win32;
 
 // ReSharper disable InconsistentNaming
 
@@ -16,11 +17,11 @@ internal static class Ftd2xx
 
     public static bool DllExists()
     {
-        IntPtr module = Kernel32.LoadLibrary(DllName);
-        if (module == IntPtr.Zero)
+        FreeLibrarySafeHandle module = PInvoke.LoadLibrary(DllName);
+        if (module.IsInvalid)
             return false;
 
-        Kernel32.FreeLibrary(module);
+        module.Dispose();
         return true;
     }
 

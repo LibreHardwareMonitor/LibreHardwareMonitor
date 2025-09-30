@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Windows.Win32;
 
 // ReSharper disable InconsistentNaming
 
@@ -180,11 +181,11 @@ internal static class AtiAdlxx
 
     public static bool ADL_Method_Exists(string ADL_Method)
     {
-        IntPtr module = Kernel32.LoadLibrary(DllName);
-        if (module != IntPtr.Zero)
+        FreeLibrarySafeHandle module = PInvoke.LoadLibrary(DllName);
+        if (!module.IsInvalid)
         {
-            bool result = Kernel32.GetProcAddress(module, ADL_Method) != IntPtr.Zero;
-            Kernel32.FreeLibrary(module);
+            bool result = PInvoke.GetProcAddress(module, ADL_Method) != IntPtr.Zero;
+            module.Dispose();
             return result;
         }
 

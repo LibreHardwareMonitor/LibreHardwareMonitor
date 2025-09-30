@@ -51,7 +51,7 @@ public abstract class AtaStorage : AbstractStorage
         ISmart smart = new WindowsSmart(storageInfo.Index);
         string name = null;
         string firmwareRevision = null;
-        Kernel32.SMART_ATTRIBUTE[] smartAttributes = { };
+        AtaSmart.SMART_ATTRIBUTE[] smartAttributes = { };
 
         if (smart.IsValid)
         {
@@ -119,7 +119,7 @@ public abstract class AtaStorage : AbstractStorage
                 {
                     bool attributeFound = false;
 
-                    foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
+                    foreach (AtaSmart.SMART_ATTRIBUTE value in smartAttributes)
                     {
                         if (value.Id == requireAttribute.AttributeId)
                         {
@@ -202,7 +202,7 @@ public abstract class AtaStorage : AbstractStorage
         }
     }
 
-    protected virtual void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values) { }
+    protected virtual void UpdateAdditionalSensors(AtaSmart.SMART_ATTRIBUTE[] values) { }
 
     protected override void UpdateSensors()
     {
@@ -214,12 +214,12 @@ public abstract class AtaStorage : AbstractStorage
 
         if (Smart.IsValid)
         {
-            Kernel32.SMART_ATTRIBUTE[] smartAttributes = Smart.ReadSmartData();
+            AtaSmart.SMART_ATTRIBUTE[] smartAttributes = Smart.ReadSmartData();
 
             foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
             {
                 SmartAttribute attribute = keyValuePair.Key;
-                foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
+                foreach (AtaSmart.SMART_ATTRIBUTE value in smartAttributes)
                 {
                     if (value.Id == attribute.Id)
                     {
@@ -233,12 +233,12 @@ public abstract class AtaStorage : AbstractStorage
         }
     }
 
-    protected override void GetReport(StringBuilder r)
+    protected override unsafe void GetReport(StringBuilder r)
     {
         if (Smart.IsValid)
         {
-            Kernel32.SMART_ATTRIBUTE[] values = Smart.ReadSmartData();
-            Kernel32.SMART_THRESHOLD[] thresholds = Smart.ReadSmartThresholds();
+            AtaSmart.SMART_ATTRIBUTE[] values = Smart.ReadSmartData();
+            AtaSmart.SMART_THRESHOLD[] thresholds = Smart.ReadSmartThresholds();
             if (values.Length > 0)
             {
                 r.AppendFormat(CultureInfo.InvariantCulture,
@@ -252,13 +252,13 @@ public abstract class AtaStorage : AbstractStorage
                                "Physical".PadRight(8),
                                Environment.NewLine);
 
-                foreach (Kernel32.SMART_ATTRIBUTE value in values)
+                foreach (AtaSmart.SMART_ATTRIBUTE value in values)
                 {
                     if (value.Id == 0x00)
                         break;
 
                     byte? threshold = null;
-                    foreach (Kernel32.SMART_THRESHOLD t in thresholds)
+                    foreach (AtaSmart.SMART_THRESHOLD t in thresholds)
                     {
                         if (t.Id == value.Id)
                         {
@@ -280,7 +280,9 @@ public abstract class AtaStorage : AbstractStorage
                         }
                     }
 
-                    string raw = BitConverter.ToString(value.RawValue);
+                    Span<byte> rawValue = new(value.RawValue, 6);
+                    string raw = BitConverter.ToString(rawValue.ToArray());
+
                     r.AppendFormat(CultureInfo.InvariantCulture,
                                    " {0}{1}{2}{3}{4}{5}{6}{7}",
                                    value.Id.ToString("X2").PadRight(3),

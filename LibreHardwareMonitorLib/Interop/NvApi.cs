@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32;
 
 namespace LibreHardwareMonitor.Interop;
 
@@ -232,11 +233,11 @@ internal static class NvApi
 
     public static bool DllExists()
     {
-        IntPtr module = Kernel32.LoadLibrary(Environment.Is64BitProcess ? DllName64 : DllName);
-        if (module == IntPtr.Zero)
+        FreeLibrarySafeHandle module = PInvoke.LoadLibrary(Environment.Is64BitProcess ? DllName64 : DllName);
+        if (module.IsInvalid)
             return false;
 
-        Kernel32.FreeLibrary(module);
+        module.Dispose();
         return true;
     }
 

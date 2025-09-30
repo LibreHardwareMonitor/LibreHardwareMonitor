@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 
 namespace LibreHardwareMonitor.Hardware;
@@ -24,7 +26,15 @@ internal static class Mutexes
         {
             try
             {
-                return new Mutex(false, name);
+                var worldRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), MutexRights.FullControl, AccessControlType.Allow);
+                var mutexSecurity = new MutexSecurity();
+                mutexSecurity.AddAccessRule(worldRule);
+
+#if NETFRAMEWORK
+                return new Mutex(false, name, out _, mutexSecurity);
+#else
+                return MutexAcl.Create(false, name, out _, mutexSecurity);
+#endif
             }
             catch (UnauthorizedAccessException)
             {
