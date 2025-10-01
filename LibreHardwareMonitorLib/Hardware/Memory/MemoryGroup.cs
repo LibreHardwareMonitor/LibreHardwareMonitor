@@ -184,7 +184,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
             if (ram.ChangePage(PageData.ModulePartNumber))
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
 
-            DimmMemory memory = new(ram, name, new Identifier($"memory/dimm/{ram.Index}"), settings);
+            DimmMemory memory = new(ram, name, new Identifier("memory", "dimm", $"{ram.Index}"), settings);
             additions.Add(memory);
         }
 
