@@ -29,6 +29,17 @@ public class PawnIo
         {
             Version = version;
         }
+        else
+        {
+            using RegistryKey registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+
+            using RegistryKey subKeyWow64 = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO");
+
+            if (Version.TryParse(subKeyWow64?.GetValue("DisplayVersion") as string, out version))
+            {
+                Version = version;
+            }
+        }
     }
 
     private PawnIo(SafeFileHandle handle) => _handle = handle;

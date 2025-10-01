@@ -18,7 +18,7 @@
     <LangVersion>latest</LangVersion>
     <PackageIcon>packageicon.png</PackageIcon>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <Platforms>x64</Platforms>
+    <Platforms>x64;x86</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>

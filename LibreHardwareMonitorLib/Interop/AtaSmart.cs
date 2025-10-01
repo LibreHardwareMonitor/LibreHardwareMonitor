@@ -3,13 +3,14 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System.Runtime.InteropServices;
 using Windows.Win32.Storage.IscsiDisc;
 
 // ReSharper disable InconsistentNaming
 
 namespace LibreHardwareMonitor.Interop;
 
-public class AtaSmart
+public unsafe class AtaSmart
 {
     internal const int IOCTL_BUFFER_SIZE = 4096;
     internal const int SCSI_IOCTL_SENSE_SIZE = 24;
@@ -25,24 +26,26 @@ public class AtaSmart
     internal const byte SMART_LBA_HI = 0xC2;
     internal const byte SMART_LBA_MID = 0x4F;
 
-    public unsafe struct SMART_ATTRIBUTE
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SMART_ATTRIBUTE
     {
-        public byte Id;
-        public short Flags;
-        public byte CurrentValue;
-        public byte WorstValue;
-        public fixed byte RawValue[6];
-        public byte Reserved;
+        internal byte Id;
+        internal ushort Flags;
+        internal byte CurrentValue;
+        internal byte WorstValue;
+        internal fixed byte RawValue[6];
+        internal byte Reserved;
     }
 
-    public unsafe struct SMART_THRESHOLD
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SMART_THRESHOLD
     {
         public byte Id;
         public byte Threshold;
         public fixed byte Reserved[10];
     }
 
-    internal unsafe struct IDENTIFY_DEVICE_DATA
+    internal struct IDENTIFY_DEVICE_DATA
     {
         public ushort GeneralConfiguration;
         public ushort NumberOfCylinders;
@@ -75,7 +78,7 @@ public class AtaSmart
         public fixed ushort Reserved3[197];
     }
 
-    internal unsafe struct NVME_PASS_THROUGH_IOCTL
+    internal struct NVME_PASS_THROUGH_IOCTL
     {
         public SRB_IO_CONTROL SrbIoCtrl;
         public fixed uint VendorSpecific[NVME_IOCTL_VENDOR_SPECIFIC_DW_SIZE];
@@ -89,7 +92,7 @@ public class AtaSmart
         public fixed byte DataBuffer[IOCTL_BUFFER_SIZE];
     }
 
-    internal unsafe struct SCSI_PASS_THROUGH
+    internal struct SCSI_PASS_THROUGH
     {
         public Windows.Win32.Storage.IscsiDisc.SCSI_PASS_THROUGH Spt;
         public fixed byte SenseBuf[SCSI_IOCTL_SENSE_SIZE];
