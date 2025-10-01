@@ -3,6 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -46,7 +47,7 @@ internal class RazerGroup : IGroup
                         break;
                 }
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 _report.AppendLine($"Failed to get information for USB device with id {dev.ProductID}: {e.Message} ");
             }

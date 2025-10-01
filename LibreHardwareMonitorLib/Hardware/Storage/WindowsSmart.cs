@@ -12,6 +12,7 @@ using LibreHardwareMonitor.Interop;
 using Windows.Win32;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
+using static LibreHardwareMonitor.Interop.AtaSmart;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -50,8 +51,8 @@ internal class WindowsSmart : ISmart
             irDriveRegs =
             {
                 bFeaturesReg = 0xD8,
-                bCylLowReg = AtaSmart.SMART_LBA_MID,
-                bCylHighReg = AtaSmart.SMART_LBA_HI,
+                bCylLowReg = (byte)PInvoke.SMART_CYL_LOW,
+                bCylHighReg = (byte)PInvoke.SMART_CYL_HI,
                 bCommandReg = (byte) PInvoke.SMART_CMD
             }
         };
@@ -68,7 +69,7 @@ internal class WindowsSmart : ISmart
                                         null);
     }
 
-    public unsafe AtaSmart.SMART_ATTRIBUTE[] ReadSmartData()
+    public unsafe SMART_ATTRIBUTE[] ReadSmartData()
     {
         if (_handle.IsClosed)
             throw new ObjectDisposedException(nameof(WindowsSmart));
@@ -78,14 +79,14 @@ internal class WindowsSmart : ISmart
             bDriveNumber = (byte)_driveNumber,
             irDriveRegs =
             {
-                bFeaturesReg = 0xD0,
-                bCylLowReg = AtaSmart.SMART_LBA_MID,
-                bCylHighReg = AtaSmart.SMART_LBA_HI,
+                bFeaturesReg = (byte)PInvoke.READ_ATTRIBUTES,
+                bCylLowReg = (byte)PInvoke.SMART_CYL_LOW,
+                bCylHighReg = (byte)PInvoke.SMART_CYL_HI,
                 bCommandReg = (byte) PInvoke.SMART_CMD
             }
         };
 
-        int cb = sizeof(SENDCMDOUTPARAMS) + 2 + 512; // 2 bytes padding + 512 bytes buffer.
+        int cb = sizeof(SENDCMDOUTPARAMS) + 512; // 512 bytes buffer.
         IntPtr buffer = Marshal.AllocHGlobal(cb);
 
         bool isValid = PInvoke.DeviceIoControl(_handle,
@@ -99,11 +100,16 @@ internal class WindowsSmart : ISmart
 
         if (isValid)
         {
-            AtaSmart.SMART_ATTRIBUTE[] attributes = new AtaSmart.SMART_ATTRIBUTE[512 / sizeof(AtaSmart.SMART_ATTRIBUTE)];
-            AtaSmart.SMART_ATTRIBUTE* pAttributes = (AtaSmart.SMART_ATTRIBUTE*)((byte*)buffer + (int)Marshal.OffsetOf<SENDCMDOUTPARAMS>(nameof(SENDCMDOUTPARAMS.bBuffer)) + 2);
+            var attributes = new SMART_ATTRIBUTE[30]; // A maximum of 30 are returned.
 
-            for (int i = 0; i < attributes.Length; i++)
-                attributes[i] = pAttributes[i];
+            var sendCmdOutParams = (SENDCMDOUTPARAMS*)buffer;
+            fixed (byte* pBuffer = &sendCmdOutParams->bBuffer[0])
+            {
+                var pAttribute = (SMART_ATTRIBUTE*)(pBuffer + 2); // + 2 padding.
+                
+                for (int i = 0; i < attributes.Length; i++)
+                    attributes[i] = pAttribute[i];
+            }
 
             Marshal.FreeHGlobal(buffer);
             return attributes;
@@ -113,7 +119,7 @@ internal class WindowsSmart : ISmart
         return null;
     }
 
-    public unsafe AtaSmart.SMART_THRESHOLD[] ReadSmartThresholds()
+    public unsafe SMART_THRESHOLD[] ReadSmartThresholds()
     {
         if (_handle.IsClosed)
             throw new ObjectDisposedException(nameof(WindowsSmart));
@@ -123,14 +129,14 @@ internal class WindowsSmart : ISmart
             bDriveNumber = (byte)_driveNumber,
             irDriveRegs =
             {
-                bFeaturesReg = 0xD1,
-                bCylLowReg = AtaSmart.SMART_LBA_MID,
-                bCylHighReg = AtaSmart.SMART_LBA_HI,
+                bFeaturesReg = (byte)PInvoke.READ_THRESHOLDS,
+                bCylLowReg = (byte)PInvoke.SMART_CYL_LOW,
+                bCylHighReg = (byte)PInvoke.SMART_CYL_HI,
                 bCommandReg = (byte) PInvoke.SMART_CMD
             }
         };
 
-        int cb = sizeof(SENDCMDOUTPARAMS) + 2 + 512; // 2 bytes padding + 512 bytes buffer.
+        int cb = sizeof(SENDCMDOUTPARAMS) + 512; // 2 bytes padding + 512 bytes buffer.
         IntPtr buffer = Marshal.AllocHGlobal(cb);
         bool isValid = PInvoke.DeviceIoControl(_handle,
                                               PInvoke.SMART_RCV_DRIVE_DATA,
@@ -143,11 +149,16 @@ internal class WindowsSmart : ISmart
 
         if (isValid)
         {
-            AtaSmart.SMART_THRESHOLD[] thresholds = new AtaSmart.SMART_THRESHOLD[512 / sizeof(AtaSmart.SMART_THRESHOLD)];
-            AtaSmart.SMART_THRESHOLD* pThresholds = (AtaSmart.SMART_THRESHOLD*) ((byte*)buffer + (int)Marshal.OffsetOf<SENDCMDOUTPARAMS>(nameof(SENDCMDOUTPARAMS.bBuffer)) + 2);
+            var thresholds = new SMART_THRESHOLD[30]; // A maximum of 30 are returned.
 
-            for (int i = 0; i < thresholds.Length; i++)
-                thresholds[i] = pThresholds[i];
+            var sendCmdOutParams = (SENDCMDOUTPARAMS*)buffer;
+            fixed (byte* pBuffer = &sendCmdOutParams->bBuffer[0])
+            {
+                var pThreshold = (SMART_THRESHOLD*)(pBuffer + 2); // + 2 padding.
+
+                for (int i = 0; i < thresholds.Length; i++)
+                    thresholds[i] = pThreshold[i];
+            }
 
             Marshal.FreeHGlobal(buffer);
             return thresholds;
@@ -171,7 +182,7 @@ internal class WindowsSmart : ISmart
             }
         };
 
-        int cb = sizeof(SENDCMDOUTPARAMS) + sizeof(AtaSmart.IDENTIFY_DEVICE_DATA);
+        int cb = sizeof(SENDCMDOUTPARAMS) + sizeof(IDENTIFY_DEVICE_DATA);
         IntPtr buffer = Marshal.AllocHGlobal(cb);
 
         bool valid = PInvoke.DeviceIoControl(_handle,
@@ -191,7 +202,7 @@ internal class WindowsSmart : ISmart
             return false;
         }
 
-        AtaSmart.IDENTIFY_DEVICE_DATA identity = *(AtaSmart.IDENTIFY_DEVICE_DATA*)((byte*)buffer + (int)Marshal.OffsetOf<SENDCMDOUTPARAMS>(nameof(SENDCMDOUTPARAMS.bBuffer)));
+        IDENTIFY_DEVICE_DATA identity = *(IDENTIFY_DEVICE_DATA*)((byte*)buffer + (int)Marshal.OffsetOf<SENDCMDOUTPARAMS>(nameof(SENDCMDOUTPARAMS.bBuffer)));
 
         byte* p = identity.ModelNumber;
         for (int i = 0; i < 40; i += 2)

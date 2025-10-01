@@ -51,7 +51,7 @@ public abstract class AtaStorage : AbstractStorage
         ISmart smart = new WindowsSmart(storageInfo.Index);
         string name = null;
         string firmwareRevision = null;
-        AtaSmart.SMART_ATTRIBUTE[] smartAttributes = { };
+        AtaSmart.SMART_ATTRIBUTE[] smartAttributes = [];
 
         if (smart.IsValid)
         {
@@ -149,7 +149,7 @@ public abstract class AtaStorage : AbstractStorage
                     {
                         const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 
-                        return Activator.CreateInstance(type, flags, null, new object[] { storageInfo, smart, name, firmwareRevision, storageInfo.Index, settings }, null) as AtaStorage;
+                        return Activator.CreateInstance(type, flags, null, [storageInfo, smart, name, firmwareRevision, storageInfo.Index, settings], null) as AtaStorage;
                     }
                 }
             }
