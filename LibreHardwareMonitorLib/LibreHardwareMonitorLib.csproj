@@ -18,18 +18,20 @@
     <LangVersion>latest</LangVersion>
     <PackageIcon>packageicon.png</PackageIcon>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <Platforms>x64;x86</Platforms>
-    <!-- Silence missing platform checks for Windows APIs -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
-    <!-- Nuget is built custom, so we exclude output -->
+    <Platforms>x64;x86;AnyCPU</Platforms>
+    <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
+    <NoWarn>$(NoWarn);CA1416;NU5131</NoWarn>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\$(Platform)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>..\bin\Release\$(Platform)\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
+    <OutputPath>..\bin\refs\</OutputPath>
+    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -79,6 +81,12 @@
     </None>
     <None Include="..\bin\$(Configuration)\x86\**\LibreHardwareMonitorLib.xml" Pack="true">
       <PackagePath>runtimes\win-x86\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\refs\**\LibreHardwareMonitorLib.dll" Pack="true">
+      <PackagePath>ref\</PackagePath>
+    </None>
+    <None Include="..\bin\refs\**\LibreHardwareMonitorLib.xml" Pack="true">
+      <PackagePath>ref\</PackagePath>
     </None>
   </ItemGroup>
 </Project>
