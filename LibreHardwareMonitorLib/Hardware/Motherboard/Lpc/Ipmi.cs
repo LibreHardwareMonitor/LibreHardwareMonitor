@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Management;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Management.Infrastructure;
+using WmiLight;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -33,7 +35,7 @@ internal class Ipmi : ISuperIO
     private readonly List<string> _fanNames = new();
     private readonly List<float> _fans = new();
 
-    private readonly ManagementObject _ipmi;
+    private readonly WmiObject _ipmi;
     private readonly Manufacturer _manufacturer;
 
     private readonly List<Interop.Ipmi.Sdr> _sdrs = new();
@@ -49,12 +51,12 @@ internal class Ipmi : ISuperIO
         Chip = Chip.IPMI;
         _manufacturer = manufacturer;
 
-        using ManagementClass ipmiClass = new("root\\WMI", "Microsoft_IPMI", null);
+        using var wmi = new WmiConnection(@"\\.\root\WMI");
 
-        foreach (ManagementBaseObject ipmi in ipmiClass.GetInstances())
+        foreach (var o in wmi.CreateQuery(@"SELECT * FROM Microsoft_IPMI"))
         {
-            if (ipmi is ManagementObject managementObject)
-                _ipmi = managementObject;
+            _ipmi = o;
+            break;
         }
 
         // Fan control is exposed for Supermicro only as it differs between IPMI implementations
@@ -270,8 +272,8 @@ internal class Ipmi : ISuperIO
     {
         try
         {
-            using ManagementObjectSearcher searcher = new("root\\WMI", "SELECT * FROM Microsoft_IPMI WHERE Active='True'");
-            return searcher.Get().Count > 0;
+            using var connection = new WmiConnection(@"\\.\root\WMI");
+            return connection.CreateQuery("SELECT * FROM Microsoft_IPMI WHERE Active='True'").Any();
         }
         catch
         {
@@ -287,19 +289,33 @@ internal class Ipmi : ISuperIO
     public void WriteGpio(int index, byte value)
     { }
 
+    private const string Ns = @"root\WMI";
+    private const string ClassName = "Microsoft_IPMI";
+
     private byte[] RunIPMICommand(byte command, byte networkFunction, byte[] requestData)
     {
-        using ManagementBaseObject inParams = _ipmi.GetMethodParameters("RequestResponse");
+        using var session = CimSession.Create(null);
 
-        inParams["NetworkFunction"] = networkFunction;
-        inParams["Lun"] = 0;
-        inParams["ResponderAddress"] = 0x20;
-        inParams["Command"] = command;
-        inParams["RequestDataSize"] = requestData.Length;
-        inParams["RequestData"] = requestData;
+        var ipmi = session.QueryInstances(Ns, "WQL", $"SELECT * FROM {ClassName}")
+            .FirstOrDefault();
+        if (ipmi is null)
+            throw new InvalidOperationException($"{ClassName} instance not found.");
 
-        using ManagementBaseObject outParams = _ipmi.InvokeMethod("RequestResponse", inParams, null);
-        return (byte[])outParams["ResponseData"];
+        var inParams = new CimMethodParametersCollection
+        {
+            CimMethodParameter.Create("Command", command, CimFlags.None),
+            CimMethodParameter.Create("NetworkFunction", networkFunction, CimFlags.None),
+            CimMethodParameter.Create("Lun", (byte)0, CimFlags.None),
+            CimMethodParameter.Create("ResponderAddress", (byte)0x20, CimFlags.None),
+            CimMethodParameter.Create("RequestDataSize", (uint)(requestData?.Length ?? 0),
+                CimFlags.None),
+            CimMethodParameter.Create("RequestData", requestData ?? Array.Empty<byte>(), CimFlags.None),
+        };
+
+        var result = session.InvokeMethod(Ns, ipmi, "RequestResponse", inParams);
+
+        var respParam = result?.OutParameters?["ResponseData"];
+        return respParam?.Value as byte[] ?? Array.Empty<byte>();
     }
 
     // Ported from ipmiutil

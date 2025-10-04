@@ -6,12 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Management;
 using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
 using Microsoft.Win32.SafeHandles;
+using WmiLight;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -56,16 +56,25 @@ internal static class WindowsStorage
     {
         var list = new List<string>();
 
+        using var connection = new WmiConnection(@"\\.\root\CIMV2");
+
         try
         {
-            using var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex);
-
-            foreach (ManagementBaseObject o in s.Get())
+            foreach (var partition in connection.CreateQuery(
+                         $"SELECT DeviceID FROM Win32_DiskPartition WHERE DiskIndex = {driveIndex}"))
             {
-                if (o is ManagementObject dp)
+                var deviceId = partition.GetPropertyValue<string>("DeviceID");
+                if (string.IsNullOrEmpty(deviceId))
+                    continue;
+
+                foreach (var logicalDisk in connection.CreateQuery(
+                             $@"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID=""{EscapeForWql(deviceId)}""}}
+                                WHERE AssocClass=Win32_LogicalDiskToPartition
+                                      ResultClass=Win32_LogicalDisk"))
                 {
-                    foreach (ManagementBaseObject ld in dp.GetRelated("Win32_LogicalDisk"))
-                        list.Add(((string)ld["Name"]).TrimEnd(':'));
+                    var name = logicalDisk.GetPropertyValue<string>("Name");
+                    if (!string.IsNullOrEmpty(name))
+                        list.Add(name.TrimEnd(':'));
                 }
             }
         }
@@ -76,6 +85,9 @@ internal static class WindowsStorage
 
         return list.ToArray();
     }
+
+    private static string EscapeForWql(string s) =>
+        s.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
     private class StorageInfo : Storage.StorageInfo
     {

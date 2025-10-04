@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Management;
+using WmiLight;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -21,8 +21,11 @@ internal class StorageGroup : IGroup
         if (Software.OperatingSystem.IsUnix)
             return;
 
-        Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap = GetStorageSpaceDiskToPhysicalDiskMap();
-        AddHardware(settings, storageSpaceDiskToPhysicalDiskMap);
+        using var cimv2   = new WmiConnection(@"\\.\root\CIMV2");
+        using var storage = new WmiConnection(@"\\.\root\Microsoft\Windows\Storage");
+
+        Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap = GetStorageSpaceDiskToPhysicalDiskMap(storage);
+        AddHardware(settings, cimv2, storageSpaceDiskToPhysicalDiskMap);
     }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
@@ -31,40 +34,45 @@ internal class StorageGroup : IGroup
     /// Adds the hardware.
     /// </summary>
     /// <param name="settings">The settings.</param>
+    /// <param name="cimv2">Connection to WMI.</param>
     /// <param name="storageSpaceDiskToPhysicalDiskMap">The storage space disk to physical disk map.</param>
-    private void AddHardware(ISettings settings, Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap)
+    private void AddHardware(
+        ISettings settings,
+        WmiConnection cimv2,
+        Dictionary<uint, List<(uint deviceId, ulong size)>> storageSpaceDiskToPhysicalDiskMap)
     {
         try
         {
             // https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
-            using var diskDriveSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive") { Options = { Timeout = TimeSpan.FromSeconds(10) } };
-
-            foreach (ManagementBaseObject diskDrive in diskDriveSearcher.Get())
+            foreach (var diskDrive in cimv2.CreateQuery(
+                         @"SELECT DeviceID, Index, Size, SCSIPort FROM Win32_DiskDrive"))
             {
-                string deviceId = (string)diskDrive.Properties["DeviceId"].Value; // is \\.\PhysicalDrive0..n
-                uint index = Convert.ToUInt32(diskDrive.Properties["Index"].Value);
-                ulong diskSize = Convert.ToUInt64(diskDrive.Properties["Size"].Value);
-                int scsi = Convert.ToInt32(diskDrive.Properties["SCSIPort"].Value);
+                var deviceId = diskDrive.GetPropertyValue<string>("DeviceID"); // \\.\PHYSICALDRIVEn
+                if (string.IsNullOrEmpty(deviceId))
+                    continue;
 
-                if (deviceId != null)
+                uint index = SafeGetUInt32(diskDrive, "Index");
+                ulong size = SafeGetUInt64(diskDrive, "Size");
+                int scsi = SafeGetInt32(diskDrive, "SCSIPort");
+
+                var instance = AbstractStorage.CreateInstance(deviceId, index, size, scsi, settings);
+                if (instance != null)
+                    _hardware.Add(instance);
+
+                if (storageSpaceDiskToPhysicalDiskMap != null &&
+                    storageSpaceDiskToPhysicalDiskMap.TryGetValue(index, out var pdList))
                 {
-                    var instance = AbstractStorage.CreateInstance(deviceId, index, diskSize, scsi, settings);
-                    if (instance != null)
-                        _hardware.Add(instance);
-
-                    if (storageSpaceDiskToPhysicalDiskMap.ContainsKey(index))
+                    foreach (var (pdIndex, pdSize) in pdList)
                     {
-                        foreach ((uint, ulong) physicalDisk in storageSpaceDiskToPhysicalDiskMap[index])
-                        {
-                            var physicalDiskInstance = AbstractStorage.CreateInstance(@$"\\.\PHYSICALDRIVE{physicalDisk.Item1}", physicalDisk.Item1, physicalDisk.Item2, scsi, settings);
-                            if (physicalDiskInstance != null)
-                                _hardware.Add(physicalDiskInstance);
-                        }
+                        var phys = AbstractStorage.CreateInstance(
+                            $@"\\.\PHYSICALDRIVE{pdIndex}", pdIndex, pdSize, scsi, settings);
+                        if (phys != null)
+                            _hardware.Add(phys);
                     }
                 }
             }
         }
-        catch
+        catch(Exception ex)
         {
             // Ignored.
         }
@@ -73,29 +81,26 @@ internal class StorageGroup : IGroup
     /// <summary>
     /// Maps each StorageSpace to the PhysicalDisks it is composed of.
     /// </summary>
-    private static Dictionary<uint, List<(uint, ulong)>> GetStorageSpaceDiskToPhysicalDiskMap()
+    private static Dictionary<uint, List<(uint deviceId, ulong size)>> GetStorageSpaceDiskToPhysicalDiskMap(
+        WmiConnection storage)
     {
-        var diskToPhysicalDisk = new Dictionary<uint, List<(uint, ulong)>>();
+        var map = new Dictionary<uint, List<(uint, ulong)>>();
 
         if (!Software.OperatingSystem.IsWindows8OrGreater)
-            return diskToPhysicalDisk;
+            return map;
 
         try
         {
-            ManagementScope scope = new(@"\root\Microsoft\Windows\Storage");
-
             // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-disk
             // Lists all the disks visible to your system, the output is the same as Win32_DiskDrive.
             // If you're using a storage Space, the "hidden" disks which compose your storage space will not be listed.
-            using var diskSearcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM MSFT_Disk"));
-
-            foreach (ManagementBaseObject disk in diskSearcher.Get())
+            foreach (var disk in storage.CreateQuery(@"SELECT Number, ObjectId FROM MSFT_Disk"))
             {
                 try
                 {
-                    List<(uint, ulong)> map = MapDiskToPhysicalDisk(disk, scope);
-                    if (map.Count > 0)
-                        diskToPhysicalDisk[(uint)disk["Number"]] = map;
+                    var list = MapDiskToPhysicalDisk(disk, storage);
+                    if (list.Count > 0)
+                        map[SafeGetUInt32(disk, "Number")] = list;
                 }
                 catch
                 {
@@ -103,12 +108,12 @@ internal class StorageGroup : IGroup
                 }
             }
         }
-        catch
+        catch(Exception ex)
         {
             // Ignored.
         }
 
-        return diskToPhysicalDisk;
+        return map;
     }
 
     /// <summary>
@@ -116,41 +121,60 @@ internal class StorageGroup : IGroup
     /// </summary>
     /// <param name="disk">The disk.</param>
     /// <param name="scope">The scope.</param>
-    private static List<(uint, ulong)> MapDiskToPhysicalDisk(ManagementBaseObject disk, ManagementScope scope)
+    private static List<(uint deviceId, ulong size)> MapDiskToPhysicalDisk(WmiObject disk, WmiConnection storage)
     {
-        var map = new List<(uint, ulong)>();
+        var result = new List<(uint, ulong)>();
+
+        var diskObjectId = disk.GetPropertyValue<string>("ObjectId");
+        if (string.IsNullOrEmpty(diskObjectId))
+            return result;
 
         // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-virtualdisk
         // Maps the current Disk to its corresponding VirtualDisk. If the current Disk is not a storage space, it does not have a corresponding VirtualDisk.
         // Each Disk maps to one or zero VirtualDisk.
-        using var toVirtualDisk = new ManagementObjectSearcher(scope, new ObjectQuery(FollowAssociationQuery("MSFT_Disk", (string)disk["ObjectId"], "MSFT_VirtualDiskToDisk")));
-
-        foreach (ManagementBaseObject virtualDisk in toVirtualDisk.Get())
+        foreach (var virtualDisk in storage.CreateQuery(
+                     FollowAssociationQuery("MSFT_Disk", diskObjectId, "MSFT_VirtualDiskToDisk", "MSFT_VirtualDisk")))
         {
+            var vObjectId = virtualDisk.GetPropertyValue<string>("ObjectId");
+            if (string.IsNullOrEmpty(vObjectId))
+                continue;
+
             // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/stormgmt/msft-physicaldisk
             // Maps the current VirtualDisk to the PhysicalDisk it is composed of.
             // Each VirtualDisk maps to one or more PhysicalDisk.
-
-            using var toPhysicalDisk = new ManagementObjectSearcher(scope,
-                                                                    new ObjectQuery(FollowAssociationQuery("MSFT_VirtualDisk",
-                                                                                                           (string)virtualDisk["ObjectId"],
-                                                                                                           "MSFT_VirtualDiskToPhysicalDisk")));
-
-            foreach (ManagementBaseObject physicalDisk in toPhysicalDisk.Get())
+            foreach (var physicalDisk in storage.CreateQuery(FollowAssociationQuery("MSFT_VirtualDisk", vObjectId, "MSFT_VirtualDiskToPhysicalDisk", "MSFT_PhysicalDisk")))
             {
-                ulong physicalDiskSize = (ulong)physicalDisk["Size"];
-
-                if (uint.TryParse((string)physicalDisk["DeviceId"], out uint physicalDiskId))
-                    map.Add((physicalDiskId, physicalDiskSize));
+                var size = SafeGetUInt64(physicalDisk, "Size");
+                var devStr = physicalDisk.GetPropertyValue<string>("DeviceId");
+                if (UInt32.TryParse(devStr, out var devId))
+                    result.Add((devId, size));
             }
         }
 
-        return map;
+        return result;
     }
 
-    private static string FollowAssociationQuery(string source, string objectId, string associationClass)
+    private static string EscapeForWql(string s) =>
+        (s ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+    private static uint SafeGetUInt32(WmiObject o, string name)
     {
-        return @$"ASSOCIATORS OF {{{source}.ObjectId=""{objectId.Replace(@"\", @"\\").Replace(@"""", @"\""")}""}} WHERE AssocClass = {associationClass}";
+        try { return o.GetPropertyValue<uint>(name); } catch { return 0u; }
+    }
+
+    private static ulong SafeGetUInt64(WmiObject o, string name)
+    {
+        try { return o.GetPropertyValue<ulong>(name); } catch { return 0UL; }
+    }
+
+    private static int SafeGetInt32(WmiObject o, string name)
+    {
+        try { return unchecked((int)o.GetPropertyValue<uint>(name)); } catch { return 0; }
+    }
+
+    private static string FollowAssociationQuery(string source, string objectId, string associationClass, string resultClass)
+    {
+        return @$"ASSOCIATORS OF {{{source}.ObjectId=""{EscapeForWql(objectId)}""}} WHERE AssocClass = {associationClass} ResultClass = {resultClass}";
     }
 
     public string GetReport()
