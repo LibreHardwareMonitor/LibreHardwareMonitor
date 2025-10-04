@@ -116,7 +116,8 @@ internal class WindowsSmart : ISmart
         }
 
         Marshal.FreeHGlobal(buffer);
-        return null;
+
+        return [];
     }
 
     public unsafe SMART_THRESHOLD[] ReadSmartThresholds()
