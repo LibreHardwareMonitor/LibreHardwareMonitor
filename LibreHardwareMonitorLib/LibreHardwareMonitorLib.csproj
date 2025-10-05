@@ -4,7 +4,7 @@
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageId>$(AssemblyName)</PackageId>
     <Description>Monitor the temperature sensors, fan speeds, voltages, load and clock speeds of your computer.</Description>
@@ -18,20 +18,20 @@
     <LangVersion>latest</LangVersion>
     <PackageIcon>packageicon.png</PackageIcon>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <Platforms>x64;x86;AnyCPU</Platforms>
+    <Platforms>x64;x86</Platforms>
     <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
-    <NoWarn>$(NoWarn);CA1416;NU5131</NoWarn>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildOnlyRefs)'=='true'">
+    <Platform>AnyCPU</Platform>
+    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\$(Platform)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>..\bin\Release\$(Platform)\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
-    <OutputPath>..\bin\refs\</OutputPath>
-    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -65,28 +65,10 @@
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="9.0.9" />
   </ItemGroup>
-  <!-- Nuget package content -->
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">
       <Pack>True</Pack>
     </None>
-    <None Include="..\bin\$(Configuration)\x64\**\LibreHardwareMonitorLib.dll" Pack="true">
-      <PackagePath>runtimes\win-x64\lib\</PackagePath>
-    </None>
-    <None Include="..\bin\$(Configuration)\x64\**\LibreHardwareMonitorLib.xml" Pack="true">
-      <PackagePath>runtimes\win-x64\lib\</PackagePath>
-    </None>
-    <None Include="..\bin\$(Configuration)\x86\**\LibreHardwareMonitorLib.dll" Pack="true">
-      <PackagePath>runtimes\win-x86\lib\</PackagePath>
-    </None>
-    <None Include="..\bin\$(Configuration)\x86\**\LibreHardwareMonitorLib.xml" Pack="true">
-      <PackagePath>runtimes\win-x86\lib\</PackagePath>
-    </None>
-    <None Include="..\bin\refs\**\LibreHardwareMonitorLib.dll" Pack="true">
-      <PackagePath>ref\</PackagePath>
-    </None>
-    <None Include="..\bin\refs\**\LibreHardwareMonitorLib.xml" Pack="true">
-      <PackagePath>ref\</PackagePath>
-    </None>
   </ItemGroup>
+  <Import Project="main.nuget.target" Condition="'$(PackMainNuget)' == 'true'" />
 </Project>
