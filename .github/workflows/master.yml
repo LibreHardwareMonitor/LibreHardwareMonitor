@@ -80,4 +80,4 @@ jobs:
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
       - name: Publish to NuGet
-        run: nuget push bin/Release/LibreHardwareMonitorLib.*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
+        run: nuget push bin\Release\LibreHardwareMonitorLib.*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
