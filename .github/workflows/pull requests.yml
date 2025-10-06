@@ -66,6 +66,16 @@ jobs:
           path: |
             bin/Release/x86
 
+      - name: Build ARM64 libraries
+        run: dotnet build LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release --no-restore -p:Platform=ARM64
+
+      - name: Publish ARM64 libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: LibreHardwareMonitorLib (ARM64)
+          path: |
+            bin/Release/ARM64
+
       - name: Build reference libraries
         run: dotnet build LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release --no-restore -p:BuildOnlyRefs=true
 
