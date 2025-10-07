@@ -60,6 +60,12 @@ internal class CpuGroup : IGroup
                     }
 
                     break;
+                case Vendor.Qualcomm:
+                case Vendor.Apple:
+                case Vendor.ARM:
+                case Vendor.Nvidia:
+                    _hardware.Add(new GenericCpu(index, coreThreads, settings));
+                    break;
                 default:
                     _hardware.Add(new GenericCpu(index, coreThreads, settings));
                     break;
