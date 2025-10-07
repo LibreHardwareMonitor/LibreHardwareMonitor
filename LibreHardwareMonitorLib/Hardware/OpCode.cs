@@ -209,6 +209,35 @@ internal static class OpCode
 
     public static unsafe void Open()
     {
+        // If we are on ARM64, we cannot use the x86/x64 opcodes.
+        // Just provide dummy implementations that return 0 or false.
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+        {
+            Rdtsc = () =>
+            {
+                // On .NET 8 and greater, we can use Environment.TickCount64 as a fallback for
+                // a high-resolution timer. It is not as precise as the RDTSC instruction,
+                // but at least it is monotonically increasing and has a decent resolution.
+                // On earlier versions, we just return 0.
+#if NET8_0_OR_GREATER
+                return (ulong)Environment.TickCount64;
+#else
+                return 0UL;
+#endif
+            };
+
+            CpuId = (uint index, uint ecxValue, out uint eax, out uint ebx, out uint ecx, out uint edx) =>
+            {
+                eax = ebx = ecx = edx = 0;
+                return false;
+            };
+
+            _codeBuffer = IntPtr.Zero;
+            _size = 0;
+
+            return;
+        }
+
         byte[] rdTscCode;
         byte[] cpuidCode;
         if (IntPtr.Size == 4)
@@ -268,6 +297,10 @@ internal static class OpCode
     {
         Rdtsc = null;
         CpuId = null;
+
+        // If _codeBuffer is IntPtr.Zero, Open() was never called or we are on an unsupported architecture.
+        if (_codeBuffer == IntPtr.Zero)
+            return;
 
         if (Software.OperatingSystem.IsUnix)
         {

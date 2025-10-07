@@ -5,6 +5,8 @@
 // All Rights Reserved.
 
 using System;
+using System.Management;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
@@ -13,7 +15,11 @@ public enum Vendor
 {
     Unknown,
     Intel,
-    AMD
+    AMD,
+    Qualcomm,
+    Apple,
+    ARM,
+    Nvidia
 }
 
 public class CpuId
@@ -36,6 +42,80 @@ public class CpuId
 
         if (thread >= 64)
             throw new ArgumentOutOfRangeException(nameof(thread));
+
+        // Handle ARM64 architectures
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+        {
+            try
+            {
+                // Use WMI to get CPU information on ARM64 systems
+                using ManagementObjectSearcher searcher = new("SELECT * FROM Win32_Processor");
+                using ManagementObjectCollection processors = searcher.Get();
+
+                foreach (ManagementObject processor in processors)
+                {
+                    // Helper function to safely get string properties with a fallback
+                    string GetString(string key, string fallback = "") => processor[key]?.ToString().Trim() ?? fallback;
+
+                    // CPU name
+                    string processorName = GetString("Name", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER") ?? "Unknown ARM64 CPU");
+                    BrandString = processorName;
+                    Name = processorName;
+
+                    // Vendor detection
+                    string manufacturer = GetString("Manufacturer").ToLower();
+                    Vendor = manufacturer switch
+                    {
+                        var m when m.Contains("qualcomm") => Vendor.Qualcomm,
+                        var m when m.Contains("apple") => Vendor.Apple,
+                        var m when m.Contains("arm") => Vendor.ARM,
+                        var m when m.Contains("nvidia") => Vendor.Nvidia,
+                        _ => Vendor.Unknown
+                    };
+
+                    // Helper function to safely get uint properties with a fallback
+                    uint GetUInt32(string key, uint fallback) => processor[key] is uint u ? u : Convert.ToUInt32(processor[key] ?? fallback);
+
+                    // Get CPU properties
+                    Family = GetUInt32("Family", 0x8); // ARM64 generic family
+                    Model = GetUInt32("Model", 0x1); // Generic model
+                    Stepping = GetUInt32("Stepping", 0x0); // Generic stepping
+
+                    // Set APIC and other IDs to default values as they are not typically available on ARM64
+                    ApicId = (uint)Thread;
+                    ProcessorId = 0;
+                    CoreId = (uint)Thread;
+                    ThreadId = 0;
+                    PkgType = 0;
+
+                    break; // Assume single processor for simplicity
+                }
+
+                // If no processors found, set defaults
+                Data = new uint[1, 4];
+                ExtData = new uint[1, 4];
+            }
+            catch
+            {
+                // If WMI query fails, set default values
+                BrandString = "Unknown ARM64 CPU";
+                Name = "Unknown ARM64 CPU";
+                Vendor = Vendor.Unknown;
+                Family = 0x8;
+                Model = 0x1;
+                Stepping = 0x0;
+                ApicId = (uint)Thread;
+                ProcessorId = 0;
+                CoreId = (uint)Thread;
+                ThreadId = 0;
+                PkgType = 0;
+                Data = new uint[1, 4];
+                ExtData = new uint[1, 4];
+            }
+
+            // No further CPUID processing needed for ARM64
+            return;
+        }
 
         uint maxCpuid;
         if (OpCode.CpuId(CPUID_0, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
