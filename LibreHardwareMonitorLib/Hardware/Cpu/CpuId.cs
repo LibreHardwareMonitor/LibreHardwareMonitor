@@ -58,7 +58,7 @@ public class CpuId
                     string GetString(string key, string fallback = "") => processor[key]?.ToString().Trim() ?? fallback;
 
                     // CPU name
-                    string processorName = GetString("Name", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER") ?? "Unknown ARM64 CPU");
+                    string processorName = GetString("Name", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")?.Trim() ?? "Unknown ARM64 CPU");
                     BrandString = processorName;
                     Name = processorName;
 

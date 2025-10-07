@@ -6,5 +6,5 @@
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
-internal abstract class ArmCpu(int processorIndex, CpuId[][] cpuId, ISettings settings)
+internal class ArmCpu(int processorIndex, CpuId[][] cpuId, ISettings settings)
     : GenericCpu(processorIndex, cpuId, settings);
