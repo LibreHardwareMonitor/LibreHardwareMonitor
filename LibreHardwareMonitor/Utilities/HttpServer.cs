@@ -376,6 +376,12 @@ public class HttpServer
                             return;
                         }
 
+                        if (requestedFile == "metrics")
+                        {
+                            SendPrometheus(context.Response, request);
+                            return;
+                        }
+
                         if (requestedFile.Contains("images_icon"))
                         {
                             ServeResourceImage(context.Response,
@@ -585,16 +591,113 @@ public class HttpServer
         response.Close();
     }
 
+    private string sendPrometheusTreeTransversal(Node node)
+    {
+        string responseStr = "";
+        string lastTagName = "";
+
+        /// Dictionary to convert all data to base units for OpenMetrics
+        /// suffix, factor
+        var units = new Dictionary<SensorType, (string, double)>
+        {
+           { SensorType.Clock, ("hertz", 1000000)},                           //originally MHz
+           { SensorType.Conductivity, ("seconds_per_centimeter", 0.000001) }, //originally in microseconds/s
+           { SensorType.Control, ("percent", 1) },
+           { SensorType.Current, ("amperes", 1) },
+           { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
+           { SensorType.Energy, ("watthour", 0.001) },
+           { SensorType.Factor, ("", 1) },
+           { SensorType.Fan, ("rpms", 1) },
+           { SensorType.Flow, ("liters_per_hour", 1) },
+           { SensorType.Frequency, ("hertz", 1) },
+           { SensorType.Humidity, ("percent", 1) },
+           { SensorType.Level, ("percent", 1) },
+           { SensorType.Load, ("percent", 1) },
+           { SensorType.Noise, ("decibels", 1) },
+           { SensorType.Power, ("watts", 1) },
+           { SensorType.SmallData, ("bytes", 1024*1024) },                    //originally MiB
+           { SensorType.Temperature, ("celsius", 1) },
+           { SensorType.Throughput, ("bytes_per_second", 1000) },             //originally KB
+           { SensorType.TimeSpan, ("seconds", 1) },
+           { SensorType.Timing, ("seconds", 0.000000001 ) },                  //originally nanoseconds
+           { SensorType.Voltage, ("volts", 1) },
+        };
+
+        for (int i = 0; i < node.Nodes.Count; i++)
+        {
+            if (node.Nodes[i].GetType().Name == "HardwareNode")
+            {
+                responseStr += sendPrometheusTreeTransversal(node.Nodes[i]);
+            }
+
+            if (node.Nodes[i].GetType().Name == "TypeNode")
+            {
+                string prometheusHost = node.Parent.Text;
+                foreach (SensorNode sensor in node.Nodes[i].Nodes)
+                {
+                    try
+                    {
+                        string tagName = "lhm_" + ((HardwareNode)node).Hardware.HardwareType.ToString().ToLower()
+                                        + "_" + sensor.Sensor.SensorType.ToString().ToLower()
+                                        +  ( units[sensor.Sensor.SensorType].Item1.Length == 0 ? "" : "_" + units[sensor.Sensor.SensorType].Item1);
+
+                        if (lastTagName != tagName)
+                        {
+                            responseStr += "# TYPE " + tagName + " gauge\n";
+                            lastTagName = tagName;
+                        }
+
+                        responseStr += tagName
+                                        + " {"
+                                            + "\"sensor\"=\"" + sensor.Text.Replace("#", "") + "\""
+                                            + ",\"hardware\"=\"" + node.Text + "\""
+                                            + ",\"id\"=\"" + sensor.Sensor.Identifier.ToString().Split('/').Last() + "\""
+                                            + ",\"family\"=\"" + node.Nodes[i].Text + "\""
+                                            + ",\"host\"=\"" + _root.Text + "\""
+                                        + "} "
+                                        + units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value + "\n";
+
+                    }
+                    catch (Exception)
+                    {
+                        responseStr += "# HELP " + lastTagName + " This Sensor type is not defined in the prometheus adapter [" + sensor.Sensor.SensorType + "]\n";
+                        responseStr += "lhm_" + ((HardwareNode)node).Hardware.HardwareType.ToString().ToLower() + "_" + sensor.Sensor.SensorType.ToString().ToLower()
+                                        + " {"
+                                            + "\"sensor\"=\"" + sensor.Text.Replace("#", "") + "\""
+                                            + ",\"hardware\"=\"" + node.Text + "\""
+                                            + ",\"id\"=\"" + sensor.Sensor.Identifier.ToString().Split('/').Last() + "\""
+                                            + ",\"family\"=\"" + node.Nodes[i].Text + "\""
+                                            + ",\"host\"=\"" + _root.Text + "\""
+                                        + "} "
+                                        + sensor.Sensor.Value + "\n";
+                    }
+                }
+            }
+        }
+        return responseStr;
+    }
+
+    private void SendPrometheus(HttpListenerResponse response, HttpListenerRequest request = null)
+    {
+        string responseContent = sendPrometheusTreeTransversal(_root);
+        SendResponse(response, "text/plain", responseContent);
+    }
+
     private void SendJsonSensor(HttpListenerResponse response, Dictionary<string, object> sensorData)
     {
         // Convert the JObject to a JSON string
         string responseContent = System.Text.Json.JsonSerializer.Serialize(sensorData);
+        SendResponse(response, "application/json", responseContent);
+    }
+
+    private void SendResponse(HttpListenerResponse response, string contentType, string responseContent)
+    {
         byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
 
         // Add headers and set content type
         response.AddHeader("Cache-Control", "no-cache");
         response.AddHeader("Access-Control-Allow-Origin", "*");
-        response.ContentType = "application/json";
+        response.ContentType = contentType;
 
         // Write the response content to the output stream
         try
