@@ -1,0 +1,33 @@
+<!-- For packing the multi-platform nuget after building x64, x86, ARM64 and reference libs -->
+<Project>
+  <PropertyGroup>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);NU5131</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\bin\$(Configuration)\x64\**\LibreHardwareMonitorLib.dll" Pack="true">
+      <PackagePath>runtimes\win-x64\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\x64\**\LibreHardwareMonitorLib.xml" Pack="true">
+      <PackagePath>runtimes\win-x64\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\x86\**\LibreHardwareMonitorLib.dll" Pack="true">
+      <PackagePath>runtimes\win-x86\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\x86\**\LibreHardwareMonitorLib.xml" Pack="true">
+      <PackagePath>runtimes\win-x86\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\ARM64\**\LibreHardwareMonitorLib.dll" Pack="true">
+      <PackagePath>runtimes\win-arm64\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\ARM64\**\LibreHardwareMonitorLib.xml" Pack="true">
+      <PackagePath>runtimes\win-arm64\lib\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\AnyCPU\**\LibreHardwareMonitorLib.dll" Pack="true">
+      <PackagePath>ref\</PackagePath>
+    </None>
+    <None Include="..\bin\$(Configuration)\AnyCPU\**\LibreHardwareMonitorLib.xml" Pack="true">
+      <PackagePath>ref\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>
