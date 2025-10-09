@@ -23,6 +23,7 @@ internal class IntelGpuGroup : IGroup
         {
             // Initialize Intel GCL for discrete GPUs
             bool gclInitialized = false;
+
             try
             {
                 if (IntelGcl.IsAvailable)
