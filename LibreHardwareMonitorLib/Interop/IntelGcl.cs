@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Windows.Win32;
 
 namespace LibreHardwareMonitor.Interop;
 
@@ -202,11 +203,10 @@ internal static class IntelGcl
 
     private static bool GclMethodExists(string gclMethod)
     {
-        IntPtr module = Kernel32.LoadLibrary(DllName);
-        if (module != IntPtr.Zero)
+        using FreeLibrarySafeHandle module = PInvoke.LoadLibrary(DllName);
+        if (!module.IsInvalid)
         {
-            bool result = Kernel32.GetProcAddress(module, gclMethod) != IntPtr.Zero;
-            Kernel32.FreeLibrary(module);
+            bool result = PInvoke.GetProcAddress(module, gclMethod) != IntPtr.Zero;
             return result;
         }
 
