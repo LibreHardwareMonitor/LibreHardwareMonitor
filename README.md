@@ -25,7 +25,7 @@ winget install LibreHardwareMonitor.LibreHardwareMonitor
 ```
 
 ### Nightly builds
-If you have a **GitHub** account, you can download nightly builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Otherwise, you can download the *latest* nightly build [here](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor-net472.zip).
+If you have a **GitHub** account, you can download nightly builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Otherwise, you can download the *latest* nightly build [here](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.zip).
 
 ## How can I help improve it?
 The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
