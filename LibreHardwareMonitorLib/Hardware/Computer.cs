@@ -172,7 +172,9 @@ public class Computer : IComputer
                 {
                     Add(new AmdGpuGroup(_settings));
                     Add(new NvidiaGroup(_settings));
-                    Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+
+                    if (_cpuEnabled)
+                        Add(new IntelGpuGroup(GetIntelCpus(), _settings));
                 }
                 else
                 {
@@ -507,7 +509,9 @@ public class Computer : IComputer
         {
             Add(new AmdGpuGroup(_settings));
             Add(new NvidiaGroup(_settings));
-            Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+
+            if (_cpuEnabled)
+                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
         }
 
         if (_controllerEnabled)
