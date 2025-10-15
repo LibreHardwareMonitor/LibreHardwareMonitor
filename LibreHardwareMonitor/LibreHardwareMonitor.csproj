@@ -31,7 +31,7 @@
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="OxyPlot.Core" Version="2.2.0" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
-    <PackageReference Include="System.Management" Version="9.0.9" />
+    <PackageReference Include="System.Management" Version="9.0.10" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Web" />
