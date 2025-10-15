@@ -63,7 +63,7 @@
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.3.2" />
     <PackageReference Include="System.Management" Version="9.0.10" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="System.Threading.AccessControl" Version="9.0.9" />
+    <PackageReference Include="System.Threading.AccessControl" Version="9.0.10" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">
