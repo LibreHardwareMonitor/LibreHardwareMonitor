@@ -424,6 +424,7 @@ internal class LpcIO
                             case Model.Z890A_PRO_WIFI:
                             case Model.Z890S_PRO_WIFI:
                             case Model.B850S_PRO_WIFI6E:
+                            case Model.B850M_GAMING_PLUS_WIFI6E:
                                 chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
                                 break;
                             default:
