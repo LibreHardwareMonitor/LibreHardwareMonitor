@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
@@ -29,7 +30,8 @@ public class HttpServer
     private readonly HttpListener _listener;
     private readonly Node _root;
     private readonly IElement _rootElement;
-    private Thread _listenerThread;
+    private Task _listenerTask;
+    private CancellationTokenSource _cts;
 
     public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
@@ -57,7 +59,11 @@ public class HttpServer
             return;
 
         StopHttpListener();
-        _listener.Abort();
+        try
+        {
+            _listener?.Abort();
+        }
+        catch { }
     }
 
     public bool AuthEnabled { get; set; }
@@ -117,11 +123,8 @@ public class HttpServer
             _listener.AuthenticationSchemes = AuthEnabled ? AuthenticationSchemes.Basic : AuthenticationSchemes.Anonymous;
             _listener.Start();
 
-            if (_listenerThread == null)
-            {
-                _listenerThread = new Thread(HandleRequests);
-                _listenerThread.Start();
-            }
+            _cts = new CancellationTokenSource();
+            _listenerTask = Task.Run(() => ProcessRequestsAsync(_cts.Token));
         }
         catch (Exception)
         {
@@ -138,13 +141,16 @@ public class HttpServer
 
         try
         {
-            _listenerThread?.Abort();
-            _listener.Stop();
-            _listenerThread = null;
+            _cts?.Cancel();
+            _listenerTask?.Wait(TimeSpan.FromSeconds(5)); // Graceful wait
+            _listener?.Stop();
+            _cts?.Dispose();
+            _cts = null;
+            _listenerTask = null;
         }
         catch (HttpListenerException)
         { }
-        catch (ThreadAbortException)
+        catch (OperationCanceledException)
         { }
         catch (NullReferenceException)
         { }
@@ -154,24 +160,145 @@ public class HttpServer
         return true;
     }
 
-    private void HandleRequests()
+    private async Task ProcessRequestsAsync(CancellationToken cancellationToken)
     {
-        while (_listener.IsListening)
+        while (_listener.IsListening && !cancellationToken.IsCancellationRequested)
         {
-            IAsyncResult context = _listener.BeginGetContext(ListenerCallback, _listener);
-            context.AsyncWaitHandle.WaitOne();
+            try
+            {
+                var context = await _listener.GetContextAsync();
+                _ = Task.Run(() => HandleContextAsync(context), cancellationToken);
+            }
+            catch (HttpListenerException ex) when (ex.ErrorCode == 50 || ex.Message.ToLower().Contains("not supported"))
+            {
+                // Handle Windows update bug (e.g., 2025-10 Cumulative Update): retry after delay
+                System.Diagnostics.Debug.WriteLine($"HttpListener error (code {ex.ErrorCode}): {ex.Message}. Retrying in 5 seconds.");
+                await Task.Delay(5000, cancellationToken);
+            }
+            catch (ObjectDisposedException)
+            {
+                break; // Listener stopped
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Unexpected HttpListener error: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task HandleContextAsync(HttpListenerContext context)
+    {
+        HttpListenerRequest request = context.Request;
+        bool authenticated = true;
+
+        if (AuthEnabled)
+        {
+            try
+            {
+                HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
+                authenticated = (identity.Name == UserName) && (ComputeSHA256(identity.Password) == PasswordSHA256);
+            }
+            catch
+            {
+                authenticated = false;
+            }
+        }
+
+        if (authenticated)
+        {
+            switch (request.HttpMethod)
+            {
+                case "POST":
+                    {
+                        string postResult = HandlePostRequest(request);
+                        await SendResponseAsync(context.Response, postResult, "application/json");
+                        break;
+                    }
+                case "GET":
+                    {
+                        string requestedFile = request.RawUrl.Substring(1);
+
+                        if (requestedFile == "data.json")
+                        {
+                            await SendJsonAsync(context.Response, request);
+                            return;
+                        }
+
+                        if (requestedFile.Contains("images_icon"))
+                        {
+                            await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
+                            return;
+                        }
+
+                        if (requestedFile.Contains("Sensor"))
+                        {
+                            var sensorResult = new Dictionary<string, object>();
+                            HandleSensorRequest(request, sensorResult);
+                            await SendJsonSensorAsync(context.Response, sensorResult);
+                            return;
+                        }
+
+                        if (requestedFile.Contains("ResetAllMinMax"))
+                        {
+                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
+                            {
+                                sensor.ResetMin();
+                                sensor.ResetMax();
+                            }));
+                            await SendJsonAsync(context.Response, request);
+                            return;
+                        }
+
+                        // default file to be served
+                        if (string.IsNullOrEmpty(requestedFile))
+                            requestedFile = "index.html";
+
+                        string[] splits = requestedFile.Split('.');
+                        string ext = splits[splits.Length - 1];
+                        await ServeResourceFileAsync(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+                        break;
+                    }
+                default:
+                    {
+                        context.Response.StatusCode = 404;
+                        break;
+                    }
+            }
+        }
+        else
+        {
+            context.Response.StatusCode = 401;
+        }
+
+        if (context.Response.StatusCode == 401)
+        {
+            const string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
+  <BODY><H4>401 Unauthorized</H4>
+  Authorization required.</BODY></HTML> ";
+
+            await SendResponseAsync(context.Response, responseString, "text/html");
+        }
+
+        try
+        {
+            context.Response.Close();
+        }
+        catch
+        {
+            // client closed connection before the content was sent
         }
     }
 
     public static IDictionary<string, string> ToDictionary(NameValueCollection col)
     {
-        IDictionary<string, string> dict = new Dictionary<string, string>();
-        foreach (string k in col.AllKeys)
-        {
-            dict.Add(k, col[k]);
-        }
-
-        return dict;
+        return col.AllKeys?
+            .Where(k => k != null)
+            .ToDictionary(k => k, k => col[k] ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
     public SensorNode FindSensor(Node node, string id)
@@ -250,21 +377,28 @@ public class HttpServer
                     dict["action"] = "Get";
                 }
 
-                switch (dict["action"])
+                string action = dict["action"];
+                if (action == "Set")
                 {
-                    case "Set" when dict.ContainsKey("value"):
+                    if (dict.ContainsKey("value"))
+                    {
                         SetSensorControlValue(sNode, dict["value"]);
-                        break;
-                    case "Set":
+                    }
+                    else
+                    {
                         throw new ArgumentNullException("No value provided");
-                    case "Get":
-                        result["value"] = sNode.Sensor.Value;
-                        result["min"] = sNode.Sensor.Min;
-                        result["max"] = sNode.Sensor.Max;
-                        result["format"] = sNode.Format;
-                        break;
-                    default:
-                        throw new ArgumentException("Unknown action type " + dict["action"]);
+                    }
+                }
+                else if (action == "Get")
+                {
+                    result["value"] = sNode.Sensor.Value;
+                    result["min"] = sNode.Sensor.Min;
+                    result["max"] = sNode.Sensor.Max;
+                    result["format"] = sNode.Format;
+                }
+                else
+                {
+                    throw new ArgumentException("Unknown action type " + dict["action"]);
                 }
             }
             else
@@ -308,148 +442,22 @@ public class HttpServer
         return System.Text.Json.JsonSerializer.Serialize(result);
     }
 
-    private void ListenerCallback(IAsyncResult result)
+    private static async Task SendResponseAsync(HttpListenerResponse response, string content, string contentType)
     {
-        HttpListener listener = (HttpListener)result.AsyncState;
-        if (listener == null || !listener.IsListening)
-            return;
-
-        // Call EndGetContext to complete the asynchronous operation.
-        HttpListenerContext context;
-        try
-        {
-            context = listener.EndGetContext(result);
-        }
-        catch (Exception)
-        {
-            return;
-        }
-
-        HttpListenerRequest request = context.Request;
-
-        bool authenticated;
-
-        if (AuthEnabled)
-        {
-            try
-            {
-                HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
-                authenticated = (identity.Name == UserName) & (ComputeSHA256(identity.Password) == Password);
-            }
-            catch
-            {
-                authenticated = false;
-            }
-        }
-        else
-        {
-            authenticated = true;
-        }
-
-        if (authenticated)
-        {
-            switch (request.HttpMethod)
-            {
-                case "POST":
-                    {
-                        string postResult = HandlePostRequest(request);
-
-                        Stream output = context.Response.OutputStream;
-                        byte[] utfBytes = Encoding.UTF8.GetBytes(postResult);
-
-                        context.Response.AddHeader("Cache-Control", "no-cache");
-                        context.Response.ContentLength64 = utfBytes.Length;
-                        context.Response.ContentType = "application/json";
-
-                        output.Write(utfBytes, 0, utfBytes.Length);
-                        output.Close();
-
-                        break;
-                    }
-                case "GET":
-                    {
-                        string requestedFile = request.RawUrl.Substring(1);
-
-                        if (requestedFile == "data.json")
-                        {
-                            SendJson(context.Response, request);
-                            return;
-                        }
-
-                        if (requestedFile.Contains("images_icon"))
-                        {
-                            ServeResourceImage(context.Response,
-                                               requestedFile.Replace("images_icon/", string.Empty));
-
-                            return;
-                        }
-
-                        if (requestedFile.Contains("Sensor"))
-                        {
-                            var sensorResult = new Dictionary<string, object>();
-                            HandleSensorRequest(request, sensorResult);
-                            SendJsonSensor(context.Response, sensorResult);
-                            return;
-                        }
-
-                        if (requestedFile.Contains("ResetAllMinMax"))
-                        {
-                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
-                            {
-                                sensor.ResetMin();
-                                sensor.ResetMax();
-                            }));
-                            SendJson(context.Response, request);
-                            return;
-                        }
-
-                        // default file to be served
-                        if (string.IsNullOrEmpty(requestedFile))
-                            requestedFile = "index.html";
-
-                        string[] splits = requestedFile.Split('.');
-                        string ext = splits[splits.Length - 1];
-                        ServeResourceFile(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
-
-                        break;
-                    }
-                default:
-                    {
-                        context.Response.StatusCode = 404;
-                        break;
-                    }
-            }
-        }
-        else
-        {
-            context.Response.StatusCode = 401;
-        }
-
-        if (context.Response.StatusCode == 401)
-        {
-            const string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
-  <BODY><H4>401 Unauthorized</H4>
-  Authorization required.</BODY></HTML> ";
-
-            byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-            context.Response.ContentLength64 = buffer.Length;
-            context.Response.StatusCode = 401;
-            Stream output = context.Response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
-        }
+        byte[] buffer = Encoding.UTF8.GetBytes(content);
+        response.ContentType = contentType;
+        response.ContentLength64 = buffer.Length;
 
         try
         {
-            context.Response.Close();
+            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
         }
-        catch
-        {
-            // client closed connection before the content was sent
-        }
+        catch (HttpListenerException)
+        { }
     }
 
-    private void ServeResourceFile(HttpListenerResponse response, string name, string ext)
+    private async Task ServeResourceFileAsync(HttpListenerResponse response, string name, string ext)
     {
         // resource names do not support the hyphen
         name = "LibreHardwareMonitor.Resources." +
@@ -468,15 +476,14 @@ public class HttpServer
                 byte[] buffer = new byte[512 * 1024];
                 try
                 {
-                    Stream output = response.OutputStream;
                     int len;
-                    while ((len = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    while ((len = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        output.Write(buffer, 0, len);
+                        await response.OutputStream.WriteAsync(buffer, 0, len);
                     }
 
-                    output.Flush();
-                    output.Close();
+                    await response.OutputStream.FlushAsync();
+                    response.OutputStream.Close();
                     response.Close();
                 }
                 catch (HttpListenerException)
@@ -492,7 +499,7 @@ public class HttpServer
         response.Close();
     }
 
-    private void ServeResourceImage(HttpListenerResponse response, string name)
+    private async Task ServeResourceImageAsync(HttpListenerResponse response, string name)
     {
         name = "LibreHardwareMonitor.Resources." + name;
 
@@ -504,23 +511,19 @@ public class HttpServer
             {
                 using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]);
 
-                Image image = Image.FromStream(stream);
+                using Image image = Image.FromStream(stream);
                 response.ContentType = "image/png";
                 try
                 {
-                    Stream output = response.OutputStream;
-                    using (MemoryStream ms = new())
-                    {
-                        image.Save(ms, ImageFormat.Png);
-                        ms.WriteTo(output);
-                    }
-
-                    output.Close();
+                    using var ms = new MemoryStream();
+                    image.Save(ms, ImageFormat.Png);
+                    byte[] buffer = ms.ToArray();
+                    await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                    response.OutputStream.Close();
                 }
                 catch (HttpListenerException)
                 { }
 
-                image.Dispose();
                 response.Close();
                 return;
             }
@@ -530,7 +533,7 @@ public class HttpServer
         response.Close();
     }
 
-    private void SendJson(HttpListenerResponse response, HttpListenerRequest request = null)
+    private async Task SendJsonAsync(HttpListenerResponse response, HttpListenerRequest request = null)
     {
         Dictionary<string, object> json = new();
 
@@ -550,34 +553,32 @@ public class HttpServer
         bool acceptGzip;
         try
         {
-            acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].ToLower().IndexOf("gzip", StringComparison.OrdinalIgnoreCase) >= 0);
+            acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].ToLower().Contains("gzip"));
         }
         catch
         {
             acceptGzip = false;
         }
 
-        if (acceptGzip)
-            response.AddHeader("Content-Encoding", "gzip");
-
         response.AddHeader("Cache-Control", "no-cache");
         response.AddHeader("Access-Control-Allow-Origin", "*");
         response.ContentType = "application/json";
+
         try
         {
             if (acceptGzip)
             {
+                response.AddHeader("Content-Encoding", "gzip");
                 using var ms = new MemoryStream();
                 using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
-                    zip.Write(buffer, 0, buffer.Length);
+                    await zip.WriteAsync(buffer, 0, buffer.Length);
 
                 buffer = ms.ToArray();
             }
 
             response.ContentLength64 = buffer.Length;
-            Stream output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
+            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
         }
         catch (HttpListenerException)
         { }
@@ -585,7 +586,7 @@ public class HttpServer
         response.Close();
     }
 
-    private void SendJsonSensor(HttpListenerResponse response, Dictionary<string, object> sensorData)
+    private async Task SendJsonSensorAsync(HttpListenerResponse response, Dictionary<string, object> sensorData)
     {
         // Convert the JObject to a JSON string
         string responseContent = System.Text.Json.JsonSerializer.Serialize(sensorData);
@@ -600,9 +601,8 @@ public class HttpServer
         try
         {
             response.ContentLength64 = buffer.Length;
-            Stream output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
+            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
         }
         catch (HttpListenerException)
         { }
@@ -769,6 +769,10 @@ public class HttpServer
             return;
 
         StopHttpListener();
-        _listener.Abort();
+        try
+        {
+            _listener?.Abort();
+        }
+        catch { }
     }
 }
