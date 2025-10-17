@@ -190,109 +190,6 @@ public class HttpServer
         }
     }
 
-    private async Task HandleContextAsync(HttpListenerContext context)
-    {
-        HttpListenerRequest request = context.Request;
-        bool authenticated = true;
-
-        if (AuthEnabled)
-        {
-            try
-            {
-                HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
-                authenticated = (identity.Name == UserName) && (ComputeSHA256(identity.Password) == PasswordSHA256);
-            }
-            catch
-            {
-                authenticated = false;
-            }
-        }
-
-        if (authenticated)
-        {
-            switch (request.HttpMethod)
-            {
-                case "POST":
-                    {
-                        string postResult = HandlePostRequest(request);
-                        await SendResponseAsync(context.Response, postResult, "application/json");
-                        break;
-                    }
-                case "GET":
-                    {
-                        string requestedFile = request.RawUrl.Substring(1);
-
-                        if (requestedFile == "data.json")
-                        {
-                            await SendJsonAsync(context.Response, request);
-                            return;
-                        }
-
-                        if (requestedFile.Contains("images_icon"))
-                        {
-                            await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
-                            return;
-                        }
-
-                        if (requestedFile.Contains("Sensor"))
-                        {
-                            var sensorResult = new Dictionary<string, object>();
-                            HandleSensorRequest(request, sensorResult);
-                            await SendJsonSensorAsync(context.Response, sensorResult);
-                            return;
-                        }
-
-                        if (requestedFile.Contains("ResetAllMinMax"))
-                        {
-                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
-                            {
-                                sensor.ResetMin();
-                                sensor.ResetMax();
-                            }));
-                            await SendJsonAsync(context.Response, request);
-                            return;
-                        }
-
-                        // default file to be served
-                        if (string.IsNullOrEmpty(requestedFile))
-                            requestedFile = "index.html";
-
-                        string[] splits = requestedFile.Split('.');
-                        string ext = splits[splits.Length - 1];
-                        await ServeResourceFileAsync(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
-                        break;
-                    }
-                default:
-                    {
-                        context.Response.StatusCode = 404;
-                        break;
-                    }
-            }
-        }
-        else
-        {
-            context.Response.StatusCode = 401;
-        }
-
-        if (context.Response.StatusCode == 401)
-        {
-            const string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
-  <BODY><H4>401 Unauthorized</H4>
-  Authorization required.</BODY></HTML> ";
-
-            await SendResponseAsync(context.Response, responseString, "text/html");
-        }
-
-        try
-        {
-            context.Response.Close();
-        }
-        catch
-        {
-            // client closed connection before the content was sent
-        }
-    }
-
     public static IDictionary<string, string> ToDictionary(NameValueCollection col)
     {
         return col.AllKeys?
@@ -300,7 +197,6 @@ public class HttpServer
             .ToDictionary(k => k, k => col[k] ?? string.Empty, StringComparer.OrdinalIgnoreCase)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
-
     public SensorNode FindSensor(Node node, string id)
     {
         if (node is SensorNode sNode)
@@ -320,7 +216,6 @@ public class HttpServer
 
         return null;
     }
-
     public void SetSensorControlValue(SensorNode sNode, string value)
     {
         if (sNode.Sensor.Control == null)
@@ -442,21 +337,108 @@ public class HttpServer
         return System.Text.Json.JsonSerializer.Serialize(result);
     }
 
-    private static async Task SendResponseAsync(HttpListenerResponse response, string content, string contentType)
+    private async Task HandleContextAsync(HttpListenerContext context)
     {
-        byte[] buffer = Encoding.UTF8.GetBytes(content);
-        response.ContentType = contentType;
-        response.ContentLength64 = buffer.Length;
+        HttpListenerRequest request = context.Request;
+        bool authenticated = true;
+
+        if (AuthEnabled)
+        {
+            try
+            {
+                HttpListenerBasicIdentity identity = (HttpListenerBasicIdentity)context.User.Identity;
+                authenticated = (identity.Name == UserName) && (ComputeSHA256(identity.Password) == PasswordSHA256);
+            }
+            catch
+            {
+                authenticated = false;
+            }
+        }
+
+        if (authenticated)
+        {
+            switch (request.HttpMethod)
+            {
+                case "POST":
+                    {
+                        string postResult = HandlePostRequest(request);
+                        await SendResponseAsync(context.Response, postResult, "application/json");
+                        break;
+                    }
+                case "GET":
+                    {
+                        string requestedFile = request.RawUrl.Substring(1);
+
+                        if (requestedFile == "data.json")
+                        {
+                            await SendJsonAsync(context.Response, request);
+                            return;
+                        }
+
+                        if (requestedFile.Contains("images_icon"))
+                        {
+                            await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
+                            return;
+                        }
+
+                        if (requestedFile.Contains("Sensor"))
+                        {
+                            var sensorResult = new Dictionary<string, object>();
+                            HandleSensorRequest(request, sensorResult);
+                            await SendJsonSensorAsync(context.Response, sensorResult);
+                            return;
+                        }
+
+                        if (requestedFile.Contains("ResetAllMinMax"))
+                        {
+                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
+                            {
+                                sensor.ResetMin();
+                                sensor.ResetMax();
+                            }));
+                            await SendJsonAsync(context.Response, request);
+                            return;
+                        }
+
+                        // default file to be served
+                        if (string.IsNullOrEmpty(requestedFile))
+                            requestedFile = "index.html";
+
+                        string[] splits = requestedFile.Split('.');
+                        string ext = splits[splits.Length - 1];
+                        await ServeResourceFileAsync(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+                        break;
+                    }
+                default:
+                    {
+                        context.Response.StatusCode = 404;
+                        break;
+                    }
+            }
+        }
+        else
+        {
+            context.Response.StatusCode = 401;
+        }
+
+        if (context.Response.StatusCode == 401)
+        {
+            const string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
+  <BODY><H4>401 Unauthorized</H4>
+  Authorization required.</BODY></HTML> ";
+
+            await SendResponseAsync(context.Response, responseString, "text/html");
+        }
 
         try
         {
-            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
+            context.Response.Close();
         }
-        catch (HttpListenerException)
-        { }
+        catch
+        {
+            // client closed connection before the content was sent
+        }
     }
-
     private async Task ServeResourceFileAsync(HttpListenerResponse response, string name, string ext)
     {
         // resource names do not support the hyphen
@@ -498,7 +480,6 @@ public class HttpServer
         response.StatusCode = 404;
         response.Close();
     }
-
     private async Task ServeResourceImageAsync(HttpListenerResponse response, string name)
     {
         name = "LibreHardwareMonitor.Resources." + name;
@@ -685,7 +666,6 @@ public class HttpServer
             default: return "application/octet-stream";
         }
     }
-
     private static string GetHardwareImageFile(HardwareNode hn)
     {
         switch (hn.Hardware.HardwareType)
@@ -775,4 +755,20 @@ public class HttpServer
         }
         catch { }
     }
+
+    private static async Task SendResponseAsync(HttpListenerResponse response, string content, string contentType)
+    {
+        byte[] buffer = Encoding.UTF8.GetBytes(content);
+        response.ContentType = contentType;
+        response.ContentLength64 = buffer.Length;
+
+        try
+        {
+            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
+        }
+        catch (HttpListenerException)
+        { }
+    }
+
 }
