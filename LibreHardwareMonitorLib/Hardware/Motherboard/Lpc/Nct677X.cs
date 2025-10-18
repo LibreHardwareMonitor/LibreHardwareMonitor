@@ -212,7 +212,7 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
-                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
+                            //new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496), // Disabled because these registers are wrong and can cause wrong measurement
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
@@ -220,15 +220,17 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),
                             new(SourceNct67Xxd.PCH_CPU_TEMP,  0x678, 0, -1, 0xC2A, 0x402),
                             new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),
-                            new(SourceNct67Xxd.AGENT0_DIMM0, 0),
-                            new(SourceNct67Xxd.AGENT0_DIMM1, 0),
-                            new(SourceNct67Xxd.AGENT1_DIMM0, 0),
-                            new(SourceNct67Xxd.AGENT1_DIMM1, 0),
-                            new(SourceNct67Xxd.BYTE_TEMP0, 0),
-                            new(SourceNct67Xxd.BYTE_TEMP1, 0),
-                            new(SourceNct67Xxd.PECI_0_CAL, 0),
-                            new(SourceNct67Xxd.PECI_1_CAL, 0),
-                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0)
+                            new(SourceNct67Xxd.AGENT0_DIMM0, 0x405, 0, -1),
+                            new(SourceNct67Xxd.AGENT0_DIMM1,0x406, 0, -1),
+                            new(SourceNct67Xxd.AGENT1_DIMM0, 0x407, 0, -1),
+                            new(SourceNct67Xxd.AGENT1_DIMM1, 0x408, 0, -1),
+                            new(SourceNct67Xxd.BYTE_TEMP0, 0x419, 0, -1),
+                            new(SourceNct67Xxd.BYTE_TEMP1, 0x41A, 0, -1),
+                            new(SourceNct67Xxd.PECI_0_CAL, 0x4F4, 0, -1),
+                            new(SourceNct67Xxd.PECI_1_CAL, 0x4F5, 0, -1),
+                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0),
+                            new(SourceNct67Xxd.SPARE_TEMP, 0), // Used for voltage temp sensor
+                            new(SourceNct67Xxd.SPARE_TEMP2, 0) // Used for voltage temp sensor
                         });
                         break;
 
@@ -1141,7 +1143,12 @@ internal class Nct677X : ISuperIO
         AUXTIN4 = 7,
         SMBUSMASTER0 = 8,
         SMBUSMASTER1 = 9,
-        TSENSOR = 10,
+        RESERVED_1 = 10,
+        RESERVED_2 = 11,
+        RESERVED_3 = 12,
+        RESERVED_4 = 13,
+        RESERVED_5 = 14,
+        RESERVED_6 = 15,
         PECI_0 = 16,
         PECI_1 = 17,
         PCH_CHIP_CPU_MAX_TEMP = 18,
@@ -1156,7 +1163,10 @@ internal class Nct677X : ISuperIO
         BYTE_TEMP1 = 27,
         PECI_0_CAL = 28,
         PECI_1_CAL = 29,
-        VIRTUAL_TEMP = 31
+        RESERVED_7 = 30,
+        VIRTUAL_TEMP = 31,
+        SPARE_TEMP = 32,
+        SPARE_TEMP2 = 33
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
