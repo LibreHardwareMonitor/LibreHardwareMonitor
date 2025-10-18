@@ -591,7 +591,7 @@ public class HttpServer
         response.Close();
     }
 
-    private string sendPrometheusTreeTransversal(Node node)
+    private string SendPrometheusTreeTransversal(Node node)
     {
         string responseStr = "";
         string lastTagName = "";
@@ -600,8 +600,8 @@ public class HttpServer
         /// suffix, factor
         var units = new Dictionary<SensorType, (string, double)>
         {
-           { SensorType.Clock, ("hertz", 1000000)},                           //originally MHz
-           { SensorType.Conductivity, ("seconds_per_centimeter", 0.000001) }, //originally in microseconds/s
+           { SensorType.Clock, ("hertz", 1000000)},                           //originally megahertz
+           { SensorType.Conductivity, ("seconds_per_centimeter", 0.000001) }, //originally microseconds per centimeter
            { SensorType.Control, ("percent", 1) },
            { SensorType.Current, ("amperes", 1) },
            { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
@@ -627,7 +627,7 @@ public class HttpServer
         {
             if (node.Nodes[i].GetType().Name == "HardwareNode")
             {
-                responseStr += sendPrometheusTreeTransversal(node.Nodes[i]);
+                responseStr += SendPrometheusTreeTransversal(node.Nodes[i]);
             }
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
@@ -635,41 +635,34 @@ public class HttpServer
                 string prometheusHost = node.Parent.Text;
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
+                    string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
+                    string tagSensorType = sensor.Sensor.SensorType.ToString();
+                    string tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? "" : "_" + units[sensor.Sensor.SensorType].Item1);
+                    string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
+                    tagName = tagName.ToLower();
+
+                    string valueSensor = sensor.Text.Replace("#", "");
+                    string valueHardware = node.Text;
+                    string valueId = sensor.Sensor.Identifier.ToString().Split('/').Last();
+                    string valueFamily = node.Nodes[i].Text;
+                    string valueHost = _root.Text;
+
                     try
                     {
-                        string tagName = "lhm_" + ((HardwareNode)node).Hardware.HardwareType.ToString().ToLower()
-                                        + "_" + sensor.Sensor.SensorType.ToString().ToLower()
-                                        +  ( units[sensor.Sensor.SensorType].Item1.Length == 0 ? "" : "_" + units[sensor.Sensor.SensorType].Item1);
 
                         if (lastTagName != tagName)
                         {
-                            responseStr += "# TYPE " + tagName + " gauge\n";
+                            responseStr += $"# TYPE {tagName} gauge\n";
                             lastTagName = tagName;
                         }
 
-                        responseStr += tagName
-                                        + " {"
-                                            + "\"sensor\"=\"" + sensor.Text.Replace("#", "") + "\""
-                                            + ",\"hardware\"=\"" + node.Text + "\""
-                                            + ",\"id\"=\"" + sensor.Sensor.Identifier.ToString().Split('/').Last() + "\""
-                                            + ",\"family\"=\"" + node.Nodes[i].Text + "\""
-                                            + ",\"host\"=\"" + _root.Text + "\""
-                                        + "} "
-                                        + units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value + "\n";
-
+                        double? tagValue = units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value;
+                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}} "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{tagValue}}""" + "\n";
                     }
                     catch (Exception)
                     {
-                        responseStr += "# HELP " + lastTagName + " This Sensor type is not defined in the prometheus adapter [" + sensor.Sensor.SensorType + "]\n";
-                        responseStr += "lhm_" + ((HardwareNode)node).Hardware.HardwareType.ToString().ToLower() + "_" + sensor.Sensor.SensorType.ToString().ToLower()
-                                        + " {"
-                                            + "\"sensor\"=\"" + sensor.Text.Replace("#", "") + "\""
-                                            + ",\"hardware\"=\"" + node.Text + "\""
-                                            + ",\"id\"=\"" + sensor.Sensor.Identifier.ToString().Split('/').Last() + "\""
-                                            + ",\"family\"=\"" + node.Nodes[i].Text + "\""
-                                            + ",\"host\"=\"" + _root.Text + "\""
-                                        + "} "
-                                        + sensor.Sensor.Value + "\n";
+                        responseStr += $"# HELP {lastTagName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
+                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}} "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{sensor.Sensor.Value}}""" + "\n";
                     }
                 }
             }
@@ -679,7 +672,7 @@ public class HttpServer
 
     private void SendPrometheus(HttpListenerResponse response, HttpListenerRequest request = null)
     {
-        string responseContent = sendPrometheusTreeTransversal(_root);
+        string responseContent = SendPrometheusTreeTransversal(_root);
         SendResponse(response, "text/plain", responseContent);
     }
 
