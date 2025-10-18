@@ -372,7 +372,7 @@ public class HttpServer
 
                         if (requestedFile == "metrics")
                         {
-                            SendPrometheus(context.Response, request);
+                            await SendPrometheusAsync(context.Response, request);
                             return;
                         }
 
@@ -569,7 +569,7 @@ public class HttpServer
         response.Close();
     }
 
-    private string SendPrometheusTreeTransversal(Node node)
+    private string GeneratePrometheusResponse(Node node)
     {
         string responseStr = "";
         string lastTagName = "";
@@ -605,7 +605,7 @@ public class HttpServer
         {
             if (node.Nodes[i].GetType().Name == "HardwareNode")
             {
-                responseStr += SendPrometheusTreeTransversal(node.Nodes[i]);
+                responseStr += GeneratePrometheusResponse(node.Nodes[i]);
             }
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
@@ -648,40 +648,19 @@ public class HttpServer
         return responseStr;
     }
 
-    private void SendPrometheus(HttpListenerResponse response, HttpListenerRequest request = null)
+    private async Task SendPrometheusAsync(HttpListenerResponse response, HttpListenerRequest request = null)
     {
-        string responseContent = SendPrometheusTreeTransversal(_root);
-        SendResponse(response, "text/plain", responseContent);
+        string responseContent = GeneratePrometheusResponse(_root);
+        response.AddHeader("Cache-Control", "no-cache");
+        response.AddHeader("Access-Control-Allow-Origin", "*");
+        await SendResponseAsync(response, responseContent, "text/plain");
     }
 
     private async Task SendJsonSensorAsync(HttpListenerResponse response, Dictionary<string, object> sensorData)
     {
         // Convert the JObject to a JSON string
         string responseContent = System.Text.Json.JsonSerializer.Serialize(sensorData);
-        SendResponse(response, "application/json", responseContent);
-    }
-
-    private async void SendResponse(HttpListenerResponse response, string contentType, string responseContent)
-    {
-        byte[] buffer = Encoding.UTF8.GetBytes(responseContent);
-
-        // Add headers and set content type
-        response.AddHeader("Cache-Control", "no-cache");
-        response.AddHeader("Access-Control-Allow-Origin", "*");
-        response.ContentType = contentType;
-
-        // Write the response content to the output stream
-        try
-        {
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
-        catch (HttpListenerException)
-        { }
-
-        // Close the response
-        response.Close();
+        await SendResponseAsync(response, responseContent, "application/json");
     }
         
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
