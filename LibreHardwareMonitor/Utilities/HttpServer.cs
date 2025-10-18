@@ -145,8 +145,6 @@ public class HttpServer
             _listenerTask?.Wait(TimeSpan.FromSeconds(5)); // Graceful wait
             _listener?.Stop();
             _cts?.Dispose();
-            _cts = null;
-            _listenerTask = null;
         }
         catch (HttpListenerException)
         { }
@@ -169,7 +167,7 @@ public class HttpServer
                 var context = await _listener.GetContextAsync();
                 _ = Task.Run(() => HandleContextAsync(context), cancellationToken);
             }
-            catch (HttpListenerException ex) when (ex.ErrorCode == 50 || ex.Message.ToLower().Contains("not supported"))
+            catch (HttpListenerException ex) when (ex.ErrorCode == 50)
             {
                 // Handle Windows update bug (e.g., 2025-10 Cumulative Update): retry after delay
                 System.Diagnostics.Debug.WriteLine($"HttpListener error (code {ex.ErrorCode}): {ex.Message}. Retrying in 5 seconds.");
@@ -192,11 +190,15 @@ public class HttpServer
 
     public static IDictionary<string, string> ToDictionary(NameValueCollection col)
     {
-        return col.AllKeys?
-            .Where(k => k != null)
-            .ToDictionary(k => k, k => col[k] ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        IDictionary<string, string> dict = new Dictionary<string, string>();
+        foreach (string k in col.AllKeys)
+        {
+            dict.Add(k, col[k]);
+        }
+
+        return dict;
     }
+
     public SensorNode FindSensor(Node node, string id)
     {
         if (node is SensorNode sNode)
@@ -272,28 +274,21 @@ public class HttpServer
                     dict["action"] = "Get";
                 }
 
-                string action = dict["action"];
-                if (action == "Set")
+                switch (dict["action"])
                 {
-                    if (dict.ContainsKey("value"))
-                    {
+                    case "Set" when dict.ContainsKey("value"):
                         SetSensorControlValue(sNode, dict["value"]);
-                    }
-                    else
-                    {
+                        break;
+                    case "Set":
                         throw new ArgumentNullException("No value provided");
-                    }
-                }
-                else if (action == "Get")
-                {
-                    result["value"] = sNode.Sensor.Value;
-                    result["min"] = sNode.Sensor.Min;
-                    result["max"] = sNode.Sensor.Max;
-                    result["format"] = sNode.Format;
-                }
-                else
-                {
-                    throw new ArgumentException("Unknown action type " + dict["action"]);
+                    case "Get":
+                        result["value"] = sNode.Sensor.Value;
+                        result["min"] = sNode.Sensor.Min;
+                        result["max"] = sNode.Sensor.Max;
+                        result["format"] = sNode.Format;
+                        break;
+                    default:
+                        throw new ArgumentException("Unknown action type " + dict["action"]);
                 }
             }
             else
@@ -480,6 +475,7 @@ public class HttpServer
         response.StatusCode = 404;
         response.Close();
     }
+
     private async Task ServeResourceImageAsync(HttpListenerResponse response, string name)
     {
         name = "LibreHardwareMonitor.Resources." + name;
@@ -534,7 +530,7 @@ public class HttpServer
         bool acceptGzip;
         try
         {
-            acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].ToLower().Contains("gzip"));
+            acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].IndexOf("gzip", StringComparison.OrdinalIgnoreCase) >= 0);
         }
         catch
         {
@@ -614,7 +610,7 @@ public class HttpServer
                 jsonNode["Value"] = sensorNode.Value;
                 jsonNode["Max"] = sensorNode.Max;
 
-                // Unformatted values for external systems to have consistent readings, e.g. Throughput will always be measured in B/s 
+                // Unformatted values for external systems to have consistent readings, e.g. Throughput will always be measured in B/s
                 jsonNode["RawMin"] = string.Format(sensorNode.Format, sensorNode.Sensor.Min);
                 jsonNode["RawValue"] = string.Format(sensorNode.Format, sensorNode.Sensor.Value);
                 jsonNode["RawMax"] = string.Format(sensorNode.Format, sensorNode.Sensor.Max);
