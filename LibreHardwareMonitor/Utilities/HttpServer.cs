@@ -651,8 +651,6 @@ public class HttpServer
     private async Task SendPrometheusAsync(HttpListenerResponse response, HttpListenerRequest request = null)
     {
         string responseContent = GeneratePrometheusResponse(_root);
-        response.AddHeader("Cache-Control", "no-cache");
-        response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "text/plain");
     }
 
@@ -830,6 +828,8 @@ public class HttpServer
     private static async Task SendResponseAsync(HttpListenerResponse response, string content, string contentType)
     {
         byte[] buffer = Encoding.UTF8.GetBytes(content);
+        response.AddHeader("Cache-Control", "no-cache");
+        response.AddHeader("Access-Control-Allow-Origin", "*");
         response.ContentType = contentType;
         response.ContentLength64 = buffer.Length;
 
