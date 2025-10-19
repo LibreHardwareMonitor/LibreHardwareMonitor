@@ -47,7 +47,8 @@ internal class CpuGroup : IGroup
                         case 0x14:
                         case 0x15:
                         case 0x16:
-                            _hardware.Add(new Amd10Cpu(index, coreThreads, settings));
+                            // TODO: https://github.com/namazso/PawnIO.Modules/issues/32
+                            //_hardware.Add(new Amd10Cpu(index, coreThreads, settings));
                             break;
                         case 0x17:
                         case 0x19:

@@ -123,6 +123,6 @@
     <Compile Remove="Tree\NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.9" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.10" />
   </ItemGroup>
 </Project>
