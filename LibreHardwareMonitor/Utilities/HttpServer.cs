@@ -575,7 +575,7 @@ public class HttpServer
         string lastTagName = "";
 
         /// Dictionary to convert all data to base units for OpenMetrics
-        /// suffix, factor
+        /// SensorType, Item1 suffix, Item2 factor
         var units = new Dictionary<SensorType, (string, double)>
         {
            { SensorType.Clock, ("hertz", 1000000)},                           //originally megahertz
@@ -585,7 +585,7 @@ public class HttpServer
            { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
            { SensorType.Energy, ("watthour", 0.001) },
            { SensorType.Factor, ("", 1) },
-           { SensorType.Fan, ("rpms", 1) },
+           { SensorType.Fan, ("rpm", 1) },
            { SensorType.Flow, ("liters_per_hour", 1) },
            { SensorType.Frequency, ("hertz", 1) },
            { SensorType.Humidity, ("percent", 1) },
@@ -595,7 +595,7 @@ public class HttpServer
            { SensorType.Power, ("watts", 1) },
            { SensorType.SmallData, ("bytes", 1024*1024) },                    //originally MiB
            { SensorType.Temperature, ("celsius", 1) },
-           { SensorType.Throughput, ("bytes_per_second", 1000) },             //originally KB
+           { SensorType.Throughput, ("bytes_per_second", 1) },
            { SensorType.TimeSpan, ("seconds", 1) },
            { SensorType.Timing, ("seconds", 0.000000001 ) },                  //originally nanoseconds
            { SensorType.Voltage, ("volts", 1) },
@@ -610,38 +610,80 @@ public class HttpServer
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
             {
-                string prometheusHost = node.Parent.Text;
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
-                    string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
+                    // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
-                    string tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? "" : "_" + units[sensor.Sensor.SensorType].Item1);
+                    string valueSensor = sensor.Text.Replace("#", String.Empty);
+                    string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
+
+                    double _factor = 1;
+                    string tagSensorUnits = String.Empty;
+                    // Get factor and unit suffix from dictionary ...
+                    if (units.ContainsKey(sensor.Sensor.SensorType))
+                    {
+                        _factor = units[sensor.Sensor.SensorType].Item2;
+                        tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? String.Empty : "_" + units[sensor.Sensor.SensorType].Item1);
+                    }
+                    // ... or print an error message
+                    else { responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensor} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n"; }
+
+                    // Creating the tag name for prometheus
                     string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
                     tagName = tagName.ToLower();
 
-                    string valueSensor = sensor.Text.Replace("#", "");
+                    // Preparing the labels for all data and uniqueness
+                    string valueSensorId = sensor.Sensor.Identifier.ToString();
                     string valueHardware = node.Text;
-                    string valueId = sensor.Sensor.Identifier.ToString().Split('/').Last();
+
+                    string valueHardwareAlias = String.Empty;
+                    string valueSensorAlias = String.Empty;
+                    string valueId = String.Empty;
+                    string valueParentPath = String.Empty;
+                    string _suffix = "0";
+                    string[] _sensorPath = valueSensorId.Split('/');
+                    string[] _identifierNumbers = Array.FindAll(_sensorPath, _strPath => int.TryParse(_strPath, out _));
+
+                    // The following switch would not be required if we had unique identifiers in all of the hardware and sensors in a predictable way
+                    string distinctAliases = String.Empty;
+                    switch (_identifierNumbers.Length)
+                    {
+                        case 2:
+                            _suffix = _identifierNumbers[1];
+                            valueSensorAlias = $"{valueSensor} {_identifierNumbers[1]}";
+                            int _count = Array.FindIndex(_sensorPath, p => p == _identifierNumbers[0]);
+
+                            // valueParentPath = _sensorPath[0.._count]; //...
+                            int _base = _count;
+                            while(_count > 0) { _base += _sensorPath[_count--].Length; }
+                            valueParentPath = valueSensorId.Substring(0, _base);
+                            // ... without System.Index or System.Range
+
+                            distinctAliases += $""" "sensorAlias"="{valueSensorAlias}" """.TrimEnd();
+                            goto case 1;
+
+                        case 1:
+                            valueId = $"{_identifierNumbers[0]}{_suffix.PadLeft(3, '0')}";
+                            valueHardwareAlias = $"{valueHardware} {_identifierNumbers[0]}";
+                            distinctAliases += $""" "hardwareAlias"="{valueHardwareAlias}" """.TrimEnd();
+                            break;
+                    }
+
                     string valueFamily = node.Nodes[i].Text;
                     string valueHost = _root.Text;
 
-                    try
-                    {
+                    // Creates the tag with labels
+                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}" "sensorId"="{{valueSensorId}}" "parentPath"="{{valueParentPath}}" {{distinctAliases.Trim()}}}""";
 
-                        if (lastTagName != tagName)
-                        {
-                            responseStr += $"# TYPE {tagName} gauge\n";
-                            lastTagName = tagName;
-                        }
-
-                        double? tagValue = units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value;
-                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{tagValue}}""" + "\n";
-                    }
-                    catch (Exception)
+                    // Generates the TYPE line if we changed tagnames
+                    if (lastTagName != tagName)
                     {
-                        responseStr += $"# HELP {lastTagName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
-                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{sensor.Sensor.Value}}""" + "\n";
+                        responseStr += $"# TYPE {tagName} gauge\n";
+                        lastTagName = tagName;
                     }
+
+                    // Outputs prometheus tag with labels and value
+                    responseStr += $"{tagLine} {sensor.Sensor.Value * _factor}\n";
                 }
             }
         }
