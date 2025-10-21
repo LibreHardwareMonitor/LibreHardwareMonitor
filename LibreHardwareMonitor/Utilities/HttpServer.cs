@@ -635,6 +635,10 @@ public class HttpServer
                         }
 
                         double? tagValue = units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value;
+                        if (tagValue == null)
+                        {
+                            responseStr += $"# HELP {lastTagName} had a null value and would've produced the following invalid statement:\n# ";
+                        }
                         responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{tagValue}}""" + "\n";
                     }
                     catch (Exception)
@@ -664,7 +668,7 @@ public class HttpServer
         response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "application/json");
     }
-        
+
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
         Dictionary<string, object> jsonNode = new()
