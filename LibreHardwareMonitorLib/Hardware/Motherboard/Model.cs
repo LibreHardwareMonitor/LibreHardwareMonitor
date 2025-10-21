@@ -233,6 +233,7 @@ public enum Model
     MA785GMT_UD2H,
     MA78LM_S2H,
     MA790X_UD3P,
+    MA790X_DS4,
     P35_DS3,
     P35_DS3L,
     P55_UD4,
