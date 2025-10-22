@@ -617,13 +617,6 @@ public class HttpServer
                     string valueSensor = sensor.Text.Replace("#", String.Empty);
                     string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
 
-                    if (sensor.Sensor.Value == null)
-                    {
-                        // We do not need to do anything if the value is null
-                        responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensor} had a null value and was skipped.\n";
-                        continue;
-                    }
-
                     double _factor = 1;
                     string tagSensorUnits = String.Empty;
                     // Get factor and unit suffix from dictionary ...
@@ -638,6 +631,13 @@ public class HttpServer
                     // Creating the tag name for prometheus
                     string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
                     tagName = tagName.ToLower();
+
+                    if (sensor.Sensor.Value == null)
+                    {
+                        // We do not need to do anything if the value is null
+                        responseStr += $"# HELP {tagName}:{valueSensor} had a null value and was skipped.\n";
+                        continue;
+                    }
 
                     // Preparing the labels for all data and uniqueness
                     string valueSensorId = sensor.Sensor.Identifier.ToString();
