@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -23,7 +22,6 @@ using System.Threading.Tasks;
 using System.Web;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
-using LibreHardwareMonitor.Wmi;
 
 namespace LibreHardwareMonitor.Utilities;
 
@@ -571,6 +569,8 @@ public class HttpServer
         response.Close();
     }
 
+    static Dictionary<string, string> _prometheusPaths = [];
+    static Dictionary<string, int> _prometheusNames = [];
     private string GeneratePrometheusResponse(Node node)
     {
         string responseStr = "";
@@ -603,9 +603,6 @@ public class HttpServer
            { SensorType.Voltage, ("volts", 1) },
         };
 
-        var paths = new Dictionary<string, string> { };
-        var names = new Dictionary<string, int> { };
-
         for (int i = 0; i < node.Nodes.Count; i++)
         {
             if (node.Nodes[i].GetType().Name == "HardwareNode")
@@ -623,25 +620,36 @@ public class HttpServer
                 {
                     tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
                     valueHardware = ((HardwareNode)node).Hardware.Parent.Name;
-                } else {
+                }
+                else
+                {
                     tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
                     valueHardware = node.Text;
                 }
 
-                if (paths.ContainsKey(hardwarePath))
+                //Have we seen this path before?
+                if (_prometheusPaths.ContainsKey(hardwarePath))
                 {
-                    valueHardware = paths[hardwarePath];
+                    //Yeah, so use the previously stored name.
+                    valueHardware = _prometheusPaths[hardwarePath];
                 }
                 else
                 {
-                    if(names.ContainsKey(valueHardware))
+                    //Path does not exist, but have we seen this name before?
+                    if (_prometheusNames.ContainsKey(valueHardware))
                     {
-                        valueHardware += $" {names[valueHardware]++}";
-                    } else
-                    {
-                        names.Add(valueHardware, 1);
+                        //Yes, so append the counater and increment it by 1.
+                        int _currentValue = _prometheusNames[valueHardware];
+                        _prometheusNames[valueHardware] += 1;
+                        valueHardware += $" {_currentValue}";
                     }
-                    paths.Add(hardwarePath, valueHardware);
+                    else
+                    {
+                        //No, save the name.
+                        _prometheusNames.Add(valueHardware, 1);
+                    }
+                    //It does not exist, so store the name.
+                    _prometheusPaths.Add(hardwarePath, valueHardware);
                 }
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
@@ -681,31 +689,36 @@ public class HttpServer
                     // Preparing the labels for all data and uniqueness
                     string valueId = sensor.Sensor.Identifier.ToString();
 
-                    string valueSensorAlias = "";
                     string _nameKey = $"{valueHardware}.{valueSensor}.{tagSensorType}{tagSensorUnits}";
-                    if(paths.ContainsKey(valueId))
+                    //Have we seen this path before?
+                    if (_prometheusPaths.ContainsKey(valueId))
                     {
-                        valueSensor = paths[valueId];
-                    } else {
-                        //add hardware name as value
-                        if(names.ContainsKey(_nameKey))
-                        {
-                            valueSensor += $" {names[_nameKey].ToString()}";
-                            names[_nameKey] +=1;
-                        } else
-                        {
-                            names.Add(_nameKey, 1);
-                        }
-                        paths.Add(valueId, $"{valueSensor}");
+                        //Yes, then use the name.
+                        valueSensor = _prometheusPaths[valueId];
                     }
-
-                    string valueHardwareAlias = valueHardware;
+                    else
+                    {
+                        //No, but have we seen the sensor name under this same parent and tagName?
+                        if (_prometheusNames.ContainsKey(_nameKey))
+                        {
+                            //Yes, we have seen it. Append the counter and increment it.
+                            valueSensor += $" {_prometheusNames[_nameKey].ToString()}";
+                            _prometheusNames[_nameKey] += 1;
+                        }
+                        else
+                        {
+                            //No, we have not seen it, so store it.
+                            _prometheusNames.Add(_nameKey, 1);
+                        }
+                        //Save the name to the path
+                        _prometheusPaths.Add(valueId, $"{valueSensor}");
+                    }
 
                     string valueFamily = node.Nodes[i].Text;
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
-                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardwareAlias}}" "id"="{{valueId}}" "parentId"="{{hardwarePath}}" "family"="{{valueFamily}}" "host"="{{valueHost}}" """;
+                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "parentId"="{{hardwarePath}}" "family"="{{valueFamily}}" "host"="{{valueHost}}" """;
 
                     // Generates the TYPE line if we changed tagnames
                     if (lastTagName != tagName)
@@ -738,7 +751,7 @@ public class HttpServer
         response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "application/json");
     }
-        
+
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
         Dictionary<string, object> jsonNode = new()
