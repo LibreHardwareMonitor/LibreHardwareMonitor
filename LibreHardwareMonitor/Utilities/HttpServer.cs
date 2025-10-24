@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -22,6 +23,7 @@ using System.Threading.Tasks;
 using System.Web;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
+using LibreHardwareMonitor.Wmi;
 
 namespace LibreHardwareMonitor.Utilities;
 
@@ -601,6 +603,9 @@ public class HttpServer
            { SensorType.Voltage, ("volts", 1) },
         };
 
+        var paths = new Dictionary<string, string> { };
+        var names = new Dictionary<string, int> { };
+
         for (int i = 0; i < node.Nodes.Count; i++)
         {
             if (node.Nodes[i].GetType().Name == "HardwareNode")
@@ -610,15 +615,46 @@ public class HttpServer
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
             {
+
+                string tagHardware = "";
+                string valueHardware = "";
+                string hardwarePath = ((HardwareNode)node).Hardware.Identifier.ToString();
+                if (((HardwareNode)node).Hardware.Parent != null)
+                {
+                    tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
+                    valueHardware = ((HardwareNode)node).Hardware.Parent.Name;
+                } else {
+                    tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
+                    valueHardware = node.Text;
+                }
+
+                if (paths.ContainsKey(hardwarePath))
+                {
+                    valueHardware = paths[hardwarePath];
+                }
+                else
+                {
+                    if(names.ContainsKey(valueHardware))
+                    {
+                        valueHardware += $" {names[valueHardware]++}";
+                    } else
+                    {
+                        names.Add(valueHardware, 1);
+                    }
+                    paths.Add(hardwarePath, valueHardware);
+                }
+
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
+                    string[] _alias = Array.FindAll(sensor.Sensor.Identifier.ToString().Split('/'), _strPath => int.TryParse(_strPath, out _));
+
+                    string valueSensor = sensor.Text.Replace("#", String.Empty);
+
                     // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
-                    string valueSensor = sensor.Text.Replace("#", String.Empty);
-                    string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
 
                     double _factor = 1;
-                    string tagSensorUnits = String.Empty;
+                    string tagSensorUnits = "";
                     // Get factor and unit suffix from dictionary ...
                     if (units.ContainsKey(sensor.Sensor.SensorType))
                     {
@@ -626,7 +662,10 @@ public class HttpServer
                         tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? String.Empty : "_" + units[sensor.Sensor.SensorType].Item1);
                     }
                     // ... or print an error message
-                    else { responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensor} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n"; }
+                    else
+                    {
+                        responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensor} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
+                    }
 
                     // Creating the tag name for prometheus
                     string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
@@ -640,47 +679,33 @@ public class HttpServer
                     }
 
                     // Preparing the labels for all data and uniqueness
-                    string valueSensorId = sensor.Sensor.Identifier.ToString();
-                    string valueHardware = node.Text;
+                    string valueId = sensor.Sensor.Identifier.ToString();
 
-                    string valueHardwareAlias = String.Empty;
-                    string valueSensorAlias = String.Empty;
-                    string valueId = String.Empty;
-                    string valueParentPath = String.Empty;
-                    string _suffix = "0";
-                    string[] _sensorPath = valueSensorId.Split('/');
-                    string[] _identifierNumbers = Array.FindAll(_sensorPath, _strPath => int.TryParse(_strPath, out _));
-
-                    // The following switch would not be required if we had unique identifiers in all of the hardware and sensors in a predictable way
-                    string distinctAliases = String.Empty;
-                    switch (_identifierNumbers.Length)
+                    string valueSensorAlias = "";
+                    string _nameKey = $"{valueHardware}.{valueSensor}.{tagSensorType}{tagSensorUnits}";
+                    if(paths.ContainsKey(valueId))
                     {
-                        case 2:
-                            _suffix = _identifierNumbers[1];
-                            valueSensorAlias = $"{valueSensor} {_identifierNumbers[1]}";
-                            int _count = Array.FindIndex(_sensorPath, p => p == _identifierNumbers[0]);
-
-                            // valueParentPath = _sensorPath[0.._count]; //...
-                            int _base = _count;
-                            while(_count > 0) { _base += _sensorPath[_count--].Length; }
-                            valueParentPath = valueSensorId.Substring(0, _base);
-                            // ... without System.Index or System.Range
-
-                            distinctAliases += $""" "sensorAlias"="{valueSensorAlias}" """.TrimEnd();
-                            goto case 1;
-
-                        case 1:
-                            valueId = $"{_identifierNumbers[0]}{_suffix.PadLeft(3, '0')}";
-                            valueHardwareAlias = $"{valueHardware} {_identifierNumbers[0]}";
-                            distinctAliases += $""" "hardwareAlias"="{valueHardwareAlias}" """.TrimEnd();
-                            break;
+                        valueSensor = paths[valueId];
+                    } else {
+                        //add hardware name as value
+                        if(names.ContainsKey(_nameKey))
+                        {
+                            valueSensor += $" {names[_nameKey].ToString()}";
+                            names[_nameKey] +=1;
+                        } else
+                        {
+                            names.Add(_nameKey, 1);
+                        }
+                        paths.Add(valueId, $"{valueSensor}");
                     }
+
+                    string valueHardwareAlias = valueHardware;
 
                     string valueFamily = node.Nodes[i].Text;
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
-                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}" "sensorId"="{{valueSensorId}}" "parentPath"="{{valueParentPath}}" {{distinctAliases.Trim()}}}""";
+                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardwareAlias}}" "id"="{{valueId}}" "parentId"="{{hardwarePath}}" "family"="{{valueFamily}}" "host"="{{valueHost}}" """;
 
                     // Generates the TYPE line if we changed tagnames
                     if (lastTagName != tagName)
