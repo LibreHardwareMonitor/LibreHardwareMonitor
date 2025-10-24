@@ -1444,7 +1444,7 @@ public class SMBios
                 r.AppendLine(processor.Version);
                 r.Append("Processor Serial: ");
                 r.AppendLine(processor.Serial);
-                r.Append("Processor Socket Destignation: ");
+                r.Append("Processor Socket Designation: ");
                 r.AppendLine(processor.SocketDesignation);
                 r.Append("Processor Socket: ");
                 r.AppendLine(processor.Socket.ToString());
