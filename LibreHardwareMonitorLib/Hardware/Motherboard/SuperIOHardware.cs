@@ -331,7 +331,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 4, 14, 8.2f));
                         v.Add(new Voltage("VDIMM", 5));
                         v.Add(new Voltage("3VSB", 6, 34, 34));
-                        v.Add(new Voltage("VBAT", 7, 34, 34));
+                        v.Add(new Voltage("VBat", 7, 34, 34));
                         t.Add(new Temperature("System", 1));
                         t.Add(new Temperature("Peripheral", 2));
                         t.Add(new Temperature("CPU Core", 4));
@@ -1079,7 +1079,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 2));
                         v.Add(new Voltage("+5V", 3, 6.8f, 10));
                         v.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                        v.Add(new Voltage("VBAT", 8));
+                        v.Add(new Voltage("VBat", 8));
                         t.Add(new Temperature("System", 0));
                         t.Add(new Temperature("CPU", 1));
                         f.Add(new Fan("CPU Fan", 0));
