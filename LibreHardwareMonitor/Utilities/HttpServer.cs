@@ -718,7 +718,7 @@ public class HttpServer
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
-                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "parentId"="{{hardwarePath}}" "family"="{{valueFamily}}" "host"="{{valueHost}}" """;
+                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "parentId"="{{hardwarePath}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"}""";
 
                     // Generates the TYPE line if we changed tagnames
                     if (lastTagName != tagName)
