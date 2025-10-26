@@ -679,13 +679,6 @@ public class HttpServer
                     string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
                     tagName = tagName.ToLower();
 
-                    if (sensor.Sensor.Value == null)
-                    {
-                        // We do not need to do anything if the value is null
-                        responseStr += $"# HELP {tagName}:{valueSensor} had a null value and was skipped.\n";
-                        continue;
-                    }
-
                     // Preparing the labels for all data and uniqueness
                     string valueId = sensor.Sensor.Identifier.ToString();
 
@@ -727,8 +720,21 @@ public class HttpServer
                         lastTagName = tagName;
                     }
 
-                    // Outputs prometheus tag with labels and value
-                    responseStr += $"{tagLine} {sensor.Sensor.Value * _factor}\n";
+                    int _counter = 0;
+                    foreach (SensorValue val in sensor.Sensor.Values.Reverse())
+                    {
+                        if (_counter++ >= 5) break;
+                        if (float.IsNaN(val.Value))
+                        {
+                            // We do not need to do anything if the value is null
+                            responseStr += $"# HELP {tagLine} had an invalid value and was skipped.\n";
+                        }
+                        else
+                        {
+                            // Outputs prometheus tag with labels, value, and timestamp
+                            responseStr += $"{tagLine} {val.Value * _factor} {((DateTimeOffset)val.Time).ToUnixTimeSeconds()}\n";
+                        }
+                    }
                 }
             }
         }
