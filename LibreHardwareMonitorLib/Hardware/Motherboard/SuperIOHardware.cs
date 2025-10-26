@@ -5310,8 +5310,8 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Chipset", 5));     // AUXTIN2, 10k at back side of the chipset
                         t.Add(new Temperature("CPU", 23));
                         // Add temperature sensors for voltage inputs that are marked ad 
-                        t.Add(new Temperature("MOS CPU Temperature", 24));  // (VIN 4 Voltage) NTC Near MOSFET CPU VRM
-                        t.Add(new Temperature("PCH Temperature", 25));      // (Voltage #6) X570 Platform Control HUB TEMP (NTC On Bottom of PCB)
+                        t.Add(new Temperature("MOS CPU", 24));  // (VIN 4 Voltage) NTC Near MOSFET CPU VRM
+                        t.Add(new Temperature("PCH", 25));      // (Voltage #6) X570 Platform Control HUB TEMP (NTC On Bottom of PCB)
 
                         f.Add(new Fan("Pump Fan", 0));
                         f.Add(new Fan("CPU Fan", 1));
