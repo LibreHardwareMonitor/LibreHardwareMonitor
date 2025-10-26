@@ -5687,9 +5687,6 @@ internal sealed class SuperIOHardware : Hardware
             }
         }
 
-        
-
-
         foreach (Sensor sensor in _fans)
         {
             float? value = _readFan(sensor.Index);
