@@ -78,7 +78,7 @@ internal class IT87XX : ISuperIO
         {
             Chip.IT8665E or Chip.IT8625E => new byte[] { 0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92 },
             Chip.IT8792E => new byte[] { 0x15, 0x16, 0x17 },
-            Chip.IT8696E when motherboard.Model == Model.X870_AORUS_ELITE_WIFI7 => new byte[] { 0, 0, 0, 0, 0, 0 },
+            Chip.IT8696E when motherboard.Model is Model.X870_AORUS_ELITE_WIFI7 or Model.X870_AORUS_ELITE_WIFI7_ICE => new byte[] { 0, 0, 0, 0, 0, 0 },
             _ => new byte[] { 0x15, 0x16, 0x17, 0x7f, 0xa7, 0xaf }
         };
 
