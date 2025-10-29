@@ -569,10 +569,12 @@ public class HttpServer
         response.Close();
     }
 
-    static Dictionary<string, string> _prometheusPaths = [];
-    static Dictionary<string, int> _prometheusNames = [];
+    static Dictionary<string, string> _prometheusIdName = [];
+    static Dictionary<string, int> _prometheusNameCount = [];
     private string GeneratePrometheusResponse(Node node)
     {
+        const int _maxValues = 5;
+
         string responseStr = "";
         string lastTagName = "";
 
@@ -614,49 +616,51 @@ public class HttpServer
             {
 
                 string tagHardware = "";
-                string valueHardware = "";
-                string hardwarePath = ((HardwareNode)node).Hardware.Identifier.ToString();
+                string valueHardwareName = "";
+                string valueHardwareAlias = "";
+                string valueHardwareId = ((HardwareNode)node).Hardware.Identifier.ToString();
                 if (((HardwareNode)node).Hardware.Parent != null)
                 {
                     tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
-                    valueHardware = ((HardwareNode)node).Hardware.Parent.Name;
+                    valueHardwareName = ((HardwareNode)node).Hardware.Parent.Name;
                 }
                 else
                 {
                     tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
-                    valueHardware = node.Text;
+                    valueHardwareName = node.Text;
                 }
+                valueHardwareAlias = valueHardwareName;
 
                 //Have we seen this path before?
-                if (_prometheusPaths.ContainsKey(hardwarePath))
+                if (_prometheusIdName.ContainsKey(valueHardwareId))
                 {
                     //Yeah, so use the previously stored name.
-                    valueHardware = _prometheusPaths[hardwarePath];
+                    valueHardwareAlias = _prometheusIdName[valueHardwareId];
                 }
                 else
                 {
                     //Path does not exist, but have we seen this name before?
-                    if (_prometheusNames.ContainsKey(valueHardware))
+                    if (_prometheusNameCount.ContainsKey(valueHardwareName))
                     {
                         //Yes, so append the counater and increment it by 1.
-                        int _currentValue = _prometheusNames[valueHardware];
-                        _prometheusNames[valueHardware] += 1;
-                        valueHardware += $" {_currentValue}";
+                        valueHardwareAlias += $" {_prometheusNameCount[valueHardwareName]}";
+                        _prometheusNameCount[valueHardwareName] += 1;
                     }
                     else
                     {
                         //No, save the name.
-                        _prometheusNames.Add(valueHardware, 1);
+                        _prometheusNameCount.Add(valueHardwareName, 1);
                     }
                     //It does not exist, so store the name.
-                    _prometheusPaths.Add(hardwarePath, valueHardware);
+                    _prometheusIdName.Add(valueHardwareId, valueHardwareName);
                 }
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
                     string[] _alias = Array.FindAll(sensor.Sensor.Identifier.ToString().Split('/'), _strPath => int.TryParse(_strPath, out _));
 
-                    string valueSensor = sensor.Text.Replace("#", String.Empty);
+                    string valueSensorName = sensor.Text.Replace("#", String.Empty);
+                    string valueSensorAlias = valueSensorName;
 
                     // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
@@ -672,7 +676,7 @@ public class HttpServer
                     // ... or print an error message
                     else
                     {
-                        responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensor} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
+                        responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensorName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
                     }
 
                     // Creating the tag name for prometheus
@@ -680,38 +684,38 @@ public class HttpServer
                     tagName = tagName.ToLower();
 
                     // Preparing the labels for all data and uniqueness
-                    string valueId = sensor.Sensor.Identifier.ToString();
+                    string valueSensorId = sensor.Sensor.Identifier.ToString().Substring(valueHardwareId.Length);
 
-                    string _nameKey = $"{valueHardware}.{valueSensor}.{tagSensorType}{tagSensorUnits}";
+                    string _nameKey = $"{valueHardwareAlias}_{valueSensorName}_{tagSensorType}{tagSensorUnits}";
                     //Have we seen this path before?
-                    if (_prometheusPaths.ContainsKey(valueId))
+                    if (_prometheusIdName.ContainsKey(valueSensorId))
                     {
                         //Yes, then use the name.
-                        valueSensor = _prometheusPaths[valueId];
+                        valueSensorAlias = _prometheusIdName[valueSensorId];
                     }
                     else
                     {
                         //No, but have we seen the sensor name under this same parent and tagName?
-                        if (_prometheusNames.ContainsKey(_nameKey))
+                        if (_prometheusNameCount.ContainsKey(_nameKey))
                         {
                             //Yes, we have seen it. Append the counter and increment it.
-                            valueSensor += $" {_prometheusNames[_nameKey].ToString()}";
-                            _prometheusNames[_nameKey] += 1;
+                            valueSensorAlias += $" {_prometheusNameCount[_nameKey]}";
+                            _prometheusNameCount[_nameKey] += 1;
                         }
                         else
                         {
                             //No, we have not seen it, so store it.
-                            _prometheusNames.Add(_nameKey, 1);
+                            _prometheusNameCount.Add(_nameKey, 1);
                         }
                         //Save the name to the path
-                        _prometheusPaths.Add(valueId, $"{valueSensor}");
+                        _prometheusIdName.Add(valueSensorId, $"{valueSensorName}");
                     }
 
                     string valueFamily = node.Nodes[i].Text;
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
-                    string tagLine = $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "parentId"="{{hardwarePath}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"}""";
+                    string tagLine = $$"""{{tagName}} {"sensorName"="{{valueSensorName}}" "sensorAlias"="{{valueSensorAlias}}" "hardwareName"="{{valueHardwareName}}" "hardwareAlias"="{{valueHardwareAlias}}" "sensorId"="{{valueSensorId}}" "hardwareId"="{{valueHardwareId}}" "host"="{{valueHost}}"}""";
 
                     // Generates the TYPE line if we changed tagnames
                     if (lastTagName != tagName)
@@ -723,11 +727,11 @@ public class HttpServer
                     int _counter = 0;
                     foreach (SensorValue val in sensor.Sensor.Values.Reverse())
                     {
-                        if (_counter++ >= 5) break;
+                        if (_counter++ >= _maxValues) break;
                         if (float.IsNaN(val.Value))
                         {
-                            // We do not need to do anything if the value is null
-                            responseStr += $"# HELP {tagLine} had an invalid value and was skipped.\n";
+                            // Print a help line saying what tag had an invalid value
+                            responseStr += $"# HELP {tagLine} has an invalid value and was skipped.\n";
                         }
                         else
                         {
