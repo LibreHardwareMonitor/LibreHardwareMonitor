@@ -154,7 +154,7 @@ internal class BatteryGroup : IGroup
                                         &returnBytes,
                                         null))
             {
-                value = span.ToString();
+                value = new string(pSpan);
                 result = true;
             }
         }
