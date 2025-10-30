@@ -83,7 +83,7 @@ public class PawnIo
 
         fixed (byte* pIn = bin)
         {
-            if (PInvoke.DeviceIoControl(handle, (uint)ControlCode.LoadBinary, pIn, (uint)bin.Length, null, 0u, null, null))
+            if (PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), (uint)ControlCode.LoadBinary, pIn, (uint)bin.Length, null, 0u, null, null))
                 return new PawnIo(handle);
         }
 
@@ -109,7 +109,7 @@ public class PawnIo
 
             fixed (byte* pIn = totalInput, pOut = output)
             {
-                if (PInvoke.DeviceIoControl(_handle, (uint)ControlCode.Execute, pIn, (uint)totalInput.Length, pOut, (uint)output.Length, &read, null))
+                if (PInvoke.DeviceIoControl((HANDLE)_handle.DangerousGetHandle(), (uint)ControlCode.Execute, pIn, (uint)totalInput.Length, pOut, (uint)output.Length, &read, null))
                 {
                     long[] outp = new long[read / sizeof(long)];
                     Buffer.BlockCopy(output, 0, outp, 0, (int)read);
@@ -144,7 +144,7 @@ public class PawnIo
 
         fixed (byte* pIn = totalInput, pOut = output)
         {
-            if (PInvoke.DeviceIoControl(_handle, (uint)ControlCode.Execute, pIn, (uint)totalInput.Length, pOut, (uint)output.Length, &read, null))
+            if (PInvoke.DeviceIoControl((HANDLE)_handle.DangerousGetHandle(), (uint)ControlCode.Execute, pIn, (uint)totalInput.Length, pOut, (uint)output.Length, &read, null))
             {
                 Buffer.BlockCopy(output, 0, outBuffer, 0, Math.Min((int)read, outBuffer.Length * sizeof(long)));
                 returnSize = read / sizeof(long);

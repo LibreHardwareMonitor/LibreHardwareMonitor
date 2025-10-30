@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
 using LibreHardwareMonitor.Interop;
@@ -184,7 +185,7 @@ public abstract class AbstractStorage : Hardware
         DISK_PERFORMANCE diskPerformance = new();
 
         uint bytesReturned;
-        if (!PInvoke.DeviceIoControl(_storageInfo.Handle, PInvoke.IOCTL_DISK_PERFORMANCE, null, 0, &diskPerformance, (uint)sizeof(DISK_PERFORMANCE), &bytesReturned, null))
+        if (!PInvoke.DeviceIoControl((HANDLE)_storageInfo.Handle.DangerousGetHandle(), PInvoke.IOCTL_DISK_PERFORMANCE, null, 0, &diskPerformance, (uint)sizeof(DISK_PERFORMANCE), &bytesReturned, null))
         {
             return;
         }
