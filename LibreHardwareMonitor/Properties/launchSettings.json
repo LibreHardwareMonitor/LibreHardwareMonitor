@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "LibreHardwareMonitor": {
+      "commandName": "Project",
+      "remoteDebugEnabled": true,
+      "remoteDebugMachine": "192.168.88.10:4026",
+      "authenticationMode": "Windows"
+    }
+  }
+}

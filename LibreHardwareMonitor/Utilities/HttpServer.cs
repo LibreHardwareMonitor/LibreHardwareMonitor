@@ -652,7 +652,7 @@ public class HttpServer
                         _prometheusNameCount.Add(valueHardwareName, 1);
                     }
                     //It does not exist, so store the name.
-                    _prometheusIdName.Add(valueHardwareId, valueHardwareName);
+                    _prometheusIdName.Add(valueHardwareId, valueHardwareAlias);
                 }
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
@@ -706,7 +706,7 @@ public class HttpServer
                             _prometheusNameCount.Add(_nameKey, 1);
                         }
                         //Save the name to the path
-                        _prometheusIdName.Add(valueSensorId, $"{valueSensorName}");
+                        _prometheusIdName.Add(valueSensorId, $"{valueSensorAlias}");
                     }
                     valueSensorId = valueSensorId.Substring(valueHardwareId.Length); //remove the hardwareId from the sensorId
 
