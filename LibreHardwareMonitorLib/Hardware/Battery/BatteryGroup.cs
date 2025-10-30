@@ -52,10 +52,9 @@ internal class BatteryGroup : IGroup
                 else
                 {
                     uint cbRequired = 0;
-                    SP_DEVICE_INTERFACE_DATA* pData = &data;
 
                     PInvoke.SetupDiGetDeviceInterfaceDetail((HDEVINFO)hdev.DangerousGetHandle(),
-                                                            pData,
+                                                            &data,
                                                             null,
                                                             0,
                                                             &cbRequired,
@@ -68,7 +67,7 @@ internal class BatteryGroup : IGroup
                         pDetailData->cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
 
                         if (PInvoke.SetupDiGetDeviceInterfaceDetail((HDEVINFO)hdev.DangerousGetHandle(),
-                                                                    pData,
+                                                                    &data,
                                                                     pDetailData,
                                                                     cbRequired,
                                                                     &cbRequired,
