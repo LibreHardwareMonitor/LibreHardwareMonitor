@@ -9,6 +9,7 @@ using System.IO;
 using System.Management;
 using System.Runtime.InteropServices;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
 using Microsoft.Win32.SafeHandles;
@@ -33,7 +34,7 @@ internal static class WindowsStorage
         var query = new STORAGE_PROPERTY_QUERY { PropertyId = STORAGE_PROPERTY_ID.StorageDeviceProperty, QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery };
         STORAGE_DESCRIPTOR_HEADER result = new();
 
-        if (!PInvoke.DeviceIoControl(handle, PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, &query, (uint)sizeof(STORAGE_PROPERTY_QUERY), &result, (uint)sizeof(STORAGE_DESCRIPTOR_HEADER), null, null))
+        if (!PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, &query, (uint)sizeof(STORAGE_PROPERTY_QUERY), &result, (uint)sizeof(STORAGE_DESCRIPTOR_HEADER), null, null))
         {
             return null;
         }
@@ -42,7 +43,7 @@ internal static class WindowsStorage
 
         try
         {
-            return PInvoke.DeviceIoControl(handle, PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, &query, (uint)sizeof(STORAGE_PROPERTY_QUERY), (void*)descriptorPtr, result.Size, null, null)
+            return PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, &query, (uint)sizeof(STORAGE_PROPERTY_QUERY), (void*)descriptorPtr, result.Size, null, null)
                 ? new StorageInfo((int)driveIndex, descriptorPtr)
                 : null;
         }
