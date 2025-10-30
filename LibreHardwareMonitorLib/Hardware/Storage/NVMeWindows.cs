@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.Storage.Nvme;
 using Windows.Win32.System.Ioctl;
@@ -46,7 +47,7 @@ internal class NVMeWindows : INVMeDrive
         protocolData->ProtocolDataOffset = (uint)sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA);
         protocolData->ProtocolDataLength = (uint)sizeof(NVME_IDENTIFY_CONTROLLER_DATA);
 
-        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, (void*)ptr, (uint)cb, (void*)ptr, (uint)cb, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, (void*)ptr, (uint)cb, (void*)ptr, (uint)cb, null, null);
         if (validTransfer)
         {
             var dataDescriptor = (STORAGE_PROTOCOL_DATA_DESCRIPTOR*)ptr;
@@ -86,7 +87,7 @@ internal class NVMeWindows : INVMeDrive
         protocolData->ProtocolDataOffset = (uint)sizeof(STORAGE_PROTOCOL_SPECIFIC_DATA);
         protocolData->ProtocolDataLength = (uint)sizeof(NVME_HEALTH_INFO_LOG);
 
-        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, (void*)ptr, (uint)cb, (void*)ptr, (uint)cb, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_STORAGE_QUERY_PROPERTY, (void*)ptr, (uint)cb, (void*)ptr, (uint)cb, null, null);
         if (validTransfer)
         {
             var dataDescriptor = (STORAGE_PROTOCOL_DATA_DESCRIPTOR*)ptr;

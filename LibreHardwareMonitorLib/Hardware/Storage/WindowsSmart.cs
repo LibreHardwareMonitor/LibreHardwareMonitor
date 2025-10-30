@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
 using static LibreHardwareMonitor.Interop.AtaSmart;
@@ -59,7 +60,7 @@ internal class WindowsSmart : ISmart
 
         var result = new SENDCMDOUTPARAMS();
 
-        return PInvoke.DeviceIoControl(_handle,
+        return PInvoke.DeviceIoControl((HANDLE)_handle.DangerousGetHandle(),
                                         PInvoke.SMART_SEND_DRIVE_COMMAND,
                                         &parameter,
                                         (uint)sizeof(SENDCMDINPARAMS),
@@ -89,7 +90,7 @@ internal class WindowsSmart : ISmart
         int cb = sizeof(SENDCMDOUTPARAMS) + 512; // 512 bytes buffer.
         IntPtr buffer = Marshal.AllocHGlobal(cb);
 
-        bool isValid = PInvoke.DeviceIoControl(_handle,
+        bool isValid = PInvoke.DeviceIoControl((HANDLE)_handle.DangerousGetHandle(),
                                                PInvoke.SMART_RCV_DRIVE_DATA,
                                                &parameter,
                                                (uint)sizeof(SENDCMDINPARAMS),
@@ -139,7 +140,7 @@ internal class WindowsSmart : ISmart
 
         int cb = sizeof(SENDCMDOUTPARAMS) + 512; // 2 bytes padding + 512 bytes buffer.
         IntPtr buffer = Marshal.AllocHGlobal(cb);
-        bool isValid = PInvoke.DeviceIoControl(_handle,
+        bool isValid = PInvoke.DeviceIoControl((HANDLE)_handle.DangerousGetHandle(),
                                               PInvoke.SMART_RCV_DRIVE_DATA,
                                               &parameter,
                                               (uint)sizeof(SENDCMDINPARAMS),
@@ -186,7 +187,7 @@ internal class WindowsSmart : ISmart
         int cb = sizeof(SENDCMDOUTPARAMS) + sizeof(IDENTIFY_DEVICE_DATA);
         IntPtr buffer = Marshal.AllocHGlobal(cb);
 
-        bool valid = PInvoke.DeviceIoControl(_handle,
+        bool valid = PInvoke.DeviceIoControl((HANDLE)_handle.DangerousGetHandle(),
                                               PInvoke.SMART_RCV_DRIVE_DATA,
                                               &parameter,
                                               (uint)sizeof(SENDCMDINPARAMS),

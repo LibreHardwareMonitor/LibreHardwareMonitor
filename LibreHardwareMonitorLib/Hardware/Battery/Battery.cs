@@ -5,6 +5,7 @@
 
 using System;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.System.Power;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
@@ -137,7 +138,7 @@ internal sealed class Battery : Hardware
         BATTERY_WAIT_STATUS bws = default;
         bws.BatteryTag = _batteryTag;
         BATTERY_STATUS batteryStatus = default;
-        if (PInvoke.DeviceIoControl(_batteryHandle,
+        if (PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
                                     PInvoke.IOCTL_BATTERY_QUERY_STATUS,
                                     &bws,
                                     (uint)sizeof(BATTERY_WAIT_STATUS),
@@ -201,7 +202,7 @@ internal sealed class Battery : Hardware
         BATTERY_QUERY_INFORMATION bqi = default;
         bqi.BatteryTag = _batteryTag;
         bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryEstimatedTime;
-        if (PInvoke.DeviceIoControl(_batteryHandle,
+        if (PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
                                      PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
                                      &bqi,
                                      (uint)sizeof(BATTERY_QUERY_INFORMATION),
@@ -222,7 +223,7 @@ internal sealed class Battery : Hardware
 
         uint temperature = 0;
         bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryTemperature;
-        if (PInvoke.DeviceIoControl(_batteryHandle,
+        if (PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
                                     PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
                                     &bqi,
                                     (uint)sizeof(BATTERY_QUERY_INFORMATION),

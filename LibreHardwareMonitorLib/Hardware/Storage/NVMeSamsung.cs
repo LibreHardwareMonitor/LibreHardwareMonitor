@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.Storage.IscsiDisc;
 using Windows.Win32.Storage.Nvme;
@@ -56,7 +57,7 @@ internal class NVMeSamsung : INVMeDrive
         int length = (int)(Marshal.OffsetOf(typeof(AtaSmart.SCSI_PASS_THROUGH), nameof(AtaSmart.SCSI_PASS_THROUGH.DataBuf)).ToInt32() + buffers.Spt.DataTransferLength);
         IntPtr buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
-        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
         Marshal.FreeHGlobal(buffer);
 
         bool result = false;
@@ -86,7 +87,7 @@ internal class NVMeSamsung : INVMeDrive
             buffer = Marshal.AllocHGlobal(length);
             Marshal.StructureToPtr(buffers, buffer, false);
 
-            validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+            validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
 
             buffers = Marshal.PtrToStructure<AtaSmart.SCSI_PASS_THROUGH>(buffer);
 
@@ -138,7 +139,7 @@ internal class NVMeSamsung : INVMeDrive
         int length = Marshal.SizeOf<AtaSmart.SCSI_PASS_THROUGH>();
         IntPtr buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
-        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
         Marshal.FreeHGlobal(buffer);
 
         if (validTransfer)
@@ -166,7 +167,7 @@ internal class NVMeSamsung : INVMeDrive
             buffer = Marshal.AllocHGlobal(length);
             Marshal.StructureToPtr(buffers, buffer, false);
 
-            validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+            validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
             if (validTransfer)
             {
                 IntPtr offset = Marshal.OffsetOf<AtaSmart.SCSI_PASS_THROUGH>(nameof(AtaSmart.SCSI_PASS_THROUGH.DataBuf));
@@ -219,7 +220,7 @@ internal class NVMeSamsung : INVMeDrive
         int length = Marshal.SizeOf<AtaSmart.SCSI_PASS_THROUGH>();
         IntPtr buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
-        bool validTransfer = PInvoke.DeviceIoControl(handle, PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
         Marshal.FreeHGlobal(buffer);
 
         if (validTransfer)
@@ -247,7 +248,7 @@ internal class NVMeSamsung : INVMeDrive
             buffer = Marshal.AllocHGlobal(length);
             Marshal.StructureToPtr(buffers, buffer, false);
 
-            validTransfer = PInvoke.DeviceIoControl(handle, PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+            validTransfer = PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), PInvoke.IOCTL_SCSI_PASS_THROUGH, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
             if (validTransfer)
             {
                 AtaSmart.SCSI_PASS_THROUGH result = Marshal.PtrToStructure<AtaSmart.SCSI_PASS_THROUGH>(buffer);

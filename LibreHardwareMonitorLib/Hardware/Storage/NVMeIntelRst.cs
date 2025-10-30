@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.Storage.IscsiDisc;
 using Windows.Win32.Storage.Nvme;
@@ -56,7 +57,7 @@ internal class NVMeIntelRst : INVMeDrive
         IntPtr buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_SCSI_MINIPORT, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_SCSI_MINIPORT, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
         if (validTransfer)
         {
             IntPtr offset = Marshal.OffsetOf<AtaSmart.NVME_PASS_THROUGH_IOCTL>(nameof(AtaSmart.NVME_PASS_THROUGH_IOCTL.DataBuffer));
@@ -105,7 +106,7 @@ internal class NVMeIntelRst : INVMeDrive
         IntPtr buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = PInvoke.DeviceIoControl(hDevice, PInvoke.IOCTL_SCSI_MINIPORT, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)hDevice.DangerousGetHandle(), PInvoke.IOCTL_SCSI_MINIPORT, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
         if (validTransfer)
         {
             IntPtr offset = Marshal.OffsetOf<AtaSmart.NVME_PASS_THROUGH_IOCTL>(nameof(AtaSmart.NVME_PASS_THROUGH_IOCTL.DataBuffer));
@@ -157,7 +158,7 @@ internal class NVMeIntelRst : INVMeDrive
         IntPtr buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = PInvoke.DeviceIoControl(handle, PInvoke.IOCTL_SCSI_MINIPORT, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
+        bool validTransfer = PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), PInvoke.IOCTL_SCSI_MINIPORT, (void*)buffer, (uint)length, (void*)buffer, (uint)length, null, null);
         Marshal.FreeHGlobal(buffer);
 
         if (validTransfer)

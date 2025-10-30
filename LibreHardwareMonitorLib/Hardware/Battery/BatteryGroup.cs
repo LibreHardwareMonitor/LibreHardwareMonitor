@@ -52,9 +52,10 @@ internal class BatteryGroup : IGroup
                 else
                 {
                     uint cbRequired = 0;
+                    SP_DEVICE_INTERFACE_DATA* pData = &data;
 
-                    PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                            data,
+                    PInvoke.SetupDiGetDeviceInterfaceDetail((HDEVINFO)hdev.DangerousGetHandle(),
+                                                            pData,
                                                             null,
                                                             0,
                                                             &cbRequired,
@@ -63,19 +64,19 @@ internal class BatteryGroup : IGroup
                     if (Marshal.GetLastWin32Error() == (int)WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                     {
                         IntPtr buffer = Marshal.AllocHGlobal((int)cbRequired);
-                        SP_DEVICE_INTERFACE_DETAIL_DATA_W* pData = (SP_DEVICE_INTERFACE_DETAIL_DATA_W*)buffer;
-                        pData->cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
+                        SP_DEVICE_INTERFACE_DETAIL_DATA_W* pDetailData = (SP_DEVICE_INTERFACE_DETAIL_DATA_W*)buffer;
+                        pDetailData->cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
 
-                        if (PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                                    data,
+                        if (PInvoke.SetupDiGetDeviceInterfaceDetail((HDEVINFO)hdev.DangerousGetHandle(),
                                                                     pData,
+                                                                    pDetailData,
                                                                     cbRequired,
                                                                     &cbRequired,
                                                                     null))
                         {
                             string devicePath;
 
-                            fixed (void* pDevicePath = &pData->DevicePath.e0)
+                            fixed (void* pDevicePath = &pDetailData->DevicePath.e0)
                                 devicePath = new string((char*)pDevicePath);
 
                             SafeFileHandle battery = PInvoke.CreateFile(devicePath, (uint)FileAccess.ReadWrite, FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL, null);
@@ -85,7 +86,7 @@ internal class BatteryGroup : IGroup
 
                                 uint dwWait = 0;
                                 uint bytesReturned = 0;
-                                if (PInvoke.DeviceIoControl(battery,
+                                if (PInvoke.DeviceIoControl((HANDLE)battery.DangerousGetHandle(),
                                                             PInvoke.IOCTL_BATTERY_QUERY_TAG,
                                                             &dwWait,
                                                             sizeof(uint),
@@ -97,7 +98,7 @@ internal class BatteryGroup : IGroup
                                     BATTERY_INFORMATION bi = default;
                                     bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryInformation;
 
-                                    if (PInvoke.DeviceIoControl(battery,
+                                    if (PInvoke.DeviceIoControl((HANDLE)battery.DangerousGetHandle(),
                                                                 PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
                                                                 &bqi,
                                                                 (uint)sizeof(BATTERY_QUERY_INFORMATION),
@@ -145,7 +146,7 @@ internal class BatteryGroup : IGroup
         {
             uint returnBytes = 0;
 
-            if (PInvoke.DeviceIoControl(battery,
+            if (PInvoke.DeviceIoControl((HANDLE)battery.DangerousGetHandle(),
                                         PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
                                         &bqi,
                                         (uint)sizeof(BATTERY_QUERY_INFORMATION),
