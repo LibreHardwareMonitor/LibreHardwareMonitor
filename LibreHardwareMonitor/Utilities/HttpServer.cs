@@ -657,8 +657,6 @@ public class HttpServer
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
-                    string[] _alias = Array.FindAll(sensor.Sensor.Identifier.ToString().Split('/'), _strPath => int.TryParse(_strPath, out _));
-
                     string valueSensorName = sensor.Text.Replace("#", String.Empty);
                     string valueSensorAlias = valueSensorName;
 
@@ -684,7 +682,7 @@ public class HttpServer
                     tagName = tagName.ToLower();
 
                     // Preparing the labels for all data and uniqueness
-                    string valueSensorId = sensor.Sensor.Identifier.ToString().Substring(valueHardwareId.Length);
+                    string valueSensorId = sensor.Sensor.Identifier.ToString();
 
                     string _nameKey = $"{valueHardwareAlias}_{valueSensorName}_{tagSensorType}{tagSensorUnits}";
                     //Have we seen this path before?
@@ -710,8 +708,8 @@ public class HttpServer
                         //Save the name to the path
                         _prometheusIdName.Add(valueSensorId, $"{valueSensorName}");
                     }
+                    valueSensorId = valueSensorId.Substring(valueHardwareId.Length); //remove the hardwareId from the sensorId
 
-                    string valueFamily = node.Nodes[i].Text;
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
