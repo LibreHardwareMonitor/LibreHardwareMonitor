@@ -134,7 +134,7 @@ public class SensorGadget : Gadget
         ToolStripMenuItem hardwareNamesItem = new ToolStripMenuItem("Hardware Names");
         contextMenuStrip.Items.Add(hardwareNamesItem);
         ToolStripMenuItem fontSizeMenu = new ToolStripMenuItem("Font Size");
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 5; i++)
         {
             float size;
             string name;
@@ -144,6 +144,7 @@ public class SensorGadget : Gadget
                 case 1: size = 7.5f; name = "Medium"; break;
                 case 2: size = 9f; name = "Large"; break;
                 case 3: size = 11f; name = "Very Large"; break;
+                case 4: size = 22f; name = "Extremely Large"; break;
                 default: throw new NotImplementedException();
             }
 
@@ -207,6 +208,11 @@ public class SensorGadget : Gadget
             };
             opacityMenu.DropDownItems.Add(item);
         }
+
+        contextMenuStrip.Items.Add(new ToolStripSeparator());
+        ToolStripMenuItem hideShowItem = new ToolStripMenuItem("Hide/Show Main Window");
+        contextMenuStrip.Items.Add(hideShowItem);
+
         ContextMenuStrip = contextMenuStrip;
 
         _hardwareNames = new UserOption("sensorGadget.Hardwarenames", true, hardwareNamesItem, settings);
@@ -224,6 +230,11 @@ public class SensorGadget : Gadget
         lockPositionAndSize.Changed += delegate
         {
             LockPositionAndSize = lockPositionAndSize.Value;
+        };
+
+        hideShowItem.Click += delegate
+        {
+            SendHideShowCommand();
         };
 
         HitTest += delegate (object sender, HitTestEventArgs e)
