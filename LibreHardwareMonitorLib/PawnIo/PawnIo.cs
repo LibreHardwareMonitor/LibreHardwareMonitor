@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -12,7 +12,7 @@ using PInvoke = Windows.Win32.PInvoke;
 
 namespace LibreHardwareMonitor.PawnIo;
 
-public class PawnIo
+public class PawnIO
 {
     private const uint DEVICE_TYPE = 41394u << 16;
     private const int FN_NAME_LENGTH = 32;
@@ -21,7 +21,7 @@ public class PawnIo
 
     private readonly SafeFileHandle _handle;
 
-    static PawnIo()
+    static PawnIO()
     {
         using RegistryKey subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO");
 
@@ -42,7 +42,7 @@ public class PawnIo
         }
     }
 
-    private PawnIo(SafeFileHandle handle) => _handle = handle;
+    private PawnIO(SafeFileHandle handle) => _handle = handle;
 
     /// <summary>
     /// Gets a value indicating whether PawnIO is installed on the system.
@@ -63,7 +63,7 @@ public class PawnIo
         IsClosed: false
     };
 
-    internal static unsafe PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
+    internal static unsafe PawnIO LoadModuleFromResource(Assembly assembly, string resourceName)
     {
         SafeFileHandle handle = PInvoke.CreateFile(@"\\.\PawnIO",
                                                    (uint)FileAccess.ReadWrite,
@@ -74,7 +74,7 @@ public class PawnIo
                                                    null);
 
         if (handle.IsInvalid)
-            return new PawnIo(null);
+            return new PawnIO(null);
 
         using Stream stream = assembly.GetManifestResourceStream(resourceName);
         using MemoryStream memory = new();
@@ -84,10 +84,10 @@ public class PawnIo
         fixed (byte* pIn = bin)
         {
             if (PInvoke.DeviceIoControl((HANDLE)handle.DangerousGetHandle(), (uint)ControlCode.LoadBinary, pIn, (uint)bin.Length, null, 0u, null, null))
-                return new PawnIo(handle);
+                return new PawnIO(handle);
         }
 
-        return new PawnIo(null);
+        return new PawnIO(null);
     }
 
     public void Close()

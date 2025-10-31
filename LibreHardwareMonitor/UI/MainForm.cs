@@ -169,9 +169,9 @@ public sealed partial class MainForm : Form
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
 
-        if (PawnIo.PawnIo.IsInstalled)
+        if (PawnIo.PawnIO.IsInstalled)
         {
-            if (PawnIo.PawnIo.Version < new Version(2, 0, 0, 0))
+            if (PawnIo.PawnIO.Version < new Version(2, 0, 0, 0))
             {
                 DialogResult result = MessageBox.Show("PawnIO is outdated, do you want to update it?", nameof(LibreHardwareMonitor), MessageBoxButtons.OKCancel);
                 if (result == DialogResult.OK)

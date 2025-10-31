@@ -1,11 +1,11 @@
-﻿using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.PawnIo;
 
 public class IntelMsr
 {
     private readonly long[] _inArray = new long[1];
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IntelMSR.bin");
+    private readonly PawnIO _pawnIO = PawnIO.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.IntelMSR.bin");
 
     public bool ReadMsr(uint index, out ulong value)
     {

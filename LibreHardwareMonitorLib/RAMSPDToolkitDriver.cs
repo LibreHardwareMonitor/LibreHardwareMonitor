@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RAMSPDToolkit.I2CSMBus.Interop.PawnIO;
 using RAMSPDToolkit.Windows.Driver.Interfaces;
@@ -40,7 +40,7 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
 
         try
         {
-            var pawnIO = PawnIo.PawnIo.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.{moduleResourceFilename}");
+            var pawnIO = PawnIo.PawnIO.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.{moduleResourceFilename}");
 
             if (pawnIO.IsLoaded)
             {
@@ -69,9 +69,9 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
 
     internal class PawnIOModule : IPawnIOModule, IDisposable
     {
-        private PawnIo.PawnIo _pawnIO;
+        private PawnIo.PawnIO _pawnIO;
 
-        public PawnIOModule(PawnIo.PawnIo pawnIO)
+        public PawnIOModule(PawnIo.PawnIO pawnIO)
         {
             _pawnIO = pawnIO;
         }

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.PawnIo;
 
 public class RyzenSmu
 {
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.RyzenSMU.bin");
+    private readonly PawnIO _pawnIO = PawnIO.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.RyzenSMU.bin");
 
     public uint GetSmuVersion()
     {

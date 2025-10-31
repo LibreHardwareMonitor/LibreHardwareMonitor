@@ -1,8 +1,8 @@
-﻿namespace LibreHardwareMonitor.PawnIo;
+namespace LibreHardwareMonitor.PawnIo;
 
 public class AmdFamily17
 {
-    private readonly PawnIo _pawnIo = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.AMDFamily17.bin");
+    private readonly PawnIO _pawnIo = PawnIO.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.AMDFamily17.bin");
 
     public uint ReadSmn(uint offset)
     {
