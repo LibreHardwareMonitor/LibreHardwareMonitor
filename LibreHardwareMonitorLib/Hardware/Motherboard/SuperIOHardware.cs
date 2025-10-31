@@ -5333,7 +5333,10 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("System", 2));      // SYSTIN, P-3906
                         t.Add(new Temperature("VRM MOS", 3));     // AUXTIN0, CPUMOSTIN, 10k at left side of cpu vrm
                         t.Add(new Temperature("Chipset", 5));     // AUXTIN2, 10k at back side of the chipset
-                        t.Add(new Temperature("CPU", 24));
+                        t.Add(new Temperature("CPU", 23));
+                        // Add temperature sensors for voltage inputs that are marked ad 
+                        t.Add(new Temperature("MOS CPU", 24));  // (VIN 4 Voltage) NTC Near MOSFET CPU VRM
+                        t.Add(new Temperature("PCH", 25));      // (Voltage #6) X570 Platform Control HUB TEMP (NTC On Bottom of PCB)
 
                         f.Add(new Fan("Pump Fan", 0));
                         f.Add(new Fan("CPU Fan", 1));
@@ -5679,6 +5682,33 @@ internal sealed class SuperIOHardware : Hardware
             {
                 sensor.Value = value + sensor.Parameters[0].Value;
                 ActivateSensor(sensor);
+            }
+            else
+            {
+                if (_motherboard.Model == Model.X570_MS7C35) // Add Temp Value for CPU MOS TEMPERATURE & PCH TEMPERATURE
+                {
+                    float voltage;
+
+                    if (sensor.Index == 24)
+                    {
+                        voltage = (float)_readVoltage(6);
+                    }
+                    else if (sensor.Index == 25) 
+                    {
+                        voltage = (float)_readVoltage(11);
+                    }
+                    else
+                    {
+                        voltage = 0;
+                    }
+
+                    double R = (10000.0 * voltage / (2.048 - 1.0));            //Convert voltage measured to resistance value
+                    double T = ((298.15 * 3435.0) / ((298.15 * Math.Log(R / 10000.0)) + 3435.0));  // Use R value in steinhart and hart equation, calculate temperature value in kelvin
+                    float Tc = (float)(T - 273.15);                            // Converting kelvin to celsius
+
+                    sensor.Value = Tc + sensor.Parameters[0].Value;
+                    ActivateSensor(sensor);
+                }
             }
         }
 
