@@ -3,7 +3,7 @@
 internal class LpcIo
 {
     private readonly long[] _doubleArgArray = new long[2];
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(LpcIo).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.LpcIO.bin");
+    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(LpcIo).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.LpcIO.bin");
     private readonly long[] _singleArgArray = new long[1];
 
     public void SelectSlot(int slot)
