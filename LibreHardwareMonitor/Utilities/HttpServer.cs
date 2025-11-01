@@ -569,13 +569,17 @@ public class HttpServer
         response.Close();
     }
 
+    static Dictionary<string, string> _prometheusIdName = [];
+    static Dictionary<string, int> _prometheusNameCount = [];
     private string GeneratePrometheusResponse(Node node)
     {
+        const int _maxValues = 5;
+
         string responseStr = "";
         string lastTagName = "";
 
         /// Dictionary to convert all data to base units for OpenMetrics
-        /// suffix, factor
+        /// SensorType, Item1 suffix, Item2 factor
         var units = new Dictionary<SensorType, (string, double)>
         {
            { SensorType.Clock, ("hertz", 1000000)},                           //originally megahertz
@@ -585,7 +589,7 @@ public class HttpServer
            { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
            { SensorType.Energy, ("watthour", 0.001) },
            { SensorType.Factor, ("", 1) },
-           { SensorType.Fan, ("rpms", 1) },
+           { SensorType.Fan, ("rpm", 1) },
            { SensorType.Flow, ("liters_per_hour", 1) },
            { SensorType.Frequency, ("hertz", 1) },
            { SensorType.Humidity, ("percent", 1) },
@@ -595,7 +599,7 @@ public class HttpServer
            { SensorType.Power, ("watts", 1) },
            { SensorType.SmallData, ("bytes", 1024*1024) },                    //originally MiB
            { SensorType.Temperature, ("celsius", 1) },
-           { SensorType.Throughput, ("bytes_per_second", 1000) },             //originally KB
+           { SensorType.Throughput, ("bytes_per_second", 1) },
            { SensorType.TimeSpan, ("seconds", 1) },
            { SensorType.Timing, ("seconds", 0.000000001 ) },                  //originally nanoseconds
            { SensorType.Voltage, ("volts", 1) },
@@ -610,37 +614,128 @@ public class HttpServer
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
             {
-                string prometheusHost = node.Parent.Text;
+
+                string tagHardware = "";
+                string valueHardwareName = "";
+                string valueHardwareAlias = "";
+                string valueHardwareId = ((HardwareNode)node).Hardware.Identifier.ToString();
+                if (((HardwareNode)node).Hardware.Parent != null)
+                {
+                    tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
+                    valueHardwareName = ((HardwareNode)node).Hardware.Parent.Name;
+                }
+                else
+                {
+                    tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
+                    valueHardwareName = node.Text;
+                }
+                valueHardwareAlias = valueHardwareName;
+
+                //Have we seen this path before?
+                if (_prometheusIdName.ContainsKey(valueHardwareId))
+                {
+                    //Yeah, so use the previously stored name.
+                    valueHardwareAlias = _prometheusIdName[valueHardwareId];
+                }
+                else
+                {
+                    //Path does not exist, but have we seen this name before?
+                    if (_prometheusNameCount.ContainsKey(valueHardwareName))
+                    {
+                        //Yes, so append the counater and increment it by 1.
+                        valueHardwareAlias += $" {_prometheusNameCount[valueHardwareName]}";
+                        _prometheusNameCount[valueHardwareName] += 1;
+                    }
+                    else
+                    {
+                        //No, save the name.
+                        _prometheusNameCount.Add(valueHardwareName, 1);
+                    }
+                    //It does not exist, so store the name.
+                    _prometheusIdName.Add(valueHardwareId, valueHardwareAlias);
+                }
+
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
-                    string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
+                    string valueSensorName = sensor.Text.Replace("#", String.Empty);
+                    string valueSensorAlias = valueSensorName;
+
+                    // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
-                    string tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? "" : "_" + units[sensor.Sensor.SensorType].Item1);
+
+                    double _factor = 1;
+                    string tagSensorUnits = "";
+                    // Get factor and unit suffix from dictionary ...
+                    if (units.ContainsKey(sensor.Sensor.SensorType))
+                    {
+                        _factor = units[sensor.Sensor.SensorType].Item2;
+                        tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? String.Empty : "_" + units[sensor.Sensor.SensorType].Item1);
+                    }
+                    // ... or print an error message
+                    else
+                    {
+                        responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensorName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
+                    }
+
+                    // Creating the tag name for prometheus
                     string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
                     tagName = tagName.ToLower();
 
-                    string valueSensor = sensor.Text.Replace("#", "");
-                    string valueHardware = node.Text;
-                    string valueId = sensor.Sensor.Identifier.ToString().Split('/').Last();
-                    string valueFamily = node.Nodes[i].Text;
+                    // Preparing the labels for all data and uniqueness
+                    string valueSensorId = sensor.Sensor.Identifier.ToString();
+
+                    string _nameKey = $"{valueHardwareAlias}_{valueSensorName}_{tagSensorType}{tagSensorUnits}";
+                    //Have we seen this path before?
+                    if (_prometheusIdName.ContainsKey(valueSensorId))
+                    {
+                        //Yes, then use the name.
+                        valueSensorAlias = _prometheusIdName[valueSensorId];
+                    }
+                    else
+                    {
+                        //No, but have we seen the sensor name under this same parent and tagName?
+                        if (_prometheusNameCount.ContainsKey(_nameKey))
+                        {
+                            //Yes, we have seen it. Append the counter and increment it.
+                            valueSensorAlias += $" {_prometheusNameCount[_nameKey]}";
+                            _prometheusNameCount[_nameKey] += 1;
+                        }
+                        else
+                        {
+                            //No, we have not seen it, so store it.
+                            _prometheusNameCount.Add(_nameKey, 1);
+                        }
+                        //Save the name to the path
+                        _prometheusIdName.Add(valueSensorId, $"{valueSensorAlias}");
+                    }
+                    valueSensorId = valueSensorId.Substring(valueHardwareId.Length); //remove the hardwareId from the sensorId
+
                     string valueHost = _root.Text;
 
-                    try
+                    // Creates the tag with labels
+                    string tagLine = $$"""{{tagName}} {"sensorName"="{{valueSensorName}}" "sensorAlias"="{{valueSensorAlias}}" "hardwareName"="{{valueHardwareName}}" "hardwareAlias"="{{valueHardwareAlias}}" "sensorId"="{{valueSensorId}}" "hardwareId"="{{valueHardwareId}}" "host"="{{valueHost}}"}""";
+
+                    // Generates the TYPE line if we changed tagnames
+                    if (lastTagName != tagName)
                     {
-
-                        if (lastTagName != tagName)
-                        {
-                            responseStr += $"# TYPE {tagName} gauge\n";
-                            lastTagName = tagName;
-                        }
-
-                        double? tagValue = units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value;
-                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{tagValue}}""" + "\n";
+                        responseStr += $"# TYPE {tagName} gauge\n";
+                        lastTagName = tagName;
                     }
-                    catch (Exception)
+
+                    int _counter = 0;
+                    foreach (SensorValue val in sensor.Sensor.Values.Reverse())
                     {
-                        responseStr += $"# HELP {lastTagName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
-                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{sensor.Sensor.Value}}""" + "\n";
+                        if (_counter++ >= _maxValues) break;
+                        if (float.IsNaN(val.Value))
+                        {
+                            // Print a help line saying what tag had an invalid value
+                            responseStr += $"# HELP {tagLine} has an invalid value and was skipped.\n";
+                        }
+                        else
+                        {
+                            // Outputs prometheus tag with labels, value, and timestamp
+                            responseStr += $"{tagLine} {val.Value * _factor} {((DateTimeOffset)val.Time).ToUnixTimeSeconds()}\n";
+                        }
                     }
                 }
             }
@@ -664,7 +759,7 @@ public class HttpServer
         response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "application/json");
     }
-        
+
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
         Dictionary<string, object> jsonNode = new()
