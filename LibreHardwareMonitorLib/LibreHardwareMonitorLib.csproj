@@ -37,16 +37,16 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\PawnIO\LpcIO.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\LpcACPIEC.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\IntelMSR.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\RyzenSMU.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\AMDFamily0F.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\AMDFamily10.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\AMDFamily17.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\SmbusI801.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\SmbusNCT6793.bin" />
-    <EmbeddedResource Include="Resources\PawnIO\SmbusPIIX4.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcIO.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\RyzenSMU.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\AMDFamily17.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\SmbusI801.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\SmbusNCT6793.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\SmbusPIIX4.bin" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
