@@ -569,8 +569,6 @@ public class HttpServer
         response.Close();
     }
 
-    static Dictionary<string, string> _prometheusIdName = [];
-    static Dictionary<string, int> _prometheusNameCount = [];
     private string GeneratePrometheusResponse(Node node)
     {
         const int _maxValues = 5;
@@ -617,7 +615,6 @@ public class HttpServer
 
                 string tagHardware = "";
                 string valueHardwareName = "";
-                string valueHardwareAlias = "";
                 string valueHardwareId = ((HardwareNode)node).Hardware.Identifier.ToString();
                 if (((HardwareNode)node).Hardware.Parent != null)
                 {
@@ -629,36 +626,11 @@ public class HttpServer
                     tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
                     valueHardwareName = node.Text;
                 }
-                valueHardwareAlias = valueHardwareName;
-
-                //Have we seen this path before?
-                if (_prometheusIdName.ContainsKey(valueHardwareId))
-                {
-                    //Yeah, so use the previously stored name.
-                    valueHardwareAlias = _prometheusIdName[valueHardwareId];
-                }
-                else
-                {
-                    //Path does not exist, but have we seen this name before?
-                    if (_prometheusNameCount.ContainsKey(valueHardwareName))
-                    {
-                        //Yes, so append the counater and increment it by 1.
-                        valueHardwareAlias += $" {_prometheusNameCount[valueHardwareName]}";
-                        _prometheusNameCount[valueHardwareName] += 1;
-                    }
-                    else
-                    {
-                        //No, save the name.
-                        _prometheusNameCount.Add(valueHardwareName, 1);
-                    }
-                    //It does not exist, so store the name.
-                    _prometheusIdName.Add(valueHardwareId, valueHardwareAlias);
-                }
+                string valueHardwareAlias = $"{valueHardwareName} ({valueHardwareId})";
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
                     string valueSensorName = sensor.Text.Replace("#", String.Empty);
-                    string valueSensorAlias = valueSensorName;
 
                     // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
@@ -682,33 +654,8 @@ public class HttpServer
                     tagName = tagName.ToLower();
 
                     // Preparing the labels for all data and uniqueness
-                    string valueSensorId = sensor.Sensor.Identifier.ToString();
-
-                    string _nameKey = $"{valueHardwareAlias}_{valueSensorName}_{tagSensorType}{tagSensorUnits}";
-                    //Have we seen this path before?
-                    if (_prometheusIdName.ContainsKey(valueSensorId))
-                    {
-                        //Yes, then use the name.
-                        valueSensorAlias = _prometheusIdName[valueSensorId];
-                    }
-                    else
-                    {
-                        //No, but have we seen the sensor name under this same parent and tagName?
-                        if (_prometheusNameCount.ContainsKey(_nameKey))
-                        {
-                            //Yes, we have seen it. Append the counter and increment it.
-                            valueSensorAlias += $" {_prometheusNameCount[_nameKey]}";
-                            _prometheusNameCount[_nameKey] += 1;
-                        }
-                        else
-                        {
-                            //No, we have not seen it, so store it.
-                            _prometheusNameCount.Add(_nameKey, 1);
-                        }
-                        //Save the name to the path
-                        _prometheusIdName.Add(valueSensorId, $"{valueSensorAlias}");
-                    }
-                    valueSensorId = valueSensorId.Substring(valueHardwareId.Length); //remove the hardwareId from the sensorId
+                    string valueSensorId = sensor.Sensor.Identifier.ToString().Substring(valueHardwareId.Length);
+                    string valueSensorAlias = $"{valueSensorName} ({valueSensorId})";
 
                     string valueHost = _root.Text;
 
