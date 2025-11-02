@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -212,7 +213,11 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
-                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
+                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496)
+                        }
+                        .Concat(chip is Chip.NCT6799D ? new TemperatureSourceData[] { new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496) } : Array.Empty<TemperatureSourceData>())
+                        .Concat(new TemperatureSourceData[]
+                        {
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
@@ -231,7 +236,7 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.VIRTUAL_TEMP, 0),
                             new(SourceNct67Xxd.SPARE_TEMP, 0), // Used for voltage temp sensor
                             new(SourceNct67Xxd.SPARE_TEMP2, 0) // Used for voltage temp sensor
-                        });
+                        }));
                         break;
 
                     default:
