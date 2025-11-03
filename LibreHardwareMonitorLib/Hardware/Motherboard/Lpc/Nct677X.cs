@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -88,7 +88,7 @@ internal class Nct677X : ISuperIO
             VENDOR_ID_HIGH_REGISTER = 0x804F;
             VENDOR_ID_LOW_REGISTER = 0x004F;
 
-            FAN_PWM_OUT_REG = chip is Chip.NCT6797D or Chip.NCT6798D or Chip.NCT6799D
+            FAN_PWM_OUT_REG = chip is Chip.NCT6797D or Chip.NCT6798D or Chip.NCT6799D or Chip.NCT6796DS or Chip.NCT5585D
                 ? new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0xA09, 0xB09 }
                 : new ushort[] { 0x001, 0x003, 0x011, 0x013, 0x015, 0x017, 0x029 };
 
@@ -155,10 +155,12 @@ internal class Nct677X : ISuperIO
             case Chip.NCT6795D:
             case Chip.NCT6796D: // 16 voltages
             case Chip.NCT6796DR: // 16 voltages
+            case Chip.NCT6796DS:
             case Chip.NCT6797D:
             case Chip.NCT6798D:
             case Chip.NCT6799D:
             case Chip.NCT6701D:
+            case Chip.NCT5585D:
                 switch (chip)
                 {
                     case Chip.NCT6779D:
@@ -167,10 +169,12 @@ internal class Nct677X : ISuperIO
                         break;
 
                     case Chip.NCT6796DR:
+                    case Chip.NCT6796DS:
                     case Chip.NCT6797D:
                     case Chip.NCT6798D:
                     case Chip.NCT6799D:
                     case Chip.NCT6701D:
+                    case Chip.NCT5585D:
                         Fans = new float?[7];
                         Controls = new float?[7];
                         break;
@@ -231,6 +235,33 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.VIRTUAL_TEMP, 0),
                             new(SourceNct67Xxd.SPARE_TEMP, 0), // Used for voltage temp sensor
                             new(SourceNct67Xxd.SPARE_TEMP2, 0) // Used for voltage temp sensor
+                        });
+                        break;
+
+                    case Chip.NCT6796DS:
+                        temperaturesSources.AddRange(new TemperatureSourceData[]
+                        {
+                            new(SourceNct67Xxd.PECI_0, 0x0720, 0, -1, 0),
+                            new(SourceNct67Xxd.CPUTIN, 0x073, 0x074, 7, 0x100, 0x491),
+                            new(SourceNct67Xxd.SYSTIN, 0x075, 0x076, 7, 0x200, 0x490),
+                            new(SourceNct67Xxd.AUXTIN0, 0x077, 0x078, 7, 0x300, 0x492),
+                            new(SourceNct67Xxd.AUXTIN1, 0x079, 0x07A, 7, 0x900, 0x493),
+                            new(SourceNct67Xxd.AUXTIN2, 0x07B, 0x07C, 7, 0x900, 0x494),
+                            new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
+                            new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
+                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
+                            new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
+                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0)
+                        });
+                        break;
+
+                    case Chip.NCT5585D:
+                        temperaturesSources.AddRange(new TemperatureSourceData[]
+                        {
+                            new(SourceNct67Xxd.PECI_0, 0x0720, 0, -1, 0x100),
+                            new(SourceNct67Xxd.CPUTIN, 0x075, 0x076, 7, 0x000, 0x073),
+                            new(SourceNct67Xxd.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493),
+                            new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                         });
                         break;
 
@@ -570,9 +601,11 @@ internal class Nct677X : ISuperIO
 
                 case Chip.NCT6796D:
                 case Chip.NCT6796DR:
+                case Chip.NCT6796DS:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
                 case Chip.NCT6799D:
+                case Chip.NCT5585D:
                     if (_temperaturesSource[i].Register == 0)
                     {
                         System.Diagnostics.Debug.WriteLine("Temperature register {0} skipped, address 0.", i);
@@ -1097,9 +1130,11 @@ internal class Nct677X : ISuperIO
             not Chip.NCT6795D and
             not Chip.NCT6796D and
             not Chip.NCT6796DR and
+            not Chip.NCT6796DS and
             not Chip.NCT6797D and
             not Chip.NCT6798D and
-            not Chip.NCT6799D)
+            not Chip.NCT6799D and
+            not Chip.NCT5585D)
         {
             return;
         }
@@ -1166,7 +1201,8 @@ internal class Nct677X : ISuperIO
         RESERVED_7 = 30,
         VIRTUAL_TEMP = 31,
         SPARE_TEMP = 32,
-        SPARE_TEMP2 = 33
+        SPARE_TEMP2 = 33,
+        TSENSOR = 34
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]

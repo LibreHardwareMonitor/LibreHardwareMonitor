@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -10,6 +10,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+/// <summary>
+/// Known motherboard models detected/recognized by LibreHardwareMonitor.
+/// </summary>
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
 public enum Model
@@ -45,6 +49,7 @@ public enum Model
     H61M_DGS,
     B850M_STEEL_LEGEND_WIFI,
     X870E_TAICHI,
+    X870E_NOVA_WIFI,
 
     // ASUS
     CROSSHAIR_III_FORMULA,
