@@ -1892,7 +1892,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case model.B650I_AX: // IT8689E
+                    case Model.B650I_AX: // IT8689E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
                         v.Add(new Voltage("+12V", 2, 10f, 2f));
