@@ -196,11 +196,13 @@ internal class Nct677X : ISuperIO
 
                 switch (chip)
                 {
+                    case Chip.NCT6791D:
+                    case Chip.NCT6792D:
+                    case Chip.NCT6793D:
+                    case Chip.NCT6795D:
                     case Chip.NCT6796D:
                     case Chip.NCT6796DR:
                     case Chip.NCT6797D:
-                    case Chip.NCT6798D:
-                    case Chip.NCT6799D:
                     case Chip.NCT6701D:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
@@ -212,7 +214,40 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
-                            //new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496), // Disabled because these registers are wrong and can cause wrong measurement
+                            new(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, 0, -1, 0xC28, 0x400),
+                            new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),
+                            new(SourceNct67Xxd.PCH_CPU_TEMP,  0x678, 0, -1, 0xC2A, 0x402),
+                            new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),
+                            new(SourceNct67Xxd.AGENT0_DIMM0, 0x405, 0, -1),
+                            new(SourceNct67Xxd.AGENT0_DIMM1,0x406, 0, -1),
+                            new(SourceNct67Xxd.AGENT1_DIMM0, 0x407, 0, -1),
+                            new(SourceNct67Xxd.AGENT1_DIMM1, 0x408, 0, -1),
+                            new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
+                            new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
+                            new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
+                            new(SourceNct67Xxd.BYTE_TEMP0, 0x419, 0, -1),
+                            new(SourceNct67Xxd.BYTE_TEMP1, 0x41A, 0, -1),
+                            new(SourceNct67Xxd.PECI_0_CAL, 0x4F4, 0, -1),
+                            new(SourceNct67Xxd.PECI_1_CAL, 0x4F5, 0, -1),
+                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0),
+                            new(SourceNct67Xxd.SPARE_TEMP, 0),
+                            new(SourceNct67Xxd.SPARE_TEMP2, 0)
+                        });
+                        break;
+
+                    case Chip.NCT6798D:
+                    case Chip.NCT6799D:
+                        temperaturesSources.AddRange(new TemperatureSourceData[]
+                        {
+                            new(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),
+                            new(SourceNct67Xxd.CPUTIN, 0x075, 0x076, 7, 0x200, 0x491),
+                            new(SourceNct67Xxd.SYSTIN, 0x077, 0x078, 7, 0x300, 0x490),
+                            new(SourceNct67Xxd.AUXTIN0, 0x079, 0x07A, 7, 0x800, 0x492),
+                            new(SourceNct67Xxd.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493),
+                            new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
+                            new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
+                            new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
+                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
@@ -229,8 +264,8 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.PECI_0_CAL, 0x4F4, 0, -1),
                             new(SourceNct67Xxd.PECI_1_CAL, 0x4F5, 0, -1),
                             new(SourceNct67Xxd.VIRTUAL_TEMP, 0),
-                            new(SourceNct67Xxd.SPARE_TEMP, 0), // Used for voltage temp sensor
-                            new(SourceNct67Xxd.SPARE_TEMP2, 0) // Used for voltage temp sensor
+                            new(SourceNct67Xxd.SPARE_TEMP, 0),
+                            new(SourceNct67Xxd.SPARE_TEMP2, 0)
                         });
                         break;
 
@@ -1141,6 +1176,7 @@ internal class Nct677X : ISuperIO
         AUXTIN2 = 5,
         AUXTIN3 = 6,
         AUXTIN4 = 7,
+        TSENSOR = 10,
         SMBUSMASTER0 = 8,
         SMBUSMASTER1 = 9,
         RESERVED_1 = 10,
