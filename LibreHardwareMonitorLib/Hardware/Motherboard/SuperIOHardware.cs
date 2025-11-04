@@ -3801,7 +3801,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 1, 56, 10));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+5V", 4, 20, 10));
-                        v.Add(new Voltage("+1.05V ALW", 5));
+                        v.Add(new Voltage("+1.05V Always-on", 5));
                         v.Add(new Voltage("+3.3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("Vcore SoC", 10, 1, 1));
