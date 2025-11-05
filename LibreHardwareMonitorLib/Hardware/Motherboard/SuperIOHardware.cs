@@ -3911,16 +3911,17 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("VIN9", 15)); // VIN9
 
                         // Temperatures
-                        t.Add(new Temperature("CPU (PECI)", 0)); // CPU (PECI)
-                        t.Add(new Temperature("CPU Socket", 1)); // CPU Socket
-                        t.Add(new Temperature("Motherboard", 2)); // Motherboard
-                        t.Add(new Temperature("Auxiliary 0", 3)); // AUXTIN0
-                        t.Add(new Temperature("Auxiliary 1", 4)); // AUXTIN1
-                        t.Add(new Temperature("Thermistor Sensor #1", 5)); // T_SENSOR 1
-                        t.Add(new Temperature("Thermistor Sensor #2", 6)); // T_SENSOR 2
-                        t.Add(new Temperature("Auxiliary 4", 8)); // AUXTIN4
-                        t.Add(new Temperature("CPU Core", 9)); // CPU Core
-                        t.Add(new Temperature("Thermistor Sensor #3", 10)); // T_SENSOR 3
+                        t.Add(new Temperature("CPU Socket", 0)); // CPUTIN
+                        t.Add(new Temperature("Motherboard", 1)); // SYSTIN
+                        t.Add(new Temperature("Auxiliary 0", 2)); // AUXTIN0
+                        t.Add(new Temperature("Auxiliary 1", 3)); // AUXTIN1
+                        t.Add(new Temperature("Thermistor Sensor #1", 4)); // AUXTIN2 (T_SENSOR1)
+                        t.Add(new Temperature("Thermistor Sensor #2", 5)); // AUXTIN3 (T_SENSOR2)
+                        t.Add(new Temperature("Auxiliary 4", 6)); // AUXTIN4
+                        t.Add(new Temperature("Thermistor Sensor #3", 7)); // AUXTIN5 (T_SENSOR3)
+                        t.Add(new Temperature("CPU Core", 8)); // SMBUSMASTER0 (CPU Core)
+                        t.Add(new Temperature("CPU (PECI)", 9)); // CPU (PECI)
+                        t.Add(new Temperature("Virtual", 10)); // VIRTUAL_TEMP
 
                         // Fans
                         f.Add(new Fan("Chassis Fan #1", 0)); // CHA_FAN1

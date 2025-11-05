@@ -240,17 +240,17 @@ internal class Nct677X : ISuperIO
 
                     case Chip.NCT6796DS:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
-                        {
-                            new(SourceNct67Xxd.PECI_0, 0x0720, 0, -1, 0),
-                            new(SourceNct67Xxd.CPUTIN, 0x073, 0x074, 7, 0x100, 0x491),
-                            new(SourceNct67Xxd.SYSTIN, 0x075, 0x076, 7, 0x200, 0x490),
+                        {// https://khalifa.ws/randomfiles/nuvoton/NCT6796D-S_Datasheet_V0_6.pdf
+                            new(SourceNct67Xxd.CPUTIN,  0x073, 0x074, 7, 0x100, 0x491),
+                            new(SourceNct67Xxd.SYSTIN,  0x075, 0x076, 7, 0x200, 0x490),
                             new(SourceNct67Xxd.AUXTIN0, 0x077, 0x078, 7, 0x300, 0x492),
-                            new(SourceNct67Xxd.AUXTIN1, 0x079, 0x07A, 7, 0x900, 0x493),
+                            new(SourceNct67Xxd.AUXTIN1, 0x079, 0x07A, 7, 0x800, 0x493),
                             new(SourceNct67Xxd.AUXTIN2, 0x07B, 0x07C, 7, 0x900, 0x494),
-                            new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
-                            new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
-                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
+                            new(SourceNct67Xxd.AUXTIN3, 0x07D, 0x07E, 7, 0xA00, 0x495),
+                            new(SourceNct67Xxd.AUXTIN4, 0x027, 0, 4,0xC16 ,0x496),
+                            new(SourceNct67Xxd.AUXTIN5, 0x449, 0, 4, 0x100, 0x4A2),
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
+                            new(SourceNct67Xxd.PECI_0, 0x0720, 0, -1, 0),
                             new(SourceNct67Xxd.VIRTUAL_TEMP, 0)
                         });
                         break;
@@ -1202,7 +1202,8 @@ internal class Nct677X : ISuperIO
         VIRTUAL_TEMP = 31,
         SPARE_TEMP = 32,
         SPARE_TEMP2 = 33,
-        TSENSOR = 34
+        TSENSOR = 34,
+        AUXTIN5 = 35,
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
