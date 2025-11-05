@@ -20,7 +20,7 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 /// </summary>
 internal class IsaBridgeGigabyteController : IGigabyteController
 {
-    private readonly IsaBridgeEc _isaBridgeEc = new IsaBridgeEc();
+    private readonly IsaBridgeEc _isaBridgeEc;
     private MMIOState? _originalState;
     private bool _enabled;
 
@@ -51,7 +51,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// <returns>true on success</returns>
     public bool Enable(bool enabled)
     {
-        if (_enabled != enabled)
+        if (_enabled == enabled)
         {
             return false;
         }
@@ -60,7 +60,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         {
             if (_isaBridgeEc.TryGetCurrentState(out MMIOState currentState) && currentState != MMIOState.MMIO_Enabled4E)
             {
-                if ( _isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
+                if (_isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
                 {
                     _enabled = true;
                     return true;
@@ -69,7 +69,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         }
         else
         {
-            if ( _isaBridgeEc.TrySetState(MMIOState.MMIO_Disabled))
+            if (_isaBridgeEc.TrySetState(MMIOState.MMIO_Disabled))
             {
                 _enabled = false;
                 return true;

@@ -49,7 +49,6 @@
             return true;
         }
 
-        // ioctl_iomem_mmio_set_state
         public bool TrySetState(MMIOState state)
         {
             long[] inArray = new long[1];
