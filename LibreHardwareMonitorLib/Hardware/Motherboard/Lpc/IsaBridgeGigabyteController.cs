@@ -4,10 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
@@ -58,13 +54,12 @@ internal class IsaBridgeGigabyteController : IGigabyteController
 
         if (enabled)
         {
-            if (_isaBridgeEc.TryGetCurrentState(out MMIOState currentState) && currentState != MMIOState.MMIO_Enabled4E)
+            if (_isaBridgeEc.TryGetCurrentState(out MMIOState currentState) &&
+                currentState != MMIOState.MMIO_Enabled4E &&
+                _isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
             {
-                if (_isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
-                {
-                    _enabled = true;
-                    return true;
-                }
+                _enabled = true;
+                return true;
             }
         }
         else
