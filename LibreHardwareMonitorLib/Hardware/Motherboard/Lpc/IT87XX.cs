@@ -549,7 +549,11 @@ internal class IT87XX : ISuperIO
         Mutexes.ReleaseIsaBus();
     }
 
-    public void Close() => _port.Close();
+    public void Close()
+    {
+        _port.Close();
+        _gigabyteController?.Dispose();
+    }
 
     private byte ReadByte(byte register, out bool valid)
     {

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.Hardware.Cpu;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -661,6 +662,7 @@ internal class LpcIO
                 gpioVerify = port.ReadWord(BASE_ADDRESS_REGISTER + 2);
             }
 
+            IGigabyteController gigabyteController = FindGigabyteEC(port, chip, motherboard);
             port.IT87Exit();
 
             if (address != verify || address < 0x100 || (address & 0xF007) != 0)
@@ -685,11 +687,53 @@ internal class LpcIO
                 return false;
             }
 
-            _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, null));
+            _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, gigabyteController));
             return true;
         }
 
         return false;
+    }
+
+    private IGigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
+    {
+        // The controller only affects the 2nd ITE chip if present, and only a few
+        // models are known to use this controller.
+        // IT8795E likely to need this too, but may use different registers.
+        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
+            return null;
+
+        Vendor vendor = DetectVendor();
+
+        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi();
+        if (gigabyteController != null)
+            return gigabyteController;
+
+        // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
+        if (chip == Chip.IT8792E && vendor == Vendor.AMD)
+        {
+            gigabyteController = EcioPortGigabyteController.TryCreate();
+            if (gigabyteController != null)
+                return gigabyteController;
+        }
+
+        return null;
+
+        Vendor DetectVendor()
+        {
+            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
+            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
+                return Vendor.Intel;
+
+            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+                return Vendor.AMD;
+
+            return Vendor.Unknown;
+        }
+    }
+
+    private IGigabyteController FindGigabyteECUsingSmfi()
+    {
+        return IsaBridgeGigabyteController.TryCreate(out IsaBridgeGigabyteController controller) ? controller : null;
     }
 
     // ReSharper disable InconsistentNaming
