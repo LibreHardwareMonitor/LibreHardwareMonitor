@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using static System.Net.WebRequestMethods;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -240,7 +241,7 @@ internal class Nct677X : ISuperIO
 
                     case Chip.NCT6796DS:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
-                        {// https://khalifa.ws/randomfiles/nuvoton/NCT6796D-S_Datasheet_V0_6.pdf
+                        {//https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/pull/2012
                             new(SourceNct67Xxd.CPUTIN,  0x073, 0x074, 7, 0x100, 0x491),
                             new(SourceNct67Xxd.SYSTIN,  0x075, 0x076, 7, 0x200, 0x490),
                             new(SourceNct67Xxd.AUXTIN0, 0x077, 0x078, 7, 0x300, 0x492),

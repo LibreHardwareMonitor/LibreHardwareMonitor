@@ -326,13 +326,13 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("DRAM", 1));
                         v.Add(new Voltage("+3.3V (AVCC)", 2, 34, 34));
                         v.Add(new Voltage("+3.3V (3VCC)", 3, 34, 34));
-                        v.Add(new Voltage("VDD_MISC", 4));
+                        v.Add(new Voltage("VDD Misc", 4));
                         v.Add(new Voltage("3VSB", 7, 34, 34));
-                        v.Add(new Voltage("VBAT", 8, 34, 34));
-                        v.Add(new Voltage("VIN2", 12));
-                        v.Add(new Voltage("VIN3", 13));
-                        v.Add(new Voltage("VIN7", 14));
-                        v.Add(new Voltage("VIN9", 15));
+                        v.Add(new Voltage("VBat", 8, 34, 34));
+                        v.Add(new Voltage("Voltage #2", 12));
+                        v.Add(new Voltage("Voltage #3", 13));
+                        v.Add(new Voltage("Voltage #7", 14));
+                        v.Add(new Voltage("Voltage #9", 15));
 
                         // Temperatures
                         t.Add(new Temperature("MOS", 1));
@@ -3899,25 +3899,25 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3.3V", 3, 34, 34)); // +3.3V
                         v.Add(new Voltage("+5V", 4, 20, 10)); // +5V
                         v.Add(new Voltage("+1.05 Standby", 5, 0, 1)); // +1.05V_ALW
-                        v.Add(new Voltage("VIN4", 6, 0, 1)); // VIN4
+                        v.Add(new Voltage("Voltage #4", 6, 0, 1)); // VIN4
                         v.Add(new Voltage("+3V Standby", 7, 34, 34)); // +3VSB
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34)); // VBAT
                         v.Add(new Voltage("CPU Termination", 9, 1, 1)); // VTT
-                        v.Add(new Voltage("SOC", 10, 1, 1)); // VDDCR_SOC
-                        v.Add(new Voltage("VIN6", 11, 34, 34, 0)); // VIN6
-                        v.Add(new Voltage("VIN2", 12)); // VIN2
+                        v.Add(new Voltage("SoC", 10, 1, 1)); // VDDCR_SOC
+                        v.Add(new Voltage("Voltage #6", 11, 34, 34, 0)); // VIN6
+                        v.Add(new Voltage("Voltage #2", 12)); // VIN2
                         v.Add(new Voltage("+1.8V", 13, 10, 10, 0)); // +1.8V
-                        v.Add(new Voltage("VIN7", 14, 0, 1, 0)); // VIN7
-                        v.Add(new Voltage("VIN9", 15)); // VIN9
+                        v.Add(new Voltage("Voltage #7", 14, 0, 1, 0)); // VIN7
+                        v.Add(new Voltage("Voltage #9", 15)); // VIN9
 
                         // Temperatures
                         t.Add(new Temperature("CPU Socket", 0)); // CPUTIN
                         t.Add(new Temperature("Motherboard", 1)); // SYSTIN
-                        t.Add(new Temperature("Auxiliary 0", 2)); // AUXTIN0
-                        t.Add(new Temperature("Auxiliary 1", 3)); // AUXTIN1
+                        t.Add(new Temperature("Auxiliary #0", 2)); // AUXTIN0
+                        t.Add(new Temperature("Auxiliary #1", 3)); // AUXTIN1
                         t.Add(new Temperature("Thermistor Sensor #1", 4)); // AUXTIN2 (T_SENSOR1)
                         t.Add(new Temperature("Thermistor Sensor #2", 5)); // AUXTIN3 (T_SENSOR2)
-                        t.Add(new Temperature("Auxiliary 4", 6)); // AUXTIN4
+                        t.Add(new Temperature("Auxiliary #4", 6)); // AUXTIN4
                         t.Add(new Temperature("Thermistor Sensor #3", 7)); // AUXTIN5 (T_SENSOR3)
                         t.Add(new Temperature("CPU Core", 8)); // SMBUSMASTER0 (CPU Core)
                         t.Add(new Temperature("CPU (PECI)", 9)); // CPU (PECI)
