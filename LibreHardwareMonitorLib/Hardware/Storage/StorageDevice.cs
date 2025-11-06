@@ -111,7 +111,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
         foreach (var attribute in _attributes)
         {
-            r.AppendLine($"{attribute.Id,3}, {attribute.Name,35}, {attribute.Value,18}, {attribute.Threshold,3}");
+            r.AppendLine($"{attribute.Id,3}, {attribute.Name,60}, {attribute.Value,18}, {attribute.Threshold,3}");
         }
 
         r.AppendLine();
