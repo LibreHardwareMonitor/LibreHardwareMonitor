@@ -4,18 +4,18 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Diagnostics;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
-internal class IT879xEcioPort : LpcPort
+internal class IT879xEcioPort
 {
     private const ushort EcioRegisterPort = 0x3F4;
     private const ushort EcioValuePort = 0x3F0;
 
-    public IT879xEcioPort() : base(EcioRegisterPort, EcioValuePort)
+    public IT879xEcioPort(LpcPort lpcPort)
     {
+        _lpcPort = lpcPort;
     }
 
     public bool Read(ushort offset, out byte value)
@@ -66,7 +66,7 @@ internal class IT879xEcioPort : LpcPort
             return false;
         }
 
-        WriteIoPort(RegisterPort, value);
+        _lpcPort.WriteIoPort(EcioRegisterPort, value);
         return true;
     }
 
@@ -77,7 +77,7 @@ internal class IT879xEcioPort : LpcPort
             return false;
         }
 
-        WriteIoPort(ValuePort, value);
+        _lpcPort.WriteIoPort(EcioValuePort, value);
         return true;
     }
 
@@ -89,7 +89,7 @@ internal class IT879xEcioPort : LpcPort
             return false;
         }
 
-        value = ReadIoPort(ValuePort);
+        value = _lpcPort.ReadIoPort(EcioValuePort);
         return true;
     }
 
@@ -98,7 +98,7 @@ internal class IT879xEcioPort : LpcPort
         Stopwatch stopwatch = Stopwatch.StartNew();
         try
         {
-            while ((ReadIoPort(RegisterPort) & 2) != 0)
+            while ((_lpcPort.ReadIoPort(EcioRegisterPort) & 2) != 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
                 {
@@ -118,7 +118,7 @@ internal class IT879xEcioPort : LpcPort
         Stopwatch stopwatch = Stopwatch.StartNew();
         try
         {
-            while ((ReadIoPort(RegisterPort) & 1) == 0)
+            while ((_lpcPort.ReadIoPort(EcioRegisterPort) & 1) == 0)
             {
                 if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
                 {
@@ -134,4 +134,5 @@ internal class IT879xEcioPort : LpcPort
     }
 
     private const long WAIT_TIMEOUT = 1000L;
+    private readonly LpcPort _lpcPort;
 }

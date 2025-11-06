@@ -24,12 +24,9 @@ internal class EcioPortGigabyteController : IGigabyteController
         _port = port;
     }
 
-    public static EcioPortGigabyteController TryCreate()
+    public static EcioPortGigabyteController TryCreate(LpcPort lpcPort)
     {
-        IT879xEcioPort port = new();
-        port.IT87Enter();
-        port.FindBars();
-        port.IT87Exit();
+        IT879xEcioPort port = new(lpcPort);
 
         // Check compatibility by querying its version.
         if (!port.Read(ControllerFanControlArea + ControllerVersionOffset, out byte majorVersion) || majorVersion != 1)
@@ -75,5 +72,8 @@ internal class EcioPortGigabyteController : IGigabyteController
         }
     }
 
-    public void Dispose() => _port.Close();
+    public void Dispose()
+    {
+        Restore();
+    }
 }
