@@ -168,29 +168,29 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             int index = 0;
 
-            AddSensor("Temperature"   , index++, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
+            AddSensor("Temperature", index++, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
 
             if (_storage.Smart.Life.HasValue)
             {
-                AddSensor("Life"          , index++, false, SensorType.Level      , s => s.Smart.Life.GetValueOrDefault());
+                AddSensor("Life", index++, false, SensorType.Level, s => s.Smart.Life.GetValueOrDefault());
             }
 
             if (_storage.Smart.HostReads.HasValue)
             {
-                AddSensor("Data read"     , index++, false, SensorType.Data       , s => s.Smart.HostReads.GetValueOrDefault());
+                AddSensor("Data read", index++, false, SensorType.Data, s => s.Smart.HostReads.GetValueOrDefault());
             }
 
             if (_storage.Smart.HostWrites.HasValue)
             {
-                AddSensor("Data written"  , index++, false, SensorType.Data       , s => s.Smart.HostWrites.GetValueOrDefault());
+                AddSensor("Data written", index++, false, SensorType.Data, s => s.Smart.HostWrites.GetValueOrDefault());
             }
 
-            AddSensor("Power on count", index++, false, SensorType.Factor     , s => s.Smart.PowerOnCount);
-            AddSensor("Power on hours", index++, false, SensorType.Factor     , s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
+            AddSensor("Power on count", index++, false, SensorType.Factor, s => s.Smart.PowerOnCount);
+            AddSensor("Power on hours", index++, false, SensorType.Factor, s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
 
             if (_storage.IsNVMe)
             {
-                AddSensor("Temperature warning" , index++, false, SensorType.Factor, s => s.Smart.TemperatureWarning.GetValueOrDefault());
+                AddSensor("Temperature warning", index++, false, SensorType.Factor, s => s.Smart.TemperatureWarning.GetValueOrDefault());
                 AddSensor("Temperature critical", index++, false, SensorType.Factor, s => s.Smart.TemperatureCritical.GetValueOrDefault());
 
                 TryAddTemperatureSensor(index++, false, 1, SmartAttributeType.TemperatureSensor1);
