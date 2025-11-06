@@ -6,13 +6,12 @@
 
 using System.Collections.Generic;
 
-namespace LibreHardwareMonitor.Hardware.Storage
+namespace LibreHardwareMonitor.Hardware.Storage;
+
+public interface ISmart
 {
-    public interface ISmart
-    {
-        /// <summary>
-        /// Gets all available smart attributes.
-        /// </summary>
-        IReadOnlyList<SmartAttribute> Attributes { get; }
-    }
+    /// <summary>
+    /// Gets all available smart attributes.
+    /// </summary>
+    IReadOnlyList<SmartAttribute> Attributes { get; }
 }

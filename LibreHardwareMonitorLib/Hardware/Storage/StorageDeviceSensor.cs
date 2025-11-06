@@ -4,25 +4,24 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Hardware.Storage
+namespace LibreHardwareMonitor.Hardware.Storage;
+
+internal delegate float GetStorageDeviceSensorValue(DiskInfoToolkit.Storage storage);
+
+internal class StorageDeviceSensor : Sensor
 {
-    delegate float GetStorageDeviceSensorValue(DiskInfoToolkit.Storage storage);
+    private readonly GetStorageDeviceSensorValue _getValue;
 
-    internal class StorageDeviceSensor : Sensor
+    public StorageDeviceSensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ISettings settings, GetStorageDeviceSensorValue getValue)
+        : base(name, index, defaultHidden, sensorType, hardware, null, settings)
     {
-        private readonly GetStorageDeviceSensorValue _getValue;
+        _getValue = getValue;
+    }
 
-        public StorageDeviceSensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ISettings settings, GetStorageDeviceSensorValue getValue)
-            : base(name, index, defaultHidden, sensorType, hardware, null, settings)
-        {
-            _getValue = getValue;
-        }
+    public void Update(DiskInfoToolkit.Storage storage)
+    {
+        var value = _getValue(storage);
 
-        public void Update(DiskInfoToolkit.Storage storage)
-        {
-            var value = _getValue(storage);
-
-            Value = value;
-        }
+        Value = value;
     }
 }
