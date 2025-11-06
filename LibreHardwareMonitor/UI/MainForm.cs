@@ -436,11 +436,11 @@ public sealed partial class MainForm : Form
             switch (_throttleAtaUpdate.Value)
             {
                 case true:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
+                    StorageDevice.ThrottleInterval = TimeSpan.FromSeconds(30);
                     break;
 
                 case false:
-                    AtaStorage.ThrottleInterval = TimeSpan.Zero;
+                    StorageDevice.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };
