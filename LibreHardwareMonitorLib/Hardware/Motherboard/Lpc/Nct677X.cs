@@ -1203,8 +1203,7 @@ internal class Nct677X : ISuperIO
         VIRTUAL_TEMP = 31,
         SPARE_TEMP = 32,
         SPARE_TEMP2 = 33,
-        TSENSOR = 34,
-        AUXTIN5 = 35,
+        AUXTIN5 = 34,
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
