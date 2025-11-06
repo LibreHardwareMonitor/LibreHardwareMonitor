@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
     internal class StorageDeviceSensor : Sensor
     {
-        private GetStorageDeviceSensorValue _getValue;
+        private readonly GetStorageDeviceSensorValue _getValue;
 
         public StorageDeviceSensor(string name, int index, bool defaultHidden, SensorType sensorType, Hardware hardware, ISettings settings, GetStorageDeviceSensorValue getValue)
             : base(name, index, defaultHidden, sensorType, hardware, null, settings)

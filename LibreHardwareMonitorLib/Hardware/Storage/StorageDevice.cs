@@ -34,9 +34,9 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
         private static DateTime _lastUpdate;
 
-        private List<StorageDeviceSensor> _sensors = new();
+        private readonly List<StorageDeviceSensor> _sensors = new();
 
-        private List<SmartAttribute> _attributes = new();
+        private readonly List<SmartAttribute> _attributes = new();
 
         private Sensor _sensorDiskReadActivity;
         private Sensor _sensorDiskReadRate;
@@ -152,13 +152,7 @@ namespace LibreHardwareMonitor.Hardware.Storage
 
             var attributes = SmartAttributeTranslator.GetAttributesFor(_storage);
 
-            foreach (var attr in attributes)
-            {
-                if (attr != null)
-                {
-                    _attributes.Add(attr);
-                }
-            }
+            _attributes.AddRange(attributes.Where(a => a != null));
         }
 
         private void CreateSensors()
@@ -224,22 +218,20 @@ namespace LibreHardwareMonitor.Hardware.Storage
         private void TryAddTemperatureSensor(int index, bool defaultHidden, int thermalSensorIndex, SmartAttributeType type)
         {
             var attr = GetSmartAttribute(type);
-            if (attr != null)
-            {
-                //Does the sensor have a value ?
-                if (attr.Attribute.RawValueULong > 0)
-                {
-                    AddSensor($"Temperature {thermalSensorIndex}", index, defaultHidden, SensorType.Temperature, s =>
-                    {
-                        var a = GetSmartAttribute(type);
-                        if (a != null)
-                        {
-                            return TemperatureConverter.KelvinToCelsius(a.Attribute.RawValueULong);
-                        }
 
-                        return 0;
-                    });
-                }
+            //Does the sensor have a value ?
+            if (attr != null && attr.Attribute.RawValueULong > 0)
+            {
+                AddSensor($"Temperature {thermalSensorIndex}", index, defaultHidden, SensorType.Temperature, s =>
+                {
+                    var a = GetSmartAttribute(type);
+                    if (a != null)
+                    {
+                        return TemperatureConverter.KelvinToCelsius(a.Attribute.RawValueULong);
+                    }
+
+                    return 0;
+                });
             }
         }
 
