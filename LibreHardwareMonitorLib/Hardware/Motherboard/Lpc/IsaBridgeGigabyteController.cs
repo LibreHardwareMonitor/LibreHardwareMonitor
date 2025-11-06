@@ -124,5 +124,9 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             _isaBridgeEc.TrySetState(_originalState.Value);
     }
 
-    public void Dispose() => _isaBridgeEc.Close();
+    public void Dispose()
+    {
+        Restore();
+        _isaBridgeEc.Close();
+    }
 }
