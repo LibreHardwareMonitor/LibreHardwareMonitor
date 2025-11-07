@@ -27,36 +27,35 @@ namespace LibreHardwareMonitor.PawnIo
         private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IsaBridgeEc).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IsaBridgeEC.bin");
 
         // ioctl_find_superio_mmio
-        public bool FindSuperIoMMIO(out MMIOMapping mmio)
+        public bool FindSuperIoMMIO(out MMIOMapping firstMmio, out MMIOMapping secondMmio)
         {
             long[] outArray = new long[6];
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_find_superio_mmio", [], 0, outArray, 6, out uint returnSize);
 
             if (ntStatusCode != 0)
             {
-                mmio = new MMIOMapping();
+                firstMmio = default;
+                secondMmio = default;
                 return false;
             }
 
-            // 2 possible mmio mapping, return the first valid one
-            for (int i = 0; i < 2; i++)
+            firstMmio = new MMIOMapping
             {
-                mmio = new MMIOMapping()
-                {
-                    Index = i,
-                    BaseAddress = outArray[0 * i],
-                    SuperIoSize = outArray[1 * i],
-                    ChipId = outArray[2 * i]
-                };
+                Index = 0,
+                BaseAddress = outArray[0],
+                SuperIoSize = outArray[1],
+                ChipId = outArray[2]
+            };
 
-                if (mmio.BaseAddress != 0)
-                {
-                    return true;
-                }
-            }
+            secondMmio = new MMIOMapping
+            {
+                Index = 1,
+                BaseAddress = outArray[3],
+                SuperIoSize = outArray[4],
+                ChipId = outArray[5]
+            };
 
-            mmio = new MMIOMapping();
-            return false;
+            return firstMmio.BaseAddress != 0 && secondMmio.BaseAddress != 0;
         }
 
         //ioctl_access_superio_mmio

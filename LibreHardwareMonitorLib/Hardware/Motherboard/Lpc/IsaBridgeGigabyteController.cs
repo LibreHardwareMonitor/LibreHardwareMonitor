@@ -20,7 +20,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     private readonly IsaBridgeEc _isaBridgeEc;
     private readonly MMIOMapping _mmio;
     private MMIOState? _originalState;
-    private bool _enabled;
+    private bool? _enabled;
 
     private const int ControllerEnableRegister = 0x47;
     private const uint ControllerFanControlArea = 0x900;
@@ -38,7 +38,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         IsaBridgeEc _isaBridgeEc = new IsaBridgeEc();
 
         // find
-        if (!_isaBridgeEc.FindSuperIoMMIO(out MMIOMapping mmio))
+        if (!_isaBridgeEc.FindSuperIoMMIO(out _, out MMIOMapping secondMmio))
         {
             _isaBridgeEc.Close();
             return false;
@@ -58,15 +58,17 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             return false;
         }
 
-        // try set state to disabled then enabled4E mode
-        if (!_isaBridgeEc.TrySetState(MMIOState.MMIO_Disabled) || !_isaBridgeEc.TrySetState(mmio.Index == 0 ? MMIOState.MMIO_Enabled2E : MMIOState.MMIO_Enabled4E))
+        // try set state to enabled4E mode if required
+        if (state != MMIOState.MMIO_Enabled4E || state != MMIOState.MMIO_EnabledBoth)
         {
-            _isaBridgeEc.Close();
-            return false;
+            if (!_isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
+            {
+                _isaBridgeEc.Close();
+                return false;
+            }
         }
 
-
-        isaBridgeGigabyteController = new IsaBridgeGigabyteController(_isaBridgeEc, mmio, state);
+        isaBridgeGigabyteController = new IsaBridgeGigabyteController(_isaBridgeEc, secondMmio, state);
         return true;
     }
 
@@ -77,38 +79,37 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// <returns>true on success</returns>
     public bool Enable(bool enabled)
     {
+        if (_enabled is null)
+        {
+            if (!_isaBridgeEc.ReadMmio(
+                  superIoIndex: _mmio.Index,
+                  offset: ControllerFanControlArea + ControllerEnableRegister,
+                  size: 1,
+                  value: out byte readvalue))
+            {
+                return false;
+            }
+
+            _enabled = Convert.ToBoolean(readvalue);
+        }
+
         if (_enabled == enabled)
         {
             return false;
         }
 
-        if (!_isaBridgeEc.ReadMmio(
-            superIoIndex: _mmio.Index,
-            offset: ControllerFanControlArea + ControllerEnableRegister,
-            size: 1,
-            value: out byte value))
-        {
-            return false;
-        }
-
-        bool isEnabled = Convert.ToBoolean(value);
-
-        if (isEnabled == enabled)
-        {
-            return false;
-        }
-
-        value = Convert.ToByte(enabled);
+        byte writeValue = Convert.ToByte(enabled);
 
         if (!_isaBridgeEc.WriteMmio(
             superIoIndex: _mmio.Index,
             offset: ControllerFanControlArea + ControllerEnableRegister,
             size: 1,
-            value: value))
+            value: writeValue))
         {
             return false;
         }
 
+        _enabled = enabled;
 
         return true;
     }
