@@ -72,6 +72,9 @@ public sealed class StorageDevice : Hardware, ISmart
 
         _lastUpdate = DateTime.UtcNow;
 
+        //Toggle usage sensor
+        ToggleUsageSensor();
+
         //Update performance sensors
         UpdatePerformanceSensors();
 
@@ -115,26 +118,31 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         r.AppendLine();
-        r.AppendLine("Partitions:");
 
-        foreach (var partition in _storage.Partitions)
+        if (!_storage.IsDynamicDisk)
         {
-            r.AppendLine($"Partition #{partition.PartitionNumber}");
+            r.AppendLine("Partitions:");
 
-            if (partition.DriveLetter != null)
+            foreach (var partition in _storage.Partitions)
             {
-                r.AppendLine($"Drive Letter: {partition.DriveLetter}");
+                r.AppendLine($"Partition #{partition.PartitionNumber}");
+
+                if (partition.DriveLetter != null)
+                {
+                    r.AppendLine($"Drive Letter: {partition.DriveLetter}");
+                }
+
+                if (partition.AvailableFreeSpace != null)
+                {
+                    r.AppendLine($"Available Free Space: {partition.AvailableFreeSpace}");
+                }
             }
 
-            if (partition.AvailableFreeSpace != null)
-            {
-                r.AppendLine($"Available Free Space: {partition.AvailableFreeSpace}");
-            }
+            r.AppendLine();
+
+            r.AppendLine($"Total Free Size: {_storage.TotalFreeSize}");
         }
 
-        r.AppendLine();
-
-        r.AppendLine($"Total Free Size: {_storage.TotalFreeSize}");
         r.AppendLine($"Total Size: {_storage.TotalSize}");
 
         return r.ToString();
@@ -158,7 +166,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private void CreateSensors()
     {
         _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
-        ActivateSensor(_usageSensor);
+        ToggleUsageSensor();
 
         int index = 0;
 
@@ -299,6 +307,18 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         _lastTime = currentTime;
+    }
+
+    private void ToggleUsageSensor()
+    {
+        if (!_storage.IsDynamicDisk)
+        {
+            ActivateSensor(_usageSensor);
+        }
+        else
+        {
+            DeactivateSensor(_usageSensor);
+        }
     }
 
     private void UpdateUsageSensor()

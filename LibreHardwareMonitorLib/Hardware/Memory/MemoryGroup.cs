@@ -50,8 +50,10 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         }
     }
 
+#pragma warning disable 67
     public event HardwareEventHandler HardwareAdded;
     public event HardwareEventHandler HardwareRemoved;
+#pragma warning restore 67
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
