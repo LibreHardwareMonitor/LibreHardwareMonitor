@@ -94,11 +94,13 @@ public class Motherboard : IHardware
         SubHardware = subHardwareList.ToArray();
     }
 
+#pragma warning disable 67
     /// <inheritdoc />
     public event SensorEventHandler SensorAdded;
 
     /// <inheritdoc />
     public event SensorEventHandler SensorRemoved;
+#pragma warning restore 67
 
     /// <inheritdoc />
     public HardwareType HardwareType => HardwareType.Motherboard;

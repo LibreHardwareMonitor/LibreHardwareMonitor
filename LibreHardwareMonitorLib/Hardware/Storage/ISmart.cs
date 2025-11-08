@@ -4,22 +4,14 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
-using LibreHardwareMonitor.Interop;
+using System.Collections.Generic;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
-public interface ISmart : IDisposable
+public interface ISmart
 {
-    bool IsValid { get; }
-
-    void Close();
-
-    bool EnableSmart();
-
-    AtaSmart.SMART_ATTRIBUTE[] ReadSmartData();
-
-    AtaSmart.SMART_THRESHOLD[] ReadSmartThresholds();
-
-    bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision);
+    /// <summary>
+    /// Gets all available smart attributes.
+    /// </summary>
+    IReadOnlyList<SmartAttribute> Attributes { get; }
 }
