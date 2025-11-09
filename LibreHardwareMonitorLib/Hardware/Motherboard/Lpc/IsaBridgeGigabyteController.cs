@@ -128,6 +128,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     public void Dispose()
     {
         Restore();
+        _isaBridgeEc.Unmap();
         _isaBridgeEc.Close();
     }
 }
