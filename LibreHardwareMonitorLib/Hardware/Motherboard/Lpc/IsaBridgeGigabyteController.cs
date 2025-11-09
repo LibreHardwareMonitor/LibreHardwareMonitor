@@ -19,17 +19,15 @@ internal class IsaBridgeGigabyteController : IGigabyteController
 {
     private readonly IsaBridgeEc _isaBridgeEc;
     private readonly MMIOMapping _mmio;
-    private MMIOState? _originalState;
     private bool? _enabled;
-
+    private bool? _restoreEnabled;
     private const int ControllerEnableRegister = 0x47;
     private const uint ControllerFanControlArea = 0x900;
 
-    private IsaBridgeGigabyteController(IsaBridgeEc isaBridgeEc, MMIOMapping mmio, MMIOState originalState)
+    private IsaBridgeGigabyteController(IsaBridgeEc isaBridgeEc, MMIOMapping mmio)
     {
         _isaBridgeEc = isaBridgeEc;
         _mmio = mmio;
-        _originalState = originalState;
     }
 
     public static bool TryCreate(out IsaBridgeGigabyteController isaBridgeGigabyteController)
@@ -59,7 +57,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         }
 
         // try set state to enabled4E mode if required
-        if (state != MMIOState.MMIO_Enabled4E || state != MMIOState.MMIO_EnabledBoth)
+        if (state != MMIOState.MMIO_Enabled4E && state != MMIOState.MMIO_EnabledBoth)
         {
             if (!_isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
             {
@@ -68,7 +66,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             }
         }
 
-        isaBridgeGigabyteController = new IsaBridgeGigabyteController(_isaBridgeEc, secondMmio, state);
+        isaBridgeGigabyteController = new IsaBridgeGigabyteController(_isaBridgeEc, secondMmio);
         return true;
     }
 
@@ -85,17 +83,19 @@ internal class IsaBridgeGigabyteController : IGigabyteController
                   superIoIndex: _mmio.Index,
                   offset: ControllerFanControlArea + ControllerEnableRegister,
                   size: 1,
-                  value: out byte readvalue))
+                  value: out byte readvaluebyte))
             {
                 return false;
             }
 
-            _enabled = Convert.ToBoolean(readvalue);
+            bool readValue = Convert.ToBoolean(readvaluebyte);
+            _restoreEnabled ??= readValue;
+            _enabled = Convert.ToBoolean(readvaluebyte);
         }
 
         if (_enabled == enabled)
         {
-            return false;
+            return true;
         }
 
         byte writeValue = Convert.ToByte(enabled);
@@ -119,16 +119,17 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// </summary>
     public void Restore()
     {
-        Enable(false);
+        if (_restoreEnabled is null)
+        {
+            return;
+        }
 
-        if (_originalState.HasValue)
-            _isaBridgeEc.TrySetState(_originalState.Value);
+        Enable(_restoreEnabled.Value);
     }
 
     public void Dispose()
     {
         Restore();
-        _isaBridgeEc.Unmap();
         _isaBridgeEc.Close();
     }
 }
