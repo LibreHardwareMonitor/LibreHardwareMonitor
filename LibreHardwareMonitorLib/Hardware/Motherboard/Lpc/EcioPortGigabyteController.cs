@@ -18,6 +18,7 @@ internal class EcioPortGigabyteController : IGigabyteController
     private readonly IT879xEcioPort _port;
 
     private bool? _initialState;
+    private bool? _current;
 
     private EcioPortGigabyteController(IT879xEcioPort port)
     {
@@ -49,19 +50,21 @@ internal class EcioPortGigabyteController : IGigabyteController
     {
         ushort offset = ControllerFanControlArea + ControllerEnableRegister;
 
-        if (!_port.Read(offset, out byte bCurrent))
+        if (!_current.HasValue)
         {
-            DebugLog($"ENABLE: Could not read at offset {offset}");
-            return false;
+            if (!_port.Read(offset, out byte bCurrent))
+            {
+                DebugLog($"ENABLE: Could not read at offset {offset}");
+                return false;
+            }
+
+            DebugLog($"ENABLE: read value {bCurrent} at offset {offset}");
+
+            _current = Convert.ToBoolean(bCurrent);
+            _initialState ??= _current;
         }
-
-        DebugLog($"ENABLE: read value {bCurrent} at offset {offset}");
-
-        bool current = Convert.ToBoolean(bCurrent);
-
-        _initialState ??= current;
         
-        if (current != enabled)
+        if (_current != enabled)
         {
             if (!_port.Write(offset, Convert.ToByte(enabled)))
             {
