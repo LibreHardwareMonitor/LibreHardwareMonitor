@@ -436,11 +436,11 @@ public sealed partial class MainForm : Form
             switch (_throttleAtaUpdate.Value)
             {
                 case true:
-                    AtaStorage.ThrottleInterval = TimeSpan.FromSeconds(30);
+                    StorageDevice.ThrottleInterval = TimeSpan.FromSeconds(30);
                     break;
 
                 case false:
-                    AtaStorage.ThrottleInterval = TimeSpan.Zero;
+                    StorageDevice.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };
@@ -937,8 +937,6 @@ public sealed partial class MainForm : Form
 
         if (!backgroundUpdater.IsBusy)
             backgroundUpdater.RunWorkerAsync();
-
-        RestoreCollapsedNodeState(treeView);
     }
 
     private void SaveConfiguration()
@@ -1358,6 +1356,28 @@ public sealed partial class MainForm : Form
                 newWidth -= treeView.Columns[i].Width;
         }
         treeView.Columns[0].Width = newWidth;
+    }
+
+    private void TreeView_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (treeView.SelectedNode != null)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Right:
+                    if (treeView.SelectedNode.Tag is IExpandPersistNode expandPersistNodeR)
+                    {
+                        expandPersistNodeR.Expanded = true;
+                    }
+                    return;
+                case Keys.Left:
+                    if (treeView.SelectedNode.Tag is IExpandPersistNode expandPersistNodeL)
+                    {
+                        expandPersistNodeL.Expanded = false;
+                    }
+                    return;
+            }
+        }
     }
 
     private void TreeView_ColumnWidthChanged(TreeColumn column)
