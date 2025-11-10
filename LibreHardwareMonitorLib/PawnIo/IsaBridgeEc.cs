@@ -67,7 +67,7 @@ namespace LibreHardwareMonitor.PawnIo
             DebugLog($"First MMIO - BaseAddress: 0x{firstMmio.BaseAddress:X}, SuperIoSize: 0x{firstMmio.SuperIoSize:X}, ChipId: 0x{firstMmio.ChipId:X}");
             DebugLog($"Second MMIO - BaseAddress: 0x{secondMmio.BaseAddress:X}, SuperIoSize: 0x{secondMmio.SuperIoSize:X}, ChipId: 0x{secondMmio.ChipId:X}");
 
-            return firstMmio.BaseAddress != 0 && secondMmio.BaseAddress != 0;
+            return firstMmio.BaseAddress != 0 || secondMmio.BaseAddress != 0;
         }
 
         //ioctl_access_superio_mmio
