@@ -24,6 +24,14 @@ internal class EcioPortGigabyteController : IGigabyteController
         _port = port;
     }
 
+    private static void DebugLog(string message)
+    {
+        const string fileName = "EcioPortGigabyteController_DebugLog.txt";
+        string header = $"[{System.DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
+        System.IO.File.AppendAllText(fileName, header + message + System.Environment.NewLine);
+    }
+
+
     public static EcioPortGigabyteController TryCreate(LpcPort lpcPort)
     {
         IT879xEcioPort port = new(lpcPort);
@@ -43,8 +51,11 @@ internal class EcioPortGigabyteController : IGigabyteController
 
         if (!_port.Read(offset, out byte bCurrent))
         {
+            DebugLog($"ENABLE: Could not read at offset {offset}");
             return false;
         }
+
+        DebugLog($"ENABLE: read value {bCurrent} at offset {offset}");
 
         bool current = Convert.ToBoolean(bCurrent);
 
@@ -54,8 +65,11 @@ internal class EcioPortGigabyteController : IGigabyteController
         {
             if (!_port.Write(offset, Convert.ToByte(enabled)))
             {
+                DebugLog($"ENABLE: could not write value {Convert.ToByte(enabled)} at offset {offset}");
                 return false;
             }
+
+            DebugLog($"ENABLE: write value {Convert.ToByte(enabled)} at offset {offset}");
 
             // Allow the system to catch up.
             Thread.Sleep(500);

@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Threading;
 using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
@@ -66,6 +67,19 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             }
         }
 
+        // if we get 0xFF, we can't use the IsaBridgeGigabyteController
+        if (!_isaBridgeEc.ReadMmio(
+            superIoIndex: secondMmio.Index,
+            offset: ControllerFanControlArea + ControllerEnableRegister,
+            size: 1,
+            value: out byte readvaluebyte) ||
+            readvaluebyte == 0xFF)
+        {
+            _isaBridgeEc.Close();
+            return false;
+        }
+
+
         isaBridgeGigabyteController = new IsaBridgeGigabyteController(_isaBridgeEc, secondMmio);
         return true;
     }
@@ -108,6 +122,8 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         {
             return false;
         }
+
+        Thread.Sleep(500);
 
         _enabled = enabled;
 
