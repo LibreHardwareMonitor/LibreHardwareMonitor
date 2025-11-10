@@ -723,7 +723,7 @@ internal class LpcIO
 
         Vendor vendor = DetectVendor();
 
-        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi();
+        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port);
         if (gigabyteController != null)
             return gigabyteController;
 
@@ -750,8 +750,22 @@ internal class LpcIO
         }
     }
 
-    private IGigabyteController FindGigabyteECUsingSmfi()
+    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port)
     {
+        const byte IT87_LD_ACTIVE_REGISTER = 0x30;
+        const byte IT87XX_SMFI_LDN = 0x0F;
+
+        port.Select(IT87XX_SMFI_LDN);
+
+        // Check if the SMFI logical device is enabled
+        byte enabled = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+        Thread.Sleep(1);
+        byte enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+
+        // The EC has no SMFI or it's RAM access is not enabled, assume the controller is not present
+        if (enabled != enabledVerify || enabled == 0)
+            return null;
+
         return IsaBridgeGigabyteController.TryCreate(out IsaBridgeGigabyteController controller) ? controller : null;
     }
 
