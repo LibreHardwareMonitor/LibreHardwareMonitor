@@ -1,7 +1,4 @@
-﻿using System.Drawing;
-using System.Linq;
-
-namespace LibreHardwareMonitor.PawnIo
+﻿namespace LibreHardwareMonitor.PawnIo
 {
     public enum MMIOState
     {
@@ -180,7 +177,5 @@ namespace LibreHardwareMonitor.PawnIo
         }
 
         public void Close() => _pawnIO.Close();
-
-
     }
 }

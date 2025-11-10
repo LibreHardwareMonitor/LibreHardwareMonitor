@@ -43,28 +43,16 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             return false;
         }
 
-        // get original state
-        if (!_isaBridgeEc.GetOriginalState(out MMIOState state))
+        if (!_isaBridgeEc.GetOriginalState(out MMIOState originalState))
         {
             _isaBridgeEc.Close();
             return false;
         }
 
-        // map
-        if (!_isaBridgeEc.Map())
+        if (!EnterMmio(_isaBridgeEc, originalState))
         {
             _isaBridgeEc.Close();
             return false;
-        }
-
-        // try set state to enabled4E mode if required
-        if (state != MMIOState.MMIO_Enabled4E && state != MMIOState.MMIO_EnabledBoth)
-        {
-            if (!_isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
-            {
-                _isaBridgeEc.Close();
-                return false;
-            }
         }
 
         // if we get 0xFF, we can't use the IsaBridgeGigabyteController
@@ -79,8 +67,14 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             return false;
         }
 
+        if (!ExitMmio(_isaBridgeEc))
+        {
+            _isaBridgeEc.Close();
+            return false;
+        }
 
         isaBridgeGigabyteController = new IsaBridgeGigabyteController(_isaBridgeEc, secondMmio);
+
         return true;
     }
 
@@ -91,14 +85,22 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// <returns>true on success</returns>
     public bool Enable(bool enabled)
     {
+        bool isEntered = false;
         if (_enabled is null)
         {
+            isEntered = EnterMmio(_isaBridgeEc);
+            if (!isEntered)
+            {
+                return false;
+            }
+
             if (!_isaBridgeEc.ReadMmio(
                   superIoIndex: _mmio.Index,
                   offset: ControllerFanControlArea + ControllerEnableRegister,
                   size: 1,
                   value: out byte readvaluebyte))
             {
+                ExitMmio(_isaBridgeEc);
                 return false;
             }
 
@@ -110,6 +112,15 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         if (_enabled == enabled)
         {
             return true;
+        }
+
+        if (!isEntered)
+        {
+            isEntered = EnterMmio(_isaBridgeEc);
+            if (!isEntered)
+            {
+                return false;
+            }
         }
 
         byte writeValue = Convert.ToByte(enabled);
@@ -126,6 +137,11 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         Thread.Sleep(500);
 
         _enabled = enabled;
+
+        if (!ExitMmio(_isaBridgeEc))
+        {
+            return false;
+        }
 
         return true;
     }
@@ -147,5 +163,37 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     {
         Restore();
         _isaBridgeEc.Close();
+    }
+    private static bool EnterMmio(IsaBridgeEc isaBridgeEc, MMIOState? currentState = null)
+    {
+        if (!isaBridgeEc.Map())
+        {
+            return false;
+        }
+
+        if (currentState is null || (currentState != MMIOState.MMIO_Enabled4E && currentState != MMIOState.MMIO_EnabledBoth))
+        {
+            if (!isaBridgeEc.TrySetState(MMIOState.MMIO_Enabled4E))
+            {
+                isaBridgeEc.Unmap();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ExitMmio(IsaBridgeEc isaBridgeEc)
+    {
+        if (!isaBridgeEc.TrySetState(MMIOState.MMIO_Original))
+        {
+            return false;
+        }
+        if (!isaBridgeEc.Unmap())
+        {
+            return false;
+        }
+
+        return true;
     }
 }
