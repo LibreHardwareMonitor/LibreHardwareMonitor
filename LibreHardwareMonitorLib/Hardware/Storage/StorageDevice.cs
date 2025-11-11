@@ -32,7 +32,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private long _lastTime;
     private long _lastWriteCount;
 
-    private static DateTime _lastUpdate;
+    private DateTime _lastUpdate = DateTime.MinValue;
 
     private readonly List<StorageDeviceSensor> _sensors = new();
 
@@ -84,9 +84,6 @@ public sealed class StorageDevice : Hardware, ISmart
         //Update usage sensors
         UpdateUsageSensor();
 
-        //Update general sensors
-        _sensors.ForEach(s => s.Update(_storage));
-
         //Update attributes
         foreach (var attribute in _storage.Smart.SmartAttributes)
         {
@@ -99,6 +96,9 @@ public sealed class StorageDevice : Hardware, ISmart
                 found.Attribute = attribute;
             }
         }
+
+        //Update general sensors
+        _sensors.ForEach(s => s.Update(_storage));
     }
 
     public override string GetReport()
