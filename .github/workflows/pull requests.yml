@@ -9,6 +9,9 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
       - uses: nuget/setup-nuget@v2
       - uses: microsoft/setup-msbuild@v1.1
         with:

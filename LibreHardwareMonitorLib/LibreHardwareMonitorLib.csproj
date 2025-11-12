@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;netstandard2.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="9.0.10" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
   </ItemGroup>
@@ -62,9 +62,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.4.0" />
-    <PackageReference Include="System.Management" Version="9.0.10" />
+    <PackageReference Include="System.Management" Version="10.0.0" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="System.Threading.AccessControl" Version="9.0.10" />
+    <PackageReference Include="System.Threading.AccessControl" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">
