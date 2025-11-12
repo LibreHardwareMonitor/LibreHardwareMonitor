@@ -693,6 +693,8 @@ internal class Identification
                 return Model.X870E_CARBON_WIFI;
             case var _ when name.Equals("MPG X870E EDGE TI WIFI (MS-7E59)", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_EDGE_TI_WIFI;
+            case var _ when name.Equals("MEG Z790 GODLIKE MAX (MS-7D85)", StringComparison.OrdinalIgnoreCase):
+                return Model.Z790_GODLIKE_MAX;
             case var _ when name.Equals("MEG Z890 ACE (MS-7E22)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z890_ACE;
             case var _ when name.Equals("MAG Z890 TOMAHAWK WIFI (MS-7E32)", StringComparison.OrdinalIgnoreCase):
