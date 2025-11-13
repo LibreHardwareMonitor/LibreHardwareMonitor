@@ -550,10 +550,10 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("VRM MOS", 2));
                         t.Add(new Temperature("PCH", 3));
                         t.Add(new Temperature("CPU Socket", 4));
-                        t.Add(new Temperature("PCIE_1", 7));
-                        t.Add(new Temperature("PCIE_2", 8));
-                        t.Add(new Temperature("M2_1", 9));
-                        t.Add(new Temperature("M2_4", 10));
+                        t.Add(new Temperature("PCIe #1", 7));
+                        t.Add(new Temperature("PCIe #2", 8));
+                        t.Add(new Temperature("M2 #1", 9));
+                        t.Add(new Temperature("M2 #4", 10));
 
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("Pump Fan", 1));
