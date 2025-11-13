@@ -597,7 +597,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("PCH", 3));
                         t.Add(new Temperature("CPU Socket", 4));
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2_1", 6));
+                        t.Add(new Temperature("M2 #1", 6));
 
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("Pump Fan", 1));
@@ -689,7 +689,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2_1", 6));
+                        t.Add(new Temperature("M2 #1", 6));
 
                         break;
 
@@ -713,7 +713,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         t.Add(new Temperature("CPU Socket", 4));
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2_1", 6));
+                        t.Add(new Temperature("M2 #1", 6));
 
                         break;
 
@@ -2545,7 +2545,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 6));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("PCH", 1));
-                        t.Add(new Temperature("PCIEX16", 2));
+                        t.Add(new Temperature("PCIe x16", 2));
                         t.Add(new Temperature("System #1", 3));
                         t.Add(new Temperature("System #2", 4));
                         t.Add(new Temperature("VRAM MOS", 5));
@@ -5413,7 +5413,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X570_Gaming_Plus:
                         // NCT6797D
-                        // NCT771x : PCIE 1, M.2 1, not supported
+                        // NCT771x : PCIe 1, M.2 1, not supported
                         // RF35204 : VRM not supported
 
                         v.Add(new Voltage("Vcore", 0));
@@ -5459,7 +5459,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.X570_MS7C35:
                         // NCT6797D
                         // NCT7802Y (on SMBus): SYS_FAN5, CPU 1.8V, Chipset SOC, Chipset CLDO - not supported
-                        // Unknown: PCIE 1, PCIE 3, M.2_1
+                        // Unknown: PCIe 1, PCIe 3, M.2_1
 
                         v.Add(new Voltage("Vcore", 0));           // CPUVCORE
                         v.Add(new Voltage("+5V", 1, 12, 3));      // VIN1
