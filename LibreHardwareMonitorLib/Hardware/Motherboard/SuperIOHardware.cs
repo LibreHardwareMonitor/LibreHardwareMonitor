@@ -5068,12 +5068,18 @@ internal sealed class SuperIOHardware : Hardware
                             t.Add(new Temperature("CPU Package", 0));
                             t.Add(new Temperature("VRM", 1));
                             t.Add(new Temperature("Motherboard", 2));
+
+                            // BIOS 1804 or above moved CPU Temp Sensor to 21
+                            t.Add(new Temperature("CPU", 21));
+
+                            // For BIOS 1803 or older
                             t.Add(new Temperature("CPU", 22));
 
                             // Add all unmapped temperature sensors
                             for (int i = 3; i < superIO.Temperatures.Length; i++)
                             {
-                                if (i != 22)
+                                // 21 and 22 are not used at the same time
+                                if (i != 21 && i != 22)
                                 {
                                     t.Add(new Temperature($"Temperature #{i}", i));
                                 }
