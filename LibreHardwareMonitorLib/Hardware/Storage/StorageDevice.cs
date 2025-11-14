@@ -140,7 +140,10 @@ public sealed class StorageDevice : Hardware, ISmart
 
             r.AppendLine();
 
-            r.AppendLine($"Total Free Size: {_storage.TotalFreeSize}");
+            if (_storage.TotalFreeSize != null)
+            {
+                r.AppendLine($"Total Free Size: {_storage.TotalFreeSize}");
+            }
         }
 
         r.AppendLine($"Total Size: {_storage.TotalSize}");
@@ -311,7 +314,8 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void ToggleUsageSensor()
     {
-        if (!_storage.IsDynamicDisk)
+        if (!_storage.IsDynamicDisk
+         && !_storage.Partitions.Any(p => p.IsOtherOperatingSystemPartition))
         {
             ActivateSensor(_usageSensor);
         }
