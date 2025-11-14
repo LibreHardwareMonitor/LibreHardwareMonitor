@@ -4,13 +4,15 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+//#define SHOW_DEBUG
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using static System.Net.WebRequestMethods;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -51,6 +53,14 @@ internal class Nct677X : ISuperIO
     private readonly ushort _vBatMonitorControlRegister;
     private readonly ushort[] _voltageRegisters;
     private readonly ushort _voltageVBatRegister;
+
+    [Conditional("SHOW_DEBUG")]
+    private void DebugWriteLine(string format, params object[] args)
+    {
+#if DEBUG
+        Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
+#endif
+    }
 
     public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
     {
@@ -616,7 +626,7 @@ internal class Nct677X : ISuperIO
             }
         }
 
-        System.Diagnostics.Debug.WriteLine("Updating temperatures.");
+        DebugWriteLine("Updating temperatures.");
         long temperatureSourceMask = 0;
         for (int i = 0; i < _temperaturesSource.Length; i++)
         {
@@ -652,47 +662,47 @@ internal class Nct677X : ISuperIO
                 case Chip.NCT5585D:
                     if (_temperaturesSource[i].Register == 0)
                     {
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} skipped, address 0.", i);
+                        DebugWriteLine("Temperature register {0} skipped, address 0.", i);
                         continue;
                     }
 
                     value = (sbyte)ReadByte(_temperaturesSource[i].Register) << 1;
-                    System.Diagnostics.Debug.WriteLine("Temperature register {0} at 0x{1:X3} value (integer): {2}/2", i, ts.Register, value);
+                    DebugWriteLine("Temperature register {0} at 0x{1:X3} value (integer): {2}/2", i, ts.Register, value);
                     if (_temperaturesSource[i].HalfBit > 0)
                     {
                         value |= (ReadByte(_temperaturesSource[i].HalfRegister) >> ts.HalfBit) & 0x1;
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} value updated from 0x{1:X3} (fractional): {2}/2", i, ts.HalfRegister, value);
+                        DebugWriteLine("Temperature register {0} value updated from 0x{1:X3} (fractional): {2}/2", i, ts.HalfRegister, value);
                     }
 
                     if (ts.SourceRegister > 0)
                     {
                         source = (SourceNct67Xxd)(ReadByte(ts.SourceRegister) & 0x1F);
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} source at 0x{1:X3}: {2:G} ({2:D})", i, ts.SourceRegister, source);
+                        DebugWriteLine("Temperature register {0} source at 0x{1:X3}: {2:G} ({2:D})", i, ts.SourceRegister, source);
                     }
                     else
                     {
                         source = (SourceNct67Xxd)ts.Source;
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} source register is 0, source set to: {1:G} ({1:D})", i, source);
+                        DebugWriteLine("Temperature register {0} source register is 0, source set to: {1:G} ({1:D})", i, source);
                     }
 
                     // Skip reading when already filled, because later values are without fractional
                     if ((temperatureSourceMask & (1L << (byte)source)) > 0)
                     {
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} discarded, because source seen before.", i);
+                        DebugWriteLine("Temperature register {0} discarded, because source seen before.", i);
                         continue;
                     }
 
                     temperature = 0.5f * value;
-                    System.Diagnostics.Debug.WriteLine("Temperature register {0} final temperature: {1}.", i, temperature);
+                    DebugWriteLine("Temperature register {0} final temperature: {1}.", i, temperature);
                     if (temperature is > 125 or < -55)
                     {
                         temperature = null;
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} discarded: Out of range.", i);
+                        DebugWriteLine("Temperature register {0} discarded: Out of range.", i);
                     }
                     else
                     {
                         temperatureSourceMask |= 1L << (byte)source;
-                        System.Diagnostics.Debug.WriteLine("Temperature register {0} accepted.", i);
+                        DebugWriteLine("Temperature register {0} accepted.", i);
                     }
 
                     for (int j = 0; j < Temperatures.Length; j++)
@@ -700,7 +710,7 @@ internal class Nct677X : ISuperIO
                         if ((SourceNct67Xxd)_temperaturesSource[j].Source == source)
                         {
                             Temperatures[j] = temperature;
-                            System.Diagnostics.Debug.WriteLine("Temperature register {0}, value from source {1:G} ({1:D}), written at position {2}.", i, _temperaturesSource[j].Source, j);
+                            DebugWriteLine("Temperature register {0}, value from source {1:G} ({1:D}), written at position {2}.", i, _temperaturesSource[j].Source, j);
                         }
                     }
                     break;
@@ -733,23 +743,23 @@ internal class Nct677X : ISuperIO
             TemperatureSourceData ts = _temperaturesSource[i];
             if (!ts.AlternateRegister.HasValue)
             {
-                System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), skipped, because address is null.", i, ts.Source);
+                DebugWriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), skipped, because address is null.", i, ts.Source);
                 continue;
             }
 
             if ((temperatureSourceMask & (1L << (byte)(SourceNct67Xxd)ts.Source)) > 0)
             {
-                System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} skipped, because value already set.", i, ts.Source, ts.AlternateRegister.Value);
+                DebugWriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} skipped, because value already set.", i, ts.Source, ts.AlternateRegister.Value);
                 continue;
             }
 
             float? temperature = (sbyte)ReadByte(ts.AlternateRegister.Value);
-            System.Diagnostics.Debug.WriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} final temperature: {3}.", i, ts.Source, ts.AlternateRegister.Value, temperature);
+            DebugWriteLine("Alternate temperature register for temperature {0}, {1:G} ({1:D}), at 0x{2:X3} final temperature: {3}.", i, ts.Source, ts.AlternateRegister.Value, temperature);
 
             if (temperature is > 125 or <= 0)
             {
                 temperature = null;
-                System.Diagnostics.Debug.WriteLine("Alternate Temperature register for temperature {0}, {1:G} ({1:D}), discarded: Out of range.", i, ts.Source);
+                DebugWriteLine("Alternate Temperature register for temperature {0}, {1:G} ({1:D}), discarded: Out of range.", i, ts.Source);
             }
 
             Temperatures[i] = temperature;
@@ -1100,7 +1110,7 @@ internal class Nct677X : ISuperIO
                 // Write 7-point fan curve
                 for (int count = 0; count < 14; count += 2)
                 {
-                    targetFanCurveAddr = initFanCurveReg+count;
+                    targetFanCurveAddr = initFanCurveReg + count;
                     targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr);
                     WriteByte(targetFanCurveReg, value.Value);
                 }
@@ -1150,10 +1160,12 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                if (Chip is Chip.NCT6687DR) { // for MSI AM5/LGA1851 boards using NCT6687D
+                if (Chip is Chip.NCT6687DR)
+                { // for MSI AM5/LGA1851 boards using NCT6687D
                     Set6687DRControl(index, _initialFanPwmCommand[index]);
                 }
-                else { // All other motherboards that use NCT6683/6686/6687
+                else
+                { // All other motherboards that use NCT6683/6686/6687
                     WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
                 }
 
