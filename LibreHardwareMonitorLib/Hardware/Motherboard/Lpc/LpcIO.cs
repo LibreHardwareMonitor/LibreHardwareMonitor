@@ -692,6 +692,8 @@ internal class LpcIO
                 _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
                 _report.AppendLine();
 
+                gigabyteController.Dispose();
+
                 return false;
             }
 
@@ -703,10 +705,13 @@ internal class LpcIO
                 _report.AppendLine(gpioAddress.ToString("X", CultureInfo.InvariantCulture));
                 _report.AppendLine();
 
+                gigabyteController.Dispose();
+
                 return false;
             }
 
             _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, gigabyteController));
+
             return true;
         }
 

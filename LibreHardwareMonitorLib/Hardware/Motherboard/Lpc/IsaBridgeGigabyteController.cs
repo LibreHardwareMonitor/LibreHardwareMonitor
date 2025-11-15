@@ -164,6 +164,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         Restore();
         _isaBridgeEc.Close();
     }
+
     private static bool EnterMmio(IsaBridgeEc isaBridgeEc, MMIOState? currentState = null)
     {
         if (!isaBridgeEc.Map())
