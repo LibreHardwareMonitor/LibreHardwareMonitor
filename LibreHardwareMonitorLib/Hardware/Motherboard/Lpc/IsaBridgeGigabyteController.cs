@@ -86,64 +86,75 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     public bool Enable(bool enabled)
     {
         bool isEntered = false;
-        if (_enabled is null)
+
+        /// use a try finaly + the <see cref="isEntered" /> to get a safe
+        /// <see cref="EnterMmio(IsaBridgeEc, MMIOState?)"/> and <see cref="ExitMmio(IsaBridgeEc)"/> pattern
+        try
         {
-            isEntered = EnterMmio(_isaBridgeEc);
+            // get initial state if missing
+            if (_enabled is null)
+            {
+                isEntered = EnterMmio(_isaBridgeEc);
+                if (!isEntered)
+                {
+                    return false;
+                }
+
+                if (!_isaBridgeEc.ReadMmio(
+                      superIoIndex: _mmio.Index,
+                      offset: ControllerFanControlArea + ControllerEnableRegister,
+                      size: 1,
+                      value: out byte readvaluebyte))
+                {
+                    return false;
+                }
+
+                bool readValue = Convert.ToBoolean(readvaluebyte);
+                _restoreEnabled ??= readValue;
+                _enabled = Convert.ToBoolean(readvaluebyte);
+            }
+
+            // if already enabled, return
+            if (_enabled == enabled)
+            {
+                return true;
+            }
+
             if (!isEntered)
             {
-                return false;
+                // we didn't enter in the initial state block, enter now
+                isEntered = EnterMmio(_isaBridgeEc);
+                if (!isEntered)
+                {
+                    return false;
+                }
             }
 
-            if (!_isaBridgeEc.ReadMmio(
-                  superIoIndex: _mmio.Index,
-                  offset: ControllerFanControlArea + ControllerEnableRegister,
-                  size: 1,
-                  value: out byte readvaluebyte))
+            // write the value
+            byte writeValue = Convert.ToByte(enabled);
+            if (!_isaBridgeEc.WriteMmio(
+                superIoIndex: _mmio.Index,
+                offset: ControllerFanControlArea + ControllerEnableRegister,
+                size: 1,
+                value: writeValue))
             {
-                ExitMmio(_isaBridgeEc);
                 return false;
             }
 
-            bool readValue = Convert.ToBoolean(readvaluebyte);
-            _restoreEnabled ??= readValue;
-            _enabled = Convert.ToBoolean(readvaluebyte);
-        }
+            Thread.Sleep(500);
 
-        if (_enabled == enabled)
-        {
+            _enabled = enabled;
+
             return true;
         }
-
-        if (!isEntered)
+        finally
         {
-            isEntered = EnterMmio(_isaBridgeEc);
-            if (!isEntered)
+            // safe exit from any return above
+            if (isEntered)
             {
-                return false;
+                ExitMmio(_isaBridgeEc);
             }
         }
-
-        byte writeValue = Convert.ToByte(enabled);
-
-        if (!_isaBridgeEc.WriteMmio(
-            superIoIndex: _mmio.Index,
-            offset: ControllerFanControlArea + ControllerEnableRegister,
-            size: 1,
-            value: writeValue))
-        {
-            return false;
-        }
-
-        Thread.Sleep(500);
-
-        _enabled = enabled;
-
-        if (!ExitMmio(_isaBridgeEc))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     /// <summary>
@@ -190,6 +201,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         {
             return false;
         }
+
         if (!isaBridgeEc.Unmap())
         {
             return false;
