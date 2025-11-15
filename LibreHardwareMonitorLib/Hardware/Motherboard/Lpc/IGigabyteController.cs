@@ -4,9 +4,11 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
+
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
-internal interface IGigabyteController
+internal interface IGigabyteController: IDisposable
 {
     bool Enable(bool enabled);
 
