@@ -54,12 +54,6 @@ internal class Nct677X : ISuperIO
     private readonly ushort[] _voltageRegisters;
     private readonly ushort _voltageVBatRegister;
 
-    [Conditional("SHOW_DEBUG")]
-    private void DebugWriteLine(string format, params object[] args)
-    {
-        Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
-    }
-
     public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
     {
         Chip = chip;
@@ -1200,6 +1194,12 @@ internal class Nct677X : ISuperIO
         _lpcPort.WinbondNuvotonFintekEnter();
         _lpcPort.NuvotonDisableIOSpaceLock();
         _lpcPort.WinbondNuvotonFintekExit();
+    }
+
+    [Conditional("SHOW_DEBUG")]
+    private static void DebugWriteLine(string format, params object[] args)
+    {
+        Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
