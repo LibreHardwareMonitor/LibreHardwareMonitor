@@ -57,9 +57,7 @@ internal class Nct677X : ISuperIO
     [Conditional("SHOW_DEBUG")]
     private void DebugWriteLine(string format, params object[] args)
     {
-#if DEBUG
         Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
-#endif
     }
 
     public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
