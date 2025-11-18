@@ -33,17 +33,10 @@ public class ChromeOSEmbeddedController : EmbeddedController
     {
         List<EmbeddedControllerSource> sources = new List<EmbeddedControllerSource>();
 
-        using IEmbeddedControllerIO embeddedControllerIO = new ChromeOSEmbeddedControllerIO();
+        using ChromeOSEmbeddedControllerIO embeddedControllerIO = new ChromeOSEmbeddedControllerIO();
 
         // Copy the first 0x20 bytes of the EC memory map
-        ushort[] registers = new ushort[0x20];
-        byte[] data = new byte[0x20];
-        for (ushort i = 0; i < registers.Length; ++i)
-        {
-            registers[i] = i;
-        }
-
-        embeddedControllerIO.Read(registers, data);
+        byte[] data = embeddedControllerIO.ReadMemmap(0x00, 0x20);
 
         for (int i = 0; i < EC_TEMP_SENSOR_ENTRIES; i++)
         {
@@ -53,7 +46,9 @@ public class ChromeOSEmbeddedController : EmbeddedController
                 break;
             }
 
-            sources.Add(new EmbeddedControllerSource("Temp " + (i + 1), SensorType.Temperature,
+            string sensorName = embeddedControllerIO.TempSensorGetName((byte)i);
+
+            sources.Add(new EmbeddedControllerSource(sensorName, SensorType.Temperature,
                                                      (ushort)(EC_MEMMAP_TEMP_SENSOR + i),
                                                      offset: EC_TEMP_SENSOR_OFFSET - 273,
                                                      blank: EC_TEMP_SENSOR_NOT_PRESENT));
@@ -80,7 +75,9 @@ public class ChromeOSEmbeddedController : EmbeddedController
                 break;
             }
 
-            sources.Add(new EmbeddedControllerSource("Temp " + (i + 17), SensorType.Temperature,
+            string sensorName = embeddedControllerIO.TempSensorGetName((byte)(i + EC_TEMP_SENSOR_ENTRIES));
+
+            sources.Add(new EmbeddedControllerSource(sensorName, SensorType.Temperature,
                                                      (ushort)(EC_MEMMAP_TEMP_SENSOR_B + i),
                                                      offset: EC_TEMP_SENSOR_OFFSET - 273,
                                                      blank: EC_TEMP_SENSOR_NOT_PRESENT));

@@ -3,8 +3,8 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Diagnostics;
+using System.Text;
 using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
@@ -14,6 +14,8 @@ public class ChromeOSEmbeddedControllerIO : IEmbeddedControllerIO
     private bool _disposed;
 
     private readonly LpcCrOSEc _pawnModule;
+
+    private const byte EC_CMD_TEMP_SENSOR_GET_INFO = 0x0070;
 
     public ChromeOSEmbeddedControllerIO()
     {
@@ -39,6 +41,13 @@ public class ChromeOSEmbeddedControllerIO : IEmbeddedControllerIO
     public byte[] ReadMemmap(byte offset, byte bytes)
     {
         return _pawnModule.ReadMemmap(offset, bytes);
+    }
+
+    public string TempSensorGetName(byte index)
+    {
+        byte[] resp = _pawnModule.EcCommand(0, EC_CMD_TEMP_SENSOR_GET_INFO, 1, 33, [index]);
+        //byte sensorType = resp[33];
+        return Encoding.ASCII.GetString(resp, 0, 32).TrimEnd('\0');
     }
 
     public void Dispose()
