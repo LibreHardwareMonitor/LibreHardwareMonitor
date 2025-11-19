@@ -39,6 +39,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\PawnIo\LpcIO.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcCrOSEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
     <EmbeddedResource Include="Resources\PawnIo\RyzenSMU.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
