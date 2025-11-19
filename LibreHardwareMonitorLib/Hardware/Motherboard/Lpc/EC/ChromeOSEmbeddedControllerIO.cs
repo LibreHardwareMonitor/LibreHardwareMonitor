@@ -15,7 +15,7 @@ public class ChromeOSEmbeddedControllerIO : IEmbeddedControllerIO
 
     private readonly LpcCrOSEc _pawnModule;
 
-    private const byte EC_CMD_TEMP_SENSOR_GET_INFO = 0x0070;
+    private const short EC_CMD_TEMP_SENSOR_GET_INFO = 0x0070;
 
     public ChromeOSEmbeddedControllerIO()
     {
@@ -45,9 +45,16 @@ public class ChromeOSEmbeddedControllerIO : IEmbeddedControllerIO
 
     public string TempSensorGetName(byte index)
     {
-        byte[] resp = _pawnModule.EcCommand(0, EC_CMD_TEMP_SENSOR_GET_INFO, 1, 33, [index]);
-        //byte sensorType = resp[33];
-        return Encoding.ASCII.GetString(resp, 0, 32).TrimEnd('\0');
+        try
+        {
+            byte[] resp = _pawnModule.EcCommand(0, EC_CMD_TEMP_SENSOR_GET_INFO, 1, 33, [index]);
+            //byte sensorType = resp[33];
+            return Encoding.ASCII.GetString(resp, 0, 32).TrimEnd('\0');
+        }
+        catch (System.Exception)
+        {
+            return "Temp " + index;
+        }
     }
 
     public void Dispose()
