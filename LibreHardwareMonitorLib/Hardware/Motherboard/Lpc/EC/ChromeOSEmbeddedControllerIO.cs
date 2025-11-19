@@ -11,11 +11,10 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
 public class ChromeOSEmbeddedControllerIO : IEmbeddedControllerIO
 {
-    private bool _disposed;
+    private const short EC_CMD_TEMP_SENSOR_GET_INFO = 0x0070;
 
     private readonly LpcCrOSEc _pawnModule;
-
-    private const short EC_CMD_TEMP_SENSOR_GET_INFO = 0x0070;
+    private bool _disposed;
 
     public ChromeOSEmbeddedControllerIO()
     {
@@ -34,7 +33,7 @@ public class ChromeOSEmbeddedControllerIO : IEmbeddedControllerIO
 
         for (int i = 0; i < registers.Length; i++)
         {
-            data[i] = this.ReadMemmap((byte)registers[i], 1)[0];
+            data[i] = ReadMemmap((byte)registers[i], 1)[0];
         }
     }
 

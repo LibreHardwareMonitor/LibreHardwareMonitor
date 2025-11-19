@@ -9,31 +9,29 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
 public class ChromeOSEmbeddedController : EmbeddedController
 {
-    private const byte EC_MEMMAP_TEMP_SENSOR = 0x00;
+    private const byte EC_FAN_SPEED_ENTRIES = 4;
+    private const ushort EC_FAN_SPEED_NOT_PRESENT = 0xffff;
     private const byte EC_MEMMAP_FAN = 0x10;
+    private const byte EC_MEMMAP_TEMP_SENSOR = 0x00;
     private const byte EC_MEMMAP_TEMP_SENSOR_B = 0x18;
-    private const byte EC_TEMP_SENSOR_ENTRIES = 16;
     private const byte EC_TEMP_SENSOR_B_ENTRIES = 8;
+    private const byte EC_TEMP_SENSOR_ENTRIES = 16;
     private const byte EC_TEMP_SENSOR_NOT_PRESENT = 0xff;
-    private const byte EC_TEMP_SENSOR_ERROR = 0xfe;
-    private const byte EC_TEMP_SENSOR_NOT_POWERED = 0xfd;
-    private const byte EC_TEMP_SENSOR_NOT_CALIBRATED = 0xfc;
+
     /*
      * The offset of temperature value stored in mapped memory.  This allows
      * reporting a temperature range of 200K to 454K = -73C to 181C.
      */
     private const byte EC_TEMP_SENSOR_OFFSET = 200;
-    private const byte EC_FAN_SPEED_ENTRIES = 4;
-    private const ushort EC_FAN_SPEED_NOT_PRESENT = 0xffff;
 
     public ChromeOSEmbeddedController(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : base(sources, settings)
     { }
 
     public static ChromeOSEmbeddedController Create(ISettings settings)
     {
-        List<EmbeddedControllerSource> sources = new List<EmbeddedControllerSource>();
+        List<EmbeddedControllerSource> sources = [];
 
-        using ChromeOSEmbeddedControllerIO embeddedControllerIO = new ChromeOSEmbeddedControllerIO();
+        using ChromeOSEmbeddedControllerIO embeddedControllerIO = new();
 
         // Copy the first 0x20 bytes of the EC memory map
         byte[] data = embeddedControllerIO.ReadMemmap(0x00, 0x20);
@@ -48,7 +46,8 @@ public class ChromeOSEmbeddedController : EmbeddedController
 
             string sensorName = embeddedControllerIO.TempSensorGetName((byte)i);
 
-            sources.Add(new EmbeddedControllerSource(sensorName, SensorType.Temperature,
+            sources.Add(new EmbeddedControllerSource(sensorName,
+                                                     SensorType.Temperature,
                                                      (ushort)(EC_MEMMAP_TEMP_SENSOR + i),
                                                      offset: EC_TEMP_SENSOR_OFFSET - 273,
                                                      blank: EC_TEMP_SENSOR_NOT_PRESENT));
@@ -62,9 +61,12 @@ public class ChromeOSEmbeddedController : EmbeddedController
                 break;
             }
 
-            sources.Add(new EmbeddedControllerSource("Fan " + (i + 1), SensorType.Fan,
-                                                     (ushort)(EC_MEMMAP_FAN + i * 2), 2, blank: EC_FAN_SPEED_NOT_PRESENT,
-                                                     littleEndian: true));
+            sources.Add(new EmbeddedControllerSource("Fan " + (i + 1),
+                                                     SensorType.Fan,
+                                                     (ushort)(EC_MEMMAP_FAN + i * 2),
+                                                     2,
+                                                     blank: EC_FAN_SPEED_NOT_PRESENT,
+                                                     isLittleEndian: true));
         }
 
         for (int i = 0; i < EC_TEMP_SENSOR_B_ENTRIES; i++)
@@ -77,7 +79,8 @@ public class ChromeOSEmbeddedController : EmbeddedController
 
             string sensorName = embeddedControllerIO.TempSensorGetName((byte)(i + EC_TEMP_SENSOR_ENTRIES));
 
-            sources.Add(new EmbeddedControllerSource(sensorName, SensorType.Temperature,
+            sources.Add(new EmbeddedControllerSource(sensorName,
+                                                     SensorType.Temperature,
                                                      (ushort)(EC_MEMMAP_TEMP_SENSOR_B + i),
                                                      offset: EC_TEMP_SENSOR_OFFSET - 273,
                                                      blank: EC_TEMP_SENSOR_NOT_PRESENT));

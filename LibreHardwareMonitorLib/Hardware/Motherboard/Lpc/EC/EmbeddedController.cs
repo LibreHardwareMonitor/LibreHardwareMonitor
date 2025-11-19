@@ -522,8 +522,8 @@ public abstract class EmbeddedController : Hardware
         int readRegister = 0;
         for (int si = 0; si < _sensors.Count; ++si)
         {
-            int littleEndian    = _sources[si].LittleEndian ? 1 : 0;
-            int bigEndian       = _sources[si].LittleEndian ? 0 : 1;
+            int littleEndian    = _sources[si].IsLittleEndian ? 1 : 0;
+            int bigEndian       = _sources[si].IsLittleEndian ? 0 : 1;
 
             int val = _sources[si].Size switch
             {
