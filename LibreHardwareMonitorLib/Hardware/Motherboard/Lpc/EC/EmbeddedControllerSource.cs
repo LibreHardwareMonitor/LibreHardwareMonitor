@@ -5,27 +5,21 @@
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
-public class EmbeddedControllerSource
+public class EmbeddedControllerSource(string name, SensorType type, ushort register, byte size = 1, float factor = 1.0f, float offset = 0.0f, int blank = int.MaxValue, bool isLittleEndian = false)
 {
-    public EmbeddedControllerSource(string name, SensorType type, ushort register, byte size = 1, float factor = 1.0f, int blank = int.MaxValue)
-    {
-        Name = name;
+    public int Blank { get; } = blank;
 
-        Register = register;
-        Size = size;
-        Type = type;
-        Factor = factor;
-        Blank = blank;
-    }
+    public float Factor { get; } = factor;
 
-    public string Name { get; }
-    public ushort Register { get; }
-    public byte Size { get; }
-    public float Factor { get; }
+    public bool IsLittleEndian { get; } = isLittleEndian;
 
-    public int Blank { get; }
+    public string Name { get; } = name;
 
-    public EmbeddedControllerReader Reader { get; }
+    public float Offset { get; } = offset;
 
-    public SensorType Type { get; }
+    public ushort Register { get; } = register;
+
+    public byte Size { get; } = size;
+
+    public SensorType Type { get; } = type;
 }

@@ -314,6 +314,37 @@ public enum Model
     //Supermicro
     X11SWN_E,
 
+    // Framework
+    FRANBMCP03, // Intel Core i5-1135G7
+    FRANBMCP06, // Intel Core i7-1165G7
+    FRANBMCP08, // Intel Core i7-1185G7
+    FRANBMCP0A, // Intel Core i5-1135G7
+    FRANBMCP0B, // Intel Core i7-1165G7
+    FRANBMCP0C, // Intel Core i7-1185G7
+    FRANGACP04, // Intel Core i5-1240P
+    FRANGACP06, // Intel Core i7-1260P
+    FRANGACP08, // Intel Core i7-1280P
+    FRANMACP04, // Intel Core i5-1240P
+    FRANMACP06, // Intel Core i7-1260P
+    FRANMACP08, // Intel Core i7-1280P
+    FRANMCCP04, // Intel Core i5-1340P
+    FRANMCCP06, // Intel Core i7-1360P
+    FRANMCCP07, // Intel Core i7-1370P
+    FRANMDCP05, // FW13 AMD Ryzen 5 7640U
+    FRANMDCP07, // FW13 AMD Ryzen 7 7840U
+    FRANMECP02, // FW13 Intel Core Ultra 5 125H
+    FRANMECP05, // FW13 Intel Core Ultra 7 155H
+    FRANMECP06, // FW13 Intel Core Ultra 7 165H
+    FRANMZCP07, // FW16 AMD Ryzen 7 7840HS
+    FRANMZCP09, // FW16 AMD Ryzen 9 7940HS
+    FRANMFCP02, // Desktop AMD RYZEN AI MAX 385
+    FRANMFCP06, // Desktop AMD RYZEN AI MAX+ 395
+    FRAPMACP03, // FW12 Intel Core i3-1315U
+    FRAPMACP05, // FW12 Intel Core i5-1334U
+    FRANMGCP05, // FW13 AMD Ryzen AI 5 340
+    FRANMGCP07, // FW13 AMD Ryzen AI 7 350
+    FRANMGCP09, // FW13 AMD Ryzen AI 9 HX 370
+
     // Unknown
     Unknown
 }

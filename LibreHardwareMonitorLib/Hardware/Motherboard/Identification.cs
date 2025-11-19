@@ -52,6 +52,8 @@ internal class Identification
                 return Manufacturer.FIC;
             case var _ when name.Equals("Foxconn", StringComparison.OrdinalIgnoreCase):
                 return Manufacturer.Foxconn;
+            case var _ when name.StartsWith("Framework", StringComparison.OrdinalIgnoreCase):
+                return Manufacturer.Framework;
             case var _ when name.StartsWith("Fujitsu", StringComparison.OrdinalIgnoreCase):
                 return Manufacturer.Fujitsu;
             case var _ when name.StartsWith("Gigabyte", StringComparison.OrdinalIgnoreCase):
@@ -726,6 +728,64 @@ internal class Identification
                 return Model.PROART_B760_CREATOR_D4;
             case var _ when name.Equals("TUF GAMING B450-PLUS II", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_B450_PLUS_II;
+            case var _ when name.Equals("FRANBMCP03", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANBMCP03;
+            case var _ when name.Equals("FRANBMCP06", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANBMCP06;
+            case var _ when name.Equals("FRANBMCP08", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANBMCP08;
+            case var _ when name.Equals("FRANBMCP0A", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANBMCP0A;
+            case var _ when name.Equals("FRANBMCP0B", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANBMCP0B;
+            case var _ when name.Equals("FRANBMCP0C", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANBMCP0C;
+            case var _ when name.Equals("FRANGACP04", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANGACP04;
+            case var _ when name.Equals("FRANGACP06", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANGACP06;
+            case var _ when name.Equals("FRANGACP08", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANGACP08;
+            case var _ when name.Equals("FRANMACP04", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMACP04;
+            case var _ when name.Equals("FRANMACP06", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMACP06;
+            case var _ when name.Equals("FRANMACP08", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMACP08;
+            case var _ when name.Equals("FRANMCCP04", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMCCP04;
+            case var _ when name.Equals("FRANMCCP06", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMCCP06;
+            case var _ when name.Equals("FRANMCCP07", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMCCP07;
+            case var _ when name.Equals("FRANMDCP05", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMDCP05;
+            case var _ when name.Equals("FRANMDCP07", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMDCP07;
+            case var _ when name.Equals("FRANMECP02", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMECP02;
+            case var _ when name.Equals("FRANMECP05", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMECP05;
+            case var _ when name.Equals("FRANMECP06", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMECP06;
+            case var _ when name.Equals("FRANMZCP07", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMZCP07;
+            case var _ when name.Equals("FRANMZCP09", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMZCP09;
+            case var _ when name.Equals("FRANMFCP02", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMFCP02;
+            case var _ when name.Equals("FRANMFCP06", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMFCP06;
+            case var _ when name.Equals("FRAPMACP03", StringComparison.OrdinalIgnoreCase):
+                return Model.FRAPMACP03;
+            case var _ when name.Equals("FRAPMACP05", StringComparison.OrdinalIgnoreCase):
+                return Model.FRAPMACP05;
+            case var _ when name.Equals("FRANMGCP05", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMGCP05;
+            case var _ when name.Equals("FRANMGCP07", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMGCP07;
+            case var _ when name.Equals("FRANMGCP09", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMGCP09;
             case var _ when name.Equals("Base Board Product Name", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("To be filled by O.E.M.", StringComparison.OrdinalIgnoreCase):
                 return Model.Unknown;
