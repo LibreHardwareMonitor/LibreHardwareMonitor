@@ -4,7 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-//#define DEBUG_LOG
+//#define NCT677X_DEBUG_LOG
 
 using System;
 using System.Collections.Generic;
@@ -1187,7 +1187,7 @@ internal class Nct677X : ISuperIO
         _lpcPort.WinbondNuvotonFintekExit();
     }
 
-    [Conditional("DEBUG_LOG")]
+    [Conditional("DEBUG_LOG"), Conditional("NCT677X_DEBUG_LOG")]
     private static void Log(string format, params object[] args)
     {
         Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
