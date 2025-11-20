@@ -183,7 +183,7 @@ namespace LibreHardwareMonitor.PawnIo
         /// 'PawnIo_IsaBridgeEc_DebugLog.txt' in the application's working directory. This method only produces output
         /// when compiled with the ISA_BRIDGE_EC_DEBUG symbol defined.</remarks>
         /// <param name="message">The message to log. This should provide relevant information for debugging purposes.</param>
-        [Conditional("ISA_BRIDGE_EC_DEBUG")]
+        [Conditional("DEBUG_LOG"), Conditional("ISA_BRIDGE_EC_DEBUG")]
         private static void Log(string message)
         {
             const string fileName = "PawnIo_IsaBridgeEc_DebugLog.txt";

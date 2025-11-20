@@ -99,7 +99,7 @@ internal class EcioPortGigabyteController : IGigabyteController
     /// is defined. The log file is named "EcioPortGigabyteController_DebugLog.txt" and is appended to with each call.
     /// Use this method for diagnostic purposes during development or troubleshooting.</remarks>
     /// <param name="message">The message to log. This text is written to both the debug output and the log file.</param>
-    [Conditional("ECIO_GIGABYTE_CONTROLLER_DEBUG")]
+    [Conditional("DEBUG_LOG"), Conditional("ECIO_GIGABYTE_CONTROLLER_DEBUG")]
     private static void Log(string message)
     {
         const string fileName = "EcioPortGigabyteController_DebugLog.txt";
