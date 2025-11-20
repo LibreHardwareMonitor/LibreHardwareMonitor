@@ -1,4 +1,8 @@
-﻿namespace LibreHardwareMonitor.PawnIo
+﻿//#define ISA_BRIDGE_EC_DEBUG
+
+using System.Diagnostics;
+
+namespace LibreHardwareMonitor.PawnIo
 {
     public enum MMIOState
     {
@@ -21,6 +25,7 @@
 
     public class IsaBridgeEc
     {
+        [Conditional("ISA_BRIDGE_EC_DEBUG")]
         private static void DebugLog(string message)
         {
             const string fileName = "PawnIo_IsaBridgeEc_DebugLog.txt";

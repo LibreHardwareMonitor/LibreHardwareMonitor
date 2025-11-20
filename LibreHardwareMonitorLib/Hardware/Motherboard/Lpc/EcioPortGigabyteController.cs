@@ -4,6 +4,8 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+//#define ECIO_GIGABYTE_CONTROLLER_DEBUG
+
 using System;
 using System.Threading;
 
@@ -25,6 +27,7 @@ internal class EcioPortGigabyteController : IGigabyteController
         _port = port;
     }
 
+    [System.Diagnostics.Conditional("ECIO_GIGABYTE_CONTROLLER_DEBUG")]
     private static void DebugLog(string message)
     {
         const string fileName = "EcioPortGigabyteController_DebugLog.txt";
@@ -75,6 +78,8 @@ internal class EcioPortGigabyteController : IGigabyteController
 
             // Allow the system to catch up.
             Thread.Sleep(500);
+
+            _current = enabled;
         }
 
         return true;

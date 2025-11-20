@@ -692,7 +692,7 @@ internal class LpcIO
                 _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
                 _report.AppendLine();
 
-                gigabyteController.Dispose();
+                gigabyteController?.Dispose();
 
                 return false;
             }
@@ -705,7 +705,7 @@ internal class LpcIO
                 _report.AppendLine(gpioAddress.ToString("X", CultureInfo.InvariantCulture));
                 _report.AppendLine();
 
-                gigabyteController.Dispose();
+                gigabyteController?.Dispose();
 
                 return false;
             }
