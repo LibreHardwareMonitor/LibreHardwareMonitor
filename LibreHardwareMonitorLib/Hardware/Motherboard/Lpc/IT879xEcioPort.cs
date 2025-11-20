@@ -96,41 +96,30 @@ internal class IT879xEcioPort
     private bool WaitIBE()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
-        try
+
+        while ((_lpcPort.ReadIoPort(EcioRegisterPort) & 2) != 0)
         {
-            while ((_lpcPort.ReadIoPort(EcioRegisterPort) & 2) != 0)
+            if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
             {
-                if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
-                {
-                    return false;
-                }
+                return false;
             }
-            return true;
         }
-        finally
-        {
-            stopwatch.Stop();
-        }
+
+        return true;
     }
 
     private bool WaitOBF()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
-        try
+        while ((_lpcPort.ReadIoPort(EcioRegisterPort) & 1) == 0)
         {
-            while ((_lpcPort.ReadIoPort(EcioRegisterPort) & 1) == 0)
+            if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
             {
-                if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
-                {
-                    return false;
-                }
+                return false;
             }
-            return true;
         }
-        finally
-        {
-            stopwatch.Stop();
-        }
+
+        return true;
     }
 
     private const long WAIT_TIMEOUT = 1000L;
