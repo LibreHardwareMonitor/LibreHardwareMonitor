@@ -37,6 +37,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\PawnIo\IsaBridgeEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcIO.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcCrOSEC.bin" />
