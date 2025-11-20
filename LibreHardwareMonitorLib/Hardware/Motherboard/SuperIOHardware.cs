@@ -529,6 +529,52 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Manufacturer.MSI when model == Model.Z790_GODLIKE_MAX: // NCT6687D
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("Vcore", 2));
+                        v.Add(new Voltage("Voltage #1", 3));
+                        v.Add(new Voltage("DIMM", 4));
+                        v.Add(new Voltage("CPU I/O", 5));
+                        v.Add(new Voltage("CPU System Agent", 6));
+                        v.Add(new Voltage("Voltage #2", 7));
+                        v.Add(new Voltage("AVCC3", 8));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("VRef", 10));
+                        v.Add(new Voltage("VSB", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("System", 1));
+                        t.Add(new Temperature("VRM MOS", 2));
+                        t.Add(new Temperature("PCH", 3));
+                        t.Add(new Temperature("CPU Socket", 4));
+                        t.Add(new Temperature("PCIe #1", 7));
+                        t.Add(new Temperature("PCIe #2", 8));
+                        t.Add(new Temperature("M2 #1", 9));
+                        t.Add(new Temperature("M2 #4", 10));
+
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("Pump Fan", 1));
+                        f.Add(new Fan("System Fan #1", 2));
+                        f.Add(new Fan("System Fan #2", 3));
+                        f.Add(new Fan("System Fan #3", 4));
+                        f.Add(new Fan("System Fan #4", 5));
+                        f.Add(new Fan("System Fan #5", 6));
+                        f.Add(new Fan("System Fan #6", 7));
+
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("Pump Fan", 1));
+                        c.Add(new Control("System Fan #1", 2));
+                        c.Add(new Control("System Fan #2", 3));
+                        c.Add(new Control("System Fan #3", 4));
+                        c.Add(new Control("System Fan #4", 5));
+                        c.Add(new Control("System Fan #5", 6));
+                        c.Add(new Control("System Fan #6", 7));
+
+                        break;
+
                     default:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
@@ -551,7 +597,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("PCH", 3));
                         t.Add(new Temperature("CPU Socket", 4));
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2_1", 6));
+                        t.Add(new Temperature("M2 #1", 6));
 
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("Pump Fan", 1));
@@ -643,7 +689,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2_1", 6));
+                        t.Add(new Temperature("M2 #1", 6));
 
                         break;
 
@@ -667,7 +713,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         t.Add(new Temperature("CPU Socket", 4));
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2_1", 6));
+                        t.Add(new Temperature("M2 #1", 6));
 
                         break;
 
@@ -2499,7 +2545,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+5V", 6));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("PCH", 1));
-                        t.Add(new Temperature("PCIEX16", 2));
+                        t.Add(new Temperature("PCIe x16", 2));
                         t.Add(new Temperature("System #1", 3));
                         t.Add(new Temperature("System #2", 4));
                         t.Add(new Temperature("VRAM MOS", 5));
@@ -5068,12 +5114,18 @@ internal sealed class SuperIOHardware : Hardware
                             t.Add(new Temperature("CPU Package", 0));
                             t.Add(new Temperature("VRM", 1));
                             t.Add(new Temperature("Motherboard", 2));
+
+                            // BIOS 1804 or above moved CPU Temp Sensor to 21
+                            t.Add(new Temperature("CPU", 21));
+
+                            // For BIOS 1803 or older
                             t.Add(new Temperature("CPU", 22));
 
                             // Add all unmapped temperature sensors
                             for (int i = 3; i < superIO.Temperatures.Length; i++)
                             {
-                                if (i != 22)
+                                // 21 and 22 are not used at the same time
+                                if (i != 21 && i != 22)
                                 {
                                     t.Add(new Temperature($"Temperature #{i}", i));
                                 }
@@ -5367,7 +5419,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X570_Gaming_Plus:
                         // NCT6797D
-                        // NCT771x : PCIE 1, M.2 1, not supported
+                        // NCT771x : PCIe 1, M.2 1, not supported
                         // RF35204 : VRM not supported
 
                         v.Add(new Voltage("Vcore", 0));
@@ -5413,7 +5465,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.X570_MS7C35:
                         // NCT6797D
                         // NCT7802Y (on SMBus): SYS_FAN5, CPU 1.8V, Chipset SOC, Chipset CLDO - not supported
-                        // Unknown: PCIE 1, PCIE 3, M.2_1
+                        // Unknown: PCIe 1, PCIe 3, M.2_1
 
                         v.Add(new Voltage("Vcore", 0));           // CPUVCORE
                         v.Add(new Voltage("+5V", 1, 12, 3));      // VIN1
