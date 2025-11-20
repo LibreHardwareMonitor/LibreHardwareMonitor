@@ -127,7 +127,6 @@ namespace LibreHardwareMonitor.PawnIo
         }
 
         // ioctl_access_superio_mmio
-
         public bool GetOriginalState(out MMIOState state)
         {
             state = MMIOState.Unknown;
@@ -175,7 +174,6 @@ namespace LibreHardwareMonitor.PawnIo
 
         public void Close() => _pawnIO.Close();
 
-
         /// <summary>
         /// Writes a debug message to both the output window and a log file when ISA_BRIDGE_EC_DEBUG is defined.
         /// </summary>
@@ -186,9 +184,6 @@ namespace LibreHardwareMonitor.PawnIo
         [Conditional("DEBUG_LOG"), Conditional("ISA_BRIDGE_EC_DEBUG")]
         private static void Log(string message)
         {
-            const string fileName = "PawnIo_IsaBridgeEc_DebugLog.txt";
-            string header = $"[{System.DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
-            System.IO.File.AppendAllText(fileName, header + message + System.Environment.NewLine);
             Debug.WriteLine(message);
         }
     }
