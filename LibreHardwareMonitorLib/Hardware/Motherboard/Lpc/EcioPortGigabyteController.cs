@@ -32,7 +32,6 @@ internal class EcioPortGigabyteController : IGigabyteController
         System.IO.File.AppendAllText(fileName, header + message + System.Environment.NewLine);
     }
 
-
     public static EcioPortGigabyteController TryCreate(LpcPort lpcPort)
     {
         IT879xEcioPort port = new(lpcPort);
