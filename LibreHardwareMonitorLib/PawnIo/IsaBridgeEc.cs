@@ -25,14 +25,6 @@ namespace LibreHardwareMonitor.PawnIo
 
     public class IsaBridgeEc
     {
-        [Conditional("ISA_BRIDGE_EC_DEBUG")]
-        private static void DebugLog(string message)
-        {
-            const string fileName = "PawnIo_IsaBridgeEc_DebugLog.txt";
-            string header = $"[{System.DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
-            System.IO.File.AppendAllText(fileName, header + message + System.Environment.NewLine);
-        }
-
         private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IsaBridgeEc).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IsaBridgeEC.bin");
 
         // ioctl_find_superio_mmio
@@ -41,7 +33,7 @@ namespace LibreHardwareMonitor.PawnIo
             long[] outArray = new long[6];
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_find_superio_mmio", [], 0, outArray, 6, out uint returnSize);
 
-            DebugLog($"FindSuperIoMMIO statusCode: {ntStatusCode}");
+            Log($"FindSuperIoMMIO statusCode: {ntStatusCode}");
 
             if (ntStatusCode != 0)
             {
@@ -66,8 +58,8 @@ namespace LibreHardwareMonitor.PawnIo
                 ChipId = outArray[5]
             };
 
-            DebugLog($"First MMIO - BaseAddress: 0x{firstMmio.BaseAddress:X}, SuperIoSize: 0x{firstMmio.SuperIoSize:X}, ChipId: 0x{firstMmio.ChipId:X}");
-            DebugLog($"Second MMIO - BaseAddress: 0x{secondMmio.BaseAddress:X}, SuperIoSize: 0x{secondMmio.SuperIoSize:X}, ChipId: 0x{secondMmio.ChipId:X}");
+            Log($"First MMIO - BaseAddress: 0x{firstMmio.BaseAddress:X}, SuperIoSize: 0x{firstMmio.SuperIoSize:X}, ChipId: 0x{firstMmio.ChipId:X}");
+            Log($"Second MMIO - BaseAddress: 0x{secondMmio.BaseAddress:X}, SuperIoSize: 0x{secondMmio.SuperIoSize:X}, ChipId: 0x{secondMmio.ChipId:X}");
 
             return firstMmio.BaseAddress != 0 || secondMmio.BaseAddress != 0;
         }
@@ -87,7 +79,7 @@ namespace LibreHardwareMonitor.PawnIo
 
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_access_superio_mmio", inArray, 5, outarray, 1, out uint returnSize);
 
-            DebugLog($"ReadMmio statusCode: {ntStatusCode}, Read Value: 0x{outarray[0]:X} at SuperIoIndex {superIoIndex}, offset {offset}, size {size}");
+            Log($"ReadMmio statusCode: {ntStatusCode}, Read Value: 0x{outarray[0]:X} at SuperIoIndex {superIoIndex}, offset {offset}, size {size}");
 
             value = (byte)outarray[0];
 
@@ -109,7 +101,7 @@ namespace LibreHardwareMonitor.PawnIo
 
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_access_superio_mmio", inArray, 5, outarray, 1, out uint returnSize);
 
-            DebugLog($"WriteMmio statusCode: {ntStatusCode}, Written Value: 0x{value:X} at SuperIoIndex {superIoIndex}, offset {offset}, size {size}");
+            Log($"WriteMmio statusCode: {ntStatusCode}, Written Value: 0x{value:X} at SuperIoIndex {superIoIndex}, offset {offset}, size {size}");
 
             return ntStatusCode == 0;
         }
@@ -119,7 +111,7 @@ namespace LibreHardwareMonitor.PawnIo
         {
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_map_superio_mmio", [], 0, [], 0, out uint returnSize);
 
-            DebugLog($"Map statusCode: {ntStatusCode}");
+            Log($"Map statusCode: {ntStatusCode}");
 
             return ntStatusCode == 0;
         }
@@ -129,7 +121,7 @@ namespace LibreHardwareMonitor.PawnIo
         {
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_unmap_superio_mmio", [], 0, [], 0, out uint returnSize);
 
-            DebugLog($"Unmap statusCode: {ntStatusCode}");
+            Log($"Unmap statusCode: {ntStatusCode}");
 
             return ntStatusCode == 0;
         }
@@ -142,13 +134,13 @@ namespace LibreHardwareMonitor.PawnIo
             long[] outArray = new long[1];
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_iomem_mmio_get_org_state", [], 0, outArray, 1, out uint returnSize);
 
-            DebugLog($"GetOriginalState statusCode: {ntStatusCode}");
+            Log($"GetOriginalState statusCode: {ntStatusCode}");
 
 
             if (ntStatusCode != 0)
                 return false;
 
-            DebugLog($"Original MMIO State: {(MMIOState)outArray[0]}");
+            Log($"Original MMIO State: {(MMIOState)outArray[0]}");
 
             state = (MMIOState)outArray[0];
             return true;
@@ -173,7 +165,7 @@ namespace LibreHardwareMonitor.PawnIo
             inArray[0] = (long)state;
             int ntStatusCode = _pawnIO.ExecuteHr("ioctl_iomem_mmio_set_state", inArray, 1, [], 0, out uint returnSize);
 
-            DebugLog($"TrySetState to {state} statusCode: {ntStatusCode}");
+            Log($"TrySetState to {state} statusCode: {ntStatusCode}");
 
             if (ntStatusCode != 0)
                 return false;
@@ -182,5 +174,22 @@ namespace LibreHardwareMonitor.PawnIo
         }
 
         public void Close() => _pawnIO.Close();
+
+
+        /// <summary>
+        /// Writes a debug message to both the output window and a log file when ISA_BRIDGE_EC_DEBUG is defined.
+        /// </summary>
+        /// <remarks>The log entry is timestamped and appended to the file
+        /// 'PawnIo_IsaBridgeEc_DebugLog.txt' in the application's working directory. This method only produces output
+        /// when compiled with the ISA_BRIDGE_EC_DEBUG symbol defined.</remarks>
+        /// <param name="message">The message to log. This should provide relevant information for debugging purposes.</param>
+        [Conditional("ISA_BRIDGE_EC_DEBUG")]
+        private static void Log(string message)
+        {
+            const string fileName = "PawnIo_IsaBridgeEc_DebugLog.txt";
+            string header = $"[{System.DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
+            System.IO.File.AppendAllText(fileName, header + message + System.Environment.NewLine);
+            Debug.WriteLine(message);
+        }
     }
 }
