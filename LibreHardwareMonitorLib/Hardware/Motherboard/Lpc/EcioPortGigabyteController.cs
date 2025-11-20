@@ -102,9 +102,6 @@ internal class EcioPortGigabyteController : IGigabyteController
     [Conditional("DEBUG_LOG"), Conditional("ECIO_GIGABYTE_CONTROLLER_DEBUG")]
     private static void Log(string message)
     {
-        const string fileName = "EcioPortGigabyteController_DebugLog.txt";
-        string header = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
-        System.IO.File.AppendAllText(fileName, header + message + Environment.NewLine);
         Debug.WriteLine(message);
     }
 }
