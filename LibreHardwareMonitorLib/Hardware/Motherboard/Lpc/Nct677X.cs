@@ -63,10 +63,12 @@ internal class Nct677X : ISuperIO
         }
         else if (chip is Chip.NCT6687DR) // MSI AM5/LGA1851 Motherboards
         {
-            FAN_PWM_OUT_REG = [0x160, 0x161, 0xE05, 0xE04, 0xE03, 0xE02, 0xE01, 0xE00]; // Duty Cycle Sensors
-            FAN_PWM_COMMAND_REG = [0xA28, 0xA29, 0xC70, 0xC58, 0xC40, 0xC28, 0xC10, 0xBF8]; // Control Registers for CPU/Pump, Initial Fan Curve Registers for System Fans
-            FAN_CONTROL_MODE_REG = [0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00];
-            FAN_PWM_REQUEST_REG = [0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01];
+            // Each index in the below arrays represents a fan header
+            // ARRAY_KEY = new ushort[] { CPU FAN, PUMP, CHIPSET, EZ-CONNECT FAN, null, null, null, null, null, SYSFAN7, SYSFAN1, SYSFAN2, SYSFAN3, SYSFAN4, SYSFAN5, SYSFAN6 };
+            FAN_PWM_OUT_REG = [0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167, 0xFFF, 0xC93, 0xE05, 0xE04, 0xE03, 0xE02, 0xE01, 0xE00]; // Duty Cycle Sensors
+            FAN_PWM_COMMAND_REG = [0xA28, 0xA29, 0xA2A, 0xA2B, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xBE0, 0xC70, 0xC58, 0xC40, 0xC28, 0xC10, 0xBF8]; // Control Registers for CPU/Pump/EZ-Connect Fan, Initial Fan Curve Registers for System Fans
+            FAN_CONTROL_MODE_REG = [0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00];
+            FAN_PWM_REQUEST_REG = [0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01];
         }
         else
         {
@@ -424,8 +426,8 @@ internal class Nct677X : ISuperIO
                 break;
 
             case Chip.NCT6687DR:
-                Fans = new float?[8];
-                Controls = new float?[8];
+                Fans = new float?[16];
+                Controls = new float?[16];
                 Voltages = new float?[14];
                 Temperatures = new float?[7];
 
@@ -437,7 +439,7 @@ internal class Nct677X : ISuperIO
                     new TemperatureSourceData(null, 0x106), // PCH
                     new TemperatureSourceData(null, 0x108), // CPU Socket
                     new TemperatureSourceData(null, 0x10A), // PCIE_1
-                    new TemperatureSourceData(null, 0x10C) // M2_1
+                    new TemperatureSourceData(null, 0x10C)  // M2_1
                 ];
 
                 // VIN0 +12V
@@ -458,13 +460,21 @@ internal class Nct677X : ISuperIO
 
                 // CPU Fan 0x140
                 // PUMP Fan 0x142
+                // Chipset Fan 0x144
+                // EZ-Conn 0x146
+                // NOTHING
+                // NOTHING
+                // NOTHING
+                // NOTHING
+                // NOTHING
+                // NOTHING
                 // SYS Fan 1 0x15E
                 // SYS Fan 2 0x15C
                 // SYS Fan 3 0x15A
                 // SYS Fan 4 0x158
                 // SYS Fan 5 0x156
                 // SYS Fan 6 0x154
-                _fanRpmRegister = [0x140, 0x142, 0x15E, 0x15C, 0x15A, 0x158, 0x156, 0x154];
+                _fanRpmRegister = [0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x15E, 0x15C, 0x15A, 0x158, 0x156, 0x154];
 
                 _restoreDefaultFanControlRequired = new bool[_fanRpmRegister.Length];
                 _initialFanControlMode = new byte[_fanRpmRegister.Length];
@@ -541,20 +551,28 @@ internal class Nct677X : ISuperIO
                 // bit 6 : SYS Fan 5
                 // bit 7 : SYS Fan 6
 
-                byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                byte bitMask = (byte)(0x01 << index);
-                mode = (byte)(mode | bitMask);
-                WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
                 if (Chip is Chip.NCT6687DR) // For MSI AM5/LGA1851 NCT6687D functionality
-                {
+                {                    
+                    if (index < 8) // Control fans traditionally if part of the old control scheme. Applies to CPU/Pump/EZ-Conn
+                    {
+                        byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                        byte bitMask = (byte)(0x01 << index);
+                        mode = (byte)(mode | bitMask);
+                        WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                    }
+
                     Set6687DRControl(index, value.Value);
                 }
                 else // All other Nuvoton SIO controllers and motherboards that use NCT6683/6686/6687
                 {
+                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                    byte bitMask = (byte)(0x01 << index);
+                    mode = (byte)(mode | bitMask);
+                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+
                     WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
                 }
 
@@ -1080,24 +1098,30 @@ internal class Nct677X : ISuperIO
 
     private void Set6687DRControl(int index, byte? value)
     {
-        if (index > 1) // System Fan Control
+        if (index > 8) // Brute Force System Fan Control
         {
-            int initFanCurveReg = FAN_PWM_COMMAND_REG[index]; // Initial Register Address for the Fan Curve
-            byte currentSpeed = ReadByte(FAN_PWM_OUT_REG[index]); // Current Speed of the target fan
+            int initFanCurveReg = FAN_PWM_COMMAND_REG[index];       // Initial Register Address for the Fan Curve
+            int targetFanCurveAddr = initFanCurveReg;               // Address of the Current Fan Curve Register we're writing to
+            ushort targetFanCurveReg;                               // Integer value of the current fan curve register address, not the value within
+            byte currentSpeed = ReadByte(FAN_PWM_OUT_REG[index]);   // Current Speed of the target fan
 
             // If current fan duty cycle matches requested duty cycle, skip re-writing the fan curve
-            if (currentSpeed != value.Value)
+            if (currentSpeed == value.Value)
+            {
+                return;
+            }
+            else
             {
                 // Write 7-point fan curve
                 for (int count = 0; count < 14; count += 2)
                 {
-                    int targetFanCurveAddr = initFanCurveReg + count; // Address of the Current Fan Curve Register we're writing to
-                    ushort targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr); // Integer value of the current fan curve register address, not the value within
+                    targetFanCurveAddr = initFanCurveReg+count;
+                    targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr);
                     WriteByte(targetFanCurveReg, value.Value);
                 }
             }
         }
-        else // Control CPU and Pump Fan normally
+        else // Control CPU, Pump, Chipset, or EZ-Connect Fan normally
         {
             WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
         }
