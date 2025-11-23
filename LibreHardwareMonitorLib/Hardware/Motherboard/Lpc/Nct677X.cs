@@ -193,43 +193,43 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6701D: // Defaulting to this group if map is less feature-rich than 6796/98
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
-                        // Note: Linux labels start at index 1 (0 is empty).
-                        // Indices 1-6 are consistent (SYSTIN, CPUTIN, AUXTIN0-3)
-                        new(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),         // Index 0 in your list / PECI_0 is often 0x73 or 0x027
-                        new(SourceNct67Xxd.CPUTIN, 0x075, 0x076, 7, 0x200, 0x491),  // Index 2 (CPUTIN)
-                        new(SourceNct67Xxd.SYSTIN, 0x077, 0x078, 7, 0x300, 0x490),  // Index 1 (SYSTIN)
-                        new(SourceNct67Xxd.AUXTIN0, 0x079, 0x07A, 7, 0x800, 0x492), // Index 3
-                        new(SourceNct67Xxd.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493), // Index 4
-                        new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494), // Index 5
-                        new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495), // Index 6
-            
-                        // AUXTIN4 (AUXTIN4 is missing or unnamed in 6793/6795 label array)
-                        // Keeping AUXTIN4 here with original register mapping for compatibility, but moving down.
-                        new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
+                            // Note: Linux labels start at index 1 (0 is empty).
+                            // Indices 1-6 are consistent (SYSTIN, CPUTIN, AUXTIN0-3)
+                            new(SourceNct67Xxd.PECI_0, 0x073, 0x074, 7, 0x100),         // Index 0 in your list / PECI_0 is often 0x73 or 0x027
+                            new(SourceNct67Xxd.CPUTIN, 0x075, 0x076, 7, 0x200, 0x491),  // Index 2 (CPUTIN)
+                            new(SourceNct67Xxd.SYSTIN, 0x077, 0x078, 7, 0x300, 0x490),  // Index 1 (SYSTIN)
+                            new(SourceNct67Xxd.AUXTIN0, 0x079, 0x07A, 7, 0x800, 0x492), // Index 3
+                            new(SourceNct67Xxd.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493), // Index 4
+                            new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494), // Index 5
+                            new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495), // Index 6
+                
+                            // AUXTIN4 (AUXTIN4 is missing or unnamed in 6793/6795 label array)
+                            // Keeping AUXTIN4 here with original register mapping for compatibility, but moving down.
+                            new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621),
 
-                        // PECI / PCH Group (Indices 16-25 in Linux labels)
-                        new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
-                        new(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, 0, -1, 0xC28, 0x400), // Index 18 (0x400 alt reg)
-                        new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),         // Index 19 (0x401 alt reg)
-                        new(SourceNct67Xxd.PCH_CPU_TEMP, 0x678, 0, -1, 0xC2A, 0x402),          // Index 20 (0x402 alt reg)
-                        new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),          // Index 21 (0x404 alt reg)
-                        new(SourceNct67Xxd.AGENT0_DIMM0, 0x405, 0, -1),                        // Index 22 (0x405 alt reg)
-                        new(SourceNct67Xxd.AGENT0_DIMM1, 0x406, 0, -1),                        // Index 23 (0x406 alt reg)
-                        new(SourceNct67Xxd.AGENT1_DIMM0, 0x407, 0, -1),                        // Index 24 (0x407 alt reg)
-                        new(SourceNct67Xxd.AGENT1_DIMM1, 0x408, 0, -1),                        // Index 25 (0x408 alt reg)
+                            // PECI / PCH Group (Indices 16-25 in Linux labels)
+                            new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
+                            new(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, 0, -1, 0xC28, 0x400), // Index 18 (0x400 alt reg)
+                            new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),         // Index 19 (0x401 alt reg)
+                            new(SourceNct67Xxd.PCH_CPU_TEMP, 0x678, 0, -1, 0xC2A, 0x402),          // Index 20 (0x402 alt reg)
+                            new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),          // Index 21 (0x404 alt reg)
+                            new(SourceNct67Xxd.AGENT0_DIMM0, 0x405, 0, -1),                        // Index 22 (0x405 alt reg)
+                            new(SourceNct67Xxd.AGENT0_DIMM1, 0x406, 0, -1),                        // Index 23 (0x406 alt reg)
+                            new(SourceNct67Xxd.AGENT1_DIMM0, 0x407, 0, -1),                        // Index 24 (0x407 alt reg)
+                            new(SourceNct67Xxd.AGENT1_DIMM1, 0x408, 0, -1),                        // Index 25 (0x408 alt reg)
 
-                        // SMBUS Group (Indices 8-9 are consistent)
-                        new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),              // Index 8
-                        new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),                 // Index 9
+                            // SMBUS Group (Indices 8-9 are consistent)
+                            new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),              // Index 8
+                            new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),                 // Index 9
 
-                        // BYTE TEMP, CALIBRATION, and VIRTUAL (Indices 26-31)
-                        new(SourceNct67Xxd.BYTE_TEMP0, 0x419, 0, -1), // Index 26
-                        new(SourceNct67Xxd.BYTE_TEMP1, 0x41A, 0, -1), // Index 27
-                        new(SourceNct67Xxd.PECI_0_CAL, 0x4F4, 0, -1), // Index 28
-                        new(SourceNct67Xxd.PECI_1_CAL, 0x4F5, 0, -1), // Index 29
-                        new(SourceNct67Xxd.VIRTUAL_TEMP, 0),          // Index 31
-                        new(SourceNct67Xxd.SPARE_TEMP, 0),
-                        new(SourceNct67Xxd.SPARE_TEMP2, 0)
+                            // BYTE TEMP, CALIBRATION, and VIRTUAL (Indices 26-31)
+                            new(SourceNct67Xxd.BYTE_TEMP0, 0x419, 0, -1), // Index 26
+                            new(SourceNct67Xxd.BYTE_TEMP1, 0x41A, 0, -1), // Index 27
+                            new(SourceNct67Xxd.PECI_0_CAL, 0x4F4, 0, -1), // Index 28
+                            new(SourceNct67Xxd.PECI_1_CAL, 0x4F5, 0, -1), // Index 29
+                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0),          // Index 31
+                            new(SourceNct67Xxd.SPARE_TEMP, 0),
+                            new(SourceNct67Xxd.SPARE_TEMP2, 0)
                         });
                         break;
 
