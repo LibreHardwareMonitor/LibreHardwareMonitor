@@ -291,6 +291,8 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621), // Index 7
+
+                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
             
                             // SMBUS Group (Indices 8-9 are consistent)
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
