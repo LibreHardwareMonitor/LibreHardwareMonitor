@@ -632,21 +632,25 @@ internal sealed class SuperIOHardware : Hardware
 
                 f.Add(new Fan("CPU Fan", 0));
                 f.Add(new Fan("Pump Fan #1", 1));
-                f.Add(new Fan("System Fan #1", 2));
-                f.Add(new Fan("System Fan #2", 3));
-                f.Add(new Fan("System Fan #3", 4));
-                f.Add(new Fan("System Fan #4", 5));
-                f.Add(new Fan("System Fan #5", 6));
-                f.Add(new Fan("System Fan #6", 7));
+                f.Add(new Fan("Chipset Fan", 2));
+                f.Add(new Fan("System Fan #1", 10));
+                f.Add(new Fan("System Fan #2", 11));
+                f.Add(new Fan("System Fan #3", 12));
+                f.Add(new Fan("System Fan #4", 13));
+                f.Add(new Fan("System Fan #5", 14));
+                f.Add(new Fan("System Fan #6", 15));
+                f.Add(new Fan("EZ-Connect Fan", 3));
 
                 c.Add(new Control("CPU Fan", 0));
                 c.Add(new Control("Pump Fan", 1));
-                c.Add(new Control("System Fan #1", 2));
-                c.Add(new Control("System Fan #2", 3));
-                c.Add(new Control("System Fan #3", 4));
-                c.Add(new Control("System Fan #4", 5));
-                c.Add(new Control("System Fan #5", 6));
-                c.Add(new Control("System Fan #6", 7));
+                c.Add(new Control("Chipset Fan", 2));
+                c.Add(new Control("System Fan #1", 10));
+                c.Add(new Control("System Fan #2", 11));
+                c.Add(new Control("System Fan #3", 12));
+                c.Add(new Control("System Fan #4", 13));
+                c.Add(new Control("System Fan #5", 14));
+                c.Add(new Control("System Fan #6", 15));
+                c.Add(new Control("EZ-Connect Fan", 3));
 
                 switch (model)
                 {
@@ -673,6 +677,9 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X870E_CARBON_WIFI:
                     case Model.X870E_GODLIKE:
+                        f.Add(new Fan("System Fan #7", 9));
+                        c.Add(new Control("System Fan #7", 9));
+
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
                         v.Add(new Voltage("CPU Northbridge/SoC", 2));
@@ -718,6 +725,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.Z890_EDGE_TI_WIFI:
+                    case Model.Z890I_EDGE_TI_WIFI:
                     case Model.Z890P_PRO_WIFI:
                     case Model.Z890A_PRO_WIFI:
                     case Model.Z890S_PRO_WIFI:
