@@ -3732,8 +3732,8 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+1.8V", 14, 1, 1));
                         //v.Add(new Voltage("Voltage #16", 15, true)); // unknown. VIN9 pin
 
-                        t.Add(new Temperature("CPU", 9)); // AKA SMBUSMASTER0
-                        t.Add(new Temperature("Chipset", 10)); // AKA SMBUSMASTER1
+                        t.Add(new Temperature("CPU", 8)); // AKA SMBUSMASTER0
+                        t.Add(new Temperature("Chipset", 9)); // AKA SMBUSMASTER1
                         t.Add(new Temperature("Motherboard", 2)); // AKA SYSTIN
 
                         // no idea what these sources are actually connected to.
