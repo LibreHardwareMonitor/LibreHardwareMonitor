@@ -87,8 +87,8 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     {
         bool isEntered = false;
 
-        /// use a try finaly + the <see cref="isEntered" /> to get a safe
-        /// <see cref="EnterMmio(IsaBridgeEc, MMIOState?)"/> and <see cref="ExitMmio(IsaBridgeEc)"/> pattern
+        // use try finally + isEntered to get a safe
+        // EnterMmio and ExitMmio pattern
         try
         {
             // get initial state if missing
