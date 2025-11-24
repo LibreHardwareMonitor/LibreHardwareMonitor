@@ -263,8 +263,12 @@ public class PlotPanel : UserControl
                 StrokeThickness = 2,
             };
 
+#pragma warning disable CS0618 //obsolete warning
+
             axis.AxisChanged += (sender, args) => annotation.Y = axis.ActualMinimum;
             axis.TransformChanged += (sender, args) => annotation.Y = axis.ActualMinimum;
+
+#pragma warning restore CS0618 //obsolete warning
 
             axis.Zoom(_settings.GetValue("plotPanel.Min" + axis.Key, float.NaN), _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
 
