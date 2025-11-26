@@ -17,6 +17,8 @@ SetupDiDestroyDeviceInfoList
 SetupDiGetDeviceInterfaceDetail
 SetupDiEnumDeviceInterfaces
 SetupDiGetClassDevs
+SP_DEVICE_INTERFACE_DATA
+SP_DEVICE_INTERFACE_DETAIL_DATA_W
 GUID_DEVICE_BATTERY
 WIN32_ERROR
 HRESULT_FROM_WIN32
@@ -42,3 +44,8 @@ LoadLibrary
 FreeLibrary
 GetProcAddress
 BATTERY_UNKNOWN_*
+CM_Locate_DevNode
+CM_Get_DevNode_Property
+CM_LOCATE_DEVNODE_FLAGS
+DEVPKEY_Device_BusNumber
+DEVPKEY_Device_Address
