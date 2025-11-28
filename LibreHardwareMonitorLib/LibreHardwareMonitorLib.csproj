@@ -57,13 +57,13 @@
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DiskInfoToolkit" Version="1.0.6" />
+    <PackageReference Include="DiskInfoToolkit" Version="1.0.7" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.257">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.4.1" />
+    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.4.2" />
     <PackageReference Include="System.Management" Version="10.0.0" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="10.0.0" />
