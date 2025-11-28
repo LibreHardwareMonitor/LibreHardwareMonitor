@@ -6,6 +6,10 @@
 using System;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using Windows.Win32.Devices.Properties;
+using Windows.Win32.Foundation;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -207,10 +211,26 @@ internal sealed class IntelDiscreteGpu : GenericGpu
             if (deviceIdentifier.IndexOf(vendorPattern, StringComparison.OrdinalIgnoreCase) != -1 &&
                 deviceIdentifier.IndexOf(devicePattern, StringComparison.OrdinalIgnoreCase) != -1)
             {
-                // Verify it's a valid D3D device by trying to get device info
-                if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                // Check BDF if available
+                if (GetBdfFromDeviceIdentifier(deviceIdentifier, out int bus, out int device, out int function))
                 {
-                    return deviceIdentifier;
+                    if (bus == _properties.adapter_bdf.bus && device == _properties.adapter_bdf.device && function == _properties.adapter_bdf.function)
+                    {
+                        // Verify it's a valid D3D device by trying to get device info
+                        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                        {
+                            return deviceIdentifier;
+                        }
+                    }
+                }
+                else
+                {
+                    // Fallback to old behavior if BDF check fails (e.g. P/Invoke error)
+                    // Verify it's a valid D3D device by trying to get device info
+                    if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                    {
+                        return deviceIdentifier;
+                    }
                 }
             }
         }
@@ -497,7 +517,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
     {
         if (string.IsNullOrEmpty(_d3dDeviceId))
         {
-            // Fallback: Try to find any Intel discrete GPU
+            // Fallback: Try to find any Intel D3D device
             string[] deviceIdentifiers = D3DDisplayDevice.GetDeviceIdentifiers();
             if (deviceIdentifiers != null)
             {
@@ -524,7 +544,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         if (D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             // Get dedicated video memory (VRAM) usage
-            ulong totalBytes = deviceInfo.GpuDedicatedLimit;
+            ulong totalBytes = deviceInfo.GpuVideoMemoryLimit;
             ulong usedBytes = deviceInfo.GpuDedicatedUsed;
             ulong freeBytes = totalBytes > usedBytes ? totalBytes - usedBytes : 0;
 
@@ -556,7 +576,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         if (bandwidthItem.bSupported)
         {
             double bandwidthValue = GetTelemetryValue(bandwidthItem);
-            
+
             if (!double.IsNaN(bandwidthValue) && bandwidthValue >= 0)
             {
                 // Bandwidth is typically in GB/s or MB/s, convert to B/s for Throughput sensor
@@ -584,5 +604,77 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         {
             bandwidthSensor.Value = null;
         }
+    }
+
+    private unsafe bool GetBdfFromDeviceIdentifier(string deviceIdentifier, out int bus, out int device, out int function)
+    {
+        bus = -1;
+        device = -1;
+        function = -1;
+
+        if (string.IsNullOrEmpty(deviceIdentifier))
+            return false;
+
+        // deviceIdentifier is like "\\?\PCI#VEN_8086&DEV_56A0&SUBSYS_10208086&REV_08#4&3834663c&0&0008#{5b45201d-f2f2-4f3b-85bb-30ff1f953599}"
+        // We need to extract the instance ID from this.
+        // The instance ID is "PCI\VEN_8086&DEV_56A0&SUBSYS_10208086&REV_08\4&3834663c&0&0008"
+
+        // Extract the device instance path from the interface path
+        // Remove "\\?\" prefix and the GUID suffix
+        string instanceId = deviceIdentifier;
+        if (instanceId.StartsWith(@"\\?\"))
+            instanceId = instanceId.Substring(4);
+
+        int lastHash = instanceId.LastIndexOf('#');
+        if (lastHash == -1)
+            return false;
+
+        instanceId = instanceId.Substring(0, lastHash);
+        // Replace '#' with '\' to match the Instance ID format expected by CM
+        instanceId = instanceId.Replace('#', '\\');
+
+        uint devInst;
+        fixed (char* pInstanceId = instanceId)
+        {
+            if (PInvoke.CM_Locate_DevNode(out devInst, (PWSTR)pInstanceId, CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) != CONFIGRET.CR_SUCCESS)
+            {
+                return false;
+            }
+        }
+
+        DEVPROPTYPE propertyType;
+        uint bufferSize = sizeof(uint);
+        uint busNum = 0;
+        uint address = 0;
+
+        fixed (DEVPROPKEY* pBusKey = &PInvoke.DEVPKEY_Device_BusNumber)
+        {
+            if (PInvoke.CM_Get_DevNode_Property(devInst, pBusKey, &propertyType, (byte*)&busNum, &bufferSize, 0) == CONFIGRET.CR_SUCCESS && propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+            {
+                bus = (int)busNum;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bufferSize = sizeof(uint);
+        propertyType = default;
+        fixed (DEVPROPKEY* pAddrKey = &PInvoke.DEVPKEY_Device_Address)
+        {
+            if (PInvoke.CM_Get_DevNode_Property(devInst, pAddrKey, &propertyType, (byte*)&address, &bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
+                propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+            {
+                // Address contains device and function per Windows DEVPKEY_Device_Address spec
+                // Bits 16-31: Device number
+                // Bits 0-15: Function number
+                device = (int)(address >> 16) & 0xFFFF;
+                function = (int)address & 0xFFFF;
+                return true;
+            }
+        }
+
+        return false;
     }
 }
