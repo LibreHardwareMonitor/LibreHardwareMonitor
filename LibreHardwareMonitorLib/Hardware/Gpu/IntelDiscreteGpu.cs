@@ -614,6 +614,9 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         device = -1;
         function = -1;
 
+        if (string.IsNullOrEmpty(deviceIdentifier))
+            return false;
+
         // deviceIdentifier is like "\\?\PCI#VEN_8086&DEV_56A0&SUBSYS_10208086&REV_08#4&3834663c&0&0008#{5b45201d-f2f2-4f3b-85bb-30ff1f953599}"
         // We need to extract the instance ID from this.
         // The instance ID is "PCI\VEN_8086&DEV_56A0&SUBSYS_10208086&REV_08\4&3834663c&0&0008"
@@ -626,10 +629,10 @@ internal sealed class IntelDiscreteGpu : GenericGpu
             instanceId = instanceId.Substring(4);
         }
         int lastHash = instanceId.LastIndexOf('#');
-        if (lastHash != -1)
-        {
-            instanceId = instanceId.Substring(0, lastHash);
-        }
+        if (lastHash == -1)
+            return false;
+
+        instanceId = instanceId.Substring(0, lastHash);
         // Replace '#' with '\' to match the Instance ID format expected by CM
         instanceId = instanceId.Replace('#', '\\');
 
@@ -643,11 +646,12 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         }
 
         DEVPROPTYPE propertyType;
-        uint bufferSize = 4;
+        uint bufferSize = sizeof(uint);
         uint busNum = 0;
         uint address = 0;
 
-        if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_BusNumber, out propertyType, new Span<byte>(&busNum, 4), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS)
+        if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_BusNumber, out propertyType, new Span<byte>(&busNum, sizeof(uint)), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
+            propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
         {
             bus = (int)busNum;
         }
@@ -656,14 +660,20 @@ internal sealed class IntelDiscreteGpu : GenericGpu
             return false;
         }
 
-        bufferSize = 4;
-        if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_Address, out propertyType, new Span<byte>(&address, 4), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS)
+        bufferSize = sizeof(uint);
+        if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_Address, out propertyType, new Span<byte>(&address, sizeof(uint)), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
+            propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
         {
             // Address contains device and function
-            // Bits 16-31: Device
-            // Bits 0-15: Function
-            device = (int)(address >> 16) & 0xFFFF;
-            function = (int)address & 0xFFFF;
+            // Bits 16-31: Device (PCI spec: 5 bits, 0-31)
+            // Bits 0-15: Function (PCI spec: 3 bits, 0-7)
+            device = (int)(address >> 16) & 0x1F;
+            function = (int)address & 0x07;
+
+            // Validate bus is within PCI spec range (8 bits, 0-255)
+            if (bus < 0 || bus > 255)
+                return false;
+
             return true;
         }
 
