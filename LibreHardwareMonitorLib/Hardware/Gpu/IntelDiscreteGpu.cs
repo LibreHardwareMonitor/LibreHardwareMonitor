@@ -664,16 +664,11 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_Address, out propertyType, new Span<byte>(&address, sizeof(uint)), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
             propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
         {
-            // Address contains device and function
-            // Bits 16-31: Device (PCI spec: 5 bits, 0-31)
-            // Bits 0-15: Function (PCI spec: 3 bits, 0-7)
-            device = (int)(address >> 16) & 0x1F;
-            function = (int)address & 0x07;
-
-            // Validate bus is within PCI spec range (8 bits, 0-255)
-            if (bus < 0 || bus > 255)
-                return false;
-
+            // Address contains device and function per Windows DEVPKEY_Device_Address spec
+            // Bits 16-31: Device number
+            // Bits 0-15: Function number
+            device = (int)(address >> 16) & 0xFFFF;
+            function = (int)address & 0xFFFF;
             return true;
         }
 
