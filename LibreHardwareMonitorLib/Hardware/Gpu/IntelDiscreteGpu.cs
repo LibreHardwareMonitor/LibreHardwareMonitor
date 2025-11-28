@@ -214,9 +214,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
                 // Check BDF if available
                 if (GetBdfFromDeviceIdentifier(deviceIdentifier, out int bus, out int device, out int function))
                 {
-                    if (bus == _properties.adapter_bdf.bus &&
-                        device == _properties.adapter_bdf.device &&
-                        function == _properties.adapter_bdf.function)
+                    if (bus == _properties.adapter_bdf.bus && device == _properties.adapter_bdf.device && function == _properties.adapter_bdf.function)
                     {
                         // Verify it's a valid D3D device by trying to get device info
                         if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
@@ -625,9 +623,8 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         // Remove "\\?\" prefix and the GUID suffix
         string instanceId = deviceIdentifier;
         if (instanceId.StartsWith(@"\\?\"))
-        {
             instanceId = instanceId.Substring(4);
-        }
+
         int lastHash = instanceId.LastIndexOf('#');
         if (lastHash == -1)
             return false;
@@ -650,26 +647,32 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         uint busNum = 0;
         uint address = 0;
 
-        if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_BusNumber, out propertyType, new Span<byte>(&busNum, sizeof(uint)), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
-            propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+        fixed (DEVPROPKEY* pBusKey = &PInvoke.DEVPKEY_Device_BusNumber)
         {
-            bus = (int)busNum;
-        }
-        else
-        {
-            return false;
+            if (PInvoke.CM_Get_DevNode_Property(devInst, pBusKey, &propertyType, (byte*)&busNum, &bufferSize, 0) == CONFIGRET.CR_SUCCESS && propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+            {
+                bus = (int)busNum;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         bufferSize = sizeof(uint);
-        if (PInvoke.CM_Get_DevNode_Property(devInst, PInvoke.DEVPKEY_Device_Address, out propertyType, new Span<byte>(&address, sizeof(uint)), ref bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
-            propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+        propertyType = default;
+        fixed (DEVPROPKEY* pAddrKey = &PInvoke.DEVPKEY_Device_Address)
         {
-            // Address contains device and function per Windows DEVPKEY_Device_Address spec
-            // Bits 16-31: Device number
-            // Bits 0-15: Function number
-            device = (int)(address >> 16) & 0xFFFF;
-            function = (int)address & 0xFFFF;
-            return true;
+            if (PInvoke.CM_Get_DevNode_Property(devInst, pAddrKey, &propertyType, (byte*)&address, &bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
+                propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+            {
+                // Address contains device and function per Windows DEVPKEY_Device_Address spec
+                // Bits 16-31: Device number
+                // Bits 0-15: Function number
+                device = (int)(address >> 16) & 0xFFFF;
+                function = (int)address & 0xFFFF;
+                return true;
+            }
         }
 
         return false;
