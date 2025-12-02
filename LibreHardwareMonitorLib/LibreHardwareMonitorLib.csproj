@@ -57,7 +57,7 @@
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DiskInfoToolkit" Version="1.0.9" />
+    <PackageReference Include="DiskInfoToolkit" Version="1.1.0" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.257">
       <PrivateAssets>all</PrivateAssets>
