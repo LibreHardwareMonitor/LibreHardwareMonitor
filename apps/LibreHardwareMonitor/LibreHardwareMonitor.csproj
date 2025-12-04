@@ -72,8 +72,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Aga.Controls\Aga.Controls.csproj" />
-    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj" />
+    <ProjectReference Include="..\..\Aga.Controls\Aga.Controls.csproj" />
+    <ProjectReference Include="..\..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\**" />

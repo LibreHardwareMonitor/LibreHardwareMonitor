@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build solution (msbuild)
+        run: |
+          msbuild LibreHardwareMonitor.sln /p:Configuration=Release /m
+        shell: pwsh
+
+      - name: Collect library artifacts
+        run: |
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          if (Test-Path LibreHardwareMonitorLib\bin\Release) {
+            Copy-Item -Path LibreHardwareMonitorLib\bin\Release\* -Destination artifacts -Recurse -Force
+          }
+        shell: pwsh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: librehardwaremonitor-artifacts
+          path: artifacts

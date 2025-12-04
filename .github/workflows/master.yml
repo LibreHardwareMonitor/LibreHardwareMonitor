@@ -34,10 +34,10 @@ jobs:
           } | Set-Content Directory.Build.props
 
       - name: Restore application packages
-        run: dotnet restore LibreHardwareMonitor\LibreHardwareMonitor.csproj 
+        run: dotnet restore apps\LibreHardwareMonitor\LibreHardwareMonitor.csproj 
 
       - name: Build application
-        run: dotnet build LibreHardwareMonitor\LibreHardwareMonitor.csproj -c Release --no-restore -p:Platform=x64
+        run: dotnet build apps\LibreHardwareMonitor\LibreHardwareMonitor.csproj -c Release --no-restore -p:Platform=x64
 
       - name: Publish application
         uses: actions/upload-artifact@v4

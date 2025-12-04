@@ -6,3 +6,5 @@
 .vs/
 .vscode/
 packages/
+artifacts/
+

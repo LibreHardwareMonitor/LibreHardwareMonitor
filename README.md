@@ -101,3 +101,35 @@ Some sensors require administrator privileges to access the data. Restart your I
 
 ## License
 LibreHardwareMonitor is free and open source software licensed under MPL 2.0. Some parts of LibreHardwareMonitor are licensed under different terms, see [THIRD-PARTY-LICENSES](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/THIRD-PARTY-NOTICES.txt).
+
+## Repository layout and build-only intent
+
+This repository is maintained primarily to build and produce updated versions of the library `LibreHardwareMonitorLib` (the canonical artifact). The desktop application(s) and UI under `UI/`, `LibreHardwareMonitor/` and other folders are included for reference and examples; they are not the primary deliverable for automated distribution.
+
+Recommended high-level layout (logical):
+- `LibreHardwareMonitorLib/` - the library project(s) (source of truth for builds)
+- `apps/` or keep `UI/`, `LibreHardwareMonitor/` - sample apps and GUI (examples/archives)
+- `build/` - build and packaging scripts (`build.ps1`, `pack.ps1`)
+- `artifacts/` - build outputs (binaries and `.nupkg`) (should be gitignored)
+- `.github/workflows/` - CI workflows to build and produce artifacts
+
+Local build and pack instructions (Windows PowerShell / PowerShell Core):
+
+1. Build the solution and collect library outputs to `artifacts/Release`:
+
+```powershell
+pwsh.exe .\build\build.ps1 -Configuration Release
+```
+
+2. Create NuGet packages (if supported by your SDK/project):
+
+```powershell
+pwsh.exe .\build\pack.ps1 -Configuration Release
+```
+
+Notes:
+- The `build` scripts try `msbuild` first, then `dotnet build` as fallback. Ensure Visual Studio Build Tools or .NET SDK is installed on the machine/CI runner.
+- The `artifacts/` directory is intended to hold generated binaries and packages — do not commit built artifacts to Git. Add `artifacts/` to `.gitignore` if desired.
+- CI is configured to build on Windows (`.github/workflows/ci.yml`) and upload the collected `artifacts/` as workflow artifacts. Promote tagged builds to GitHub Releases or a package feed as part of your release process.
+
+If you want, I can also add `artifacts/` to `.gitignore`, create a `docs/RELEASING.md` with step-by-step release instructions, or move the UI projects under an `apps/` folder.
