@@ -370,12 +370,6 @@ public class HttpServer
                             return;
                         }
 
-                        if (requestedFile == "metrics")
-                        {
-                            await SendPrometheusAsync(context.Response, request);
-                            return;
-                        }
-
                         if (requestedFile.Contains("images_icon"))
                         {
                             await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
@@ -567,93 +561,6 @@ public class HttpServer
         { }
 
         response.Close();
-    }
-
-    private string GeneratePrometheusResponse(Node node)
-    {
-        string responseStr = "";
-        string lastTagName = "";
-
-        /// Dictionary to convert all data to base units for OpenMetrics
-        /// suffix, factor
-        var units = new Dictionary<SensorType, (string, double)>
-        {
-           { SensorType.Clock, ("hertz", 1000000)},                           //originally megahertz
-           { SensorType.Conductivity, ("seconds_per_centimeter", 0.000001) }, //originally microseconds per centimeter
-           { SensorType.Control, ("percent", 1) },
-           { SensorType.Current, ("amperes", 1) },
-           { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
-           { SensorType.Energy, ("watthour", 0.001) },
-           { SensorType.Factor, ("", 1) },
-           { SensorType.Fan, ("rpms", 1) },
-           { SensorType.Flow, ("liters_per_hour", 1) },
-           { SensorType.Frequency, ("hertz", 1) },
-           { SensorType.Humidity, ("percent", 1) },
-           { SensorType.Level, ("percent", 1) },
-           { SensorType.Load, ("percent", 1) },
-           { SensorType.Noise, ("decibels", 1) },
-           { SensorType.Power, ("watts", 1) },
-           { SensorType.SmallData, ("bytes", 1024*1024) },                    //originally MiB
-           { SensorType.Temperature, ("celsius", 1) },
-           { SensorType.Throughput, ("bytes_per_second", 1000) },             //originally KB
-           { SensorType.TimeSpan, ("seconds", 1) },
-           { SensorType.Timing, ("seconds", 0.000000001 ) },                  //originally nanoseconds
-           { SensorType.Voltage, ("volts", 1) },
-        };
-
-        for (int i = 0; i < node.Nodes.Count; i++)
-        {
-            if (node.Nodes[i].GetType().Name == "HardwareNode")
-            {
-                responseStr += GeneratePrometheusResponse(node.Nodes[i]);
-            }
-
-            if (node.Nodes[i].GetType().Name == "TypeNode")
-            {
-                string prometheusHost = node.Parent.Text;
-                foreach (SensorNode sensor in node.Nodes[i].Nodes)
-                {
-                    string tagHardware = (((HardwareNode)node).Hardware.Parent != null ? ((HardwareNode)node).Hardware.Parent.HardwareType.ToString() : ((HardwareNode)node).Hardware.HardwareType.ToString());
-                    string tagSensorType = sensor.Sensor.SensorType.ToString();
-                    string tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? "" : "_" + units[sensor.Sensor.SensorType].Item1);
-                    string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
-                    tagName = tagName.ToLower();
-
-                    string valueSensor = sensor.Text.Replace("#", "");
-                    string valueHardware = node.Text;
-                    string valueId = sensor.Sensor.Identifier.ToString().Split('/').Last();
-                    string valueFamily = node.Nodes[i].Text;
-                    string valueHost = _root.Text;
-
-                    try
-                    {
-
-                        if (lastTagName != tagName)
-                        {
-                            responseStr += $"# TYPE {tagName} gauge\n";
-                            lastTagName = tagName;
-                        }
-
-                        double? tagValue = units[sensor.Sensor.SensorType].Item2 * sensor.Sensor.Value;
-                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{tagValue}}""" + "\n";
-                    }
-                    catch (Exception)
-                    {
-                        responseStr += $"# HELP {lastTagName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
-                        responseStr += $$"""{{tagName}} {"sensor"="{{valueSensor}}" "hardware"="{{valueHardware}}" "id"="{{valueId}}" "family"="{{valueFamily}}" "host"="{{valueHost}}"} {{sensor.Sensor.Value}}""" + "\n";
-                    }
-                }
-            }
-        }
-        return responseStr;
-    }
-
-    private async Task SendPrometheusAsync(HttpListenerResponse response, HttpListenerRequest request = null)
-    {
-        string responseContent = GeneratePrometheusResponse(_root);
-        response.AddHeader("Cache-Control", "no-cache");
-        response.AddHeader("Access-Control-Allow-Origin", "*");
-        await SendResponseAsync(response, responseContent, "text/plain");
     }
 
     private async Task SendJsonSensorAsync(HttpListenerResponse response, Dictionary<string, object> sensorData)
