@@ -376,6 +376,12 @@ public class HttpServer
                             return;
                         }
 
+                        if (requestedFile == "metrics")
+                        {
+                            await SendPrometheusAsync(context.Response, request);
+                            return;
+                        }
+
                         if (requestedFile.Contains("Sensor"))
                         {
                             var sensorResult = new Dictionary<string, object>();
@@ -620,6 +626,7 @@ public class HttpServer
                     tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
                     valueHardwareName = node.Text;
                 }
+
                 string valueHardwareAlias = $"{valueHardwareName} ({valueHardwareId})";
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
@@ -629,12 +636,13 @@ public class HttpServer
                     // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
 
-                    double _factor = 1;
+                    double factor = 1;
                     string tagSensorUnits = "";
+
                     // Get factor and unit suffix from dictionary ...
                     if (units.ContainsKey(sensor.Sensor.SensorType))
                     {
-                        _factor = units[sensor.Sensor.SensorType].Item2;
+                        factor = units[sensor.Sensor.SensorType].Item2;
                         tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? String.Empty : "_" + units[sensor.Sensor.SensorType].Item1);
                     }
                     // ... or print an error message
@@ -663,10 +671,10 @@ public class HttpServer
                         lastTagName = tagName;
                     }
 
-                    int _counter = 0;
+                    int counter = 0;
                     foreach (SensorValue val in sensor.Sensor.Values.Reverse())
                     {
-                        if (_counter++ >= MaxValues) break;
+                        if (counter++ >= MaxValues) break;
                         if (float.IsNaN(val.Value))
                         {
                             // Print a help line saying what tag had an invalid value
@@ -675,7 +683,7 @@ public class HttpServer
                         else
                         {
                             // Outputs prometheus tag with labels, value, and timestamp
-                            responseStr += $"{tagLine} {(val.Value * _factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeSeconds()}\n";
+                            responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeSeconds()}\n";
                         }
                     }
                 }
