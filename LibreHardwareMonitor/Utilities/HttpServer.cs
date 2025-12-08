@@ -571,7 +571,7 @@ public class HttpServer
 
     private string GeneratePrometheusResponse(Node node)
     {
-        const int _maxValues = 5;
+        const int MaxValues = 5;
 
         string responseStr = "";
         string lastTagName = "";
@@ -612,10 +612,10 @@ public class HttpServer
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
             {
-
                 string tagHardware = "";
                 string valueHardwareName = "";
                 string valueHardwareId = ((HardwareNode)node).Hardware.Identifier.ToString();
+
                 if (((HardwareNode)node).Hardware.Parent != null)
                 {
                     tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
@@ -672,7 +672,7 @@ public class HttpServer
                     int _counter = 0;
                     foreach (SensorValue val in sensor.Sensor.Values.Reverse())
                     {
-                        if (_counter++ >= _maxValues) break;
+                        if (_counter++ >= MaxValues) break;
                         if (float.IsNaN(val.Value))
                         {
                             // Print a help line saying what tag had an invalid value
