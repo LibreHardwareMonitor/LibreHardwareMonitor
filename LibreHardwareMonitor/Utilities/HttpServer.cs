@@ -376,6 +376,12 @@ public class HttpServer
                             return;
                         }
 
+                        if (requestedFile == "metrics")
+                        {
+                            await SendPrometheusAsync(context.Response, request);
+                            return;
+                        }
+
                         if (requestedFile.Contains("Sensor"))
                         {
                             var sensorResult = new Dictionary<string, object>();
@@ -563,6 +569,137 @@ public class HttpServer
         response.Close();
     }
 
+    private string GeneratePrometheusResponse(Node node)
+    {
+        const int MaxValues = 5;
+
+        string responseStr = "";
+        string lastTagName = "";
+
+        /// Dictionary to convert all data to base units for OpenMetrics
+        /// SensorType, Item1 suffix, Item2 factor
+        var units = new Dictionary<SensorType, (string, double)>
+        {
+           { SensorType.Clock, ("hertz", 1000000)},                           //originally megahertz
+           { SensorType.Conductivity, ("seconds_per_centimeter", 0.000001) }, //originally microseconds per centimeter
+           { SensorType.Control, ("percent", 1) },
+           { SensorType.Current, ("amperes", 1) },
+           { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
+           { SensorType.Energy, ("watthour", 0.001) },
+           { SensorType.Factor, ("", 1) },
+           { SensorType.Fan, ("rpm", 1) },
+           { SensorType.Flow, ("liters_per_hour", 1) },
+           { SensorType.Frequency, ("hertz", 1) },
+           { SensorType.Humidity, ("percent", 1) },
+           { SensorType.Level, ("percent", 1) },
+           { SensorType.Load, ("percent", 1) },
+           { SensorType.Noise, ("decibels", 1) },
+           { SensorType.Power, ("watts", 1) },
+           { SensorType.SmallData, ("bytes", 1024*1024) },                    //originally MiB
+           { SensorType.Temperature, ("celsius", 1) },
+           { SensorType.Throughput, ("bytes_per_second", 1) },
+           { SensorType.TimeSpan, ("seconds", 1) },
+           { SensorType.Timing, ("seconds", 0.000000001 ) },                  //originally nanoseconds
+           { SensorType.Voltage, ("volts", 1) },
+        };
+
+        for (int i = 0; i < node.Nodes.Count; i++)
+        {
+            if (node.Nodes[i].GetType().Name == "HardwareNode")
+            {
+                responseStr += GeneratePrometheusResponse(node.Nodes[i]);
+            }
+
+            if (node.Nodes[i].GetType().Name == "TypeNode")
+            {
+                string tagHardware = "";
+                string valueHardwareName = "";
+                string valueHardwareId = ((HardwareNode)node).Hardware.Identifier.ToString();
+
+                if (((HardwareNode)node).Hardware.Parent != null)
+                {
+                    tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
+                    valueHardwareName = ((HardwareNode)node).Hardware.Parent.Name;
+                }
+                else
+                {
+                    tagHardware = ((HardwareNode)node).Hardware.HardwareType.ToString();
+                    valueHardwareName = node.Text;
+                }
+
+                string valueHardwareAlias = $"{valueHardwareName} ({valueHardwareId})";
+
+                foreach (SensorNode sensor in node.Nodes[i].Nodes)
+                {
+                    string valueSensorName = sensor.Text.Replace("#", String.Empty);
+
+                    // Variables needed in dictionary lookup and error message
+                    string tagSensorType = sensor.Sensor.SensorType.ToString();
+
+                    double factor = 1;
+                    string tagSensorUnits = "";
+
+                    // Get factor and unit suffix from dictionary ...
+                    if (units.ContainsKey(sensor.Sensor.SensorType))
+                    {
+                        factor = units[sensor.Sensor.SensorType].Item2;
+                        tagSensorUnits = (units[sensor.Sensor.SensorType].Item1.Length == 0 ? String.Empty : "_" + units[sensor.Sensor.SensorType].Item1);
+                    }
+                    // ... or print an error message
+                    else
+                    {
+                        responseStr += $"# HELP {tagHardware}_{tagSensorType}:{valueSensorName} This Sensor type is not defined in the prometheus adapter [{sensor.Sensor.SensorType}]\n";
+                    }
+
+                    // Creating the tag name for prometheus
+                    string tagName = $"lhm_{tagHardware}_{tagSensorType}{tagSensorUnits}";
+                    tagName = tagName.ToLower();
+
+                    // Preparing the labels for all data and uniqueness
+                    string valueSensorId = sensor.Sensor.Identifier.ToString().Substring(valueHardwareId.Length);
+                    string valueSensorAlias = $"{valueSensorName} ({valueSensorId})";
+
+                    string valueHost = _root.Text;
+
+                    // Creates the tag with labels
+                    string tagLine = $$"""{{tagName}} {"sensorName"="{{valueSensorName}}", "sensorAlias"="{{valueSensorAlias}}", "hardwareName"="{{valueHardwareName}}", "hardwareAlias"="{{valueHardwareAlias}}", "sensorId"="{{valueSensorId}}", "hardwareId"="{{valueHardwareId}}", "host"="{{valueHost}}"}""";
+
+                    // Generates the TYPE line if we changed tagnames
+                    if (lastTagName != tagName)
+                    {
+                        responseStr += $"# TYPE {tagName} gauge\n";
+                        lastTagName = tagName;
+                    }
+
+                    int counter = 0;
+                    foreach (SensorValue val in sensor.Sensor.Values.Reverse())
+                    {
+                        if (counter++ >= MaxValues) break;
+                        if (float.IsNaN(val.Value))
+                        {
+                            // Print a help line saying what tag had an invalid value
+                            responseStr += $"# HELP {tagLine} has an invalid value and was skipped.\n";
+                        }
+                        else
+                        {
+                            // Outputs prometheus tag with labels, value, and timestamp
+                            responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeSeconds()}\n";
+                        }
+                    }
+                }
+            }
+        }
+        return responseStr;
+    }
+
+    private async Task SendPrometheusAsync(HttpListenerResponse response, HttpListenerRequest request = null)
+    {
+        string responseContent = GeneratePrometheusResponse(_root);
+        response.AddHeader("Cache-Control", "no-cache");
+        response.AddHeader("Access-Control-Allow-Origin", "*");
+        await SendResponseAsync(response, responseContent, "text/plain");
+    }
+
     private async Task SendJsonSensorAsync(HttpListenerResponse response, Dictionary<string, object> sensorData)
     {
         // Convert the JObject to a JSON string
@@ -571,7 +708,7 @@ public class HttpServer
         response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "application/json");
     }
-        
+
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
         Dictionary<string, object> jsonNode = new()
