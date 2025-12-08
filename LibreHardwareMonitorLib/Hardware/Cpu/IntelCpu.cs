@@ -404,7 +404,21 @@ internal sealed class IntelCpu : GenericCpu
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            string name = CoreString(i);
+
+            if (_cpuId.Length > i && _cpuId[i].Length > 0)
+            {
+                CpuId coreIdInfo = _cpuId[i][0];
+
+                name = coreIdInfo.CoreType switch
+                {
+                    CoreType.Performance => $"P-Core #{i + 1}",
+                    CoreType.Efficient => $"E-Core #{i + 1}",
+                    _ => CoreString(i)
+                };
+            }
+
+            _coreClocks[i] = new Sensor(name, i + 1, SensorType.Clock, this, settings);
             if (HasTimeStampCounter && _microArchitecture != MicroArchitecture.Unknown)
                 ActivateSensor(_coreClocks[i]);
         }
