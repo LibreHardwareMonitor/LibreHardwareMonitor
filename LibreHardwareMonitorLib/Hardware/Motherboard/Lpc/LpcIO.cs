@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using LibreHardwareMonitor.Hardware.Cpu;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
@@ -378,7 +379,15 @@ internal class LpcIO
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                     case 0x2A:
-                        chip = Chip.NCT6796DR;
+                        switch (motherboard.Model)
+                        {
+                            case Model.X870E_NOVA_WIFI:
+                                chip = Chip.NCT5585D;
+                                break;
+                            default:
+                                chip = Chip.NCT6796DR;
+                                break;
+                        }
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                     case 0x51:
@@ -404,27 +413,37 @@ internal class LpcIO
                         switch (motherboard.Model)
                         {
                             case Model.B840P_PRO_WIFI:
+                            case Model.B840M_GAMING_PLUS_WIFI6E:
                             case Model.B850_GAMING_PLUS_WIFI:
+                            case Model.B850_GAMING_PLUS_WIFI6E:
+                            case Model.B850M_GAMING_PLUS_WIFI6E:
                             case Model.B850P_PRO_WIFI:
+                            case Model.B850MA_PRO_WIFI:
+                            case Model.B850MP_PRO_WIFI:
                             case Model.B850M_MORTAR_WIFI:
                             case Model.B850_TOMAHAWK_MAX_WIFI:
                             case Model.B850_EDGE_TI_WIFI:
+                            case Model.B850I_EDGE_TI_WIFI:
+                            case Model.B850MPOWER:
+                            case Model.B850S_PRO_WIFI6E:
                             case Model.X870_GAMING_PLUS_WIFI:
+                            case Model.X870E_GAMING_PLUS_WIFI:
                             case Model.X870_TOMAHAWK_WIFI:
                             case Model.X870P_PRO_WIFI:
+                            case Model.X870EP_PRO_WIFI:
                             case Model.X870E_TOMAHAWK_WIFI:
                             case Model.X870E_CARBON_WIFI:
                             case Model.X870E_EDGE_TI_WIFI:
                             case Model.X870E_GODLIKE:
                             case Model.Z890_ACE:
                             case Model.Z890_CARBON_WIFI:
+                            case Model.Z890_GAMING_PLUS_WIFI:
                             case Model.Z890_TOMAHAWK_WIFI:
                             case Model.Z890_EDGE_TI_WIFI:
+                            case Model.Z890I_EDGE_TI_WIFI:
                             case Model.Z890P_PRO_WIFI:
                             case Model.Z890A_PRO_WIFI:
                             case Model.Z890S_PRO_WIFI:
-                            case Model.B850S_PRO_WIFI6E:
-                            case Model.B850M_GAMING_PLUS_WIFI6E:
                                 chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
                                 break;
                             default:
@@ -441,7 +460,16 @@ internal class LpcIO
                 switch (revision)
                 {
                     case 0x02:
-                        chip = Chip.NCT6799D;
+                        switch (motherboard.Model)
+                        {
+                            case Model.X870E_NOVA_WIFI:
+                                chip = Chip.NCT6796DS;
+                                break;
+                            default:
+                                chip = Chip.NCT6799D;
+                                break;
+                        }
+
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
                         break;
                     case 0x06:
@@ -473,7 +501,7 @@ internal class LpcIO
 
             // disable the hardware monitor i/o space lock on NCT679XD chips
             if (address == verify &&
-                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D or Chip.NCT6701D)
+                chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6796DS or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D or Chip.NCT6701D)
             {
                 port.NuvotonDisableIOSpaceLock();
             }
@@ -533,6 +561,7 @@ internal class LpcIO
                 case Chip.NCT6795D:
                 case Chip.NCT6796D:
                 case Chip.NCT6796DR:
+                case Chip.NCT6796DS:
                 case Chip.NCT6797D:
                 case Chip.NCT6798D:
                 case Chip.NCT6799D:
@@ -541,6 +570,7 @@ internal class LpcIO
                 case Chip.NCT6687DR:
                 case Chip.NCT6683D:
                 case Chip.NCT6701D:
+                case Chip.NCT5585D:
                     _superIOs.Add(new Nct677X(port, chip, revision, address));
                     break;
 
@@ -661,6 +691,7 @@ internal class LpcIO
                 gpioVerify = port.ReadWord(BASE_ADDRESS_REGISTER + 2);
             }
 
+            IGigabyteController gigabyteController = FindGigabyteEC(port, chip, motherboard);
             port.IT87Exit();
 
             if (address != verify || address < 0x100 || (address & 0xF007) != 0)
@@ -670,6 +701,8 @@ internal class LpcIO
                 _report.Append("Error: Invalid address 0x");
                 _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
                 _report.AppendLine();
+
+                gigabyteController?.Dispose();
 
                 return false;
             }
@@ -682,14 +715,73 @@ internal class LpcIO
                 _report.AppendLine(gpioAddress.ToString("X", CultureInfo.InvariantCulture));
                 _report.AppendLine();
 
+                gigabyteController?.Dispose();
+
                 return false;
             }
 
-            _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, null));
+            _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, gigabyteController));
+
             return true;
         }
 
         return false;
+    }
+
+    private IGigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
+    {
+        // The controller only affects the 2nd ITE chip if present, and only a few
+        // models are known to use this controller.
+        // IT8795E likely to need this too, but may use different registers.
+        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
+            return null;
+
+        Vendor vendor = DetectVendor();
+
+        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port);
+        if (gigabyteController != null)
+            return gigabyteController;
+
+        // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
+        if (chip == Chip.IT8792E && vendor == Vendor.AMD)
+        {
+            gigabyteController = EcioPortGigabyteController.TryCreate(port);
+            if (gigabyteController != null)
+                return gigabyteController;
+        }
+
+        return null;
+
+        Vendor DetectVendor()
+        {
+            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
+            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
+                return Vendor.Intel;
+
+            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+                return Vendor.AMD;
+
+            return Vendor.Unknown;
+        }
+    }
+
+    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port)
+    {
+        const byte IT87_LD_ACTIVE_REGISTER = 0x30;
+        const byte IT87XX_SMFI_LDN = 0x0F;
+
+        port.Select(IT87XX_SMFI_LDN);
+
+        // Check if the SMFI logical device is enabled
+        byte enabled = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+        Thread.Sleep(1);
+        byte enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
+
+        // The EC has no SMFI or it's RAM access is not enabled, assume the controller is not present
+        if (enabled != enabledVerify || enabled == 0)
+            return null;
+
+        return IsaBridgeGigabyteController.TryCreate(out IsaBridgeGigabyteController controller) ? controller : null;
     }
 
     // ReSharper disable InconsistentNaming

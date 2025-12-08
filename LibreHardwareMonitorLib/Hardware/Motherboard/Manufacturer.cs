@@ -30,6 +30,7 @@ public enum Manufacturer
     EVGA,
     FIC,
     Foxconn,
+    Framework,
     Fujitsu,
     Gateway,
     Gigabyte,

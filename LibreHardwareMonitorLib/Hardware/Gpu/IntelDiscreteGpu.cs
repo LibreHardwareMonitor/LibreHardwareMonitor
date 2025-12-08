@@ -6,6 +6,10 @@
 using System;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using Windows.Win32.Devices.Properties;
+using Windows.Win32.Foundation;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -38,9 +42,20 @@ internal sealed class IntelDiscreteGpu : GenericGpu
     private readonly Sensor _voltageCore;
     private readonly Sensor _voltageMemory;
 
+    // Memory sensors
+    private readonly Sensor _memoryFree;
+    private readonly Sensor _memoryTotal;
+    private readonly Sensor _memoryUsed;
+    private readonly Sensor _memoryLoad;
+
+    // Bandwidth sensors
+    private readonly Sensor _memoryBandwidthRead;
+    private readonly Sensor _memoryBandwidthWrite;
+
     // Timestamps
     private double _currentTimestamp = double.NaN;
     private string _deviceId;
+    private string _d3dDeviceId;
 
     // Intel GCL properties and data
     private readonly IntelGcl.ctl_device_adapter_handle_t _handle;
@@ -54,6 +69,8 @@ internal sealed class IntelDiscreteGpu : GenericGpu
     private double _lastRenderComputeActivityCounter = double.NaN;
     private double _lastTimestamp = double.NaN;
     private double _lastTotalCardEnergyReading = double.NaN;
+    private double _lastVramReadBandwidthCounter = double.NaN;
+    private double _lastVramWriteBandwidthCounter = double.NaN;
     private IntelGcl.ctl_device_adapter_properties_t _properties;
 
     // Telemetry data
@@ -68,6 +85,9 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         // Initialize device properties
         if (!InitializeDevice())
             return;
+
+        // Try to get D3D device identifier for memory monitoring
+        _d3dDeviceId = GetD3DDeviceId();
 
         // Initialize temperature sensors
         _temperatureGpuCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
@@ -89,6 +109,16 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         _loadGlobalActivity = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
         _loadRenderCompute = new Sensor("GPU Render/Compute", 1, SensorType.Load, this, settings);
         _loadMedia = new Sensor("GPU Media", 2, SensorType.Load, this, settings);
+
+        // Initialize memory sensors
+        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
+
+        // Initialize bandwidth sensors
+        _memoryBandwidthRead = new Sensor("GPU Memory Read", 0, SensorType.Throughput, this, settings);
+        _memoryBandwidthWrite = new Sensor("GPU Memory Write", 1, SensorType.Throughput, this, settings);
 
         // Initialize fan sensors based on available fans
         int fanCount = (int)GetFanCount();
@@ -164,6 +194,50 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         return false;
     }
 
+    private string GetD3DDeviceId()
+    {
+        // Try to find matching D3D device using PCI device ID
+        string[] deviceIdentifiers = D3DDisplayDevice.GetDeviceIdentifiers();
+        if (deviceIdentifiers == null || deviceIdentifiers.Length == 0)
+            return null;
+
+        // Intel vendor ID is 0x8086
+        string vendorPattern = $"VEN_{_properties.pci_vendor_id:X}";
+        string devicePattern = $"DEV_{_properties.pci_device_id:X}";
+
+        foreach (string deviceIdentifier in deviceIdentifiers)
+        {
+            // Check if this device matches Intel vendor and device IDs
+            if (deviceIdentifier.IndexOf(vendorPattern, StringComparison.OrdinalIgnoreCase) != -1 &&
+                deviceIdentifier.IndexOf(devicePattern, StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                // Check BDF if available
+                if (GetBdfFromDeviceIdentifier(deviceIdentifier, out int bus, out int device, out int function))
+                {
+                    if (bus == _properties.adapter_bdf.bus && device == _properties.adapter_bdf.device && function == _properties.adapter_bdf.function)
+                    {
+                        // Verify it's a valid D3D device by trying to get device info
+                        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                        {
+                            return deviceIdentifier;
+                        }
+                    }
+                }
+                else
+                {
+                    // Fallback to old behavior if BDF check fails (e.g. P/Invoke error)
+                    // Verify it's a valid D3D device by trying to get device info
+                    if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceIdentifier, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+                    {
+                        return deviceIdentifier;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public override void Update()
     {
         if (!IsValid)
@@ -195,6 +269,19 @@ internal sealed class IntelDiscreteGpu : GenericGpu
             UpdateUtilizationFromActivityCounter(_telemetry.globalActivityCounter, ref _lastGlobalActivityCounter, _loadGlobalActivity);
             UpdateUtilizationFromActivityCounter(_telemetry.renderComputeActivityCounter, ref _lastRenderComputeActivityCounter, _loadRenderCompute);
             UpdateUtilizationFromActivityCounter(_telemetry.mediaActivityCounter, ref _lastMediaActivityCounter, _loadMedia);
+
+            // Try to get D3D device ID if we haven't found it yet
+            if (string.IsNullOrEmpty(_d3dDeviceId))
+            {
+                _d3dDeviceId = GetD3DDeviceId();
+            }
+
+            // Update VRAM memory sensors (using D3D API)
+            UpdateMemorySensors();
+
+            // Update VRAM bandwidth sensors
+            UpdateBandwidthFromCounter(_telemetry.vramReadBandwidth, ref _lastVramReadBandwidthCounter, _memoryBandwidthRead);
+            UpdateBandwidthFromCounter(_telemetry.vramWriteBandwidth, ref _lastVramWriteBandwidthCounter, _memoryBandwidthWrite);
 
             // Update fan sensors
             UpdateFanSpeeds(_fans);
@@ -424,5 +511,170 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         }
 
         lastActivityReading = currentActivity;
+    }
+
+    private void UpdateMemorySensors()
+    {
+        if (string.IsNullOrEmpty(_d3dDeviceId))
+        {
+            // Fallback: Try to find any Intel D3D device
+            string[] deviceIdentifiers = D3DDisplayDevice.GetDeviceIdentifiers();
+            if (deviceIdentifiers != null)
+            {
+                foreach (string deviceId in deviceIdentifiers)
+                {
+                    if (deviceId.IndexOf("VEN_8086", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo testInfo))
+                        {
+                            if (testInfo.GpuDedicatedLimit > 0 && !testInfo.Integrated)
+                            {
+                                _d3dDeviceId = deviceId;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(_d3dDeviceId))
+                return;
+        }
+
+        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+        {
+            // Get dedicated video memory (VRAM) usage
+            ulong totalBytes = deviceInfo.GpuVideoMemoryLimit;
+            ulong usedBytes = deviceInfo.GpuDedicatedUsed;
+            ulong freeBytes = totalBytes > usedBytes ? totalBytes - usedBytes : 0;
+
+            if (totalBytes > 0)
+            {
+                // Convert bytes to MB for display
+                _memoryTotal.Value = totalBytes / (1024.0f * 1024.0f);
+                ActivateSensor(_memoryTotal);
+
+                _memoryUsed.Value = usedBytes / (1024.0f * 1024.0f);
+                ActivateSensor(_memoryUsed);
+
+                _memoryFree.Value = freeBytes / (1024.0f * 1024.0f);
+                ActivateSensor(_memoryFree);
+
+                // Calculate load percentage
+                _memoryLoad.Value = (float)((double)usedBytes / totalBytes * 100.0);
+                ActivateSensor(_memoryLoad);
+            }
+        }
+    }
+
+    private void UpdateBandwidthFromCounter(IntelGcl.ctl_oc_telemetry_item_t bandwidthItem, ref double lastBandwidthReading, Sensor bandwidthSensor)
+    {
+        if (!IsValid || bandwidthSensor == null)
+            return;
+
+        // If the telemetry item directly provides bandwidth value (not a counter)
+        if (bandwidthItem.bSupported)
+        {
+            double bandwidthValue = GetTelemetryValue(bandwidthItem);
+
+            if (!double.IsNaN(bandwidthValue) && bandwidthValue >= 0)
+            {
+                // Bandwidth is typically in GB/s or MB/s, convert to B/s for Throughput sensor
+                // Check the units to determine if conversion is needed
+                if (bandwidthItem.units == IntelGcl.ctl_units_t.CTL_UNITS_BANDWIDTH_MBPS)
+                {
+                    // Convert MB/s to B/s (multiply by 1024*1024)
+                    bandwidthValue = bandwidthValue * 1024.0 * 1024.0;
+                }
+                else if (bandwidthItem.units == IntelGcl.ctl_units_t.CTL_UNITS_MEM_SPEED_GBPS)
+                {
+                    // Convert GB/s to B/s (multiply by 1024*1024*1024)
+                    bandwidthValue = bandwidthValue * 1024.0 * 1024.0 * 1024.0;
+                }
+
+                bandwidthSensor.Value = (float)bandwidthValue;
+                ActivateSensor(bandwidthSensor);
+            }
+            else
+            {
+                bandwidthSensor.Value = null;
+            }
+        }
+        else
+        {
+            bandwidthSensor.Value = null;
+        }
+    }
+
+    private unsafe bool GetBdfFromDeviceIdentifier(string deviceIdentifier, out int bus, out int device, out int function)
+    {
+        bus = -1;
+        device = -1;
+        function = -1;
+
+        if (string.IsNullOrEmpty(deviceIdentifier))
+            return false;
+
+        // deviceIdentifier is like "\\?\PCI#VEN_8086&DEV_56A0&SUBSYS_10208086&REV_08#4&3834663c&0&0008#{5b45201d-f2f2-4f3b-85bb-30ff1f953599}"
+        // We need to extract the instance ID from this.
+        // The instance ID is "PCI\VEN_8086&DEV_56A0&SUBSYS_10208086&REV_08\4&3834663c&0&0008"
+
+        // Extract the device instance path from the interface path
+        // Remove "\\?\" prefix and the GUID suffix
+        string instanceId = deviceIdentifier;
+        if (instanceId.StartsWith(@"\\?\"))
+            instanceId = instanceId.Substring(4);
+
+        int lastHash = instanceId.LastIndexOf('#');
+        if (lastHash == -1)
+            return false;
+
+        instanceId = instanceId.Substring(0, lastHash);
+        // Replace '#' with '\' to match the Instance ID format expected by CM
+        instanceId = instanceId.Replace('#', '\\');
+
+        uint devInst;
+        fixed (char* pInstanceId = instanceId)
+        {
+            if (PInvoke.CM_Locate_DevNode(out devInst, (PWSTR)pInstanceId, CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) != CONFIGRET.CR_SUCCESS)
+            {
+                return false;
+            }
+        }
+
+        DEVPROPTYPE propertyType;
+        uint bufferSize = sizeof(uint);
+        uint busNum = 0;
+        uint address = 0;
+
+        fixed (DEVPROPKEY* pBusKey = &PInvoke.DEVPKEY_Device_BusNumber)
+        {
+            if (PInvoke.CM_Get_DevNode_Property(devInst, pBusKey, &propertyType, (byte*)&busNum, &bufferSize, 0) == CONFIGRET.CR_SUCCESS && propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+            {
+                bus = (int)busNum;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bufferSize = sizeof(uint);
+        propertyType = default;
+        fixed (DEVPROPKEY* pAddrKey = &PInvoke.DEVPKEY_Device_Address)
+        {
+            if (PInvoke.CM_Get_DevNode_Property(devInst, pAddrKey, &propertyType, (byte*)&address, &bufferSize, 0) == CONFIGRET.CR_SUCCESS &&
+                propertyType == DEVPROPTYPE.DEVPROP_TYPE_UINT32)
+            {
+                // Address contains device and function per Windows DEVPKEY_Device_Address spec
+                // Bits 16-31: Device number
+                // Bits 0-15: Function number
+                device = (int)(address >> 16) & 0xFFFF;
+                function = (int)address & 0xFFFF;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

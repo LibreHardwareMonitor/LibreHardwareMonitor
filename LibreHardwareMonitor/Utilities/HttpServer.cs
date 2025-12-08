@@ -370,12 +370,6 @@ public class HttpServer
                             return;
                         }
 
-                        if (requestedFile == "metrics")
-                        {
-                            await SendPrometheusAsync(context.Response, request);
-                            return;
-                        }
-
                         if (requestedFile.Contains("images_icon"))
                         {
                             await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
