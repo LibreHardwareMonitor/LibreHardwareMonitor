@@ -407,6 +407,8 @@ internal class Identification
                 return Model.TUF_X470_PLUS_GAMING;
             case var _ when name.Equals("B360M PRO-VDH (MS-7B24)", StringComparison.OrdinalIgnoreCase):
                 return Model.B360M_PRO_VDH;
+            case var _ when name.Equals("A320M-S2H-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.A320M_S2H_CF;
             case var _ when name.Equals("B360M H", StringComparison.OrdinalIgnoreCase):
                 return Model.B360M_H;
             case var _ when name.Equals("B550-A PRO (MS-7C56)", StringComparison.OrdinalIgnoreCase):
