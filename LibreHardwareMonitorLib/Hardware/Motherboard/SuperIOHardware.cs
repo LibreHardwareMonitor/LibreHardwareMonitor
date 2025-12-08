@@ -5269,7 +5269,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("VTT", 9, 34, 34));
                         v.Add(new Voltage("CPU VDDIO Memory", 10, 34, 34));
-                        v.Add(new Voltage("VMISC", 11, 34, 34));
+                        v.Add(new Voltage("VMisc", 11, 34, 34));
                         v.Add(new Voltage("1.8V Standby", 12, 7.66f, 10));
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
