@@ -470,6 +470,8 @@ internal class Identification
                 return Model.TUF_GAMING_X570_PLUS_WIFI;
             case var _ when name.Equals("TUF GAMING B550M-PLUS (WI-FI)", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_B550M_PLUS_WIFI;
+            case var _ when name.Equals("TUF GAMING B760M-PLUS WIFI D4", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_B760M_PLUS_WIFI_D4;
             case var _ when name.Equals("B360 AORUS GAMING 3 WIFI-CF", StringComparison.OrdinalIgnoreCase):
                 return Model.B360_AORUS_GAMING_3_WIFI_CF;
             case var _ when name.Equals("B550I AORUS PRO AX", StringComparison.OrdinalIgnoreCase):
