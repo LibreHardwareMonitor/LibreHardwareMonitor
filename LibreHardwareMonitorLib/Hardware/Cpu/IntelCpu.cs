@@ -23,6 +23,8 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _distToTjMaxTemperatures;
 
+    private readonly string[] _coreNames;
+
     private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, MSR_PLATFORM_ENERGY_STATUS };
     private readonly uint[] _lastEnergyConsumed;
     private readonly DateTime[] _lastEnergyTime;
@@ -324,6 +326,30 @@ internal sealed class IntelCpu : GenericCpu
                 break;
         }
 
+        // Initialize core names
+        _coreNames = new string[_coreCount];
+        int pCoreIndex = 1;
+        int eCoreIndex = 1;
+
+        for (int i = 0; i < _coreCount; i++)
+        {
+            if (_cpuId.Length > i && _cpuId[i].Length > 0)
+            {
+                CoreType coreType = _cpuId[i][0].CoreType;
+
+                _coreNames[i] = coreType switch
+                {
+                    CoreType.Performance => $"P-Core #{pCoreIndex++}",
+                    CoreType.Efficient => $"E-Core #{eCoreIndex++}",
+                    _ => CoreString(i)
+                };
+            }
+            else
+            {
+                _coreNames[i] = CoreString(i);
+            }
+        }
+
         int coreSensorId = 0;
 
         //core temp avg and max value
@@ -350,23 +376,24 @@ internal sealed class IntelCpu : GenericCpu
             _coreTemperatures = new Sensor[_coreCount];
             for (int i = 0; i < _coreTemperatures.Length; i++)
             {
-                _coreTemperatures[i] = new Sensor(CoreString(i),
-                                                  coreSensorId,
-                                                  SensorType.Temperature,
-                                                  this,
-                                                  new[]
-                                                  {
-                                                      new ParameterDescription("TjMax [°C]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[i]),
-                                                      new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
-                                                  },
-                                                  settings);
+                _coreTemperatures[i] = new Sensor(_coreNames[i],
+                    coreSensorId,
+                    SensorType.Temperature,
+                    this,
+                    [
+                        new ParameterDescription("TjMax [°C]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[i]),
+                        new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
+                    ],
+                    settings);
 
                 ActivateSensor(_coreTemperatures[i]);
                 coreSensorId++;
             }
         }
         else
-            _coreTemperatures = Array.Empty<Sensor>();
+        {
+            _coreTemperatures = [];
+        }
 
         // check if processor supports a digital thermal sensor at package level
         if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown)
@@ -375,11 +402,10 @@ internal sealed class IntelCpu : GenericCpu
                                              coreSensorId,
                                              SensorType.Temperature,
                                              this,
-                                             new[]
-                                             {
+                                             [
                                                  new ParameterDescription("TjMax [°C]", "TjMax temperature of the package sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[0]),
                                                  new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
-                                             },
+                                             ],
                                              settings);
 
             ActivateSensor(_packageTemperature);
@@ -392,19 +418,21 @@ internal sealed class IntelCpu : GenericCpu
             _distToTjMaxTemperatures = new Sensor[_coreCount];
             for (int i = 0; i < _distToTjMaxTemperatures.Length; i++)
             {
-                _distToTjMaxTemperatures[i] = new Sensor(CoreString(i) + " Distance to TjMax", coreSensorId, SensorType.Temperature, this, settings);
+                _distToTjMaxTemperatures[i] = new Sensor(_coreNames[i] + " Distance to TjMax", coreSensorId, SensorType.Temperature, this, settings);
                 ActivateSensor(_distToTjMaxTemperatures[i]);
                 coreSensorId++;
             }
         }
         else
-            _distToTjMaxTemperatures = Array.Empty<Sensor>();
+        {
+            _distToTjMaxTemperatures = [];
+        }
 
         _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            _coreClocks[i] = new Sensor(_coreNames[i], i + 1, SensorType.Clock, this, settings);
             if (HasTimeStampCounter && _microArchitecture != MicroArchitecture.Unknown)
                 ActivateSensor(_coreClocks[i]);
         }
@@ -449,7 +477,7 @@ internal sealed class IntelCpu : GenericCpu
 
             if (EnergyUnitsMultiplier != 0)
             {
-                string[] powerSensorLabels = { "CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory", "CPU Platform" };
+                string[] powerSensorLabels = ["CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory", "CPU Platform"];
 
                 for (int i = 0; i < _energyStatusMsrs.Length; i++)
                 {
@@ -482,7 +510,7 @@ internal sealed class IntelCpu : GenericCpu
         _coreVIDs = new Sensor[_coreCount];
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            _coreVIDs[i] = new Sensor(CoreString(i), i + 1, SensorType.Voltage, this, settings);
+            _coreVIDs[i] = new Sensor(_coreNames[i], i + 1, SensorType.Voltage, this, settings);
             ActivateSensor(_coreVIDs[i]);
         }
 

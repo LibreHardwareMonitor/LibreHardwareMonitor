@@ -83,6 +83,24 @@ public class CpuId
             OpCode.CpuId(CPUID_0 + i, 0, out Data[i, 0], out Data[i, 1], out Data[i, 2], out Data[i, 3]);
         }
 
+        if (Vendor == Vendor.Intel && maxCpuid >= 0x1A)
+        {
+            // Leaf 0x1A, SubLeaf 0, EAX Bits 31:24 = Core Type ID
+            uint coreType = (Data[0x1A, 0] >> 24) & 0xFF;
+
+            CoreType = coreType switch
+            {
+                // 0x40 = Core (P-Core), 0x20 = Atom (E-Core)
+                0x40 => CoreType.Performance,
+                0x20 => CoreType.Efficient,
+                _ => CoreType.Unknown
+            };
+        }
+        else
+        {
+            CoreType = CoreType.Unknown;
+        }
+
         ExtData = new uint[maxCpuidExt + 1, 4];
         for (uint i = 0; i < maxCpuidExt + 1; i++)
         {
@@ -191,6 +209,7 @@ public class CpuId
     public string BrandString { get; } = string.Empty;
 
     public uint CoreId { get; }
+    public CoreType CoreType { get; } = CoreType.Unknown;
 
     public uint[,] Data { get; } = new uint[0, 0];
 
