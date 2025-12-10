@@ -26,7 +26,7 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="10.0.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.1" />
     <PackageReference Include="System.Resources.Extensions" Version="10.0.0" />
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="OxyPlot.Core" Version="2.2.0" />
