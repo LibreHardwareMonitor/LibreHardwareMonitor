@@ -297,10 +297,6 @@ internal class Nct677X : ISuperIO
                             // SMBUS Group (Indices 8-9 are consistent)
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
-
-                            // AUXTIN5 (Index 13 is unique to NCT6799)
-                            // Register map is assumed, as no specific register was given, but this is the slot.
-                            new(SourceNct67Xxd.AUXTIN5, 0x4A3, 0x4A4, 7, 0xC00),
             
                             // PECI / PCH / DIMM Group (Indices 16-25)
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),
