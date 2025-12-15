@@ -1933,6 +1933,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.B650_EAGLE_AX: // IT8689E
                     case Model.B650_AORUS_ELITE: // IT8689E
                     case Model.B650_AORUS_ELITE_AX: // IT8689E
                     case Model.B650_AORUS_ELITE_V2: // IT8689E
@@ -1964,14 +1965,31 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
                         f.Add(new Fan("System Fan #3", 3));
-                        f.Add(new Fan("System Fan #4 / Pump", 4));
-                        f.Add(new Fan("CPU Optional Fan", 5));
+
+                        if (model == Model.B650_EAGLE_AX)
+                        {
+                            f.Add(new Fan("CPU Optional Fan", 4));
+                        }
+                        else
+                        {
+                            f.Add(new Fan("System Fan #4 / Pump", 4));
+                            f.Add(new Fan("CPU Optional Fan", 5));
+                        }
+
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("System Fan #1", 1));
                         c.Add(new Control("System Fan #2", 2));
                         c.Add(new Control("System Fan #3", 3));
-                        c.Add(new Control("System Fan #4 / Pump", 4));
-                        c.Add(new Control("CPU Optional Fan", 5));
+
+                        if (model == Model.B650_EAGLE_AX)
+                        {
+                            c.Add(new Control("CPU Optional Fan", 4));
+                        }
+                        else
+                        {
+                            c.Add(new Control("System Fan #4 / Pump", 4));
+                            c.Add(new Control("CPU Optional Fan", 5));
+                        }
 
                         break;
 
