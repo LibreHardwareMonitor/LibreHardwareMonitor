@@ -8,9 +8,9 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Windows.Wdk.Graphics.Direct3D;
-using Windows.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;
 using Windows.Win32.Foundation;
+using PInvoke = Windows.Win32.PInvoke;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -143,7 +143,7 @@ internal static class D3DDisplayDevice
     {
         return nodeMetaData.NodeData.EngineType switch
         {
-            DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => "D3D " + (nodeMetaData.NodeData.FriendlyName.Length > 0 ? nodeMetaData.NodeData.FriendlyName : "Other"),
+            DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => GetOtherName(),
             DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_3D => "D3D 3D",
             DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_DECODE => "D3D Video Decode",
             DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_ENCODE => "D3D Video Encode",
@@ -154,6 +154,19 @@ internal static class D3DDisplayDevice
             DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_CRYPTO => "D3D Crypto",
             _ => "D3D Unknown"
         };
+
+        string GetOtherName()
+        {
+            string friendlyName = (nodeMetaData.NodeData.FriendlyName.Length > 0 ? nodeMetaData.NodeData.FriendlyName : "Other").ToString();
+
+            if (friendlyName.StartsWith("JPEG_Decode_"))
+                friendlyName = friendlyName.Replace("JPEG_Decode_", "JPEG Decode ");
+
+            if (friendlyName.StartsWith("OFA_"))
+                friendlyName = friendlyName.Replace("OFA_", "Optical Flow Accelerator ");
+
+            return "D3D " + friendlyName;
+        }
     }
 
     private static unsafe void GetSegmentSize
