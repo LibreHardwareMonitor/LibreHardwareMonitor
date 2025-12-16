@@ -189,6 +189,7 @@ public enum Model
     Z890_GAMING_PLUS_WIFI,
     Z890S_PRO_WIFI_PROJECT_ZERO,
     B850S_PRO_WIFI6E,
+    Z390_GAMING_EDGE_AC,
 
     // EVGA
     X58_SLI_Classified,
