@@ -5632,6 +5632,38 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.Z390_GAMING_EDGE_AC: // NCT6797D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("+5V", 1, ri: 4, rf: 1));
+
+                        t.Add(new Temperature("System", 2));
+                        t.Add(new Temperature("MOS", 1));
+                        t.Add(new Temperature("CPU Core", 0));
+                        t.Add(new Temperature("M.2", 3));
+                        t.Add(new Temperature("PCI-E", 4));
+                        t.Add(new Temperature("CPU Socket", 5));
+
+                        c.Add(new Control("Pump Fan", 0));
+                        c.Add(new Control("CPU Fan", 1));
+                        c.Add(new Control("System Fan #1", 5));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 4));
+                        c.Add(new Control("System Fan #4", 3));
+                        c.Add(new Control("System Fan #5", 6));
+
+                        f.Add(new Fan("Pump Fan", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+                        f.Add(new Fan("System Fan #1", 5));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 4));
+                        f.Add(new Fan("System Fan #4", 3));
+                        f.Add(new Fan("System Fan #5", 6));
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
