@@ -683,7 +683,7 @@ public class HttpServer
                         else
                         {
                             // Outputs prometheus tag with labels, value, and timestamp
-                            responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeSeconds()}\n";
+                            responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeMilliseconds()}\n";
                         }
                     }
                 }
