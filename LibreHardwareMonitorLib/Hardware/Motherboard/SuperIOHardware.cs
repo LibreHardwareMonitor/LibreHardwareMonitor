@@ -5406,6 +5406,43 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.TUF_GAMING_B850M_PLUS_II: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4.02f, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 10.98f, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 34, 34));
+                        v.Add(new Voltage("VMISC", 11, 34, 34));
+                        v.Add(new Voltage("1,8V Standby", 12, 7.66f, 10));
+                        v.Add(new Voltage("Voltage #14", 13, true));
+                        v.Add(new Voltage("Voltage #15", 14, true));
+                        v.Add(new Voltage("Voltage #16", 15, true));
+
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("T-Sensor", 6));
+                        
+                        f.Add(new Fan("Chassis Fan #1", 0)); // CHA_FAN_1
+                        f.Add(new Fan("CPU Fan", 1)); // CPU_FAN
+                        f.Add(new Fan("Chassis Fan #2", 2)); // CHA_FAN_2
+                        f.Add(new Fan("Chassis Fan #3", 3)); // CHA_FAN_3
+                        f.Add(new Fan("CPU Optional Fan", 4)); // CPU_OPT
+                        f.Add(new Fan("AIO Pump", 5)); // AIO_PUMP
+
+                        c.Add(new Control("Chassis Fan #1", 0)); // CHA_FAN_1
+                        c.Add(new Control("CPU Fan", 1)); // CPU_FAN
+                        c.Add(new Control("Chassis Fan #2", 2)); // CHA_FAN_2
+                        c.Add(new Control("Chassis Fan #3", 3)); // CHA_FAN_3
+                        c.Add(new Control("CPU Optional Fan", 4)); // CPU_OPT
+                        c.Add(new Control("AIO Pump", 5)); // AIO_PUMP
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
