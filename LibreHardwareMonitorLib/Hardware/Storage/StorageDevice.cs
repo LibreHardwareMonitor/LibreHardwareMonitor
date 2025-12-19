@@ -157,6 +157,8 @@ public sealed class StorageDevice : Hardware, ISmart
             sensor.Accept(visitor);
     }
 
+    public DiskInfoToolkit.Storage GetUnderlyingStorageObject() => _storage;
+
     private void CreateAttributes()
     {
         _attributes.Clear();
