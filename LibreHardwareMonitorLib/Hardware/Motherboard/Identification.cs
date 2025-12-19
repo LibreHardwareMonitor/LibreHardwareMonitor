@@ -111,6 +111,8 @@ internal class Identification
     {
         switch (name)
         {
+            case var _ when name.Equals("TUF GAMING B850M-PLUS II", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_B850M_PLUS_II;
             case var _ when name.Equals("MPG Z390 GAMING EDGE AC (MS-7B17)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z390_GAMING_EDGE_AC;
             case var _ when name.Equals("X870 AORUS ELITE WIFI7", StringComparison.OrdinalIgnoreCase):
