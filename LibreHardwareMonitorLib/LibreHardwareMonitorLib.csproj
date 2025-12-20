@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -18,44 +20,46 @@
     <LangVersion>latest</LangVersion>
     <PackageIcon>packageicon.png</PackageIcon>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <Platforms>x64;x86;ARM64</Platforms>
-    <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(BuildOnlyRefs)'=='true'">
     <Platform>AnyCPU</Platform>
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>..\bin\Debug\$(Platform)\</OutputPath>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <OutputPath>..\bin\Release\$(Platform)\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="Resources\PawnIo\IsaBridgeEC.bin" />
-    <EmbeddedResource Include="Resources\PawnIo\LpcIO.bin" />
-    <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
-    <EmbeddedResource Include="Resources\PawnIo\LpcCrOSEC.bin" />
-    <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
-    <EmbeddedResource Include="Resources\PawnIo\RyzenSMU.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily17.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\IsaBridgeEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcCrOSEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\LpcIO.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\RyzenSMU.bin" />
     <EmbeddedResource Include="Resources\PawnIo\SmbusI801.bin" />
     <EmbeddedResource Include="Resources\PawnIo\SmbusNCT6793.bin" />
     <EmbeddedResource Include="Resources\PawnIo\SmbusPIIX4.bin" />
   </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="10.0.1" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.1" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="DiskInfoToolkit" Version="1.1.0" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
@@ -68,10 +72,12 @@
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="10.0.1" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">
       <Pack>True</Pack>
     </None>
   </ItemGroup>
+
   <Import Project="main.nuget.target" Condition="'$(PackMainNuget)' == 'true'" />
 </Project>

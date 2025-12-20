@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <Platforms>x64;x86;ARM64</Platforms>
-  </PropertyGroup>
-  <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net10.0-windows</TargetFrameworks>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
     <AssemblyName>LibreHardwareMonitor</AssemblyName>
     <AssemblyTitle>Libre Hardware Monitor</AssemblyTitle>
     <Copyright>LibreHardwareMonitor</Copyright>
@@ -17,26 +15,31 @@
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
 	  <LangVersion>latest</LangVersion>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebugType>full</DebugType>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="10.0.1" />
-    <PackageReference Include="System.Resources.Extensions" Version="10.0.1" />
-    <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="OxyPlot.Core" Version="2.2.0" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
     <PackageReference Include="System.Management" Version="10.0.1" />
+    <PackageReference Include="System.Resources.Extensions" Version="10.0.1" />
+    <PackageReference Include="System.Text.Json" Version="10.0.1" />
+    <PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
+
   <ItemGroup>
-    <Reference Include="System.Web" />
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Web" />
   </ItemGroup>
+
   <ItemGroup>
     <Compile Update="UI\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
@@ -54,6 +57,7 @@
       <DependentUpon>InterfacePortForm.cs</DependentUpon>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Update="UI\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
@@ -71,10 +75,12 @@
       <DependentUpon>InterfacePortForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Aga.Controls\Aga.Controls.csproj" />
     <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\**" />
     <None Include="Resources\app.manifest" />
