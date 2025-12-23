@@ -19,6 +19,10 @@ public abstract class EmbeddedController : Hardware
     // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
     private static readonly BoardInfo[] _boards =
     {
+        new (Model.TUF_GAMING_X870_PLUS_WIFI,
+            BoardFamily.Amd800,
+            ECSensor.TempVrm,
+            ECSensor.FanCPUOpt),
         new(Model.PRIME_X470_PRO,
             BoardFamily.Amd400,
             ECSensor.TempChipset,
