@@ -432,6 +432,7 @@ internal class LpcIO
                             case Model.X870P_PRO_WIFI:
                             case Model.X870EP_PRO_WIFI:
                             case Model.X870E_TOMAHAWK_WIFI:
+                            case Model.X870E_TOMAHAWK_MAX_WIFI_PZ:
                             case Model.X870E_CARBON_WIFI:
                             case Model.X870E_EDGE_TI_WIFI:
                             case Model.X870E_GODLIKE:
