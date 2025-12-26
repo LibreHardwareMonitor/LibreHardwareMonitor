@@ -136,6 +136,7 @@ public class GenericCpu : Hardware
         {
             Vendor.AMD => "amdcpu",
             Vendor.Intel => "intelcpu",
+            Vendor.Qualcomm or Vendor.Apple or Vendor.ARM or Vendor.Nvidia => "armcpu",
             _ => "genericcpu"
         };
 
@@ -204,6 +205,12 @@ public class GenericCpu : Hardware
                 break;
             case Vendor.Intel:
                 r.AppendLine("Intel CPU");
+                break;
+            case Vendor.Qualcomm:
+            case Vendor.Apple:
+            case Vendor.ARM:
+            case Vendor.Nvidia:
+                r.AppendLine("ARM CPU");
                 break;
             default:
                 r.AppendLine("Generic CPU");
