@@ -156,6 +156,7 @@ public enum Model
     Z68_MS7672,
     X570_Gaming_Plus,
     X570_MS7C35,
+    B850M_MORTAR,
     B850M_MORTAR_WIFI,
     B850_GAMING_PLUS_WIFI,
     B850_GAMING_PLUS_WIFI6E,
