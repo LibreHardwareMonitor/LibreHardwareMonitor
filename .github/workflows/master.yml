@@ -39,12 +39,19 @@ jobs:
       - name: Build application
         run: dotnet build LibreHardwareMonitor\LibreHardwareMonitor.csproj -c Release --no-restore -p:Platform=x64
 
-      - name: Publish application
+      - name: Publish net472 application
         uses: actions/upload-artifact@v4
         with:
           name: LibreHardwareMonitor
           path: |
             bin/Release/net472
+
+      - name: Publish net10.0 application
+        uses: actions/upload-artifact@v4
+        with:
+          name: LibreHardwareMonitor (.NET 10)
+          path: |
+            bin/Release/net10.0-windows
 
       - name: Restore library packages
         run: dotnet restore LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj 

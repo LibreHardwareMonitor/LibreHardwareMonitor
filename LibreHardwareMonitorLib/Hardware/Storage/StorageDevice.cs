@@ -57,7 +57,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override HardwareType HardwareType => HardwareType.Storage;
 
-    internal DiskInfoToolkit.Storage Storage => _storage;
+    public DiskInfoToolkit.Storage Storage => _storage;
 
     public IReadOnlyList<SmartAttribute> Attributes => _attributes;
 

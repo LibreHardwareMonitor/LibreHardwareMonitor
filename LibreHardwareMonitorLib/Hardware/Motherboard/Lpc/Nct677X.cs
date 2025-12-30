@@ -291,14 +291,12 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                             new(SourceNct67Xxd.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                             new(SourceNct67Xxd.AUXTIN4, 0x027, 0, -1, 0x621), // Index 7
+
+                            new(SourceNct67Xxd.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
             
                             // SMBUS Group (Indices 8-9 are consistent)
                             new(SourceNct67Xxd.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
                             new(SourceNct67Xxd.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
-
-                            // AUXTIN5 (Index 13 is unique to NCT6799)
-                            // Register map is assumed, as no specific register was given, but this is the slot.
-                            new(SourceNct67Xxd.AUXTIN5, 0x4A3, 0x4A4, 7, 0xC00),
             
                             // PECI / PCH / DIMM Group (Indices 16-25)
                             new(SourceNct67Xxd.PECI_1, 0x672, 0, -1, 0xC27),

@@ -17,10 +17,8 @@ using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Storage;
-using LibreHardwareMonitor.PawnIo;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
-using LibreHardwareMonitor.Wmi;
 
 namespace LibreHardwareMonitor.UI;
 
@@ -56,7 +54,6 @@ public sealed partial class MainForm : Form
     private readonly SystemTray _systemTray;
     private readonly UnitManager _unitManager;
     private readonly UpdateVisitor _updateVisitor = new();
-    private readonly WmiProvider _wmiProvider;
 
     private int _delayCount;
     private Form _plotForm;
@@ -153,7 +150,6 @@ public sealed partial class MainForm : Form
             treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
             _gadget = new SensorGadget(_computer, _settings, _unitManager);
             _gadget.HideShowCommand += HideShowClick;
-            _wmiProvider = new WmiProvider(_computer);
         }
 
         treeView.ShowNodeToolTips = true;
@@ -933,7 +929,6 @@ public sealed partial class MainForm : Form
         treeView.Invalidate();
         _systemTray.Redraw();
         _gadget?.Redraw();
-        _wmiProvider?.Update();
 
         if (!backgroundUpdater.IsBusy)
             backgroundUpdater.RunWorkerAsync();
