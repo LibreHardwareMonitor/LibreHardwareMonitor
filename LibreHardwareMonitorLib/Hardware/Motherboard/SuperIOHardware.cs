@@ -704,6 +704,7 @@ internal sealed class SuperIOHardware : Hardware
                     case Model.Z890_CARBON_WIFI:
                     case Model.Z890_TOMAHAWK_WIFI:
                     case Model.Z890_ACE:
+                    case Model.Z890_UNIFY_X:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
                         v.Add(new Voltage("Vcore", 2));
