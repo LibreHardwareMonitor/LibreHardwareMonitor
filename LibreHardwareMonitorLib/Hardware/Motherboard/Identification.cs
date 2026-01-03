@@ -409,6 +409,8 @@ internal class Identification
                 return Model.AX370_Gaming_5;
             case var _ when name.Equals("TUF X470-PLUS GAMING", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_X470_PLUS_GAMING;
+            case var _ when name.Equals("TUF GAMING X870-PLUS WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_X870_PLUS_WIFI;
             case var _ when name.Equals("B360M PRO-VDH (MS-7B24)", StringComparison.OrdinalIgnoreCase):
                 return Model.B360M_PRO_VDH;
             case var _ when name.Equals("A320M-S2H-CF", StringComparison.OrdinalIgnoreCase):
