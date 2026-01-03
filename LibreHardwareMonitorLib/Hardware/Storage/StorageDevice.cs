@@ -44,6 +44,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private Sensor _sensorDiskWriteActivity;
     private Sensor _sensorDiskWriteRate;
     private Sensor _usageSensor;
+    private Sensor _freeSpaceSensor;
 
     public StorageDevice(DiskInfoToolkit.Storage storage, string id, ISettings settings)
         : base(storage.Model, new Identifier(id, storage.DriveNumber.ToString(CultureInfo.InvariantCulture)), settings)
@@ -72,8 +73,8 @@ public sealed class StorageDevice : Hardware, ISmart
 
         _lastUpdate = DateTime.UtcNow;
 
-        //Toggle usage sensor
-        ToggleUsageSensor();
+        //Toggle space sensors
+        ToggleSpaceSensors();
 
         //Update performance sensors
         UpdatePerformanceSensors();
@@ -81,8 +82,8 @@ public sealed class StorageDevice : Hardware, ISmart
         //Update storage object
         _storage.Update();
 
-        //Update usage sensors
-        UpdateUsageSensor();
+        //Update space sensors
+        UpdateSpaceSensors();
 
         //Update attributes
         foreach (var attribute in _storage.Smart.SmartAttributes)
@@ -168,45 +169,50 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void CreateSensors()
     {
-        _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
-        ToggleUsageSensor();
+        AddSensor("Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
 
-        int index = 0;
+        if (_storage.IsNVMe)
+        {
+            //TemperatureSensor1 equals the main temperature sensor; no need to add it again
+            TryAddTemperatureSensor(1, false, 2, SmartAttributeType.TemperatureSensor2);
+            TryAddTemperatureSensor(2, false, 3, SmartAttributeType.TemperatureSensor3);
+            TryAddTemperatureSensor(3, false, 4, SmartAttributeType.TemperatureSensor4);
+            TryAddTemperatureSensor(4, false, 5, SmartAttributeType.TemperatureSensor5);
+            TryAddTemperatureSensor(5, false, 6, SmartAttributeType.TemperatureSensor6);
+            TryAddTemperatureSensor(6, false, 7, SmartAttributeType.TemperatureSensor7);
+            TryAddTemperatureSensor(7, false, 8, SmartAttributeType.TemperatureSensor8);
 
-        AddSensor("Temperature", index++, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
+            AddSensor("Temperature warning", 10, false, SensorType.Temperature, s => s.Smart.TemperatureWarning.GetValueOrDefault());
+            AddSensor("Temperature critical", 11, false, SensorType.Temperature, s => s.Smart.TemperatureCritical.GetValueOrDefault());
+        }
 
         if (_storage.Smart.Life.HasValue)
         {
-            AddSensor("Life", index++, false, SensorType.Level, s => s.Smart.Life.GetValueOrDefault());
+            AddSensor("Life", 20, false, SensorType.Level, s => s.Smart.Life.GetValueOrDefault());
         }
 
         if (_storage.Smart.HostReads.HasValue)
         {
-            AddSensor("Data read", index++, false, SensorType.Data, s => s.Smart.HostReads.GetValueOrDefault());
+            AddSensor("Data read", 21, false, SensorType.Data, s => s.Smart.HostReads.GetValueOrDefault());
         }
 
         if (_storage.Smart.HostWrites.HasValue)
         {
-            AddSensor("Data written", index++, false, SensorType.Data, s => s.Smart.HostWrites.GetValueOrDefault());
+            AddSensor("Data written", 22, false, SensorType.Data, s => s.Smart.HostWrites.GetValueOrDefault());
         }
 
-        AddSensor("Power on count", index++, false, SensorType.Factor, s => s.Smart.PowerOnCount);
-        AddSensor("Power on hours", index++, false, SensorType.Factor, s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
+        AddSensor("Power on count", 23, false, SensorType.Factor, s => s.Smart.PowerOnCount);
+        AddSensor("Power on hours", 24, false, SensorType.Factor, s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
 
-        if (_storage.IsNVMe)
+        _usageSensor = new Sensor("Used Space", 30, SensorType.Load, this, _settings);
+        _freeSpaceSensor = new Sensor("Free Space", 31, SensorType.Data, this, _settings);
+        ToggleSpaceSensors();
+
+        var totalSpaceSensor = new Sensor("Total Space", 32, SensorType.Data, this, _settings)
         {
-            AddSensor("Temperature warning", index++, false, SensorType.Factor, s => s.Smart.TemperatureWarning.GetValueOrDefault());
-            AddSensor("Temperature critical", index++, false, SensorType.Factor, s => s.Smart.TemperatureCritical.GetValueOrDefault());
-
-            TryAddTemperatureSensor(index++, false, 1, SmartAttributeType.TemperatureSensor1);
-            TryAddTemperatureSensor(index++, false, 2, SmartAttributeType.TemperatureSensor2);
-            TryAddTemperatureSensor(index++, false, 3, SmartAttributeType.TemperatureSensor3);
-            TryAddTemperatureSensor(index++, false, 4, SmartAttributeType.TemperatureSensor4);
-            TryAddTemperatureSensor(index++, false, 5, SmartAttributeType.TemperatureSensor5);
-            TryAddTemperatureSensor(index++, false, 6, SmartAttributeType.TemperatureSensor6);
-            TryAddTemperatureSensor(index++, false, 7, SmartAttributeType.TemperatureSensor7);
-            TryAddTemperatureSensor(index++, false, 8, SmartAttributeType.TemperatureSensor8);
-        }
+            Value = (float)DataStorageSizeConverter.ByteToGigabyte(_storage.TotalSize)
+        };
+        ActivateSensor(totalSpaceSensor);
 
         _sensorDiskReadActivity = new Sensor("Read Activity", 51, SensorType.Load, this, _settings);
         ActivateSensor(_sensorDiskReadActivity);
@@ -312,29 +318,33 @@ public sealed class StorageDevice : Hardware, ISmart
         _lastTime = currentTime;
     }
 
-    private void ToggleUsageSensor()
+    private void ToggleSpaceSensors()
     {
         if (!_storage.IsDynamicDisk
          && !_storage.Partitions.Any(p => p.IsOtherOperatingSystemPartition))
         {
             ActivateSensor(_usageSensor);
+            ActivateSensor(_freeSpaceSensor);
         }
         else
         {
             DeactivateSensor(_usageSensor);
+            DeactivateSensor(_freeSpaceSensor);
         }
     }
 
-    private void UpdateUsageSensor()
+    private void UpdateSpaceSensors()
     {
         if (_storage.TotalSize > 0)
         {
             //Set sensor value
             _usageSensor.Value = 100.0f - (100.0f * _storage.TotalFreeSize / _storage.TotalSize);
+            _freeSpaceSensor.Value = (float)DataStorageSizeConverter.ByteToGigabyte(_storage.TotalFreeSize.GetValueOrDefault());
         }
         else
         {
             _usageSensor.Value = null;
+            _freeSpaceSensor.Value = null;
         }
     }
 
