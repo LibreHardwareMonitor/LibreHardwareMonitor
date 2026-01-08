@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading;
 using HidSharp;
 
-namespace LibreHardwareMonitor.Hardware.Controller.Artic
+namespace LibreHardwareMonitor.Hardware.Controller.Arctic
 {
-    internal class ArticFanController : Hardware
+    internal class ArcticFanController : Hardware
     {
         private const int CHANNEL_COUNT = 10;
         private const int PACKET_SIZE = 32;
@@ -20,10 +20,12 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
         private Thread _thread;
         private float[] _requestedFanSpeedsPercent = new float[CHANNEL_COUNT];
         private float[] _currentFanRpms = new float[CHANNEL_COUNT];
+        private float[] _currentDevicePwmValues = new float[CHANNEL_COUNT]; // Current PWM values from device
         private bool _sendPwmRequested;
+        private bool _pwmValuesInitialized = false; // Track if we've read initial PWM values from device
         private readonly System.Collections.Generic.List<Sensor> _rpmSensors = new();
 
-        public ArticFanController(HidDevice dev, ISettings settings) : base("Artic Fan Controller", new Identifier(dev), settings)
+        public ArcticFanController(HidDevice dev, ISettings settings) : base("Arctic Fan Controller", new Identifier(dev), settings)
         {
             if (dev.TryOpen(out HidStream hidStream))
             {
@@ -47,6 +49,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
                     control.SoftwareControlValueChanged += Control_SoftwareControlValueChanged;
 
                     controlSensor.Control = control;
+                    ActivateSensor(controlSensor); // Activate the control sensor so it appears in the UI
                 }
 
                 _hidStream = hidStream;
@@ -55,6 +58,8 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
 
                 // create thread
                 _thread = new Thread(ThreadHidLoop);
+                _thread.IsBackground = true; // Allow app to close even if thread is running
+                _thread.Start(); // Start the thread to read RPM data
             }
         }
 
@@ -105,6 +110,26 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
             foreach (Sensor sensor in _rpmSensors)
             {
                 sensor.Value = GetRPM(sensor.Index);
+            }
+
+            // Update control sensor values to reflect current device PWM values
+            // This ensures the UI shows the actual current values from the device quickly
+            foreach (Sensor sensor in Sensors)
+            {
+                if (sensor.SensorType == SensorType.Control && sensor.Index >= 1 && sensor.Index <= CHANNEL_COUNT)
+                {
+                    int idx = sensor.Index - 1;
+                    if (idx >= 0 && idx < CHANNEL_COUNT)
+                    {
+                        // Only update if sensor doesn't have a manual value set (to avoid overwriting user input)
+                        if (sensor.Control?.ControlMode != ControlMode.Software)
+                        {
+                            // Use current device PWM values for immediate display, fallback to requested if not initialized yet
+                            float displayValue = _pwmValuesInitialized ? _currentDevicePwmValues[idx] : _requestedFanSpeedsPercent[idx];
+                            sensor.Value = displayValue;
+                        }
+                    }
+                }
             }
         }
 
@@ -198,8 +223,31 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
 
                     if (response != null && response.Length >= PACKET_SIZE && response[0] == 0x01)
                     {
-                        // Parse RPM values from bytes 11-30 (10 RPM values as uint16 little-endian)
+                        // Parse current PWM values from bytes 1-10 (sent by device)
                         // Format: [Report ID=0x01, PWM[1-10] (bytes 1-10), RPM[1-10] (bytes 11-30, 2 bytes each), padding]
+                        for (int i = 0; i < CHANNEL_COUNT; i++)
+                        {
+                            if (1 + i < response.Length)
+                            {
+                                _currentDevicePwmValues[i] = response[1 + i];
+                            }
+                        }
+
+                        // Initialize requested PWM values with current device values on first read
+                        // This prevents other fans from resetting to 0% when one fan is set to manual
+                        if (!_pwmValuesInitialized)
+                        {
+                            lock (_controlLock)
+                            {
+                                for (int i = 0; i < CHANNEL_COUNT; i++)
+                                {
+                                    _requestedFanSpeedsPercent[i] = _currentDevicePwmValues[i];
+                                }
+                                _pwmValuesInitialized = true;
+                            }
+                        }
+
+                        // Parse RPM values from bytes 11-30 (10 RPM values as uint16 little-endian)
                         for (int i = 0; i < CHANNEL_COUNT; i++)
                         {
                             int rpmIndex = 11 + i * 2;
