@@ -71,7 +71,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
                 {
                     if (_hidStream == null) return;
 
-                    UpdateRPM();
+                    UpdateRpmAndPwmValues();
                     SendPWMUpdateIfRequired();
                 }
 
@@ -168,7 +168,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
             base.Close();
         }
 
-        private void UpdateRPM()
+        private void UpdateRpmAndPwmValues()
         {
             if (_hidStream is null)
             {
@@ -221,48 +221,55 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
                         if (attempts < maxAttempts) Thread.Sleep(50);
                     }
 
-                    if (response != null && response.Length >= PACKET_SIZE && response[0] == 0x01)
-                    {
-                        // Parse current PWM values from bytes 1-10 (sent by device)
-                        // Format: [Report ID=0x01, PWM[1-10] (bytes 1-10), RPM[1-10] (bytes 11-30, 2 bytes each), padding]
-                        for (int i = 0; i < CHANNEL_COUNT; i++)
-                        {
-                            if (1 + i < response.Length)
-                            {
-                                _currentDevicePwmValues[i] = response[1 + i];
-                            }
-                        }
-
-                        // Initialize requested PWM values with current device values on first read
-                        // This prevents other fans from resetting to 0% when one fan is set to manual
-                        if (!_pwmValuesInitialized)
-                        {
-                            lock (_controlLock)
-                            {
-                                for (int i = 0; i < CHANNEL_COUNT; i++)
-                                {
-                                    _requestedFanSpeedsPercent[i] = _currentDevicePwmValues[i];
-                                }
-                                _pwmValuesInitialized = true;
-                            }
-                        }
-
-                        // Parse RPM values from bytes 11-30 (10 RPM values as uint16 little-endian)
-                        for (int i = 0; i < CHANNEL_COUNT; i++)
-                        {
-                            int rpmIndex = 11 + i * 2;
-                            if (rpmIndex + 1 < response.Length)
-                            {
-                                int rpmLow = response[rpmIndex];
-                                int rpmHigh = response[rpmIndex + 1];
-                                _currentFanRpms[i] = rpmLow | (rpmHigh << 8);
-                            }
-                        }
-                    }
+                    ProcessResponse(response);
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"RPM update failed: {ex.Message}");
+                }
+            }
+        }
+
+        private void ProcessResponse(byte[] response)
+        {
+            if ( response == null || response.Length < PACKET_SIZE || response[0] != 0x01)
+            {
+                return;
+            }
+
+            // Parse current PWM values from bytes 1-10 (sent by device)
+            // Format: [Report ID=0x01, PWM[1-10] (bytes 1-10), RPM[1-10] (bytes 11-30, 2 bytes each), padding]
+            for (int i = 0; i < CHANNEL_COUNT; i++)
+            {
+                if (1 + i < response.Length)
+                {
+                    _currentDevicePwmValues[i] = response[1 + i];
+                }
+            }
+
+            // Initialize requested PWM values with current device values on first read
+            // This prevents other fans from resetting to 0% when one fan is set to manual
+            if (!_pwmValuesInitialized)
+            {
+                lock (_controlLock)
+                {
+                    for (int i = 0; i < CHANNEL_COUNT; i++)
+                    {
+                        _requestedFanSpeedsPercent[i] = _currentDevicePwmValues[i];
+                    }
+                    _pwmValuesInitialized = true;
+                }
+            }
+
+            // Parse RPM values from bytes 11-30 (10 RPM values as uint16 little-endian)
+            for (int i = 0; i < CHANNEL_COUNT; i++)
+            {
+                int rpmIndex = 11 + i * 2;
+                if (rpmIndex + 1 < response.Length)
+                {
+                    int rpmLow = response[rpmIndex];
+                    int rpmHigh = response[rpmIndex + 1];
+                    _currentFanRpms[i] = rpmLow | (rpmHigh << 8);
                 }
             }
         }
