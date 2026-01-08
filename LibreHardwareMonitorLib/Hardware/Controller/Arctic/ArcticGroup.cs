@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using HidSharp;
 
-namespace LibreHardwareMonitor.Hardware.Controller.Artic
+namespace LibreHardwareMonitor.Hardware.Controller.Arctic
 {
-    internal class ArticGroup : IGroup
+    internal class ArcticGroup : IGroup
     {
         private readonly List<IHardware> _hardware = new();
         private readonly StringBuilder _report = new();
@@ -14,9 +14,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
         private const int VendorId = 0x3904;
         private const int ProductId = 0xF001;
 
-        public ArticGroup(ISettings settings)
+        public ArcticGroup(ISettings settings)
         {
-            _report.AppendLine("Artic Hardware");
+            _report.AppendLine("Arctic Hardware");
             _report.AppendLine();
             try
             {
@@ -25,7 +25,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Artic
 
                 if (hidDevice != null)
                 {
-                    _hardware.Add(new ArticFanController(hidDevice, settings));
+                    _hardware.Add(new ArcticFanController(hidDevice, settings));
                     _report.AppendLine("Arctic Fan Controller initialized successfully");
                 }
             }

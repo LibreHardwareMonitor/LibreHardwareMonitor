@@ -12,7 +12,7 @@ using System.Linq;
 using LibreHardwareMonitor.Hardware.Battery;
 using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
-using LibreHardwareMonitor.Hardware.Controller.Artic;
+using LibreHardwareMonitor.Hardware.Controller.Arctic;
 using LibreHardwareMonitor.Hardware.Controller.Heatmaster;
 using LibreHardwareMonitor.Hardware.Controller.Nzxt;
 using LibreHardwareMonitor.Hardware.Controller.Razer;
@@ -127,7 +127,7 @@ public class Computer : IComputer
                     Add(new AeroCoolGroup(_settings));
                     Add(new NzxtGroup(_settings));
                     Add(new RazerGroup(_settings));
-                    Add(new ArticGroup(_settings));
+                    Add(new ArcticGroup(_settings));
                 }
                 else
                 {
@@ -137,7 +137,7 @@ public class Computer : IComputer
                     RemoveType<AeroCoolGroup>();
                     RemoveType<NzxtGroup>();
                     RemoveType<RazerGroup>();
-                    RemoveType<ArticGroup>();
+                    RemoveType<ArcticGroup>();
                 }
             }
 
@@ -525,7 +525,7 @@ public class Computer : IComputer
             Add(new AeroCoolGroup(_settings));
             Add(new NzxtGroup(_settings));
             Add(new RazerGroup(_settings));
-            Add(new ArticGroup(_settings));
+            Add(new ArcticGroup(_settings));
         }
 
         if (_storageEnabled)
