@@ -391,6 +391,8 @@ internal class Identification
                 return Model.ROG_ZENITH_II_EXTREME;
             case var _ when name.Equals("Z170-A", StringComparison.OrdinalIgnoreCase):
                 return Model.Z170_A;
+            case var _ when name.Equals("Z170 PRO GAMING", StringComparison.OrdinalIgnoreCase):
+                return Model.Z170_PRO_GAMING;
             case var _ when name.Equals("B150M-C", StringComparison.OrdinalIgnoreCase):
                 return Model.B150M_C;
             case var _ when name.Equals("B150M-C D3", StringComparison.OrdinalIgnoreCase):
