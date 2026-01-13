@@ -1,4 +1,10 @@
-﻿using System;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
+
+using System;
 using System.Linq;
 using System.Threading;
 using HidSharp;
@@ -15,25 +21,23 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
         private const int TIMEOUT_MS = 1000;
 
         private HidStream _hidStream;
-        private object _hidLock = new();
-        private object _controlLock = new();
-        private Thread _thread;
-        private float[] _requestedFanSpeedsPercent = new float[CHANNEL_COUNT];
-        private float[] _currentFanRpms = new float[CHANNEL_COUNT];
-        private float[] _currentDevicePwmValues = new float[CHANNEL_COUNT]; // Current PWM values from device
+        private readonly object _hidLock = new();
+        private readonly object _controlLock = new();
+        private readonly Thread _thread;
+        private readonly float[] _requestedFanSpeedsPercent = new float[CHANNEL_COUNT];
+        private readonly float[] _currentFanRpms = new float[CHANNEL_COUNT];
+        private readonly float[] _currentDevicePwmValues = new float[CHANNEL_COUNT]; // Current PWM values from device
         private bool _sendPwmRequested;
         private bool _pwmValuesInitialized = false; // Track if we've read initial PWM values from device
         private readonly System.Collections.Generic.List<Sensor> _rpmSensors = new();
+        private readonly System.Collections.Generic.List<Sensor> _controlSensors = new();
 
         public ArcticFanController(HidDevice dev, ISettings settings) : base("Arctic Fan Controller", new Identifier(dev), settings)
         {
             if (dev.TryOpen(out HidStream hidStream))
             {
-                const int numberOfChannels = CHANNEL_COUNT;
-
-
                 // Create fan sensors (RPM monitoring) - all 10 fans have RPM feedback
-                for (int i = 1; i <= numberOfChannels; i++)
+                for (int i = 1; i <= CHANNEL_COUNT; i++)
                 {
                     var fanSensor = new Sensor($"Arctic Controller Fan {i}", i, SensorType.Fan, this, settings);
                     ActivateSensor(fanSensor);
@@ -41,7 +45,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
                 }
 
                 // Create control sensors - all 10 fans can be controlled
-                for (int i = 1; i <= numberOfChannels; i++)
+                for (int i = 1; i <= CHANNEL_COUNT; i++)
                 {
                     var controlSensor = new Sensor($"Arctic Controller Fan Control {i}", i, SensorType.Control, this, settings);
                     Control control = new(controlSensor, settings, CONTROL_VALUE_MIN, CONTROL_VALUE_MAX);
@@ -50,6 +54,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
 
                     controlSensor.Control = control;
                     ActivateSensor(controlSensor); // Activate the control sensor so it appears in the UI
+                    _controlSensors.Add(controlSensor);
                 }
 
                 _hidStream = hidStream;
@@ -107,28 +112,27 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
 
         public override void Update()
         {
-            foreach (Sensor sensor in _rpmSensors)
+            lock (_hidLock)
             {
-                sensor.Value = GetRPM(sensor.Index);
-            }
+                foreach (Sensor sensor in _rpmSensors)
+                {
+                    sensor.Value = GetRPM(sensor.Index);
+                }
 
-            // Update control sensor values to reflect current device PWM values
-            // This ensures the UI shows the actual current values from the device quickly
-            foreach (Sensor sensor in Sensors)
-            {
-                if (sensor.SensorType == SensorType.Control && sensor.Index >= 1 && sensor.Index <= CHANNEL_COUNT)
+                // Update control sensor values to reflect current device PWM values
+                // This ensures the UI shows the actual current values from the device quickly
+                foreach (Sensor sensor in _controlSensors)
                 {
                     int idx = sensor.Index - 1;
-                    if (idx >= 0 && idx < CHANNEL_COUNT)
-                    {
+                    if (idx >= 0 && idx < CHANNEL_COUNT &&
                         // Only update if sensor doesn't have a manual value set (to avoid overwriting user input)
-                        if (sensor.Control?.ControlMode != ControlMode.Software)
-                        {
-                            // Use current device PWM values for immediate display, fallback to requested if not initialized yet
-                            float displayValue = _pwmValuesInitialized ? _currentDevicePwmValues[idx] : _requestedFanSpeedsPercent[idx];
-                            sensor.Value = displayValue;
-                        }
+                        sensor.Control?.ControlMode != ControlMode.Software)
+                    {
+                        // Use current device PWM values for immediate display, fallback to requested if not initialized yet
+                        float displayValue = _pwmValuesInitialized ? _currentDevicePwmValues[idx] : _requestedFanSpeedsPercent[idx];
+                        sensor.Value = displayValue;
                     }
+
                 }
             }
         }
@@ -139,13 +143,17 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
             {
                 try
                 {
-                    // Set all fans to 30% before closing (like JS does)
-                    for (int i = 0; i < CHANNEL_COUNT; i++)
+                    lock (_controlLock)
                     {
-                        _requestedFanSpeedsPercent[i] = CONTROL_RESET_VALUE;
+                        // Set all fans to 30% before closing (like JS does)
+                        for (int i = 0; i < CHANNEL_COUNT; i++)
+                        {
+                            _requestedFanSpeedsPercent[i] = CONTROL_RESET_VALUE;
+                        }
+
+                        _sendPwmRequested = true;
                     }
 
-                    _sendPwmRequested = true;
                     SendPWMUpdateIfRequired();
 
                 }
@@ -165,6 +173,9 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
                 }
             }
 
+            // wait for thread to finish
+            _thread?.Join(1000);
+
             base.Close();
         }
 
@@ -175,64 +186,61 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
                 return;
             }
 
-            lock (_hidLock)
+            if (_hidStream is null)
             {
-                if (_hidStream is null)
-                {
-                    return;
-                }
+                return;
+            }
 
-                try
-                {
-                    // Try to read available data (device sends periodically)
-                    byte[] response = null;
-                    int attempts = 0;
-                    const int maxAttempts = 3;
+            try
+            {
+                // Try to read available data (device sends periodically)
+                byte[] response = null;
+                int attempts = 0;
+                const int maxAttempts = 3;
 
-                    while (attempts < maxAttempts)
+                while (attempts < maxAttempts)
+                {
+                    try
                     {
-                        try
+                        // Set short timeout to check if data is available
+                        var originalTimeout = _hidStream.ReadTimeout;
+                        _hidStream.ReadTimeout = 200;
+
+                        response = new byte[PACKET_SIZE];
+                        int bytesRead = _hidStream.Read(response, 0, PACKET_SIZE);
+
+                        _hidStream.ReadTimeout = originalTimeout;
+
+                        if (bytesRead >= PACKET_SIZE && response[0] == 0x01)
                         {
-                            // Set short timeout to check if data is available
-                            var originalTimeout = _hidStream.ReadTimeout;
-                            _hidStream.ReadTimeout = 200;
-
-                            response = new byte[PACKET_SIZE];
-                            int bytesRead = _hidStream.Read(response, 0, PACKET_SIZE);
-
-                            _hidStream.ReadTimeout = originalTimeout;
-
-                            if (bytesRead >= PACKET_SIZE && response[0] == 0x01)
-                            {
-                                // Valid response with Report ID 0x01
-                                break;
-                            }
+                            // Valid response with Report ID 0x01
+                            break;
                         }
-                        catch (TimeoutException)
-                        {
-                            // No data available yet, continue trying
-                        }
-                        catch
-                        {
-                            // Retry on other errors
-                        }
-
-                        attempts++;
-                        if (attempts < maxAttempts) Thread.Sleep(50);
+                    }
+                    catch (TimeoutException)
+                    {
+                        // No data available yet, continue trying
+                    }
+                    catch
+                    {
+                        // Retry on other errors
                     }
 
-                    ProcessResponse(response);
+                    attempts++;
+                    if (attempts < maxAttempts) Thread.Sleep(50);
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"RPM update failed: {ex.Message}");
-                }
+
+                ProcessResponse(response);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"RPM update failed: {ex.Message}");
             }
         }
 
         private void ProcessResponse(byte[] response)
         {
-            if ( response == null || response.Length < PACKET_SIZE || response[0] != 0x01)
+            if (response == null || response.Length < PACKET_SIZE || response[0] != 0x01)
             {
                 return;
             }
@@ -288,32 +296,24 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
                 values = _requestedFanSpeedsPercent.ToArray();
             }
 
-            lock (_hidLock)
+            try
             {
-                if (_hidStream == null)
-                {
-                    return;
-                }
+                // New format: [Report ID=0x01, PWM[0-9] (10 bytes), padding (21 bytes)]
+                byte[] pwmPacket = new byte[PACKET_SIZE];
+                pwmPacket[0] = 0x01; // Report ID
 
-                try
+                // Set all fan speeds (bytes 1-10)
+                for (int i = 0; i < CHANNEL_COUNT; i++)
                 {
-                    // New format: [Report ID=0x01, PWM[0-9] (10 bytes), padding (21 bytes)]
-                    byte[] pwmPacket = new byte[PACKET_SIZE];
-                    pwmPacket[0] = 0x01; // Report ID
-
-                    // Set all fan speeds (bytes 1-10)
-                    for (int i = 0; i < CHANNEL_COUNT; i++)
-                    {
-                        pwmPacket[1 + i] = (byte)Math.Round(values[i]);
-                    }
-                    // Rest are zeros (already initialized)
-
-                    _hidStream.Write(pwmPacket);
+                    pwmPacket[1 + i] = (byte)Math.Round(values[i]);
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"PWM update failed: {ex.Message}");
-                }
+                // Rest are zeros (already initialized)
+
+                _hidStream.Write(pwmPacket);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"PWM update failed: {ex.Message}");
             }
         }
 
