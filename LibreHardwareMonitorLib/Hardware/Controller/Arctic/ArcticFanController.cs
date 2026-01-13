@@ -108,7 +108,7 @@ namespace LibreHardwareMonitor.Hardware.Controller.Arctic
             Control_SoftwareControlValueChanged(control);
         }
 
-        public override HardwareType HardwareType { get; } = HardwareType.EmbeddedController;
+        public override HardwareType HardwareType { get; } = HardwareType.Cooler;
 
         public override void Update()
         {
