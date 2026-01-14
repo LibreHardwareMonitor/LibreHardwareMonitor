@@ -31,7 +31,7 @@
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
     <PackageReference Include="System.Management" Version="10.0.1" />
     <PackageReference Include="System.Resources.Extensions" Version="10.0.1" />
-    <PackageReference Include="System.Text.Json" Version="10.0.1" />
+    <PackageReference Include="System.Text.Json" Version="10.0.2" />
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
 
