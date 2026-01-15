@@ -663,16 +663,18 @@ public class HttpServer
                     // Creates the tag with labels
                     string tagLine = $$"""{{tagName}} {"sensorName"="{{valueSensorName}}", "sensorAlias"="{{valueSensorAlias}}", "hardwareName"="{{valueHardwareName}}", "hardwareAlias"="{{valueHardwareAlias}}", "sensorId"="{{valueSensorId}}", "hardwareId"="{{valueHardwareId}}", "host"="{{valueHost}}"}""";
 
-                        if (lastTagName != tagName)
-                        {
-                            responseStr += $"# TYPE {tagName} gauge\n";
-                            lastTagName = tagName;
-                        }
+                    if (lastTagName != tagName)
+                    {
+                        responseStr += $"# TYPE {tagName} gauge\n";
+                        lastTagName = tagName;
+                    }
 
                     int counter = 0;
                     foreach (SensorValue val in sensor.Sensor.Values.Reverse())
                     {
-                        if (counter++ > prometheusSettings["archivelength"]) break;
+                        if (counter++ > prometheusSettings["archivelength"])
+                            break;
+
                         if (float.IsNaN(val.Value))
                         {
                             // Print a help line saying what tag had an invalid value
@@ -680,7 +682,9 @@ public class HttpServer
                         }
                         else
                         {
-                            if (counter == 1 && prometheusSettings["lastvalue"] == 0) continue; // skip the first value in the list
+                            if (counter == 1 && prometheusSettings["lastvalue"] == 0)
+                                continue; // skip the first value in the list
+
                             if (prometheusSettings["timestamps"] == 1)
                             {
                                 responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeMilliseconds()}\n";
@@ -704,6 +708,7 @@ public class HttpServer
         prometheusSettings["archivelength"] = 0;
         prometheusSettings["timestamps"] = 0;
         prometheusSettings["lastvalue"] = 1;
+
         if (request != null && request.QueryString != null && request.QueryString.Count > 0)
         {
             int archive = 0, timestamps = 0, lastvalue = 1;
@@ -713,37 +718,62 @@ public class HttpServer
                 {
                     case "timestamps":
                         int.TryParse(request.QueryString[key], out timestamps);     
-                        if (timestamps < 0 || timestamps > 1) { timestamps = 0; }               // Enforce boolean range 0 to 1
-                        if (archive > 0) { timestamps = 1; }                                    // If archive is requested, timestamps must be enabled
+
+                        if (timestamps < 0 || timestamps > 1)
+                            timestamps = 0;     // Enforce boolean range 0 to 1
+
+                        if (archive > 0)
+                            timestamps = 1;     // If archive is requested, timestamps must be enabled
+
                         break;
+
                     case "archivelength":
                         int.TryParse(request.QueryString[key], out archive);
                         archive = Math.Min(10, archive);                                        // Enforce max 10
                         archive = Math.Max(0, archive);                                         // Enforce min 0
-                        if (archive == 0 && lastvalue == 0) { archive = 1; }                    // If lastvalue was not requested then return at least 1 archived value
-                        if (archive > 0) { timestamps = 1; }                                    // If archive is requested, timestamps must be enabled
+
+                        if (archive == 0 && lastvalue == 0)
+                            archive = 1;        // If lastvalue was not requested then return at least 1 archived value
+
+                        if (archive > 0)
+                            timestamps = 1;     // If archive is requested, timestamps must be enabled
+
                         break;
+
                     case "lastvalue":
                         int.TryParse(request.QueryString[key], out lastvalue);
-                        if (lastvalue < 0 || lastvalue > 1) { lastvalue = 1; }                  // Enforce boolean range 0 to 1
-                        if (lastvalue == 0 && archive  == 0) { archive = 1; timestamps = 1; }   // If lastvalue was not requested then return at least 1 archived value
+
+                        if (lastvalue < 0 || lastvalue > 1)
+                            lastvalue = 1;      // Enforce boolean range 0 to 1
+
+                        if (lastvalue == 0 && archive  == 0)
+                        {
+                            archive = 1;
+                            timestamps = 1;
+                        }
+
                         break;
+
                     default:
 
                         break;
                 }
             }
+
             prometheusSettings["archivelength"] = archive;
             prometheusSettings["timestamps"] = timestamps;
             prometheusSettings["lastvalue"] = lastvalue;
         }
+
         string responseContent = GeneratePrometheusResponse(_root, prometheusSettings);
         response.AddHeader("Cache-Control", "no-cache");
         response.AddHeader("Access-Control-Allow-Origin", "*");
+
         // Add custom headers to inform the user what settings are in effect
-        response.AddHeader("X-archivelenght", prometheusSettings["archivelength"].ToString());
+        response.AddHeader("X-archivelength", prometheusSettings["archivelength"].ToString());
         response.AddHeader("X-timestamps", prometheusSettings["timestamps"].ToString());
         response.AddHeader("X-lastvalue", prometheusSettings["lastvalue"].ToString());
+
         await SendResponseAsync(response, responseContent, "text/plain");
     }
 
