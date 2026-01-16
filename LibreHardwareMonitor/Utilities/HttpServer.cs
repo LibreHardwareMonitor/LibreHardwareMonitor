@@ -571,7 +571,6 @@ public class HttpServer
 
     private string GeneratePrometheusResponse(Node node, Dictionary<string, int> prometheusSettings)
     {
-
         string responseStr = "";
         string lastTagName = "";
 
@@ -657,7 +656,6 @@ public class HttpServer
                     // Preparing the labels for all data and uniqueness
                     string valueSensorId = sensor.Sensor.Identifier.ToString().Substring(valueHardwareId.Length);
                     string valueSensorAlias = $"{valueSensorName} ({valueSensorId})";
-
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
@@ -712,6 +710,7 @@ public class HttpServer
         if (request != null && request.QueryString != null && request.QueryString.Count > 0)
         {
             int archive = 0, timestamps = 0, lastvalue = 1;
+            
             foreach (string key in request.QueryString.AllKeys)
             {
                 switch (key)
@@ -726,25 +725,23 @@ public class HttpServer
                             timestamps = 1;     // If archive is requested, timestamps must be enabled
 
                         break;
-
                     case "archivelength":
                         int.TryParse(request.QueryString[key], out archive);
-                        archive = Math.Min(10, archive);                                        // Enforce max 10
-                        archive = Math.Max(0, archive);                                         // Enforce min 0
+                        archive = Math.Min(10, archive); // Enforce max 10
+                        archive = Math.Max(0, archive); // Enforce min 0
 
                         if (archive == 0 && lastvalue == 0)
-                            archive = 1;        // If lastvalue was not requested then return at least 1 archived value
+                            archive = 1; // If lastvalue was not requested then return at least 1 archived value
 
                         if (archive > 0)
-                            timestamps = 1;     // If archive is requested, timestamps must be enabled
+                            timestamps = 1; // If archive is requested, timestamps must be enabled
 
                         break;
-
                     case "lastvalue":
                         int.TryParse(request.QueryString[key], out lastvalue);
 
                         if (lastvalue < 0 || lastvalue > 1)
-                            lastvalue = 1;      // Enforce boolean range 0 to 1
+                            lastvalue = 1; // Enforce boolean range 0 to 1
 
                         if (lastvalue == 0 && archive  == 0)
                         {
@@ -753,9 +750,7 @@ public class HttpServer
                         }
 
                         break;
-
                     default:
-
                         break;
                 }
             }
