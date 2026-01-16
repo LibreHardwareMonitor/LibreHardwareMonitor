@@ -19,6 +19,11 @@ public abstract class EmbeddedController : Hardware
     // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
     private static readonly BoardInfo[] _boards =
     {
+        new(Model.Z170_PRO_GAMING,
+            BoardFamily.AsusZ170ProGaming,
+            ECSensor.TempChipset,
+            ECSensor.TempVrm,
+            ECSensor.TempTSensor),
         new (Model.TUF_GAMING_X870_PLUS_WIFI,
             BoardFamily.Amd800,
             ECSensor.TempVrm,
@@ -405,6 +410,14 @@ public abstract class EmbeddedController : Hardware
             }
         },
         {
+            BoardFamily.AsusZ170ProGaming, new Dictionary<ECSensor, EmbeddedControllerSource>
+            {
+                { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d) }
+            }
+        },
+        {
             BoardFamily.Intel300, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
                 { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
@@ -672,7 +685,8 @@ public abstract class EmbeddedController : Hardware
         Intel400,
         Intel600,
         Intel700,
-        CrOS
+        CrOS,
+        AsusZ170ProGaming
     }
 
     private struct BoardInfo

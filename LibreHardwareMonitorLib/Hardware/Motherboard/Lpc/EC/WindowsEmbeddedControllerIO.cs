@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using LibreHardwareMonitor.PawnIo;
 
@@ -24,7 +25,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
     private const int MaxRetries = 5;
 
     // implementation
-    private const int WaitSpins = 50;
+    private const int WaitSpins = 1000;
     private bool _disposed;
 
     private int _waitReadFailures;
@@ -137,7 +138,6 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
         return false;
     }
-
     private bool WaitRead()
     {
         if (_waitReadFailures > FailuresBeforeSkip)
@@ -145,14 +145,10 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
             return true;
         }
 
-        if (WaitForStatus(Status.OutputBufferFull, true))
-        {
-            _waitReadFailures = 0;
-            return true;
-        }
-
-        _waitReadFailures++;
-        return false;
+        // ASUS Z170 Pro Gaming workaround
+        Thread.Sleep(20);
+        _waitReadFailures = 0;
+        return true;
     }
 
     private bool WaitWrite()
