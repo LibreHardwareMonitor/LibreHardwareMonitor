@@ -2038,6 +2038,8 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("VSoC MOS", 5));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan", 1));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan", 1));
 
                         break;
 
