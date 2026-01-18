@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Text;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
@@ -44,6 +46,21 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _powerUsage;
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
+    private readonly Sensor[] _12VHPwrPinCurrentSensors;
+    private readonly Sensor[] _12VHPwrPinVoltageSensors;
+    private readonly Sensor[] _12VHPwrPinPowerSensors;
+    private readonly Sensor _12VHPwrConnectorPowerSensor;
+    private readonly Sensor _12VHPwrConnectorCurrentSensor;
+
+    // ASUS Astral subsystem IDs for 12VHPwr pin monitoring
+    private static readonly uint[] AstralSubSystemIds =
+    [
+        0x89EA1043, // Astral 5090D OC
+        0x8A611043, // Astral 5090 Matrix
+        0x89EC1043, // Astral 5090 LC
+        0x89E31043, // Astral 5090 OC
+        0x89DE1043, // Astral 5080 OC
+    ];
 
     public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
         : base(GetName(handle),
@@ -424,6 +441,58 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
         _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
+        // Pin power sensors for RTX 5090 Astral series
+        if (NvApi.NvAPI_I2CReadEx != null && NvApi.NvAPI_GPU_GetPCIIdentifiers != null)
+        {
+            NvApi.NvAPI_GPU_GetPCIIdentifiers(_handle, out _, out uint subSystemId, out _, out _);
+
+            if (AstralSubSystemIds.Contains(subSystemId))
+            {
+                _12VHPwrPinVoltageSensors =
+                [
+                    new Sensor("12VHPWR Pin 1", 0, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 2", 1, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 3", 2, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 4", 3, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 5", 4, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 6", 5, SensorType.Voltage, this, settings),
+                ];
+                _12VHPwrPinCurrentSensors =
+                [
+                    new Sensor("12VHPWR Pin 1", 1, SensorType.Current, this, settings),
+                    new Sensor("12VHPWR Pin 2", 2, SensorType.Current, this, settings),
+                    new Sensor("12VHPWR Pin 3", 3, SensorType.Current, this, settings),
+                    new Sensor("12VHPWR Pin 4", 4, SensorType.Current, this, settings),
+                    new Sensor("12VHPWR Pin 5", 5, SensorType.Current, this, settings),
+                    new Sensor("12VHPWR Pin 6", 6, SensorType.Current, this, settings),
+                ];
+                _12VHPwrPinPowerSensors =
+                [
+                    new Sensor("12VHPWR Pin 1", 2, SensorType.Power, this, settings),
+                    new Sensor("12VHPWR Pin 2", 3, SensorType.Power, this, settings),
+                    new Sensor("12VHPWR Pin 3", 4, SensorType.Power, this, settings),
+                    new Sensor("12VHPWR Pin 4", 5, SensorType.Power, this, settings),
+                    new Sensor("12VHPWR Pin 5", 6, SensorType.Power, this, settings),
+                    new Sensor("12VHPWR Pin 6", 7, SensorType.Power, this, settings),
+                ];
+
+                foreach (Sensor sensor in _12VHPwrPinVoltageSensors)
+                    ActivateSensor(sensor);
+
+                foreach (Sensor sensor in _12VHPwrPinCurrentSensors)
+                    ActivateSensor(sensor);
+
+                foreach (Sensor sensor in _12VHPwrPinPowerSensors)
+                    ActivateSensor(sensor);
+
+                _12VHPwrConnectorPowerSensor = new Sensor("12VHPWR Connector", 1, SensorType.Power, this, settings);
+                _12VHPwrConnectorCurrentSensor = new Sensor("12VHPWR Connector", 0, SensorType.Current, this, settings);
+
+                ActivateSensor(_12VHPwrConnectorPowerSensor);
+                ActivateSensor(_12VHPwrConnectorCurrentSensor);
+            }
+        }
+
         Update();
     }
 
@@ -660,6 +729,75 @@ internal sealed class NvidiaGpu : GenericGpu
                 ActivateSensor(_pcieThroughputTx);
             }
         }
+
+        // Astral specific
+        if (_12VHPwrPinCurrentSensors is { Length: > 0 } && TryReadAstral12VHPwrPinSensors(out ushort[] pinSensorValues))
+        {
+            float connectorCurrent = 0;
+            float connectorPower = 0;
+            for (ushort i = 0; i < 6; i++)
+            {
+                float current = pinSensorValues[i * 2] / 1000f;
+                float voltage = pinSensorValues[i * 2 + 1] / 1000f;
+                _12VHPwrPinVoltageSensors[i].Value = voltage;
+                _12VHPwrPinCurrentSensors[i].Value = current;
+                _12VHPwrPinPowerSensors[i].Value = voltage * current;
+
+                connectorCurrent += current;
+                connectorPower += voltage * current;
+            }
+
+            _12VHPwrConnectorCurrentSensor.Value = connectorCurrent;
+            _12VHPwrConnectorPowerSensor.Value = connectorPower;
+        }
+    }
+
+    private bool TryReadAstral12VHPwrPinSensors(out ushort[] data)
+    {
+        data = null;
+
+        if (NvApi.NvAPI_I2CReadEx == null)
+            return false;
+
+        byte[] dataBuffer = new byte[24];
+        byte[] regAddress = [0x80];
+
+        unsafe
+        {
+            fixed (byte* pData = dataBuffer)
+            fixed (byte* pRegAddr = regAddress)
+            {
+                NvApi.NvI2CInfo i2cInfo = new()
+                {
+                    Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvI2CInfo>(3),
+                    DisplayMask = 0,
+                    IsDDCPort = 0,
+                    I2CDevAddress = 0x2B << 1,
+                    I2CRegAddress = (IntPtr)pRegAddr,
+                    RegAddrSize = 1,
+                    Data = (IntPtr)pData,
+                    Size = 24,
+                    I2CSpeed = NvApi.NVAPI_I2C_SPEED_DEPRECATED,
+                    I2CSpeedKhz = NvApi.NvI2CSpeed.Speed100Khz,
+                    PortId = 0x1,
+                    IsPortIdSet = 1
+                };
+
+                uint readData = 0;
+                if (NvApi.NvAPI_I2CReadEx(_handle, ref i2cInfo, ref readData) != NvApi.NvStatus.OK)
+                    return false;
+            }
+        }
+
+        // Parse 12 x u16 big-endian (as mV and mA) values in reverse order
+        data = new ushort[12];
+        for (int i = 0; i < 12; i++)
+        {
+            int pinIndex = 11 - i;
+            data[i] = (ushort)((dataBuffer[pinIndex * 2] << 8) | dataBuffer[pinIndex * 2 + 1]);
+        }
+
+        return true;
     }
 
     public override string GetReport()
