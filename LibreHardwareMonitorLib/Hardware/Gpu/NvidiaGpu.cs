@@ -42,6 +42,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
     private readonly Sensor _powerUsage;
+    private readonly Sensor _coreVoltage;
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
 
@@ -305,6 +306,15 @@ internal sealed class NvidiaGpu : GenericGpu
                     ActivateSensor(_powers[i]);
                 }
             }
+        }
+
+        // Voltage
+        var voltageSensor = GetVoltRailsStatus(out status);
+        if (status == NvApi.NvStatus.OK)
+        {
+            _coreVoltage = new Sensor("GPU Core Voltage", 0, SensorType.Voltage, this, settings);
+
+            ActivateSensor(_coreVoltage);
         }
 
         if (NvidiaML.IsAvailable || NvidiaML.Initialize())
@@ -611,6 +621,17 @@ internal sealed class NvidiaGpu : GenericGpu
                     NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
                     _powers[i].Value = entry.PowerUsage / 1000f;
                 }
+            }
+        }
+
+        if (_coreVoltage != null)
+        {
+            var voltageSensor = GetVoltRailsStatus(out status);
+            if (status == NvApi.NvStatus.OK)
+            {
+                var microvolts = ((ulong)voltageSensor.CoreMicrovoltsHigh << 32) | voltageSensor.CoreMicrovolts;
+
+                _coreVoltage.Value = microvolts == 0 ? 0 : microvolts / 1_000_000f;
             }
         }
 
@@ -1036,6 +1057,23 @@ internal sealed class NvidiaGpu : GenericGpu
 
         status = NvApi.NvAPI_GPU_GetThermalSensors(_handle, ref thermalSensors);
         return status == NvApi.NvStatus.OK ? thermalSensors : default;
+    }
+
+    private NvApi.NvGpuClientVoltRailsStatus GetVoltRailsStatus(out NvApi.NvStatus status)
+    {
+        if (NvApi.NvAPI_GPU_ClientVoltRailsGetStatus == null)
+        {
+            status = NvApi.NvStatus.Error;
+            return default;
+        }
+
+        var voltRails = new NvApi.NvGpuClientVoltRailsStatus
+        {
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvGpuClientVoltRailsStatus>(1),
+        };
+
+        status = NvApi.NvAPI_GPU_ClientVoltRailsGetStatus(_handle, ref voltRails);
+        return status == NvApi.NvStatus.OK ? voltRails : default;
     }
 
     private NvApi.NvFanCoolersStatus GetFanCoolersStatus(out NvApi.NvStatus status)

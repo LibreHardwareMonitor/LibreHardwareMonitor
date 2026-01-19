@@ -46,6 +46,7 @@ internal static class NvApi
     public static NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages { get; internal set; }
     public static NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels { get; internal set; }
     public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
+    public static NvAPI_GPU_ClientVoltRailsGetStatusDelegate NvAPI_GPU_ClientVoltRailsGetStatus { get; internal set; }
 
     private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
     private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
@@ -90,6 +91,7 @@ internal static class NvApi
             NvAPI_GPU_ClientFanCoolersSetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersSetControlDelegate>(0xA58971A5);
             NvAPI_GPU_ClientPowerTopologyGetStatus = GetDelegate<NvAPI_GPU_ClientPowerTopologyGetStatusDelegate>(0x0EDCF624E);
             NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
+            NvAPI_GPU_ClientVoltRailsGetStatus = GetDelegate<NvAPI_GPU_ClientVoltRailsGetStatusDelegate>(0x465F9BCF);
 
             IsAvailable = true;
         }
@@ -157,6 +159,9 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvCoolerLevels NvCoolerLevels);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_ClientVoltRailsGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref NvGpuClientVoltRailsStatus status);
 
     public enum NvFanControlMode : uint
     {
@@ -575,6 +580,17 @@ internal static class NvApi
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_GPU_PUBLIC_CLOCKS)]
         public NvGpuClockFrequenciesDomain[] Clocks;
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = 0x4C)]
+    internal unsafe struct NvGpuClientVoltRailsStatus
+    {
+        [FieldOffset(0x00)] public uint Version;
+
+        [FieldOffset(0x04)] public fixed uint _reserved[17]; //Unknown
+
+        [FieldOffset(0x28)] public uint CoreMicrovolts;
+        [FieldOffset(0x2C)] public uint CoreMicrovoltsHigh;
     }
 
     internal enum NvGpuPublicClockId
