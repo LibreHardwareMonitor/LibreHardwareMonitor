@@ -439,12 +439,12 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
         _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
-        // Pin power sensors for RTX 5090 Astral series
+        // Pin power sensors for NVIDIA RTX Astral series from ASUS
         if (NvApi.NvAPI_I2CReadEx != null && NvApi.NvAPI_GPU_GetPCIIdentifiers != null)
         {
-            NvApi.NvAPI_GPU_GetPCIIdentifiers(_handle, out _, out uint subSystemId, out _, out _);
+            NvApi.NvStatus pciIdentifierStatus = NvApi.NvAPI_GPU_GetPCIIdentifiers(_handle, out _, out uint subSystemId, out _, out _);
 
-            if (AstralSubSystemIds.Contains(subSystemId))
+            if (pciIdentifierStatus == NvApi.NvStatus.OK && AstralSubSystemIds.Contains(subSystemId))
             {
                 _12VHPwrPinVoltageSensors =
                 [
@@ -733,7 +733,7 @@ internal sealed class NvidiaGpu : GenericGpu
         {
             float connectorCurrent = 0;
             float connectorPower = 0;
-            for (ushort i = 0; i < 6; i++)
+            for (int i = 0; i < 6; i++)
             {
                 float current = pinSensorValues[i * 2] / 1000f;
                 float voltage = pinSensorValues[i * 2 + 1] / 1000f;
