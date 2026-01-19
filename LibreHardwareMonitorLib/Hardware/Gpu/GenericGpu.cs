@@ -3,10 +3,15 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System.Collections.Generic;
+using LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
 public abstract class GenericGpu : Hardware
 {
+    readonly List<IHardware> _subHardware = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="GenericGpu" /> class.
     /// </summary>
@@ -14,10 +19,24 @@ public abstract class GenericGpu : Hardware
     /// <param name="identifier">Identifier that will be assigned to the device. Based on <see cref="Identifier" /></param>
     /// <param name="settings">Additional settings passed by the <see cref="IComputer" />.</param>
     protected GenericGpu(string name, Identifier identifier, ISettings settings) : base(name, identifier, settings)
-    { }
+    {
+        TryAddSubHardware();
+    }
 
     /// <summary>
     /// Gets the device identifier.
     /// </summary>
     public abstract string DeviceId { get; }
+
+    public override IHardware[] SubHardware => base.SubHardware;
+
+    private void TryAddSubHardware()
+    {
+        var wireViewPro2 = WireViewPro2.TryFindDevice(_settings);
+
+        if (wireViewPro2 != null && wireViewPro2.IsConnected)
+        {
+            _subHardware.Add(wireViewPro2);
+        }
+    }
 }

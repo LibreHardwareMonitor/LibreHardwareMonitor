@@ -4,25 +4,12 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-namespace LibreHardwareMonitor.Hardware;
+using System;
 
-/// <summary>
-/// Collection of identifiers representing the purpose of the hardware.
-/// </summary>
-public enum HardwareType
+namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor
 {
-    Motherboard,
-    SuperIO,
-    Cpu,
-    Memory,
-    GpuNvidia,
-    GpuAmd,
-    GpuIntel,
-    Storage,
-    Network,
-    Cooler,
-    EmbeddedController,
-    Psu,
-    Battery,
-    GpuPowerMonitor,
+    internal interface IPowerMonitor : IDisposable
+    {
+        //To be filled
+    }
 }
