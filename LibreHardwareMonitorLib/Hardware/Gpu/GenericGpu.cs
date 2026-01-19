@@ -10,7 +10,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 
 public abstract class GenericGpu : Hardware
 {
-    readonly List<IHardware> _subHardware = new();
+    readonly List<Hardware> _subHardware = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GenericGpu" /> class.
@@ -29,6 +29,13 @@ public abstract class GenericGpu : Hardware
     public abstract string DeviceId { get; }
 
     public override IHardware[] SubHardware => _subHardware.ToArray();
+
+    public override void Close()
+    {
+        _subHardware.ForEach(h => h.Close());
+
+        base.Close();
+    }
 
     private void TryAddSubHardware()
     {

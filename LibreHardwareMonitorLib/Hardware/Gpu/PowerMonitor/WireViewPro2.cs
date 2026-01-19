@@ -270,8 +270,12 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 {
                     //Ignore exceptions during cleanup
                 }
+                finally
+                {
+                    _serialPort.Dispose();
+                    _serialPort = null;
 
-                _serialPort = null;
+                }
             }
 
             IsConnected = false;
@@ -285,8 +289,12 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        _serialPort.Close();
-        _serialPort.Dispose();
+        if (_serialPort != null)
+        {
+            _serialPort.Close();
+            _serialPort.Dispose();
+            _serialPort = null;
+        }
 
         IsConnected = false;
 
