@@ -4,11 +4,9 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using System;
-
 namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor
 {
-    internal interface IPowerMonitor : IDisposable
+    internal interface IPowerMonitor
     {
         //To be filled
     }

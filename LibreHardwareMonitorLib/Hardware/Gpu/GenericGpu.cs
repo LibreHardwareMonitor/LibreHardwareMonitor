@@ -28,7 +28,7 @@ public abstract class GenericGpu : Hardware
     /// </summary>
     public abstract string DeviceId { get; }
 
-    public override IHardware[] SubHardware => base.SubHardware;
+    public override IHardware[] SubHardware => _subHardware.ToArray();
 
     private void TryAddSubHardware()
     {

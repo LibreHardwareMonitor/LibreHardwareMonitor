@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -21,7 +22,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     const byte VendorID = 239;
     const byte ProductID = 5;
 
-    string _portName;
+    readonly string _portName;
     SerialPort _serialPort;
     readonly int _baudRate;
 
@@ -35,7 +36,10 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         Connect();
 
-        CreateSensors();
+        if (IsConnected)
+        {
+            CreateSensors();
+        }
     }
 
     public override HardwareType HardwareType => HardwareType.GpuPowerMonitor;
@@ -48,6 +52,11 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     public static WireViewPro2 TryFindDevice(ISettings settings)
     {
+        if (!Software.OperatingSystem.IsWindows8OrGreater)
+        {
+            return null; //No Linux implementation yet
+        }
+
         var matches = new List<string>();
 
         using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%(COM%)%'"))
@@ -62,12 +71,12 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 if (temp.StartsWith("USB\\VID_0483&PID_5740", StringComparison.OrdinalIgnoreCase)
                  && obj["Name"] is string str)
                 {
-                    int num1 = str.LastIndexOf("(COM", StringComparison.OrdinalIgnoreCase);
-                    int num2 = str.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
+                    int comStartIndex = str.LastIndexOf("(COM", StringComparison.OrdinalIgnoreCase);
+                    int comEndIndex = str.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
 
-                    if (num1 >= 0 && num2 > num1)
+                    if (comStartIndex >= 0 && comEndIndex > comStartIndex)
                     {
-                        var subStr = str.Substring(num1 + 1, num2 - num1 - 1);
+                        var subStr = str.Substring(comStartIndex + 1, comEndIndex - comStartIndex - 1);
 
                         matches.Add(subStr);
                     }
@@ -79,11 +88,6 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         foreach (var port in matches)
         {
-            if (port == null)
-            {
-                continue;
-            }
-
             try
             {
                 wireViewPro2 = new WireViewPro2(port, settings);
@@ -93,13 +97,13 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 }
                 else
                 {
-                    wireViewPro2.Dispose();
+                    wireViewPro2.Close();
                     wireViewPro2 = null;
                 }
             }
             catch
             {
-                wireViewPro2?.Dispose();
+                wireViewPro2?.Close();
                 wireViewPro2 = null;
             }
         }
@@ -107,9 +111,11 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return wireViewPro2;
     }
 
-    public void Dispose()
+    public override void Close()
     {
         Disconnect();
+
+        base.Close();
     }
 
     public override void Update()
@@ -136,14 +142,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         var bytes = ReadExact(Marshal.SizeOf<DeviceConfigStruct>());
 
-        if (bytes == null)
-        {
-            return null;
-        }
-        else
-        {
-            return BytesToStructure<DeviceConfigStruct>(bytes);
-        }
+        return bytes == null ? null : BytesToStructure<DeviceConfigStruct>(bytes);
     }
 
     public void WriteConfig(DeviceConfigStruct config)
@@ -193,35 +192,35 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     void CreateSensors()
     {
         //"Default" temperature sensors
-        AddSensor("Onboard Temp In", 0, false, SensorType.Temperature, dd => (float)dd.OnboardTempInC);
-        AddSensor("Onboard Temp Out", 1, false, SensorType.Temperature, dd => (float)dd.OnboardTempOutC);
+        AddSensor("Onboard Temp In", 0, SensorType.Temperature, dd => (float)dd.OnboardTempInC);
+        AddSensor("Onboard Temp Out", 1, SensorType.Temperature, dd => (float)dd.OnboardTempOutC);
 
         //External temperature sensors, requires shipped temperature sensors to be connected
-        AddSensor("External Temp 1", 2, false, SensorType.Temperature, dd => (float)dd.ExternalTemp1C);
-        AddSensor("External Temp 2", 3, false, SensorType.Temperature, dd => (float)dd.ExternalTemp2C);
+        AddSensor("External Temp 1", 2, SensorType.Temperature, dd => (float)dd.ExternalTemp1C);
+        AddSensor("External Temp 2", 3, SensorType.Temperature, dd => (float)dd.ExternalTemp2C);
 
         //Pin voltages
-        AddSensor("Pin 1 Voltage", 10, false, SensorType.Voltage, dd => (float)dd.PinVoltage[0]);
-        AddSensor("Pin 2 Voltage", 11, false, SensorType.Voltage, dd => (float)dd.PinVoltage[1]);
-        AddSensor("Pin 3 Voltage", 12, false, SensorType.Voltage, dd => (float)dd.PinVoltage[2]);
-        AddSensor("Pin 4 Voltage", 13, false, SensorType.Voltage, dd => (float)dd.PinVoltage[3]);
-        AddSensor("Pin 5 Voltage", 14, false, SensorType.Voltage, dd => (float)dd.PinVoltage[4]);
-        AddSensor("Pin 6 Voltage", 15, false, SensorType.Voltage, dd => (float)dd.PinVoltage[5]);
+        AddSensor("Pin 1 Voltage", 10, SensorType.Voltage, dd => (float)dd.PinVoltage[0]);
+        AddSensor("Pin 2 Voltage", 11, SensorType.Voltage, dd => (float)dd.PinVoltage[1]);
+        AddSensor("Pin 3 Voltage", 12, SensorType.Voltage, dd => (float)dd.PinVoltage[2]);
+        AddSensor("Pin 4 Voltage", 13, SensorType.Voltage, dd => (float)dd.PinVoltage[3]);
+        AddSensor("Pin 5 Voltage", 14, SensorType.Voltage, dd => (float)dd.PinVoltage[4]);
+        AddSensor("Pin 6 Voltage", 15, SensorType.Voltage, dd => (float)dd.PinVoltage[5]);
 
         //Pin currents
-        AddSensor("Total Current", 20, false, SensorType.Voltage, dd => (float)dd.SumCurrentA);
-        AddSensor("Pin 1 Current", 21, false, SensorType.Current, dd => (float)dd.PinCurrent[0]);
-        AddSensor("Pin 2 Current", 22, false, SensorType.Current, dd => (float)dd.PinCurrent[1]);
-        AddSensor("Pin 3 Current", 23, false, SensorType.Current, dd => (float)dd.PinCurrent[2]);
-        AddSensor("Pin 4 Current", 24, false, SensorType.Current, dd => (float)dd.PinCurrent[3]);
-        AddSensor("Pin 5 Current", 25, false, SensorType.Current, dd => (float)dd.PinCurrent[4]);
-        AddSensor("Pin 6 Current", 26, false, SensorType.Current, dd => (float)dd.PinCurrent[5]);
+        AddSensor("Total Current", 20, SensorType.Current, dd => (float)dd.SumCurrentA);
+        AddSensor("Pin 1 Current", 21, SensorType.Current, dd => (float)dd.PinCurrent[0]);
+        AddSensor("Pin 2 Current", 22, SensorType.Current, dd => (float)dd.PinCurrent[1]);
+        AddSensor("Pin 3 Current", 23, SensorType.Current, dd => (float)dd.PinCurrent[2]);
+        AddSensor("Pin 4 Current", 24, SensorType.Current, dd => (float)dd.PinCurrent[3]);
+        AddSensor("Pin 5 Current", 25, SensorType.Current, dd => (float)dd.PinCurrent[4]);
+        AddSensor("Pin 6 Current", 26, SensorType.Current, dd => (float)dd.PinCurrent[5]);
 
         //Power
-        AddSensor("Total Power", 30, false, SensorType.Power, dd => (float)dd.SumPowerW);
+        AddSensor("Total Power", 30, SensorType.Power, dd => (float)dd.SumPowerW);
     }
 
-    private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetWireViewPro2SensorValue getValue)
+    private void AddSensor(string name, int index, SensorType sensorType, GetWireViewPro2SensorValue getValue)
     {
         var sensor = new WireViewPro2Sensor(name, index, sensorType, this, _settings, getValue);
 
@@ -237,21 +236,45 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        _serialPort = new SerialPort(_portName, _baudRate, Parity.None, 8, StopBits.One);
-        _serialPort.ReadTimeout = 1000;
-        _serialPort.WriteTimeout = 1000;
-        _serialPort.Open();
-
-        var vendorData = ReadVendorData();
-
-        if (vendorData.HasValue
-         && vendorData.Value.VendorId == VendorID
-         && vendorData.Value.ProductId == ProductID)
+        try
         {
-            VendorData = vendorData.Value;
-            UniqueID = ReadUniqueID();
+            _serialPort = new SerialPort(_portName, _baudRate, Parity.None, 8, StopBits.One);
+            _serialPort.ReadTimeout = 1000;
+            _serialPort.WriteTimeout = 1000;
+            _serialPort.Open();
 
-            IsConnected = true;
+            var vendorData = ReadVendorData();
+
+            if (vendorData.HasValue
+             && vendorData.Value.VendorId == VendorID
+             && vendorData.Value.ProductId == ProductID)
+            {
+                VendorData = vendorData.Value;
+                UniqueID = ReadUniqueID();
+
+                IsConnected = true;
+            }
+        }
+        catch (Exception)
+        {
+            if (_serialPort != null)
+            {
+                try
+                {
+                    if (_serialPort.IsOpen)
+                    {
+                        _serialPort.Close();
+                    }
+                }
+                catch
+                {
+                    //Ignore exceptions during cleanup
+                }
+
+                _serialPort = null;
+            }
+
+            IsConnected = false;
         }
     }
 
@@ -263,6 +286,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
 
         _serialPort.Close();
+        _serialPort.Dispose();
 
         IsConnected = false;
 
@@ -277,14 +301,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         var bytes = ReadExact(Marshal.SizeOf<VendorDataStruct>());
 
-        if (bytes == null)
-        {
-            return null;
-        }
-        else
-        {
-            return BytesToStructure<VendorDataStruct>(bytes);
-        }
+        return bytes == null ? null : BytesToStructure<VendorDataStruct>(bytes);
     }
 
     string ReadUniqueID()
@@ -294,14 +311,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         var bytes = ReadExact(12);
 
-        if (bytes == null)
-        {
-            return null;
-        }
-        else
-        {
-            return BitConverter.ToString(bytes).Replace("-", string.Empty);
-        }
+        return bytes == null ? null : BitConverter.ToString(bytes).Replace("-", string.Empty);
     }
 
     SensorStruct? ReadSensorValues()
@@ -317,14 +327,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         var bytes = ReadExact(Marshal.SizeOf<SensorStruct>());
 
-        if (bytes == null)
-        {
-            return null;
-        }
-        else
-        {
-            return BytesToStructure<SensorStruct>(bytes);
-        }
+        return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
     }
 
     DeviceData MapSensorStructure(SensorStruct sensorStruct)
@@ -370,24 +373,16 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         var buffer = new byte[size];
 
         int offset = 0;
-        int tickCount = Environment.TickCount;
 
-        while (offset < size && (Environment.TickCount - tickCount) < _serialPort.ReadTimeout)
+        var sw = Stopwatch.StartNew();
+
+        while (offset < size && sw.ElapsedMilliseconds < _serialPort.ReadTimeout)
         {
             try
             {
                 if (_serialPort.BytesToRead > 0)
                 {
                     offset += _serialPort.Read(buffer, offset, size - offset);
-                }
-
-                if (offset != size)
-                {
-                    return null;
-                }
-                else
-                {
-                    return buffer;
                 }
             }
             catch (TimeoutException)
@@ -396,7 +391,9 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             }
         }
 
-        return null;
+        sw.Stop();
+
+        return offset != size ? null : buffer;
     }
 
     T BytesToStructure<T>(byte[] bytes)
