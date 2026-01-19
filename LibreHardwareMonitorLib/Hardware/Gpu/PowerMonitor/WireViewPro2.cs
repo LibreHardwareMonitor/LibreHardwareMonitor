@@ -19,14 +19,14 @@ namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
 /// </summary>
 public sealed class WireViewPro2 : Hardware, IPowerMonitor
 {
-    const byte VendorID = 239;
-    const byte ProductID = 5;
+    private const byte VendorID = 239;
+    private const byte ProductID = 5;
 
-    readonly string _portName;
-    SerialPort _serialPort;
-    readonly int _baudRate;
+    private readonly string _portName;
+    private SerialPort _serialPort;
+    private readonly int _baudRate;
 
-    readonly List<WireViewPro2Sensor> _sensors = new();
+    private readonly List<WireViewPro2Sensor> _sensors = new();
 
     public WireViewPro2(string portName, ISettings settings, int baud = 115200)
         : base("WireView Pro II", new Identifier("gpu-powermonitor", portName), settings)
@@ -189,7 +189,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }, 0, 6);
     }
 
-    void CreateSensors()
+    private void CreateSensors()
     {
         //"Default" temperature sensors
         AddSensor("Onboard Temp In", 0, SensorType.Temperature, dd => (float)dd.OnboardTempInC);
@@ -229,7 +229,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         ActivateSensor(sensor);
     }
 
-    void Connect()
+    private void Connect()
     {
         if (IsConnected)
         {
@@ -282,7 +282,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
     }
 
-    void Disconnect()
+    private void Disconnect()
     {
         if (!IsConnected)
         {
@@ -302,7 +302,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         UniqueID = null;
     }
 
-    VendorDataStruct? ReadVendorData()
+    private VendorDataStruct? ReadVendorData()
     {
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[1] { (byte)UsbCmd.CMD_READ_VENDOR_DATA }, 0, 1);
@@ -312,7 +312,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return bytes == null ? null : BytesToStructure<VendorDataStruct>(bytes);
     }
 
-    string ReadUniqueID()
+    private string ReadUniqueID()
     {
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[1] { (byte)UsbCmd.CMD_READ_UID }, 0, 1);
@@ -322,7 +322,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return bytes == null ? null : BitConverter.ToString(bytes).Replace("-", string.Empty);
     }
 
-    SensorStruct? ReadSensorValues()
+    private SensorStruct? ReadSensorValues()
     {
         if (!IsConnected)
         {
@@ -338,7 +338,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
     }
 
-    DeviceData MapSensorStructure(SensorStruct sensorStruct)
+    private DeviceData MapSensorStructure(SensorStruct sensorStruct)
     {
         var deviceData = new DeviceData()
         {
@@ -376,7 +376,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return deviceData;
     }
 
-    byte[] ReadExact(int size)
+    private byte[] ReadExact(int size)
     {
         var buffer = new byte[size];
 
@@ -404,7 +404,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return offset != size ? null : buffer;
     }
 
-    T BytesToStructure<T>(byte[] bytes)
+    private T BytesToStructure<T>(byte[] bytes)
         where T : struct
     {
         var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
@@ -419,7 +419,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
     }
 
-    byte[] StructureToBytes<T>(T value)
+    private byte[] StructureToBytes<T>(T value)
         where T : struct
     {
         int size = Marshal.SizeOf<T>();
