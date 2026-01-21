@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Management;
 using System.Runtime.InteropServices;
-using LibreHardwareMonitor.Hardware.Gpu.PowerMonitor.Interop;
+using LibreHardwareMonitor.Interop.PowerMonitor;
 
 namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
 
@@ -22,11 +22,12 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     private const byte VendorID = 239;
     private const byte ProductID = 5;
 
-    private readonly string _portName;
-    private SerialPort _serialPort;
     private readonly int _baudRate;
+    private readonly string _portName;
 
     private readonly List<WireViewPro2Sensor> _sensors = new();
+
+    private SerialPort _serialPort;
 
     public WireViewPro2(string portName, ISettings settings, int baud = 115200)
         : base("WireView Pro II", new Identifier("gpu-powermonitor", portName), settings)
@@ -121,7 +122,6 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     public override void Update()
     {
         var sensorValues = ReadSensorValues();
-
         if (sensorValues.HasValue)
         {
             var deviceData = MapSensorStructure(sensorValues.Value);
@@ -245,9 +245,9 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
             var vendorData = ReadVendorData();
 
-            if (vendorData.HasValue
-             && vendorData.Value.VendorId == VendorID
-             && vendorData.Value.ProductId == ProductID)
+            if (vendorData.HasValue &&
+                vendorData.Value.VendorId == VendorID &&
+                vendorData.Value.ProductId == ProductID)
             {
                 VendorData = vendorData.Value;
                 UniqueID = ReadUniqueID();

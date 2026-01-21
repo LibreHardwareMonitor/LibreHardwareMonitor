@@ -40,7 +40,6 @@ public abstract class GenericGpu : Hardware
     private void TryAddSubHardware()
     {
         var wireViewPro2 = WireViewPro2.TryFindDevice(_settings);
-
         if (wireViewPro2 != null && wireViewPro2.IsConnected)
         {
             _subHardware.Add(wireViewPro2);

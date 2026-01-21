@@ -6,7 +6,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor.Interop;
+namespace LibreHardwareMonitor.Interop.PowerMonitor;
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
 public struct VendorDataStruct
