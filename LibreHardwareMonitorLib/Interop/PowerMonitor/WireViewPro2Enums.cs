@@ -8,24 +8,25 @@ namespace LibreHardwareMonitor.Interop.PowerMonitor;
 
 public enum UsbCmd : byte
 {
-    CMD_WELCOME = 0,
-    CMD_READ_VENDOR_DATA = 1,
-    CMD_READ_UID = 2,
-    CMD_READ_DEVICE_DATA = 3,
-    CMD_READ_SENSOR_VALUES = 4,
-    CMD_READ_CONFIG = 5,
-    CMD_WRITE_CONFIG = 6,
-    CMD_READ_CALIBRATION = 7,
-    CMD_WRITE_CALIBRATION = 8,
-    CMD_SPI_FLASH_WRITE_PAGE = 9,
-    CMD_SPI_FLASH_READ_PAGE = 10,
-    CMD_SPI_FLASH_ERASE_SECTOR = 11,
-    CMD_SCREEN_CHANGE = 12,
-    CMD_READ_BUILD_INFO = 13,
+    CMD_WELCOME,
+    CMD_READ_VENDOR_DATA,
+    CMD_READ_UID,
+    CMD_READ_DEVICE_DATA,
+    CMD_READ_SENSOR_VALUES,
+    CMD_READ_CONFIG,
+    CMD_WRITE_CONFIG,
+    CMD_READ_CALIBRATION,
+    CMD_WRITE_CALIBRATION,
+    CMD_SPI_FLASH_WRITE_PAGE,
+    CMD_SPI_FLASH_READ_PAGE,
+    CMD_SPI_FLASH_ERASE_SECTOR,
+    CMD_SCREEN_CHANGE,
+    CMD_READ_BUILD_INFO,
+    CMD_CLEAR_FAULTS,
     CMD_RESET = 0xF0,
     CMD_BOOTLOADER = 0xF1,
     CMD_NVM_CONFIG = 0xF2,
-    CMD_NOP = 0xFF,
+    CMD_NOP = 0xFF
 }
 
 public enum SensorTs
@@ -38,60 +39,60 @@ public enum SensorTs
 
 public enum HpwrCapability : byte
 {
-    PSU_CAP_600W,
-    PSU_CAP_450W,
-    PSU_CAP_300W,
-    PSU_CAP_150W,
+    PSU_CAP_600W = 0,
+    PSU_CAP_450W = 1,
+    PSU_CAP_300W = 2,
+    PSU_CAP_150W = 3
 }
 
 public enum FanMode : byte
 {
-    FanModeCurve,
-    FanModeFixed,
+    FanModeCurve = 0,
+    FanModeFixed = 1
 }
 
 public enum TempSource : byte
 {
-    TempSourceTsIn,
-    TempSourceTsOut,
-    TempSourceTs1,
-    TempSourceTs2,
-    TempSourceTmax,
+    TempSourceTsIn = 0,
+    TempSourceTsOut = 1,
+    TempSourceTs1 = 2,
+    TempSourceTs2 = 3,
+    TempSourceTmax = 4
 }
 
 public enum CurrentScale : byte
 {
-    CurrentScale5A,
-    CurrentScale10A,
-    CurrentScale15A,
-    CurrentScale20A,
+    CurrentScale5A = 0,
+    CurrentScale10A = 1,
+    CurrentScale15A = 2,
+    CurrentScale20A = 3
 }
 
 public enum PowerScale : byte
 {
-    PowerScaleAuto,
-    PowerScale300W,
-    PowerScale600W,
+    PowerScaleAuto = 0,
+    PowerScale300W = 1,
+    PowerScale600W = 2
 }
 
 public enum Theme : byte
 {
-    ThemeTg1,
-    ThemeTg2,
-    ThemeTg3,
+    ThemeTg1 = 0,
+    ThemeTg2 = 1,
+    ThemeTg3 = 2
 }
 
 public enum DisplayRotation : byte
 {
-    DisplayRotation0,
-    DisplayRotation180,
+    DisplayRotation0 = 0,
+    DisplayRotation180 = 1
 }
 
 public enum TimeoutMode : byte
 {
-    TimeoutModeStatic,
-    TimeoutModeCycle,
-    TimeoutModeSleep,
+    TimeoutModeStatic = 0,
+    TimeoutModeCycle = 1,
+    TimeoutModeSleep = 2
 }
 
 public enum NVM_CMD : byte

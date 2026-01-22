@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
-using System.Management;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
@@ -58,32 +57,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return null; //No Linux implementation yet
         }
 
-        var matches = new List<string>();
-
-        using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%(COM%)%'"))
-        {
-            foreach (var obj in searcher.Get())
-            {
-                if (!(obj["PNPDeviceID"] is string temp))
-                {
-                    temp = string.Empty;
-                }
-
-                if (temp.StartsWith("USB\\VID_0483&PID_5740", StringComparison.OrdinalIgnoreCase)
-                 && obj["Name"] is string str)
-                {
-                    int comStartIndex = str.LastIndexOf("(COM", StringComparison.OrdinalIgnoreCase);
-                    int comEndIndex = str.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
-
-                    if (comStartIndex >= 0 && comEndIndex > comStartIndex)
-                    {
-                        var subStr = str.Substring(comStartIndex + 1, comEndIndex - comStartIndex - 1);
-
-                        matches.Add(subStr);
-                    }
-                }
-            }
-        }
+        var matches = Stm32PortFinder.FindMatchingComPorts(0x0483, 0x5740);
 
         WireViewPro2 wireViewPro2 = null;
 

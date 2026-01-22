@@ -28,15 +28,17 @@ public struct PowerSensor
 public struct SensorStruct
 {
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public short[] Ts;
-    public ushort Vdd;
-    public byte FanDuty;
+    public short[] Ts; // 0.1 °C
+    public ushort Vdd; // mV
+    public byte FanDuty; // %
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
     public PowerSensor[] PowerReadings;
-    public uint TotalPower;
-    public uint TotalCurrent;
-    public ushort AvgVoltage;
-    public HpwrCapability HpwrCapability;
+
+    public uint TotalPower; // mW
+    public uint TotalCurrent; // mA
+    public ushort AvgVoltage; // mV
+    public HpwrCapability HpwrCapability; // 8-bit enum
     public ushort FaultStatus;
     public ushort FaultLog;
 }
@@ -70,21 +72,24 @@ public struct DeviceConfigStruct
 {
     public ushort Crc;
     public byte Version;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
     public byte[] FriendlyName;
+
     public FanConfigStruct FanConfig;
     public byte BacklightDuty;
+
     public ushort FaultDisplayEnable;
     public ushort FaultBuzzerEnable;
     public ushort FaultSoftPowerEnable;
     public ushort FaultHardPowerEnable;
-    public short TsFaultThreshold;
-    public byte OcpFaultThreshold;
-    public byte WireOcpFaultThreshold;
-    public ushort OppFaultThreshold;
-    public byte CurrentImbalanceFaultThreshold;
-    public byte CurrentImbalanceFaultMinLoad;
-    public byte ShutdownWaitTime;
-    public byte LoggingInterval;
+    public short TsFaultThreshold; // 0.1 °C
+    public byte OcpFaultThreshold; // A
+    public byte WireOcpFaultThreshold; // 0.1A
+    public ushort OppFaultThreshold; // W
+    public byte CurrentImbalanceFaultThreshold; // %
+    public byte CurrentImbalanceFaultMinLoad; // A
+    public byte ShutdownWaitTime; // seconds
+    public byte LoggingInterval; // seconds
     public UiConfigStruct Ui;
 }
