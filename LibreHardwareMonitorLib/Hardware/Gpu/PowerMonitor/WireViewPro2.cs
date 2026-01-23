@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Text;
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
 namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
@@ -84,6 +85,19 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
 
         return wireViewPro2;
+    }
+
+    public override string GetReport()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(Name);
+
+        foreach (var sensor in _sensors)
+        {
+            sb.AppendLine($"  Sensor: {sensor.Name} = {sensor.Value}");
+        }
+
+        return sb.ToString();
     }
 
     public override void Close()
