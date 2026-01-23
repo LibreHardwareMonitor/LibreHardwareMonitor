@@ -397,7 +397,7 @@ namespace LibreHardwareMonitor.UI
             this.collpaseAllNodesMenuItem.Name = "collpaseAllNodesMenuItem";
             this.collpaseAllNodesMenuItem.Size = new System.Drawing.Size(188, 22);
             this.collpaseAllNodesMenuItem.Text = "Collapse All Nodes";
-            this.collpaseAllNodesMenuItem.Click += new System.EventHandler(this.CollapsepAllNodes_Click);
+            this.collpaseAllNodesMenuItem.Click += new System.EventHandler(this.CollapseAllNodes_Click);
             //
             // resetPlotMenuItem
             //

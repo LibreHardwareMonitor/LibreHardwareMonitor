@@ -1289,11 +1289,27 @@ public sealed partial class MainForm : Form
     private void ExpandAllNodes_Click(object sender, EventArgs e)
     {
         treeView.ExpandAll();
+
+        foreach (var node in treeView.AllNodes)
+        {
+            if (node.Tag is IExpandPersistNode expandPersistNode)
+            {
+                expandPersistNode.Expanded = true;
+            }
+        }
     }
 
-    private void CollapsepAllNodes_Click(object sender, EventArgs e)
+    private void CollapseAllNodes_Click(object sender, EventArgs e)
     {
         treeView.CollapseAll();
+
+        foreach (var node in treeView.AllNodes)
+        {
+            if (node.Tag is IExpandPersistNode expandPersistNode)
+            {
+                expandPersistNode.Expanded = false;
+            }
+        }
     }
 
     private void resetPlotMenuItem_Click(object sender, EventArgs e)
