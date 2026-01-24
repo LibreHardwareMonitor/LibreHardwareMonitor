@@ -11,6 +11,7 @@ internal static class Mutexes
     private static Mutex _isaBusMutex;
     private static Mutex _pciBusMutex;
     private static Mutex _razerMutex;
+    private static Mutex _usbSensors; //Thermal Grizzly WireView Pro 2
 
     /// <summary>
     /// Opens the mutexes.
@@ -21,6 +22,7 @@ internal static class Mutexes
         _pciBusMutex = CreateOrOpenExistingMutex("Global\\Access_PCI");
         _ecMutex = CreateOrOpenExistingMutex("Global\\Access_EC");
         _razerMutex = CreateOrOpenExistingMutex("Global\\RazerReadWriteGuardMutex");
+        _usbSensors = CreateOrOpenExistingMutex("Global\\Access_USB_Sensors");
 
         static Mutex CreateOrOpenExistingMutex(string name)
         {
@@ -61,6 +63,7 @@ internal static class Mutexes
         _pciBusMutex?.Close();
         _ecMutex?.Close();
         _razerMutex?.Close();
+        _usbSensors?.Close();
     }
 
     public static bool WaitIsaBus(int millisecondsTimeout)
@@ -101,6 +104,16 @@ internal static class Mutexes
     public static void ReleaseRazer()
     {
         _razerMutex?.ReleaseMutex();
+    }
+
+    public static bool WaitUsbSensors(int millisecondsTimeout)
+    {
+        return WaitMutex(_usbSensors, millisecondsTimeout);
+    }
+
+    public static void ReleaseUsbSensors()
+    {
+        _usbSensors?.ReleaseMutex();
     }
 
     private static bool WaitMutex(Mutex mutex, int millisecondsTimeout)
