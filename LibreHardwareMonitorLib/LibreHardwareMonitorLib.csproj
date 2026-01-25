@@ -57,20 +57,20 @@
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="10.0.1" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiskInfoToolkit" Version="1.1.0" />
+    <PackageReference Include="DiskInfoToolkit" Version="1.1.2" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.264">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.269">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.4.2" />
-    <PackageReference Include="System.Management" Version="10.0.1" />
+    <PackageReference Include="System.Management" Version="10.0.2" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="System.Threading.AccessControl" Version="10.0.1" />
+    <PackageReference Include="System.Threading.AccessControl" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>

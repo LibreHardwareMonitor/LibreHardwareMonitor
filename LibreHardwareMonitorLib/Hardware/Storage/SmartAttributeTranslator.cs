@@ -11,7 +11,7 @@ namespace LibreHardwareMonitor.Hardware.Storage;
 
 internal static class SmartAttributeTranslator
 {
-    const int SensorChannelStartIndex = 30;
+    const int SensorChannelStartIndex = 100;
 
     public static List<SmartAttribute> GetAttributesFor(DiskInfoToolkit.Storage storage)
     {
