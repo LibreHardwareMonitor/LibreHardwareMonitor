@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
+using LibreHardwareMonitor.Interop.PowerMonitor;
 
 namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor
 {
@@ -8,11 +9,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor
     /// This does not call <see cref="SerialPort.Dispose"/>.
     /// </summary>
     /// <remarks>This is supposed to be used for shared serial ports - open, read data, close, repeat.</remarks>
-    internal sealed class SerialPortGuard : IDisposable
+    internal sealed class SharedSerialPortGuard : IDisposable
     {
-        private readonly SerialPort _serialPort;
+        private readonly SharedSerialPort _serialPort;
 
-        public SerialPortGuard(SerialPort serialPort)
+        public SharedSerialPortGuard(SharedSerialPort serialPort)
         {
             _serialPort = serialPort;
 

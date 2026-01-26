@@ -121,7 +121,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return null;
         }
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_CONFIG }, 0, 1);
 
@@ -142,7 +142,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         var frame = new byte[64];
         frame[0] = (byte)UsbCmd.CMD_WRITE_CONFIG;
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
 
         const int maxPayloadPerFrame = 62;
@@ -165,7 +165,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[]
         {
@@ -185,7 +185,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_SCREEN_CHANGE, (byte)cmd }, 0, 2);
     }
@@ -197,7 +197,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[]
         {
@@ -330,7 +330,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     {
         var size = WelcomeMessage.Length + 1;
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.RtsEnable = true;
 
         if (sendCmd)
@@ -348,7 +348,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     private VendorDataStruct? ReadVendorData()
     {
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_VENDOR_DATA }, 0, 1);
 
@@ -359,7 +359,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     private string ReadUniqueID()
     {
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_UID }, 0, 1);
 
@@ -375,7 +375,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return null;
         }
 
-        using var guard = new SerialPortGuard(_serialPort);
+        using var guard = new SharedSerialPortGuard(_serialPort);
         _serialPort.DiscardInBuffer();
         _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_SENSOR_VALUES }, 0, 1);
 
