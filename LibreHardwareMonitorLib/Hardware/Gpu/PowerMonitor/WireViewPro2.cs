@@ -328,11 +328,6 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     private bool ReadWelcomeMessage(bool sendCmd = false)
     {
-        if (!IsConnected)
-        {
-            return false;
-        }
-
         var size = WelcomeMessage.Length + 1;
 
         using var guard = new SerialPortGuard(_serialPort);
