@@ -19,7 +19,6 @@ SetupDiDestroyDeviceInfoList
 SetupDiGetDeviceInterfaceDetail
 SetupDiEnumDeviceInterfaces
 SetupDiGetClassDevs
-SP_DEVINFO_DATA
 SP_DEVICE_INTERFACE_DATA
 SP_DEVICE_INTERFACE_DETAIL_DATA_W
 GUID_DEVCLASS_PORTS
