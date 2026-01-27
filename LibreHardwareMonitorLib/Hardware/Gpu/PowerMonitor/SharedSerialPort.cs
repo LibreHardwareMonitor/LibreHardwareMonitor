@@ -4,7 +4,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
 
 internal sealed class SharedSerialPort : SerialPort
 {
-    bool hasMutex = false;
+    private bool _hasMutex = false;
 
     private int MutexTimeout { get; set; } = 500;
 
@@ -36,7 +36,7 @@ internal sealed class SharedSerialPort : SerialPort
 
     public new void Open()
     {
-        if (hasMutex = Mutexes.WaitUsbSensors(MutexTimeout))
+        if (_hasMutex = Mutexes.WaitUsbSensors(MutexTimeout))
         {
             base.Open();
         }
@@ -44,7 +44,7 @@ internal sealed class SharedSerialPort : SerialPort
 
     public new void Close()
     {
-        if (hasMutex)
+        if (_hasMutex)
         {
             if (IsOpen)
             {
@@ -52,14 +52,14 @@ internal sealed class SharedSerialPort : SerialPort
                 BaseStream.Close();
             }
 
-            hasMutex = false;
+            _hasMutex = false;
             Mutexes.ReleaseUsbSensors();
         }
     }
 
     public new void Write(byte[] buffer, int offset, int count)
     {
-        if (hasMutex)
+        if (_hasMutex)
         {
             base.Write(buffer, offset, count);
         }
@@ -67,7 +67,7 @@ internal sealed class SharedSerialPort : SerialPort
 
     public new int Read(byte[] buffer, int offset, int count)
     {
-        if (hasMutex)
+        if (_hasMutex)
         {
             return base.Read(buffer, offset, count);
         }
@@ -77,7 +77,7 @@ internal sealed class SharedSerialPort : SerialPort
 
     public new void DiscardInBuffer()
     {
-        if (hasMutex)
+        if (_hasMutex)
         {
             base.DiscardInBuffer();
         }
@@ -85,7 +85,7 @@ internal sealed class SharedSerialPort : SerialPort
 
     public new void DiscardOutBuffer()
     {
-        if (hasMutex)
+        if (_hasMutex)
         {
             base.DiscardOutBuffer();
         }
