@@ -449,7 +449,7 @@ internal class Nct677X : ISuperIO
                 _voltageRegisters = [0x120, 0x122, 0x124, 0x126, 0x128, 0x12A, 0x12C, 0x12E, 0x130, 0x13A, 0x13E, 0x136, 0x138, 0x13C];
 
                 // CPU Fan
-                // PUMP Fan
+                // PUMP Fan 1
                 // SYS Fan 1 on some older NCT6687Ds, Nil on others
                 // SYS Fan 2 on some older NCT6687Ds, EZConn on others
                 // SYS Fan 3 on some older NCT6687Ds
@@ -462,6 +462,7 @@ internal class Nct677X : ISuperIO
                 // SYS Fan 3 on newer NCT6687Ds
                 // SYS Fan 2 on newer NCT6687Ds
                 // SYS Fan 1 on newer NCT6687Ds
+                // SYS Fan 7 on some NCT6687Ds - 0x852 (e.g. Z790 GODLIKE MAX)
                 _fanRpmRegister = [0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x154, 0x156, 0x158, 0x15A, 0x15C, 0x15E, 0x852];
 
                 //On some boards, there will be SYS Fan 7 (e.g. MSI MEG Z790 GODLIKE MAX)
@@ -535,7 +536,7 @@ internal class Nct677X : ISuperIO
                 // NOTHING
                 // NOTHING
                 // NOTHING
-                // NOTHING
+                // SYS Fan 7 0x152
                 // SYS Fan 1 0x15E
                 // SYS Fan 2 0x15C
                 // SYS Fan 3 0x15A
