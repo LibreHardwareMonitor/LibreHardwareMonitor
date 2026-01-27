@@ -20,7 +20,6 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     private readonly int _baudRate;
     private readonly string _portName;
-
     private readonly List<WireViewPro2Sensor> _sensors = new();
 
     private SharedSerialPort _serialPort;
@@ -315,7 +314,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 IsConnected = true;
             }
         }
-        catch (Exception)
+        catch
         {
             if (_serialPort != null)
             {
@@ -513,8 +512,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return offset != size ? null : buffer;
     }
 
-    private T BytesToStructure<T>(byte[] bytes)
-        where T : struct
+    private T BytesToStructure<T>(byte[] bytes) where T : struct
     {
         var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 
@@ -528,8 +526,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
     }
 
-    private byte[] StructureToBytes<T>(T value)
-        where T : struct
+    private byte[] StructureToBytes<T>(T value) where T : struct
     {
         int size = Marshal.SizeOf<T>();
 
