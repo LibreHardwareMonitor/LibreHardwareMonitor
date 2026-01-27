@@ -68,7 +68,7 @@ public static class Stm32PortFinder
             while (PInvoke.SetupDiEnumDeviceInfo(devInfo, index++, ref devInfoData))
             {
                 //Get hardware ID
-                string hwId = GetProperty(devInfo, SETUP_DI_REGISTRY_PROPERTY.SPDRP_HARDWAREID, ref devInfoData);
+                string hwId = GetProperty(devInfo, SETUP_DI_REGISTRY_PROPERTY.SPDRP_HARDWAREID, devInfoData);
                 if (string.IsNullOrWhiteSpace(hwId))
                 {
                     continue;
@@ -82,7 +82,7 @@ public static class Stm32PortFinder
                 }
 
                 //Get friendly name
-                string friendlyName = GetProperty(devInfo, SETUP_DI_REGISTRY_PROPERTY.SPDRP_FRIENDLYNAME, ref devInfoData);
+                string friendlyName = GetProperty(devInfo, SETUP_DI_REGISTRY_PROPERTY.SPDRP_FRIENDLYNAME, devInfoData);
 
                 //Extract COM port from friendly name
                 int start = friendlyName.LastIndexOf("(COM", StringComparison.OrdinalIgnoreCase);
@@ -103,25 +103,24 @@ public static class Stm32PortFinder
         }
 
         return result;
-    }
 
-    private static string GetProperty(SafeHandle hDevInfo, SETUP_DI_REGISTRY_PROPERTY property, ref SP_DEVINFO_DATA devInfoData)
-    {
-        byte[] buffer = new byte[BufferSize];
-
-        if (PInvoke.SetupDiGetDeviceRegistryProperty(hDevInfo, devInfoData, property, buffer))
+        static string GetProperty(SafeHandle hDevInfo, SETUP_DI_REGISTRY_PROPERTY property, SP_DEVINFO_DATA devInfoData)
         {
-            //Take first string only, no need for the rest
-            return NormalizeString(Encoding.Unicode.GetString(buffer));
-        }
+            byte[] buffer = new byte[BufferSize];
 
-        return null;
+            if (PInvoke.SetupDiGetDeviceRegistryProperty(hDevInfo, devInfoData, property, buffer))
+            {
+                //Take first string only, no need for the rest
+                return NormalizeString(Encoding.Unicode.GetString(buffer));
+            }
+
+            return null;
+        }
     }
 
     private static string NormalizeString(string str)
     {
         int end = str.IndexOf('\0');
-
         if (end == -1)
         {
             end = 0;
