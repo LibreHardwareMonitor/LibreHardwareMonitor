@@ -121,13 +121,20 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return null;
         }
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_CONFIG }, 0, 1);
+        try
+        {
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_CONFIG }, 0, 1);
 
-        var bytes = ReadExact(Marshal.SizeOf<DeviceConfigStruct>());
+            var bytes = ReadExact(Marshal.SizeOf<DeviceConfigStruct>());
 
-        return bytes == null ? null : BytesToStructure<DeviceConfigStruct>(bytes);
+            return bytes == null ? null : BytesToStructure<DeviceConfigStruct>(bytes);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     public void WriteConfig(DeviceConfigStruct config)
@@ -142,19 +149,26 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         var frame = new byte[64];
         frame[0] = (byte)UsbCmd.CMD_WRITE_CONFIG;
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-
-        const int maxPayloadPerFrame = 62;
-
-        for (byte offset = 0; offset < payload.Length; offset += maxPayloadPerFrame)
+        try
         {
-            var bytesToWrite = Math.Min(maxPayloadPerFrame, payload.Length - offset);
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
 
-            frame[1] = offset;
-            Buffer.BlockCopy(payload, offset, frame, 2, bytesToWrite);
+            const int maxPayloadPerFrame = 62;
 
-            _serialPort.Write(frame, 0, bytesToWrite + 2);
+            for (byte offset = 0; offset < payload.Length; offset += maxPayloadPerFrame)
+            {
+                var bytesToWrite = Math.Min(maxPayloadPerFrame, payload.Length - offset);
+
+                frame[1] = offset;
+                Buffer.BlockCopy(payload, offset, frame, 2, bytesToWrite);
+
+                _serialPort.Write(frame, 0, bytesToWrite + 2);
+            }
+        }
+        finally
+        {
+            _serialPort.Close();
         }
     }
 
@@ -165,17 +179,24 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[]
+        try
         {
-            (byte)UsbCmd.CMD_NVM_CONFIG,
-            (byte)0x55, //Magic
-            (byte)0xAA, //Magic
-            (byte)0x55, //Magic
-            (byte)0xAA, //Magic
-            (byte)cmd,
-        }, 0, 6);
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[]
+            {
+                (byte)UsbCmd.CMD_NVM_CONFIG,
+                (byte)0x55, //Magic
+                (byte)0xAA, //Magic
+                (byte)0x55, //Magic
+                (byte)0xAA, //Magic
+                (byte)cmd,
+            }, 0, 6);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     public void ScreenCmd(SCREEN_CMD cmd)
@@ -185,9 +206,16 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_SCREEN_CHANGE, (byte)cmd }, 0, 2);
+        try
+        {
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_SCREEN_CHANGE, (byte)cmd }, 0, 2);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     public void ClearFaults(int faultStatusMask = 0xFFFF, int faultLogMask = 0xFFFF)
@@ -197,27 +225,34 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[]
+        try
         {
-            (byte)UsbCmd.CMD_CLEAR_FAULTS,
-            (byte)(faultStatusMask & 0xFF),
-            (byte)((faultStatusMask >> 8) & 0xFF),
-            (byte)(faultLogMask & 0xFF),
-            (byte)((faultLogMask >> 8) & 0xFF)
-        }, 0, 5);
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[]
+            {
+                (byte)UsbCmd.CMD_CLEAR_FAULTS,
+                (byte)(faultStatusMask & 0xFF),
+                (byte)((faultStatusMask >> 8) & 0xFF),
+                (byte)(faultLogMask & 0xFF),
+                (byte)((faultLogMask >> 8) & 0xFF)
+            }, 0, 5);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     private void CreateSensors()
     {
-        //"Default" temperature sensors
-        AddSensor("Onboard Temp In", 0, SensorType.Temperature, dd => (float)dd.OnboardTempInC);
-        AddSensor("Onboard Temp Out", 1, SensorType.Temperature, dd => (float)dd.OnboardTempOutC);
+        //Onboard temperature sensors
+        AddSensor("Onboard Temperature In", 0, SensorType.Temperature, dd => (float)dd.OnboardTempInC);
+        AddSensor("Onboard Temperature Out", 1, SensorType.Temperature, dd => (float)dd.OnboardTempOutC);
 
         //External temperature sensors, requires shipped temperature sensors to be connected
-        AddSensor("External Temp 1", 2, SensorType.Temperature, dd => (float)dd.ExternalTemp1C);
-        AddSensor("External Temp 2", 3, SensorType.Temperature, dd => (float)dd.ExternalTemp2C);
+        AddSensor("External Temperature 1", 2, SensorType.Temperature, dd => (float)dd.ExternalTemp1C);
+        AddSensor("External Temperature 2", 3, SensorType.Temperature, dd => (float)dd.ExternalTemp2C);
 
         //Pin voltages
         AddSensor("Pin 1 Voltage", 10, SensorType.Voltage, dd => (float)dd.PinVoltage[0]);
@@ -330,42 +365,63 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     {
         var size = WelcomeMessage.Length + 1;
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.RtsEnable = true;
-
-        if (sendCmd)
+        try
         {
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_WELCOME }, 0, 1);
+            _serialPort.Open();
+            _serialPort.RtsEnable = true;
+
+            if (sendCmd)
+            {
+                _serialPort.DiscardInBuffer();
+                _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_WELCOME }, 0, 1);
+            }
+
+            var bytes = ReadExact(size);
+
+            _serialPort.RtsEnable = false;
+
+            return bytes == null ? false : Encoding.ASCII.GetString(bytes, 0, size).TrimEnd('\0').CompareTo(WelcomeMessage) == 0;
         }
-
-        var bytes = ReadExact(size);
-
-        _serialPort.RtsEnable = false;
-
-        return bytes == null ? false : Encoding.ASCII.GetString(bytes, 0, size).TrimEnd('\0').CompareTo(WelcomeMessage) == 0;
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     private VendorDataStruct? ReadVendorData()
     {
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_VENDOR_DATA }, 0, 1);
+        try
+        {
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_VENDOR_DATA }, 0, 1);
 
-        var bytes = ReadExact(Marshal.SizeOf<VendorDataStruct>());
+            var bytes = ReadExact(Marshal.SizeOf<VendorDataStruct>());
 
-        return bytes == null ? null : BytesToStructure<VendorDataStruct>(bytes);
+            return bytes == null ? null : BytesToStructure<VendorDataStruct>(bytes);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     private string ReadUniqueID()
     {
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_UID }, 0, 1);
+        try
+        {
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_UID }, 0, 1);
 
-        var bytes = ReadExact(12);
+            var bytes = ReadExact(12);
 
-        return bytes == null ? null : BitConverter.ToString(bytes).Replace("-", string.Empty);
+            return bytes == null ? null : BitConverter.ToString(bytes).Replace("-", string.Empty);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     private SensorStruct? ReadSensorValues()
@@ -375,13 +431,20 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return null;
         }
 
-        using var guard = new SharedSerialPortGuard(_serialPort);
-        _serialPort.DiscardInBuffer();
-        _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_SENSOR_VALUES }, 0, 1);
+        try
+        {
+            _serialPort.Open();
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(new byte[] { (byte)UsbCmd.CMD_READ_SENSOR_VALUES }, 0, 1);
 
-        var bytes = ReadExact(Marshal.SizeOf<SensorStruct>());
+            var bytes = ReadExact(Marshal.SizeOf<SensorStruct>());
 
-        return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
+            return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
     }
 
     private DeviceData MapSensorStructure(SensorStruct sensorStruct)
@@ -446,8 +509,6 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 //Ignore timeout exceptions and continue reading
             }
         }
-
-        sw.Stop();
 
         return offset != size ? null : buffer;
     }

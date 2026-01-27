@@ -6,25 +6,24 @@
 
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor
+namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+
+internal delegate float GetWireViewPro2SensorValue(DeviceData wvp);
+
+internal class WireViewPro2Sensor : Sensor
 {
-    internal delegate float GetWireViewPro2SensorValue(DeviceData wvp);
+    readonly GetWireViewPro2SensorValue _getValue;
 
-    internal class WireViewPro2Sensor : Sensor
+    public WireViewPro2Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings, GetWireViewPro2SensorValue getValue)
+        : base(name, index, sensorType, hardware, settings)
     {
-        readonly GetWireViewPro2SensorValue _getValue;
+        _getValue = getValue;
+    }
 
-        public WireViewPro2Sensor(string name, int index, SensorType sensorType, Hardware hardware, ISettings settings, GetWireViewPro2SensorValue getValue)
-            : base(name, index, sensorType, hardware, settings)
-        {
-            _getValue = getValue;
-        }
+    internal void Update(DeviceData wvp)
+    {
+        var value = _getValue(wvp);
 
-        public void Update(DeviceData wvp)
-        {
-            var value = _getValue(wvp);
-
-            Value = value;
-        }
+        Value = value;
     }
 }

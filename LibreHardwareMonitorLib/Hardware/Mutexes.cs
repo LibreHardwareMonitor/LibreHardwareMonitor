@@ -11,7 +11,7 @@ internal static class Mutexes
     private static Mutex _isaBusMutex;
     private static Mutex _pciBusMutex;
     private static Mutex _razerMutex;
-    private static Mutex _usbSensors; //Thermal Grizzly WireView Pro 2
+    private static Mutex _usbSensors;
 
     /// <summary>
     /// Opens the mutexes.

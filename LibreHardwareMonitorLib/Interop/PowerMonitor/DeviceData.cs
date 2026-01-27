@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace LibreHardwareMonitor.Interop.PowerMonitor;
 
-public class DeviceData
+internal sealed class DeviceData
 {
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     public bool Connected { get; set; }
