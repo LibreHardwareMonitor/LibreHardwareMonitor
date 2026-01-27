@@ -4,39 +4,34 @@ namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
 
 internal sealed class SharedSerialPort : SerialPort
 {
-    private bool _hasMutex = false;
-
-    private int MutexTimeout { get; set; } = 500;
+    private bool _hasMutex;
 
     public SharedSerialPort()
-    {
-    }
+    { }
 
     public SharedSerialPort(string portName) : base(portName)
-    {
-    }
+    { }
 
     public SharedSerialPort(string portName, int baudRate) : base(portName, baudRate)
-    {
-    }
+    { }
 
     public SharedSerialPort(string portName, int baudRate, Parity parity) : base(portName, baudRate, parity)
-    {
-    }
+    { }
 
     public SharedSerialPort(string portName, int baudRate, Parity parity, int dataBits)
         : base(portName, baudRate, parity, dataBits)
-    {
-    }
+    { }
 
     public SharedSerialPort(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         : base(portName, baudRate, parity, dataBits, stopBits)
-    {
-    }
+    { }
+
+    private int MutexTimeout { get; set; } = 500;
 
     public new void Open()
     {
-        if (_hasMutex = Mutexes.WaitUsbSensors(MutexTimeout))
+        _hasMutex = Mutexes.WaitUsbSensors(MutexTimeout);
+        if (_hasMutex)
         {
             base.Open();
         }

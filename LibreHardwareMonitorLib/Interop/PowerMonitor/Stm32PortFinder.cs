@@ -26,25 +26,33 @@ public static class Stm32PortFinder
     /// </summary>
     /// <param name="vid">The USB vendor ID to match.</param>
     /// <param name="pid">The USB product ID to match.</param>
-    /// <returns>A list of strings containing the names of matching COM ports.<br/>
-    /// The list is empty if no matching ports are found.</returns>
+    /// <returns>
+    /// A list of strings containing the names of matching COM ports.<br />
+    /// The list is empty if no matching ports are found.
+    /// </returns>
     public static List<string> FindMatchingComPorts(uint vid, uint pid)
     {
         return FindMatchingComPorts($"{vid:X4}", $"{pid:X4}");
     }
 
     /// <summary>
-    /// <inheritdoc cref="FindMatchingComPorts(uint, uint)"/>
+    ///     <inheritdoc cref="FindMatchingComPorts(uint, uint)" />
     /// </summary>
-    /// <param name="vid"><inheritdoc cref="FindMatchingComPorts(uint, uint)"/></param>
-    /// <param name="pid"><inheritdoc cref="FindMatchingComPorts(uint, uint)"/></param>
-    /// <returns><inheritdoc cref="FindMatchingComPorts(uint, uint)"/></returns>
+    /// <param name="vid">
+    ///     <inheritdoc cref="FindMatchingComPorts(uint, uint)" />
+    /// </param>
+    /// <param name="pid">
+    ///     <inheritdoc cref="FindMatchingComPorts(uint, uint)" />
+    /// </param>
+    /// <returns>
+    ///     <inheritdoc cref="FindMatchingComPorts(uint, uint)" />
+    /// </returns>
     public static List<string> FindMatchingComPorts(string vid, string pid)
     {
         var result = new List<string>();
 
         //Setup
-        var devInfo = PInvoke.SetupDiGetClassDevs(PInvoke.GUID_DEVCLASS_PORTS, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
+        SetupDiDestroyDeviceInfoListSafeHandle devInfo = PInvoke.SetupDiGetClassDevs(PInvoke.GUID_DEVCLASS_PORTS, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
 
         //Check handle
         if (devInfo.IsInvalid)
@@ -54,22 +62,21 @@ public static class Stm32PortFinder
 
         try
         {
-            SP_DEVINFO_DATA devInfoData = new SP_DEVINFO_DATA();
-            devInfoData.cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>();
+            SP_DEVINFO_DATA devInfoData = new() { cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>() };
 
             uint index = 0;
             while (PInvoke.SetupDiEnumDeviceInfo(devInfo, index++, ref devInfoData))
             {
                 //Get hardware ID
-                string hwID = GetProperty(devInfo, SETUP_DI_REGISTRY_PROPERTY.SPDRP_HARDWAREID, ref devInfoData);
-                if (string.IsNullOrWhiteSpace(hwID))
+                string hwId = GetProperty(devInfo, SETUP_DI_REGISTRY_PROPERTY.SPDRP_HARDWAREID, ref devInfoData);
+                if (string.IsNullOrWhiteSpace(hwId))
                 {
                     continue;
                 }
 
                 //Check if hardware ID contains VID and PID
-                if (!hwID.Contains($"VID_{vid}", StringComparison.OrdinalIgnoreCase) ||
-                    !hwID.Contains($"PID_{pid}", StringComparison.OrdinalIgnoreCase))
+                if (!hwId.Contains($"VID_{vid}", StringComparison.OrdinalIgnoreCase) ||
+                    !hwId.Contains($"PID_{pid}", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -100,7 +107,7 @@ public static class Stm32PortFinder
 
     private static string GetProperty(SafeHandle hDevInfo, SETUP_DI_REGISTRY_PROPERTY property, ref SP_DEVINFO_DATA devInfoData)
     {
-        var buffer = new byte[BufferSize];
+        byte[] buffer = new byte[BufferSize];
 
         if (PInvoke.SetupDiGetDeviceRegistryProperty(hDevInfo, devInfoData, property, buffer))
         {
@@ -113,7 +120,7 @@ public static class Stm32PortFinder
 
     private static string NormalizeString(string str)
     {
-        var end = str.IndexOf('\0');
+        int end = str.IndexOf('\0');
 
         if (end == -1)
         {

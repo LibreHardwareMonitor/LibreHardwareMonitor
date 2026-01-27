@@ -22,7 +22,7 @@ internal class WireViewPro2Sensor : Sensor
 
     internal void Update(DeviceData wvp)
     {
-        var value = _getValue(wvp);
+        float value = _getValue(wvp);
 
         Value = value;
     }

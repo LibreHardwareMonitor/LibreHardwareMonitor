@@ -29,6 +29,7 @@ public struct SensorStruct
 {
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
     public short[] Ts; // 0.1 °C
+
     public ushort Vdd; // mV
     public byte FanDuty; // %
 
