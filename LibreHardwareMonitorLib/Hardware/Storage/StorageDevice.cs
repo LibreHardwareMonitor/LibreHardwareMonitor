@@ -169,21 +169,26 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void CreateSensors()
     {
-        AddSensor("Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
-
         if (_storage.IsNVMe)
         {
-            //TemperatureSensor1 equals the main temperature sensor; no need to add it again
-            TryAddTemperatureSensor(1, false, 2, SmartAttributeType.TemperatureSensor2);
-            TryAddTemperatureSensor(2, false, 3, SmartAttributeType.TemperatureSensor3);
-            TryAddTemperatureSensor(3, false, 4, SmartAttributeType.TemperatureSensor4);
-            TryAddTemperatureSensor(4, false, 5, SmartAttributeType.TemperatureSensor5);
-            TryAddTemperatureSensor(5, false, 6, SmartAttributeType.TemperatureSensor6);
-            TryAddTemperatureSensor(6, false, 7, SmartAttributeType.TemperatureSensor7);
-            TryAddTemperatureSensor(7, false, 8, SmartAttributeType.TemperatureSensor8);
+            //Different name for NVMe
+            AddSensor("Composite temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
+
+            TryAddTemperatureSensor(1, false, 1, SmartAttributeType.TemperatureSensor1);
+            TryAddTemperatureSensor(2, false, 2, SmartAttributeType.TemperatureSensor2);
+            TryAddTemperatureSensor(3, false, 3, SmartAttributeType.TemperatureSensor3);
+            TryAddTemperatureSensor(4, false, 4, SmartAttributeType.TemperatureSensor4);
+            TryAddTemperatureSensor(5, false, 5, SmartAttributeType.TemperatureSensor5);
+            TryAddTemperatureSensor(6, false, 6, SmartAttributeType.TemperatureSensor6);
+            TryAddTemperatureSensor(7, false, 7, SmartAttributeType.TemperatureSensor7);
+            TryAddTemperatureSensor(8, false, 8, SmartAttributeType.TemperatureSensor8);
 
             AddSensor("Temperature warning", 10, false, SensorType.Temperature, s => s.Smart.TemperatureWarning.GetValueOrDefault());
             AddSensor("Temperature critical", 11, false, SensorType.Temperature, s => s.Smart.TemperatureCritical.GetValueOrDefault());
+        }
+        else
+        {
+            AddSensor("Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
         }
 
         if (_storage.Smart.Life.HasValue)
