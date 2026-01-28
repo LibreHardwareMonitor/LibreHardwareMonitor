@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -400,7 +401,7 @@ internal class Nct677X : ISuperIO
             case Chip.NCT6683D:
             case Chip.NCT6686D:
             case Chip.NCT6687D:
-                Fans = new float?[16];
+                Fans = new float?[17];
                 Controls = new float?[8];
                 Voltages = new float?[14];
                 Temperatures = new float?[11];
@@ -448,7 +449,7 @@ internal class Nct677X : ISuperIO
                 _voltageRegisters = [0x120, 0x122, 0x124, 0x126, 0x128, 0x12A, 0x12C, 0x12E, 0x130, 0x13A, 0x13E, 0x136, 0x138, 0x13C];
 
                 // CPU Fan
-                // PUMP Fan
+                // PUMP Fan 1
                 // SYS Fan 1 on some older NCT6687Ds, Nil on others
                 // SYS Fan 2 on some older NCT6687Ds, EZConn on others
                 // SYS Fan 3 on some older NCT6687Ds
@@ -461,7 +462,17 @@ internal class Nct677X : ISuperIO
                 // SYS Fan 3 on newer NCT6687Ds
                 // SYS Fan 2 on newer NCT6687Ds
                 // SYS Fan 1 on newer NCT6687Ds
-                _fanRpmRegister = [0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x154, 0x156, 0x158, 0x15A, 0x15C, 0x15E];
+                // SYS Fan 7 on some NCT6687Ds - 0x852 (e.g. Z790 GODLIKE MAX)
+                _fanRpmRegister = [0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x154, 0x156, 0x158, 0x15A, 0x15C, 0x15E, 0x852];
+
+                // On some boards, there will be SYS Fan 7 (e.g. MSI MEG Z790 GODLIKE MAX)
+                _fanCountRegister = [0x852];
+
+                // max value for 13-bit fan counter
+                _maxFanCount = 0x1FFF;
+
+                // min value that could be transferred to 16-bit RPM registers
+                _minFanCount = 0x15;
 
                 _restoreDefaultFanControlRequired = new bool[_fanRpmRegister.Length];
                 _initialFanControlMode = new byte[_fanRpmRegister.Length];
@@ -525,7 +536,7 @@ internal class Nct677X : ISuperIO
                 // NOTHING
                 // NOTHING
                 // NOTHING
-                // NOTHING
+                // SYS Fan 7 0x152
                 // SYS Fan 1 0x15E
                 // SYS Fan 2 0x15C
                 // SYS Fan 3 0x15A
@@ -827,6 +838,28 @@ internal class Nct677X : ISuperIO
             Temperatures[i] = temperature;
         }
 
+        void Update13BitFan(int i, byte low, byte high)
+        {
+            int count = (high << 5) | (low & 0x1F);
+            if (count < _maxFanCount)
+            {
+                if (count >= _minFanCount)
+                {
+                    Fans[i] = 1.35e6f / count;
+                }
+                else
+                {
+                    Fans[i] = null;
+                }
+            }
+            else
+            {
+                Fans[i] = 0;
+            }
+        }
+
+        var fcrList = _fanCountRegister?.ToList() ?? new List<ushort>();
+
         for (int i = 0; i < Fans.Length; i++)
         {
             if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
@@ -836,22 +869,7 @@ internal class Nct677X : ISuperIO
                     byte high = ReadByte(_fanCountRegister[i]);
                     byte low = ReadByte((ushort)(_fanCountRegister[i] + 1));
 
-                    int count = (high << 5) | (low & 0x1F);
-                    if (count < _maxFanCount)
-                    {
-                        if (count >= _minFanCount)
-                        {
-                            Fans[i] = 1.35e6f / count;
-                        }
-                        else
-                        {
-                            Fans[i] = null;
-                        }
-                    }
-                    else
-                    {
-                        Fans[i] = 0;
-                    }
+                    Update13BitFan(i, low, high);
                 }
                 else
                 {
@@ -864,7 +882,18 @@ internal class Nct677X : ISuperIO
             }
             else
             {
-                Fans[i] = (ReadByte(_fanRpmRegister[i]) << 8) | ReadByte((ushort)(_fanRpmRegister[i] + 1));
+                byte high = ReadByte(_fanRpmRegister[i]);
+                byte low = ReadByte((ushort)(_fanRpmRegister[i] + 1));
+
+                //13-bit fan ?
+                if (fcrList.Contains(_fanRpmRegister[i]))
+                {
+                    Update13BitFan(i, low, high);
+                }
+                else
+                {
+                    Fans[i] = (high << 8) | low;
+                }
             }
         }
 
