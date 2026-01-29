@@ -841,7 +841,7 @@ internal class Nct677X : ISuperIO
 
         void Update13BitFan(int i, byte low, byte high)
         {
-            //No fan plugged in OR fan is at 0 RPM
+            // No fan plugged in OR fan is at 0 RPM
             if (Chip is Chip.NCT6687D && high == 0xFF && low == 0xF8)
             {
                 Fans[i] = 0;
