@@ -172,7 +172,7 @@ public sealed class StorageDevice : Hardware, ISmart
         if (_storage.IsNVMe)
         {
             //Different name for NVMe
-            AddSensor("Composite temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
+            AddSensor("Composite Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
 
             TryAddTemperatureSensor(1, false, 1, SmartAttributeType.TemperatureSensor1);
             TryAddTemperatureSensor(2, false, 2, SmartAttributeType.TemperatureSensor2);
