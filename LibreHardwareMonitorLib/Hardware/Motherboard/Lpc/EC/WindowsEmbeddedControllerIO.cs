@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using LibreHardwareMonitor.PawnIo;
 
@@ -122,7 +123,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
     }
 
     private bool WaitForStatus(Status status, bool isSet)
-    {
+    {   
         for (int i = 0; i < WaitSpins; i++)
         {
             byte value = ReadIOPort(Port.Command);
@@ -137,7 +138,6 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
         return false;
     }
-
     private bool WaitRead()
     {
         if (_waitReadFailures > FailuresBeforeSkip)
@@ -145,16 +145,37 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
             return true;
         }
 
-        if (WaitForStatus(Status.OutputBufferFull, true))
+        // Try OBF with reduced timeout
+        const int OBF_QUICK_CHECK = 10; // 10ms instead of 50ms
+        for (int i = 0; i < OBF_QUICK_CHECK; i++)
         {
-            _waitReadFailures = 0;
-            return true;
+            byte status = ReadIOPort(Port.Command);
+            if ((status & (byte)Status.OutputBufferFull) != 0)
+            {
+                _waitReadFailures = 0;
+                return true;
+            }
+            Thread.Sleep(1);
+        }
+
+        // ASUS workaround: Wait for IBF to clear instead of OBF
+        // Testing on Z170 Pro Gaming shows IBF clears in 1-3ms when data is ready
+        for (int i = 0; i < 50; i++)
+        {
+            byte status = ReadIOPort(Port.Command);
+            if ((status & (byte)Status.InputBufferFull) == 0)
+            {
+                // IBF cleared - add 2ms safety margin for data stability
+                Thread.Sleep(2);
+                _waitReadFailures = 0;
+                return true;
+            }
+            Thread.Sleep(1);
         }
 
         _waitReadFailures++;
         return false;
     }
-
     private bool WaitWrite()
     {
         return WaitForStatus(Status.InputBufferFull, false);
