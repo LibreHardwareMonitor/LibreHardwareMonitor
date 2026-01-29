@@ -25,7 +25,6 @@ public sealed class StorageDevice : Hardware, ISmart
     private readonly PerformanceValue _perfRead = new();
     private readonly PerformanceValue _perfTotal = new();
     private readonly PerformanceValue _perfWrite = new();
-
     private readonly DiskInfoToolkit.Storage _storage;
 
     private long _lastReadCount;
@@ -35,7 +34,6 @@ public sealed class StorageDevice : Hardware, ISmart
     private DateTime _lastUpdate = DateTime.MinValue;
 
     private readonly List<StorageDeviceSensor> _sensors = new();
-
     private readonly List<SmartAttribute> _attributes = new();
 
     private Sensor _sensorDiskReadActivity;
@@ -73,32 +71,25 @@ public sealed class StorageDevice : Hardware, ISmart
 
         _lastUpdate = DateTime.UtcNow;
 
-        //Toggle space sensors
         ToggleSpaceSensors();
-
-        //Update performance sensors
         UpdatePerformanceSensors();
-
-        //Update storage object
         _storage.Update();
-
-        //Update space sensors
         UpdateSpaceSensors();
 
-        //Update attributes
+        // Update attributes
         foreach (var attribute in _storage.Smart.SmartAttributes)
         {
-            //Try to find attribute
+            // Try to find attribute
             var found = _attributes.Find(sa => sa.Id == attribute.Info.ID);
 
-            //Found attribute, update it
+            // Found attribute, update it
             if (found != null)
             {
                 found.Attribute = attribute;
             }
         }
 
-        //Update general sensors
+        // Update general sensors
         _sensors.ForEach(s => s.Update(_storage));
     }
 
@@ -171,7 +162,7 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         if (_storage.IsNVMe)
         {
-            //Different name for NVMe
+            // Different name for NVMe
             AddSensor("Composite Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
 
             TryAddTemperatureSensor(1, false, 1, SmartAttributeType.TemperatureSensor1);
@@ -198,16 +189,16 @@ public sealed class StorageDevice : Hardware, ISmart
 
         if (_storage.Smart.HostReads.HasValue)
         {
-            AddSensor("Data read", 21, false, SensorType.Data, s => s.Smart.HostReads.GetValueOrDefault());
+            AddSensor("Data Read", 21, false, SensorType.Data, s => s.Smart.HostReads.GetValueOrDefault());
         }
 
         if (_storage.Smart.HostWrites.HasValue)
         {
-            AddSensor("Data written", 22, false, SensorType.Data, s => s.Smart.HostWrites.GetValueOrDefault());
+            AddSensor("Data Written", 22, false, SensorType.Data, s => s.Smart.HostWrites.GetValueOrDefault());
         }
 
-        AddSensor("Power on count", 23, false, SensorType.Factor, s => s.Smart.PowerOnCount);
-        AddSensor("Power on hours", 24, false, SensorType.Factor, s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
+        AddSensor("Power On Count", 23, false, SensorType.Factor, s => s.Smart.PowerOnCount);
+        AddSensor("Power On Hours", 24, false, SensorType.Factor, s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
 
         _usageSensor = new Sensor("Used Space", 30, SensorType.Load, this, _settings);
         _freeSpaceSensor = new Sensor("Free Space", 31, SensorType.Data, this, _settings);
@@ -240,11 +231,9 @@ public sealed class StorageDevice : Hardware, ISmart
     private void TryAddTemperatureSensor(int index, bool defaultHidden, int thermalSensorIndex, SmartAttributeType type)
     {
         var attr = GetSmartAttribute(type);
-
-        //Does the sensor have a value ?
         if (attr != null && attr.Attribute.RawValueULong > 0)
         {
-            AddSensor($"Temperature {thermalSensorIndex}", index, defaultHidden, SensorType.Temperature, s =>
+            AddSensor($"Temperature #{thermalSensorIndex}", index, defaultHidden, SensorType.Temperature, s =>
             {
                 var a = GetSmartAttribute(type);
                 if (a != null)
@@ -325,8 +314,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void ToggleSpaceSensors()
     {
-        if (!_storage.IsDynamicDisk
-         && !_storage.Partitions.Any(p => p.IsOtherOperatingSystemPartition))
+        if (!_storage.IsDynamicDisk && !_storage.Partitions.Any(p => p.IsOtherOperatingSystemPartition))
         {
             ActivateSensor(_usageSensor);
             ActivateSensor(_freeSpaceSensor);
@@ -342,7 +330,7 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         if (_storage.TotalSize > 0)
         {
-            //Set sensor value
+            // Set sensor value
             _usageSensor.Value = 100.0f - (100.0f * _storage.TotalFreeSize / _storage.TotalSize);
             _freeSpaceSensor.Value = (float)DataStorageSizeConverter.ByteToGigabyte(_storage.TotalFreeSize.GetValueOrDefault());
         }
@@ -355,7 +343,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void AddSmartAttributeSensors()
     {
-        //Unique attributes by sensor- type and channel
+        // Unique attributes by sensor- type and channel
         var attributes = Attributes.Where(sa => sa.SensorType.HasValue)
                                    .GroupBy(sa => new { sa.SensorType.Value, sa.SensorChannel })
                                    .Select(sa => sa.First());
@@ -391,8 +379,8 @@ public sealed class StorageDevice : Hardware, ISmart
             Time = valBase;
             Result = 100.0 / diffTime * diffValue;
 
-            //sometimes it is possible that diff_value > diff_timebase
-            //limit result to 100%, this is because timing issues during read from pcie controller an latency between IO operation
+            // sometimes it is possible that diff_value > diff_timebase
+            // limit result to 100%, this is because timing issues during read from pcie controller an latency between IO operation
             if (Result > 100)
                 Result = 100;
         }
