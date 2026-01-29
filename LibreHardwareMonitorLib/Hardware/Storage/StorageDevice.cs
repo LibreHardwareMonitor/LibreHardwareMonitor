@@ -183,8 +183,8 @@ public sealed class StorageDevice : Hardware, ISmart
             TryAddTemperatureSensor(7, false, 7, SmartAttributeType.TemperatureSensor7);
             TryAddTemperatureSensor(8, false, 8, SmartAttributeType.TemperatureSensor8);
 
-            AddSensor("Temperature warning", 10, false, SensorType.Temperature, s => s.Smart.TemperatureWarning.GetValueOrDefault());
-            AddSensor("Temperature critical", 11, false, SensorType.Temperature, s => s.Smart.TemperatureCritical.GetValueOrDefault());
+            AddSensor("Warning Temperature", 10, false, SensorType.Temperature, s => s.Smart.TemperatureWarning.GetValueOrDefault());
+            AddSensor("Critical Temperature", 11, false, SensorType.Temperature, s => s.Smart.TemperatureCritical.GetValueOrDefault());
         }
         else
         {
