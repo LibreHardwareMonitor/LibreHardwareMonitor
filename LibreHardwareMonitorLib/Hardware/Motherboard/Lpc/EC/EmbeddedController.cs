@@ -678,7 +678,7 @@ public abstract class EmbeddedController : Hardware
         Intel400,
         Intel600,
         Intel700,
-        CrOS,
+        CrOS
     }
 
     private struct BoardInfo
