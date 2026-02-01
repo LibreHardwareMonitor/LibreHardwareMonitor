@@ -701,7 +701,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("M2 #1", 6));
+                        t.Add(new Temperature("T_Sensor", 6));
 
                         break;
 
