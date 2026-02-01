@@ -3,7 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using System;
 using System.Diagnostics;
 using System.Threading;
 using LibreHardwareMonitor.PawnIo;
@@ -25,11 +24,11 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     // implementation
     private const int WaitSpins = 50;
+
+    private readonly LpcAcpiEc _pawnModule;
     private bool _disposed;
 
     private int _waitReadFailures;
-
-    private readonly LpcAcpiEc _pawnModule;
 
     public WindowsEmbeddedControllerIO()
     {
@@ -62,20 +61,11 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
             {
                 bank = SwitchBank(regBank);
             }
+
             data[i] = ReadByte(regIndex);
         }
 
         SwitchBank(prevBank);
-    }
-
-    private byte ReadByte(byte register)
-    {
-        return ReadLoop<byte>(register, ReadByteOp);
-    }
-
-    private void WriteByte(byte register, byte value)
-    {
-        WriteLoop(register, value, WriteByteOp);
     }
 
     public void Dispose()
@@ -86,6 +76,16 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
             Mutexes.ReleaseEc();
             _pawnModule.Close();
         }
+    }
+
+    private byte ReadByte(byte register)
+    {
+        return ReadLoop<byte>(register, ReadByteOp);
+    }
+
+    private void WriteByte(byte register, byte value)
+    {
+        WriteLoop(register, value, WriteByteOp);
     }
 
     private byte SwitchBank(byte bank)
@@ -145,10 +145,31 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
             return true;
         }
 
-        if (WaitForStatus(Status.OutputBufferFull, true))
+        // Try OBF with reduced timeout
+        for (int i = 0; i < MaxRetries; i++)
         {
-            _waitReadFailures = 0;
-            return true;
+            byte status = ReadIOPort(Port.Command);
+            if ((status & (byte)Status.OutputBufferFull) != 0)
+            {
+                _waitReadFailures = 0;
+                return true;
+            }
+
+            Thread.Sleep(1);
+        }
+
+        // ASUS workaround: Wait for IBF to clear instead of OBF
+        // Testing on Z170 Pro Gaming shows IBF clears in 1-3ms when data is ready
+        for (int i = 0; i < WaitSpins; i++)
+        {
+            byte status = ReadIOPort(Port.Command);
+            if ((status & (byte)Status.InputBufferFull) == 0)
+            {
+                _waitReadFailures = 0;
+                return true;
+            }
+
+            Thread.Sleep(1);
         }
 
         _waitReadFailures++;
@@ -169,45 +190,6 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
     {
         _pawnModule.WritePort((byte)port, datum);
     }
-
-    public class BusMutexLockingFailedException : EmbeddedController.IOException
-    {
-        public BusMutexLockingFailedException()
-            : base("could not lock ISA bus mutex")
-        { }
-    }
-
-    private delegate bool ReadOp<TParam>(byte register, out TParam p);
-
-    private delegate bool WriteOp<in TParam>(byte register, TParam p);
-
-    // see the ACPI specification chapter 12
-    private enum Port : byte
-    {
-        Command = 0x66,
-        Data = 0x62
-    }
-
-    private enum Command : byte
-    {
-        Read = 0x80, // RD_EC
-        Write = 0x81, // WR_EC
-        BurstEnable = 0x82, // BE_EC
-        BurstDisable = 0x83, // BD_EC
-        Query = 0x84 // QR_EC
-    }
-
-    private enum Status : byte
-    {
-        OutputBufferFull = 0x01, // EC_OBF
-        InputBufferFull = 0x02, // EC_IBF
-        Command = 0x08, // CMD
-        BurstMode = 0x10, // BURST
-        SciEventPending = 0x20, // SCI_EVT
-        SmiEventPending = 0x40 // SMI_EVT
-    }
-
-    #region Read/Write ops
 
     protected bool ReadByteOp(byte register, out byte value)
     {
@@ -250,5 +232,39 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         return false;
     }
 
-    #endregion
+    public class BusMutexLockingFailedException : EmbeddedController.IOException
+    {
+        public BusMutexLockingFailedException() : base("could not lock ISA bus mutex")
+        { }
+    }
+
+    private delegate bool ReadOp<TParam>(byte register, out TParam p);
+
+    private delegate bool WriteOp<in TParam>(byte register, TParam p);
+
+    // see the ACPI specification chapter 12
+    private enum Port : byte
+    {
+        Command = 0x66,
+        Data = 0x62
+    }
+
+    private enum Command : byte
+    {
+        Read = 0x80, // RD_EC
+        Write = 0x81, // WR_EC
+        BurstEnable = 0x82, // BE_EC
+        BurstDisable = 0x83, // BD_EC
+        Query = 0x84 // QR_EC
+    }
+
+    private enum Status : byte
+    {
+        OutputBufferFull = 0x01, // EC_OBF
+        InputBufferFull = 0x02, // EC_IBF
+        Command = 0x08, // CMD
+        BurstMode = 0x10, // BURST
+        SciEventPending = 0x20, // SCI_EVT
+        SmiEventPending = 0x40 // SMI_EVT
+    }
 }
