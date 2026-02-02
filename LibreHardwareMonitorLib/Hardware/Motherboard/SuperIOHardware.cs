@@ -701,7 +701,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 13));
 
                         t.Add(new Temperature("PCIe x1", 5));
-                        t.Add(new Temperature("T_Sensor", 6));
+                        t.Add(new Temperature("Temperature Sensor", 6));
 
                         break;
 
@@ -1448,7 +1448,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
                         t.Add(new Temperature("CPU", 0));
                         t.Add(new Temperature("Motherboard", 1));
-                        t.Add(new Temperature("T_Sensor", 2));
+                        t.Add(new Temperature("Temperature Sensor", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM", 4));
                         t.Add(new Temperature("Temperature #6", 5));
@@ -3941,7 +3941,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU", 1));
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("PCH TS10", 9));
-                        t.Add(new Temperature("T_Sensor", 24));
+                        t.Add(new Temperature("Temperature Sensor", 24));
 
                         f.Add(new Fan("CPU Fan #1", 1)); // CPU_FAN1
                         f.Add(new Fan("CPU Fan #2 / Pump", 0)); // CPU_FAN2/PUMP
@@ -3970,9 +3970,9 @@ internal sealed class SuperIOHardware : Hardware
 
                         t.Add(new Temperature("Motherboard", 2));
 
-                        t.Add(new Temperature("Thermistor Sensor #1", 5)); // T_SENSOR 1
-                        t.Add(new Temperature("Thermistor Sensor #2", 6)); // T_SENSOR 2
-                        t.Add(new Temperature("Thermistor Sensor #3", 8)); // T_SENSOR 3
+                        t.Add(new Temperature("Thermistor Sensor #1", 5)); // Temperature Sensor 1
+                        t.Add(new Temperature("Thermistor Sensor #2", 6)); // Temperature Sensor 2
+                        t.Add(new Temperature("Thermistor Sensor #3", 8)); // Temperature Sensor 3
 
                         f.Add(new Fan("CPU Fan #1", 1)); // CPU_FAN1
                         f.Add(new Fan("CPU Fan #2", 2)); // CPU_FAN2
@@ -4011,10 +4011,10 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 1)); // SYSTIN
                         t.Add(new Temperature("Auxiliary #0", 2)); // AUXTIN0
                         t.Add(new Temperature("Auxiliary #1", 3)); // AUXTIN1
-                        t.Add(new Temperature("Thermistor Sensor #1", 4)); // AUXTIN2 (T_SENSOR1)
-                        t.Add(new Temperature("Thermistor Sensor #2", 5)); // AUXTIN3 (T_SENSOR2)
+                        t.Add(new Temperature("Thermistor Sensor #1", 4)); // AUXTIN2 (Temperature Sensor1)
+                        t.Add(new Temperature("Thermistor Sensor #2", 5)); // AUXTIN3 (Temperature Sensor2)
                         t.Add(new Temperature("Auxiliary #4", 6)); // AUXTIN4
-                        t.Add(new Temperature("Thermistor Sensor #3", 7)); // AUXTIN5 (T_SENSOR3)
+                        t.Add(new Temperature("Thermistor Sensor #3", 7)); // AUXTIN5 (Temperature Sensor3)
                         t.Add(new Temperature("CPU Core", 8)); // SMBUSMASTER0 (CPU Core)
                         t.Add(new Temperature("CPU (PECI)", 9)); // CPU (PECI)
                         t.Add(new Temperature("Virtual", 10)); // VIRTUAL_TEMP
@@ -4576,7 +4576,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("PCH", 12)); // Chipset. Match HWinfo & Armoury Crate
                         t.Add(new Temperature("CPU", 21)); // Matches CPU in HWinfo & Armoury Crate.
 
-                        // note that CPU Opt Fan is on the ASUS EC controller. Together with VRM, T_Sensor, WaterIn, WaterOut and WaterFlow + additional sensors.
+                        // note that CPU Opt Fan is on the ASUS EC controller. Together with VRM, Temperature Sensor, WaterIn, WaterOut and WaterFlow + additional sensors.
                         fanControlNames = ["Chassis Fan 1", "CPU Fan", "Chassis Fan 2", "Chassis Fan 3", "Chassis Fan 4", "Waterpump", "AIO Pump"];
 
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length,
@@ -5115,7 +5115,7 @@ internal sealed class SuperIOHardware : Hardware
                         //v.Add(new Voltage("CPU Termination", 9)); // This is wrong
                         t.Add(new Temperature("CPU", 22));
                         t.Add(new Temperature("Motherboard", 2));
-                        t.Add(new Temperature("T_Sensor", 24)); // Aligned with Armoury Crate
+                        t.Add(new Temperature("Temperature Sensor", 24)); // Aligned with Armoury Crate
                         t.Add(new Temperature("Temperature #1", 1)); // Unknown, Possibly VRM with 23 offset
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
