@@ -401,7 +401,7 @@ internal class Nct677X : ISuperIO
             case Chip.NCT6683D:
             case Chip.NCT6686D:
             case Chip.NCT6687D:
-                Fans = new float?[18];
+                Fans = new float?[17];
                 Controls = new float?[8];
                 Voltages = new float?[14];
                 Temperatures = new float?[11];
@@ -456,18 +456,17 @@ internal class Nct677X : ISuperIO
                 // SYS Fan 4 on some older NCT6687Ds
                 // SYS Fan 5 on some older NCT6687Ds
                 // SYS Fan 6 on some older NCT6687Ds
-                // SYS Fan 6 on newer NCT6687Ds
-                // SYS Fan 5 on newer NCT6687Ds
+                // SYS Fan 6 on newer NCT6687Ds - PUMP Fan 2 on some NCT6687Ds (e.g. Z790 GODLIKE MAX)
+                // SYS Fan 5 on newer NCT6687Ds - JAF Fan 1 on some NCT6687Ds (e.g. Z790 GODLIKE MAX)
                 // SYS Fan 4 on newer NCT6687Ds
                 // SYS Fan 3 on newer NCT6687Ds
                 // SYS Fan 2 on newer NCT6687Ds
                 // SYS Fan 1 on newer NCT6687Ds
-                // PUMP Fan 2 on some NCT6687Ds - 0x850 (e.g. Z790 GODLIKE MAX)
                 // SYS Fan 7 on some NCT6687Ds - 0x852 (e.g. Z790 GODLIKE MAX)
-                _fanRpmRegister = [0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x154, 0x156, 0x158, 0x15A, 0x15C, 0x15E, 0x850, 0x852];
+                _fanRpmRegister = [0x140, 0x142, 0x144, 0x146, 0x148, 0x14A, 0x14C, 0x14E, 0x150, 0x152, 0x154, 0x156, 0x158, 0x15A, 0x15C, 0x15E, 0x852];
 
-                // On some boards, there will be PUMP Fan 2 and SYS Fan 7 (e.g. MSI MEG Z790 GODLIKE MAX)
-                _fanCountRegister = [0x850, 0x852];
+                // On some boards, there will be SYS Fan 7 (e.g. MSI MEG Z790 GODLIKE MAX)
+                _fanCountRegister = [0x852];
 
                 // max value for 13-bit fan counter
                 _maxFanCount = 0x1FFF;
