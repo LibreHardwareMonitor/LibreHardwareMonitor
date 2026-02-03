@@ -68,8 +68,8 @@ public struct UiConfigStruct
     public byte Timeout;
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 4)]
-public struct DeviceConfigStruct
+[StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Ansi)]
+public struct DeviceConfigStructV1
 {
     public ushort Crc;
     public byte Version;
@@ -92,5 +92,33 @@ public struct DeviceConfigStruct
     public byte CurrentImbalanceFaultMinLoad; // A
     public byte ShutdownWaitTime; // seconds
     public byte LoggingInterval; // seconds
+    public UiConfigStruct Ui;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Ansi)]
+public struct DeviceConfigStructV2
+{
+    public ushort Crc;
+    public byte Version;
+
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+    public byte[] FriendlyName;
+
+    public FanConfigStruct FanConfig;
+    public byte BacklightDuty;
+
+    public ushort FaultDisplayEnable;
+    public ushort FaultBuzzerEnable;
+    public ushort FaultSoftPowerEnable;
+    public ushort FaultHardPowerEnable;
+    public short TsFaultThreshold; // 0.1 °C
+    public byte OcpFaultThreshold; // A
+    public byte WireOcpFaultThreshold; // 0.1A
+    public ushort OppFaultThreshold; // W
+    public byte CurrentImbalanceFaultThreshold; // %
+    public byte CurrentImbalanceFaultMinLoad; // A
+    public byte ShutdownWaitTime; // seconds
+    public byte LoggingInterval; // seconds
+    public AVG Average;
     public UiConfigStruct Ui;
 }

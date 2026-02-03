@@ -28,13 +28,15 @@ internal sealed class SharedSerialPort : SerialPort
 
     private int MutexTimeout { get; set; } = 500;
 
-    public new void Open()
+    public new bool Open()
     {
         _hasMutex = Mutexes.WaitUsbSensors(MutexTimeout);
         if (_hasMutex)
         {
             base.Open();
         }
+
+        return _hasMutex;
     }
 
     public new void Close()
