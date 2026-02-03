@@ -457,7 +457,7 @@ internal class Nct677X : ISuperIO
                 // SYS Fan 5 on some older NCT6687Ds
                 // SYS Fan 6 on some older NCT6687Ds
                 // SYS Fan 6 on newer NCT6687Ds - PUMP Fan 2 on some NCT6687Ds (e.g. Z790 GODLIKE MAX)
-                // SYS Fan 5 on newer NCT6687Ds - JAF Fan 1 on some NCT6687Ds (e.g. Z790 GODLIKE MAX)
+                // SYS Fan 5 on newer NCT6687Ds - EZ-Connect Fan 1 (JAF) on some NCT6687Ds (e.g. Z790 GODLIKE MAX)
                 // SYS Fan 4 on newer NCT6687Ds
                 // SYS Fan 3 on newer NCT6687Ds
                 // SYS Fan 2 on newer NCT6687Ds
