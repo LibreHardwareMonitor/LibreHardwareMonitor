@@ -415,12 +415,12 @@ internal class LpcIO
                             case Model.B840P_PRO_WIFI:
                             case Model.B840M_GAMING_PLUS_WIFI6E:
                             case Model.B850_GAMING_PLUS_WIFI:
-                            case Model.B850_GAMING_PLUS_WIFI6E:
                             case Model.B850_GAMING_PLUS_WIFI_PZ:
                             case Model.B850M_GAMING_PLUS_WIFI:
                             case Model.B850M_GAMING_PLUS_WIFI6E:
                             case Model.B850P_PRO_WIFI:
                             case Model.B850MA_PRO_WIFI:
+                            case Model.B850MA_PRO_WIFI_PZ:
                             case Model.B850MP_PRO_WIFI:
                             case Model.B850M_MORTAR:
                             case Model.B850M_MORTAR_WIFI:

@@ -391,6 +391,8 @@ internal class Identification
                 return Model.ROG_ZENITH_II_EXTREME;
             case var _ when name.Equals("Z170-A", StringComparison.OrdinalIgnoreCase):
                 return Model.Z170_A;
+            case var _ when name.Equals("Z170 PRO GAMING", StringComparison.OrdinalIgnoreCase):
+                return Model.Z170_PRO_GAMING;
             case var _ when name.Equals("B150M-C", StringComparison.OrdinalIgnoreCase):
                 return Model.B150M_C;
             case var _ when name.Equals("B150M-C D3", StringComparison.OrdinalIgnoreCase):
@@ -691,6 +693,8 @@ internal class Identification
                 return Model.B850S_PRO_WIFI6E;
             case var _ when name.Equals("PRO B850M-A WIFI (MS-7E66)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850MA_PRO_WIFI;
+            case var _ when name.Equals("PRO B850M-A WIFI PZ (MS-7E78)", StringComparison.OrdinalIgnoreCase):
+                return Model.B850MA_PRO_WIFI_PZ;
             case var _ when name.Equals("PRO B850M-P WIFI (MS-7E71)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850MP_PRO_WIFI;
             case var _ when name.Equals("B850 GAMING PLUS WIFI (MS-7E56)", StringComparison.OrdinalIgnoreCase):
@@ -705,6 +709,8 @@ internal class Identification
                 return Model.B850M_MORTAR;
             case var _ when name.Equals("MAG B850M MORTAR WIFI (MS-7E61)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850M_MORTAR_WIFI;
+            case var _ when name.Equals("MAG B850 TOMAHAWK WIFI (MS-7E53)", StringComparison.OrdinalIgnoreCase):
+                return Model.B850_TOMAHAWK_WIFI;
             case var _ when name.Equals("MAG B850 TOMAHAWK MAX WIFI (MS-7E62)", StringComparison.OrdinalIgnoreCase):
                 return Model.B850_TOMAHAWK_MAX_WIFI;
             case var _ when name.Equals("MPG B850 EDGE TI WIFI (MS-7E62)", StringComparison.OrdinalIgnoreCase):
