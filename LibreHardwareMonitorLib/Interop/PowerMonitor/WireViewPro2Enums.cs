@@ -118,3 +118,15 @@ public enum SCREEN_CMD : byte
     SCREEN_PAUSE_UPDATES = 0xF0,
     SCREEN_RESUME_UPDATES = 0xF1
 }
+
+public enum AVG : byte
+{
+    AVG_22MS,
+    AVG_44MS,
+    AVG_89MS,
+    AVG_177MS,
+    AVG_354MS,
+    AVG_709MS,
+    AVG_1417MS,
+    AVG_NUM
+}

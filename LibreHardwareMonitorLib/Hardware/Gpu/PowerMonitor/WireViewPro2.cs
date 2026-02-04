@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
 namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
@@ -45,6 +46,8 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     public string UniqueID { get; private set; }
 
     public VendorDataStruct? VendorData { get; private set; }
+
+    public int ConfigVersion => VendorData?.FwVersion > 2 ? 1 : 0;
 
     public static WireViewPro2 TryFindDevice(ISettings settings)
     {
@@ -111,22 +114,46 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
     }
 
-    public DeviceConfigStruct? ReadConfig()
+    public DeviceConfigStructV2? ReadConfig()
     {
         if (!IsConnected)
         {
             return null;
         }
 
+        int size = 0;
+
         try
         {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([(byte)UsbCmd.CMD_READ_CONFIG], 0, 1);
+            switch (ConfigVersion)
+            {
+                case 0:
+                    size = Marshal.SizeOf<DeviceConfigStructV1>();
+                    break;
+                case 1:
+                    size = Marshal.SizeOf<DeviceConfigStructV2>();
+                    break;
+                default:
+                    return null;
+            }
 
-            byte[] bytes = ReadExact(Marshal.SizeOf<DeviceConfigStruct>());
+            var buf = SendCmd(UsbCmd.CMD_READ_CONFIG, size);
 
-            return bytes == null ? null : BytesToStructure<DeviceConfigStruct>(bytes);
+            if (buf == null)
+            {
+                return null;
+            }
+
+            switch (ConfigVersion)
+            {
+                case 0:
+                    var s = BytesToStructure<DeviceConfigStructV1>(buf);
+                    return StructureConversion.ConvertConfigV1ToV2(s);
+                case 1:
+                    return BytesToStructure<DeviceConfigStructV2>(buf);
+                default:
+                    return null;
+            }
         }
         finally
         {
@@ -134,14 +161,27 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
     }
 
-    public void WriteConfig(DeviceConfigStruct config)
+    public void WriteConfig(DeviceConfigStructV2 config)
     {
         if (!IsConnected)
         {
             return;
         }
 
-        byte[] payload = StructureToBytes(config);
+        byte[] payload = [];
+
+        switch (ConfigVersion)
+        {
+            case 0:
+                var s = StructureConversion.ConvertConfigV2ToV1(config);
+                payload = StructureToBytes(s);
+                break;
+            case 1:
+                payload = StructureToBytes(config);
+                break;
+            default:
+                return;
+        }
 
         byte[] frame = new byte[64];
         frame[0] = (byte)UsbCmd.CMD_WRITE_CONFIG;
@@ -176,25 +216,15 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        try
-        {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([
-                                  (byte)UsbCmd.CMD_NVM_CONFIG,
-                                  0x55, //Magic
-                                  0xAA, //Magic
-                                  0x55, //Magic
-                                  0xAA, //Magic
-                                  (byte)cmd
-                              ],
-                              0,
-                              6);
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        SendData(
+            [
+                (byte)UsbCmd.CMD_NVM_CONFIG,
+                0x55, //Magic
+                0xAA, //Magic
+                0x55, //Magic
+                0xAA, //Magic
+                (byte)cmd
+            ]);
     }
 
     public void ScreenCmd(SCREEN_CMD cmd)
@@ -204,16 +234,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        try
-        {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([(byte)UsbCmd.CMD_SCREEN_CHANGE, (byte)cmd], 0, 2);
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        SendData([(byte)UsbCmd.CMD_SCREEN_CHANGE, (byte)cmd]);
     }
 
     public void ClearFaults(int faultStatusMask = 0xFFFF, int faultLogMask = 0xFFFF)
@@ -223,24 +244,14 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return;
         }
 
-        try
-        {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([
-                                  (byte)UsbCmd.CMD_CLEAR_FAULTS,
-                                  (byte)(faultStatusMask & 0xFF),
-                                  (byte)((faultStatusMask >> 8) & 0xFF),
-                                  (byte)(faultLogMask & 0xFF),
-                                  (byte)((faultLogMask >> 8) & 0xFF)
-                              ],
-                              0,
-                              5);
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        SendData(
+            [
+                (byte)UsbCmd.CMD_CLEAR_FAULTS,
+                (byte)(faultStatusMask & 0xFF),
+                (byte)((faultStatusMask >> 8) & 0xFF),
+                (byte)(faultLogMask & 0xFF),
+                (byte)((faultLogMask >> 8) & 0xFF)
+            ]);
     }
 
     private void CreateSensors()
@@ -364,63 +375,25 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     {
         int size = WelcomeMessage.Length + 1;
 
-        try
-        {
-            _serialPort.Open();
-            _serialPort.RtsEnable = true;
+        var bytes = SendData([(byte)UsbCmd.CMD_WELCOME], size, true);
 
-            if (sendCmd)
-            {
-                _serialPort.DiscardInBuffer();
-                _serialPort.Write([(byte)UsbCmd.CMD_WELCOME], 0, 1);
-            }
-
-            byte[] bytes = ReadExact(size);
-
-            _serialPort.RtsEnable = false;
-
-            return bytes == null ? false : Encoding.ASCII.GetString(bytes, 0, size).TrimEnd('\0').CompareTo(WelcomeMessage) == 0;
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        return bytes == null ? false : Encoding.ASCII.GetString(bytes, 0, size).TrimEnd('\0').CompareTo(WelcomeMessage) == 0;
     }
 
     private VendorDataStruct? ReadVendorData()
     {
-        try
-        {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([(byte)UsbCmd.CMD_READ_VENDOR_DATA], 0, 1);
+        var bytes = SendCmd(UsbCmd.CMD_READ_VENDOR_DATA, Marshal.SizeOf<VendorDataStruct>());
 
-            byte[] bytes = ReadExact(Marshal.SizeOf<VendorDataStruct>());
-
-            return bytes == null ? null : BytesToStructure<VendorDataStruct>(bytes);
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        return bytes == null ? null : BytesToStructure<VendorDataStruct>(bytes);
     }
 
     private string ReadUniqueID()
     {
-        try
-        {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([(byte)UsbCmd.CMD_READ_UID], 0, 1);
+        const int UIDBytes = 12;
 
-            byte[] bytes = ReadExact(12);
+        var bytes = SendCmd(UsbCmd.CMD_READ_UID, UIDBytes);
 
-            return bytes == null ? null : BitConverter.ToString(bytes).Replace("-", string.Empty);
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        return bytes == null ? null : BitConverter.ToString(bytes).Replace("-", string.Empty);
     }
 
     private SensorStruct? ReadSensorValues()
@@ -430,20 +403,9 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             return null;
         }
 
-        try
-        {
-            _serialPort.Open();
-            _serialPort.DiscardInBuffer();
-            _serialPort.Write([(byte)UsbCmd.CMD_READ_SENSOR_VALUES], 0, 1);
+        var bytes = SendCmd(UsbCmd.CMD_READ_SENSOR_VALUES, Marshal.SizeOf<SensorStruct>());
 
-            byte[] bytes = ReadExact(Marshal.SizeOf<SensorStruct>());
-
-            return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
-        }
-        finally
-        {
-            _serialPort.Close();
-        }
+        return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
     }
 
     private DeviceData MapSensorStructure(SensorStruct sensorStruct)
@@ -484,6 +446,55 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
 
         return deviceData;
+    }
+
+    private byte[] SendCmd(UsbCmd cmd, int responseSize = 0, bool rts = false)
+    {
+        return SendData(new[] { (byte)cmd }, responseSize, rts);
+    }
+
+    private byte[] SendData(byte[] data, int responseSize = 0, bool rts = false)
+    {
+        if (_serialPort == null)
+        {
+            return null;
+        }
+
+        byte[] buf = null;
+
+        try
+        {
+            lock (_serialPort)
+            {
+                _serialPort.Open();
+                _serialPort.DiscardInBuffer();
+
+                if (rts)
+                {
+                    _serialPort.RtsEnable = true;
+                    Thread.Sleep(10);
+                }
+
+                _serialPort.Write(data, 0, data.Length);
+
+                if (responseSize > 0)
+                {
+                    buf = ReadExact(responseSize);
+                }
+
+                if (rts)
+                {
+                    Thread.Sleep(10);
+                    _serialPort.RtsEnable = false;
+                }
+            }
+        }
+        finally
+        {
+            _serialPort.Close();
+        }
+
+        return buf;
     }
 
     private byte[] ReadExact(int size)
