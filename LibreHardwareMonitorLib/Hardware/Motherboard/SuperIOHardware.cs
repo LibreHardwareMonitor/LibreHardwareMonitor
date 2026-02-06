@@ -580,7 +580,6 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case Manufacturer.MSI when model == Model.B850_TOMAHAWK_WIFI: // NCT6687D
                     case Manufacturer.MSI when model == Model.B850_GAMING_PLUS_WIFI6E: // NCT6687D
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
