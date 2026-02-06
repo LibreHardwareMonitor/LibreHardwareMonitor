@@ -410,51 +410,16 @@ internal class LpcIO
                 switch (revision)
                 {
                     case 0x92:
-                        switch (motherboard.Model)
+                        // MSI AM5/LGA1851 800 Series Motherboard Compatibility (Nuvoton NCT6687DR)
+                        if (motherboard.Manufacturer == Manufacturer.MSI && (motherboard.Model.ToString().StartsWith("B8", StringComparison.OrdinalIgnoreCase) ||
+                            motherboard.Model.ToString().StartsWith("X8", StringComparison.OrdinalIgnoreCase) ||
+                            motherboard.Model.ToString().StartsWith("Z8", StringComparison.OrdinalIgnoreCase)))
                         {
-                            case Model.B840P_PRO_WIFI:
-                            case Model.B840M_GAMING_PLUS_WIFI6E:
-                            case Model.B850_GAMING_PLUS_WIFI:
-                            case Model.B850_GAMING_PLUS_WIFI_PZ:
-                            case Model.B850M_GAMING_PLUS_WIFI:
-                            case Model.B850M_GAMING_PLUS_WIFI6E:
-                            case Model.B850P_PRO_WIFI:
-                            case Model.B850MA_PRO_WIFI:
-                            case Model.B850MA_PRO_WIFI_PZ:
-                            case Model.B850MP_PRO_WIFI:
-                            case Model.B850M_MORTAR:
-                            case Model.B850M_MORTAR_WIFI:
-                            case Model.B850_TOMAHAWK_WIFI:
-                            case Model.B850_TOMAHAWK_MAX_WIFI:
-                            case Model.B850_EDGE_TI_WIFI:
-                            case Model.B850I_EDGE_TI_WIFI:
-                            case Model.B850MPOWER:
-                            case Model.B850S_PRO_WIFI6E:
-                            case Model.X870_GAMING_PLUS_WIFI:
-                            case Model.X870E_GAMING_PLUS_WIFI:
-                            case Model.X870_TOMAHAWK_WIFI:
-                            case Model.X870P_PRO_WIFI:
-                            case Model.X870EP_PRO_WIFI:
-                            case Model.X870E_TOMAHAWK_WIFI:
-                            case Model.X870E_TOMAHAWK_MAX_WIFI_PZ:
-                            case Model.X870E_CARBON_WIFI:
-                            case Model.X870E_EDGE_TI_WIFI:
-                            case Model.X870E_GODLIKE:
-                            case Model.Z890_ACE:
-                            case Model.Z890_CARBON_WIFI:
-                            case Model.Z890_GAMING_PLUS_WIFI:
-                            case Model.Z890_TOMAHAWK_WIFI:
-                            case Model.Z890_UNIFY_X:
-                            case Model.Z890_EDGE_TI_WIFI:
-                            case Model.Z890I_EDGE_TI_WIFI:
-                            case Model.Z890P_PRO_WIFI:
-                            case Model.Z890A_PRO_WIFI:
-                            case Model.Z890S_PRO_WIFI:
-                                chip = Chip.NCT6687DR; // MSI AM5/LGA1851 Compatibility
-                                break;
-                            default:
-                                chip = Chip.NCT6687D;
-                                break;
+                            chip = Chip.NCT6687DR;
+                        }
+                        else
+                        {
+                           chip = Chip.NCT6687D; 
                         }
 
                         logicalDeviceNumber = WINBOND_NUVOTON_HARDWARE_MONITOR_LDN;
