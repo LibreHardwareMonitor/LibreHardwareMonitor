@@ -559,14 +559,15 @@ internal sealed class SuperIOHardware : Hardware
 
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("Pump Fan #1", 1));
-                        f.Add(new Fan("Pump Fan #2", 16));
+                        f.Add(new Fan("Pump Fan #2", 8));
                         f.Add(new Fan("System Fan #1", 2));
                         f.Add(new Fan("System Fan #2", 3));
                         f.Add(new Fan("System Fan #3", 4));
                         f.Add(new Fan("System Fan #4", 5));
                         f.Add(new Fan("System Fan #5", 6));
                         f.Add(new Fan("System Fan #6", 7));
-                        f.Add(new Fan("System Fan #7", 17));
+                        f.Add(new Fan("System Fan #7", 16));
+                        f.Add(new Fan("EZ-Connect Fan", 9));
 
                         c.Add(new Control("CPU Fan", 0));
                         c.Add(new Control("Pump Fan #1", 1));
@@ -579,7 +580,6 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
-                    case Manufacturer.MSI when model == Model.B850_TOMAHAWK_WIFI: // NCT6687D
                     case Manufacturer.MSI when model == Model.B850_GAMING_PLUS_WIFI6E: // NCT6687D
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
