@@ -36,7 +36,7 @@ internal class MsiGroup : IGroup
 
             try
             {
-                var coreLiquidController = new CoreLiquidController(found, hidDevice, settings);
+                var coreLiquidController = new MsiCoreLiquidController(found, hidDevice, settings);
 
                 _hardware.Add(coreLiquidController);
                 _report.AppendLine($"MSI Controller for '{hidDevice.GetProductName()}' ({hidDevice.VendorID:X4}:{hidDevice.ProductID:X4}) initialized successfully");
@@ -52,12 +52,9 @@ internal class MsiGroup : IGroup
 
     public void Close()
     {
-        foreach (IHardware hw in _hardware)
+        foreach (Hardware hw in _hardware.OfType<Hardware>())
         {
-            if (hw is Hardware hardware)
-            {
-                hardware.Close();
-            }
+            hw.Close();
         }
     }
 

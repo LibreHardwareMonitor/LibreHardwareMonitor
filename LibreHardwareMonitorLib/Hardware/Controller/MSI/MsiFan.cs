@@ -17,22 +17,22 @@ public class MsiFan
     /// <summary>
     /// Speed of Fan in percentage 0-100. This can e.g. be used to set fan curve when <see cref="Mode"/> is <see cref="MsiFanMode.Custom"/>.
     /// </summary>
-    public byte Configure_Duty_0 { get; set; }
-    public byte Configure_Duty_1 { get; set; }
-    public byte Configure_Duty_2 { get; set; }
-    public byte Configure_Duty_3 { get; set; }
-    public byte Configure_Duty_4 { get; set; }
-    public byte Configure_Duty_5 { get; set; }
-    public byte Configure_Duty_6 { get; set; }
+    public byte ConfigureDuty0 { get; set; }
+    public byte ConfigureDuty1 { get; set; }
+    public byte ConfigureDuty2 { get; set; }
+    public byte ConfigureDuty3 { get; set; }
+    public byte ConfigureDuty4 { get; set; }
+    public byte ConfigureDuty5 { get; set; }
+    public byte ConfigureDuty6 { get; set; }
 
     /// <summary>
     /// Temperature of Fan in degrees Celsius. This can e.g. be used to set fan curve when <see cref="Mode"/> is <see cref="MsiFanMode.Custom"/>.
     /// </summary>
-    public byte Configure_Temp_0 { get; set; }
-    public byte Configure_Temp_1 { get; set; }
-    public byte Configure_Temp_2 { get; set; }
-    public byte Configure_Temp_3 { get; set; }
-    public byte Configure_Temp_4 { get; set; }
-    public byte Configure_Temp_5 { get; set; }
-    public byte Configure_Temp_6 { get; set; }
+    public byte ConfigureTemp0 { get; set; }
+    public byte ConfigureTemp1 { get; set; }
+    public byte ConfigureTemp2 { get; set; }
+    public byte ConfigureTemp3 { get; set; }
+    public byte ConfigureTemp4 { get; set; }
+    public byte ConfigureTemp5 { get; set; }
+    public byte ConfigureTemp6 { get; set; }
 }

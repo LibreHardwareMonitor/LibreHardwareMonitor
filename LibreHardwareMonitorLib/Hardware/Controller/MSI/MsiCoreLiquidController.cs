@@ -10,7 +10,7 @@ using HidSharp;
 
 namespace LibreHardwareMonitor.Hardware.Controller.MSI;
 
-internal class CoreLiquidController : Hardware
+internal class MsiCoreLiquidController : Hardware
 {
     private const int MutexTimeout = 500;
     private const int DataLength = 64;
@@ -26,7 +26,7 @@ internal class CoreLiquidController : Hardware
     private Sensor _fan4;
     private Sensor _fan5;
 
-    public CoreLiquidController(MsiDevice msiDevice, HidDevice hidDevice, ISettings settings)
+    public MsiCoreLiquidController(MsiDevice msiDevice, HidDevice hidDevice, ISettings settings)
         : base(msiDevice.Name, new(hidDevice), settings)
     {
         _msiDevice = msiDevice;
@@ -157,19 +157,30 @@ internal class CoreLiquidController : Hardware
                 return;
             }
 
-            //Set requested speed in % and CPU temperature in degrees Celsius
-            fan.Configure_Duty_0 = (byte)control.SoftwareValue;
-            fan.Configure_Temp_0 = 0; //Set temperature to 0 to use fixed duty instead of temperature curve
+            byte value = (byte)control.SoftwareValue;
 
-            fan.Configure_Duty_1 = (byte)control.SoftwareValue;
-            fan.Configure_Temp_1 = 90;
+            if (value < 0)
+            {
+                value = 0;
+            }
+            else if (value > 100)
+            {
+                value = 100;
+            }
+
+            //Set requested speed in % and CPU temperature in degrees Celsius
+            fan.ConfigureDuty0 = value;
+            fan.ConfigureTemp0 = 0; //Set temperature to 0 to use fixed duty instead of temperature curve
+
+            fan.ConfigureDuty1 = value;
+            fan.ConfigureTemp1 = 90;
 
             //Add failsafe to prevent fan from stopping at high temperatures if user sets low duty
-            fan.Configure_Duty_2 = 100; //Max fan
-            fan.Configure_Temp_2 = 91;
+            fan.ConfigureDuty2 = 100; //Max fan
+            fan.ConfigureTemp2 = 91;
 
-            fan.Configure_Duty_2 = 100; //Max fan
-            fan.Configure_Temp_2 = 95;
+            fan.ConfigureDuty3 = 100; //Max fan
+            fan.ConfigureTemp3 = 95;
 
             SetFanConfigure(msi);
             SetFanTemperatureConfigure(msi);
@@ -241,49 +252,49 @@ internal class CoreLiquidController : Hardware
         }
 
         msi.Fan1.Mode = (MsiFanMode)data[2];
-        msi.Fan1.Configure_Duty_0 = data[3];
-        msi.Fan1.Configure_Duty_1 = data[4];
-        msi.Fan1.Configure_Duty_2 = data[5];
-        msi.Fan1.Configure_Duty_3 = data[6];
-        msi.Fan1.Configure_Duty_4 = data[7];
-        msi.Fan1.Configure_Duty_5 = data[8];
-        msi.Fan1.Configure_Duty_6 = data[9];
+        msi.Fan1.ConfigureDuty0 = data[3];
+        msi.Fan1.ConfigureDuty1 = data[4];
+        msi.Fan1.ConfigureDuty2 = data[5];
+        msi.Fan1.ConfigureDuty3 = data[6];
+        msi.Fan1.ConfigureDuty4 = data[7];
+        msi.Fan1.ConfigureDuty5 = data[8];
+        msi.Fan1.ConfigureDuty6 = data[9];
 
         msi.Fan2.Mode = (MsiFanMode)data[10];
-        msi.Fan2.Configure_Duty_0 = data[11];
-        msi.Fan2.Configure_Duty_1 = data[12];
-        msi.Fan2.Configure_Duty_2 = data[13];
-        msi.Fan2.Configure_Duty_3 = data[14];
-        msi.Fan2.Configure_Duty_4 = data[15];
-        msi.Fan2.Configure_Duty_5 = data[16];
-        msi.Fan2.Configure_Duty_6 = data[17];
+        msi.Fan2.ConfigureDuty0 = data[11];
+        msi.Fan2.ConfigureDuty1 = data[12];
+        msi.Fan2.ConfigureDuty2 = data[13];
+        msi.Fan2.ConfigureDuty3 = data[14];
+        msi.Fan2.ConfigureDuty4 = data[15];
+        msi.Fan2.ConfigureDuty5 = data[16];
+        msi.Fan2.ConfigureDuty6 = data[17];
 
         msi.Fan3.Mode = (MsiFanMode)data[18];
-        msi.Fan3.Configure_Duty_0 = data[19];
-        msi.Fan3.Configure_Duty_1 = data[20];
-        msi.Fan3.Configure_Duty_2 = data[21];
-        msi.Fan3.Configure_Duty_3 = data[22];
-        msi.Fan3.Configure_Duty_4 = data[23];
-        msi.Fan3.Configure_Duty_5 = data[24];
-        msi.Fan3.Configure_Duty_6 = data[25];
+        msi.Fan3.ConfigureDuty0 = data[19];
+        msi.Fan3.ConfigureDuty1 = data[20];
+        msi.Fan3.ConfigureDuty2 = data[21];
+        msi.Fan3.ConfigureDuty3 = data[22];
+        msi.Fan3.ConfigureDuty4 = data[23];
+        msi.Fan3.ConfigureDuty5 = data[24];
+        msi.Fan3.ConfigureDuty6 = data[25];
 
         msi.Fan4.Mode = (MsiFanMode)data[26];
-        msi.Fan4.Configure_Duty_0 = data[27];
-        msi.Fan4.Configure_Duty_1 = data[28];
-        msi.Fan4.Configure_Duty_2 = data[29];
-        msi.Fan4.Configure_Duty_3 = data[30];
-        msi.Fan4.Configure_Duty_4 = data[31];
-        msi.Fan4.Configure_Duty_5 = data[32];
-        msi.Fan4.Configure_Duty_6 = data[33];
+        msi.Fan4.ConfigureDuty0 = data[27];
+        msi.Fan4.ConfigureDuty1 = data[28];
+        msi.Fan4.ConfigureDuty2 = data[29];
+        msi.Fan4.ConfigureDuty3 = data[30];
+        msi.Fan4.ConfigureDuty4 = data[31];
+        msi.Fan4.ConfigureDuty5 = data[32];
+        msi.Fan4.ConfigureDuty6 = data[33];
 
         msi.Fan5.Mode = (MsiFanMode)data[34];
-        msi.Fan5.Configure_Duty_0 = data[35];
-        msi.Fan5.Configure_Duty_1 = data[36];
-        msi.Fan5.Configure_Duty_2 = data[37];
-        msi.Fan5.Configure_Duty_3 = data[38];
-        msi.Fan5.Configure_Duty_4 = data[39];
-        msi.Fan5.Configure_Duty_5 = data[40];
-        msi.Fan5.Configure_Duty_6 = data[41];
+        msi.Fan5.ConfigureDuty0 = data[35];
+        msi.Fan5.ConfigureDuty1 = data[36];
+        msi.Fan5.ConfigureDuty2 = data[37];
+        msi.Fan5.ConfigureDuty3 = data[38];
+        msi.Fan5.ConfigureDuty4 = data[39];
+        msi.Fan5.ConfigureDuty5 = data[40];
+        msi.Fan5.ConfigureDuty6 = data[41];
 
         return true;
     }
@@ -302,49 +313,49 @@ internal class CoreLiquidController : Hardware
         }
 
         msi.Fan1.Mode = (MsiFanMode)data[2];
-        msi.Fan1.Configure_Temp_0 = data[3];
-        msi.Fan1.Configure_Temp_1 = data[4];
-        msi.Fan1.Configure_Temp_2 = data[5];
-        msi.Fan1.Configure_Temp_3 = data[6];
-        msi.Fan1.Configure_Temp_4 = data[7];
-        msi.Fan1.Configure_Temp_5 = data[8];
-        msi.Fan1.Configure_Temp_6 = data[9];
+        msi.Fan1.ConfigureTemp0 = data[3];
+        msi.Fan1.ConfigureTemp1 = data[4];
+        msi.Fan1.ConfigureTemp2 = data[5];
+        msi.Fan1.ConfigureTemp3 = data[6];
+        msi.Fan1.ConfigureTemp4 = data[7];
+        msi.Fan1.ConfigureTemp5 = data[8];
+        msi.Fan1.ConfigureTemp6 = data[9];
 
         msi.Fan2.Mode = (MsiFanMode)data[10];
-        msi.Fan2.Configure_Temp_0 = data[11];
-        msi.Fan2.Configure_Temp_1 = data[12];
-        msi.Fan2.Configure_Temp_2 = data[13];
-        msi.Fan2.Configure_Temp_3 = data[14];
-        msi.Fan2.Configure_Temp_4 = data[15];
-        msi.Fan2.Configure_Temp_5 = data[16];
-        msi.Fan2.Configure_Temp_6 = data[17];
+        msi.Fan2.ConfigureTemp0 = data[11];
+        msi.Fan2.ConfigureTemp1 = data[12];
+        msi.Fan2.ConfigureTemp2 = data[13];
+        msi.Fan2.ConfigureTemp3 = data[14];
+        msi.Fan2.ConfigureTemp4 = data[15];
+        msi.Fan2.ConfigureTemp5 = data[16];
+        msi.Fan2.ConfigureTemp6 = data[17];
 
         msi.Fan3.Mode = (MsiFanMode)data[18];
-        msi.Fan3.Configure_Temp_0 = data[19];
-        msi.Fan3.Configure_Temp_1 = data[20];
-        msi.Fan3.Configure_Temp_2 = data[21];
-        msi.Fan3.Configure_Temp_3 = data[22];
-        msi.Fan3.Configure_Temp_4 = data[23];
-        msi.Fan3.Configure_Temp_5 = data[24];
-        msi.Fan3.Configure_Temp_6 = data[25];
+        msi.Fan3.ConfigureTemp0 = data[19];
+        msi.Fan3.ConfigureTemp1 = data[20];
+        msi.Fan3.ConfigureTemp2 = data[21];
+        msi.Fan3.ConfigureTemp3 = data[22];
+        msi.Fan3.ConfigureTemp4 = data[23];
+        msi.Fan3.ConfigureTemp5 = data[24];
+        msi.Fan3.ConfigureTemp6 = data[25];
 
         msi.Fan4.Mode = (MsiFanMode)data[26];
-        msi.Fan4.Configure_Temp_0 = data[27];
-        msi.Fan4.Configure_Temp_1 = data[28];
-        msi.Fan4.Configure_Temp_2 = data[29];
-        msi.Fan4.Configure_Temp_3 = data[30];
-        msi.Fan4.Configure_Temp_4 = data[31];
-        msi.Fan4.Configure_Temp_5 = data[32];
-        msi.Fan4.Configure_Temp_6 = data[33];
+        msi.Fan4.ConfigureTemp0 = data[27];
+        msi.Fan4.ConfigureTemp1 = data[28];
+        msi.Fan4.ConfigureTemp2 = data[29];
+        msi.Fan4.ConfigureTemp3 = data[30];
+        msi.Fan4.ConfigureTemp4 = data[31];
+        msi.Fan4.ConfigureTemp5 = data[32];
+        msi.Fan4.ConfigureTemp6 = data[33];
 
         msi.Fan5.Mode = (MsiFanMode)data[34];
-        msi.Fan5.Configure_Temp_0 = data[35];
-        msi.Fan5.Configure_Temp_1 = data[36];
-        msi.Fan5.Configure_Temp_2 = data[37];
-        msi.Fan5.Configure_Temp_3 = data[38];
-        msi.Fan5.Configure_Temp_4 = data[39];
-        msi.Fan5.Configure_Temp_5 = data[40];
-        msi.Fan5.Configure_Temp_6 = data[41];
+        msi.Fan5.ConfigureTemp0 = data[35];
+        msi.Fan5.ConfigureTemp1 = data[36];
+        msi.Fan5.ConfigureTemp2 = data[37];
+        msi.Fan5.ConfigureTemp3 = data[38];
+        msi.Fan5.ConfigureTemp4 = data[39];
+        msi.Fan5.ConfigureTemp5 = data[40];
+        msi.Fan5.ConfigureTemp6 = data[41];
 
         return true;
     }
@@ -356,49 +367,49 @@ internal class CoreLiquidController : Hardware
         buffer[1] = 0x40;
 
         buffer[2] = (byte)msi.Fan1.Mode;
-        buffer[3] = msi.Fan1.Configure_Duty_0;
-        buffer[4] = msi.Fan1.Configure_Duty_1;
-        buffer[5] = msi.Fan1.Configure_Duty_2;
-        buffer[6] = msi.Fan1.Configure_Duty_3;
-        buffer[7] = msi.Fan1.Configure_Duty_4;
-        buffer[8] = msi.Fan1.Configure_Duty_5;
-        buffer[9] = msi.Fan1.Configure_Duty_6;
+        buffer[3] = msi.Fan1.ConfigureDuty0;
+        buffer[4] = msi.Fan1.ConfigureDuty1;
+        buffer[5] = msi.Fan1.ConfigureDuty2;
+        buffer[6] = msi.Fan1.ConfigureDuty3;
+        buffer[7] = msi.Fan1.ConfigureDuty4;
+        buffer[8] = msi.Fan1.ConfigureDuty5;
+        buffer[9] = msi.Fan1.ConfigureDuty6;
 
         buffer[10] = (byte)msi.Fan2.Mode;
-        buffer[11] = msi.Fan2.Configure_Duty_0;
-        buffer[12] = msi.Fan2.Configure_Duty_1;
-        buffer[13] = msi.Fan2.Configure_Duty_2;
-        buffer[14] = msi.Fan2.Configure_Duty_3;
-        buffer[15] = msi.Fan2.Configure_Duty_4;
-        buffer[16] = msi.Fan2.Configure_Duty_5;
-        buffer[17] = msi.Fan2.Configure_Duty_6;
+        buffer[11] = msi.Fan2.ConfigureDuty0;
+        buffer[12] = msi.Fan2.ConfigureDuty1;
+        buffer[13] = msi.Fan2.ConfigureDuty2;
+        buffer[14] = msi.Fan2.ConfigureDuty3;
+        buffer[15] = msi.Fan2.ConfigureDuty4;
+        buffer[16] = msi.Fan2.ConfigureDuty5;
+        buffer[17] = msi.Fan2.ConfigureDuty6;
 
         buffer[18] = (byte)msi.Fan3.Mode;
-        buffer[19] = msi.Fan3.Configure_Duty_0;
-        buffer[20] = msi.Fan3.Configure_Duty_1;
-        buffer[21] = msi.Fan3.Configure_Duty_2;
-        buffer[22] = msi.Fan3.Configure_Duty_3;
-        buffer[23] = msi.Fan3.Configure_Duty_4;
-        buffer[24] = msi.Fan3.Configure_Duty_5;
-        buffer[25] = msi.Fan3.Configure_Duty_6;
+        buffer[19] = msi.Fan3.ConfigureDuty0;
+        buffer[20] = msi.Fan3.ConfigureDuty1;
+        buffer[21] = msi.Fan3.ConfigureDuty2;
+        buffer[22] = msi.Fan3.ConfigureDuty3;
+        buffer[23] = msi.Fan3.ConfigureDuty4;
+        buffer[24] = msi.Fan3.ConfigureDuty5;
+        buffer[25] = msi.Fan3.ConfigureDuty6;
 
         buffer[26] = (byte)msi.Fan4.Mode;
-        buffer[27] = msi.Fan4.Configure_Duty_0;
-        buffer[28] = msi.Fan4.Configure_Duty_1;
-        buffer[29] = msi.Fan4.Configure_Duty_2;
-        buffer[30] = msi.Fan4.Configure_Duty_3;
-        buffer[31] = msi.Fan4.Configure_Duty_4;
-        buffer[32] = msi.Fan4.Configure_Duty_5;
-        buffer[33] = msi.Fan4.Configure_Duty_6;
+        buffer[27] = msi.Fan4.ConfigureDuty0;
+        buffer[28] = msi.Fan4.ConfigureDuty1;
+        buffer[29] = msi.Fan4.ConfigureDuty2;
+        buffer[30] = msi.Fan4.ConfigureDuty3;
+        buffer[31] = msi.Fan4.ConfigureDuty4;
+        buffer[32] = msi.Fan4.ConfigureDuty5;
+        buffer[33] = msi.Fan4.ConfigureDuty6;
 
         buffer[34] = (byte)msi.Fan5.Mode;
-        buffer[35] = msi.Fan5.Configure_Duty_0;
-        buffer[36] = msi.Fan5.Configure_Duty_1;
-        buffer[37] = msi.Fan5.Configure_Duty_2;
-        buffer[38] = msi.Fan5.Configure_Duty_3;
-        buffer[39] = msi.Fan5.Configure_Duty_4;
-        buffer[40] = msi.Fan5.Configure_Duty_5;
-        buffer[41] = msi.Fan5.Configure_Duty_6;
+        buffer[35] = msi.Fan5.ConfigureDuty0;
+        buffer[36] = msi.Fan5.ConfigureDuty1;
+        buffer[37] = msi.Fan5.ConfigureDuty2;
+        buffer[38] = msi.Fan5.ConfigureDuty3;
+        buffer[39] = msi.Fan5.ConfigureDuty4;
+        buffer[40] = msi.Fan5.ConfigureDuty5;
+        buffer[41] = msi.Fan5.ConfigureDuty6;
 
         SetData(buffer);
     }
@@ -410,49 +421,49 @@ internal class CoreLiquidController : Hardware
         buffer[1] = 0x41;
 
         buffer[2] = (byte)msi.Fan1.Mode;
-        buffer[3] = msi.Fan1.Configure_Temp_0;
-        buffer[4] = msi.Fan1.Configure_Temp_1;
-        buffer[5] = msi.Fan1.Configure_Temp_2;
-        buffer[6] = msi.Fan1.Configure_Temp_3;
-        buffer[7] = msi.Fan1.Configure_Temp_4;
-        buffer[8] = msi.Fan1.Configure_Temp_5;
-        buffer[9] = msi.Fan1.Configure_Temp_6;
+        buffer[3] = msi.Fan1.ConfigureTemp0;
+        buffer[4] = msi.Fan1.ConfigureTemp1;
+        buffer[5] = msi.Fan1.ConfigureTemp2;
+        buffer[6] = msi.Fan1.ConfigureTemp3;
+        buffer[7] = msi.Fan1.ConfigureTemp4;
+        buffer[8] = msi.Fan1.ConfigureTemp5;
+        buffer[9] = msi.Fan1.ConfigureTemp6;
 
         buffer[10] = (byte)msi.Fan2.Mode;
-        buffer[11] = msi.Fan2.Configure_Temp_0;
-        buffer[12] = msi.Fan2.Configure_Temp_1;
-        buffer[13] = msi.Fan2.Configure_Temp_2;
-        buffer[14] = msi.Fan2.Configure_Temp_3;
-        buffer[15] = msi.Fan2.Configure_Temp_4;
-        buffer[16] = msi.Fan2.Configure_Temp_5;
-        buffer[17] = msi.Fan2.Configure_Temp_6;
+        buffer[11] = msi.Fan2.ConfigureTemp0;
+        buffer[12] = msi.Fan2.ConfigureTemp1;
+        buffer[13] = msi.Fan2.ConfigureTemp2;
+        buffer[14] = msi.Fan2.ConfigureTemp3;
+        buffer[15] = msi.Fan2.ConfigureTemp4;
+        buffer[16] = msi.Fan2.ConfigureTemp5;
+        buffer[17] = msi.Fan2.ConfigureTemp6;
 
         buffer[18] = (byte)msi.Fan3.Mode;
-        buffer[19] = msi.Fan3.Configure_Temp_0;
-        buffer[20] = msi.Fan3.Configure_Temp_1;
-        buffer[21] = msi.Fan3.Configure_Temp_2;
-        buffer[22] = msi.Fan3.Configure_Temp_3;
-        buffer[23] = msi.Fan3.Configure_Temp_4;
-        buffer[24] = msi.Fan3.Configure_Temp_5;
-        buffer[25] = msi.Fan3.Configure_Temp_6;
+        buffer[19] = msi.Fan3.ConfigureTemp0;
+        buffer[20] = msi.Fan3.ConfigureTemp1;
+        buffer[21] = msi.Fan3.ConfigureTemp2;
+        buffer[22] = msi.Fan3.ConfigureTemp3;
+        buffer[23] = msi.Fan3.ConfigureTemp4;
+        buffer[24] = msi.Fan3.ConfigureTemp5;
+        buffer[25] = msi.Fan3.ConfigureTemp6;
 
         buffer[26] = (byte)msi.Fan4.Mode;
-        buffer[27] = msi.Fan4.Configure_Temp_0;
-        buffer[28] = msi.Fan4.Configure_Temp_1;
-        buffer[29] = msi.Fan4.Configure_Temp_2;
-        buffer[30] = msi.Fan4.Configure_Temp_3;
-        buffer[31] = msi.Fan4.Configure_Temp_4;
-        buffer[32] = msi.Fan4.Configure_Temp_5;
-        buffer[33] = msi.Fan4.Configure_Temp_6;
+        buffer[27] = msi.Fan4.ConfigureTemp0;
+        buffer[28] = msi.Fan4.ConfigureTemp1;
+        buffer[29] = msi.Fan4.ConfigureTemp2;
+        buffer[30] = msi.Fan4.ConfigureTemp3;
+        buffer[31] = msi.Fan4.ConfigureTemp4;
+        buffer[32] = msi.Fan4.ConfigureTemp5;
+        buffer[33] = msi.Fan4.ConfigureTemp6;
 
         buffer[34] = (byte)msi.Fan5.Mode;
-        buffer[35] = msi.Fan5.Configure_Temp_0;
-        buffer[36] = msi.Fan5.Configure_Temp_1;
-        buffer[37] = msi.Fan5.Configure_Temp_2;
-        buffer[38] = msi.Fan5.Configure_Temp_3;
-        buffer[39] = msi.Fan5.Configure_Temp_4;
-        buffer[40] = msi.Fan5.Configure_Temp_5;
-        buffer[41] = msi.Fan5.Configure_Temp_6;
+        buffer[35] = msi.Fan5.ConfigureTemp0;
+        buffer[36] = msi.Fan5.ConfigureTemp1;
+        buffer[37] = msi.Fan5.ConfigureTemp2;
+        buffer[38] = msi.Fan5.ConfigureTemp3;
+        buffer[39] = msi.Fan5.ConfigureTemp4;
+        buffer[40] = msi.Fan5.ConfigureTemp5;
+        buffer[41] = msi.Fan5.ConfigureTemp6;
 
         SetData(buffer);
     }
@@ -461,13 +472,13 @@ internal class CoreLiquidController : Hardware
     {
         HidStream stream = null;
 
+        if (!Mutexes.WaitUsbSensors(MutexTimeout))
+        {
+            return null;
+        }
+
         try
         {
-            if (!Mutexes.WaitUsbSensors(MutexTimeout))
-            {
-                return null;
-            }
-
             var outBuf = new byte[DataLength];
 
             if (!_hidDevice.TryOpen(out stream))
@@ -499,15 +510,13 @@ internal class CoreLiquidController : Hardware
     {
         HidStream stream = null;
 
+        if (!Mutexes.WaitUsbSensors(MutexTimeout))
+        {
+            return;
+        }
+
         try
         {
-            if (!Mutexes.WaitUsbSensors(MutexTimeout))
-            {
-                return;
-            }
-
-            var outBuf = new byte[DataLength];
-
             if (!_hidDevice.TryOpen(out stream))
             {
                 return;
