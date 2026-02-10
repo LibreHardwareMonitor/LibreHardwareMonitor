@@ -82,7 +82,7 @@ internal class MsiCoreLiquidController : Hardware
             _fan5 = AddSensor("Fan 5", 14, SensorType.Fan, m => m.Fan5.Speed);
         }
 
-        AddSensor("Temperature Inlet", 0, SensorType.Temperature, m => m.TemperatureInlet);
+        AddSensor("Inlet Temperature", 0, SensorType.Temperature, m => m.TemperatureInlet);
         AddSensor("Liquid Temperature", 1, SensorType.Temperature, m => m.TemperatureOutlet); //Msi: "Liquid_Temp"
         AddSensor("Temperature Sensor 1", 2, SensorType.Temperature, m => m.TemperatureSensor1 == 125 ? -100 : m.TemperatureSensor1);
         AddSensor("Temperature Sensor 2", 3, SensorType.Temperature, m => m.TemperatureSensor2 == 125 ? -100 : m.TemperatureSensor2);

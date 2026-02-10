@@ -52,7 +52,7 @@ public class MsiDevice
                 case MsiDeviceType.D240:
                     return "MSI CoreLiquid D240";
                 default:
-                    return "No name available";
+                    return "Other";
             }
         }
     }
