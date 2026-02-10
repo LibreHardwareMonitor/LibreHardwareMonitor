@@ -12,27 +12,30 @@ public class MsiFan
     /// </summary>
     public int Speed { get; set; }
     public int Duty { get; set; }
-    public MsiFanMode Mode { get; set; } = MsiFanMode.Unknown;
 
     /// <summary>
-    /// Speed of Fan in percentage 0-100. This can e.g. be used to set fan curve when <see cref="Mode"/> is <see cref="MsiFanMode.Custom"/>.
+    /// Speed of Fan in percentage 0-100. This can e.g. be used to set fan curve when <see cref="MsiFanConfigure.Mode"/> is <see cref="MsiFanMode.Custom"/>.
     /// </summary>
-    public byte ConfigureDuty0 { get; set; }
-    public byte ConfigureDuty1 { get; set; }
-    public byte ConfigureDuty2 { get; set; }
-    public byte ConfigureDuty3 { get; set; }
-    public byte ConfigureDuty4 { get; set; }
-    public byte ConfigureDuty5 { get; set; }
-    public byte ConfigureDuty6 { get; set; }
+    public MsiFanConfigure ConfigureDuty;
 
     /// <summary>
-    /// Temperature of Fan in degrees Celsius. This can e.g. be used to set fan curve when <see cref="Mode"/> is <see cref="MsiFanMode.Custom"/>.
+    /// Temperature of Fan in degrees Celsius. This can e.g. be used to set fan curve when <see cref="MsiFanConfigure.Mode"/> is <see cref="MsiFanMode.Custom"/>.
     /// </summary>
-    public byte ConfigureTemp0 { get; set; }
-    public byte ConfigureTemp1 { get; set; }
-    public byte ConfigureTemp2 { get; set; }
-    public byte ConfigureTemp3 { get; set; }
-    public byte ConfigureTemp4 { get; set; }
-    public byte ConfigureTemp5 { get; set; }
-    public byte ConfigureTemp6 { get; set; }
+    public MsiFanConfigure ConfigureTemp;
+}
+
+public struct MsiFanConfigure
+{
+    public MsiFanConfigure()
+    {
+    }
+
+    public MsiFanMode Mode = MsiFanMode.Unknown;
+    public byte Item0;
+    public byte Item1;
+    public byte Item2;
+    public byte Item3;
+    public byte Item4;
+    public byte Item5;
+    public byte Item6;
 }
