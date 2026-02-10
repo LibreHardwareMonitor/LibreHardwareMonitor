@@ -3,6 +3,9 @@
 // Copyright (C) Florian K. (Blacktempel)
 // All Rights Reserved.
 
+using System;
+using System.Runtime.InteropServices;
+
 namespace LibreHardwareMonitor.Hardware.Controller.MSI;
 
 public class MsiFan
@@ -28,6 +31,10 @@ public struct MsiFanConfigure
 {
     public MsiFanConfigure()
     {
+        if (Marshal.SizeOf<MsiFanConfigure>() != 8)
+        {
+            throw new InvalidOperationException($"{nameof(MsiFanConfigure)} struct size is invalid.");
+        }
     }
 
     public MsiFanMode Mode = MsiFanMode.Unknown;

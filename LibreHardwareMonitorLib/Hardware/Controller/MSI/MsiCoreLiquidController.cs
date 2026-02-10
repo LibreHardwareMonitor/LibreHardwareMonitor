@@ -253,11 +253,13 @@ internal class MsiCoreLiquidController : Hardware
             return false;
         }
 
-        msi.Fan1.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, 2);
-        msi.Fan2.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, 10);
-        msi.Fan3.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, 18);
-        msi.Fan4.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, 26);
-        msi.Fan5.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, 34);
+        int startIndex = 2;
+
+        msi.Fan1.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, startIndex);
+        msi.Fan2.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        msi.Fan3.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        msi.Fan4.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        msi.Fan5.ConfigureDuty = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
 
         return true;
     }
@@ -275,11 +277,13 @@ internal class MsiCoreLiquidController : Hardware
             return false;
         }
 
-        msi.Fan1.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, 2);
-        msi.Fan2.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, 10);
-        msi.Fan3.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, 18);
-        msi.Fan4.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, 26);
-        msi.Fan5.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, 34);
+        int startIndex = 2;
+
+        msi.Fan1.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, startIndex);
+        msi.Fan2.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        msi.Fan3.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        msi.Fan4.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        msi.Fan5.ConfigureTemp = BytesToStruct<MsiFanConfigure>(data, startIndex += Marshal.SizeOf<MsiFanConfigure>());
 
         return true;
     }
@@ -290,11 +294,13 @@ internal class MsiCoreLiquidController : Hardware
         buffer[0] = 0xD0;
         buffer[1] = 0x40;
 
-        StructToBytes(msi.Fan1.ConfigureDuty, buffer, 2);
-        StructToBytes(msi.Fan2.ConfigureDuty, buffer, 10);
-        StructToBytes(msi.Fan3.ConfigureDuty, buffer, 18);
-        StructToBytes(msi.Fan4.ConfigureDuty, buffer, 26);
-        StructToBytes(msi.Fan5.ConfigureDuty, buffer, 34);
+        int startIndex = 2;
+
+        StructToBytes(msi.Fan1.ConfigureDuty, buffer, startIndex);
+        StructToBytes(msi.Fan2.ConfigureDuty, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        StructToBytes(msi.Fan3.ConfigureDuty, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        StructToBytes(msi.Fan4.ConfigureDuty, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        StructToBytes(msi.Fan5.ConfigureDuty, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
 
         SetData(buffer);
     }
@@ -305,11 +311,13 @@ internal class MsiCoreLiquidController : Hardware
         buffer[0] = 0xD0;
         buffer[1] = 0x41;
 
-        StructToBytes(msi.Fan1.ConfigureTemp, buffer, 2);
-        StructToBytes(msi.Fan2.ConfigureTemp, buffer, 10);
-        StructToBytes(msi.Fan3.ConfigureTemp, buffer, 18);
-        StructToBytes(msi.Fan4.ConfigureTemp, buffer, 26);
-        StructToBytes(msi.Fan5.ConfigureTemp, buffer, 34);
+        int startIndex = 2;
+
+        StructToBytes(msi.Fan1.ConfigureTemp, buffer, startIndex);
+        StructToBytes(msi.Fan2.ConfigureTemp, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        StructToBytes(msi.Fan3.ConfigureTemp, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        StructToBytes(msi.Fan4.ConfigureTemp, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
+        StructToBytes(msi.Fan5.ConfigureTemp, buffer, startIndex += Marshal.SizeOf<MsiFanConfigure>());
 
         SetData(buffer);
     }
