@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -22,7 +22,7 @@ internal class ArcticGroup : IGroup
 
     public ArcticGroup(ISettings settings)
     {
-        _report.AppendLine("Arctic Hardware");
+        _report.AppendLine("ARCTIC Hardware");
         _report.AppendLine();
         try
         {
@@ -32,12 +32,12 @@ internal class ArcticGroup : IGroup
             if (hidDevice != null)
             {
                 _hardware.Add(new ArcticFanController(hidDevice, settings));
-                _report.AppendLine("Arctic Fan Controller initialized successfully");
+                _report.AppendLine("ARCTIC Fan Controller initialized successfully");
             }
         }
         catch (Exception ex)
         {
-            _report.AppendLine($"Arctic Fan Controller Plugin initialization failed: {ex.Message}");
+            _report.AppendLine($"ARCTIC Fan Controller Plugin initialization failed: {ex.Message}");
         }
     }
 
