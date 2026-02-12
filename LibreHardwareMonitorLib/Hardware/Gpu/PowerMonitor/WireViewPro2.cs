@@ -110,6 +110,15 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             sb.AppendLine($"  Sensor: {sensor.Name} = {sensor.Value}");
         }
 
+        if (VendorData.HasValue)
+        {
+            sb.AppendLine($"  {nameof(VendorData.Value.VendorId)} = {VendorData.Value.VendorId}");
+            sb.AppendLine($"  {nameof(VendorData.Value.ProductId)} = {VendorData.Value.ProductId}");
+            sb.AppendLine($"  {nameof(VendorData.Value.FwVersion)} = {VendorData.Value.FwVersion}");
+        }
+
+        sb.AppendLine($"  {nameof(UniqueID)} = {UniqueID}");
+
         return sb.ToString();
     }
 
