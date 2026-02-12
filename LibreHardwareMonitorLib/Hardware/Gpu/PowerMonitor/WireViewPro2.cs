@@ -63,11 +63,13 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     public int ConfigVersion => VendorData?.FwVersion > 2 ? 1 : 0;
 
-    public static WireViewPro2 TryFindDevice(ISettings settings)
+    public static List<WireViewPro2> TryFindDevices(ISettings settings)
     {
+        var devices = new List<WireViewPro2>();
+
         if (!Software.OperatingSystem.IsWindows8OrGreater)
         {
-            return null; //No Linux implementation yet
+            return devices; //No Linux implementation yet
         }
 
         List<string> matches = Stm32PortFinder.FindMatchingComPorts(0x0483, 0x5740);
@@ -81,7 +83,8 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 wireViewPro2 = new WireViewPro2(port, settings);
                 if (wireViewPro2.IsConnected)
                 {
-                    break;
+                    devices.Add(wireViewPro2);
+                    continue;
                 }
 
                 wireViewPro2.Close();
@@ -94,7 +97,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             }
         }
 
-        return wireViewPro2;
+        return devices;
     }
 
     public override string GetReport()
