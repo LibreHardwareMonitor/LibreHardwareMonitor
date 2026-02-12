@@ -725,6 +725,27 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.X870E_ACE_MAX:
+                        v.Add(new Voltage("+12V", 0));
+                        v.Add(new Voltage("+5V", 1));
+                        v.Add(new Voltage("CPU Northbridge/SoC", 2));
+                        v.Add(new Voltage("DIMM", 3, 1, 1));
+                        v.Add(new Voltage("Vcore", 4, -1, 2));
+                        v.Add(new Voltage("Chipset", 5));
+                        v.Add(new Voltage("CPU System Agent", 6));
+                        //v.Add(new Voltage("Unknown_4", 7)); //"Voltage #2"
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VREF", 9));
+                        v.Add(new Voltage("+1.8V", 10));
+                        v.Add(new Voltage("+3V Standby", 11));
+                        v.Add(new Voltage("AVSB", 12));
+                        v.Add(new Voltage("CMOS Battery", 13));
+
+                        t.Add(new Temperature("Chipset #2", 5));
+                        t.Add(new Temperature("Thermistor Sensor", 6));
+
+                        break;
+
                     case Model.X870E_CARBON_WIFI:
                     case Model.X870E_GODLIKE:
                         f.Add(new Fan("System Fan #7", 9));
