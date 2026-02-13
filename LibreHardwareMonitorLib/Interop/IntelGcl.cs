@@ -48,6 +48,17 @@ internal static class IntelGcl
         CTL_DEVICE_TYPE_MAX
     }
 
+    /// <summary>
+    /// Adapter properties flags from ctl_adapter_properties_flags_t.
+    /// The graphics_adapter_properties field is a bitmask of these values.
+    /// </summary>
+    public enum ctl_adapter_properties_flag_t : uint
+    {
+        CTL_ADAPTER_PROPERTIES_FLAG_INTEGRATED = 1 << 0,
+        CTL_ADAPTER_PROPERTIES_FLAG_LDA_PRIMARY = 1 << 1,
+        CTL_ADAPTER_PROPERTIES_FLAG_LDA_SECONDARY = 1 << 2,
+    }
+
     public enum ctl_fan_speed_mode_t
     {
         CTL_FAN_SPEED_MODE_DEFAULT = 0,
