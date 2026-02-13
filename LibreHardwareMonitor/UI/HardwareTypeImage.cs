@@ -63,6 +63,9 @@ public class HardwareTypeImage
             case HardwareType.Battery:
                 image = Utilities.EmbeddedResources.GetImage("battery.png");
                 break;
+            case HardwareType.PowerMonitor:
+                image = Utilities.EmbeddedResources.GetImage("powermonitor.png");
+                break;
             default:
                 image = new Bitmap(1, 1);
                 break;

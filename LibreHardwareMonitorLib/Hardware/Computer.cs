@@ -20,6 +20,7 @@ using LibreHardwareMonitor.Hardware.Controller.Razer;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
 using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Gpu;
+using LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
@@ -181,12 +182,15 @@ public class Computer : IComputer
 
                     if (_cpuEnabled)
                         Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+
+                    Add(new PowerMonitorGroup(_settings));
                 }
                 else
                 {
                     RemoveType<AmdGpuGroup>();
                     RemoveType<NvidiaGroup>();
                     RemoveType<IntelGpuGroup>();
+                    RemoveType<PowerMonitorGroup>();
                 }
             }
 
@@ -518,6 +522,8 @@ public class Computer : IComputer
 
             if (_cpuEnabled)
                 Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+
+            Add(new PowerMonitorGroup(_settings));
         }
 
         if (_controllerEnabled)
