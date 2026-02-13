@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace LibreHardwareMonitor.Interop.PowerMonitor;
 
-internal sealed class DeviceData
+public sealed class DeviceData
 {
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
@@ -40,4 +40,6 @@ internal sealed class DeviceData
     public ushort FaultStatus { get; set; }
 
     public ushort FaultLog { get; set; }
+
+    public DeviceConfigStructV2 Config;
 }
