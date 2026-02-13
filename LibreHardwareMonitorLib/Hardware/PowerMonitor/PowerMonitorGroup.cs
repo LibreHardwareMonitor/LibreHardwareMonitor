@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+namespace LibreHardwareMonitor.Hardware.PowerMonitor;
 
 internal class PowerMonitorGroup : IGroup
 {

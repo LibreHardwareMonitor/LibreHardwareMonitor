@@ -20,10 +20,10 @@ using LibreHardwareMonitor.Hardware.Controller.Razer;
 using LibreHardwareMonitor.Hardware.Controller.TBalancer;
 using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Gpu;
-using LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
+using LibreHardwareMonitor.Hardware.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
 using LibreHardwareMonitor.Hardware.Storage;
@@ -43,6 +43,7 @@ public class Computer : IComputer
     private bool _controllerEnabled;
     private bool _cpuEnabled;
     private bool _gpuEnabled;
+    private bool _powerMonitorEnabled;
     private bool _memoryEnabled;
     private bool _motherboardEnabled;
     private bool _networkEnabled;
@@ -182,19 +183,34 @@ public class Computer : IComputer
 
                     if (_cpuEnabled)
                         Add(new IntelGpuGroup(GetIntelCpus(), _settings));
-
-                    Add(new PowerMonitorGroup(_settings));
                 }
                 else
                 {
                     RemoveType<AmdGpuGroup>();
                     RemoveType<NvidiaGroup>();
                     RemoveType<IntelGpuGroup>();
-                    RemoveType<PowerMonitorGroup>();
                 }
             }
 
             _gpuEnabled = value;
+        }
+    }
+
+    /// <inheritdoc />
+    public bool IsPowerMonitorEnabled
+    {
+        get { return _powerMonitorEnabled; }
+        set
+        {
+            if (_open && value != _powerMonitorEnabled)
+            {
+                if (value)
+                    Add(new PowerMonitorGroup(_settings));
+                else
+                    RemoveType<PowerMonitorGroup>();
+            }
+
+            _powerMonitorEnabled = value;
         }
     }
 
@@ -522,9 +538,10 @@ public class Computer : IComputer
 
             if (_cpuEnabled)
                 Add(new IntelGpuGroup(GetIntelCpus(), _settings));
-
-            Add(new PowerMonitorGroup(_settings));
         }
+
+        if (_powerMonitorEnabled)
+            Add(new PowerMonitorGroup(_settings));
 
         if (_controllerEnabled)
         {

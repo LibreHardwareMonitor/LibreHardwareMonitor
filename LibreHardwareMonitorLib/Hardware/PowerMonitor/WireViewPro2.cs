@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+namespace LibreHardwareMonitor.Hardware.PowerMonitor;
 
 /// <summary>
 /// Thermal Grizzly WireView Pro II power monitor.
