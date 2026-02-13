@@ -883,6 +883,8 @@ public class HttpServer
                 return "power-supply.png";
             case HardwareType.Battery:
                 return "battery.png";
+            case HardwareType.PowerMonitor:
+                return "powermonitor.png";
             default:
                 return "cpu.png";
         }
@@ -896,6 +898,7 @@ public class HttpServer
             case SensorType.Current:
                 return "voltage.png";
             case SensorType.Clock:
+            case SensorType.Timing:
                 return "clock.png";
             case SensorType.Load:
                 return "load.png";

@@ -6,7 +6,7 @@
 
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+namespace LibreHardwareMonitor.Hardware.PowerMonitor;
 
 internal delegate float GetWireViewPro2SensorValue(DeviceData wvp);
 

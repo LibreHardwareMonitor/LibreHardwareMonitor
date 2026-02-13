@@ -1,6 +1,6 @@
 ﻿using System.IO.Ports;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+namespace LibreHardwareMonitor.Hardware.PowerMonitor;
 
 internal sealed class SharedSerialPort : SerialPort
 {

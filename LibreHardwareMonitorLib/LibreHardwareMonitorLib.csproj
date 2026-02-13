@@ -59,7 +59,7 @@
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="10.0.2" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,7 +72,7 @@
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.4.2" />
     <PackageReference Include="System.Management" Version="10.0.2" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="System.Threading.AccessControl" Version="10.0.2" />
+    <PackageReference Include="System.Threading.AccessControl" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>

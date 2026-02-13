@@ -1,13 +1,19 @@
-﻿using System;
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) Florian K. (Blacktempel)
+// All Rights Reserved.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
-namespace LibreHardwareMonitor.Hardware.Gpu.PowerMonitor;
+namespace LibreHardwareMonitor.Hardware.PowerMonitor;
 
 /// <summary>
 /// Thermal Grizzly WireView Pro II power monitor.
@@ -16,8 +22,21 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 {
     public const string WelcomeMessage = "Thermal Grizzly WireView Pro II";
 
+    /// <summary>
+    /// Max RPM according to the8auer. This is a custom made fan.
+    /// </summary>
+    private const int MaxFanRPM = 5000;
+
     private const byte VendorID = 0xEF;
     private const byte ProductID = 0x05;
+
+    /// <summary>
+    /// Time the fan needs to ramp up by 10%.
+    /// </summary>
+    private static readonly TimeSpan FanRampupTime = TimeSpan.FromSeconds(3.5);
+
+    private double _lastFanSpeedRpm;
+    private DateTime _lastFanUpdateTime = DateTime.MinValue;
 
     private readonly int _baudRate;
     private readonly string _portName;
@@ -39,7 +58,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         }
     }
 
-    public override HardwareType HardwareType => HardwareType.GpuPowerMonitor;
+    public override HardwareType HardwareType => HardwareType.PowerMonitor;
 
     public bool IsConnected { get; private set; }
 
@@ -49,11 +68,13 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     public int ConfigVersion => VendorData?.FwVersion > 2 ? 1 : 0;
 
-    public static WireViewPro2 TryFindDevice(ISettings settings)
+    public static List<WireViewPro2> TryFindDevices(ISettings settings)
     {
+        var devices = new List<WireViewPro2>();
+
         if (!Software.OperatingSystem.IsWindows8OrGreater)
         {
-            return null; //No Linux implementation yet
+            return devices; //No Linux implementation yet
         }
 
         List<string> matches = Stm32PortFinder.FindMatchingComPorts(0x0483, 0x5740);
@@ -67,7 +88,8 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 wireViewPro2 = new WireViewPro2(port, settings);
                 if (wireViewPro2.IsConnected)
                 {
-                    break;
+                    devices.Add(wireViewPro2);
+                    continue;
                 }
 
                 wireViewPro2.Close();
@@ -80,7 +102,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             }
         }
 
-        return wireViewPro2;
+        return devices;
     }
 
     public override string GetReport()
@@ -92,6 +114,15 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         {
             sb.AppendLine($"  Sensor: {sensor.Name} = {sensor.Value}");
         }
+
+        if (VendorData.HasValue)
+        {
+            sb.AppendLine($"  {nameof(VendorData.Value.VendorId)} = {VendorData.Value.VendorId}");
+            sb.AppendLine($"  {nameof(VendorData.Value.ProductId)} = {VendorData.Value.ProductId}");
+            sb.AppendLine($"  {nameof(VendorData.Value.FwVersion)} = {VendorData.Value.FwVersion}");
+        }
+
+        sb.AppendLine($"  {nameof(UniqueID)} = {UniqueID}");
 
         return sb.ToString();
     }
@@ -105,13 +136,41 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     public override void Update()
     {
-        SensorStruct? sensorValues = ReadSensorValues();
-        if (sensorValues.HasValue)
-        {
-            DeviceData deviceData = MapSensorStructure(sensorValues.Value);
+        var deviceData = GetDeviceData();
 
+        if (deviceData != null)
+        {
             _sensors.ForEach(wvps => wvps.Update(deviceData));
         }
+    }
+
+    public DeviceData GetDeviceData()
+    {
+        SensorStruct? sensorValues = null;
+        DeviceConfigStructV2? config = null;
+
+        try
+        {
+            sensorValues = ReadSensorValues();
+
+            config = ReadConfig();
+        }
+        catch (IOException)
+        {
+            //"A device attached to the system is not functioning."
+            //Can happen rarely
+        }
+        catch (InvalidOperationException)
+        {
+            //Can happen sometimes if the device is disconnecting while reading
+        }
+
+        if (sensorValues.HasValue && config.HasValue)
+        {
+            return MapSensorStructure(sensorValues.Value, config.Value);
+        }
+
+        return null;
     }
 
     public DeviceConfigStructV2? ReadConfig()
@@ -123,41 +182,34 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         int size = 0;
 
-        try
+        switch (ConfigVersion)
         {
-            switch (ConfigVersion)
-            {
-                case 0:
-                    size = Marshal.SizeOf<DeviceConfigStructV1>();
-                    break;
-                case 1:
-                    size = Marshal.SizeOf<DeviceConfigStructV2>();
-                    break;
-                default:
-                    return null;
-            }
-
-            var buf = SendCmd(UsbCmd.CMD_READ_CONFIG, size);
-
-            if (buf == null)
-            {
+            case 0:
+                size = Marshal.SizeOf<DeviceConfigStructV1>();
+                break;
+            case 1:
+                size = Marshal.SizeOf<DeviceConfigStructV2>();
+                break;
+            default:
                 return null;
-            }
-
-            switch (ConfigVersion)
-            {
-                case 0:
-                    var s = BytesToStructure<DeviceConfigStructV1>(buf);
-                    return StructureConversion.ConvertConfigV1ToV2(s);
-                case 1:
-                    return BytesToStructure<DeviceConfigStructV2>(buf);
-                default:
-                    return null;
-            }
         }
-        finally
+
+        var buf = SendCmd(UsbCmd.CMD_READ_CONFIG, size);
+
+        if (buf == null)
         {
-            _serialPort.Close();
+            return null;
+        }
+
+        switch (ConfigVersion)
+        {
+            case 0:
+                var s = BytesToStructure<DeviceConfigStructV1>(buf);
+                return StructureConversion.ConvertConfigV1ToV2(s);
+            case 1:
+                return BytesToStructure<DeviceConfigStructV2>(buf);
+            default:
+                return null;
         }
     }
 
@@ -283,15 +335,204 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
         //Power
         AddSensor("Total Power", 30, SensorType.Power, dd => (float)dd.SumPowerW);
+
+        //Fan
+        var fan = AddSensor("Fan", 40, SensorType.Fan, dd => CalculateFanSpeed(dd));
+        var fanControl = new Control(fan, _settings, 0, 100);
+
+        fan.Control = fanControl;
+        fanControl.ControlModeChanged += OnFanControlModeChanged;
+        fanControl.SoftwareControlValueChanged += OnSoftwareControlValueChanged;
     }
 
-    private void AddSensor(string name, int index, SensorType sensorType, GetWireViewPro2SensorValue getValue)
+    private WireViewPro2Sensor AddSensor(string name, int index, SensorType sensorType, GetWireViewPro2SensorValue getValue)
     {
         var sensor = new WireViewPro2Sensor(name, index, sensorType, this, _settings, getValue);
 
         _sensors.Add(sensor);
 
         ActivateSensor(sensor);
+
+        return sensor;
+    }
+
+    private double FromTemp(short temp)
+    {
+        return temp == 0 ? 0 : temp / 10.0;
+    }
+
+    private short ToTemp(double temp)
+    {
+        return (short)(temp * 10);
+    }
+
+    private void OnFanControlModeChanged(Control control)
+    {
+        var deviceData = GetDeviceData();
+
+        if (deviceData == null)
+        {
+            return;
+        }
+
+        switch (control.ControlMode)
+        {
+            case ControlMode.Software:
+                deviceData.Config.FanConfig.Mode = FanMode.FanModeFixed;
+                break;
+            case ControlMode.Default:
+                //Set default values of TG Software
+                deviceData.Config.FanConfig.Mode = FanMode.FanModeCurve;
+                deviceData.Config.FanConfig.TempSource = TempSource.TempSourceTmax;
+
+                deviceData.Config.FanConfig.TempMin = ToTemp(50);
+                deviceData.Config.FanConfig.TempMax = ToTemp(80);
+
+                deviceData.Config.FanConfig.DutyMin = 0;
+                deviceData.Config.FanConfig.DutyMax = 100;
+                break;
+            default:
+                break;
+        }
+
+        WriteConfig(deviceData.Config);
+    }
+
+    private void OnSoftwareControlValueChanged(Control control)
+    {
+        var deviceData = GetDeviceData();
+
+        if (deviceData == null)
+        {
+            return;
+        }
+
+        byte value = (byte)control.SoftwareValue;
+
+        if (value < 0)
+        {
+            value = 0;
+        }
+        else if (value > 100)
+        {
+            value = 100;
+        }
+
+        deviceData.Config.FanConfig.TempMin = ToTemp(0);
+        deviceData.Config.FanConfig.TempMax = ToTemp(80);
+
+        deviceData.Config.FanConfig.DutyMin = value;
+        deviceData.Config.FanConfig.DutyMax = value;
+
+        WriteConfig(deviceData.Config);
+    }
+
+    /// <summary>
+    /// Fan speed for this device is an approximation based on the curve configuration and current temperatures.<br/>
+    /// The device itself does not report actual fan speed.
+    /// </summary>
+    private float CalculateFanSpeed(DeviceData dd)
+    {
+        var fanConfig = dd.Config.FanConfig;
+        double targetRpm;
+
+        switch (fanConfig.Mode)
+        {
+            case FanMode.FanModeCurve:
+                var tempMin = FromTemp(fanConfig.TempMin);
+                var tempMax = FromTemp(fanConfig.TempMax);
+                var currentTemperature = GetActiveTemperature(dd);
+
+                if (tempMax <= tempMin || currentTemperature <= tempMin)
+                {
+                    targetRpm = fanConfig.DutyMin;
+                }
+                else if (currentTemperature >= tempMax)
+                {
+                    targetRpm = fanConfig.DutyMax;
+                }
+                else
+                {
+                    var temp = (currentTemperature - tempMin) / (tempMax - tempMin);
+                    var fanSpeedInPercent = fanConfig.DutyMin + temp * (fanConfig.DutyMax - fanConfig.DutyMin);
+                    targetRpm = fanSpeedInPercent;
+                }
+
+                targetRpm = targetRpm == 0 ? 0 : targetRpm / 100.0 * MaxFanRPM;
+                break;
+            case FanMode.FanModeFixed:
+                targetRpm = fanConfig.DutyMin == 0 ? 0 : fanConfig.DutyMin / 100.0 * MaxFanRPM;
+                break;
+            default:
+                return -1;
+        }
+
+        return (float)ApplyFanRamp(targetRpm);
+    }
+
+    private double ApplyFanRamp(double targetRpm)
+    {
+        var now = DateTime.UtcNow;
+
+        if (_lastFanUpdateTime == DateTime.MinValue)
+        {
+            _lastFanSpeedRpm = targetRpm;
+            _lastFanUpdateTime = now;
+            return targetRpm;
+        }
+
+        var elapsed = now - _lastFanUpdateTime;
+
+        if (elapsed <= TimeSpan.Zero)
+        {
+            return _lastFanSpeedRpm;
+        }
+
+        var maxPercentDeltaPerSecond = 0.1 / FanRampupTime.TotalSeconds; //10% per FanRampupTime
+        var allowedPercentDelta = elapsed.TotalSeconds * maxPercentDeltaPerSecond;
+
+        var rpmDelta = targetRpm - _lastFanSpeedRpm;
+        var percentDelta = rpmDelta / MaxFanRPM;
+
+        if (Math.Abs(percentDelta) > allowedPercentDelta)
+        {
+            rpmDelta = Math.Sign(percentDelta) * allowedPercentDelta * MaxFanRPM;
+        }
+
+        _lastFanSpeedRpm += rpmDelta;
+        _lastFanUpdateTime = now;
+
+        return _lastFanSpeedRpm;
+    }
+
+    private double GetActiveTemperature(DeviceData dd)
+    {
+        double temperature = 0;
+
+        switch (dd.Config.FanConfig.TempSource)
+        {
+            case TempSource.TempSourceTsIn:
+                temperature = dd.OnboardTempInC;
+                break;
+            case TempSource.TempSourceTsOut:
+                temperature = dd.OnboardTempOutC;
+                break;
+            case TempSource.TempSourceTs1:
+                temperature = dd.ExternalTemp1C;
+                break;
+            case TempSource.TempSourceTs2:
+                temperature = dd.ExternalTemp2C;
+                break;
+            case TempSource.TempSourceTmax:
+                temperature = Math.Max(
+                    Math.Max(dd.OnboardTempInC, dd.OnboardTempOutC),
+                    Math.Max(dd.ExternalTemp1C, dd.ExternalTemp2C));
+                break;
+            default:
+                break;
+        }
+
+        return temperature;
     }
 
     private void Connect()
@@ -408,7 +649,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return bytes == null ? null : BytesToStructure<SensorStruct>(bytes);
     }
 
-    private DeviceData MapSensorStructure(SensorStruct sensorStruct)
+    private DeviceData MapSensorStructure(SensorStruct sensorStruct, DeviceConfigStructV2 config)
     {
         var deviceData = new DeviceData
         {
@@ -421,6 +662,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             ExternalTemp2C = sensorStruct.Ts[(int)SensorTs.SENSOR_TS4] / 10.0,
             FaultStatus = sensorStruct.FaultStatus,
             FaultLog = sensorStruct.FaultLog,
+            Config = config,
         };
 
         switch (sensorStruct.HpwrCapability)
