@@ -40,6 +40,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _readCpuSensors;
     private readonly UserOption _readFanControllersSensors;
     private readonly UserOption _readGpuSensors;
+    private readonly UserOption _readPowerMonitorSensors;
     private readonly UserOption _readHddSensors;
     private readonly UserOption _readMainboardSensors;
     private readonly UserOption _readNicSensors;
@@ -264,6 +265,9 @@ public sealed partial class MainForm : Form
 
         _readGpuSensors = new UserOption("gpuMenuItem", true, gpuMenuItem, _settings);
         _readGpuSensors.Changed += delegate { _computer.IsGpuEnabled = _readGpuSensors.Value; };
+
+        _readPowerMonitorSensors = new UserOption("powerMonitorMenuItem", true, powerMonitorMenuItem, _settings);
+        _readPowerMonitorSensors.Changed += delegate { _computer.IsPowerMonitorEnabled = _readPowerMonitorSensors.Value; };
 
         _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
         _readFanControllersSensors.Changed += delegate { _computer.IsControllerEnabled = _readFanControllersSensors.Value; };
@@ -1289,11 +1293,27 @@ public sealed partial class MainForm : Form
     private void ExpandAllNodes_Click(object sender, EventArgs e)
     {
         treeView.ExpandAll();
+
+        foreach (var node in treeView.AllNodes)
+        {
+            if (node.Tag is IExpandPersistNode expandPersistNode)
+            {
+                expandPersistNode.Expanded = true;
+            }
+        }
     }
 
-    private void CollapsepAllNodes_Click(object sender, EventArgs e)
+    private void CollapseAllNodes_Click(object sender, EventArgs e)
     {
         treeView.CollapseAll();
+
+        foreach (var node in treeView.AllNodes)
+        {
+            if (node.Tag is IExpandPersistNode expandPersistNode)
+            {
+                expandPersistNode.Expanded = false;
+            }
+        }
     }
 
     private void resetPlotMenuItem_Click(object sender, EventArgs e)

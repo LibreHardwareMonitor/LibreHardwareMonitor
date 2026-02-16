@@ -79,6 +79,12 @@ public interface IComputer : IElement
     bool IsGpuEnabled { get; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.PowerMonitor"/> devices should be enabled and updated.
+    /// </summary>
+    /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
+    bool IsPowerMonitorEnabled { get; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Memory" /> devices should be enabled and updated.
     /// </summary>
     /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>

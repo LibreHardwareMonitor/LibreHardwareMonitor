@@ -56,6 +56,7 @@ namespace LibreHardwareMonitor.UI
             this.cpuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ramMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gpuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.powerMonitorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fanControllerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hddMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nicMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -292,6 +293,7 @@ namespace LibreHardwareMonitor.UI
             this.cpuMenuItem,
             this.ramMenuItem,
             this.gpuMenuItem,
+            this.powerMonitorMenuItem,
             this.fanControllerMenuItem,
             this.hddMenuItem,
             this.nicMenuItem,
@@ -324,6 +326,12 @@ namespace LibreHardwareMonitor.UI
             this.gpuMenuItem.Name = "gpuMenuItem";
             this.gpuMenuItem.Size = new System.Drawing.Size(180, 22);
             this.gpuMenuItem.Text = "GPU";
+            //
+            // powerMonitorMenuItem
+            //
+            this.powerMonitorMenuItem.Name = "powerMonitorMenuItem";
+            this.powerMonitorMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.powerMonitorMenuItem.Text = "Power Monitors";
             //
             // fanControllerMenuItem
             //
@@ -397,7 +405,7 @@ namespace LibreHardwareMonitor.UI
             this.collpaseAllNodesMenuItem.Name = "collpaseAllNodesMenuItem";
             this.collpaseAllNodesMenuItem.Size = new System.Drawing.Size(188, 22);
             this.collpaseAllNodesMenuItem.Text = "Collapse All Nodes";
-            this.collpaseAllNodesMenuItem.Click += new System.EventHandler(this.CollapsepAllNodes_Click);
+            this.collpaseAllNodesMenuItem.Click += new System.EventHandler(this.CollapseAllNodes_Click);
             //
             // resetPlotMenuItem
             //
@@ -1176,6 +1184,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem mainboardMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cpuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gpuMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem powerMonitorMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fanControllerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ramMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logSensorsMenuItem;

@@ -14,10 +14,16 @@ public abstract class GenericGpu : Hardware
     /// <param name="identifier">Identifier that will be assigned to the device. Based on <see cref="Identifier" /></param>
     /// <param name="settings">Additional settings passed by the <see cref="IComputer" />.</param>
     protected GenericGpu(string name, Identifier identifier, ISettings settings) : base(name, identifier, settings)
-    { }
+    {
+    }
 
     /// <summary>
     /// Gets the device identifier.
     /// </summary>
     public abstract string DeviceId { get; }
+
+    public override void Close()
+    {
+        base.Close();
+    }
 }

@@ -376,7 +376,7 @@ public class HttpServer
                             return;
                         }
 
-                        if (requestedFile == "metrics")
+                        if (requestedFile.StartsWith("metrics?") || requestedFile == "metrics")
                         {
                             await SendPrometheusAsync(context.Response, request);
                             return;
@@ -569,10 +569,8 @@ public class HttpServer
         response.Close();
     }
 
-    private string GeneratePrometheusResponse(Node node)
+    private string GeneratePrometheusResponse(Node node, Dictionary<string, int> prometheusSettings)
     {
-        const int MaxValues = 5;
-
         string responseStr = "";
         string lastTagName = "";
 
@@ -607,7 +605,7 @@ public class HttpServer
         {
             if (node.Nodes[i].GetType().Name == "HardwareNode")
             {
-                responseStr += GeneratePrometheusResponse(node.Nodes[i]);
+                responseStr += GeneratePrometheusResponse(node.Nodes[i], prometheusSettings);
             }
 
             if (node.Nodes[i].GetType().Name == "TypeNode")
@@ -658,13 +656,11 @@ public class HttpServer
                     // Preparing the labels for all data and uniqueness
                     string valueSensorId = sensor.Sensor.Identifier.ToString().Substring(valueHardwareId.Length);
                     string valueSensorAlias = $"{valueSensorName} ({valueSensorId})";
-
                     string valueHost = _root.Text;
 
                     // Creates the tag with labels
                     string tagLine = $$"""{{tagName}} {"sensorName"="{{valueSensorName}}", "sensorAlias"="{{valueSensorAlias}}", "hardwareName"="{{valueHardwareName}}", "hardwareAlias"="{{valueHardwareAlias}}", "sensorId"="{{valueSensorId}}", "hardwareId"="{{valueHardwareId}}", "host"="{{valueHost}}"}""";
 
-                    // Generates the TYPE line if we changed tagnames
                     if (lastTagName != tagName)
                     {
                         responseStr += $"# TYPE {tagName} gauge\n";
@@ -674,7 +670,9 @@ public class HttpServer
                     int counter = 0;
                     foreach (SensorValue val in sensor.Sensor.Values.Reverse())
                     {
-                        if (counter++ >= MaxValues) break;
+                        if (counter++ > prometheusSettings["archivelength"])
+                            break;
+
                         if (float.IsNaN(val.Value))
                         {
                             // Print a help line saying what tag had an invalid value
@@ -682,8 +680,17 @@ public class HttpServer
                         }
                         else
                         {
-                            // Outputs prometheus tag with labels, value, and timestamp
-                            responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeMilliseconds()}\n";
+                            if (counter == 1 && prometheusSettings["lastvalue"] == 0)
+                                continue; // skip the first value in the list
+
+                            if (prometheusSettings["timestamps"] == 1)
+                            {
+                                responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)} {((DateTimeOffset)val.Time).ToUnixTimeMilliseconds()}\n";
+                            }
+                            else
+                            {
+                                responseStr += $"{tagLine} {(val.Value * factor).ToString(CultureInfo.InvariantCulture)}\n";
+                            }
                         }
                     }
                 }
@@ -694,9 +701,74 @@ public class HttpServer
 
     private async Task SendPrometheusAsync(HttpListenerResponse response, HttpListenerRequest request = null)
     {
-        string responseContent = GeneratePrometheusResponse(_root);
+        Dictionary<string, int> prometheusSettings = new Dictionary<string, int>();
+        //Default values: archivelength=0, timestamps=0, lastvalue=1
+        prometheusSettings["archivelength"] = 0;
+        prometheusSettings["timestamps"] = 0;
+        prometheusSettings["lastvalue"] = 1;
+
+        if (request != null && request.QueryString != null && request.QueryString.Count > 0)
+        {
+            int archive = 0, timestamps = 0, lastvalue = 1;
+            
+            foreach (string key in request.QueryString.AllKeys)
+            {
+                switch (key)
+                {
+                    case "timestamps":
+                        int.TryParse(request.QueryString[key], out timestamps);     
+
+                        if (timestamps < 0 || timestamps > 1)
+                            timestamps = 0;     // Enforce boolean range 0 to 1
+
+                        if (archive > 0)
+                            timestamps = 1;     // If archive is requested, timestamps must be enabled
+
+                        break;
+                    case "archivelength":
+                        int.TryParse(request.QueryString[key], out archive);
+                        archive = Math.Min(10, archive); // Enforce max 10
+                        archive = Math.Max(0, archive); // Enforce min 0
+
+                        if (archive == 0 && lastvalue == 0)
+                            archive = 1; // If lastvalue was not requested then return at least 1 archived value
+
+                        if (archive > 0)
+                            timestamps = 1; // If archive is requested, timestamps must be enabled
+
+                        break;
+                    case "lastvalue":
+                        int.TryParse(request.QueryString[key], out lastvalue);
+
+                        if (lastvalue < 0 || lastvalue > 1)
+                            lastvalue = 1; // Enforce boolean range 0 to 1
+
+                        if (lastvalue == 0 && archive  == 0)
+                        {
+                            archive = 1;
+                            timestamps = 1;
+                        }
+
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            prometheusSettings["archivelength"] = archive;
+            prometheusSettings["timestamps"] = timestamps;
+            prometheusSettings["lastvalue"] = lastvalue;
+        }
+
+        string responseContent = GeneratePrometheusResponse(_root, prometheusSettings);
         response.AddHeader("Cache-Control", "no-cache");
         response.AddHeader("Access-Control-Allow-Origin", "*");
+
+        // Add custom headers to inform the user what settings are in effect
+        response.AddHeader("X-archivelength", prometheusSettings["archivelength"].ToString());
+        response.AddHeader("X-timestamps", prometheusSettings["timestamps"].ToString());
+        response.AddHeader("X-lastvalue", prometheusSettings["lastvalue"].ToString());
+
         await SendResponseAsync(response, responseContent, "text/plain");
     }
 
@@ -708,7 +780,7 @@ public class HttpServer
         response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "application/json");
     }
-
+        
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
         Dictionary<string, object> jsonNode = new()
@@ -811,6 +883,8 @@ public class HttpServer
                 return "power-supply.png";
             case HardwareType.Battery:
                 return "battery.png";
+            case HardwareType.PowerMonitor:
+                return "powermonitor.png";
             default:
                 return "cpu.png";
         }
@@ -824,6 +898,7 @@ public class HttpServer
             case SensorType.Current:
                 return "voltage.png";
             case SensorType.Clock:
+            case SensorType.Timing:
                 return "clock.png";
             case SensorType.Load:
                 return "load.png";
