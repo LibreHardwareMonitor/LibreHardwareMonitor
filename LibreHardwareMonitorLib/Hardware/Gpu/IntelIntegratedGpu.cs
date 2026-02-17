@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
+using LibreHardwareMonitor.Interop;
 using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
 
@@ -20,11 +22,16 @@ internal class IntelIntegratedGpu : GenericGpu
     private readonly long[] _nodeUsagePrevValue;
     private readonly Sensor _powerSensor;
     private readonly Sensor _sharedMemoryUsage;
+    private readonly Sensor _gtCoresTemperature;
+    private readonly Sensor _gpuClockFrequency;
+    private readonly Sensor _gpuVoltage;
 
     private uint _lastEnergyConsumed;
     private DateTime _lastEnergyTime;
 
     private readonly IntelMsr _pawnModule;
+
+    private readonly IntelGcl.ctl_device_adapter_handle_t? _igclHandle;
 
     public IntelIntegratedGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
@@ -32,8 +39,30 @@ internal class IntelIntegratedGpu : GenericGpu
                settings)
     {
         _pawnModule = new IntelMsr();
-
         _deviceId = deviceId;
+
+        _igclHandle = FindIgclHandle();
+
+        if (_igclHandle.HasValue && TryReadTelemetry(_igclHandle.Value, out IntelGcl.ctl_power_telemetry_t probeTelemetry))
+        {
+            if (probeTelemetry.gpuCurrentTemperature.bSupported)
+            {
+                _gtCoresTemperature = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
+                ActivateSensor(_gtCoresTemperature);
+            }
+
+            if (probeTelemetry.gpuCurrentClockFrequency.bSupported)
+            {
+                _gpuClockFrequency = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
+                ActivateSensor(_gpuClockFrequency);
+            }
+
+            if (probeTelemetry.gpuVoltage.bSupported)
+            {
+                _gpuVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
+                ActivateSensor(_gpuVoltage);
+            }
+        }
 
         int memorySensorIndex = 0;
 
@@ -82,6 +111,23 @@ internal class IntelIntegratedGpu : GenericGpu
 
     public override void Update()
     {
+        // Update IGCL telemetry (temperature, clock, voltage).
+        if (_igclHandle.HasValue && (_gtCoresTemperature != null || _gpuClockFrequency != null || _gpuVoltage != null))
+        {
+            if (TryReadTelemetry(_igclHandle.Value, out IntelGcl.ctl_power_telemetry_t telemetry))
+            {
+                UpdateSensorFromTelemetry(telemetry.gpuCurrentTemperature, _gtCoresTemperature);
+                UpdateSensorFromTelemetry(telemetry.gpuCurrentClockFrequency, _gpuClockFrequency);
+                UpdateSensorFromTelemetry(telemetry.gpuVoltage, _gpuVoltage);
+            }
+            else
+            {
+                if (_gtCoresTemperature != null) _gtCoresTemperature.Value = null;
+                if (_gpuClockFrequency != null) _gpuClockFrequency.Value = null;
+                if (_gpuVoltage != null) _gpuVoltage.Value = null;
+            }
+        }
+
         if (D3DDisplayDevice.GetDeviceInfoByIdentifier(_deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             if (_dedicatedMemoryUsage != null)
@@ -137,6 +183,88 @@ internal class IntelIntegratedGpu : GenericGpu
     {
         base.Close();
         _pawnModule.Close();
+    }
+
+    private static bool TryReadTelemetry(IntelGcl.ctl_device_adapter_handle_t handle, out IntelGcl.ctl_power_telemetry_t telemetry)
+    {
+        telemetry = new IntelGcl.ctl_power_telemetry_t
+        {
+            Size = (uint)Marshal.SizeOf<IntelGcl.ctl_power_telemetry_t>(),
+            Version = 1,
+            psu = new IntelGcl.ctl_psu_info_t[IntelGcl.CTL_PSU_COUNT],
+            fanSpeed = new IntelGcl.ctl_oc_telemetry_item_t[IntelGcl.CTL_FAN_COUNT]
+        };
+
+        int result = IntelGcl.ctlPowerTelemetryGet(handle, ref telemetry);
+        return result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS;
+    }
+
+    private static void UpdateSensorFromTelemetry(IntelGcl.ctl_oc_telemetry_item_t telemetryItem, Sensor sensor)
+    {
+        if (sensor == null)
+            return;
+
+        if (telemetryItem.bSupported)
+        {
+            double value = GetTelemetryValue(telemetryItem);
+            sensor.Value = double.IsNaN(value) ? null : (float)value;
+        }
+        else
+        {
+            sensor.Value = null;
+        }
+    }
+
+    private static double GetTelemetryValue(IntelGcl.ctl_oc_telemetry_item_t item)
+    {
+        return item.type switch
+        {
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_FLOAT => item.value.datafloat,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_DOUBLE => item.value.datadouble,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT32 => item.value.datau32,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT32 => item.value.data32,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT64 => item.value.datau64,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT64 => item.value.data64,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT16 => item.value.datau16,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT16 => item.value.data16,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT8 => item.value.datau8,
+            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT8 => item.value.data8,
+            _ => double.NaN
+        };
+    }
+
+    private static IntelGcl.ctl_device_adapter_handle_t? FindIgclHandle()
+    {
+        if (!IntelGcl.IsInitialized)
+            return null;
+
+        IntelGcl.ctl_device_adapter_handle_t[] handles = IntelGcl.GetDeviceHandles();
+
+        foreach (IntelGcl.ctl_device_adapter_handle_t handle in handles)
+        {
+            var properties = new IntelGcl.ctl_device_adapter_properties_t
+            {
+                Size = (uint)Marshal.SizeOf<IntelGcl.ctl_device_adapter_properties_t>(),
+                Version = 2
+            };
+
+            int result = IntelGcl.ctlGetDeviceProperties(handle, ref properties);
+
+            if (result != (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS)
+                continue;
+
+            if (properties.device_type != IntelGcl.ctl_device_type_t.CTL_DEVICE_TYPE_GRAPHICS)
+                continue;
+
+            // Use the IGCL integrated-adapter flag — the same method IntelGpuGroup uses
+            // to filter iGPUs out of the discrete GPU enumeration path.
+            if ((properties.graphics_adapter_properties & (uint)IntelGcl.ctl_adapter_properties_flag_t.CTL_ADAPTER_PROPERTIES_FLAG_INTEGRATED) != 0)
+            {
+                return handle;
+            }
+        }
+
+        return null;
     }
 
     private static string GetName(string deviceId)
