@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -702,24 +702,22 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_displayHandle != null)
+        if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
         {
-            NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
-            if (status == NvApi.NvStatus.OK)
+            NvidiaML.NvmlMemory memory = NvidiaML.NvmlDeviceGetMemoryInfo(_nvmlDevice.Value);
+
+            _memoryTotal.Value = memory.Total / 1024 / 1024;
+            ActivateSensor(_memoryTotal);
+
+            _memoryFree.Value = memory.Free / 1024 / 1024;
+            ActivateSensor(_memoryFree);
+
+            _memoryUsed.Value = memory.Used / 1024 / 1024;
+            ActivateSensor(_memoryUsed);
+
+            if (memory.Total > 0)
             {
-                uint free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
-                uint total = memoryInfo.DedicatedVideoMemory;
-
-                _memoryTotal.Value = total / 1024;
-                ActivateSensor(_memoryTotal);
-
-                _memoryFree.Value = free / 1024;
-                ActivateSensor(_memoryFree);
-
-                _memoryUsed.Value = (total - free) / 1024;
-                ActivateSensor(_memoryUsed);
-
-                _memoryLoad.Value = ((float)(total - free) / total) * 100;
+                _memoryLoad.Value = (float)memory.Used / memory.Total * 100;
                 ActivateSensor(_memoryLoad);
             }
         }
@@ -1123,23 +1121,6 @@ internal sealed class NvidiaGpu : GenericGpu
         }
 
         return "NVIDIA";
-    }
-
-    private NvApi.NvMemoryInfo GetMemoryInfo(out NvApi.NvStatus status)
-    {
-        if (NvApi.NvAPI_GPU_GetMemoryInfo == null || _displayHandle == null)
-        {
-            status = NvApi.NvStatus.Error;
-            return default;
-        }
-
-        NvApi.NvMemoryInfo memoryInfo = new()
-        {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvMemoryInfo>(2)
-        };
-
-        status = NvApi.NvAPI_GPU_GetMemoryInfo(_displayHandle.Value, ref memoryInfo);
-        return status == NvApi.NvStatus.OK ? memoryInfo : default;
     }
 
     private NvApi.NvGpuClockFrequencies GetClockFrequencies(out NvApi.NvStatus status)
