@@ -725,17 +725,20 @@ internal sealed class NvidiaGpu : GenericGpu
                 }
             }
 
-            _memoryTotal.Value = total / 1024;
-            ActivateSensor(_memoryTotal);
+            if (status == NvApi.NvStatus.OK)
+            {
+                _memoryTotal.Value = total / 1024;
+                ActivateSensor(_memoryTotal);
 
-            _memoryFree.Value = free / 1024;
-            ActivateSensor(_memoryFree);
+                _memoryFree.Value = free / 1024;
+                ActivateSensor(_memoryFree);
 
-            _memoryUsed.Value = (total - free) / 1024;
-            ActivateSensor(_memoryUsed);
+                _memoryUsed.Value = (total - free) / 1024;
+                ActivateSensor(_memoryUsed);
 
-            _memoryLoad.Value = ((float)(total - free) / total) * 100;
-            ActivateSensor(_memoryLoad);
+                _memoryLoad.Value = ((float)(total - free) / total) * 100;
+                ActivateSensor(_memoryLoad);
+            }
         }
 
         if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
