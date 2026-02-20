@@ -345,10 +345,11 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         ctrl.SoftwareControlValueChanged += OnSoftwareControlValueChanged;
 
         //Control
-        var fanControl = AddSensor("Fan Control", 50, SensorType.Control, GetFanSpeedInPercent);
+        var fanControl = AddSensor($"{Name} ({_portName})", 50, SensorType.Control, GetFanSpeedInPercent);
+        fanControl.Control = ctrl;
     }
 
-    private WireViewPro2Sensor AddSensor(string name, int index, SensorType sensorType, GetWireViewPro2SensorValue getValue, Control control = null)
+    private WireViewPro2Sensor AddSensor(string name, int index, SensorType sensorType, GetWireViewPro2SensorValue getValue)
     {
         var sensor = new WireViewPro2Sensor(name, index, sensorType, this, _settings, getValue);
 
