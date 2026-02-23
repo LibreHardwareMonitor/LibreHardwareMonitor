@@ -33,6 +33,8 @@ public class HttpServer
     private Task _listenerTask;
     private CancellationTokenSource _cts;
 
+    private readonly Version _version = typeof(HttpServer).Assembly.GetName().Version;
+
     public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
         _root = node;
@@ -523,6 +525,7 @@ public class HttpServer
         int nodeIndex = 0;
 
         json["id"] = nodeIndex++;
+        json["Version"] = $"{_version.Major}.{_version.Minor}.{_version.Build}";
         json["Text"] = "Sensor";
         json["Min"] = "Min";
         json["Value"] = "Value";
