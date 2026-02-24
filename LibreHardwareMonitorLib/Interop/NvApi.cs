@@ -42,6 +42,7 @@ internal static class NvApi
     public static NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings { get; internal set; }
     public static NvAPI_GPU_GetDynamicPstatesInfoExDelegate NvAPI_GPU_GetDynamicPstatesInfoEx { get; internal set; }
     public static NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo { get; internal set; }
+    public static NvAPI_GPU_GetMemoryInfoExDelegate NvAPI_GPU_GetMemoryInfoEx { get; internal set; }
     public static NvAPI_GPU_GetPCIIdentifiersDelegate NvAPI_GPU_GetPCIIdentifiers { get; internal set; }
     public static NvAPI_GPU_GetTachReadingDelegate NvAPI_GPU_GetTachReading { get; internal set; }
     public static NvAPI_GPU_GetThermalSettingsDelegate NvAPI_GPU_GetThermalSettings { get; internal set; }
@@ -84,6 +85,7 @@ internal static class NvApi
             NvAPI_GPU_GetCoolerSettings = GetDelegate<NvAPI_GPU_GetCoolerSettingsDelegate>(0xDA141340);
             NvAPI_GPU_SetCoolerLevels = GetDelegate<NvAPI_GPU_SetCoolerLevelsDelegate>(0x891FA0AE);
             NvAPI_GPU_GetMemoryInfo = GetDelegate<NvAPI_GPU_GetMemoryInfoDelegate>(0x774AA982);
+            NvAPI_GPU_GetMemoryInfoEx = GetDelegate<NvAPI_GPU_GetMemoryInfoExDelegate>(0xC0599498);
             NvAPI_GetDisplayDriverVersion = GetDelegate<NvAPI_GetDisplayDriverVersionDelegate>(0xF951A4D1);
             _nvAPI_GetInterfaceVersionString = GetDelegate<NvAPI_GetInterfaceVersionStringDelegate>(0x01053FA5);
             NvAPI_GPU_GetPCIIdentifiers = GetDelegate<NvAPI_GPU_GetPCIIdentifiersDelegate>(0x2DDFB66E);
@@ -145,6 +147,9 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_GetMemoryInfoDelegate(NvDisplayHandle displayHandle, ref NvMemoryInfo nvMemoryInfo);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_GetMemoryInfoExDelegate(NvPhysicalGpuHandle gpuHandle, ref NvMemoryInfoEx nvMemoryInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_GetPCIIdentifiersDelegate(NvPhysicalGpuHandle gpuHandle, out uint deviceId, out uint subSystemId, out uint revisionId, out uint extDeviceId);
@@ -574,6 +579,24 @@ internal static class NvApi
         public uint SharedSystemMemory;
 
         public uint CurrentAvailableDedicatedVideoMemory;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct NvMemoryInfoEx
+    {
+        public uint Version;
+        public ulong DedicatedVideoMemory;
+        public ulong AvailableDedicatedVideoMemory;
+        public ulong SystemVideoMemory;
+        public ulong SharedSystemMemory;
+
+        public ulong CurrentAvailableDedicatedVideoMemory;
+
+        public ulong DedicatedVideoMemoryEvictionsSize;
+        public ulong DedicatedVideoMemoryEvictionCount;
+
+        public ulong DedicatedVideoMemoryPromotionsSize;
+        public ulong DedicatedVideoMemoryPromotionCount;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]

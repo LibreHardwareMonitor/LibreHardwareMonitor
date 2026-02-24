@@ -337,12 +337,16 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         AddSensor("Total Power", 30, SensorType.Power, dd => (float)dd.SumPowerW);
 
         //Fan
-        var fan = AddSensor("Fan", 40, SensorType.Fan, dd => CalculateFanSpeed(dd));
-        var fanControl = new Control(fan, _settings, 0, 100);
+        var fan = AddSensor("Fan", 40, SensorType.Fan, CalculateFanSpeed);
+        var ctrl = new Control(fan, _settings, 0, 100);
 
-        fan.Control = fanControl;
-        fanControl.ControlModeChanged += OnFanControlModeChanged;
-        fanControl.SoftwareControlValueChanged += OnSoftwareControlValueChanged;
+        fan.Control = ctrl;
+        ctrl.ControlModeChanged += OnFanControlModeChanged;
+        ctrl.SoftwareControlValueChanged += OnSoftwareControlValueChanged;
+
+        //Control
+        var fanControl = AddSensor($"{Name} ({_portName})", 50, SensorType.Control, GetFanSpeedInPercent);
+        fanControl.Control = ctrl;
     }
 
     private WireViewPro2Sensor AddSensor(string name, int index, SensorType sensorType, GetWireViewPro2SensorValue getValue)
@@ -427,14 +431,10 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         WriteConfig(deviceData.Config);
     }
 
-    /// <summary>
-    /// Fan speed for this device is an approximation based on the curve configuration and current temperatures.<br/>
-    /// The device itself does not report actual fan speed.
-    /// </summary>
-    private float CalculateFanSpeed(DeviceData dd)
+    private float GetFanSpeedInPercent(DeviceData dd)
     {
         var fanConfig = dd.Config.FanConfig;
-        double targetRpm;
+        float fanSpeedInPercent;
 
         switch (fanConfig.Mode)
         {
@@ -445,23 +445,44 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
                 if (tempMax <= tempMin || currentTemperature <= tempMin)
                 {
-                    targetRpm = fanConfig.DutyMin;
+                    fanSpeedInPercent = fanConfig.DutyMin;
                 }
                 else if (currentTemperature >= tempMax)
                 {
-                    targetRpm = fanConfig.DutyMax;
+                    fanSpeedInPercent = fanConfig.DutyMax;
                 }
                 else
                 {
                     var temp = (currentTemperature - tempMin) / (tempMax - tempMin);
-                    var fanSpeedInPercent = fanConfig.DutyMin + temp * (fanConfig.DutyMax - fanConfig.DutyMin);
-                    targetRpm = fanSpeedInPercent;
+                    fanSpeedInPercent = (float)(fanConfig.DutyMin + temp * (fanConfig.DutyMax - fanConfig.DutyMin));
                 }
-
-                targetRpm = targetRpm == 0 ? 0 : targetRpm / 100.0 * MaxFanRPM;
                 break;
             case FanMode.FanModeFixed:
-                targetRpm = fanConfig.DutyMin == 0 ? 0 : fanConfig.DutyMin / 100.0 * MaxFanRPM;
+                fanSpeedInPercent = fanConfig.DutyMin;
+                break;
+            default:
+                return -1;
+        }
+
+        return fanSpeedInPercent;
+    }
+
+    /// <summary>
+    /// Fan speed for this device is an approximation based on the curve configuration and current temperatures.<br/>
+    /// The device itself does not report actual fan speed.
+    /// </summary>
+    private float CalculateFanSpeed(DeviceData dd)
+    {
+        var fanConfig = dd.Config.FanConfig;
+        double targetRpm;
+
+        var fanSpeedInPercent = GetFanSpeedInPercent(dd);
+
+        switch (fanConfig.Mode)
+        {
+            case FanMode.FanModeCurve:
+            case FanMode.FanModeFixed:
+                targetRpm = fanSpeedInPercent == 0 ? 0 : fanSpeedInPercent / 100.0f * MaxFanRPM;
                 break;
             default:
                 return -1;

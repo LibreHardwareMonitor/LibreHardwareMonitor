@@ -91,10 +91,40 @@ internal class MsiCoreLiquidController : Hardware
         {
             if (fan != null)
             {
-                var fanControl = new Control(fan, _settings, 0, 100);
-                fan.Control = fanControl;
-                fanControl.ControlModeChanged += OnFanControlModeChanged;
-                fanControl.SoftwareControlValueChanged += OnSoftwareControlValueChanged;
+                var ctrl = new Control(fan, _settings, 0, 100);
+                fan.Control = ctrl;
+                ctrl.ControlModeChanged += OnFanControlModeChanged;
+                ctrl.SoftwareControlValueChanged += OnSoftwareControlValueChanged;
+
+                MsiSensor fanControl = null;
+
+                switch (fan)
+                {
+                    case var f when f == _fan1:
+                        fanControl = AddSensor($"{fan.Name} Control", 50, SensorType.Control, m => m.Fan1.ConfigureDuty.Item0);
+                        break;
+                    case var f when f == _fan2:
+                        fanControl = AddSensor($"{fan.Name} Control", 51, SensorType.Control, m => m.Fan2.ConfigureDuty.Item0);
+                        break;
+                    case var f when f == _fan3:
+                        fanControl = AddSensor($"{fan.Name} Control", 52, SensorType.Control, m => m.Fan3.ConfigureDuty.Item0);
+                        break;
+                    case var f when f == _fan4:
+                        fanControl = AddSensor($"{fan.Name} Control", 53, SensorType.Control, m => m.Fan4.ConfigureDuty.Item0);
+                        break;
+                    case var f when f == _fan5:
+                        fanControl = AddSensor($"{fan.Name} Control", 54, SensorType.Control, m => m.Fan5.ConfigureDuty.Item0);
+                        break;
+                }
+
+                if (fanControl != null)
+                {
+                    fanControl.Control = ctrl;
+
+                    _sensors.Add(fanControl);
+
+                    ActivateSensor(fanControl);
+                }
             }
         }
 

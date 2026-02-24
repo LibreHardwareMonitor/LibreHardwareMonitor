@@ -702,14 +702,31 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_displayHandle != null)
+        if (NvApi.NvAPI_GPU_GetMemoryInfoEx != null || _displayHandle != null)
         {
-            NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
+            uint free = 0;
+            uint total = 0;
+
+            //Size in bytes
+            NvApi.NvMemoryInfoEx memoryInfoEx = GetMemoryInfoEx(out status);
             if (status == NvApi.NvStatus.OK)
             {
-                uint free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
-                uint total = memoryInfo.DedicatedVideoMemory;
+                free = (uint)(memoryInfoEx.CurrentAvailableDedicatedVideoMemory / 1024);
+                total = (uint)(memoryInfoEx.DedicatedVideoMemory / 1024);
+            }
+            else
+            {
+                //Size in kilobytes, fallback for older drivers
+                NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
+                if (status == NvApi.NvStatus.OK)
+                {
+                    free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
+                    total = memoryInfo.DedicatedVideoMemory;
+                }
+            }
 
+            if (status == NvApi.NvStatus.OK)
+            {
                 _memoryTotal.Value = total / 1024;
                 ActivateSensor(_memoryTotal);
 
@@ -1140,6 +1157,23 @@ internal sealed class NvidiaGpu : GenericGpu
 
         status = NvApi.NvAPI_GPU_GetMemoryInfo(_displayHandle.Value, ref memoryInfo);
         return status == NvApi.NvStatus.OK ? memoryInfo : default;
+    }
+
+    private NvApi.NvMemoryInfoEx GetMemoryInfoEx(out NvApi.NvStatus status)
+    {
+        if (NvApi.NvAPI_GPU_GetMemoryInfoEx == null)
+        {
+            status = NvApi.NvStatus.Error;
+            return default;
+        }
+
+        NvApi.NvMemoryInfoEx memoryInfoEx = new()
+        {
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvMemoryInfoEx>(1)
+        };
+
+        status = NvApi.NvAPI_GPU_GetMemoryInfoEx(_handle, ref memoryInfoEx);
+        return status == NvApi.NvStatus.OK ? memoryInfoEx : default;
     }
 
     private NvApi.NvGpuClockFrequencies GetClockFrequencies(out NvApi.NvStatus status)
