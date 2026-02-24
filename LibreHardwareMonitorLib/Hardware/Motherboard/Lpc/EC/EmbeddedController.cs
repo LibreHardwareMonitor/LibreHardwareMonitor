@@ -19,6 +19,9 @@ public abstract class EmbeddedController : Hardware
     // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
     private static readonly BoardInfo[] _boards =
     {
+        new (Model.ROG_CROSSHAIR_X870E_DARK_HERO,
+            BoardFamily.Amd800,
+            ECSensor.TempTSensor),
         new (Model.TUF_GAMING_X870_PLUS_WIFI,
             BoardFamily.Amd800,
             ECSensor.TempVrm,
