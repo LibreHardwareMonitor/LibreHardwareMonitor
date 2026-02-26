@@ -102,6 +102,7 @@ namespace LibreHardwareMonitor.UI
             this.splitPanelFixedSensorScalingMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.forceDriveWakeupItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileRotationMethod = new System.Windows.Forms.ToolStripMenuItem();
             this.perSessionFileRotationMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
             this.dailyFileRotationMenuItem = new LibreHardwareMonitor.UI.ToolStripRadioButtonMenuItem();
@@ -485,6 +486,7 @@ namespace LibreHardwareMonitor.UI
             this.splitPlotPanelScalingMenuItem,
             this.logSeparatorMenuItem,
             this.logSensorsMenuItem,
+            this.forceDriveWakeupItem,
             this.loggingIntervalMenuItem,
             this.updateIntervalMenuItem,
             this.fileRotationMethod,
@@ -666,6 +668,12 @@ namespace LibreHardwareMonitor.UI
             this.logSensorsMenuItem.Name = "logSensorsMenuItem";
             this.logSensorsMenuItem.Size = new System.Drawing.Size(221, 22);
             this.logSensorsMenuItem.Text = "Log Sensors";
+            //
+            // forceDriveWakeupItem
+            //
+            this.forceDriveWakeupItem.Name = "forceDriveWakeupItem";
+            this.forceDriveWakeupItem.Size = new System.Drawing.Size(221, 22);
+            this.forceDriveWakeupItem.Text = "Force Drive Wakeup";
             //
             // fileRotationMethod
             //
@@ -1188,6 +1196,7 @@ namespace LibreHardwareMonitor.UI
         private System.Windows.Forms.ToolStripMenuItem fanControllerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ramMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logSensorsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem forceDriveWakeupItem;
         private System.Windows.Forms.ToolStripSeparator logSeparatorMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loggingIntervalMenuItem;
         private ToolStripRadioButtonMenuItem log1sMenuItem;
