@@ -826,6 +826,8 @@ internal class Identification
                 return Model.FRANMZCP09;
             case var _ when name.Equals("FRANMFCP02", StringComparison.OrdinalIgnoreCase):
                 return Model.FRANMFCP02;
+            case var _ when name.Equals("FRANMFCP04", StringComparison.OrdinalIgnoreCase):
+                return Model.FRANMFCP04;
             case var _ when name.Equals("FRANMFCP06", StringComparison.OrdinalIgnoreCase):
                 return Model.FRANMFCP06;
             case var _ when name.Equals("FRAPMACP03", StringComparison.OrdinalIgnoreCase):
