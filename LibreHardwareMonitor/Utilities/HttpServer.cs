@@ -30,10 +30,10 @@ public class HttpServer
     private readonly HttpListener _listener;
     private readonly Node _root;
     private readonly IElement _rootElement;
+    private readonly Version _version = typeof(HttpServer).Assembly.GetName().Version;
+
     private Task _listenerTask;
     private CancellationTokenSource _cts;
-
-    private readonly Version _version = typeof(HttpServer).Assembly.GetName().Version;
 
     public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
     {
