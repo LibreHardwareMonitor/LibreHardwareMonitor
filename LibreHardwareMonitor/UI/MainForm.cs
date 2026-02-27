@@ -287,7 +287,7 @@ public sealed partial class MainForm : Form
 
         _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
 
-        _forceDriveWakeup = new UserOption("logSensorsMenuItem", false, forceDriveWakeupItem, _settings);
+        _forceDriveWakeup = new UserOption("forceDriveWakeupItem", false, forceDriveWakeupItem, _settings);
         _forceDriveWakeup.Changed += delegate
         {
             _computer.Hardware
