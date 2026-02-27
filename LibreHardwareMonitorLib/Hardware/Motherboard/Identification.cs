@@ -671,6 +671,8 @@ internal class Identification
                 return Model.ROG_CROSSHAIR_X870E_APEX;
             case var _ when name.Equals("ROG CROSSHAIR X870E HERO", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_X870E_HERO;
+            case var _ when name.Equals("ROG CROSSHAIR X870E DARK HERO", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_CROSSHAIR_X870E_DARK_HERO;
             case var _ when name.Equals("MPG Z890 CARBON WIFI (MS-7E17)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z890_CARBON_WIFI;
             case var _ when name.Equals("MAG X870E TOMAHAWK WIFI (MS-7E59)", StringComparison.OrdinalIgnoreCase):

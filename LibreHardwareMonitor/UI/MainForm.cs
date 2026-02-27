@@ -33,6 +33,7 @@ public sealed partial class MainForm : Form
     private readonly UserRadioGroup _updateInterval;
     private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
+    private readonly UserOption _forceDriveWakeup;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
     private readonly PlotPanel _plotPanel;
@@ -286,9 +287,20 @@ public sealed partial class MainForm : Form
 
         _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
 
+        _forceDriveWakeup = new UserOption("forceDriveWakeupItem", false, forceDriveWakeupItem, _settings);
+        _forceDriveWakeup.Changed += delegate
+        {
+            _computer.Hardware
+                .OfType<StorageDevice>()
+                .ToList()
+                .ForEach(sd =>
+            {
+                sd.Storage.ForceWakeup = _forceDriveWakeup.Value;
+            });
+        };
+
         // Prevent Menu From Closing When UnClicking Hardware Items
         menuItemFileHardware.DropDown.Closing += StopFileHardwareMenuFromClosing;
-
 
         _showGadget.Changed += delegate
         {
