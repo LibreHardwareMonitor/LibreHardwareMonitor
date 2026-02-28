@@ -10,6 +10,7 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
     const string I801ModuleFilename = "SmbusI801.bin";
     const string Nct6793ModuleFilename = "SmbusNCT6793.bin";
     const string Piix4ModuleFilename = "SmbusPIIX4.bin";
+    const string IntelSkylakeIMCModuleFileName = "SmbusIntelSkylakeIMC.bin";
 
     private readonly List<PawnIOModule> _pawnIOModules = new();
 
@@ -28,6 +29,7 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
             PawnIOSMBusIdentifier.I801 => I801ModuleFilename,
             PawnIOSMBusIdentifier.Piix4 => Piix4ModuleFilename,
             PawnIOSMBusIdentifier.NCT6793 => Nct6793ModuleFilename,
+            PawnIOSMBusIdentifier.IntelSkylakeIMC => IntelSkylakeIMCModuleFileName,
             _ => null
         };
 
