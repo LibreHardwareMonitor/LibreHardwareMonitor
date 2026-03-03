@@ -51,6 +51,7 @@ public static class Stm32PortFinder
     {
         var result = new List<string>();
 
+#if WINDOWS
         //Setup
         SetupDiDestroyDeviceInfoListSafeHandle devInfo = PInvoke.SetupDiGetClassDevs(PInvoke.GUID_DEVCLASS_PORTS, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
 
@@ -102,8 +103,6 @@ public static class Stm32PortFinder
             devInfo.Dispose();
         }
 
-        return result;
-
         static string GetProperty(SafeHandle hDevInfo, SETUP_DI_REGISTRY_PROPERTY property, SP_DEVINFO_DATA devInfoData)
         {
             byte[] buffer = new byte[BufferSize];
@@ -116,6 +115,9 @@ public static class Stm32PortFinder
 
             return null;
         }
+    #endif
+
+        return result;
     }
 
     private static string NormalizeString(string str)
