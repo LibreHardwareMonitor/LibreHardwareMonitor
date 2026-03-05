@@ -38,6 +38,14 @@
     <OutputPath>..\bin\Release\$(Platform)\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />

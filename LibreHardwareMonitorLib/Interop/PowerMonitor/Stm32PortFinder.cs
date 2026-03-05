@@ -115,7 +115,7 @@ public static class Stm32PortFinder
 
             return null;
         }
-    #endif
+#endif
 
         return result;
     }

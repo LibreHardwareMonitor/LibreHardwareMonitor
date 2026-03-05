@@ -130,7 +130,7 @@ internal class BatteryGroup : IGroup
 
             hdev.Dispose();
         }
-    #endif
+#endif
     }
 
     /// <inheritdoc />
