@@ -61,6 +61,13 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public IReadOnlyList<SmartAttribute> Attributes => _attributes;
 
+    ///<inheritdoc cref="DiskInfoToolkit.Storage.ForceWakeup"/>
+    public bool ForceWakeup
+    {
+        get { return _storage.ForceWakeup; }
+        set { _storage.ForceWakeup = value; }
+    }
+
     public static TimeSpan ThrottleInterval { get; set; }
 
     public override void Update()

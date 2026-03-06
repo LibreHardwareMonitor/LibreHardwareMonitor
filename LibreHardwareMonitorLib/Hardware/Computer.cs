@@ -512,7 +512,9 @@ public class Computer : IComputer
 
         _smbios = new SMBios();
 
-        Mutexes.Open();
+        if (Software.OperatingSystem.IsWindows8OrGreater)
+            Mutexes.Open();
+
         OpCode.Open();
 
         AddGroups();

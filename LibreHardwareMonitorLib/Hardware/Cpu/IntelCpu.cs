@@ -38,6 +38,9 @@ internal sealed class IntelCpu : GenericCpu
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
+        if (Software.OperatingSystem.IsUnix)
+            return;
+
         _pawnModule = new IntelMsr();
 
         uint eax;
@@ -569,7 +572,7 @@ internal sealed class IntelCpu : GenericCpu
         float coreAvg = 0;
         uint eax;
 
-        for (int i = 0; i < _coreTemperatures.Length; i++)
+        for (int i = 0; i < _coreTemperatures?.Length; i++)
         {
             // if reading is valid
             if (_pawnModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
@@ -704,7 +707,7 @@ internal sealed class IntelCpu : GenericCpu
             _coreVoltage.Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
         }
 
-        for (int i = 0; i < _coreVIDs.Length; i++)
+        for (int i = 0; i < _coreVIDs?.Length; i++)
         {
             if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
             {
