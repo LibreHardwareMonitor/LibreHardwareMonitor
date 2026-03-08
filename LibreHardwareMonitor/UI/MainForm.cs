@@ -295,7 +295,7 @@ public sealed partial class MainForm : Form
                 .ToList()
                 .ForEach(sd =>
             {
-                sd.Storage.ForceWakeup = _forceDriveWakeup.Value;
+                sd.ForceWakeup = _forceDriveWakeup.Value;
             });
         };
 

@@ -28,6 +28,7 @@ internal class BatteryGroup : IGroup
         if (Software.OperatingSystem.IsUnix)
             return;
 
+#if WINDOWS
         SetupDiDestroyDeviceInfoListSafeHandle hdev = PInvoke.SetupDiGetClassDevs(PInvoke.GUID_DEVICE_BATTERY,
                                                                                   null,
                                                                                   HWND.Null,
@@ -129,11 +130,13 @@ internal class BatteryGroup : IGroup
 
             hdev.Dispose();
         }
+#endif
     }
 
     /// <inheritdoc />
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
+#if WINDOWS
     private static unsafe bool QueryStringFromBatteryInfo(SafeFileHandle battery, BATTERY_QUERY_INFORMATION bqi, out string value)
     {
         value = null;
@@ -161,6 +164,7 @@ internal class BatteryGroup : IGroup
 
         return result;
     }
+#endif
 
     /// <inheritdoc />
     public void Close()
