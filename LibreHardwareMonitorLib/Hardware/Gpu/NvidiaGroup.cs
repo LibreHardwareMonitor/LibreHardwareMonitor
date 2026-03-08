@@ -17,13 +17,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 
 internal class NvidiaGroup : IGroup, IHardwareChanged
 {
-    private readonly object _syncRoot = new();
     private readonly Dictionary<NvApi.NvPhysicalGpuHandle, NvidiaGpu> _hardwareByHandle = new();
-    private readonly List<Hardware> _hardwareInternal = new();
+    private readonly List<IHardware> _hardwareInternal = new();
     private readonly StringBuilder _report = new();
     private readonly ISettings _settings;
 
-    private IReadOnlyList<IHardware> _hardwareSnapshot = [];
     private CancellationTokenSource _cancellationTokenSource;
     private Task _monitorTask;
     private bool _disposed;
@@ -52,22 +50,10 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
 
     public IReadOnlyList<IHardware> Hardware
     {
-        get
-        {
-            lock (_syncRoot)
-            {
-                return _hardwareSnapshot;
-            }
-        }
+        get { return _hardwareInternal; }
     }
 
-    public string GetReport()
-    {
-        lock (_syncRoot)
-        {
-            return _report.ToString();
-        }
-    }
+    public string GetReport() => _report.ToString();
 
     public void Close()
     {
@@ -88,15 +74,10 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
         _cancellationTokenSource = null;
         _monitorTask = null;
 
-        List<Hardware> toClose;
-        lock (_syncRoot)
-        {
-            toClose = _hardwareInternal.ToList();
+        var toClose = _hardwareInternal.ToList();
 
-            _hardwareInternal.Clear();
-            _hardwareByHandle.Clear();
-            _hardwareSnapshot = [];
-        }
+        _hardwareInternal.Clear();
+        _hardwareByHandle.Clear();
 
         foreach (Hardware gpu in toClose)
         {
@@ -110,6 +91,7 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
     {
         CancellationTokenSource cts = new();
         _cancellationTokenSource = cts;
+
         CancellationToken token = cts.Token;
 
         _monitorTask = Task.Run(async () =>
@@ -162,18 +144,15 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
         {
             NvidiaML.Close();
 
-            lock (_syncRoot)
+            if (NvApi.NvAPI_GetInterfaceVersionString(out string version) == NvApi.NvStatus.OK)
             {
-                if (NvApi.NvAPI_GetInterfaceVersionString(out string version) == NvApi.NvStatus.OK)
-                {
-                    _report.Append("Version: ");
-                    _report.AppendLine(version);
-                }
-
-                _report.Append("Number of GPUs: ");
-                _report.AppendLine(count.ToString(CultureInfo.InvariantCulture));
-                _report.AppendLine();
+                _report.Append("Version: ");
+                _report.AppendLine(version);
             }
+
+            _report.Append("Number of GPUs: ");
+            _report.AppendLine(count.ToString(CultureInfo.InvariantCulture));
+            _report.AppendLine();
         }
 
         _nvidiaWasAvailable = true;
@@ -183,40 +162,35 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
         HashSet<NvApi.NvPhysicalGpuHandle> currentSet = new(handles.Take(count));
         List<Hardware> removed = [];
 
-        lock (_syncRoot)
+        foreach (KeyValuePair<NvApi.NvPhysicalGpuHandle, NvidiaGpu> pair in _hardwareByHandle.ToList())
         {
-            foreach (KeyValuePair<NvApi.NvPhysicalGpuHandle, NvidiaGpu> pair in _hardwareByHandle.ToList())
+            if (!currentSet.Contains(pair.Key))
             {
-                if (!currentSet.Contains(pair.Key))
-                {
-                    _hardwareByHandle.Remove(pair.Key);
-                    _hardwareInternal.Remove(pair.Value);
-                    removed.Add(pair.Value);
-                }
+                _hardwareByHandle.Remove(pair.Key);
+                _hardwareInternal.Remove(pair.Value);
+                removed.Add(pair.Value);
+            }
+        }
+
+        for (int i = 0; i < count; ++i)
+        {
+            NvApi.NvPhysicalGpuHandle handle = handles[i];
+
+            if (_hardwareByHandle.ContainsKey(handle))
+            {
+                continue;
             }
 
-            for (int i = 0; i < count; ++i)
+            displayHandles.TryGetValue(handle, out NvApi.NvDisplayHandle displayHandle);
+
+            NvidiaGpu gpu = new(i, handle, displayHandle, _settings);
+            _hardwareByHandle.Add(handle, gpu);
+            _hardwareInternal.Add(gpu);
+
+            if (raiseEvents)
             {
-                NvApi.NvPhysicalGpuHandle handle = handles[i];
-
-                if (_hardwareByHandle.ContainsKey(handle))
-                {
-                    continue;
-                }
-
-                displayHandles.TryGetValue(handle, out NvApi.NvDisplayHandle displayHandle);
-
-                NvidiaGpu gpu = new(i, handle, displayHandle, _settings);
-                _hardwareByHandle.Add(handle, gpu);
-                _hardwareInternal.Add(gpu);
-
-                if (raiseEvents)
-                {
-                    HardwareAdded?.Invoke(gpu);
-                }
+                HardwareAdded?.Invoke(gpu);
             }
-
-            _hardwareSnapshot = _hardwareInternal.Cast<IHardware>().ToList();
         }
 
         foreach (Hardware gpu in removed)
@@ -232,21 +206,17 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
 
     private void RemoveAllHardware(bool raiseEvents)
     {
-        List<Hardware> removed;
+        List<IHardware> removed;
 
-        lock (_syncRoot)
+        if (_hardwareInternal.Count == 0)
         {
-            if (_hardwareInternal.Count == 0)
-            {
-                return;
-            }
-
-            removed = _hardwareInternal.ToList();
-
-            _hardwareInternal.Clear();
-            _hardwareByHandle.Clear();
-            _hardwareSnapshot = [];
+            return;
         }
+
+        removed = _hardwareInternal.ToList();
+
+        _hardwareInternal.Clear();
+        _hardwareByHandle.Clear();
 
         foreach (Hardware gpu in removed)
         {
@@ -314,6 +284,7 @@ internal class NvidiaGroup : IGroup, IHardwareChanged
         }
 
         status = NvApi.NvAPI_EnumPhysicalGPUs(handles, out count);
+
         return status == NvApi.NvStatus.OK && count > 0;
     }
 }
