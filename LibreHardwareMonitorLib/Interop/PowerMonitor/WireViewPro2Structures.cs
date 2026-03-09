@@ -56,7 +56,7 @@ public struct FanConfigStruct
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
-public struct UiConfigStruct
+public struct UiConfigStructV1
 {
     public CurrentScale CurrentScale;
     public PowerScale PowerScale;
@@ -66,6 +66,26 @@ public struct UiConfigStruct
     public byte CycleScreens;
     public byte CycleTime;
     public byte Timeout;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 4)]
+public struct UiConfigStructV2
+{
+    public Screen DefaultScreen;
+    public CurrentScale CurrentScale;
+    public PowerScale PowerScale;
+    public DisplayRotation DisplayRotation;
+    public TimeoutMode TimeoutMode;
+    public byte CycleScreens; // bitmask of SCREEN_*
+    public byte CycleTime; // seconds
+    public byte Timeout; // seconds
+    public uint PrimaryColor;
+    public uint SecondaryColor;
+    public uint HighlightColor;
+    public uint BackgroundColor;
+    public byte BackgroundBitmapId;
+    public byte FanBitmapId;
+    public DISPLAY_INVERSION DisplayInversion;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Ansi)]
@@ -92,7 +112,7 @@ public struct DeviceConfigStructV1
     public byte CurrentImbalanceFaultMinLoad; // A
     public byte ShutdownWaitTime; // seconds
     public byte LoggingInterval; // seconds
-    public UiConfigStruct Ui;
+    public UiConfigStructV1 Ui;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Ansi)]
@@ -120,5 +140,33 @@ public struct DeviceConfigStructV2
     public byte ShutdownWaitTime; // seconds
     public byte LoggingInterval; // seconds
     public AVG Average;
-    public UiConfigStruct Ui;
+    public UiConfigStructV1 Ui;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Ansi)]
+public struct DeviceConfigStructV3
+{
+    public ushort Crc;
+    public byte Version;
+
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+    public byte[] FriendlyName;
+
+    public FanConfigStruct FanConfig;
+    public byte BacklightDuty;
+
+    public ushort FaultDisplayEnable;
+    public ushort FaultBuzzerEnable;
+    public ushort FaultSoftPowerEnable;
+    public ushort FaultHardPowerEnable;
+    public short TsFaultThreshold; // 0.1 °C
+    public byte OcpFaultThreshold; // A
+    public byte WireOcpFaultThreshold; // 0.1A
+    public ushort OppFaultThreshold; // W
+    public byte CurrentImbalanceFaultThreshold; // %
+    public byte CurrentImbalanceFaultMinLoad; // A
+    public byte ShutdownWaitTime; // seconds
+    public byte LoggingInterval; // seconds
+    public AVG Average;
+    public UiConfigStructV2 Ui;
 }
