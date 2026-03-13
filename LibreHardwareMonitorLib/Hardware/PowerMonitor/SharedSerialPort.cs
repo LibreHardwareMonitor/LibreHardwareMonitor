@@ -31,7 +31,7 @@ internal sealed class SharedSerialPort : SerialPort
     public new void Open()
     {
         _hasMutex = Mutexes.WaitUsbSensors(MutexTimeout);
-        if (_hasMutex)
+        if (_hasMutex && !IsOpen)
         {
             base.Open();
         }
@@ -39,14 +39,20 @@ internal sealed class SharedSerialPort : SerialPort
 
     public new void Close()
     {
-        if (_hasMutex)
+        if (!_hasMutex)
+        {
+            return;
+        }
+
+        try
         {
             if (IsOpen)
             {
-                BaseStream.Flush();
-                BaseStream.Close();
+                base.Close();
             }
-
+        }
+        finally
+        {
             _hasMutex = false;
             Mutexes.ReleaseUsbSensors();
         }

@@ -95,6 +95,15 @@ public enum TimeoutMode : byte
     TimeoutModeSleep = 2
 }
 
+public enum Screen : byte
+{
+    ScreenMain = 0,
+    ScreenSimple = 1,
+    ScreenCurrent = 2,
+    ScreenTemp = 3,
+    ScreenStatus = 4
+}
+
 public enum NVM_CMD : byte
 {
     NVM_CMD_NONE,
@@ -128,5 +137,25 @@ public enum AVG : byte
     AVG_354MS,
     AVG_709MS,
     AVG_1417MS,
-    AVG_NUM
+}
+
+public enum DISPLAY_INVERSION : byte
+{
+    DISPLAY_INVERSION_OFF,
+    DISPLAY_INVERSION_ON,
+    DISPLAY_INVERSION_NUM
+}
+
+public enum THEME_BACKGROUND : byte
+{
+    ThermalGrizzlyOrange = 1,
+    ThermalGrizzlyDark = 2,
+    Disabled = 255
+}
+
+public enum THEME_FAN : byte
+{
+    ThermalGrizzlyOrange = 0x64, // Bitmap 4 + 6
+    ThermalGrizzlyDark = 0x75, // Bitmap 5 + 7
+    ThermalGrizzlyBlackWhite = 0x98, // Bitmap 8 + 9
 }

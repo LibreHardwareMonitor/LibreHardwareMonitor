@@ -41,5 +41,5 @@ public sealed class DeviceData
 
     public ushort FaultLog { get; set; }
 
-    public DeviceConfigStructV2 Config;
+    public DeviceConfigStructV3 Config;
 }
