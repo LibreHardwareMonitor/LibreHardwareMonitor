@@ -581,9 +581,6 @@ public class SensorGadget : Gadget
     {
         Bitmap sourceBitmap = new Bitmap(source);
         Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
-        float targetHue = targetColor.GetHue() / 360f;
-        float targetSaturation = targetColor.GetSaturation();
-        float targetValue = GetColorValue(targetColor);
 
         for (int y = 0; y < sourceBitmap.Height; y++)
         {
@@ -596,13 +593,9 @@ public class SensorGadget : Gadget
                     continue;
                 }
 
-                // Respect target color's saturation/value so grayscale and dark colors
-                // (e.g. #000000) remain grayscale/dark instead of being hue-biased.
-                float sourceSaturation = c.GetSaturation();
-                float sourceValue = c.GetBrightness();
-                float saturation = Math.Min(1f, sourceSaturation * targetSaturation);
-                float value = Math.Min(1f, sourceValue * targetValue);
-                Color tinted = ColorFromHsv(targetHue, saturation, value, c.A);
+                // Bars should follow selected text color directly.
+                // Preserve source alpha for antialiasing/edge transparency.
+                Color tinted = Color.FromArgb(c.A, targetColor.R, targetColor.G, targetColor.B);
                 result.SetPixel(x, y, tinted);
             }
         }
