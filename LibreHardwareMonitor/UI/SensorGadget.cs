@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.IO;
@@ -31,6 +32,7 @@ public class SensorGadget : Gadget
     private Image _barBack = Utilities.EmbeddedResources.GetImage("barback.png");
     private Image _barFore = Utilities.EmbeddedResources.GetImage("bar.png");
     private Image _backTinted;
+    private Image _barForeTinted;
     private Image _background = new Bitmap(1, 1);
     private bool _backgroundDirty = true;
     private readonly float _scale;
@@ -345,6 +347,11 @@ public class SensorGadget : Gadget
             _backTinted.Dispose();
             _backTinted = null;
         }
+        if (_barForeTinted != null)
+        {
+            _barForeTinted.Dispose();
+            _barForeTinted = null;
+        }
 
         _background.Dispose();
         _background = null;
@@ -510,10 +517,15 @@ public class SensorGadget : Gadget
         _backgroundColor = color;
         _backTinted?.Dispose();
         _backTinted = null;
+        _barForeTinted?.Dispose();
+        _barForeTinted = null;
 
         // Transparent means "Default" and keeps the embedded/custom image as-is.
         if (_backgroundColor.A > 0)
+        {
             _backTinted = CreateBackgroundTint(_back, _backgroundColor);
+            _barForeTinted = CreateBarTint(_barFore, _backgroundColor);
+        }
 
         _backgroundDirty = true;
         Redraw();
@@ -542,6 +554,34 @@ public class SensorGadget : Gadget
                 float saturation = Math.Min(1f, Math.Max(c.GetSaturation() * 0.35f, targetSaturation * 0.75f));
                 Color tinted = ColorFromHsv(targetHue, saturation, c.GetBrightness(), c.A);
 
+                result.SetPixel(x, y, tinted);
+            }
+        }
+
+        sourceBitmap.Dispose();
+        return result;
+    }
+
+    private static Image CreateBarTint(Image source, Color targetColor)
+    {
+        Bitmap sourceBitmap = new Bitmap(source);
+        Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
+        float targetHue = targetColor.GetHue() / 360f;
+        float targetSaturation = Math.Max(0.35f, targetColor.GetSaturation());
+
+        for (int y = 0; y < sourceBitmap.Height; y++)
+        {
+            for (int x = 0; x < sourceBitmap.Width; x++)
+            {
+                Color c = sourceBitmap.GetPixel(x, y);
+                if (c.A == 0)
+                {
+                    result.SetPixel(x, y, c);
+                    continue;
+                }
+
+                float saturation = Math.Min(1f, Math.Max(c.GetSaturation() * 0.4f, targetSaturation));
+                Color tinted = ColorFromHsv(targetHue, saturation, c.GetBrightness(), c.A);
                 result.SetPixel(x, y, tinted);
             }
         }
@@ -595,18 +635,28 @@ public class SensorGadget : Gadget
         };
         form.Icon = EmbeddedResources.GetIcon("icon.ico");
 
-        PictureBox spectrumBox = new PictureBox
+        Panel svBox = new Panel
         {
             BorderStyle = BorderStyle.FixedSingle,
             Cursor = Cursors.Cross
         };
+        Panel hueBox = new Panel
+        {
+            BorderStyle = BorderStyle.FixedSingle,
+            Cursor = Cursors.Cross
+        };
+        SetDoubleBuffered(svBox);
+        SetDoubleBuffered(hueBox);
+        SetDoubleBuffered(form);
 
         float currentHue = initialColor.GetHue() / 360f;
+        float currentSaturation = initialColor.GetSaturation();
         float currentValue = GetColorValue(initialColor);
-        Color current = ColorFromHsv(currentHue, 1f, currentValue, 255);
-        int selectorX = 0;
-        int selectorY = 0;
-        Bitmap spectrum = null;
+        Color current = ColorFromHsv(currentHue, currentSaturation, currentValue, 255);
+
+        int svSelectorX = 0;
+        int svSelectorY = 0;
+        int hueSelectorY = 0;
 
         Panel preview = new Panel
         {
@@ -629,11 +679,15 @@ public class SensorGadget : Gadget
         {
             const int padding = 12;
             const int bottomRowHeight = 40;
+            const int hueBarWidth = 24;
+            const int hueGap = 8;
 
-            spectrumBox.Location = new Point(padding, padding);
-            spectrumBox.Size = new Size(
-                Math.Max(200, form.ClientSize.Width - (2 * padding)),
+            svBox.Location = new Point(padding, padding);
+            svBox.Size = new Size(
+                Math.Max(200, form.ClientSize.Width - (2 * padding) - hueBarWidth - hueGap),
                 Math.Max(120, form.ClientSize.Height - (3 * padding) - bottomRowHeight));
+            hueBox.Location = new Point(svBox.Right + hueGap, padding);
+            hueBox.Size = new Size(hueBarWidth, svBox.Height);
 
             preview.Location = new Point(padding, form.ClientSize.Height - padding - preview.Height);
             selectedLabel.Location = new Point(preview.Right + 10, preview.Top + 9);
@@ -642,62 +696,142 @@ public class SensorGadget : Gadget
             okButton.Location = new Point(cancelButton.Left - 8 - okButton.Width, cancelButton.Top);
         }
 
-        void BuildSpectrum()
+        void SyncSelectorsFromCurrent()
         {
-            spectrum?.Dispose();
-            spectrum = new Bitmap(Math.Max(1, spectrumBox.ClientSize.Width), Math.Max(1, spectrumBox.ClientSize.Height), PixelFormat.Format32bppPArgb);
-            for (int y = 0; y < spectrum.Height; y++)
-            {
-                float value = 1f - (y / (float)Math.Max(1, spectrum.Height - 1));
-                for (int x = 0; x < spectrum.Width; x++)
-                {
-                    float hue = x / (float)Math.Max(1, spectrum.Width - 1);
-                    spectrum.SetPixel(x, y, ColorFromHsv(hue, 1f, value, 255));
-                }
-            }
-
-            spectrumBox.Image = spectrum;
-            selectorX = Math.Min(spectrum.Width - 1, Math.Max(0, (int)Math.Round(currentHue * Math.Max(1, spectrum.Width - 1))));
-            selectorY = Math.Min(spectrum.Height - 1, Math.Max(0, (int)Math.Round((1f - currentValue) * Math.Max(1, spectrum.Height - 1))));
-            spectrumBox.Invalidate();
+            svSelectorX = Math.Min(Math.Max(0, (int)Math.Round(currentSaturation * Math.Max(1, svBox.ClientSize.Width - 1))), Math.Max(0, svBox.ClientSize.Width - 1));
+            svSelectorY = Math.Min(Math.Max(0, (int)Math.Round((1f - currentValue) * Math.Max(1, svBox.ClientSize.Height - 1))), Math.Max(0, svBox.ClientSize.Height - 1));
+            hueSelectorY = Math.Min(Math.Max(0, (int)Math.Round(currentHue * Math.Max(1, hueBox.ClientSize.Height - 1))), Math.Max(0, hueBox.ClientSize.Height - 1));
         }
 
-        void UpdateCurrentFromPoint(Point p)
+        void UpdateCurrentColor()
         {
-            selectorX = Math.Min(Math.Max(0, p.X), Math.Max(0, spectrumBox.ClientSize.Width - 1));
-            selectorY = Math.Min(Math.Max(0, p.Y), Math.Max(0, spectrumBox.ClientSize.Height - 1));
-            currentHue = selectorX / (float)Math.Max(1, spectrumBox.ClientSize.Width - 1);
-            currentValue = 1f - selectorY / (float)Math.Max(1, spectrumBox.ClientSize.Height - 1);
-            current = ColorFromHsv(currentHue, 1f, currentValue, 255);
+            current = ColorFromHsv(currentHue, currentSaturation, currentValue, 255);
             preview.BackColor = current;
             selectedLabel.Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}";
-            spectrumBox.Invalidate();
         }
 
-        bool dragging = false;
-        spectrumBox.MouseDown += delegate(object sender, MouseEventArgs e)
+        void UpdateSvFromPoint(Point p)
+        {
+            svSelectorX = Math.Min(Math.Max(0, p.X), Math.Max(0, svBox.ClientSize.Width - 1));
+            svSelectorY = Math.Min(Math.Max(0, p.Y), Math.Max(0, svBox.ClientSize.Height - 1));
+            currentSaturation = svSelectorX / (float)Math.Max(1, svBox.ClientSize.Width - 1);
+            currentValue = 1f - svSelectorY / (float)Math.Max(1, svBox.ClientSize.Height - 1);
+            UpdateCurrentColor();
+            svBox.Invalidate();
+        }
+
+        void UpdateHueFromPoint(Point p)
+        {
+            int newHueSelectorY = Math.Min(Math.Max(0, p.Y), Math.Max(0, hueBox.ClientSize.Height - 1));
+            if (newHueSelectorY == hueSelectorY)
+                return;
+
+            hueSelectorY = newHueSelectorY;
+            currentHue = hueSelectorY / (float)Math.Max(1, hueBox.ClientSize.Height - 1);
+            UpdateCurrentColor();
+            svBox.Invalidate();
+            hueBox.Invalidate();
+        }
+
+        bool draggingSv = false;
+        bool draggingHue = false;
+        svBox.MouseDown += delegate(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left)
                 return;
-            dragging = true;
-            UpdateCurrentFromPoint(e.Location);
+            draggingSv = true;
+            UpdateSvFromPoint(e.Location);
         };
-        spectrumBox.MouseMove += delegate(object sender, MouseEventArgs e)
+        svBox.MouseMove += delegate(object sender, MouseEventArgs e)
         {
-            if (dragging)
-                UpdateCurrentFromPoint(e.Location);
+            if (draggingSv)
+                UpdateSvFromPoint(e.Location);
         };
-        spectrumBox.MouseUp += delegate { dragging = false; };
-        spectrumBox.Paint += delegate(object sender, PaintEventArgs e)
+        svBox.MouseUp += delegate { draggingSv = false; };
+
+        hueBox.MouseDown += delegate(object sender, MouseEventArgs e)
         {
-            Rectangle marker = new Rectangle(selectorX - 4, selectorY - 4, 8, 8);
+            if (e.Button != MouseButtons.Left)
+                return;
+            draggingHue = true;
+            UpdateHueFromPoint(e.Location);
+        };
+        hueBox.MouseMove += delegate(object sender, MouseEventArgs e)
+        {
+            if (draggingHue)
+                UpdateHueFromPoint(e.Location);
+        };
+        hueBox.MouseUp += delegate { draggingHue = false; };
+
+        svBox.Paint += delegate(object sender, PaintEventArgs e)
+        {
+            Rectangle rect = svBox.ClientRectangle;
+            if (rect.Width <= 1 || rect.Height <= 1)
+                return;
+
+            rect.Width -= 1;
+            rect.Height -= 1;
+            e.Graphics.SmoothingMode = SmoothingMode.None;
+
+            using (SolidBrush hueBrush = new SolidBrush(ColorFromHsv(currentHue, 1f, 1f, 255)))
+                e.Graphics.FillRectangle(hueBrush, rect);
+
+            using (LinearGradientBrush satBrush = new LinearGradientBrush(rect, Color.White, Color.Transparent, LinearGradientMode.Horizontal))
+            {
+                ColorBlend satBlend = new ColorBlend
+                {
+                    Positions = new[] { 0f, 1f },
+                    Colors = new[] { Color.FromArgb(255, 255, 255, 255), Color.FromArgb(0, 255, 255, 255) }
+                };
+                satBrush.InterpolationColors = satBlend;
+                e.Graphics.FillRectangle(satBrush, rect);
+            }
+
+            using (LinearGradientBrush valueBrush = new LinearGradientBrush(rect, Color.Transparent, Color.Black, LinearGradientMode.Vertical))
+            {
+                ColorBlend valueBlend = new ColorBlend
+                {
+                    Positions = new[] { 0f, 1f },
+                    Colors = new[] { Color.FromArgb(0, 0, 0, 0), Color.FromArgb(255, 0, 0, 0) }
+                };
+                valueBrush.InterpolationColors = valueBlend;
+                e.Graphics.FillRectangle(valueBrush, rect);
+            }
+
+            Rectangle marker = new Rectangle(svSelectorX - 4, svSelectorY - 4, 8, 8);
             using Pen outer = new Pen(Color.Black, 2f);
             using Pen inner = new Pen(Color.White, 1f);
             e.Graphics.DrawEllipse(outer, marker);
             e.Graphics.DrawEllipse(inner, marker);
         };
+        hueBox.Paint += delegate(object sender, PaintEventArgs e)
+        {
+            Rectangle rect = hueBox.ClientRectangle;
+            if (rect.Width <= 1 || rect.Height <= 1)
+                return;
 
-        form.Controls.Add(spectrumBox);
+            rect.Width -= 1;
+            rect.Height -= 1;
+
+            using (LinearGradientBrush hueBrush = new LinearGradientBrush(rect, Color.Red, Color.Red, LinearGradientMode.Vertical))
+            {
+                hueBrush.InterpolationColors = new ColorBlend
+                {
+                    Positions = new[] { 0f, 1f / 6f, 2f / 6f, 3f / 6f, 4f / 6f, 5f / 6f, 1f },
+                    Colors = new[] { Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta, Color.Red }
+                };
+                e.Graphics.FillRectangle(hueBrush, rect);
+            }
+
+            Rectangle marker = new Rectangle(0, hueSelectorY - 2, hueBox.ClientSize.Width - 1, 4);
+            using Pen outer = new Pen(Color.Black, 2f);
+            using Pen inner = new Pen(Color.White, 1f);
+            e.Graphics.DrawRectangle(outer, marker);
+            e.Graphics.DrawRectangle(inner, marker);
+        };
+
+        form.Controls.Add(svBox);
+        form.Controls.Add(hueBox);
         form.Controls.Add(preview);
         form.Controls.Add(selectedLabel);
         form.Controls.Add(okButton);
@@ -708,11 +842,14 @@ public class SensorGadget : Gadget
         form.Resize += delegate
         {
             LayoutControls();
-            BuildSpectrum();
+            SyncSelectorsFromCurrent();
+            UpdateCurrentColor();
+            svBox.Invalidate();
+            hueBox.Invalidate();
         };
         LayoutControls();
-        BuildSpectrum();
-        form.FormClosed += delegate { spectrum?.Dispose(); };
+        SyncSelectorsFromCurrent();
+        UpdateCurrentColor();
 
         if (form.ShowDialog() == DialogResult.OK)
         {
@@ -722,6 +859,12 @@ public class SensorGadget : Gadget
 
         selectedColor = initialColor;
         return false;
+    }
+
+    private static void SetDoubleBuffered(Control control)
+    {
+        typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(control, true, null);
     }
 
     private static float GetColorValue(Color color)
@@ -826,13 +969,14 @@ public class SensorGadget : Gadget
 
     private void DrawProgress(Graphics g, float x, float y, float width, float height, float progress)
     {
+        Image barFore = _barForeTinted ?? _barFore;
         g.DrawImage(_barBack,
                     new RectangleF(x + width * progress, y, width * (1 - progress), height),
                     new RectangleF(_barBack.Width * progress, 0, (1 - progress) * _barBack.Width, _barBack.Height),
                     GraphicsUnit.Pixel);
-        g.DrawImage(_barFore,
+        g.DrawImage(barFore,
                     new RectangleF(x, y, width * progress, height),
-                    new RectangleF(0, 0, progress * _barFore.Width, _barFore.Height), GraphicsUnit.Pixel);
+                    new RectangleF(0, 0, progress * barFore.Width, barFore.Height), GraphicsUnit.Pixel);
     }
 
     protected override void OnPaint(PaintEventArgs e)
