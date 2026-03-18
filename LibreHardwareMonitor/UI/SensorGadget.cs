@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
@@ -31,6 +32,8 @@ public class SensorGadget : Gadget
     private Image _fore;
     private Image _barBack = Utilities.EmbeddedResources.GetImage("barback.png");
     private Image _barFore = Utilities.EmbeddedResources.GetImage("bar.png");
+    private bool _customBarBack;
+    private bool _customBarFore;
     private Image _backTinted;
     private Image _barBackTinted;
     private Image _barForeTinted;
@@ -107,6 +110,7 @@ public class SensorGadget : Gadget
                 Image newBarBack = new Bitmap("gadget_bar_background.png");
                 _barBack.Dispose();
                 _barBack = newBarBack;
+                _customBarBack = true;
             }
             catch { }
         }
@@ -118,6 +122,7 @@ public class SensorGadget : Gadget
                 Image newBarColor = new Bitmap("gadget_bar_foreground.png");
                 _barFore.Dispose();
                 _barFore = newBarColor;
+                _customBarFore = true;
             }
             catch { }
         }
@@ -218,7 +223,7 @@ public class SensorGadget : Gadget
             Color color = Color.FromArgb(0);
             backgroundColor = color;
             SetBackgroundColor(color);
-            settings.SetValue("sensorGadget.BackgroundColor", color);
+            settings.Remove("sensorGadget.BackgroundColor");
         };
         backgroundColorMenu.DropDownItems.Add(defaultBackgroundItem);
         contextMenuStrip.Items.Add(backgroundColorMenu);
@@ -520,9 +525,9 @@ public class SensorGadget : Gadget
         _textBrush = new SolidBrush(color);
 
         _barBackTinted?.Dispose();
-        _barBackTinted = CreateBarTint(_barBack, _fontColor);
+        _barBackTinted = _customBarBack ? null : CreateBarTint(_barBack, _fontColor);
         _barForeTinted?.Dispose();
-        _barForeTinted = CreateBarTint(_barFore, _fontColor);
+        _barForeTinted = _customBarFore ? null : CreateBarTint(_barFore, _fontColor);
     }
 
     private void SetBackgroundColor(Color color)
@@ -544,36 +549,86 @@ public class SensorGadget : Gadget
     private static Image CreateBackgroundTint(Image source, Color targetColor)
     {
         Bitmap sourceBitmap = new Bitmap(source);
-        Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
+        Rectangle rect = new Rectangle(0, 0, sourceBitmap.Width, sourceBitmap.Height);
+        Bitmap workingSource = sourceBitmap.PixelFormat == PixelFormat.Format32bppArgb ||
+                               sourceBitmap.PixelFormat == PixelFormat.Format32bppPArgb
+            ? sourceBitmap
+            : sourceBitmap.Clone(rect, PixelFormat.Format32bppArgb);
+        Bitmap result = new Bitmap(workingSource.Width, workingSource.Height, PixelFormat.Format32bppPArgb);
+
         float targetHue = targetColor.GetHue() / 360f;
         float targetSaturation = targetColor.GetSaturation();
         float targetValue = GetColorValue(targetColor);
+        bool isGrayscaleTarget = targetSaturation <= 0.001f;
 
-        for (int y = 0; y < sourceBitmap.Height; y++)
+        BitmapData srcData = null;
+        BitmapData dstData = null;
+        try
         {
-            for (int x = 0; x < sourceBitmap.Width; x++)
+            srcData = workingSource.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            dstData = result.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
+
+            int srcLength = srcData.Stride * workingSource.Height;
+            int dstLength = dstData.Stride * result.Height;
+            byte[] srcBuffer = new byte[srcLength];
+            byte[] dstBuffer = new byte[dstLength];
+            Marshal.Copy(srcData.Scan0, srcBuffer, 0, srcLength);
+
+            for (int y = 0; y < workingSource.Height; y++)
             {
-                Color c = sourceBitmap.GetPixel(x, y);
-                if (c.A == 0)
+                int srcRow = y * srcData.Stride;
+                int dstRow = y * dstData.Stride;
+                for (int x = 0; x < workingSource.Width; x++)
                 {
-                    result.SetPixel(x, y, c);
-                    continue;
+                    int srcIndex = srcRow + (x * 4);
+                    int dstIndex = dstRow + (x * 4);
+                    byte b = srcBuffer[srcIndex + 0];
+                    byte g = srcBuffer[srcIndex + 1];
+                    byte r = srcBuffer[srcIndex + 2];
+                    byte a = srcBuffer[srcIndex + 3];
+
+                    if (a == 0)
+                    {
+                        // For PArgb targets, keep fully transparent pixels black.
+                        dstBuffer[dstIndex + 0] = 0;
+                        dstBuffer[dstIndex + 1] = 0;
+                        dstBuffer[dstIndex + 2] = 0;
+                        dstBuffer[dstIndex + 3] = 0;
+                        continue;
+                    }
+
+                    Color c = Color.FromArgb(a, r, g, b);
+                    float sourceSaturation = c.GetSaturation();
+                    float sourceValue = c.GetBrightness();
+                    float saturation = isGrayscaleTarget
+                        ? 0f
+                        : Math.Min(1f, Math.Max(sourceSaturation * 0.25f, targetSaturation * 0.85f));
+                    float value = Math.Min(1f, (sourceValue * 0.55f) + (targetValue * 0.45f));
+                    Color tinted = ColorFromHsv(targetHue, saturation, value, a);
+
+                    // Destination format is 32bppPArgb, so RGB must be premultiplied by A.
+                    dstBuffer[dstIndex + 0] = (byte)((tinted.B * tinted.A + 127) / 255);
+                    dstBuffer[dstIndex + 1] = (byte)((tinted.G * tinted.A + 127) / 255);
+                    dstBuffer[dstIndex + 2] = (byte)((tinted.R * tinted.A + 127) / 255);
+                    dstBuffer[dstIndex + 3] = tinted.A;
                 }
-
-                // Keep original luminance/alpha so texture depth remains intact while
-                // shifting hue to the selected background color. Blend the target
-                // value in so bright colors can actually lighten the panel.
-                float sourceSaturation = c.GetSaturation();
-                float sourceValue = c.GetBrightness();
-                float saturation = Math.Min(1f, Math.Max(sourceSaturation * 0.25f, targetSaturation * 0.85f));
-                float value = Math.Min(1f, (sourceValue * 0.55f) + (targetValue * 0.45f));
-                Color tinted = ColorFromHsv(targetHue, saturation, value, c.A);
-
-                result.SetPixel(x, y, tinted);
             }
+
+            Marshal.Copy(dstBuffer, 0, dstData.Scan0, dstLength);
+        }
+        finally
+        {
+            if (srcData != null)
+                workingSource.UnlockBits(srcData);
+            if (dstData != null)
+                result.UnlockBits(dstData);
+
+            if (!ReferenceEquals(workingSource, sourceBitmap))
+                workingSource.Dispose();
+
+            sourceBitmap.Dispose();
         }
 
-        sourceBitmap.Dispose();
         return result;
     }
 
