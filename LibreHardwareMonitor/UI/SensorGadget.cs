@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 
 namespace LibreHardwareMonitor.UI;
@@ -28,8 +29,10 @@ public class SensorGadget : Gadget
     private Image _image;
     private Image _fore;
     private Image _barBack = Utilities.EmbeddedResources.GetImage("barback.png");
-    private Image _barFore = Utilities.EmbeddedResources.GetImage("barblue.png");
+    private Image _barFore = Utilities.EmbeddedResources.GetImage("bar.png");
+    private Image _backTinted;
     private Image _background = new Bitmap(1, 1);
+    private bool _backgroundDirty = true;
     private readonly float _scale;
     private float _fontSize;
     private int _iconSize;
@@ -51,6 +54,7 @@ public class SensorGadget : Gadget
     private StringFormat _stringFormat;
     private StringFormat _trimStringFormat;
     private StringFormat _alignRightStringFormat;
+    private Color _backgroundColor;
 
     public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
     {
@@ -161,29 +165,59 @@ public class SensorGadget : Gadget
         contextMenuStrip.Items.Add(fontSizeMenu);
 
         Color fontColor = settings.GetValue("sensorGadget.FontColor", Color.White);
-        int fontColorArgb = fontColor.ToArgb();
-
         SetFontColor(fontColor);
 
-        IEnumerable<Color> providedColors = Enum.GetValues(typeof(KnownColor))
-                                                .Cast<KnownColor>()
-                                                .Select(x => Color.FromKnownColor(x))
-                                                .Where(x => !x.IsSystemColor && x.Name.Length < 7);
-
         ToolStripMenuItem fontColorMenu = new ToolStripMenuItem("Font Color");
-        foreach (Color color in providedColors)
+        ToolStripItem chooseFontColorItem = new ToolStripMenuItem("Choose...");
+        chooseFontColorItem.Click += delegate
         {
-            ToolStripItem item = new ToolStripMenuItem(color.Name) { Checked = fontColorArgb == color.ToArgb() };
-            item.Click += delegate
+            if (TrySelectColor(fontColor, out Color selectedColor))
             {
-                SetFontColor(color);
-                settings.SetValue("sensorGadget.FontColor", color);
-                foreach (ToolStripMenuItem mi in fontColorMenu.DropDownItems)
-                    mi.Checked = mi == item;
-            };
-            fontColorMenu.DropDownItems.Add(item);
-        }
+                fontColor = selectedColor;
+                SetFontColor(fontColor);
+                settings.SetValue("sensorGadget.FontColor", fontColor);
+                Redraw();
+            }
+        };
+        fontColorMenu.DropDownItems.Add(chooseFontColorItem);
+
+        ToolStripItem defaultFontColorItem = new ToolStripMenuItem("Default");
+        defaultFontColorItem.Click += delegate
+        {
+            fontColor = Color.White;
+            SetFontColor(fontColor);
+            settings.Remove("sensorGadget.FontColor");
+            Redraw();
+        };
+        fontColorMenu.DropDownItems.Add(defaultFontColorItem);
         contextMenuStrip.Items.Add(fontColorMenu);
+
+        Color backgroundColor = settings.GetValue("sensorGadget.BackgroundColor", Color.FromArgb(0));
+        SetBackgroundColor(backgroundColor);
+
+        ToolStripMenuItem backgroundColorMenu = new ToolStripMenuItem("Background Color");
+        ToolStripItem chooseBackgroundItem = new ToolStripMenuItem("Choose...");
+        chooseBackgroundItem.Click += delegate
+        {
+            if (TrySelectColor(backgroundColor.A == 0 ? Color.White : backgroundColor, out Color selectedColor))
+            {
+                backgroundColor = selectedColor;
+                SetBackgroundColor(backgroundColor);
+                settings.SetValue("sensorGadget.BackgroundColor", backgroundColor);
+            }
+        };
+        backgroundColorMenu.DropDownItems.Add(chooseBackgroundItem);
+
+        ToolStripItem defaultBackgroundItem = new ToolStripMenuItem("Default");
+        defaultBackgroundItem.Click += delegate
+        {
+            Color color = Color.FromArgb(0);
+            backgroundColor = color;
+            SetBackgroundColor(color);
+            settings.SetValue("sensorGadget.BackgroundColor", color);
+        };
+        backgroundColorMenu.DropDownItems.Add(defaultBackgroundItem);
+        contextMenuStrip.Items.Add(backgroundColorMenu);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
         ToolStripMenuItem lockItem = new ToolStripMenuItem("Lock Position and Size");
         contextMenuStrip.Items.Add(lockItem);
@@ -305,6 +339,12 @@ public class SensorGadget : Gadget
 
         _barBack.Dispose();
         _barBack = null;
+
+        if (_backTinted != null)
+        {
+            _backTinted.Dispose();
+            _backTinted = null;
+        }
 
         _background.Dispose();
         _background = null;
@@ -465,6 +505,230 @@ public class SensorGadget : Gadget
         _textBrush = new SolidBrush(color);
     }
 
+    private void SetBackgroundColor(Color color)
+    {
+        _backgroundColor = color;
+        _backTinted?.Dispose();
+        _backTinted = null;
+
+        // Transparent means "Default" and keeps the embedded/custom image as-is.
+        if (_backgroundColor.A > 0)
+            _backTinted = CreateBackgroundTint(_back, _backgroundColor);
+
+        _backgroundDirty = true;
+        Redraw();
+    }
+
+    private static Image CreateBackgroundTint(Image source, Color targetColor)
+    {
+        Bitmap sourceBitmap = new Bitmap(source);
+        Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
+        float targetHue = targetColor.GetHue() / 360f;
+        float targetSaturation = targetColor.GetSaturation();
+
+        for (int y = 0; y < sourceBitmap.Height; y++)
+        {
+            for (int x = 0; x < sourceBitmap.Width; x++)
+            {
+                Color c = sourceBitmap.GetPixel(x, y);
+                if (c.A == 0)
+                {
+                    result.SetPixel(x, y, c);
+                    continue;
+                }
+
+                // Keep original luminance/alpha so texture depth remains intact while
+                // shifting hue to the selected background color.
+                float saturation = Math.Min(1f, Math.Max(c.GetSaturation() * 0.35f, targetSaturation * 0.75f));
+                Color tinted = ColorFromHsv(targetHue, saturation, c.GetBrightness(), c.A);
+
+                result.SetPixel(x, y, tinted);
+            }
+        }
+
+        sourceBitmap.Dispose();
+        return result;
+    }
+
+    private static Color ColorFromHsv(float hue, float saturation, float value, int alpha)
+    {
+        if (saturation <= 0)
+        {
+            int v = (int)Math.Round(value * 255);
+            return Color.FromArgb(alpha, v, v, v);
+        }
+
+        float h = (hue % 1.0f + 1.0f) % 1.0f * 6.0f;
+        int i = (int)Math.Floor(h);
+        float f = h - i;
+        float p = value * (1 - saturation);
+        float q = value * (1 - saturation * f);
+        float t = value * (1 - saturation * (1 - f));
+
+        (float r, float g, float b) = i switch
+        {
+            0 => (value, t, p),
+            1 => (q, value, p),
+            2 => (p, value, t),
+            3 => (p, q, value),
+            4 => (t, p, value),
+            _ => (value, p, q)
+        };
+
+        return Color.FromArgb(alpha,
+                              (int)Math.Round(r * 255),
+                              (int)Math.Round(g * 255),
+                              (int)Math.Round(b * 255));
+    }
+
+    private static bool TrySelectColor(Color initialColor, out Color selectedColor)
+    {
+        using Form form = new Form
+        {
+            Text = "Select Color",
+            FormBorderStyle = FormBorderStyle.Sizable,
+            StartPosition = FormStartPosition.CenterScreen,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ClientSize = new Size(460, 340),
+            MinimumSize = new Size(360, 280)
+        };
+        form.Icon = EmbeddedResources.GetIcon("icon.ico");
+
+        PictureBox spectrumBox = new PictureBox
+        {
+            BorderStyle = BorderStyle.FixedSingle,
+            Cursor = Cursors.Cross
+        };
+
+        float currentHue = initialColor.GetHue() / 360f;
+        float currentValue = GetColorValue(initialColor);
+        Color current = ColorFromHsv(currentHue, 1f, currentValue, 255);
+        int selectorX = 0;
+        int selectorY = 0;
+        Bitmap spectrum = null;
+
+        Panel preview = new Panel
+        {
+            Size = new Size(34, 34),
+            BorderStyle = BorderStyle.FixedSingle,
+            BackColor = current
+        };
+
+        Label selectedLabel = new Label
+        {
+            AutoSize = true,
+            Location = new Point(0, 0),
+            Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}"
+        };
+
+        Button okButton = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 70 };
+        Button cancelButton = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 70 };
+
+        void LayoutControls()
+        {
+            const int padding = 12;
+            const int bottomRowHeight = 40;
+
+            spectrumBox.Location = new Point(padding, padding);
+            spectrumBox.Size = new Size(
+                Math.Max(200, form.ClientSize.Width - (2 * padding)),
+                Math.Max(120, form.ClientSize.Height - (3 * padding) - bottomRowHeight));
+
+            preview.Location = new Point(padding, form.ClientSize.Height - padding - preview.Height);
+            selectedLabel.Location = new Point(preview.Right + 10, preview.Top + 9);
+
+            cancelButton.Location = new Point(form.ClientSize.Width - padding - cancelButton.Width, form.ClientSize.Height - padding - cancelButton.Height);
+            okButton.Location = new Point(cancelButton.Left - 8 - okButton.Width, cancelButton.Top);
+        }
+
+        void BuildSpectrum()
+        {
+            spectrum?.Dispose();
+            spectrum = new Bitmap(Math.Max(1, spectrumBox.ClientSize.Width), Math.Max(1, spectrumBox.ClientSize.Height), PixelFormat.Format32bppPArgb);
+            for (int y = 0; y < spectrum.Height; y++)
+            {
+                float value = 1f - (y / (float)Math.Max(1, spectrum.Height - 1));
+                for (int x = 0; x < spectrum.Width; x++)
+                {
+                    float hue = x / (float)Math.Max(1, spectrum.Width - 1);
+                    spectrum.SetPixel(x, y, ColorFromHsv(hue, 1f, value, 255));
+                }
+            }
+
+            spectrumBox.Image = spectrum;
+            selectorX = Math.Min(spectrum.Width - 1, Math.Max(0, (int)Math.Round(currentHue * Math.Max(1, spectrum.Width - 1))));
+            selectorY = Math.Min(spectrum.Height - 1, Math.Max(0, (int)Math.Round((1f - currentValue) * Math.Max(1, spectrum.Height - 1))));
+            spectrumBox.Invalidate();
+        }
+
+        void UpdateCurrentFromPoint(Point p)
+        {
+            selectorX = Math.Min(Math.Max(0, p.X), Math.Max(0, spectrumBox.ClientSize.Width - 1));
+            selectorY = Math.Min(Math.Max(0, p.Y), Math.Max(0, spectrumBox.ClientSize.Height - 1));
+            currentHue = selectorX / (float)Math.Max(1, spectrumBox.ClientSize.Width - 1);
+            currentValue = 1f - selectorY / (float)Math.Max(1, spectrumBox.ClientSize.Height - 1);
+            current = ColorFromHsv(currentHue, 1f, currentValue, 255);
+            preview.BackColor = current;
+            selectedLabel.Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}";
+            spectrumBox.Invalidate();
+        }
+
+        bool dragging = false;
+        spectrumBox.MouseDown += delegate(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+            dragging = true;
+            UpdateCurrentFromPoint(e.Location);
+        };
+        spectrumBox.MouseMove += delegate(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+                UpdateCurrentFromPoint(e.Location);
+        };
+        spectrumBox.MouseUp += delegate { dragging = false; };
+        spectrumBox.Paint += delegate(object sender, PaintEventArgs e)
+        {
+            Rectangle marker = new Rectangle(selectorX - 4, selectorY - 4, 8, 8);
+            using Pen outer = new Pen(Color.Black, 2f);
+            using Pen inner = new Pen(Color.White, 1f);
+            e.Graphics.DrawEllipse(outer, marker);
+            e.Graphics.DrawEllipse(inner, marker);
+        };
+
+        form.Controls.Add(spectrumBox);
+        form.Controls.Add(preview);
+        form.Controls.Add(selectedLabel);
+        form.Controls.Add(okButton);
+        form.Controls.Add(cancelButton);
+        form.AcceptButton = okButton;
+        form.CancelButton = cancelButton;
+        Theme.Current.Apply(form);
+        form.Resize += delegate
+        {
+            LayoutControls();
+            BuildSpectrum();
+        };
+        LayoutControls();
+        BuildSpectrum();
+        form.FormClosed += delegate { spectrum?.Dispose(); };
+
+        if (form.ShowDialog() == DialogResult.OK)
+        {
+            selectedColor = current;
+            return true;
+        }
+
+        selectedColor = initialColor;
+        return false;
+    }
+
+    private static float GetColorValue(Color color)
+    {
+        return Math.Max(color.R, Math.Max(color.G, color.B)) / 255f;
+    }
+
     private void Resize()
     {
         Resize(Size.Width);
@@ -514,14 +778,14 @@ public class SensorGadget : Gadget
         int w = Size.Width;
         int h = Size.Height;
 
-        if (w != _background.Width || h != _background.Height)
+        if (_backgroundDirty || w != _background.Width || h != _background.Height)
         {
             _background.Dispose();
             _background = new Bitmap(w, h, PixelFormat.Format32bppPArgb);
 
             using (Graphics graphics = Graphics.FromImage(_background))
             {
-                DrawImageWidthBorder(graphics, w, h, _back, TopBorder, BottomBorder,LeftBorder, RightBorder);
+                DrawImageWidthBorder(graphics, w, h, _backTinted ?? _back, TopBorder, BottomBorder, LeftBorder, RightBorder);
 
                 if (_fore != null)
                     DrawImageWidthBorder(graphics, w, h, _fore, TopBorder, BottomBorder, LeftBorder, RightBorder);
@@ -553,6 +817,8 @@ public class SensorGadget : Gadget
                     graphics.DrawImage(_image, new RectangleF(LeftBorder + xOffset, TopBorder + yOffset, destWidth, destHeight));
                 }
             }
+
+            _backgroundDirty = false;
         }
 
         g.DrawImageUnscaled(_background, 0, 0);
