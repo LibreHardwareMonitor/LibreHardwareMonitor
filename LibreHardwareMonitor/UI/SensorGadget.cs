@@ -32,6 +32,7 @@ public class SensorGadget : Gadget
     private Image _barBack = Utilities.EmbeddedResources.GetImage("barback.png");
     private Image _barFore = Utilities.EmbeddedResources.GetImage("bar.png");
     private Image _backTinted;
+    private Image _barBackTinted;
     private Image _barForeTinted;
     private Image _background = new Bitmap(1, 1);
     private bool _backgroundDirty = true;
@@ -56,6 +57,7 @@ public class SensorGadget : Gadget
     private StringFormat _stringFormat;
     private StringFormat _trimStringFormat;
     private StringFormat _alignRightStringFormat;
+    private Color _fontColor;
     private Color _backgroundColor;
 
     public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
@@ -352,6 +354,11 @@ public class SensorGadget : Gadget
             _barForeTinted.Dispose();
             _barForeTinted = null;
         }
+        if (_barBackTinted != null)
+        {
+            _barBackTinted.Dispose();
+            _barBackTinted = null;
+        }
 
         _background.Dispose();
         _background = null;
@@ -508,8 +515,14 @@ public class SensorGadget : Gadget
 
     private void SetFontColor(Color color)
     {
+        _fontColor = color;
         _textBrush?.Dispose();
         _textBrush = new SolidBrush(color);
+
+        _barBackTinted?.Dispose();
+        _barBackTinted = CreateBarTint(_barBack, _fontColor);
+        _barForeTinted?.Dispose();
+        _barForeTinted = CreateBarTint(_barFore, _fontColor);
     }
 
     private void SetBackgroundColor(Color color)
@@ -517,14 +530,11 @@ public class SensorGadget : Gadget
         _backgroundColor = color;
         _backTinted?.Dispose();
         _backTinted = null;
-        _barForeTinted?.Dispose();
-        _barForeTinted = null;
 
         // Transparent means "Default" and keeps the embedded/custom image as-is.
         if (_backgroundColor.A > 0)
         {
             _backTinted = CreateBackgroundTint(_back, _backgroundColor);
-            _barForeTinted = CreateBarTint(_barFore, _backgroundColor);
         }
 
         _backgroundDirty = true;
@@ -537,6 +547,7 @@ public class SensorGadget : Gadget
         Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
         float targetHue = targetColor.GetHue() / 360f;
         float targetSaturation = targetColor.GetSaturation();
+        float targetValue = GetColorValue(targetColor);
 
         for (int y = 0; y < sourceBitmap.Height; y++)
         {
@@ -550,9 +561,13 @@ public class SensorGadget : Gadget
                 }
 
                 // Keep original luminance/alpha so texture depth remains intact while
-                // shifting hue to the selected background color.
-                float saturation = Math.Min(1f, Math.Max(c.GetSaturation() * 0.35f, targetSaturation * 0.75f));
-                Color tinted = ColorFromHsv(targetHue, saturation, c.GetBrightness(), c.A);
+                // shifting hue to the selected background color. Blend the target
+                // value in so bright colors can actually lighten the panel.
+                float sourceSaturation = c.GetSaturation();
+                float sourceValue = c.GetBrightness();
+                float saturation = Math.Min(1f, Math.Max(sourceSaturation * 0.25f, targetSaturation * 0.85f));
+                float value = Math.Min(1f, (sourceValue * 0.55f) + (targetValue * 0.45f));
+                Color tinted = ColorFromHsv(targetHue, saturation, value, c.A);
 
                 result.SetPixel(x, y, tinted);
             }
@@ -567,7 +582,8 @@ public class SensorGadget : Gadget
         Bitmap sourceBitmap = new Bitmap(source);
         Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
         float targetHue = targetColor.GetHue() / 360f;
-        float targetSaturation = Math.Max(0.35f, targetColor.GetSaturation());
+        float targetSaturation = targetColor.GetSaturation();
+        float targetValue = GetColorValue(targetColor);
 
         for (int y = 0; y < sourceBitmap.Height; y++)
         {
@@ -580,8 +596,13 @@ public class SensorGadget : Gadget
                     continue;
                 }
 
-                float saturation = Math.Min(1f, Math.Max(c.GetSaturation() * 0.4f, targetSaturation));
-                Color tinted = ColorFromHsv(targetHue, saturation, c.GetBrightness(), c.A);
+                // Respect target color's saturation/value so grayscale and dark colors
+                // (e.g. #000000) remain grayscale/dark instead of being hue-biased.
+                float sourceSaturation = c.GetSaturation();
+                float sourceValue = c.GetBrightness();
+                float saturation = Math.Min(1f, sourceSaturation * targetSaturation);
+                float value = Math.Min(1f, sourceValue * targetValue);
+                Color tinted = ColorFromHsv(targetHue, saturation, value, c.A);
                 result.SetPixel(x, y, tinted);
             }
         }
@@ -665,15 +686,21 @@ public class SensorGadget : Gadget
             BackColor = current
         };
 
-        Label selectedLabel = new Label
+        Label hexLabel = new Label
         {
             AutoSize = true,
             Location = new Point(0, 0),
+            Text = "Hex:"
+        };
+        TextBox hexTextBox = new TextBox
+        {
+            Width = 110,
             Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}"
         };
 
         Button okButton = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 70 };
         Button cancelButton = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 70 };
+        bool updatingHexText = false;
 
         void LayoutControls()
         {
@@ -690,7 +717,8 @@ public class SensorGadget : Gadget
             hueBox.Size = new Size(hueBarWidth, svBox.Height);
 
             preview.Location = new Point(padding, form.ClientSize.Height - padding - preview.Height);
-            selectedLabel.Location = new Point(preview.Right + 10, preview.Top + 9);
+            hexLabel.Location = new Point(preview.Right + 10, preview.Top + 9);
+            hexTextBox.Location = new Point(hexLabel.Right + 6, preview.Top + 6);
 
             cancelButton.Location = new Point(form.ClientSize.Width - padding - cancelButton.Width, form.ClientSize.Height - padding - cancelButton.Height);
             okButton.Location = new Point(cancelButton.Left - 8 - okButton.Width, cancelButton.Top);
@@ -707,7 +735,9 @@ public class SensorGadget : Gadget
         {
             current = ColorFromHsv(currentHue, currentSaturation, currentValue, 255);
             preview.BackColor = current;
-            selectedLabel.Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}";
+            updatingHexText = true;
+            hexTextBox.Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}";
+            updatingHexText = false;
         }
 
         void UpdateSvFromPoint(Point p)
@@ -829,11 +859,32 @@ public class SensorGadget : Gadget
             e.Graphics.DrawRectangle(outer, marker);
             e.Graphics.DrawRectangle(inner, marker);
         };
+        hexTextBox.TextChanged += delegate
+        {
+            if (updatingHexText)
+                return;
+
+            if (!TryParseHexColor(hexTextBox.Text, out Color parsedColor))
+                return;
+
+            float parsedHue = parsedColor.GetHue() / 360f;
+            float parsedSaturation = parsedColor.GetSaturation();
+            float parsedValue = GetColorValue(parsedColor);
+
+            currentHue = parsedHue;
+            currentSaturation = parsedSaturation;
+            currentValue = parsedValue;
+            SyncSelectorsFromCurrent();
+            UpdateCurrentColor();
+            svBox.Invalidate();
+            hueBox.Invalidate();
+        };
 
         form.Controls.Add(svBox);
         form.Controls.Add(hueBox);
         form.Controls.Add(preview);
-        form.Controls.Add(selectedLabel);
+        form.Controls.Add(hexLabel);
+        form.Controls.Add(hexTextBox);
         form.Controls.Add(okButton);
         form.Controls.Add(cancelButton);
         form.AcceptButton = okButton;
@@ -870,6 +921,30 @@ public class SensorGadget : Gadget
     private static float GetColorValue(Color color)
     {
         return Math.Max(color.R, Math.Max(color.G, color.B)) / 255f;
+    }
+
+    private static bool TryParseHexColor(string input, out Color color)
+    {
+        color = Color.Empty;
+        if (string.IsNullOrWhiteSpace(input))
+            return false;
+
+        string hex = input.Trim();
+        if (hex.StartsWith("#"))
+            hex = hex.Substring(1);
+
+        if (hex.Length != 6)
+            return false;
+
+        if (!int.TryParse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int r))
+            return false;
+        if (!int.TryParse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int g))
+            return false;
+        if (!int.TryParse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int b))
+            return false;
+
+        color = Color.FromArgb(r, g, b);
+        return true;
     }
 
     private void Resize()
@@ -969,10 +1044,11 @@ public class SensorGadget : Gadget
 
     private void DrawProgress(Graphics g, float x, float y, float width, float height, float progress)
     {
+        Image barBack = _barBackTinted ?? _barBack;
         Image barFore = _barForeTinted ?? _barFore;
-        g.DrawImage(_barBack,
+        g.DrawImage(barBack,
                     new RectangleF(x + width * progress, y, width * (1 - progress), height),
-                    new RectangleF(_barBack.Width * progress, 0, (1 - progress) * _barBack.Width, _barBack.Height),
+                    new RectangleF(barBack.Width * progress, 0, (1 - progress) * barBack.Width, barBack.Height),
                     GraphicsUnit.Pixel);
         g.DrawImage(barFore,
                     new RectangleF(x, y, width * progress, height),
