@@ -354,6 +354,7 @@ public enum Model
     FRANMACP04, // Intel Core i5-1240P
     FRANMACP06, // Intel Core i7-1260P
     FRANMACP08, // Intel Core i7-1280P
+    FRANMBCP04, // Intel Core i5-1240P Chromebook?
     FRANMCCP04, // Intel Core i5-1340P
     FRANMCCP06, // Intel Core i7-1360P
     FRANMCCP07, // Intel Core i7-1370P
