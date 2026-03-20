@@ -5,8 +5,13 @@
 // All Rights Reserved.
 
 using System;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+#if !NETFRAMEWORK
+using Mono.Unix.Native;
+#else
+using System.Reflection;
+#endif
 using Windows.Win32;
 using Windows.Win32.System.Memory;
 
@@ -207,6 +212,7 @@ internal static class OpCode
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate ulong RdtscDelegate();
 
+    [RequiresUnreferencedCode("Dynamic code generation for OpCode delegates")]
     public static unsafe void Open()
     {
         byte[] rdTscCode;
@@ -228,9 +234,6 @@ internal static class OpCode
         {
 #if NETFRAMEWORK
             Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
-#else
-            Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
-#endif
 
             Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
             MethodInfo mmap = sysCall.GetMethod("mmap");
@@ -248,6 +251,11 @@ internal static class OpCode
 
             if (mmap != null)
                 _codeBuffer = (IntPtr)mmap.Invoke(null, [IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0]);
+#else
+            _codeBuffer = Syscall.mmap(IntPtr.Zero, _size,
+                MmapProts.PROT_READ | MmapProts.PROT_WRITE | MmapProts.PROT_EXEC,
+                MmapFlags.MAP_ANONYMOUS | MmapFlags.MAP_PRIVATE, -1, 0);
+#endif
         }
         else
         {
@@ -258,10 +266,10 @@ internal static class OpCode
         }
 
         Marshal.Copy(rdTscCode, 0, _codeBuffer, rdTscCode.Length);
-        Rdtsc = Marshal.GetDelegateForFunctionPointer(_codeBuffer, typeof(RdtscDelegate)) as RdtscDelegate;
+        Rdtsc = Marshal.GetDelegateForFunctionPointer<RdtscDelegate>(_codeBuffer);
         IntPtr cpuidAddress = (IntPtr)((long)_codeBuffer + rdTscCode.Length);
         Marshal.Copy(cpuidCode, 0, cpuidAddress, cpuidCode.Length);
-        CpuId = Marshal.GetDelegateForFunctionPointer(cpuidAddress, typeof(CpuidDelegate)) as CpuidDelegate;
+        CpuId = Marshal.GetDelegateForFunctionPointer<CpuidDelegate>(cpuidAddress);
     }
 
     public static unsafe void Close()
@@ -273,13 +281,13 @@ internal static class OpCode
         {
 #if NETFRAMEWORK
             Assembly assembly = Assembly.Load("Mono.Posix, Version=2.0.0.0, Culture=neutral, " + "PublicKeyToken=0738eb9f132ed756");
-#else
-            Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
-#endif
 
             Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
             MethodInfo method = sysCall.GetMethod("munmap");
             method?.Invoke(null, [_codeBuffer, _size]);
+#else
+            Syscall.munmap(_codeBuffer, _size);
+#endif
         }
         else
         {

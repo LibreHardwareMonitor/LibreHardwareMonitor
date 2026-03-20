@@ -251,7 +251,7 @@ internal static class NvApi
 
         if (ptr != IntPtr.Zero)
         {
-            return Marshal.GetDelegateForFunctionPointer(ptr, typeof(T)) as T;
+            return Marshal.GetDelegateForFunctionPointer<T>(ptr);
         }
         else
         {

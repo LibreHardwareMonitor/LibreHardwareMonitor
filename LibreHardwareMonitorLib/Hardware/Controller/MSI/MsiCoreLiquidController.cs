@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -352,7 +353,7 @@ internal class MsiCoreLiquidController : Hardware
         SetData(buffer);
     }
 
-    private static T BytesToStruct<T>(byte[] data, int startIndex) where T : struct
+    private static T BytesToStruct<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(byte[] data, int startIndex) where T : struct
     {
         int size = Marshal.SizeOf<T>();
 
