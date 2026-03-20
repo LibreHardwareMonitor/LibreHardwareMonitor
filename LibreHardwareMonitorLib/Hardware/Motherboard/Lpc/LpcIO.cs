@@ -413,6 +413,7 @@ internal class LpcIO
                         // MSI AM5/LGA1851 800 Series Motherboard Compatibility (Nuvoton NCT6687DR)
                         if (motherboard.Manufacturer == Manufacturer.MSI && (motherboard.SMBios.Board.ProductName.ToString().Contains("B840", StringComparison.OrdinalIgnoreCase) ||
                             motherboard.SMBios.Board.ProductName.ToString().Contains("B850", StringComparison.OrdinalIgnoreCase) ||
+                            motherboard.SMBios.Board.ProductName.ToString().Contains("B860", StringComparison.OrdinalIgnoreCase) ||
                             motherboard.SMBios.Board.ProductName.ToString().Contains("X870", StringComparison.OrdinalIgnoreCase) ||
                             motherboard.SMBios.Board.ProductName.ToString().Contains("Z890", StringComparison.OrdinalIgnoreCase)))
                         {

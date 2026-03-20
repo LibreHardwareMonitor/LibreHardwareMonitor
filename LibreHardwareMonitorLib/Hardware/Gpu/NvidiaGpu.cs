@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -520,271 +521,278 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Update()
     {
-        if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+        try
         {
-            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
-            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
-            ActivateSensor(_gpuDedicatedMemoryUsage);
-            ActivateSensor(_gpuSharedMemoryUsage);
-
-            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+            if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
             {
-                long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
-                long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
+                _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
+                _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
+                ActivateSensor(_gpuDedicatedMemoryUsage);
+                ActivateSensor(_gpuSharedMemoryUsage);
 
-                _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
-                _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
-                _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
-                ActivateSensor(_gpuNodeUsage[node.Id]);
-            }
-        }
-
-        NvApi.NvStatus status;
-
-        if (_temperatures is { Length: > 0 })
-        {
-            NvApi.NvThermalSettings settings = GetThermalSettings(out status);
-            // settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval.
-            if (status == NvApi.NvStatus.OK && settings.Count > 0)
-            {
-                foreach (Sensor sensor in _temperatures)
-                    sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
-            }
-        }
-
-        if (_thermalSensorsMask > 0)
-        {
-            NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
-
-            if (status == NvApi.NvStatus.OK)
-            {
-                // RTX 50xx series
-                if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+                foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
                 {
-                    _hotSpotTemperature.Value = 0;
-                    _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                    long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
+                    long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
+
+                    _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+                    _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+                    _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+                    ActivateSensor(_gpuNodeUsage[node.Id]);
                 }
-                // RTX 40xx series
-                else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
+            }
+
+            NvApi.NvStatus status;
+
+            if (_temperatures is { Length: > 0 })
+            {
+                NvApi.NvThermalSettings settings = GetThermalSettings(out status);
+                // settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval.
+                if (status == NvApi.NvStatus.OK && settings.Count > 0)
                 {
-                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
+                    foreach (Sensor sensor in _temperatures)
+                        sensor.Value = settings.Sensor[sensor.Index].CurrentTemp;
+                }
+            }
+
+            if (_thermalSensorsMask > 0)
+            {
+                NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
+
+                if (status == NvApi.NvStatus.OK)
+                {
+                    // RTX 50xx series
+                    if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotSpotTemperature.Value = 0;
+                        _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                    }
+                    // RTX 40xx series
+                    else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
+                    }
+                    else
+                    {
+                        _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                    }
+                }
+
+                if (_hotSpotTemperature.Value != 0)
+                    ActivateSensor(_hotSpotTemperature);
+
+                if (_memoryJunctionTemperature.Value != 0)
+                    ActivateSensor(_memoryJunctionTemperature);
+            }
+            else
+            {
+                _hotSpotTemperature.Value = null;
+                _memoryJunctionTemperature.Value = null;
+            }
+
+            if (_clocks is { Length: > 0 })
+            {
+                NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out status);
+                if (status == NvApi.NvStatus.OK)
+                {
+                    int current = 0;
+                    for (int i = 0; i < clockFrequencies.Clocks.Length; i++)
+                    {
+                        NvApi.NvGpuClockFrequenciesDomain clock = clockFrequencies.Clocks[i];
+                        if (clock.IsPresent && Enum.IsDefined(typeof(NvApi.NvGpuPublicClockId), i))
+                            _clocks[current++].Value = clock.Frequency / 1000f;
+                    }
+                }
+            }
+
+            if (_fans is { Length: > 0 })
+            {
+                NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
+                if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
+                {
+                    for (int i = 0; i < fanCoolers.Count; i++)
+                    {
+                        NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
+                        _fans[i].Value = item.CurrentRpm;
+                    }
                 }
                 else
                 {
-                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                    int tachReading = GetTachReading(out status);
+                    if (status == NvApi.NvStatus.OK)
+                        _fans[0].Value = tachReading;
                 }
             }
 
-            if (_hotSpotTemperature.Value != 0)
-                ActivateSensor(_hotSpotTemperature);
-
-            if (_memoryJunctionTemperature.Value != 0)
-                ActivateSensor(_memoryJunctionTemperature);
-        }
-        else
-        {
-            _hotSpotTemperature.Value = null;
-            _memoryJunctionTemperature.Value = null;
-        }
-
-        if (_clocks is { Length: > 0 })
-        {
-            NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out status);
-            if (status == NvApi.NvStatus.OK)
+            if (_controls is { Length: > 0 })
             {
-                int current = 0;
-                for (int i = 0; i < clockFrequencies.Clocks.Length; i++)
+                NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
+                if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0 && fanCoolers.Count == _controls.Length)
                 {
-                    NvApi.NvGpuClockFrequenciesDomain clock = clockFrequencies.Clocks[i];
-                    if (clock.IsPresent && Enum.IsDefined(typeof(NvApi.NvGpuPublicClockId), i))
-                        _clocks[current++].Value = clock.Frequency / 1000f;
-                }
-            }
-        }
-
-        if (_fans is { Length: > 0 })
-        {
-            NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
-            if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
-            {
-                for (int i = 0; i < fanCoolers.Count; i++)
-                {
-                    NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
-                    _fans[i].Value = item.CurrentRpm;
-                }
-            }
-            else
-            {
-                int tachReading = GetTachReading(out status);
-                if (status == NvApi.NvStatus.OK)
-                    _fans[0].Value = tachReading;
-            }
-        }
-
-        if (_controls is { Length: > 0 })
-        {
-            NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
-            if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0 && fanCoolers.Count == _controls.Length)
-            {
-                for (int i = 0; i < fanCoolers.Count; i++)
-                {
-                    NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
-
-                    if (Array.Find(_controls, c => c.Index == item.CoolerId) is { } control)
-                        control.Value = item.CurrentLevel;
-                }
-            }
-            else
-            {
-                NvApi.NvCoolerSettings coolerSettings = GetCoolerSettings(out status);
-                if (status == NvApi.NvStatus.OK && coolerSettings.Count > 0)
-                {
-                    for (int i = 0; i < coolerSettings.Count; i++)
+                    for (int i = 0; i < fanCoolers.Count; i++)
                     {
-                        NvApi.NvCooler cooler = coolerSettings.Cooler[i];
-                        _controls[i].Value = cooler.CurrentLevel;
+                        NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
+
+                        if (Array.Find(_controls, c => c.Index == item.CoolerId) is { } control)
+                            control.Value = item.CurrentLevel;
+                    }
+                }
+                else
+                {
+                    NvApi.NvCoolerSettings coolerSettings = GetCoolerSettings(out status);
+                    if (status == NvApi.NvStatus.OK && coolerSettings.Count > 0)
+                    {
+                        for (int i = 0; i < coolerSettings.Count; i++)
+                        {
+                            NvApi.NvCooler cooler = coolerSettings.Cooler[i];
+                            _controls[i].Value = cooler.CurrentLevel;
+                        }
                     }
                 }
             }
-        }
 
-        if (_loads is { Length: > 0 })
-        {
-            NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
-            if (status == NvApi.NvStatus.OK)
+            if (_loads is { Length: > 0 })
             {
-                for (int index = 0; index < pStatesInfo.Utilizations.Length; index++)
-                {
-                    NvApi.NvDynamicPState load = pStatesInfo.Utilizations[index];
-                    if (load.IsPresent && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
-                        _loads[index].Value = load.Percentage;
-                }
-            }
-            else
-            {
-                NvApi.NvUsages usages = GetUsages(out status);
+                NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
                 if (status == NvApi.NvStatus.OK)
                 {
-                    for (int index = 0; index < usages.Entries.Length; index++)
+                    for (int index = 0; index < pStatesInfo.Utilizations.Length; index++)
                     {
-                        NvApi.NvUsagesEntry load = usages.Entries[index];
-                        if (load.IsPresent > 0 && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
+                        NvApi.NvDynamicPState load = pStatesInfo.Utilizations[index];
+                        if (load.IsPresent && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
                             _loads[index].Value = load.Percentage;
                     }
                 }
-            }
-        }
-
-        if (_powers is { Length: > 0 })
-        {
-            NvApi.NvPowerTopology powerTopology = GetPowerTopology(out status);
-            if (status == NvApi.NvStatus.OK && powerTopology.Count > 0)
-            {
-                for (int i = 0; i < powerTopology.Count; i++)
+                else
                 {
-                    NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
-                    _powers[i].Value = entry.PowerUsage / 1000f;
+                    NvApi.NvUsages usages = GetUsages(out status);
+                    if (status == NvApi.NvStatus.OK)
+                    {
+                        for (int index = 0; index < usages.Entries.Length; index++)
+                        {
+                            NvApi.NvUsagesEntry load = usages.Entries[index];
+                            if (load.IsPresent > 0 && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
+                                _loads[index].Value = load.Percentage;
+                        }
+                    }
                 }
             }
-        }
 
-        if (_coreVoltage != null)
-        {
-            var voltageSensor = GetVoltRailsStatus(out status);
-            if (status == NvApi.NvStatus.OK)
+            if (_powers is { Length: > 0 })
             {
-                var microvolts = ((ulong)voltageSensor.CoreMicrovoltsHigh << 32) | voltageSensor.CoreMicrovolts;
-
-                _coreVoltage.Value = microvolts == 0 ? 0 : microvolts / 1_000_000f;
+                NvApi.NvPowerTopology powerTopology = GetPowerTopology(out status);
+                if (status == NvApi.NvStatus.OK && powerTopology.Count > 0)
+                {
+                    for (int i = 0; i < powerTopology.Count; i++)
+                    {
+                        NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
+                        _powers[i].Value = entry.PowerUsage / 1000f;
+                    }
+                }
             }
-        }
 
-        if (NvApi.NvAPI_GPU_GetMemoryInfoEx != null || _displayHandle != null)
-        {
-            uint free = 0;
-            uint total = 0;
-
-            //Size in bytes
-            NvApi.NvMemoryInfoEx memoryInfoEx = GetMemoryInfoEx(out status);
-            if (status == NvApi.NvStatus.OK)
+            if (_coreVoltage != null)
             {
-                free = (uint)(memoryInfoEx.CurrentAvailableDedicatedVideoMemory / 1024);
-                total = (uint)(memoryInfoEx.DedicatedVideoMemory / 1024);
-            }
-            else
-            {
-                //Size in kilobytes, fallback for older drivers
-                NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
+                var voltageSensor = GetVoltRailsStatus(out status);
                 if (status == NvApi.NvStatus.OK)
                 {
-                    free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
-                    total = memoryInfo.DedicatedVideoMemory;
+                    var microvolts = ((ulong)voltageSensor.CoreMicrovoltsHigh << 32) | voltageSensor.CoreMicrovolts;
+
+                    _coreVoltage.Value = microvolts == 0 ? 0 : microvolts / 1_000_000f;
                 }
             }
 
-            if (status == NvApi.NvStatus.OK)
+            if (NvApi.NvAPI_GPU_GetMemoryInfoEx != null || _displayHandle != null)
             {
-                _memoryTotal.Value = total / 1024;
-                ActivateSensor(_memoryTotal);
+                uint free = 0;
+                uint total = 0;
 
-                _memoryFree.Value = free / 1024;
-                ActivateSensor(_memoryFree);
+                //Size in bytes
+                NvApi.NvMemoryInfoEx memoryInfoEx = GetMemoryInfoEx(out status);
+                if (status == NvApi.NvStatus.OK)
+                {
+                    free = (uint)(memoryInfoEx.CurrentAvailableDedicatedVideoMemory / 1024);
+                    total = (uint)(memoryInfoEx.DedicatedVideoMemory / 1024);
+                }
+                else
+                {
+                    //Size in kilobytes, fallback for older drivers
+                    NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
+                    if (status == NvApi.NvStatus.OK)
+                    {
+                        free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
+                        total = memoryInfo.DedicatedVideoMemory;
+                    }
+                }
 
-                _memoryUsed.Value = (total - free) / 1024;
-                ActivateSensor(_memoryUsed);
+                if (status == NvApi.NvStatus.OK)
+                {
+                    _memoryTotal.Value = total / 1024;
+                    ActivateSensor(_memoryTotal);
 
-                _memoryLoad.Value = ((float)(total - free) / total) * 100;
-                ActivateSensor(_memoryLoad);
+                    _memoryFree.Value = free / 1024;
+                    ActivateSensor(_memoryFree);
+
+                    _memoryUsed.Value = (total - free) / 1024;
+                    ActivateSensor(_memoryUsed);
+
+                    _memoryLoad.Value = ((float)(total - free) / total) * 100;
+                    ActivateSensor(_memoryLoad);
+                }
+            }
+
+            if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
+            {
+                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+                if (result.HasValue)
+                {
+                    _powerUsage.Value = result.Value / 1000f;
+                    ActivateSensor(_powerUsage);
+                }
+
+                // In MB/s, throughput sensors are passed as in KB/s.
+                uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
+                if (rx.HasValue)
+                {
+                    _pcieThroughputRx.Value = rx * 1024;
+                    ActivateSensor(_pcieThroughputRx);
+                }
+
+                uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
+                if (tx.HasValue)
+                {
+                    _pcieThroughputTx.Value = tx * 1024;
+                    ActivateSensor(_pcieThroughputTx);
+                }
+            }
+
+            // Astral specific
+            if (_12VHPwrPinCurrentSensors is { Length: > 0 } && TryReadAstral12VHPwrPinSensors(out ushort[] pinSensorValues))
+            {
+                float connectorCurrent = 0;
+                float connectorPower = 0;
+                for (int i = 0; i < 6; i++)
+                {
+                    float current = pinSensorValues[i * 2] / 1000f;
+                    float voltage = pinSensorValues[i * 2 + 1] / 1000f;
+                    _12VHPwrPinVoltageSensors[i].Value = voltage;
+                    _12VHPwrPinCurrentSensors[i].Value = current;
+                    _12VHPwrPinPowerSensors[i].Value = voltage * current;
+
+                    connectorCurrent += current;
+                    connectorPower += voltage * current;
+                }
+
+                _12VHPwrConnectorCurrentSensor.Value = connectorCurrent;
+                _12VHPwrConnectorPowerSensor.Value = connectorPower;
             }
         }
-
-        if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
+        catch (Exception e)
         {
-            int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
-            if (result.HasValue)
-            {
-                _powerUsage.Value = result.Value / 1000f;
-                ActivateSensor(_powerUsage);
-            }
-
-            // In MB/s, throughput sensors are passed as in KB/s.
-            uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
-            if (rx.HasValue)
-            {
-                _pcieThroughputRx.Value = rx * 1024;
-                ActivateSensor(_pcieThroughputRx);
-            }
-
-            uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
-            if (tx.HasValue)
-            {
-                _pcieThroughputTx.Value = tx * 1024;
-                ActivateSensor(_pcieThroughputTx);
-            }
-        }
-
-        // Astral specific
-        if (_12VHPwrPinCurrentSensors is { Length: > 0 } && TryReadAstral12VHPwrPinSensors(out ushort[] pinSensorValues))
-        {
-            float connectorCurrent = 0;
-            float connectorPower = 0;
-            for (int i = 0; i < 6; i++)
-            {
-                float current = pinSensorValues[i * 2] / 1000f;
-                float voltage = pinSensorValues[i * 2 + 1] / 1000f;
-                _12VHPwrPinVoltageSensors[i].Value = voltage;
-                _12VHPwrPinCurrentSensors[i].Value = current;
-                _12VHPwrPinPowerSensors[i].Value = voltage * current;
-
-                connectorCurrent += current;
-                connectorPower += voltage * current;
-            }
-
-            _12VHPwrConnectorCurrentSensor.Value = connectorCurrent;
-            _12VHPwrConnectorPowerSensor.Value = connectorPower;
+            Debug.WriteLine($"{nameof(NvidiaGpu)} {nameof(Update)} failed for '{Name}' ({Identifier}): {e}");
         }
     }
 
