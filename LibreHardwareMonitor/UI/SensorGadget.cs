@@ -550,8 +550,7 @@ public class SensorGadget : Gadget
     {
         Bitmap sourceBitmap = new Bitmap(source);
         Rectangle rect = new Rectangle(0, 0, sourceBitmap.Width, sourceBitmap.Height);
-        Bitmap workingSource = sourceBitmap.PixelFormat == PixelFormat.Format32bppArgb ||
-                               sourceBitmap.PixelFormat == PixelFormat.Format32bppPArgb
+        Bitmap workingSource = sourceBitmap.PixelFormat == PixelFormat.Format32bppArgb
             ? sourceBitmap
             : sourceBitmap.Clone(rect, PixelFormat.Format32bppArgb);
         Bitmap result = new Bitmap(workingSource.Width, workingSource.Height, PixelFormat.Format32bppPArgb);
