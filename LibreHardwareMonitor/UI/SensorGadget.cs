@@ -7,11 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.UI.Themes;
 using LibreHardwareMonitor.Utilities;
 
 namespace LibreHardwareMonitor.UI;
@@ -28,8 +31,14 @@ public class SensorGadget : Gadget
     private Image _image;
     private Image _fore;
     private Image _barBack = Utilities.EmbeddedResources.GetImage("barback.png");
-    private Image _barFore = Utilities.EmbeddedResources.GetImage("barblue.png");
+    private Image _barFore = Utilities.EmbeddedResources.GetImage("bar.png");
+    private bool _customBarBack;
+    private bool _customBarFore;
+    private Image _backTinted;
+    private Image _barBackTinted;
+    private Image _barForeTinted;
     private Image _background = new Bitmap(1, 1);
+    private bool _backgroundDirty = true;
     private readonly float _scale;
     private float _fontSize;
     private int _iconSize;
@@ -51,6 +60,8 @@ public class SensorGadget : Gadget
     private StringFormat _stringFormat;
     private StringFormat _trimStringFormat;
     private StringFormat _alignRightStringFormat;
+    private Color _fontColor;
+    private Color _backgroundColor;
 
     public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
     {
@@ -99,6 +110,7 @@ public class SensorGadget : Gadget
                 Image newBarBack = new Bitmap("gadget_bar_background.png");
                 _barBack.Dispose();
                 _barBack = newBarBack;
+                _customBarBack = true;
             }
             catch { }
         }
@@ -110,6 +122,7 @@ public class SensorGadget : Gadget
                 Image newBarColor = new Bitmap("gadget_bar_foreground.png");
                 _barFore.Dispose();
                 _barFore = newBarColor;
+                _customBarFore = true;
             }
             catch { }
         }
@@ -161,29 +174,59 @@ public class SensorGadget : Gadget
         contextMenuStrip.Items.Add(fontSizeMenu);
 
         Color fontColor = settings.GetValue("sensorGadget.FontColor", Color.White);
-        int fontColorArgb = fontColor.ToArgb();
-
         SetFontColor(fontColor);
 
-        IEnumerable<Color> providedColors = Enum.GetValues(typeof(KnownColor))
-                                                .Cast<KnownColor>()
-                                                .Select(x => Color.FromKnownColor(x))
-                                                .Where(x => !x.IsSystemColor && x.Name.Length < 7);
-
         ToolStripMenuItem fontColorMenu = new ToolStripMenuItem("Font Color");
-        foreach (Color color in providedColors)
+        ToolStripItem chooseFontColorItem = new ToolStripMenuItem("Choose...");
+        chooseFontColorItem.Click += delegate
         {
-            ToolStripItem item = new ToolStripMenuItem(color.Name) { Checked = fontColorArgb == color.ToArgb() };
-            item.Click += delegate
+            if (TrySelectColor(fontColor, out Color selectedColor))
             {
-                SetFontColor(color);
-                settings.SetValue("sensorGadget.FontColor", color);
-                foreach (ToolStripMenuItem mi in fontColorMenu.DropDownItems)
-                    mi.Checked = mi == item;
-            };
-            fontColorMenu.DropDownItems.Add(item);
-        }
+                fontColor = selectedColor;
+                SetFontColor(fontColor);
+                settings.SetValue("sensorGadget.FontColor", fontColor);
+                Redraw();
+            }
+        };
+        fontColorMenu.DropDownItems.Add(chooseFontColorItem);
+
+        ToolStripItem defaultFontColorItem = new ToolStripMenuItem("Default");
+        defaultFontColorItem.Click += delegate
+        {
+            fontColor = Color.White;
+            SetFontColor(fontColor);
+            settings.Remove("sensorGadget.FontColor");
+            Redraw();
+        };
+        fontColorMenu.DropDownItems.Add(defaultFontColorItem);
         contextMenuStrip.Items.Add(fontColorMenu);
+
+        Color backgroundColor = settings.GetValue("sensorGadget.BackgroundColor", Color.FromArgb(0));
+        SetBackgroundColor(backgroundColor);
+
+        ToolStripMenuItem backgroundColorMenu = new ToolStripMenuItem("Background Color");
+        ToolStripItem chooseBackgroundItem = new ToolStripMenuItem("Choose...");
+        chooseBackgroundItem.Click += delegate
+        {
+            if (TrySelectColor(backgroundColor.A == 0 ? Color.White : backgroundColor, out Color selectedColor))
+            {
+                backgroundColor = selectedColor;
+                SetBackgroundColor(backgroundColor);
+                settings.SetValue("sensorGadget.BackgroundColor", backgroundColor);
+            }
+        };
+        backgroundColorMenu.DropDownItems.Add(chooseBackgroundItem);
+
+        ToolStripItem defaultBackgroundItem = new ToolStripMenuItem("Default");
+        defaultBackgroundItem.Click += delegate
+        {
+            Color color = Color.FromArgb(0);
+            backgroundColor = color;
+            SetBackgroundColor(color);
+            settings.Remove("sensorGadget.BackgroundColor");
+        };
+        backgroundColorMenu.DropDownItems.Add(defaultBackgroundItem);
+        contextMenuStrip.Items.Add(backgroundColorMenu);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
         ToolStripMenuItem lockItem = new ToolStripMenuItem("Lock Position and Size");
         contextMenuStrip.Items.Add(lockItem);
@@ -305,6 +348,22 @@ public class SensorGadget : Gadget
 
         _barBack.Dispose();
         _barBack = null;
+
+        if (_backTinted != null)
+        {
+            _backTinted.Dispose();
+            _backTinted = null;
+        }
+        if (_barForeTinted != null)
+        {
+            _barForeTinted.Dispose();
+            _barForeTinted = null;
+        }
+        if (_barBackTinted != null)
+        {
+            _barBackTinted.Dispose();
+            _barBackTinted = null;
+        }
 
         _background.Dispose();
         _background = null;
@@ -461,8 +520,478 @@ public class SensorGadget : Gadget
 
     private void SetFontColor(Color color)
     {
+        _fontColor = color;
         _textBrush?.Dispose();
         _textBrush = new SolidBrush(color);
+
+        _barBackTinted?.Dispose();
+        _barBackTinted = _customBarBack ? null : CreateBarTint(_barBack, _fontColor);
+        _barForeTinted?.Dispose();
+        _barForeTinted = _customBarFore ? null : CreateBarTint(_barFore, _fontColor);
+    }
+
+    private void SetBackgroundColor(Color color)
+    {
+        _backgroundColor = color;
+        _backTinted?.Dispose();
+        _backTinted = null;
+
+        // Transparent means "Default" and keeps the embedded/custom image as-is.
+        if (_backgroundColor.A > 0)
+        {
+            _backTinted = CreateBackgroundTint(_back, _backgroundColor);
+        }
+
+        _backgroundDirty = true;
+        Redraw();
+    }
+
+    private static Image CreateBackgroundTint(Image source, Color targetColor)
+    {
+        Bitmap sourceBitmap = new Bitmap(source);
+        Rectangle rect = new Rectangle(0, 0, sourceBitmap.Width, sourceBitmap.Height);
+        Bitmap workingSource = sourceBitmap.PixelFormat == PixelFormat.Format32bppArgb
+            ? sourceBitmap
+            : sourceBitmap.Clone(rect, PixelFormat.Format32bppArgb);
+        Bitmap result = new Bitmap(workingSource.Width, workingSource.Height, PixelFormat.Format32bppPArgb);
+
+        float targetHue = targetColor.GetHue() / 360f;
+        float targetSaturation = targetColor.GetSaturation();
+        float targetValue = GetColorValue(targetColor);
+        bool isGrayscaleTarget = targetSaturation <= 0.001f;
+
+        BitmapData srcData = null;
+        BitmapData dstData = null;
+        try
+        {
+            srcData = workingSource.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            dstData = result.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
+
+            int srcLength = srcData.Stride * workingSource.Height;
+            int dstLength = dstData.Stride * result.Height;
+            byte[] srcBuffer = new byte[srcLength];
+            byte[] dstBuffer = new byte[dstLength];
+            Marshal.Copy(srcData.Scan0, srcBuffer, 0, srcLength);
+
+            for (int y = 0; y < workingSource.Height; y++)
+            {
+                int srcRow = y * srcData.Stride;
+                int dstRow = y * dstData.Stride;
+                for (int x = 0; x < workingSource.Width; x++)
+                {
+                    int srcIndex = srcRow + (x * 4);
+                    int dstIndex = dstRow + (x * 4);
+                    byte b = srcBuffer[srcIndex + 0];
+                    byte g = srcBuffer[srcIndex + 1];
+                    byte r = srcBuffer[srcIndex + 2];
+                    byte a = srcBuffer[srcIndex + 3];
+
+                    if (a == 0)
+                    {
+                        // For PArgb targets, keep fully transparent pixels black.
+                        dstBuffer[dstIndex + 0] = 0;
+                        dstBuffer[dstIndex + 1] = 0;
+                        dstBuffer[dstIndex + 2] = 0;
+                        dstBuffer[dstIndex + 3] = 0;
+                        continue;
+                    }
+
+                    Color c = Color.FromArgb(a, r, g, b);
+                    float sourceSaturation = c.GetSaturation();
+                    float sourceValue = c.GetBrightness();
+                    float saturation = isGrayscaleTarget
+                        ? 0f
+                        : Math.Min(1f, Math.Max(sourceSaturation * 0.25f, targetSaturation * 0.85f));
+                    float value = Math.Min(1f, (sourceValue * 0.55f) + (targetValue * 0.45f));
+                    Color tinted = ColorFromHsv(targetHue, saturation, value, a);
+
+                    // Destination format is 32bppPArgb, so RGB must be premultiplied by A.
+                    dstBuffer[dstIndex + 0] = (byte)((tinted.B * tinted.A + 127) / 255);
+                    dstBuffer[dstIndex + 1] = (byte)((tinted.G * tinted.A + 127) / 255);
+                    dstBuffer[dstIndex + 2] = (byte)((tinted.R * tinted.A + 127) / 255);
+                    dstBuffer[dstIndex + 3] = tinted.A;
+                }
+            }
+
+            Marshal.Copy(dstBuffer, 0, dstData.Scan0, dstLength);
+        }
+        finally
+        {
+            if (srcData != null)
+                workingSource.UnlockBits(srcData);
+            if (dstData != null)
+                result.UnlockBits(dstData);
+
+            if (!ReferenceEquals(workingSource, sourceBitmap))
+                workingSource.Dispose();
+
+            sourceBitmap.Dispose();
+        }
+
+        return result;
+    }
+
+    private static Image CreateBarTint(Image source, Color targetColor)
+    {
+        Bitmap sourceBitmap = new Bitmap(source);
+        Bitmap result = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, PixelFormat.Format32bppPArgb);
+
+        for (int y = 0; y < sourceBitmap.Height; y++)
+        {
+            for (int x = 0; x < sourceBitmap.Width; x++)
+            {
+                Color c = sourceBitmap.GetPixel(x, y);
+                if (c.A == 0)
+                {
+                    result.SetPixel(x, y, c);
+                    continue;
+                }
+
+                // Bars should follow selected text color directly.
+                // Preserve source alpha for antialiasing/edge transparency.
+                Color tinted = Color.FromArgb(c.A, targetColor.R, targetColor.G, targetColor.B);
+                result.SetPixel(x, y, tinted);
+            }
+        }
+
+        sourceBitmap.Dispose();
+        return result;
+    }
+
+    private static Color ColorFromHsv(float hue, float saturation, float value, int alpha)
+    {
+        if (saturation <= 0)
+        {
+            int v = (int)Math.Round(value * 255);
+            return Color.FromArgb(alpha, v, v, v);
+        }
+
+        float h = (hue % 1.0f + 1.0f) % 1.0f * 6.0f;
+        int i = (int)Math.Floor(h);
+        float f = h - i;
+        float p = value * (1 - saturation);
+        float q = value * (1 - saturation * f);
+        float t = value * (1 - saturation * (1 - f));
+
+        (float r, float g, float b) = i switch
+        {
+            0 => (value, t, p),
+            1 => (q, value, p),
+            2 => (p, value, t),
+            3 => (p, q, value),
+            4 => (t, p, value),
+            _ => (value, p, q)
+        };
+
+        return Color.FromArgb(alpha,
+                              (int)Math.Round(r * 255),
+                              (int)Math.Round(g * 255),
+                              (int)Math.Round(b * 255));
+    }
+
+    private static bool TrySelectColor(Color initialColor, out Color selectedColor)
+    {
+        using Form form = new Form
+        {
+            Text = "Select Color",
+            FormBorderStyle = FormBorderStyle.Sizable,
+            StartPosition = FormStartPosition.CenterScreen,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ClientSize = new Size(460, 340),
+            MinimumSize = new Size(360, 280)
+        };
+        form.Icon = EmbeddedResources.GetIcon("icon.ico");
+
+        Panel svBox = new Panel
+        {
+            BorderStyle = BorderStyle.FixedSingle,
+            Cursor = Cursors.Cross
+        };
+        Panel hueBox = new Panel
+        {
+            BorderStyle = BorderStyle.FixedSingle,
+            Cursor = Cursors.Cross
+        };
+        SetDoubleBuffered(svBox);
+        SetDoubleBuffered(hueBox);
+        SetDoubleBuffered(form);
+
+        float currentHue = initialColor.GetHue() / 360f;
+        float currentSaturation = initialColor.GetSaturation();
+        float currentValue = GetColorValue(initialColor);
+        Color current = ColorFromHsv(currentHue, currentSaturation, currentValue, 255);
+
+        int svSelectorX = 0;
+        int svSelectorY = 0;
+        int hueSelectorY = 0;
+
+        Panel preview = new Panel
+        {
+            Size = new Size(34, 34),
+            BorderStyle = BorderStyle.FixedSingle,
+            BackColor = current
+        };
+
+        Label hexLabel = new Label
+        {
+            AutoSize = true,
+            Location = new Point(0, 0),
+            Text = "Hex:"
+        };
+        TextBox hexTextBox = new TextBox
+        {
+            Width = 110,
+            Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}"
+        };
+
+        Button okButton = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 70 };
+        Button cancelButton = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 70 };
+        bool updatingHexText = false;
+
+        void LayoutControls()
+        {
+            const int padding = 12;
+            const int bottomRowHeight = 40;
+            const int hueBarWidth = 24;
+            const int hueGap = 8;
+
+            svBox.Location = new Point(padding, padding);
+            svBox.Size = new Size(
+                Math.Max(200, form.ClientSize.Width - (2 * padding) - hueBarWidth - hueGap),
+                Math.Max(120, form.ClientSize.Height - (3 * padding) - bottomRowHeight));
+            hueBox.Location = new Point(svBox.Right + hueGap, padding);
+            hueBox.Size = new Size(hueBarWidth, svBox.Height);
+
+            preview.Location = new Point(padding, form.ClientSize.Height - padding - preview.Height);
+            hexLabel.Location = new Point(preview.Right + 10, preview.Top + 9);
+            hexTextBox.Location = new Point(hexLabel.Right + 6, preview.Top + 6);
+
+            cancelButton.Location = new Point(form.ClientSize.Width - padding - cancelButton.Width, form.ClientSize.Height - padding - cancelButton.Height);
+            okButton.Location = new Point(cancelButton.Left - 8 - okButton.Width, cancelButton.Top);
+        }
+
+        void SyncSelectorsFromCurrent()
+        {
+            svSelectorX = Math.Min(Math.Max(0, (int)Math.Round(currentSaturation * Math.Max(1, svBox.ClientSize.Width - 1))), Math.Max(0, svBox.ClientSize.Width - 1));
+            svSelectorY = Math.Min(Math.Max(0, (int)Math.Round((1f - currentValue) * Math.Max(1, svBox.ClientSize.Height - 1))), Math.Max(0, svBox.ClientSize.Height - 1));
+            hueSelectorY = Math.Min(Math.Max(0, (int)Math.Round(currentHue * Math.Max(1, hueBox.ClientSize.Height - 1))), Math.Max(0, hueBox.ClientSize.Height - 1));
+        }
+
+        void UpdateCurrentColor()
+        {
+            current = ColorFromHsv(currentHue, currentSaturation, currentValue, 255);
+            preview.BackColor = current;
+            updatingHexText = true;
+            hexTextBox.Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}";
+            updatingHexText = false;
+        }
+
+        void UpdateSvFromPoint(Point p)
+        {
+            svSelectorX = Math.Min(Math.Max(0, p.X), Math.Max(0, svBox.ClientSize.Width - 1));
+            svSelectorY = Math.Min(Math.Max(0, p.Y), Math.Max(0, svBox.ClientSize.Height - 1));
+            currentSaturation = svSelectorX / (float)Math.Max(1, svBox.ClientSize.Width - 1);
+            currentValue = 1f - svSelectorY / (float)Math.Max(1, svBox.ClientSize.Height - 1);
+            UpdateCurrentColor();
+            svBox.Invalidate();
+        }
+
+        void UpdateHueFromPoint(Point p)
+        {
+            int newHueSelectorY = Math.Min(Math.Max(0, p.Y), Math.Max(0, hueBox.ClientSize.Height - 1));
+            if (newHueSelectorY == hueSelectorY)
+                return;
+
+            hueSelectorY = newHueSelectorY;
+            currentHue = hueSelectorY / (float)Math.Max(1, hueBox.ClientSize.Height - 1);
+            UpdateCurrentColor();
+            svBox.Invalidate();
+            hueBox.Invalidate();
+        }
+
+        bool draggingSv = false;
+        bool draggingHue = false;
+        svBox.MouseDown += delegate(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+            draggingSv = true;
+            UpdateSvFromPoint(e.Location);
+        };
+        svBox.MouseMove += delegate(object sender, MouseEventArgs e)
+        {
+            if (draggingSv)
+                UpdateSvFromPoint(e.Location);
+        };
+        svBox.MouseUp += delegate { draggingSv = false; };
+
+        hueBox.MouseDown += delegate(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+            draggingHue = true;
+            UpdateHueFromPoint(e.Location);
+        };
+        hueBox.MouseMove += delegate(object sender, MouseEventArgs e)
+        {
+            if (draggingHue)
+                UpdateHueFromPoint(e.Location);
+        };
+        hueBox.MouseUp += delegate { draggingHue = false; };
+
+        svBox.Paint += delegate(object sender, PaintEventArgs e)
+        {
+            Rectangle rect = svBox.ClientRectangle;
+            if (rect.Width <= 1 || rect.Height <= 1)
+                return;
+
+            rect.Width -= 1;
+            rect.Height -= 1;
+            e.Graphics.SmoothingMode = SmoothingMode.None;
+
+            using (SolidBrush hueBrush = new SolidBrush(ColorFromHsv(currentHue, 1f, 1f, 255)))
+                e.Graphics.FillRectangle(hueBrush, rect);
+
+            using (LinearGradientBrush satBrush = new LinearGradientBrush(rect, Color.White, Color.Transparent, LinearGradientMode.Horizontal))
+            {
+                ColorBlend satBlend = new ColorBlend
+                {
+                    Positions = new[] { 0f, 1f },
+                    Colors = new[] { Color.FromArgb(255, 255, 255, 255), Color.FromArgb(0, 255, 255, 255) }
+                };
+                satBrush.InterpolationColors = satBlend;
+                e.Graphics.FillRectangle(satBrush, rect);
+            }
+
+            using (LinearGradientBrush valueBrush = new LinearGradientBrush(rect, Color.Transparent, Color.Black, LinearGradientMode.Vertical))
+            {
+                ColorBlend valueBlend = new ColorBlend
+                {
+                    Positions = new[] { 0f, 1f },
+                    Colors = new[] { Color.FromArgb(0, 0, 0, 0), Color.FromArgb(255, 0, 0, 0) }
+                };
+                valueBrush.InterpolationColors = valueBlend;
+                e.Graphics.FillRectangle(valueBrush, rect);
+            }
+
+            Rectangle marker = new Rectangle(svSelectorX - 4, svSelectorY - 4, 8, 8);
+            using Pen outer = new Pen(Color.Black, 2f);
+            using Pen inner = new Pen(Color.White, 1f);
+            e.Graphics.DrawEllipse(outer, marker);
+            e.Graphics.DrawEllipse(inner, marker);
+        };
+        hueBox.Paint += delegate(object sender, PaintEventArgs e)
+        {
+            Rectangle rect = hueBox.ClientRectangle;
+            if (rect.Width <= 1 || rect.Height <= 1)
+                return;
+
+            rect.Width -= 1;
+            rect.Height -= 1;
+
+            using (LinearGradientBrush hueBrush = new LinearGradientBrush(rect, Color.Red, Color.Red, LinearGradientMode.Vertical))
+            {
+                hueBrush.InterpolationColors = new ColorBlend
+                {
+                    Positions = new[] { 0f, 1f / 6f, 2f / 6f, 3f / 6f, 4f / 6f, 5f / 6f, 1f },
+                    Colors = new[] { Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta, Color.Red }
+                };
+                e.Graphics.FillRectangle(hueBrush, rect);
+            }
+
+            Rectangle marker = new Rectangle(0, hueSelectorY - 2, hueBox.ClientSize.Width - 1, 4);
+            using Pen outer = new Pen(Color.Black, 2f);
+            using Pen inner = new Pen(Color.White, 1f);
+            e.Graphics.DrawRectangle(outer, marker);
+            e.Graphics.DrawRectangle(inner, marker);
+        };
+        hexTextBox.TextChanged += delegate
+        {
+            if (updatingHexText)
+                return;
+
+            if (!TryParseHexColor(hexTextBox.Text, out Color parsedColor))
+                return;
+
+            float parsedHue = parsedColor.GetHue() / 360f;
+            float parsedSaturation = parsedColor.GetSaturation();
+            float parsedValue = GetColorValue(parsedColor);
+
+            currentHue = parsedHue;
+            currentSaturation = parsedSaturation;
+            currentValue = parsedValue;
+            SyncSelectorsFromCurrent();
+            UpdateCurrentColor();
+            svBox.Invalidate();
+            hueBox.Invalidate();
+        };
+
+        form.Controls.Add(svBox);
+        form.Controls.Add(hueBox);
+        form.Controls.Add(preview);
+        form.Controls.Add(hexLabel);
+        form.Controls.Add(hexTextBox);
+        form.Controls.Add(okButton);
+        form.Controls.Add(cancelButton);
+        form.AcceptButton = okButton;
+        form.CancelButton = cancelButton;
+        Theme.Current.Apply(form);
+        form.Resize += delegate
+        {
+            LayoutControls();
+            SyncSelectorsFromCurrent();
+            UpdateCurrentColor();
+            svBox.Invalidate();
+            hueBox.Invalidate();
+        };
+        LayoutControls();
+        SyncSelectorsFromCurrent();
+        UpdateCurrentColor();
+
+        if (form.ShowDialog() == DialogResult.OK)
+        {
+            selectedColor = current;
+            return true;
+        }
+
+        selectedColor = initialColor;
+        return false;
+    }
+
+    private static void SetDoubleBuffered(Control control)
+    {
+        typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(control, true, null);
+    }
+
+    private static float GetColorValue(Color color)
+    {
+        return Math.Max(color.R, Math.Max(color.G, color.B)) / 255f;
+    }
+
+    private static bool TryParseHexColor(string input, out Color color)
+    {
+        color = Color.Empty;
+        if (string.IsNullOrWhiteSpace(input))
+            return false;
+
+        string hex = input.Trim();
+        if (hex.StartsWith("#"))
+            hex = hex.Substring(1);
+
+        if (hex.Length != 6)
+            return false;
+
+        if (!int.TryParse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int r))
+            return false;
+        if (!int.TryParse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int g))
+            return false;
+        if (!int.TryParse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int b))
+            return false;
+
+        color = Color.FromArgb(r, g, b);
+        return true;
     }
 
     private void Resize()
@@ -514,14 +1043,14 @@ public class SensorGadget : Gadget
         int w = Size.Width;
         int h = Size.Height;
 
-        if (w != _background.Width || h != _background.Height)
+        if (_backgroundDirty || w != _background.Width || h != _background.Height)
         {
             _background.Dispose();
             _background = new Bitmap(w, h, PixelFormat.Format32bppPArgb);
 
             using (Graphics graphics = Graphics.FromImage(_background))
             {
-                DrawImageWidthBorder(graphics, w, h, _back, TopBorder, BottomBorder,LeftBorder, RightBorder);
+                DrawImageWidthBorder(graphics, w, h, _backTinted ?? _back, TopBorder, BottomBorder, LeftBorder, RightBorder);
 
                 if (_fore != null)
                     DrawImageWidthBorder(graphics, w, h, _fore, TopBorder, BottomBorder, LeftBorder, RightBorder);
@@ -553,6 +1082,8 @@ public class SensorGadget : Gadget
                     graphics.DrawImage(_image, new RectangleF(LeftBorder + xOffset, TopBorder + yOffset, destWidth, destHeight));
                 }
             }
+
+            _backgroundDirty = false;
         }
 
         g.DrawImageUnscaled(_background, 0, 0);
@@ -560,13 +1091,15 @@ public class SensorGadget : Gadget
 
     private void DrawProgress(Graphics g, float x, float y, float width, float height, float progress)
     {
-        g.DrawImage(_barBack,
+        Image barBack = _barBackTinted ?? _barBack;
+        Image barFore = _barForeTinted ?? _barFore;
+        g.DrawImage(barBack,
                     new RectangleF(x + width * progress, y, width * (1 - progress), height),
-                    new RectangleF(_barBack.Width * progress, 0, (1 - progress) * _barBack.Width, _barBack.Height),
+                    new RectangleF(barBack.Width * progress, 0, (1 - progress) * barBack.Width, barBack.Height),
                     GraphicsUnit.Pixel);
-        g.DrawImage(_barFore,
+        g.DrawImage(barFore,
                     new RectangleF(x, y, width * progress, height),
-                    new RectangleF(0, 0, progress * _barFore.Width, _barFore.Height), GraphicsUnit.Pixel);
+                    new RectangleF(0, 0, progress * barFore.Width, barFore.Height), GraphicsUnit.Pixel);
     }
 
     protected override void OnPaint(PaintEventArgs e)
