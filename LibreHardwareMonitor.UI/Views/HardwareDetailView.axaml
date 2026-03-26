@@ -69,7 +69,7 @@
                                                                             IsVisible="{Binding MaxTemperature, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                     <TextBlock FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
                                                                                Foreground="{Binding MaxTemperature, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
-                                                                        <Run Text="{Binding MaxTemperature, StringFormat='{}{0:F0}'}" /><Run Text="°C" FontSize="10" />
+                                                                        <Run Text="{Binding MaxTemperature, StringFormat='{}{0:F0}'}" /><Run Text="{Binding MaxTemperature, Converter={x:Static vm:TempUnitConverter.Instance}}" FontSize="10" />
                                                                     </TextBlock>
                                                                 </StackPanel>
                                                                 <StackPanel Orientation="Horizontal" Spacing="3"

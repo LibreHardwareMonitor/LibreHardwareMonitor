@@ -84,9 +84,9 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private bool _hasBattery;
     [ObservableProperty] private float _batteryChargeRate;
 
-    // Summary counts
     [ObservableProperty] private int _totalSensorCount;
     [ObservableProperty] private int _totalHardwareCount;
+    [ObservableProperty] private string _tempUnit = "\u00B0C";
 
     public ObservableCollection<SensorViewModel> TopTemperatures { get; } = new();
     public ObservableCollection<SensorViewModel> TopFans { get; } = new();
@@ -99,6 +99,7 @@ public partial class DashboardViewModel : ObservableObject
 
     public void Update()
     {
+        TempUnit = Converters.SensorUnitHelper.TempUnit;
         UpdateCpu();
         UpdateGpu();
         UpdateRam();
@@ -128,7 +129,8 @@ public partial class DashboardViewModel : ObservableObject
 
         var temps = cpu.Sensors.Where(s => s.SensorType == SensorType.Temperature).ToList();
         var packageTemp = temps.FirstOrDefault(t => t.Name.Contains("Package") || t.Name.Contains("Average"));
-        CpuTemp = packageTemp?.Value ?? (temps.Count > 0 ? temps.Max(t => t.Value ?? 0) : 0);
+        float rawCpuTemp = packageTemp?.Value ?? (temps.Count > 0 ? temps.Max(t => t.Value ?? 0) : 0);
+        CpuTemp = Converters.SensorUnitHelper.ConvertTemp(rawCpuTemp);
 
         var power = cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && (s.Name.Contains("Package") || s.Name.Contains("Total")));
         CpuPower = power?.Value ?? 0;
@@ -157,7 +159,8 @@ public partial class DashboardViewModel : ObservableObject
         GpuLoad = coreLoad?.Value ?? 0;
 
         var temp = gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && s.Name.Contains("Core"));
-        GpuTemp = temp?.Value ?? (gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature)?.Value ?? 0);
+        float rawGpuTemp = temp?.Value ?? (gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature)?.Value ?? 0);
+        GpuTemp = Converters.SensorUnitHelper.ConvertTemp(rawGpuTemp);
 
         var memUsed = gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.SmallData && s.Name.Contains("Used"));
         GpuMemoryUsed = memUsed?.Value ?? 0;
@@ -217,7 +220,7 @@ public partial class DashboardViewModel : ObservableObject
         StorageName = drive.Name;
 
         var temp = GetRealTemperature(drive);
-        StorageTemp = temp?.Value ?? 0;
+        StorageTemp = Converters.SensorUnitHelper.ConvertTemp(temp?.Value ?? 0);
 
         var usedSpace = drive.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name.Contains("Used"));
         StorageUsed = usedSpace?.Value ?? 0;
@@ -260,29 +263,10 @@ public partial class DashboardViewModel : ObservableObject
         StorageWriteRate = totalWrite;
     }
 
-    // Virtual/tunnel adapter keywords to exclude
-    private static readonly string[] VirtualAdapterKeywords =
-    {
-        "Virtual", "VPN", "Tunnel", "Loopback", "vEthernet", "VMware",
-        "Hyper-V", "WAN Miniport", "Bluetooth", "Wi-Fi Direct",
-        "Teredo", "ISATAP", "6to4"
-    };
-
-    private static bool IsPhysicalAdapter(IHardware nic)
-    {
-        string name = nic.Name;
-        foreach (string keyword in VirtualAdapterKeywords)
-        {
-            if (name.Contains(keyword, System.StringComparison.OrdinalIgnoreCase))
-                return false;
-        }
-        return true;
-    }
-
     private void UpdateNetwork()
     {
         var allNics = _service.GetHardwareByType(HardwareType.Network).ToList();
-        var physicalNics = allNics.Where(IsPhysicalAdapter).ToList();
+        var physicalNics = allNics.Where(Services.NetworkAdapterFilter.IsPhysicalAdapter).ToList();
 
         // Fall back to all adapters if no physical ones found
         var nics = physicalNics.Count > 0 ? physicalNics : allNics;
@@ -356,12 +340,12 @@ public partial class DashboardViewModel : ObservableObject
         var sysTemp = allSensors.FirstOrDefault(s =>
             s.SensorType == SensorType.Temperature &&
             (s.Name.Contains("System") || s.Name.Contains("Chipset") || s.Name.Contains("Temperature #1")));
-        MotherboardTemp = sysTemp?.Value ?? 0;
+        MotherboardTemp = Converters.SensorUnitHelper.ConvertTemp(sysTemp?.Value ?? 0);
 
         var vrmTemp = allSensors.FirstOrDefault(s =>
             s.SensorType == SensorType.Temperature &&
             (s.Name.Contains("VRM") || s.Name.Contains("MOS") || s.Name.Contains("Temperature #2")));
-        MotherboardVrmTemp = vrmTemp?.Value ?? 0;
+        MotherboardVrmTemp = Converters.SensorUnitHelper.ConvertTemp(vrmTemp?.Value ?? 0);
 
         MotherboardFanCount = allSensors.Count(s => s.SensorType == SensorType.Fan && s.Value.HasValue && s.Value > 0);
     }

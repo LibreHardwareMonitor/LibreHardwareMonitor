@@ -4,6 +4,13 @@ namespace LibreHardwareMonitor.UI.Converters;
 
 public static class SensorUnitHelper
 {
+    public static bool UseFahrenheit { get; set; }
+
+    public static float ConvertTemp(float celsius) =>
+        UseFahrenheit ? celsius * 9f / 5f + 32f : celsius;
+
+    public static string TempUnit => UseFahrenheit ? "\u00B0F" : "\u00B0C";
+
     public static string GetUnit(SensorType type)
     {
         return type switch
@@ -12,7 +19,7 @@ public static class SensorUnitHelper
             SensorType.Current => "A",
             SensorType.Power => "W",
             SensorType.Clock => "MHz",
-            SensorType.Temperature => "\u00B0C",
+            SensorType.Temperature => TempUnit,
             SensorType.Load => "%",
             SensorType.Frequency => "Hz",
             SensorType.Fan => "RPM",

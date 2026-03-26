@@ -34,10 +34,34 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Border>
+            <!-- Time window + stroke -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ItemsControl ItemsSource="{Binding TimeWindows}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Button Content="{Binding}" Padding="10,4" FontSize="10" Cursor="Hand"
+                                    Background="{StaticResource BgSecondaryBrush}"
+                                    Foreground="{StaticResource TextSecondaryBrush}"
+                                    CornerRadius="4" BorderThickness="0"
+                                    Command="{Binding $parent[UserControl].((vm:ChartsViewModel)DataContext).SelectTimeWindowCommand}"
+                                    CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Stroke:" FontSize="10" Foreground="{StaticResource TextTertiaryBrush}"
+                           VerticalAlignment="Center" Margin="12,0,0,0" />
+                <Slider Minimum="1" Maximum="5" Value="{Binding StrokeThickness}"
+                        Width="80" VerticalAlignment="Center" />
+            </StackPanel>
         </StackPanel>
 
-        <!-- Chart + Legend -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,240">
+        <!-- Chart + Sensor picker + Legend -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,260">
 
             <!-- Chart area -->
             <Border Classes="card" Padding="16" Margin="0,0,12,0">
@@ -63,39 +87,70 @@
                 </Grid>
             </Border>
 
-            <!-- Legend panel with current values -->
+            <!-- Right panel: sensor picker + legend -->
             <Border Grid.Column="1" Classes="card" Padding="16">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="SENSORS" FontSize="10" FontWeight="Bold"
-                               Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,8" />
+                <Grid RowDefinitions="Auto,*,Auto,Auto">
 
-                    <ItemsControl ItemsSource="{Binding SensorLegend}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:ChartSensorInfo">
-                                <Border Padding="0,6"
-                                        BorderBrush="{StaticResource BorderSubtleBrush}"
-                                        BorderThickness="0,0,0,1">
-                                    <StackPanel Spacing="4">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center">
-                                                <Ellipse.Fill>
-                                                    <SolidColorBrush Color="{Binding Color}" />
-                                                </Ellipse.Fill>
-                                            </Ellipse>
-                                            <TextBlock Text="{Binding Name}" FontSize="11"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       MaxWidth="190" />
+                    <!-- Sensor picker header -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SENSOR SELECTION" FontSize="10" FontWeight="Bold"
+                                   Foreground="{StaticResource TextTertiaryBrush}" />
+                        <TextBlock Text="{Binding SelectionInfo}" FontSize="10"
+                                   Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,4" />
+                    </StackPanel>
+
+                    <!-- Scrollable sensor checkboxes -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding AvailableSensors}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SelectableSensor">
+                                    <CheckBox IsChecked="{Binding IsSelected}"
+                                              Padding="4,2" Margin="0,1">
+                                        <TextBlock Text="{Binding DisplayName}" FontSize="10"
+                                                   TextTrimming="CharacterEllipsis" MaxWidth="190"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Divider -->
+                    <Border Grid.Row="2" Height="1" Margin="0,8"
+                            Background="{StaticResource BorderSubtleBrush}" />
+
+                    <!-- Active sensor legend -->
+                    <StackPanel Grid.Row="3" Spacing="4">
+                        <TextBlock Text="ACTIVE" FontSize="10" FontWeight="Bold"
+                                   Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,4" />
+                        <ItemsControl ItemsSource="{Binding SensorLegend}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChartSensorInfo">
+                                    <Border Padding="0,4"
+                                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                                            BorderThickness="0,0,0,1">
+                                        <StackPanel Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                                                    <Ellipse.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Ellipse.Fill>
+                                                </Ellipse>
+                                                <TextBlock Text="{Binding Name}" FontSize="10"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxWidth="190" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding CurrentValue}" FontSize="12" FontWeight="Bold"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       Margin="14,0,0,0" />
                                         </StackPanel>
-                                        <TextBlock Text="{Binding CurrentValue}" FontSize="14" FontWeight="Bold"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                   Margin="14,0,0,0" />
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

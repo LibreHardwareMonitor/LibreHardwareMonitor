@@ -10,17 +10,15 @@ namespace LibreHardwareMonitor.UI.ViewModels;
 
 public partial class HardwareDetailViewModel : ObservableObject
 {
-    private readonly HardwareMonitorService? _service;
+    private readonly HardwareMonitorService _service;
+    private readonly SensorConfigService _sensorConfig;
 
     public ObservableCollection<HardwareCategoryViewModel> HardwareCategories { get; } = new();
 
-    public HardwareDetailViewModel()
-    {
-    }
-
-    public HardwareDetailViewModel(HardwareMonitorService service)
+    public HardwareDetailViewModel(HardwareMonitorService service, SensorConfigService sensorConfig)
     {
         _service = service;
+        _sensorConfig = sensorConfig;
     }
 
     public void Update()
@@ -31,29 +29,6 @@ public partial class HardwareDetailViewModel : ObservableObject
             foreach (var hw in cat.Items)
                 hw.Update();
         }
-    }
-
-    // Virtual/tunnel adapter keywords to exclude from hardware view
-    private static readonly string[] VirtualAdapterKeywords =
-    {
-        "Virtual", "VPN", "Tunnel", "Loopback", "vEthernet", "VMware",
-        "Hyper-V", "WAN Miniport", "Bluetooth", "Wi-Fi Direct",
-        "Teredo", "ISATAP", "6to4", "vSwitch", "VMSwitch",
-        "Pseudo", "Microsoft Kernel Debug"
-    };
-
-    private static bool IsVirtualAdapter(IHardware hw)
-    {
-        if (hw.HardwareType != HardwareType.Network)
-            return false;
-
-        string name = hw.Name;
-        foreach (string keyword in VirtualAdapterKeywords)
-        {
-            if (name.Contains(keyword, System.StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-        return false;
     }
 
     public void RebuildCategories(HardwareMonitorService service)
@@ -80,13 +55,13 @@ public partial class HardwareDetailViewModel : ObservableObject
 
             foreach (var h in hardware)
             {
-                if (types.Contains(h.HardwareType) && !IsVirtualAdapter(h))
-                    items.Add(new HardwareViewModel(h));
+                if (types.Contains(h.HardwareType) && !Services.NetworkAdapterFilter.IsVirtualAdapter(h))
+                    items.Add(new HardwareViewModel(h, _sensorConfig));
 
                 foreach (IHardware sub in h.SubHardware)
                 {
-                    if (types.Contains(sub.HardwareType) && !IsVirtualAdapter(sub))
-                        items.Add(new HardwareViewModel(sub));
+                    if (types.Contains(sub.HardwareType) && !Services.NetworkAdapterFilter.IsVirtualAdapter(sub))
+                        items.Add(new HardwareViewModel(sub, _sensorConfig));
                 }
             }
 
@@ -110,7 +85,7 @@ public partial class HardwareCategoryViewModel : ObservableObject
     {
         _categoryName = name;
         _categoryIcon = icon;
-        _isExpanded = false;
+        _isExpanded = true;
         Items = new ObservableCollection<HardwareViewModel>(items);
     }
 
@@ -137,8 +112,8 @@ public partial class SensorGroupViewModel : ObservableObject
     public SensorGroupViewModel(SensorType type, ObservableCollection<SensorViewModel> sensors)
     {
         _sensorType = type;
-        _groupName = GetGroupName(type);
-        _groupIcon = GetGroupIcon(type);
+        _groupName = GetGroupNameStatic(type);
+        _groupIcon = GetGroupIconStatic(type);
         _accentColor = GetGroupColor(type);
         Sensors = sensors;
     }
@@ -150,7 +125,7 @@ public partial class SensorGroupViewModel : ObservableObject
         OnPropertyChanged(nameof(ExpandIcon));
     }
 
-    private static string GetGroupName(SensorType type)
+    public static string GetGroupNameStatic(SensorType type)
     {
         return type switch
         {
@@ -175,7 +150,7 @@ public partial class SensorGroupViewModel : ObservableObject
         };
     }
 
-    private static string GetGroupIcon(SensorType type)
+    public static string GetGroupIconStatic(SensorType type)
     {
         return type switch
         {

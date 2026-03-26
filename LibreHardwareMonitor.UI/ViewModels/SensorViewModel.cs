@@ -41,34 +41,39 @@ public partial class SensorViewModel : ObservableObject
         _sensor = sensor;
         _name = sensor.Name;
         _sensorType = sensor.SensorType;
-        _unit = GetUnit(sensor.SensorType);
+        _unit = SensorUnitHelper.GetUnit(sensor.SensorType);
         Update();
     }
 
     public void Update()
     {
-        float newValue = _sensor.Value ?? 0;
-        float newMin = _sensor.Min ?? 0;
-        float newMax = _sensor.Max ?? 0;
+        float rawValue = _sensor.Value ?? 0;
+        float rawMin = _sensor.Min ?? 0;
+        float rawMax = _sensor.Max ?? 0;
 
-        // skipcq: MVVMTK0034 — intentional field read for change detection without triggering PropertyChanged
-        bool changed = newValue != Value || newMin != Min || newMax != Max;
-        if (!changed && _sensor.Name == Name) return;
+        bool isTemp = _sensor.SensorType == SensorType.Temperature;
+        float newValue = isTemp ? SensorUnitHelper.ConvertTemp(rawValue) : rawValue;
+        float newMin = isTemp ? SensorUnitHelper.ConvertTemp(rawMin) : rawMin;
+        float newMax = isTemp ? SensorUnitHelper.ConvertTemp(rawMax) : rawMax;
+
+        if (newValue == Value && newMin == Min && newMax == Max && _sensor.Name == Name)
+            return;
 
         Value = newValue;
         Min = newMin;
         Max = newMax;
         Name = _sensor.Name;
+        if (isTemp) Unit = SensorUnitHelper.TempUnit;
 
-        FormattedValue = FormatValue(_sensor.Value, _sensor.SensorType);
-        FormattedMin = FormatValue(_sensor.Min, _sensor.SensorType);
-        FormattedMax = FormatValue(_sensor.Max, _sensor.SensorType);
+        FormattedValue = _sensor.Value is float v ? FormatSensorValue(v, _sensor.SensorType) : "N/A";
+        FormattedMin = _sensor.Min is float mn ? FormatSensorValue(mn, _sensor.SensorType) : "N/A";
+        FormattedMax = _sensor.Max is float mx ? FormatSensorValue(mx, _sensor.SensorType) : "N/A";
     }
 
-    private static string FormatValue(float? value, SensorType type)
+    public static string FormatSensorValue(float v, SensorType type)
     {
-        if (value is null) return "N/A";
-        float v = value.Value;
+        if (type == SensorType.Temperature)
+            v = SensorUnitHelper.ConvertTemp(v);
 
         return type switch
         {
@@ -85,7 +90,7 @@ public partial class SensorViewModel : ObservableObject
             SensorType.Level => $"{v:F1}",
             SensorType.Data => $"{v:F1}",
             SensorType.SmallData => $"{v:F1}",
-            SensorType.Throughput => FormatThroughput(v),
+            SensorType.Throughput => SensorUnitHelper.FormatThroughput(v),
             SensorType.Energy => $"{v:F0}",
             SensorType.Noise => $"{v:F1}",
             SensorType.Humidity => $"{v:F1}",
@@ -93,9 +98,4 @@ public partial class SensorViewModel : ObservableObject
         };
     }
 
-    private static string FormatThroughput(float bytesPerSec) =>
-        SensorUnitHelper.FormatThroughput(bytesPerSec);
-
-    private static string GetUnit(SensorType type) =>
-        SensorUnitHelper.GetUnit(type);
 }

@@ -5,6 +5,7 @@
         x:Class="LibreHardwareMonitor.UI.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="Libre Hardware Monitor"
+        Icon="avares://LibreHardwareMonitor.UI/Assets/Icons/tray-icon.ico"
         Width="1280" Height="800"
         MinWidth="960" MinHeight="600"
         Background="{StaticResource BgPrimaryBrush}"
@@ -108,17 +109,26 @@
                     <!-- Empty spacer -->
                     <Border Grid.Row="1" />
 
-                    <!-- Machine name footer -->
-                    <Border Grid.Row="2" Padding="16,12"
+                    <!-- About + footer -->
+                    <Border Grid.Row="2" Padding="0"
                             BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,0,0">
-                        <StackPanel Spacing="6">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding MachineName}" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <StackPanel>
+                            <Button Classes="nav-item" Margin="12,8,12,0"
+                                    Command="{Binding ShowAboutCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="&#x2139;" FontSize="16" VerticalAlignment="Center" Width="20" TextAlignment="Center" />
+                                    <TextBlock Text="About" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <StackPanel Spacing="6" Margin="16,8,16,12">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding MachineName}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding UptimeText}" FontSize="10"
+                                           Foreground="{StaticResource TextTertiaryBrush}" Margin="16,0,0,0" />
                             </StackPanel>
-                            <TextBlock Text="{Binding UptimeText}" FontSize="10"
-                                       Foreground="{StaticResource TextTertiaryBrush}" Margin="16,0,0,0" />
                         </StackPanel>
                     </Border>
                 </Grid>

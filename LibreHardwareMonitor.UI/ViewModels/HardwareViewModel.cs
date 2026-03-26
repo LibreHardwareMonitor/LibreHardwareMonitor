@@ -9,6 +9,7 @@ namespace LibreHardwareMonitor.UI.ViewModels;
 public partial class HardwareViewModel : ObservableObject
 {
     private readonly IHardware _hardware;
+    private readonly Services.SensorConfigService? _sensorConfig;
 
     [ObservableProperty] private string _name;
     [ObservableProperty] private HardwareType _hardwareType;
@@ -18,26 +19,15 @@ public partial class HardwareViewModel : ObservableObject
     public ObservableCollection<SensorGroupViewModel> SensorGroups { get; } = new();
     public ObservableCollection<HardwareViewModel> SubHardware { get; } = new();
 
-    public IHardware Hardware => _hardware;
-    public string Identifier => _hardware.Identifier.ToString();
-
-    // Quick-access grouped sensors
-    public IEnumerable<SensorViewModel> Temperatures => Sensors.Where(s => s.SensorType == SensorType.Temperature);
-    public IEnumerable<SensorViewModel> Loads => Sensors.Where(s => s.SensorType == SensorType.Load);
-    public IEnumerable<SensorViewModel> Clocks => Sensors.Where(s => s.SensorType == SensorType.Clock);
-    public IEnumerable<SensorViewModel> Voltages => Sensors.Where(s => s.SensorType == SensorType.Voltage);
-    public IEnumerable<SensorViewModel> Fans => Sensors.Where(s => s.SensorType == SensorType.Fan);
-    public IEnumerable<SensorViewModel> Powers => Sensors.Where(s => s.SensorType == SensorType.Power);
-
-    private IEnumerable<SensorViewModel> RealTemperatures => Temperatures.Where(t => !t.IsReferenceSensor);
-    public float? AverageTemperature => RealTemperatures.Any() ? RealTemperatures.Average(t => t.Value) : null;
+    private IEnumerable<SensorViewModel> ByType(SensorType t) => Sensors.Where(s => s.SensorType == t);
+    private IEnumerable<SensorViewModel> RealTemperatures => ByType(SensorType.Temperature).Where(t => !t.IsReferenceSensor);
     public float? MaxTemperature => RealTemperatures.Any() ? RealTemperatures.Max(t => t.Value) : null;
-    public float? TotalLoad => Loads.FirstOrDefault(l => l.Name.Contains("Total"))?.Value;
-    public float? TotalPower => Powers.Any() ? Powers.Where(p => p.Name.Contains("Package") || p.Name.Contains("Total")).Select(p => p.Value).FirstOrDefault() : null;
+    public float? TotalLoad => ByType(SensorType.Load).FirstOrDefault(l => l.Name.Contains("Total"))?.Value;
+    public float? TotalPower => ByType(SensorType.Power).Where(p => p.Name.Contains("Package") || p.Name.Contains("Total")).Select(p => (float?)p.Value).FirstOrDefault();
     public int SensorCount => Sensors.Count;
 
-    // Display order for sensor groups
-    private static readonly SensorType[] GroupOrder =
+    /// <summary>Shared display order for sensor type groups.</summary>
+    public static readonly SensorType[] GroupOrder =
     {
         SensorType.Temperature,
         SensorType.Load,
@@ -58,59 +48,103 @@ public partial class HardwareViewModel : ObservableObject
         SensorType.Humidity,
     };
 
-    public HardwareViewModel(IHardware hardware)
+    public HardwareViewModel(IHardware hardware, Services.SensorConfigService? sensorConfig = null)
     {
         _hardware = hardware;
+        _sensorConfig = sensorConfig;
         _name = hardware.Name;
         _hardwareType = hardware.HardwareType;
-        _iconGlyph = GetIcon(hardware.HardwareType);
+        _iconGlyph = GetIconStatic(hardware.HardwareType);
 
         foreach (ISensor sensor in hardware.Sensors)
-            Sensors.Add(new SensorViewModel(sensor));
+        {
+            if (_sensorConfig != null && !_sensorConfig.IsSensorVisible(sensor.Identifier.ToString()))
+                continue;
+
+            var vm = new SensorViewModel(sensor);
+            string? customName = _sensorConfig?.GetCustomName(sensor.Identifier.ToString());
+            if (customName != null)
+                vm.Name = customName;
+
+            Sensors.Add(vm);
+        }
 
         foreach (IHardware sub in hardware.SubHardware)
-            SubHardware.Add(new HardwareViewModel(sub));
+            SubHardware.Add(new HardwareViewModel(sub, sensorConfig));
 
         RebuildSensorGroups();
     }
 
     private void RebuildSensorGroups()
     {
-        // Preserve expand/collapse state across rebuilds
-        var previousState = new Dictionary<SensorType, bool>();
-        foreach (var g in SensorGroups)
-            previousState[g.SensorType] = g.IsExpanded;
-
-        SensorGroups.Clear();
-
         var grouped = Sensors.GroupBy(s => s.SensorType)
             .ToDictionary(g => g.Key, g => g.ToList());
 
+        var desiredTypes = new List<SensorType>();
         foreach (SensorType type in GroupOrder)
         {
-            if (grouped.TryGetValue(type, out var sensors))
-            {
-                var group = new SensorGroupViewModel(type, new ObservableCollection<SensorViewModel>(sensors));
-                if (previousState.TryGetValue(type, out bool wasExpanded))
-                    group.IsExpanded = wasExpanded;
-                SensorGroups.Add(group);
-                grouped.Remove(type);
-            }
+            if (grouped.ContainsKey(type))
+                desiredTypes.Add(type);
+        }
+        foreach (var key in grouped.Keys)
+        {
+            if (!desiredTypes.Contains(key))
+                desiredTypes.Add(key);
         }
 
-        // Add any remaining types not in the predefined order
-        foreach (var kvp in grouped)
+        var existingGroups = new Dictionary<SensorType, SensorGroupViewModel>();
+        foreach (var g in SensorGroups)
+            existingGroups[g.SensorType] = g;
+
+        // Remove groups whose type no longer has sensors
+        for (int i = SensorGroups.Count - 1; i >= 0; i--)
         {
-            var group = new SensorGroupViewModel(kvp.Key, new ObservableCollection<SensorViewModel>(kvp.Value));
-            if (previousState.TryGetValue(kvp.Key, out bool wasExpanded))
-                group.IsExpanded = wasExpanded;
-            SensorGroups.Add(group);
+            if (!grouped.ContainsKey(SensorGroups[i].SensorType))
+                SensorGroups.RemoveAt(i);
+        }
+
+        for (int i = 0; i < desiredTypes.Count; i++)
+        {
+            SensorType type = desiredTypes[i];
+            if (existingGroups.TryGetValue(type, out var existing))
+            {
+                SyncSensorCollection(existing.Sensors, grouped[type]);
+
+                int currentIdx = SensorGroups.IndexOf(existing);
+                if (currentIdx != i)
+                    SensorGroups.Move(currentIdx, i);
+            }
+            else
+            {
+                var newGroup = new SensorGroupViewModel(type,
+                    new ObservableCollection<SensorViewModel>(grouped[type]));
+                SensorGroups.Insert(i, newGroup);
+            }
+        }
+    }
+
+    private static void SyncSensorCollection(
+        ObservableCollection<SensorViewModel> target,
+        List<SensorViewModel> desired)
+    {
+        var desiredById = new HashSet<string>(desired.Select(s => s.Identifier));
+        var existingIds = new HashSet<string>(target.Select(s => s.Identifier));
+
+        for (int i = target.Count - 1; i >= 0; i--)
+        {
+            if (!desiredById.Contains(target[i].Identifier))
+                target.RemoveAt(i);
+        }
+
+        foreach (var s in desired)
+        {
+            if (!existingIds.Contains(s.Identifier))
+                target.Add(s);
         }
     }
 
     public void Update()
     {
-        // Build a lookup for O(1) sensor matching
         var existingById = new Dictionary<string, SensorViewModel>(Sensors.Count);
         foreach (var s in Sensors)
             existingById[s.Identifier] = s;
@@ -120,6 +154,18 @@ public partial class HardwareViewModel : ObservableObject
         foreach (ISensor sensor in _hardware.Sensors)
         {
             string id = sensor.Identifier.ToString();
+
+            if (_sensorConfig != null && !_sensorConfig.IsSensorVisible(id))
+            {
+                if (existingById.TryGetValue(id, out var hidden))
+                {
+                    Sensors.Remove(hidden);
+                    existingById.Remove(id);
+                    sensorsChanged = true;
+                }
+                continue;
+            }
+
             if (existingById.TryGetValue(id, out var existing))
             {
                 existing.Update();
@@ -127,40 +173,34 @@ public partial class HardwareViewModel : ObservableObject
             }
             else
             {
-                Sensors.Add(new SensorViewModel(sensor));
+                var vm = new SensorViewModel(sensor);
+                string? customName = _sensorConfig?.GetCustomName(id);
+                if (customName != null)
+                    vm.Name = customName;
+                Sensors.Add(vm);
                 sensorsChanged = true;
             }
         }
 
-        // Remove sensors no longer present
         foreach (var removed in existingById.Values)
         {
             Sensors.Remove(removed);
             sensorsChanged = true;
         }
 
-        // Rebuild groups if sensors were added/removed
         if (sensorsChanged)
             RebuildSensorGroups();
-        else
-        {
-            // Update sensors within existing groups
-            foreach (var group in SensorGroups)
-                foreach (var s in group.Sensors)
-                    s.Update();
-        }
 
         foreach (var sub in SubHardware)
             sub.Update();
 
-        OnPropertyChanged(nameof(AverageTemperature));
         OnPropertyChanged(nameof(MaxTemperature));
         OnPropertyChanged(nameof(TotalLoad));
         OnPropertyChanged(nameof(TotalPower));
         OnPropertyChanged(nameof(SensorCount));
     }
 
-    private static string GetIcon(HardwareType type)
+    public static string GetIconStatic(HardwareType type)
     {
         return type switch
         {

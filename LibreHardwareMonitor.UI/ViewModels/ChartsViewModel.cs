@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -28,17 +29,51 @@ public partial class ChartSensorInfo : ObservableObject
     }
 }
 
+public partial class SelectableSensor : ObservableObject
+{
+    [ObservableProperty] private bool _isSelected;
+    [ObservableProperty] private string _displayName;
+
+    public string Identifier { get; }
+
+    public SelectableSensor(ISensor sensor, bool isSelected = false)
+    {
+        Identifier = sensor.Identifier.ToString();
+        _displayName = $"{sensor.Hardware.Name} \u2014 {sensor.Name}";
+        _isSelected = isSelected;
+    }
+}
+
 public partial class ChartsViewModel : ObservableObject
 {
     private readonly HardwareMonitorService _service;
     private readonly Dictionary<string, List<DateTimePoint>> _seriesData = new();
-    private const int MaxPoints = 120;
+    private const int MaxSelectedSensors = 20;
 
     [ObservableProperty] private string _selectedCategory = "Temperatures";
-    [ObservableProperty] private string _yAxisUnit = "°C";
+    [ObservableProperty] private string _yAxisUnit = "\u00B0C";
+    [ObservableProperty] private string _selectionInfo = "0/20 sensors selected";
+    [ObservableProperty] private string _selectedTimeWindow = "2 min";
+    [ObservableProperty] private float _strokeThickness = 2.5f;
+
+    // skipcq: MVVMTK0034 — field read for computed property
+    private int MaxPoints => _selectedTimeWindow switch
+    {
+        "2 min" => 120,
+        "5 min" => 300,
+        "15 min" => 900,
+        "1 hour" => 3600,
+        _ => 120
+    };
+
+    public string[] TimeWindows { get; } = { "2 min", "5 min", "15 min", "1 hour" };
 
     public ObservableCollection<ISeries> Series { get; } = new();
     public ObservableCollection<ChartSensorInfo> SensorLegend { get; } = new();
+    public ObservableCollection<SelectableSensor> AvailableSensors { get; } = new();
+
+    private readonly Dictionary<string, HashSet<string>> _selectedSensorsByCategory = new();
+    private bool _suppressSelectionHandler;
 
     public Axis[] XAxes { get; } =
     {
@@ -70,6 +105,16 @@ public partial class ChartsViewModel : ObservableObject
         new(0xEC, 0x48, 0x99),  // Pink
         new(0x6E, 0xE7, 0xB7),  // Mint
         new(0xFB, 0xBF, 0x24),  // Amber
+        new(0x94, 0xA3, 0xB8),  // Slate
+        new(0xE8, 0x79, 0xF9),  // Fuchsia
+        new(0x2D, 0xD4, 0xBF),  // Teal
+        new(0xF4, 0x72, 0xB6),  // Rose
+        new(0xA3, 0xE6, 0x35),  // Lime
+        new(0xFD, 0x96, 0x44),  // Tangerine
+        new(0x81, 0x8C, 0xF8),  // Indigo
+        new(0x4A, 0xDE, 0x80),  // Emerald
+        new(0xFB, 0x92, 0x3C),  // Apricot
+        new(0x38, 0xBD, 0xF8),  // Sky
     };
 
     private readonly Axis _yAxis;
@@ -79,7 +124,7 @@ public partial class ChartsViewModel : ObservableObject
         _service = service;
         _yAxis = new Axis
         {
-            Name = "°C",
+            Name = Converters.SensorUnitHelper.TempUnit,
             NamePaint = new SolidColorPaint(new SKColor(0x6E, 0x76, 0x81)),
             NameTextSize = 13,
             LabelsPaint = new SolidColorPaint(new SKColor(0x8B, 0x94, 0x9E)),
@@ -96,14 +141,32 @@ public partial class ChartsViewModel : ObservableObject
     {
         SelectedCategory = category;
         UpdateYAxisUnit(category);
+        RebuildAvailableSensors();
         RebuildSeries();
+        Update();
+    }
+
+    [RelayCommand]
+    private void SelectTimeWindow(string window)
+    {
+        SelectedTimeWindow = window;
+        RebuildSeries();
+    }
+
+    partial void OnStrokeThicknessChanged(float value)
+    {
+        foreach (var series in Series)
+        {
+            if (series is LineSeries<DateTimePoint> line && line.Stroke is SolidColorPaint paint)
+                paint.StrokeThickness = value;
+        }
     }
 
     private void UpdateYAxisUnit(string category)
     {
         string unit = category switch
         {
-            "Temperatures" => "°C",
+            "Temperatures" => Converters.SensorUnitHelper.TempUnit,
             "Loads" => "%",
             "Clocks" => "MHz",
             "Fans" => "RPM",
@@ -114,7 +177,6 @@ public partial class ChartsViewModel : ObservableObject
         YAxisUnit = unit;
         _yAxis.Name = unit;
 
-        // Set sensible min limits
         _yAxis.MinLimit = category switch
         {
             "Loads" => 0,
@@ -122,40 +184,129 @@ public partial class ChartsViewModel : ObservableObject
             _ => null
         };
 
-        // Set max limits for percentage
         _yAxis.MaxLimit = category == "Loads" ? 100 : null;
     }
 
     public void Update()
     {
-        // Build series on first update
+        if (SelectedCategory == "Temperatures" && _yAxis.Name != Converters.SensorUnitHelper.TempUnit)
+            UpdateYAxisUnit(SelectedCategory);
+
         if (Series.Count == 0)
+        {
+            RebuildAvailableSensors();
             RebuildSeries();
+        }
+
+        var selectedIds = GetSelectedIds();
+        if (selectedIds.Count == 0) return;
 
         var sensorType = GetSensorType(SelectedCategory);
         var sensors = _service.GetSensorsByType(sensorType)
-            .Where(s => s.Value.HasValue)
-            .Take(10)
+            .Where(s => s.Value.HasValue && selectedIds.Contains(s.Identifier.ToString()))
             .ToList();
 
         var now = DateTime.Now;
+        int legendIdx = 0;
 
-        for (int i = 0; i < sensors.Count; i++)
+        bool isTemp = sensorType == SensorType.Temperature;
+
+        foreach (var sensor in sensors)
         {
-            var sensor = sensors[i];
             string id = sensor.Identifier.ToString();
             if (!_seriesData.TryGetValue(id, out var data))
-                continue; // Skip sensors not in our series
+                continue;
 
-            data.Add(new DateTimePoint(now, sensor.Value ?? 0));
+            float val = sensor.Value ?? 0;
+            if (isTemp) val = Converters.SensorUnitHelper.ConvertTemp(val);
+
+            data.Add(new DateTimePoint(now, val));
 
             if (data.Count > MaxPoints)
                 data.RemoveRange(0, data.Count - MaxPoints);
 
-            // Update legend current value
-            if (i < SensorLegend.Count)
-                SensorLegend[i].CurrentValue = $"{sensor.Value ?? 0:F1} {YAxisUnit}";
+            if (legendIdx < SensorLegend.Count)
+                SensorLegend[legendIdx].CurrentValue = $"{val:F1} {YAxisUnit}";
+            legendIdx++;
         }
+    }
+
+    private void RebuildAvailableSensors()
+    {
+        _suppressSelectionHandler = true;
+
+        foreach (var s in AvailableSensors)
+            s.PropertyChanged -= OnSensorSelectionChanged;
+
+        AvailableSensors.Clear();
+
+        var sensorType = GetSensorType(SelectedCategory);
+        var sensors = _service.GetSensorsByType(sensorType)
+            .Where(s => s.Value.HasValue)
+            .ToList();
+
+        if (!_selectedSensorsByCategory.TryGetValue(SelectedCategory, out var selected))
+        {
+            selected = new HashSet<string>(
+                sensors.Take(10).Select(s => s.Identifier.ToString()));
+            _selectedSensorsByCategory[SelectedCategory] = selected;
+        }
+
+        foreach (var sensor in sensors)
+        {
+            var selectable = new SelectableSensor(sensor, selected.Contains(sensor.Identifier.ToString()));
+            selectable.PropertyChanged += OnSensorSelectionChanged;
+            AvailableSensors.Add(selectable);
+        }
+
+        _suppressSelectionHandler = false;
+        UpdateSelectionInfo();
+    }
+
+    private void OnSensorSelectionChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_suppressSelectionHandler || e.PropertyName != nameof(SelectableSensor.IsSelected))
+            return;
+
+        var sel = (SelectableSensor)sender!;
+
+        if (!_selectedSensorsByCategory.TryGetValue(SelectedCategory, out var selected))
+        {
+            selected = new HashSet<string>();
+            _selectedSensorsByCategory[SelectedCategory] = selected;
+        }
+
+        if (sel.IsSelected)
+        {
+            if (selected.Count >= MaxSelectedSensors)
+            {
+                // At cap — reject selection
+                _suppressSelectionHandler = true;
+                sel.IsSelected = false;
+                _suppressSelectionHandler = false;
+                return;
+            }
+            selected.Add(sel.Identifier);
+        }
+        else
+        {
+            selected.Remove(sel.Identifier);
+        }
+
+        UpdateSelectionInfo();
+        RebuildSeries();
+    }
+
+    private void UpdateSelectionInfo()
+    {
+        var selected = _selectedSensorsByCategory.GetValueOrDefault(SelectedCategory);
+        int count = selected?.Count ?? 0;
+        SelectionInfo = $"{count}/{MaxSelectedSensors} sensors selected";
+    }
+
+    private HashSet<string> GetSelectedIds()
+    {
+        return _selectedSensorsByCategory.GetValueOrDefault(SelectedCategory) ?? new HashSet<string>();
     }
 
     private void RebuildSeries()
@@ -164,32 +315,36 @@ public partial class ChartsViewModel : ObservableObject
         _seriesData.Clear();
         SensorLegend.Clear();
 
+        var selectedIds = GetSelectedIds();
+        if (selectedIds.Count == 0) return;
+
         var sensorType = GetSensorType(SelectedCategory);
         var sensors = _service.GetSensorsByType(sensorType)
-            .Where(s => s.Value.HasValue)
-            .Take(10)
+            .Where(s => s.Value.HasValue && selectedIds.Contains(s.Identifier.ToString()))
             .ToList();
 
         var now = DateTime.Now;
+        bool isTemp = sensorType == SensorType.Temperature;
 
         for (int i = 0; i < sensors.Count; i++)
         {
             var sensor = sensors[i];
             string id = sensor.Identifier.ToString();
-            var data = new List<DateTimePoint>(MaxPoints + 1);
+            float val = sensor.Value ?? 0;
+            if (isTemp) val = Converters.SensorUnitHelper.ConvertTemp(val);
 
-            // Seed with initial data point so chart renders immediately
-            data.Add(new DateTimePoint(now, sensor.Value ?? 0));
+            var data = new List<DateTimePoint>(MaxPoints + 1);
+            data.Add(new DateTimePoint(now, val));
             _seriesData[id] = data;
 
             var color = ChartColors[i % ChartColors.Length];
-            string label = $"{sensor.Hardware.Name} — {sensor.Name}";
+            string label = $"{sensor.Hardware.Name} \u2014 {sensor.Name}";
 
             Series.Add(new LineSeries<DateTimePoint>
             {
                 Name = label,
                 Values = data,
-                Stroke = new SolidColorPaint(color) { StrokeThickness = 2.5f },
+                Stroke = new SolidColorPaint(color) { StrokeThickness = StrokeThickness },
                 Fill = new SolidColorPaint(color.WithAlpha(20)),
                 GeometryFill = null,
                 GeometryStroke = null,
@@ -199,7 +354,7 @@ public partial class ChartsViewModel : ObservableObject
 
             SensorLegend.Add(new ChartSensorInfo(
                 label,
-                $"{sensor.Value ?? 0:F1} {YAxisUnit}",
+                $"{val:F1} {YAxisUnit}",
                 color
             ));
         }

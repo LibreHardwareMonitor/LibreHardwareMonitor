@@ -112,7 +112,9 @@ public sealed class HardwareMonitorService : IDisposable
 
         public void VisitHardware(IHardware hardware)
         {
-            hardware.Update();
+            if (!NetworkAdapterFilter.IsVirtualAdapter(hardware))
+                hardware.Update();
+
             foreach (IHardware sub in hardware.SubHardware)
                 sub.Accept(this);
         }

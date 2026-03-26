@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using LibreHardwareMonitor.Hardware;
-
 namespace LibreHardwareMonitor.UI.Converters;
 
 public class TemperatureToColorConverter : IValueConverter
@@ -22,7 +20,9 @@ public class TemperatureToColorConverter : IValueConverter
         if (value is not float temp)
             return DefaultBrush;
 
-        return temp switch
+        // Convert back to Celsius for threshold comparison if displaying Fahrenheit
+        float c = SensorUnitHelper.UseFahrenheit ? (temp - 32f) * 5f / 9f : temp;
+        return c switch
         {
             < 40 => GreenBrush,
             < 60 => CyanBrush,
@@ -81,51 +81,6 @@ public class PercentToAngleConverter : IValueConverter
         throw new NotSupportedException();
 }
 
-public class SensorValueFormatConverter : IValueConverter
-{
-    public static readonly SensorValueFormatConverter Instance = new();
-
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is not float val)
-            return "N/A";
-
-        string format = parameter as string ?? "F1";
-        return val.ToString(format, CultureInfo.InvariantCulture);
-    }
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
-}
-
-public class HardwareTypeToIconConverter : IValueConverter
-{
-    public static readonly HardwareTypeToIconConverter Instance = new();
-
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is not HardwareType type)
-            return "\uE950"; // generic chip
-
-        return type switch
-        {
-            HardwareType.Cpu => "\uE950",
-            HardwareType.GpuNvidia or HardwareType.GpuAmd or HardwareType.GpuIntel => "\uE7F4",
-            HardwareType.Memory => "\uE964",
-            HardwareType.Motherboard => "\uEBC6",
-            HardwareType.Storage => "\uEDA2",
-            HardwareType.Network => "\uE839",
-            HardwareType.Battery => "\uE83F",
-            HardwareType.Psu => "\uE945",
-            HardwareType.Cooler => "\uE9CA",
-            _ => "\uE950"
-        };
-    }
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
-}
-
 public class BoolToOpacityConverter : IValueConverter
 {
     public static readonly BoolToOpacityConverter Instance = new();
@@ -139,18 +94,3 @@ public class BoolToOpacityConverter : IValueConverter
         throw new NotSupportedException();
 }
 
-public class SensorTypeUnitConverter : IValueConverter
-{
-    public static readonly SensorTypeUnitConverter Instance = new();
-
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is not SensorType type)
-            return "";
-
-        return SensorUnitHelper.GetUnit(type);
-    }
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
-}

@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,6 +12,8 @@ namespace LibreHardwareMonitor.UI.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly HardwareMonitorService _service;
+    private readonly SensorConfigService _sensorConfig;
+    private readonly SensorLogService _logService;
     private readonly DateTime _startTime = DateTime.Now;
 
     [ObservableProperty] private int _selectedViewIndex;
@@ -26,18 +30,22 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(HardwareMonitorService service)
     {
         _service = service;
+        _sensorConfig = new SensorConfigService();
+        _logService = new SensorLogService(service);
         Dashboard = new DashboardViewModel(service);
-        HardwareDetail = new HardwareDetailViewModel(service);
+        HardwareDetail = new HardwareDetailViewModel(service, _sensorConfig);
         Charts = new ChartsViewModel(service);
-        Settings = new SettingsViewModel(service);
+        Settings = new SettingsViewModel(service, _sensorConfig, _logService);
         _activeView = Dashboard;
 
         _service.Updated += OnServiceUpdated;
+        Settings.SensorConfigSaved += () => HardwareDetail.RebuildCategories(_service);
 
         try
         {
             _service.Start();
             HardwareDetail.RebuildCategories(_service);
+            Settings.RebuildHardwareTree();
             Dashboard.Update();
             UpdateUptime();
         }
@@ -52,6 +60,9 @@ public partial class MainViewModel : ObservableObject
     {
         Dispatcher.UIThread.Post(() =>
         {
+            Charts.Update();
+            _logService.OnUpdate();
+
             switch (SelectedViewIndex)
             {
                 case 0:
@@ -59,9 +70,6 @@ public partial class MainViewModel : ObservableObject
                     break;
                 case 1:
                     HardwareDetail.Update();
-                    break;
-                case 2:
-                    Charts.Update();
                     break;
             }
 
@@ -97,5 +105,16 @@ public partial class MainViewModel : ObservableObject
             3 => Settings,
             _ => Dashboard
         };
+
+        if (SelectedViewIndex == 3)
+            Settings.Gadget?.RebuildAvailableSensors();
+    }
+
+    [RelayCommand]
+    private async Task ShowAbout()
+    {
+        var mainWindow = TopLevelHelper.GetMainWindow();
+        if (mainWindow is Window owner)
+            await new Views.AboutWindow().ShowDialog(owner);
     }
 }

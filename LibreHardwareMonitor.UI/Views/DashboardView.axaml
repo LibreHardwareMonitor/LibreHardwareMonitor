@@ -61,7 +61,7 @@
                                 <TextBlock Text="Temp" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                                 <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold"
                                            Foreground="{Binding CpuTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
-                                    <Run Text="{Binding CpuTemp, StringFormat='{}{0:F0}'}" /><Run Text="°C" FontSize="10" />
+                                    <Run Text="{Binding CpuTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding TempUnit}" FontSize="10" />
                                 </TextBlock>
                             </Grid>
                             <Grid ColumnDefinitions="Auto,*,Auto">
@@ -110,7 +110,7 @@
                                 <TextBlock Text="Temp" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                                 <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold"
                                            Foreground="{Binding GpuTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
-                                    <Run Text="{Binding GpuTemp, StringFormat='{}{0:F0}'}" /><Run Text="°C" FontSize="10" />
+                                    <Run Text="{Binding GpuTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding TempUnit}" FontSize="10" />
                                 </TextBlock>
                             </Grid>
                             <Grid ColumnDefinitions="Auto,*,Auto">
@@ -176,14 +176,14 @@
                             <TextBlock Text="Chipset" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                             <TextBlock Grid.Column="2" FontSize="13" FontWeight="Bold"
                                        Foreground="{Binding MotherboardTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
-                                <Run Text="{Binding MotherboardTemp, StringFormat='{}{0:F0}'}" /><Run Text="°C" FontSize="9" />
+                                <Run Text="{Binding MotherboardTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
                             </TextBlock>
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <TextBlock Text="VRM" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                             <TextBlock Grid.Column="2" FontSize="13" FontWeight="Bold"
                                        Foreground="{Binding MotherboardVrmTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
-                                <Run Text="{Binding MotherboardVrmTemp, StringFormat='{}{0:F0}'}" /><Run Text="°C" FontSize="9" />
+                                <Run Text="{Binding MotherboardVrmTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
                             </TextBlock>
                         </Grid>
                     </StackPanel>
@@ -217,7 +217,7 @@
                                                 <TextBlock FontSize="11" FontWeight="Bold" IsVisible="{Binding HasTemp}"
                                                            Foreground="{Binding Temperature, Converter={x:Static conv:TemperatureToColorConverter.Instance}}"
                                                            VerticalAlignment="Center">
-                                                    <Run Text="{Binding Temperature, StringFormat='{}{0:F0}'}" /><Run Text="°C" FontSize="9" />
+                                                    <Run Text="{Binding Temperature, StringFormat='{}{0:F0}'}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
                                                 </TextBlock>
                                             </StackPanel>
                                         </Grid>
@@ -309,7 +309,7 @@
                                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         <TextBlock Grid.Column="1" FontSize="13" FontWeight="Bold"
                                                    Foreground="{Binding Value, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
-                                            <Run Text="{Binding FormattedValue}" /><Run Text="°C" FontSize="9" />
+                                            <Run Text="{Binding FormattedValue}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
                                         </TextBlock>
                                     </Grid>
                                 </DataTemplate>
