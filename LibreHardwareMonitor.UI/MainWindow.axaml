@@ -1,0 +1,156 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LibreHardwareMonitor.UI.ViewModels"
+        xmlns:views="using:LibreHardwareMonitor.UI.Views"
+        x:Class="LibreHardwareMonitor.UI.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Libre Hardware Monitor"
+        Width="1280" Height="800"
+        MinWidth="960" MinHeight="600"
+        Background="{StaticResource BgPrimaryBrush}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="40"
+        SystemDecorations="BorderOnly">
+
+    <Grid RowDefinitions="40,*">
+
+        <!-- Custom Title Bar -->
+        <Border Grid.Row="0" Background="{StaticResource BgPrimaryBrush}"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="220,*,Auto">
+                <!-- App branding -->
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0" VerticalAlignment="Center">
+                    <Border Background="#1A3B82F6" CornerRadius="6" Padding="6,3"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="LHM" FontSize="10" FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBlueBrush}" />
+                    </Border>
+                    <TextBlock Text="Libre Hardware Monitor" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Status center -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Ellipse Width="6" Height="6" Fill="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11"
+                               Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Window controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="0"
+                            VerticalAlignment="Stretch">
+                    <Button Classes="window-control" Click="MinimizeButton_Click"
+                            VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <TextBlock Text="&#x2500;" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                    <Button Classes="window-control" Click="MaximizeButton_Click"
+                            VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <TextBlock Text="&#x25A1;" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                    <Button Classes="window-control window-close" Click="CloseButton_Click"
+                            VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <TextBlock Text="&#x2715;" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main layout -->
+        <Grid Grid.Row="1" ColumnDefinitions="220,*">
+
+            <!-- Sidebar — nav only, no hardware tree -->
+            <Border Grid.Column="0" Background="{StaticResource BgSidebarBrush}"
+                    BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!-- Nav buttons -->
+                    <StackPanel Grid.Row="0" Margin="12,12,12,0" Spacing="2">
+                        <Button Classes="nav-item"
+                                Classes.active="{Binding SelectedViewIndex, Converter={x:Static vm:IndexMatchConverter.Dashboard}}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="Dashboard">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="&#x2302;" FontSize="16" VerticalAlignment="Center" Width="20" TextAlignment="Center" />
+                                <TextBlock Text="Dashboard" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="nav-item"
+                                Classes.active="{Binding SelectedViewIndex, Converter={x:Static vm:IndexMatchConverter.Hardware}}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="Hardware">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="&#x2318;" FontSize="16" VerticalAlignment="Center" Width="20" TextAlignment="Center" />
+                                <TextBlock Text="Hardware" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="nav-item"
+                                Classes.active="{Binding SelectedViewIndex, Converter={x:Static vm:IndexMatchConverter.Charts}}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="Charts">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="&#x2248;" FontSize="16" VerticalAlignment="Center" Width="20" TextAlignment="Center" />
+                                <TextBlock Text="Charts" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="nav-item"
+                                Classes.active="{Binding SelectedViewIndex, Converter={x:Static vm:IndexMatchConverter.Settings}}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="Settings">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="&#x2699;" FontSize="16" VerticalAlignment="Center" Width="20" TextAlignment="Center" />
+                                <TextBlock Text="Settings" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Empty spacer -->
+                    <Border Grid.Row="1" />
+
+                    <!-- Machine name footer -->
+                    <Border Grid.Row="2" Padding="16,12"
+                            BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding MachineName}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding UptimeText}" FontSize="10"
+                                       Foreground="{StaticResource TextTertiaryBrush}" Margin="16,0,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Main content area — only the active view is rendered -->
+            <Border Grid.Column="1" Background="{StaticResource BgSecondaryBrush}" ClipToBounds="True">
+                <ContentControl Content="{Binding ActiveView}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="vm:DashboardViewModel">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <views:DashboardView />
+                            </ScrollViewer>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:HardwareDetailViewModel">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <views:HardwareDetailView />
+                            </ScrollViewer>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:ChartsViewModel">
+                            <views:ChartsView />
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:SettingsViewModel">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <views:SettingsView />
+                            </ScrollViewer>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

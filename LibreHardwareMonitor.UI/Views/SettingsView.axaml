@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LibreHardwareMonitor.UI.ViewModels"
+             x:Class="LibreHardwareMonitor.UI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <DockPanel>
+        <StackPanel Spacing="16" MaxWidth="640" Margin="24">
+            <TextBlock Text="Settings" Classes="section-header" FontSize="22" />
+
+            <!-- Update Interval -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x23F1;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentBlueBrush}" />
+                        <TextBlock Text="Update Interval" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="How often sensor values are refreshed. Lower values increase CPU usage."
+                               FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" Margin="0,-4,0,0" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Slider Minimum="0.25" Maximum="10" Value="{Binding UpdateInterval}"
+                                TickFrequency="0.25" IsSnapToTickEnabled="True" />
+                        <Border Grid.Column="1" Background="{StaticResource BgSecondaryBrush}"
+                                CornerRadius="6" Padding="12,6" Margin="12,0,0,0">
+                            <TextBlock FontSize="14" FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       HorizontalAlignment="Center" MinWidth="50" TextAlignment="Center">
+                                <Run Text="{Binding UpdateInterval, StringFormat='{}{0:F2}'}" />
+                                <Run Text="s" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </TextBlock>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Hardware toggles -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x2699;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentGreenBrush}" />
+                        <TextBlock Text="Hardware Monitoring" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Enable or disable hardware categories. Changes require reload."
+                               FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,4" />
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,4,0,0">
+                        <CheckBox IsChecked="{Binding IsCpuEnabled}" Content="CPU"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Column="1" IsChecked="{Binding IsGpuEnabled}" Content="GPU"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="1" IsChecked="{Binding IsMemoryEnabled}" Content="Memory"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding IsMotherboardEnabled}" Content="Motherboard"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="2" IsChecked="{Binding IsStorageEnabled}" Content="Storage"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding IsNetworkEnabled}" Content="Network"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="3" IsChecked="{Binding IsBatteryEnabled}" Content="Battery"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding IsPsuEnabled}" Content="PSU"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="4" IsChecked="{Binding IsControllerEnabled}" Content="Controllers"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                    </Grid>
+
+                    <Button Content="Apply &amp; Reload Hardware" Command="{Binding ApplyHardwareSettingsCommand}"
+                            HorizontalAlignment="Left" Padding="20,10"
+                            Background="{StaticResource AccentBlueBrush}" Foreground="White"
+                            CornerRadius="8" Margin="0,8,0,0" Cursor="Hand" />
+                </StackPanel>
+            </Border>
+
+            <!-- Status -->
+            <Border Classes="card" Padding="14,12">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StatusText}" FontSize="12"
+                               Foreground="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- About -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x2139;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentPurpleBrush}" />
+                        <TextBlock Text="About" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,4" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,0,0,0">
+                        <TextBlock Text="Application" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                        <TextBlock Grid.Column="1" Text="Libre Hardware Monitor UI" FontSize="12"
+                                   Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                        <TextBlock Grid.Row="1" Text="Framework" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="Avalonia 11.3" FontSize="12"
+                                   Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                        <TextBlock Grid.Row="2" Text="Library" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="LibreHardwareMonitorLib" FontSize="12"
+                                   Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                        <TextBlock Grid.Row="3" Text="License" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="MPL 2.0" FontSize="12"
+                                   Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </DockPanel>
+</UserControl>
