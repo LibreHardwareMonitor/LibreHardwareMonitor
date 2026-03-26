@@ -6,3 +6,6 @@
 .vs/
 .vscode/
 packages/
+build/
+docs/
+.arch/
