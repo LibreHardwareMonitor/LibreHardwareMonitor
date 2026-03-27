@@ -99,5 +99,11 @@ jobs:
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
+      - name: Restore AOT test project
+        run: dotnet restore AotTest\AotTest.csproj -r win-x64
+
+      - name: Publish AOT test (Native AOT)
+        run: dotnet publish AotTest\AotTest.csproj -c Release -r win-x64 --no-restore
+
       - name: Publish to NuGet
         run: nuget push bin\Release\LibreHardwareMonitorLib.*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
