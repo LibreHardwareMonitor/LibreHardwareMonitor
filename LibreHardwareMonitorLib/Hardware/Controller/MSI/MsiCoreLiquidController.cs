@@ -353,7 +353,11 @@ internal class MsiCoreLiquidController : Hardware
         SetData(buffer);
     }
 
-    private static T BytesToStruct<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(byte[] data, int startIndex) where T : struct
+    private static T BytesToStruct<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+#endif
+        T>(byte[] data, int startIndex) where T : struct
     {
         int size = Marshal.SizeOf<T>();
 

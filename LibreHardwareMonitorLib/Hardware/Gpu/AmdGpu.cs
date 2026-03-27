@@ -925,7 +925,13 @@ internal sealed class AmdGpu : GenericGpu
                     adlPMLogData = Marshal.PtrToStructure<AtiAdlxx.ADLPMLogData>(_adlPMLogStartOutput.pLoggingAddress);
                 }
 
-                foreach (AtiAdlxx.ADLPMLogSensors sensorType in Enum.GetValues<AtiAdlxx.ADLPMLogSensors>())
+                foreach (AtiAdlxx.ADLPMLogSensors sensorType in
+#if NET5_0_OR_GREATER
+                    Enum.GetValues<AtiAdlxx.ADLPMLogSensors>()
+#else
+                    (AtiAdlxx.ADLPMLogSensors[])Enum.GetValues(typeof(AtiAdlxx.ADLPMLogSensors))
+#endif
+                )
                 {
                     int i = (int)sensorType;
                     if (i == 0)

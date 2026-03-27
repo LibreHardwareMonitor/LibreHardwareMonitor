@@ -822,7 +822,11 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return offset != size ? null : buffer;
     }
 
-    private T BytesToStructure<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(byte[] bytes) where T : struct
+    private T BytesToStructure<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+#endif
+        T>(byte[] bytes) where T : struct
     {
         var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 
