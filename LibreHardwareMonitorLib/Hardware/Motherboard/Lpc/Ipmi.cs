@@ -154,7 +154,7 @@ internal class Ipmi : ISuperIO
 
                         fixed (byte* pSdr = sdrRaw)
                         {
-                            Interop.Ipmi.Sdr sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
+                            Interop.Ipmi.Sdr sdr = Marshal.PtrToStructure<Interop.Ipmi.Sdr>((IntPtr)pSdr + 3);
                             _sdrs.Add(sdr);
                             stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
                         }
