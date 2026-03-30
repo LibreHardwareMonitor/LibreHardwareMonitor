@@ -643,10 +643,15 @@ internal class Nct677X : ISuperIO
                     }
                 }
 
-                if (StartFanCfgUpdate(index))
+                // Retry up to 3 times if EC rejects the configuration (INVALID bit)
+                for (int attempt = 0; attempt < 3; attempt++)
                 {
+                    if (!StartFanCfgUpdate(index))
+                        break;
+
                     Set6687DRControl(index, value.Value);
-                    FinishFanCfgUpdate(index);
+                    if (FinishFanCfgUpdate(index))
+                        break;
                 }
             }
             else
@@ -1265,15 +1270,15 @@ internal class Nct677X : ISuperIO
 
     /// <summary>
     /// Signal the EC that fan configuration is complete and wait for acknowledgment.
-    /// Based on the Linux nct6687d driver's finish_fan_cfg_update() function.
+    /// Returns false if the EC set the INVALID bit (configuration rejected).
     /// </summary>
-    private void FinishFanCfgUpdate(int index)
+    private bool FinishFanCfgUpdate(int index)
     {
         byte engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
 
         // Already not accessible
         if ((engsts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engsts & NCT6687DR_FAN_CFG_PHASE) == 0)
-            return;
+            return false;
 
         // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
         WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
@@ -1289,6 +1294,10 @@ internal class Nct677X : ISuperIO
 
             Thread.Sleep(1);
         }
+
+        // Check if EC rejected the configuration (INVALID bit)
+        engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+        return (engsts & NCT6687DR_FAN_CFG_INVALID) == 0;
     }
 
     /// <summary>
@@ -1372,10 +1381,14 @@ internal class Nct677X : ISuperIO
                     WriteByte(FAN_CONTROL_MODE_REG[index], mode);
                 }
 
-                if (StartFanCfgUpdate(index))
+                for (int attempt = 0; attempt < 3; attempt++)
                 {
+                    if (!StartFanCfgUpdate(index))
+                        break;
+
                     Set6687DRControl(index, _initialFanPwmCommand[index]);
-                    FinishFanCfgUpdate(index);
+                    if (FinishFanCfgUpdate(index))
+                        break;
                 }
             }
             else
