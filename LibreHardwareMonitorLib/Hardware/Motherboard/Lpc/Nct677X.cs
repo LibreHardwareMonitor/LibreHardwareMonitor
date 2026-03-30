@@ -628,15 +628,19 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR (MSI AM5/LGA1851): Set manual mode bit using the correct bit mapping,
-                // then use EC engine status polling to safely enter config phase before writing.
-                int bitPos = FAN_CONTROL_MODE_BIT[index];
-                if (bitPos >= 0)
+                // NCT6687DR (MSI AM5/LGA1851): CC_Engine emulation.
+                // System fans (index > 8) use flat SmartFAN curves — do NOT set manual mode bit.
+                // CPU/Pump/Chipset/EZ-Connect (index <= 8) still use direct PWM with manual mode.
+                if (index <= 8)
                 {
-                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    byte bitMask = (byte)(0x01 << bitPos);
-                    mode = (byte)(mode | bitMask);
-                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                    int bitPos = FAN_CONTROL_MODE_BIT[index];
+                    if (bitPos >= 0)
+                    {
+                        byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                        byte bitMask = (byte)(0x01 << bitPos);
+                        mode = (byte)(mode | bitMask);
+                        WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                    }
                 }
 
                 if (StartFanCfgUpdate(index))
@@ -1243,6 +1247,7 @@ internal class Nct677X : ISuperIO
 
         // Send config request
         WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ);
+        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
 
         // Wait until EC enters config phase and unlocks registers
         deadline = DateTime.UtcNow.AddMilliseconds(1000);
@@ -1270,8 +1275,9 @@ internal class Nct677X : ISuperIO
         if ((engsts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engsts & NCT6687DR_FAN_CFG_PHASE) == 0)
             return;
 
-        // Signal done
-        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_DONE);
+        // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
+        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
+        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
 
         // Wait until EC checks the new configuration
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(1000);
@@ -1291,13 +1297,21 @@ internal class Nct677X : ISuperIO
     /// </summary>
     private void Set6687DRControl(int index, byte value)
     {
-        if (index > 8) // Brute Force System Fan Control — write same PWM to all 7 curve points
+        if (index > 8) // System Fan Control — write flat SmartFAN curve (CC_Engine emulation)
         {
-            ushort baseCurveReg = FAN_PWM_COMMAND_REG[index];
+            ushort baseDutyReg = FAN_PWM_COMMAND_REG[index];
+            ushort baseTempReg = (ushort)(baseDutyReg - 8);
 
+            // Write 7 temperature points (step=1, consecutive) — all 0x20 (32°C) for flat curve
             for (int point = 0; point < 7; point++)
             {
-                ushort reg = (ushort)(baseCurveReg + (point * 2));
+                WriteByte((ushort)(baseTempReg + point), 0x20);
+            }
+
+            // Write 7 duty points (step=2, even addresses) — all same PWM value
+            for (int point = 0; point < 7; point++)
+            {
+                ushort reg = (ushort)(baseDutyReg + (point * 2));
                 WriteByte(reg, value);
             }
         }
@@ -1349,10 +1363,14 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR: Restore original mode bit and PWM via EC engine protocol
-                byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                mode = (byte)(mode & ~_initialFanControlMode[index]);
-                WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                // NCT6687DR: Restore original mode bit (only for CPU/Pump/Chipset/EZ-Connect)
+                // and restore PWM via EC engine protocol
+                if (index <= 8)
+                {
+                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                    mode = (byte)(mode & ~_initialFanControlMode[index]);
+                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                }
 
                 if (StartFanCfgUpdate(index))
                 {
