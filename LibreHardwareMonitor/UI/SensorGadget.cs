@@ -699,7 +699,8 @@ public class SensorGadget : Gadget
             MinimizeBox = false,
             MaximizeBox = false,
             ClientSize = new Size(460, 340),
-            MinimumSize = new Size(360, 280)
+            MinimumSize = new Size(420, 320),
+            AutoScaleMode = AutoScaleMode.Font
         };
         form.Icon = EmbeddedResources.GetIcon("icon.ico");
 
@@ -745,16 +746,35 @@ public class SensorGadget : Gadget
             Text = $"#{current.R:X2}{current.G:X2}{current.B:X2}"
         };
 
-        Button okButton = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 70 };
-        Button cancelButton = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 70 };
+        Button okButton = new Button
+        {
+            Text = "OK",
+            DialogResult = DialogResult.OK,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            MinimumSize = new Size(75, 0),
+            Padding = new Padding(6, 2, 6, 2)
+        };
+        Button cancelButton = new Button
+        {
+            Text = "Cancel",
+            DialogResult = DialogResult.Cancel,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            MinimumSize = new Size(75, 0),
+            Padding = new Padding(6, 2, 6, 2)
+        };
         bool updatingHexText = false;
 
         void LayoutControls()
         {
             const int padding = 12;
-            const int bottomRowHeight = 40;
             const int hueBarWidth = 24;
             const int hueGap = 8;
+            int bottomRowHeight = Math.Max(
+                Math.Max(preview.Height, Math.Max(okButton.Height, cancelButton.Height)),
+                Math.Max(hexTextBox.PreferredSize.Height, hexLabel.Height)) + 8;
+            int rowTop = form.ClientSize.Height - padding - bottomRowHeight;
 
             svBox.Location = new Point(padding, padding);
             svBox.Size = new Size(
@@ -763,12 +783,12 @@ public class SensorGadget : Gadget
             hueBox.Location = new Point(svBox.Right + hueGap, padding);
             hueBox.Size = new Size(hueBarWidth, svBox.Height);
 
-            preview.Location = new Point(padding, form.ClientSize.Height - padding - preview.Height);
-            hexLabel.Location = new Point(preview.Right + 10, preview.Top + 9);
-            hexTextBox.Location = new Point(hexLabel.Right + 6, preview.Top + 6);
+            preview.Location = new Point(padding, rowTop + (bottomRowHeight - preview.Height) / 2);
+            hexLabel.Location = new Point(preview.Right + 10, rowTop + (bottomRowHeight - hexLabel.Height) / 2);
+            hexTextBox.Location = new Point(hexLabel.Right + 6, rowTop + (bottomRowHeight - hexTextBox.Height) / 2);
 
-            cancelButton.Location = new Point(form.ClientSize.Width - padding - cancelButton.Width, form.ClientSize.Height - padding - cancelButton.Height);
-            okButton.Location = new Point(cancelButton.Left - 8 - okButton.Width, cancelButton.Top);
+            cancelButton.Location = new Point(form.ClientSize.Width - padding - cancelButton.Width, rowTop + (bottomRowHeight - cancelButton.Height) / 2);
+            okButton.Location = new Point(cancelButton.Left - 8 - okButton.Width, rowTop + (bottomRowHeight - okButton.Height) / 2);
         }
 
         void SyncSelectorsFromCurrent()
