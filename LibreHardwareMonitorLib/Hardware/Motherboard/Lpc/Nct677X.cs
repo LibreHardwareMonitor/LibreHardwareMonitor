@@ -67,8 +67,13 @@ internal class Nct677X : ISuperIO
             // Each index in the below arrays represents a fan header
             // ARRAY_KEY = new ushort[] { CPU FAN, PUMP, CHIPSET, EZ-CONNECT FAN, null, null, null, null, null, SYSFAN7, SYSFAN1, SYSFAN2, SYSFAN3, SYSFAN4, SYSFAN5, SYSFAN6 };
             FAN_PWM_OUT_REG = [0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167, 0xFFF, 0xC93, 0xE05, 0xE04, 0xE03, 0xE02, 0xE01, 0xE00]; // Duty Cycle Sensors
-            FAN_PWM_COMMAND_REG = [0xA28, 0xA29, 0xA2A, 0xA2B, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xBE0, 0xC70, 0xC58, 0xC40, 0xC28, 0xC10, 0xBF8]; // Control Registers for CPU/Pump/EZ-Connect Fan, Initial Fan Curve Registers for System Fans
-            FAN_CONTROL_MODE_REG = [0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00];
+            // Direct PWM command registers ("pair 0" from extended unk_101E0 table in BIOS).
+            // CPU/Pump/Chipset/EZ-Connect: 0A:(28+ch).  SYSFAN7(ch9): 08:E9.  SYSFAN1-6(ch10-15): 02:(65..60).
+            // Setting the manual-mode bit in FAN_CONTROL_MODE_REG makes the EC use these for direct PWM,
+            // bypassing the SmartFAN curve engine and its inherent ~2%/sec smoothing.
+            FAN_PWM_COMMAND_REG = [0xA28, 0xA29, 0xA2A, 0xA2B, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0x8E9, 0x265, 0x264, 0x263, 0x262, 0x261, 0x260];
+            // Manual-mode enable registers.  Ch 0-7 use 0A:00 (one bit each); ch 8-15 use 08:0F.
+            FAN_CONTROL_MODE_REG = [0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0x80F, 0x80F, 0x80F, 0x80F, 0x80F, 0x80F, 0x80F];
             FAN_PWM_REQUEST_REG = [0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01];
 
             // Mapping from array index to bit position in the FAN_CONTROL_MODE_REG (0xA00) register.
@@ -77,17 +82,19 @@ internal class Nct677X : ISuperIO
             // Based on the Linux nct6687d driver's msi_alt1 config: index 0=CPU, 1=Pump, 2-7=System fans.
             // -1 means no valid mapping (unused index slots).
             FAN_CONTROL_MODE_BIT = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]; // Defaults
-            FAN_CONTROL_MODE_BIT[0] = 0;   // CPU Fan    → bit 0
-            FAN_CONTROL_MODE_BIT[1] = 1;   // Pump       → bit 1
-            FAN_CONTROL_MODE_BIT[2] = 2;   // Chipset    → bit 2
-            FAN_CONTROL_MODE_BIT[3] = 3;   // EZ-Connect → bit 3
-            FAN_CONTROL_MODE_BIT[9] = 4;   // SYSFAN7    → bit 4 (tentative)
-            FAN_CONTROL_MODE_BIT[10] = 2;  // SYSFAN1    → bit 2
-            FAN_CONTROL_MODE_BIT[11] = 3;  // SYSFAN2    → bit 3
-            FAN_CONTROL_MODE_BIT[12] = 4;  // SYSFAN3    → bit 4
-            FAN_CONTROL_MODE_BIT[13] = 5;  // SYSFAN4    → bit 5
-            FAN_CONTROL_MODE_BIT[14] = 6;  // SYSFAN5    → bit 6
-            FAN_CONTROL_MODE_BIT[15] = 7;  // SYSFAN6    → bit 7
+            FAN_CONTROL_MODE_BIT[0] = 0;   // CPU Fan    → bit 0 of 0A:00
+            FAN_CONTROL_MODE_BIT[1] = 1;   // Pump       → bit 1 of 0A:00
+            FAN_CONTROL_MODE_BIT[2] = 2;   // Chipset    → bit 2 of 0A:00
+            FAN_CONTROL_MODE_BIT[3] = 3;   // EZ-Connect → bit 3 of 0A:00
+            // System fans: manual-mode bits in 08:0F (derived from BIOS unk_104C0 entry[1]).
+            // EC channel mapping: LHM idx 9=ch9, 10=ch15, 11=ch14, 12=ch13, 13=ch12, 14=ch11, 15=ch10.
+            FAN_CONTROL_MODE_BIT[9]  = 1;  // SYSFAN7 (ch 9)  → bit 1 of 08:0F
+            FAN_CONTROL_MODE_BIT[10] = 7;  // SYSFAN1 (ch 15) → bit 7 of 08:0F
+            FAN_CONTROL_MODE_BIT[11] = 6;  // SYSFAN2 (ch 14) → bit 6 of 08:0F
+            FAN_CONTROL_MODE_BIT[12] = 5;  // SYSFAN3 (ch 13) → bit 5 of 08:0F
+            FAN_CONTROL_MODE_BIT[13] = 4;  // SYSFAN4 (ch 12) → bit 4 of 08:0F
+            FAN_CONTROL_MODE_BIT[14] = 3;  // SYSFAN5 (ch 11) → bit 3 of 08:0F
+            FAN_CONTROL_MODE_BIT[15] = 2;  // SYSFAN6 (ch 10) → bit 2 of 08:0F
         }
         else
         {
@@ -628,19 +635,17 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR (MSI AM5/LGA1851): CC_Engine emulation.
-                // System fans (index > 8) use flat SmartFAN curves — do NOT set manual mode bit.
-                // CPU/Pump/Chipset/EZ-Connect (index <= 8) still use direct PWM with manual mode.
-                if (index <= 8)
+                // NCT6687DR (MSI AM5/LGA1851): Direct PWM mode for ALL fans.
+                // Set the manual-mode bit to bypass the SmartFAN curve engine entirely.
+                // CPU/Pump/Chipset/EZ-Connect: bit in 0xA00.  System fans: bit in 0x80F.
+                // Derived from BIOS unk_104C0 table — entry[1] = set manual-mode bit.
+                int bitPos = FAN_CONTROL_MODE_BIT[index];
+                if (bitPos >= 0)
                 {
-                    int bitPos = FAN_CONTROL_MODE_BIT[index];
-                    if (bitPos >= 0)
-                    {
-                        byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                        byte bitMask = (byte)(0x01 << bitPos);
-                        mode = (byte)(mode | bitMask);
-                        WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-                    }
+                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                    byte bitMask = (byte)(0x01 << bitPos);
+                    mode = (byte)(mode | bitMask);
+                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
                 }
 
                 // Retry up to 3 times if EC rejects the configuration (INVALID bit)
@@ -1301,33 +1306,11 @@ internal class Nct677X : ISuperIO
     }
 
     /// <summary>
-    /// Write fan control value for NCT6687DR. System fans (index > 8) use 7-point fan curve brute force;
-    /// CPU/Pump/Chipset/EZ-Connect (index &lt;= 8) use direct PWM command register.
+    /// Write fan control value for NCT6687DR.  All fans use direct PWM command registers.
     /// </summary>
     private void Set6687DRControl(int index, byte value)
     {
-        if (index > 8) // System Fan Control — write flat SmartFAN curve (CC_Engine emulation)
-        {
-            ushort baseDutyReg = FAN_PWM_COMMAND_REG[index];
-            ushort baseTempReg = (ushort)(baseDutyReg - 8);
-
-            // Write 7 temperature points (step=1, consecutive) — all 0x20 (32°C) for flat curve
-            for (int point = 0; point < 7; point++)
-            {
-                WriteByte((ushort)(baseTempReg + point), 0x20);
-            }
-
-            // Write 7 duty points (step=2, even addresses) — all same PWM value
-            for (int point = 0; point < 7; point++)
-            {
-                ushort reg = (ushort)(baseDutyReg + (point * 2));
-                WriteByte(reg, value);
-            }
-        }
-        else // Control CPU, Pump, Chipset, or EZ-Connect Fan directly
-        {
-            WriteByte(FAN_PWM_COMMAND_REG[index], value);
-        }
+        WriteByte(FAN_PWM_COMMAND_REG[index], value);
     }
 
     private void SaveDefaultFanControl(int index)
@@ -1348,6 +1331,7 @@ internal class Nct677X : ISuperIO
                     byte bitMask = (byte)(0x01 << bitPos);
                     _initialFanControlMode[index] = (byte)(mode & bitMask);
                 }
+
             }
             else
             {
@@ -1372,12 +1356,14 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR: Restore original mode bit (only for CPU/Pump/Chipset/EZ-Connect)
-                // and restore PWM via EC engine protocol
-                if (index <= 8)
+                // NCT6687DR: Restore original manual-mode bit for all fans.
+                // Clear the bit we set in SetControl to return to SmartFAN curve mode.
+                int bitPos = FAN_CONTROL_MODE_BIT[index];
+                if (bitPos >= 0)
                 {
                     byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    mode = (byte)(mode & ~_initialFanControlMode[index]);
+                    byte bitMask = (byte)(0x01 << bitPos);
+                    mode = (byte)(mode & ~bitMask);
                     WriteByte(FAN_CONTROL_MODE_REG[index], mode);
                 }
 
@@ -1538,10 +1524,11 @@ internal class Nct677X : ISuperIO
     private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
 
     private readonly ushort[] FAN_CONTROL_MODE_REG;
-    private readonly int[] FAN_CONTROL_MODE_BIT; // NCT6687DR only: maps array index → bit position in 0xA00
+    private readonly int[] FAN_CONTROL_MODE_BIT; // NCT6687DR only: maps array index → bit position in mode register
     private readonly ushort[] FAN_PWM_COMMAND_REG;
     private readonly ushort[] FAN_PWM_OUT_REG;
     private readonly ushort[] FAN_PWM_REQUEST_REG;
+
 
     // NCT6687DR EC engine status register and flags (based on Linux nct6687d driver)
     private const ushort NCT6687DR_REG_FAN_ENGINE_STS = 0xCF8;
