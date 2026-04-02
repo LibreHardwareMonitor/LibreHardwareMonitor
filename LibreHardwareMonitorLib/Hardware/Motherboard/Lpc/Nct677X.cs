@@ -19,8 +19,6 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class Nct677X : ISuperIO
 {
-    #region Constants
-
     // ReSharper disable InconsistentNaming
     private const ushort ADDRESS_REGISTER_OFFSET = 0x05;
     private const byte BANK_SELECT_REGISTER = 0x4E;
@@ -43,10 +41,6 @@ internal class Nct677X : ISuperIO
     private const byte NCT6687DR_FAN_CFG_REQ = 0x80;
     private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
     // ReSharper restore InconsistentNaming
-
-    #endregion
-
-    #region Fields
 
     // Chip identity
     private readonly LpcPort _lpcPort;
@@ -80,10 +74,6 @@ internal class Nct677X : ISuperIO
     private readonly byte[] _initialFanControlMode = new byte[7];
     private readonly byte[] _initialFanPwmCommand = new byte[7];
     private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
-
-    #endregion
-
-    #region Constructor
 
     public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
     {
@@ -641,10 +631,6 @@ internal class Nct677X : ISuperIO
         }
     }
 
-    #endregion
-
-    #region Properties
-
     public Chip Chip { get; }
 
     public float?[] Controls { get; } = Array.Empty<float?>();
@@ -654,10 +640,6 @@ internal class Nct677X : ISuperIO
     public float?[] Temperatures { get; } = Array.Empty<float?>();
 
     public float?[] Voltages { get; } = Array.Empty<float?>();
-
-    #endregion
-
-    #region ISuperIO Methods
 
     public byte? ReadGpio(int index)
     {
@@ -1188,10 +1170,6 @@ internal class Nct677X : ISuperIO
         return r.ToString();
     }
 
-    #endregion
-
-    #region Register I/O
-
     private byte ReadByte(ushort address)
     {
         if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
@@ -1288,10 +1266,6 @@ internal class Nct677X : ISuperIO
                ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
-    #endregion
-
-    #region Fan Control (NCT6687DR EC Protocol)
-
     /// <summary>
     /// Request the EC to enter fan configuration phase and wait until registers are unlocked.
     /// Based on the Linux nct6687d driver's start_fan_cfg_update() function.
@@ -1322,7 +1296,7 @@ internal class Nct677X : ISuperIO
 
         // Send config request
         WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ);
-        PreciseWait(10); // CC_Engine: fixed 10ms delay after request
+        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
 
         // Wait until EC enters config phase and unlocks registers
         sw.Restart();
@@ -1352,7 +1326,7 @@ internal class Nct677X : ISuperIO
 
         // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
         WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
-        PreciseWait(10); // CC_Engine: fixed 10ms delay after commit
+        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
 
         // Wait until EC checks the new configuration
         Stopwatch sw = Stopwatch.StartNew();
@@ -1462,10 +1436,6 @@ internal class Nct677X : ISuperIO
         }
     }
 
-    #endregion
-
-    #region Helpers
-
     private void DisableIOSpaceLock()
     {
         if (Chip is not Chip.NCT6791D and
@@ -1493,28 +1463,11 @@ internal class Nct677X : ISuperIO
         _lpcPort.WinbondNuvotonFintekExit();
     }
 
-    /// <summary>
-    /// Spin-wait for the specified number of milliseconds using Stopwatch.
-    /// Thread.Sleep(N) on Windows has ~15.6ms minimum granularity;
-    /// SpinWait yields progressively to avoid burning CPU while staying precise.
-    /// </summary>
-    private static void PreciseWait(int milliseconds)
-    {
-        Stopwatch sw = Stopwatch.StartNew();
-        SpinWait spin = new();
-        while (sw.ElapsedMilliseconds < milliseconds)
-            spin.SpinOnce();
-    }
-
     [Conditional("DEBUG_LOG"), Conditional("NCT677X_DEBUG_LOG")]
     private static void Log(string format, params object[] args)
     {
         Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
     }
-
-    #endregion
-
-    #region Nested Types
 
     private readonly struct TemperatureSourceData(Enum source, ushort register, ushort halfRegister = 0, int halfBit = -1, ushort sourceRegister = 0, ushort? alternateRegister = null)
     {
@@ -1595,6 +1548,4 @@ internal class Nct677X : ISuperIO
         SYSTIN3 = 6,
         PECI_0 = 12
     }
-
-    #endregion
 }
