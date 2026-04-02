@@ -1211,11 +1211,11 @@ internal class Nct677X : ISuperIO
         //timeout: after 500ms, abort and force access
         byte access;
 
-        DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+        Stopwatch timeout = Stopwatch.StartNew();
         while (true)
         {
             access = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
-            if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
+            if (access == EC_SPACE_PAGE_SELECT || timeout.Elapsed >= TimeSpan.FromMilliseconds(500))
                 break;
 
             Thread.Sleep(1);
@@ -1257,11 +1257,11 @@ internal class Nct677X : ISuperIO
             //timeout: after 500ms, abort and force access
             byte access;
 
-            DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+            Stopwatch timeout = Stopwatch.StartNew();
             while (true)
             {
                 access = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
-                if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
+                if (access == EC_SPACE_PAGE_SELECT || timeout.Elapsed >= TimeSpan.FromMilliseconds(500))
                     break;
 
                 Thread.Sleep(1);
@@ -1322,7 +1322,7 @@ internal class Nct677X : ISuperIO
 
         // Send config request
         WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ);
-        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
+        PreciseWait(10); // CC_Engine: fixed 10ms delay after request
 
         // Wait until EC enters config phase and unlocks registers
         sw.Restart();
@@ -1352,7 +1352,7 @@ internal class Nct677X : ISuperIO
 
         // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
         WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
-        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
+        PreciseWait(10); // CC_Engine: fixed 10ms delay after commit
 
         // Wait until EC checks the new configuration
         Stopwatch sw = Stopwatch.StartNew();
@@ -1491,6 +1491,19 @@ internal class Nct677X : ISuperIO
         _lpcPort.WinbondNuvotonFintekEnter();
         _lpcPort.NuvotonDisableIOSpaceLock();
         _lpcPort.WinbondNuvotonFintekExit();
+    }
+
+    /// <summary>
+    /// Spin-wait for the specified number of milliseconds using Stopwatch.
+    /// Thread.Sleep(N) on Windows has ~15.6ms minimum granularity;
+    /// SpinWait yields progressively to avoid burning CPU while staying precise.
+    /// </summary>
+    private static void PreciseWait(int milliseconds)
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+        SpinWait spin = new();
+        while (sw.ElapsedMilliseconds < milliseconds)
+            spin.SpinOnce();
     }
 
     [Conditional("DEBUG_LOG"), Conditional("NCT677X_DEBUG_LOG")]
