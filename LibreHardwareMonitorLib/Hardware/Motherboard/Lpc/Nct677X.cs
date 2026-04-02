@@ -19,22 +19,71 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class Nct677X : ISuperIO
 {
+    #region Constants
+
+    // ReSharper disable InconsistentNaming
+    private const ushort ADDRESS_REGISTER_OFFSET = 0x05;
+    private const byte BANK_SELECT_REGISTER = 0x4E;
+    private const uint DATA_REGISTER_OFFSET = 0x06;
+
+    // NCT668X EC space
+    private const uint EC_SPACE_PAGE_REGISTER_OFFSET = 0x04;
+    private const uint EC_SPACE_INDEX_REGISTER_OFFSET = 0x05;
+    private const uint EC_SPACE_DATA_REGISTER_OFFSET = 0x06;
+    private const byte EC_SPACE_PAGE_SELECT = 0xFF;
+
+    private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
+
+    // NCT6687DR EC engine status register and flags (based on Linux nct6687d driver)
+    private const ushort NCT6687DR_REG_FAN_ENGINE_STS = 0xCF8;
+    private const byte NCT6687DR_FAN_CFG_LOCK = 1 << 6;
+    private const byte NCT6687DR_FAN_CFG_PHASE = 1 << 3;
+    private const byte NCT6687DR_FAN_CFG_INVALID = 1 << 4;
+    private const byte NCT6687DR_FAN_CFG_CHECK_DONE = 1 << 5;
+    private const byte NCT6687DR_FAN_CFG_REQ = 0x80;
+    private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
+    // ReSharper restore InconsistentNaming
+
+    #endregion
+
+    #region Fields
+
+    // Chip identity
+    private readonly LpcPort _lpcPort;
+    private readonly ushort _port;
+    private readonly byte _revision;
+    private readonly bool _isNuvotonVendor;
+
+    // Fan registers (chip-specific, initialized in constructor)
+    // ReSharper disable InconsistentNaming
+    private readonly ushort[] FAN_CONTROL_MODE_REG;
+    private readonly int[] FAN_CONTROL_MODE_BIT; // NCT6687DR only: maps array index → bit position in mode register
+    private readonly ushort[] FAN_PWM_COMMAND_REG;
+    private readonly ushort[] FAN_PWM_OUT_REG;
+    private readonly ushort[] FAN_PWM_REQUEST_REG;
+    private readonly ushort VENDOR_ID_HIGH_REGISTER;
+    private readonly ushort VENDOR_ID_LOW_REGISTER;
+    // ReSharper restore InconsistentNaming
+
+    // Sensor registers
     private readonly ushort[] _fanCountRegister;
     private readonly ushort[] _fanRpmRegister;
-    private readonly byte[] _initialFanControlMode = new byte[7];
-    private readonly byte[] _initialFanPwmCommand = new byte[7];
-    private readonly bool _isNuvotonVendor;
-    private readonly LpcPort _lpcPort;
     private readonly int _maxFanCount;
     private readonly int _minFanCount;
     private readonly int _minFanRpm;
-    private readonly ushort _port;
-    private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
-    private readonly byte _revision;
     private readonly TemperatureSourceData[] _temperaturesSource;
     private readonly ushort _vBatMonitorControlRegister;
     private readonly ushort[] _voltageRegisters;
     private readonly ushort _voltageVBatRegister;
+
+    // Fan control state (save/restore)
+    private readonly byte[] _initialFanControlMode = new byte[7];
+    private readonly byte[] _initialFanPwmCommand = new byte[7];
+    private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
+
+    #endregion
+
+    #region Constructor
 
     public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
     {
@@ -592,6 +641,10 @@ internal class Nct677X : ISuperIO
         }
     }
 
+    #endregion
+
+    #region Properties
+
     public Chip Chip { get; }
 
     public float?[] Controls { get; } = Array.Empty<float?>();
@@ -601,6 +654,10 @@ internal class Nct677X : ISuperIO
     public float?[] Temperatures { get; } = Array.Empty<float?>();
 
     public float?[] Voltages { get; } = Array.Empty<float?>();
+
+    #endregion
+
+    #region ISuperIO Methods
 
     public byte? ReadGpio(int index)
     {
@@ -655,7 +712,7 @@ internal class Nct677X : ISuperIO
                         break;
 
                     Set6687DRControl(index, value.Value);
-                    if (FinishFanCfgUpdate(index))
+                    if (CompleteFanConfigUpdate(index))
                         break;
                 }
             }
@@ -1131,6 +1188,10 @@ internal class Nct677X : ISuperIO
         return r.ToString();
     }
 
+    #endregion
+
+    #region Register I/O
+
     private byte ReadByte(ushort address)
     {
         if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
@@ -1227,6 +1288,10 @@ internal class Nct677X : ISuperIO
                ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
+    #endregion
+
+    #region Fan Control (NCT6687DR EC Protocol)
+
     /// <summary>
     /// Request the EC to enter fan configuration phase and wait until registers are unlocked.
     /// Based on the Linux nct6687d driver's start_fan_cfg_update() function.
@@ -1234,18 +1299,18 @@ internal class Nct677X : ISuperIO
     /// <returns>true if the EC entered config phase successfully; false on timeout.</returns>
     private bool StartFanCfgUpdate(int index)
     {
-        byte engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+        byte engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
 
         // Already accessible
-        if ((engsts & NCT6687DR_FAN_CFG_LOCK) == 0 && (engsts & NCT6687DR_FAN_CFG_PHASE) != 0)
+        if ((engineSts & NCT6687DR_FAN_CFG_LOCK) == 0 && (engineSts & NCT6687DR_FAN_CFG_PHASE) != 0)
             return true;
 
         // Wait until any existing config phase is done and request flag is clear
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(1000);
-        while (DateTime.UtcNow < deadline)
+        Stopwatch sw = Stopwatch.StartNew();
+        while (sw.Elapsed < TimeSpan.FromSeconds(1))
         {
-            engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
-            if ((engsts & NCT6687DR_FAN_CFG_PHASE) == 0)
+            engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+            if ((engineSts & NCT6687DR_FAN_CFG_PHASE) == 0)
             {
                 byte req = ReadByte(FAN_PWM_REQUEST_REG[index]);
                 if ((req & NCT6687DR_FAN_CFG_REQ) == 0)
@@ -1260,11 +1325,11 @@ internal class Nct677X : ISuperIO
         Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
 
         // Wait until EC enters config phase and unlocks registers
-        deadline = DateTime.UtcNow.AddMilliseconds(1000);
-        while (DateTime.UtcNow < deadline)
+        sw.Restart();
+        while (sw.Elapsed < TimeSpan.FromSeconds(1))
         {
-            engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
-            if ((engsts & NCT6687DR_FAN_CFG_LOCK) == 0 && (engsts & NCT6687DR_FAN_CFG_PHASE) != 0)
+            engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+            if ((engineSts & NCT6687DR_FAN_CFG_LOCK) == 0 && (engineSts & NCT6687DR_FAN_CFG_PHASE) != 0)
                 return true;
 
             Thread.Sleep(1);
@@ -1277,12 +1342,12 @@ internal class Nct677X : ISuperIO
     /// Signal the EC that fan configuration is complete and wait for acknowledgment.
     /// Returns false if the EC set the INVALID bit (configuration rejected).
     /// </summary>
-    private bool FinishFanCfgUpdate(int index)
+    private bool CompleteFanConfigUpdate(int index)
     {
-        byte engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+        byte engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
 
         // Already not accessible
-        if ((engsts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engsts & NCT6687DR_FAN_CFG_PHASE) == 0)
+        if ((engineSts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engineSts & NCT6687DR_FAN_CFG_PHASE) == 0)
             return false;
 
         // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
@@ -1290,19 +1355,19 @@ internal class Nct677X : ISuperIO
         Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
 
         // Wait until EC checks the new configuration
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(1000);
-        while (DateTime.UtcNow < deadline)
+        Stopwatch sw = Stopwatch.StartNew();
+        while (sw.Elapsed < TimeSpan.FromSeconds(1))
         {
-            engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
-            if ((engsts & NCT6687DR_FAN_CFG_CHECK_DONE) != 0)
+            engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+            if ((engineSts & NCT6687DR_FAN_CFG_CHECK_DONE) != 0)
                 break;
 
             Thread.Sleep(1);
         }
 
         // Check if EC rejected the configuration (INVALID bit)
-        engsts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
-        return (engsts & NCT6687DR_FAN_CFG_INVALID) == 0;
+        engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+        return (engineSts & NCT6687DR_FAN_CFG_INVALID) == 0;
     }
 
     /// <summary>
@@ -1373,7 +1438,7 @@ internal class Nct677X : ISuperIO
                         break;
 
                     Set6687DRControl(index, _initialFanPwmCommand[index]);
-                    if (FinishFanCfgUpdate(index))
+                    if (CompleteFanConfigUpdate(index))
                         break;
                 }
             }
@@ -1396,6 +1461,10 @@ internal class Nct677X : ISuperIO
             _restoreDefaultFanControlRequired[index] = false;
         }
     }
+
+    #endregion
+
+    #region Helpers
 
     private void DisableIOSpaceLock()
     {
@@ -1429,6 +1498,10 @@ internal class Nct677X : ISuperIO
     {
         Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
     }
+
+    #endregion
+
+    #region Nested Types
 
     private readonly struct TemperatureSourceData(Enum source, ushort register, ushort halfRegister = 0, int halfBit = -1, ushort sourceRegister = 0, ushort? alternateRegister = null)
     {
@@ -1510,37 +1583,5 @@ internal class Nct677X : ISuperIO
         PECI_0 = 12
     }
 
-    // ReSharper disable InconsistentNaming
-    private const ushort ADDRESS_REGISTER_OFFSET = 0x05;
-    private const byte BANK_SELECT_REGISTER = 0x4E;
-    private const uint DATA_REGISTER_OFFSET = 0x06;
-
-    // NCT668X
-    private const uint EC_SPACE_PAGE_REGISTER_OFFSET = 0x04;
-    private const uint EC_SPACE_INDEX_REGISTER_OFFSET = 0x05;
-    private const uint EC_SPACE_DATA_REGISTER_OFFSET = 0x06;
-    private const byte EC_SPACE_PAGE_SELECT = 0xFF;
-
-    private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
-
-    private readonly ushort[] FAN_CONTROL_MODE_REG;
-    private readonly int[] FAN_CONTROL_MODE_BIT; // NCT6687DR only: maps array index → bit position in mode register
-    private readonly ushort[] FAN_PWM_COMMAND_REG;
-    private readonly ushort[] FAN_PWM_OUT_REG;
-    private readonly ushort[] FAN_PWM_REQUEST_REG;
-
-
-    // NCT6687DR EC engine status register and flags (based on Linux nct6687d driver)
-    private const ushort NCT6687DR_REG_FAN_ENGINE_STS = 0xCF8;
-    private const byte NCT6687DR_FAN_CFG_LOCK = 1 << 6;
-    private const byte NCT6687DR_FAN_CFG_PHASE = 1 << 3;
-    private const byte NCT6687DR_FAN_CFG_INVALID = 1 << 4;
-    private const byte NCT6687DR_FAN_CFG_CHECK_DONE = 1 << 5;
-    private const byte NCT6687DR_FAN_CFG_REQ = 0x80;
-    private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
-
-    private readonly ushort VENDOR_ID_HIGH_REGISTER;
-    private readonly ushort VENDOR_ID_LOW_REGISTER;
-
-    // ReSharper restore InconsistentNaming
+    #endregion
 }
