@@ -19,22 +19,61 @@ namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc;
 
 internal class Nct677X : ISuperIO
 {
+    // ReSharper disable InconsistentNaming
+    private const ushort ADDRESS_REGISTER_OFFSET = 0x05;
+    private const byte BANK_SELECT_REGISTER = 0x4E;
+    private const uint DATA_REGISTER_OFFSET = 0x06;
+
+    // NCT668X EC space
+    private const uint EC_SPACE_PAGE_REGISTER_OFFSET = 0x04;
+    private const uint EC_SPACE_INDEX_REGISTER_OFFSET = 0x05;
+    private const uint EC_SPACE_DATA_REGISTER_OFFSET = 0x06;
+    private const byte EC_SPACE_PAGE_SELECT = 0xFF;
+
+    private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
+
+    // NCT6687DR EC engine status register and flags (based on Linux nct6687d driver)
+    private const ushort NCT6687DR_REG_FAN_ENGINE_STS = 0xCF8;
+    private const byte NCT6687DR_FAN_CFG_LOCK = 1 << 6;
+    private const byte NCT6687DR_FAN_CFG_PHASE = 1 << 3;
+    private const byte NCT6687DR_FAN_CFG_INVALID = 1 << 4;
+    private const byte NCT6687DR_FAN_CFG_CHECK_DONE = 1 << 5;
+    private const byte NCT6687DR_FAN_CFG_REQ = 0x80;
+    private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
+    // ReSharper restore InconsistentNaming
+
+    // Chip identity
+    private readonly LpcPort _lpcPort;
+    private readonly ushort _port;
+    private readonly byte _revision;
+    private readonly bool _isNuvotonVendor;
+
+    // Fan registers (chip-specific, initialized in constructor)
+    // ReSharper disable InconsistentNaming
+    private readonly ushort[] FAN_CONTROL_MODE_REG;
+    private readonly int[] FAN_CONTROL_MODE_BIT; // NCT6687DR only: maps array index → bit position in mode register
+    private readonly ushort[] FAN_PWM_COMMAND_REG;
+    private readonly ushort[] FAN_PWM_OUT_REG;
+    private readonly ushort[] FAN_PWM_REQUEST_REG;
+    private readonly ushort VENDOR_ID_HIGH_REGISTER;
+    private readonly ushort VENDOR_ID_LOW_REGISTER;
+    // ReSharper restore InconsistentNaming
+
+    // Sensor registers
     private readonly ushort[] _fanCountRegister;
     private readonly ushort[] _fanRpmRegister;
-    private readonly byte[] _initialFanControlMode = new byte[7];
-    private readonly byte[] _initialFanPwmCommand = new byte[7];
-    private readonly bool _isNuvotonVendor;
-    private readonly LpcPort _lpcPort;
     private readonly int _maxFanCount;
     private readonly int _minFanCount;
     private readonly int _minFanRpm;
-    private readonly ushort _port;
-    private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
-    private readonly byte _revision;
     private readonly TemperatureSourceData[] _temperaturesSource;
     private readonly ushort _vBatMonitorControlRegister;
     private readonly ushort[] _voltageRegisters;
     private readonly ushort _voltageVBatRegister;
+
+    // Fan control state (save/restore)
+    private readonly byte[] _initialFanControlMode = new byte[7];
+    private readonly byte[] _initialFanPwmCommand = new byte[7];
+    private readonly bool[] _restoreDefaultFanControlRequired = new bool[7];
 
     public Nct677X(LpcPort lpcPort, Chip chip, byte revision, ushort port)
     {
@@ -67,9 +106,34 @@ internal class Nct677X : ISuperIO
             // Each index in the below arrays represents a fan header
             // ARRAY_KEY = new ushort[] { CPU FAN, PUMP, CHIPSET, EZ-CONNECT FAN, null, null, null, null, null, SYSFAN7, SYSFAN1, SYSFAN2, SYSFAN3, SYSFAN4, SYSFAN5, SYSFAN6 };
             FAN_PWM_OUT_REG = [0x160, 0x161, 0x162, 0x163, 0x164, 0x165, 0x166, 0x167, 0xFFF, 0xC93, 0xE05, 0xE04, 0xE03, 0xE02, 0xE01, 0xE00]; // Duty Cycle Sensors
-            FAN_PWM_COMMAND_REG = [0xA28, 0xA29, 0xA2A, 0xA2B, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xBE0, 0xC70, 0xC58, 0xC40, 0xC28, 0xC10, 0xBF8]; // Control Registers for CPU/Pump/EZ-Connect Fan, Initial Fan Curve Registers for System Fans
-            FAN_CONTROL_MODE_REG = [0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00];
+            // Direct PWM command registers ("pair 0" from extended unk_101E0 table in BIOS).
+            // CPU/Pump/Chipset/EZ-Connect: 0A:(28+ch).  SYSFAN7(ch9): 08:E9.  SYSFAN1-6(ch10-15): 02:(65..60).
+            // Setting the manual-mode bit in FAN_CONTROL_MODE_REG makes the EC use these for direct PWM,
+            // bypassing the SmartFAN curve engine and its inherent ~2%/sec smoothing.
+            FAN_PWM_COMMAND_REG = [0xA28, 0xA29, 0xA2A, 0xA2B, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0xFFF, 0x8E9, 0x265, 0x264, 0x263, 0x262, 0x261, 0x260];
+            // Manual-mode enable registers.  Ch 0-7 use 0A:00 (one bit each); ch 8-15 use 08:0F.
+            FAN_CONTROL_MODE_REG = [0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0xA00, 0x80F, 0x80F, 0x80F, 0x80F, 0x80F, 0x80F, 0x80F];
             FAN_PWM_REQUEST_REG = [0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01, 0xA01];
+
+            // Mapping from array index to bit position in the FAN_CONTROL_MODE_REG (0xA00) register.
+            // The EC firmware uses bits 0-7 for 8 fan channels; LHM's sparse array indices must map to the correct bit.
+            // Bit 0: CPU Fan, Bit 1: Pump, Bit 2: Chipset/SYSFAN1, Bit 3: EZ-Connect/SYSFAN2, etc.
+            // Based on the Linux nct6687d driver's msi_alt1 config: index 0=CPU, 1=Pump, 2-7=System fans.
+            // -1 means no valid mapping (unused index slots).
+            FAN_CONTROL_MODE_BIT = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]; // Defaults
+            FAN_CONTROL_MODE_BIT[0] = 0;   // CPU Fan    → bit 0 of 0A:00
+            FAN_CONTROL_MODE_BIT[1] = 1;   // Pump       → bit 1 of 0A:00
+            FAN_CONTROL_MODE_BIT[2] = 2;   // Chipset    → bit 2 of 0A:00
+            FAN_CONTROL_MODE_BIT[3] = 3;   // EZ-Connect → bit 3 of 0A:00
+            // System fans: manual-mode bits in 08:0F (derived from BIOS unk_104C0 entry[1]).
+            // EC channel mapping: LHM idx 9=ch9, 10=ch15, 11=ch14, 12=ch13, 13=ch12, 14=ch11, 15=ch10.
+            FAN_CONTROL_MODE_BIT[9]  = 1;  // SYSFAN7 (ch 9)  → bit 1 of 08:0F
+            FAN_CONTROL_MODE_BIT[10] = 7;  // SYSFAN1 (ch 15) → bit 7 of 08:0F
+            FAN_CONTROL_MODE_BIT[11] = 6;  // SYSFAN2 (ch 14) → bit 6 of 08:0F
+            FAN_CONTROL_MODE_BIT[12] = 5;  // SYSFAN3 (ch 13) → bit 5 of 08:0F
+            FAN_CONTROL_MODE_BIT[13] = 4;  // SYSFAN4 (ch 12) → bit 4 of 08:0F
+            FAN_CONTROL_MODE_BIT[14] = 3;  // SYSFAN5 (ch 11) → bit 3 of 08:0F
+            FAN_CONTROL_MODE_BIT[15] = 2;  // SYSFAN6 (ch 10) → bit 2 of 08:0F
         }
         else
         {
@@ -608,8 +672,35 @@ internal class Nct677X : ISuperIO
                 // set output value
                 WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
             }
+            else if (Chip is Chip.NCT6687DR)
+            {
+                // NCT6687DR (MSI AM5/LGA1851): Direct PWM mode for ALL fans.
+                // Set the manual-mode bit to bypass the SmartFAN curve engine entirely.
+                // CPU/Pump/Chipset/EZ-Connect: bit in 0xA00.  System fans: bit in 0x80F.
+                // Derived from BIOS unk_104C0 table — entry[1] = set manual-mode bit.
+                int bitPos = FAN_CONTROL_MODE_BIT[index];
+                if (bitPos >= 0)
+                {
+                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                    byte bitMask = (byte)(0x01 << bitPos);
+                    mode = (byte)(mode | bitMask);
+                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                }
+
+                // Retry up to 3 times if EC rejects the configuration (INVALID bit)
+                for (int attempt = 0; attempt < 3; attempt++)
+                {
+                    if (!StartFanCfgUpdate(index))
+                        break;
+
+                    Set6687DRControl(index, value.Value);
+                    if (CompleteFanConfigUpdate(index))
+                        break;
+                }
+            }
             else
             {
+                // NCT6683D / NCT6686D / NCT6687D (non-DR)
                 // Manual mode, bit(1 : set, 0 : unset)
                 // bit 0 : CPU Fan
                 // bit 1 : PUMP Fan
@@ -623,27 +714,12 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                if (Chip is Chip.NCT6687DR) // For MSI AM5/LGA1851 NCT6687D functionality
-                {                    
-                    if (index < 8) // Control fans traditionally if part of the old control scheme. Applies to CPU/Pump/EZ-Conn
-                    {
-                        byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                        byte bitMask = (byte)(0x01 << index);
-                        mode = (byte)(mode | bitMask);
-                        WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-                    }
+                byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                byte bitMask = (byte)(0x01 << index);
+                mode = (byte)(mode | bitMask);
+                WriteByte(FAN_CONTROL_MODE_REG[index], mode);
 
-                    Set6687DRControl(index, value.Value);
-                }
-                else // All other Nuvoton SIO controllers and motherboards that use NCT6683/6686/6687
-                {
-                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    byte bitMask = (byte)(0x01 << index);
-                    mode = (byte)(mode | bitMask);
-                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-
-                    WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
-                }
+                WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
 
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
                 Thread.Sleep(50);
@@ -1113,11 +1189,11 @@ internal class Nct677X : ISuperIO
         //timeout: after 500ms, abort and force access
         byte access;
 
-        DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+        Stopwatch timeout = Stopwatch.StartNew();
         while (true)
         {
             access = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
-            if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
+            if (access == EC_SPACE_PAGE_SELECT || timeout.Elapsed >= TimeSpan.FromMilliseconds(500))
                 break;
 
             Thread.Sleep(1);
@@ -1159,11 +1235,11 @@ internal class Nct677X : ISuperIO
             //timeout: after 500ms, abort and force access
             byte access;
 
-            DateTime timeout = DateTime.UtcNow.AddMilliseconds(500);
+            Stopwatch timeout = Stopwatch.StartNew();
             while (true)
             {
                 access = _lpcPort.ReadIoPort((ushort)(_port + EC_SPACE_PAGE_REGISTER_OFFSET));
-                if (access == EC_SPACE_PAGE_SELECT || DateTime.UtcNow > timeout)
+                if (access == EC_SPACE_PAGE_SELECT || timeout.Elapsed >= TimeSpan.FromMilliseconds(500))
                     break;
 
                 Thread.Sleep(1);
@@ -1190,35 +1266,90 @@ internal class Nct677X : ISuperIO
                ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
-    private void Set6687DRControl(int index, byte? value)
+    /// <summary>
+    /// Request the EC to enter fan configuration phase and wait until registers are unlocked.
+    /// Based on the Linux nct6687d driver's start_fan_cfg_update() function.
+    /// </summary>
+    /// <returns>true if the EC entered config phase successfully; false on timeout.</returns>
+    private bool StartFanCfgUpdate(int index)
     {
-        if (index > 8) // Brute Force System Fan Control
-        {
-            int initFanCurveReg = FAN_PWM_COMMAND_REG[index];       // Initial Register Address for the Fan Curve
-            int targetFanCurveAddr = initFanCurveReg;               // Address of the Current Fan Curve Register we're writing to
-            ushort targetFanCurveReg;                               // Integer value of the current fan curve register address, not the value within
-            byte currentSpeed = ReadByte(FAN_PWM_OUT_REG[index]);   // Current Speed of the target fan
+        byte engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
 
-            // If current fan duty cycle matches requested duty cycle, skip re-writing the fan curve
-            if (currentSpeed == value.Value)
-            {
-                return;
-            }
-            else
-            {
-                // Write 7-point fan curve
-                for (int count = 0; count < 14; count += 2)
-                {
-                    targetFanCurveAddr = initFanCurveReg+count;
-                    targetFanCurveReg = Convert.ToUInt16(targetFanCurveAddr);
-                    WriteByte(targetFanCurveReg, value.Value);
-                }
-            }
-        }
-        else // Control CPU, Pump, Chipset, or EZ-Connect Fan normally
+        // Already accessible
+        if ((engineSts & NCT6687DR_FAN_CFG_LOCK) == 0 && (engineSts & NCT6687DR_FAN_CFG_PHASE) != 0)
+            return true;
+
+        // Wait until any existing config phase is done and request flag is clear
+        Stopwatch sw = Stopwatch.StartNew();
+        while (sw.Elapsed < TimeSpan.FromSeconds(1))
         {
-            WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
+            engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+            if ((engineSts & NCT6687DR_FAN_CFG_PHASE) == 0)
+            {
+                byte req = ReadByte(FAN_PWM_REQUEST_REG[index]);
+                if ((req & NCT6687DR_FAN_CFG_REQ) == 0)
+                    break;
+            }
+
+            Thread.Sleep(1);
         }
+
+        // Send config request
+        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ);
+        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
+
+        // Wait until EC enters config phase and unlocks registers
+        sw.Restart();
+        while (sw.Elapsed < TimeSpan.FromSeconds(1))
+        {
+            engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+            if ((engineSts & NCT6687DR_FAN_CFG_LOCK) == 0 && (engineSts & NCT6687DR_FAN_CFG_PHASE) != 0)
+                return true;
+
+            Thread.Sleep(1);
+        }
+
+        return false; // Timeout: EC did not enter config phase
+    }
+
+    /// <summary>
+    /// Signal the EC that fan configuration is complete and wait for acknowledgment.
+    /// Returns false if the EC set the INVALID bit (configuration rejected).
+    /// </summary>
+    private bool CompleteFanConfigUpdate(int index)
+    {
+        byte engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+
+        // Already not accessible
+        if ((engineSts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engineSts & NCT6687DR_FAN_CFG_PHASE) == 0)
+            return false;
+
+        // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
+        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
+        Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
+
+        // Wait until EC checks the new configuration
+        Stopwatch sw = Stopwatch.StartNew();
+        while (sw.Elapsed < TimeSpan.FromSeconds(1))
+        {
+            engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+            if ((engineSts & NCT6687DR_FAN_CFG_CHECK_DONE) != 0)
+                break;
+
+            Thread.Sleep(1);
+        }
+
+        // Check if EC rejected the configuration (INVALID bit)
+        engineSts = ReadByte(NCT6687DR_REG_FAN_ENGINE_STS);
+        return (engineSts & NCT6687DR_FAN_CFG_INVALID) == 0;
+    }
+
+    /// <summary>
+    /// Write fan control value for NCT6687DR.  All fans use direct PWM command registers.
+    /// </summary>
+    private void Set6687DRControl(int index, byte value)
+    {
+        WriteByte(FAN_PWM_COMMAND_REG[index], value);
     }
 
     private void SaveDefaultFanControl(int index)
@@ -1228,6 +1359,18 @@ internal class Nct677X : ISuperIO
             if (Chip is not Chip.NCT6683D and not Chip.NCT6686D and not Chip.NCT6687D and not Chip.NCT6687DR)
             {
                 _initialFanControlMode[index] = ReadByte(FAN_CONTROL_MODE_REG[index]);
+            }
+            else if (Chip is Chip.NCT6687DR)
+            {
+                // Use the correct bit position mapping for NCT6687DR
+                int bitPos = FAN_CONTROL_MODE_BIT[index];
+                if (bitPos >= 0)
+                {
+                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                    byte bitMask = (byte)(0x01 << bitPos);
+                    _initialFanControlMode[index] = (byte)(mode & bitMask);
+                }
+
             }
             else
             {
@@ -1250,8 +1393,32 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_CONTROL_MODE_REG[index], _initialFanControlMode[index]);
                 WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
             }
+            else if (Chip is Chip.NCT6687DR)
+            {
+                // NCT6687DR: Restore original manual-mode bit for all fans.
+                // Clear the bit we set in SetControl to return to SmartFAN curve mode.
+                int bitPos = FAN_CONTROL_MODE_BIT[index];
+                if (bitPos >= 0)
+                {
+                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
+                    byte bitMask = (byte)(0x01 << bitPos);
+                    mode = (byte)(mode & ~bitMask);
+                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                }
+
+                for (int attempt = 0; attempt < 3; attempt++)
+                {
+                    if (!StartFanCfgUpdate(index))
+                        break;
+
+                    Set6687DRControl(index, _initialFanPwmCommand[index]);
+                    if (CompleteFanConfigUpdate(index))
+                        break;
+                }
+            }
             else
             {
+                // NCT6683D / NCT6686D / NCT6687D (non-DR)
                 byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
                 mode = (byte)(mode & ~_initialFanControlMode[index]);
                 WriteByte(FAN_CONTROL_MODE_REG[index], mode);
@@ -1259,16 +1426,7 @@ internal class Nct677X : ISuperIO
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
                 Thread.Sleep(50);
 
-                if (Chip is Chip.NCT6687DR)
-                {
-                    // for MSI AM5/LGA1851 boards using NCT6687D
-                    Set6687DRControl(index, _initialFanPwmCommand[index]);
-                }
-                else
-                {
-                    // All other motherboards that use NCT6683/6686/6687
-                    WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
-                }
+                WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
 
                 WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
                 Thread.Sleep(50);
@@ -1390,27 +1548,4 @@ internal class Nct677X : ISuperIO
         SYSTIN3 = 6,
         PECI_0 = 12
     }
-
-    // ReSharper disable InconsistentNaming
-    private const ushort ADDRESS_REGISTER_OFFSET = 0x05;
-    private const byte BANK_SELECT_REGISTER = 0x4E;
-    private const uint DATA_REGISTER_OFFSET = 0x06;
-
-    // NCT668X
-    private const uint EC_SPACE_PAGE_REGISTER_OFFSET = 0x04;
-    private const uint EC_SPACE_INDEX_REGISTER_OFFSET = 0x05;
-    private const uint EC_SPACE_DATA_REGISTER_OFFSET = 0x06;
-    private const byte EC_SPACE_PAGE_SELECT = 0xFF;
-
-    private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
-
-    private readonly ushort[] FAN_CONTROL_MODE_REG;
-    private readonly ushort[] FAN_PWM_COMMAND_REG;
-    private readonly ushort[] FAN_PWM_OUT_REG;
-    private readonly ushort[] FAN_PWM_REQUEST_REG;
-
-    private readonly ushort VENDOR_ID_HIGH_REGISTER;
-    private readonly ushort VENDOR_ID_LOW_REGISTER;
-
-    // ReSharper restore InconsistentNaming
 }
