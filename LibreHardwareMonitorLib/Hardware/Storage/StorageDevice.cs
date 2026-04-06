@@ -323,7 +323,7 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         DISK_PERFORMANCE diskPerformance = new();
 
-        using var handle = PInvoke.CreateFile(_storage.DevicePath ?? _storage.AlternateDevicePath,
+        using var handle = PInvoke.CreateFile(_storage.DevicePath,
                                               (uint)FileAccess.ReadWrite,
                                               FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
                                               null,
