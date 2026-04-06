@@ -48,11 +48,6 @@ internal class StorageGroup : IGroup, IHardwareChanged
 
     private void OnStoragesChanged(object sender, StorageDevicesChangedEventArgs e)
     {
-        if (!e.HasChanges)
-        {
-            return;
-        }
-
         foreach (var added in e.Added)
         {
             var storageDevice = new StorageDevice(added, GetID(added), _settings);
