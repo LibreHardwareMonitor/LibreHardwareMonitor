@@ -1,6 +1,7 @@
 ﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) Florian K. (Blacktempel)
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System.Collections.Generic;
@@ -62,7 +63,7 @@ internal class StorageGroup : IGroup, IHardwareChanged
 
         foreach (var removed in e.Removed)
         {
-            var storageDevice = _hardware.Find(sd => sd.UnderlyingImplementation == removed);
+            var storageDevice = _hardware.Find(sd => sd.Storage == removed);
             if (storageDevice != null)
             {
                 _hardware.Remove(storageDevice);

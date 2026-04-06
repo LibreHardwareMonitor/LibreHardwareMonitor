@@ -1,6 +1,7 @@
 ﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) Florian K. (Blacktempel)
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -60,7 +61,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override HardwareType HardwareType => HardwareType.Storage;
 
-    public StorageDeviceDIT UnderlyingImplementation => _storage;
+    public StorageDeviceDIT Storage => _storage;
 
     public IReadOnlyList<SmartAttribute> Attributes => _attributes;
 
@@ -94,7 +95,7 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         // Try waking up storage device if it is asleep and ForceWakeup is enabled
-        if (ForceWakeup && _storage.IsDevicePowerOn.HasValue && _storage.IsDevicePowerOn.Value == false)
+        if (ForceWakeup && !_storage.IsDevicePowerOn.GetValueOrDefault(true))
         {
             StorageDIT.TryWakeUp(_storage);
         }
