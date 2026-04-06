@@ -1,8 +1,9 @@
 ﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Copyright (C) Florian K. (Blacktempel)
 // All Rights Reserved.
+
+using DiskInfoToolkit;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -26,7 +27,7 @@ public sealed class SmartAttribute
     /// no sensor is created.
     /// </param>
     /// <param name="defaultHiddenSensor">True to hide the sensor initially.</param>
-    public SmartAttribute(DiskInfoToolkit.SmartAttribute smartAttribute, SensorType? sensorType, int sensorChannel, string sensorName, bool defaultHiddenSensor = false)
+    public SmartAttribute(SmartAttributeEntry smartAttribute, SensorType? sensorType, int sensorChannel, string sensorName, bool defaultHiddenSensor = false)
     {
         Attribute = smartAttribute;
         SensorType = sensorType;
@@ -35,16 +36,16 @@ public sealed class SmartAttribute
         IsHiddenByDefault = defaultHiddenSensor;
     }
 
-    public DiskInfoToolkit.SmartAttribute Attribute { get; internal set; }
+    public SmartAttributeEntry Attribute { get; internal set; }
 
-    public byte Id => Attribute.Info.ID;
-    public string Name => Attribute.Info.Name;
+    public byte Id => Attribute.ID;
+    public string Name => Attribute.Name;
 
     public SensorType? SensorType { get; }
     public int SensorChannel { get; }
     public string SensorName { get; }
     public bool IsHiddenByDefault { get; }
 
-    public float Value => Attribute.Attribute.RawValueULong;
-    public byte Threshold => Attribute.Attribute.Threshold;
+    public float Value => Attribute.RawValue;
+    public byte Threshold => Attribute.ThresholdValue;
 }
