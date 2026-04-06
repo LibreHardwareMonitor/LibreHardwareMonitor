@@ -4,9 +4,11 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using StorageDeviceDIT = DiskInfoToolkit.StorageDevice;
+
 namespace LibreHardwareMonitor.Hardware.Storage;
 
-internal delegate float GetStorageDeviceSensorValue(DiskInfoToolkit.Storage storage);
+internal delegate float GetStorageDeviceSensorValue(StorageDeviceDIT storage);
 
 internal class StorageDeviceSensor : Sensor
 {
@@ -18,7 +20,7 @@ internal class StorageDeviceSensor : Sensor
         _getValue = getValue;
     }
 
-    public void Update(DiskInfoToolkit.Storage storage)
+    public void Update(StorageDeviceDIT storage)
     {
         var value = _getValue(storage);
 
