@@ -98,9 +98,3 @@ jobs:
           name: LibreHardwareMonitorLib-nupkg
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
-
-      - name: Restore AOT test project
-        run: dotnet restore AotTest\AotTest.csproj -r win-x64
-
-      - name: Publish AOT test (Native AOT)
-        run: dotnet publish AotTest\AotTest.csproj -c Release -r win-x64 --no-restore
