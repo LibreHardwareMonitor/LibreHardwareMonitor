@@ -194,12 +194,12 @@ internal static class AtiAdlxx
 
     public static ADLStatus ADL2_Adapter_AdapterInfo_Get(ref IntPtr context, ADLAdapterInfo[] info)
     {
-        int elementSize = Marshal.SizeOf(typeof(ADLAdapterInfo));
+        int elementSize = Marshal.SizeOf<ADLAdapterInfo>();
         int size = info.Length * elementSize;
         IntPtr ptr = Marshal.AllocHGlobal(size);
         ADLStatus result = ADL2_Adapter_AdapterInfo_Get(context, ptr, size);
         for (int i = 0; i < info.Length; i++)
-            info[i] = (ADLAdapterInfo)Marshal.PtrToStructure((IntPtr)((long)ptr + (i * elementSize)), typeof(ADLAdapterInfo));
+            info[i] = Marshal.PtrToStructure<ADLAdapterInfo>((IntPtr)((long)ptr + (i * elementSize)));
 
         Marshal.FreeHGlobal(ptr);
 

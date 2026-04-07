@@ -103,5 +103,13 @@ Some sensors require administrator privileges to access the data. Restart your I
 We're **not affiliated** with `librehardwaremonitor.com`.<br>
 For your safety, please avoid using that site.
 
+## Acknowledgements
+
+Many thanks to all contributors listed below, and to JetBrains for providing tooling.
+
+<a href="https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=LibreHardwareMonitor/LibreHardwareMonitor" />
+</a>
+
 ## License
 LibreHardwareMonitor is free and open source software licensed under MPL 2.0. Some parts of LibreHardwareMonitor are licensed under different terms, see [THIRD-PARTY-LICENSES](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/THIRD-PARTY-NOTICES.txt).

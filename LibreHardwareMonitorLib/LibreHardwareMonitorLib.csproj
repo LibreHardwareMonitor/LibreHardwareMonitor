@@ -24,6 +24,17 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
+  <!-- AOT/Trimming compatibility for modern .NET -->
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net472' AND '$(TargetFramework)' != 'netstandard2.0'">
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <!-- Suppress known AOT warnings from System.Management WMI usage and OpCode dynamic code -->
+    <NoWarn>$(NoWarn);IL2026;IL3050;IL2075;IL2070</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(BuildOnlyRefs)'=='true'">
     <Platform>AnyCPU</Platform>
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
@@ -72,7 +83,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiskInfoToolkit" Version="1.2.1" />
+    <PackageReference Include="DiskInfoToolkit" Version="2.0.0" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.269">
       <PrivateAssets>all</PrivateAssets>

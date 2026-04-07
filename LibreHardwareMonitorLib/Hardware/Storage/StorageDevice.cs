@@ -13,11 +13,13 @@ using System.Linq;
 using System.Text;
 using BlackSharp.Core.Converters;
 using BlackSharp.Core.Converters.Enums;
-using DiskInfoToolkit.Interop.Enums;
+using DiskInfoToolkit.Smart;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
+using StorageDeviceDIT = DiskInfoToolkit.StorageDevice;
+using StorageDIT = DiskInfoToolkit.Storage;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -26,7 +28,9 @@ public sealed class StorageDevice : Hardware, ISmart
     private readonly PerformanceValue _perfRead = new();
     private readonly PerformanceValue _perfTotal = new();
     private readonly PerformanceValue _perfWrite = new();
-    private readonly DiskInfoToolkit.Storage _storage;
+    private readonly StorageDeviceDIT _storage;
+
+    private bool _initialized;
 
     private long _lastReadCount;
     private long _lastTime;
@@ -45,8 +49,8 @@ public sealed class StorageDevice : Hardware, ISmart
     private Sensor _usageSensor;
     private Sensor _freeSpaceSensor;
 
-    public StorageDevice(DiskInfoToolkit.Storage storage, string id, ISettings settings)
-        : base(storage.Model, new Identifier(id, storage.DriveNumber.ToString(CultureInfo.InvariantCulture)), settings)
+    public StorageDevice(StorageDeviceDIT storage, string id, ISettings settings)
+        : base(storage.ProductName, new Identifier(id, storage.StorageDeviceNumber.GetValueOrDefault().ToString(CultureInfo.InvariantCulture)), settings)
     {
         _storage = storage;
 
@@ -57,16 +61,15 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override HardwareType HardwareType => HardwareType.Storage;
 
-    public DiskInfoToolkit.Storage Storage => _storage;
+    public StorageDeviceDIT Storage => _storage;
 
     public IReadOnlyList<SmartAttribute> Attributes => _attributes;
 
-    ///<inheritdoc cref="DiskInfoToolkit.Storage.ForceWakeup"/>
-    public bool ForceWakeup
-    {
-        get { return _storage.ForceWakeup; }
-        set { _storage.ForceWakeup = value; }
-    }
+    /// <summary>
+    /// Forces disk to wake up, if disk is asleep.
+    /// </summary>
+    /// <remarks>See <see cref="StorageDIT.TryWakeUp"/> for more information.</remarks>
+    public bool ForceWakeup { get; set; }
 
     public static TimeSpan ThrottleInterval { get; set; }
 
@@ -77,18 +80,37 @@ public sealed class StorageDevice : Hardware, ISmart
             return;
         }
 
+        // If storage device has no changes, skip update
+        if (!StorageDIT.Refresh(_storage))
+        {
+            // If not initialized, we need to initialize sensors with initial values, even if there are no changes
+            if (!_initialized)
+            {
+                _initialized = true;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // Try waking up storage device if it is asleep and ForceWakeup is enabled
+        if (ForceWakeup && !_storage.IsDevicePowerOn.GetValueOrDefault(true))
+        {
+            StorageDIT.TryWakeUp(_storage);
+        }
+
         _lastUpdate = DateTime.UtcNow;
 
         ToggleSpaceSensors();
         UpdatePerformanceSensors();
-        _storage.Update();
         UpdateSpaceSensors();
 
         // Update attributes
-        foreach (var attribute in _storage.Smart.SmartAttributes)
+        foreach (var attribute in _storage.SmartAttributes)
         {
             // Try to find attribute
-            var found = _attributes.Find(sa => sa.Id == attribute.Info.ID);
+            var found = _attributes.Find(sa => sa.Id == attribute.ID);
 
             // Found attribute, update it
             if (found != null)
@@ -106,15 +128,34 @@ public sealed class StorageDevice : Hardware, ISmart
         var r = new StringBuilder();
         r.AppendLine("Storage");
         r.AppendLine();
-        r.AppendLine($"Drive Name: {_storage.Model}");
-        r.AppendLine($"Firmware Version and Revision: {_storage.Firmware}; {_storage.FirmwareRev}");
-        r.AppendLine();
-        r.AppendLine("Smart Attributes:");
-        r.AppendLine("ID, Description, Value, Threshold");
+        r.AppendLine($"Drive Name: {_storage.ProductName}");
+
+        if (_storage.HealthStatus.HasValue)
+        {
+            r.AppendLine($"Health Status: {_storage.HealthStatus}");
+        }
+
+        if (_storage.HealthStatusReason != null)
+        {
+            r.AppendLine($"Health Status Reason:");
+            r.AppendLine(_storage.HealthStatusReason);
+        }
+
+        r.AppendLine($"Revision: {_storage.ProductRevision}");
+        r.AppendLine($"Bus type: {_storage.BusType}");
+
+        r.AppendLine($"Controller information:");
+        r.AppendLine($"  Service: {_storage.Controller.Service}"); // Important
+        r.AppendLine($"  Vendor: 0x{_storage.Controller.VendorID:X4} ('{_storage.Controller.VendorName}')");
+        r.AppendLine($"  Device: 0x{_storage.Controller.DeviceID:X4} ('{_storage.Controller.DeviceName}')");
+        r.AppendLine($"  Family: {_storage.Controller.Family}");
+
+        r.AppendLine($"Smart Attributes (Profile: '{_storage.SmartAttributeProfile}'):");
+        r.AppendLine("  ID, Description, Value, Threshold");
 
         foreach (var attribute in _attributes)
         {
-            r.AppendLine($"{attribute.Id,3}, {attribute.Name,60}, {attribute.Value,18}, {attribute.Threshold,3}");
+            r.AppendLine($"  {attribute.Id,3}, {attribute.Name,60}, {attribute.Value,18}, {attribute.Threshold,3}");
         }
 
         r.AppendLine();
@@ -125,28 +166,30 @@ public sealed class StorageDevice : Hardware, ISmart
 
             foreach (var partition in _storage.Partitions)
             {
-                r.AppendLine($"Partition #{partition.PartitionNumber}");
+                r.AppendLine($"  Partition #{partition.PartitionNumber}");
 
                 if (partition.DriveLetter != null)
                 {
-                    r.AppendLine($"Drive Letter: {partition.DriveLetter}");
+                    r.AppendLine($"  Drive Letter: {partition.DriveLetter}");
                 }
 
-                if (partition.AvailableFreeSpace != null)
+                if (partition.AvailableFreeSpaceBytes != null)
                 {
-                    r.AppendLine($"Available Free Space: {partition.AvailableFreeSpace}");
+                    r.AppendLine($"  Available Free Space: {partition.AvailableFreeSpaceBytes}");
                 }
+
+                r.AppendLine($"  Contains other OS: {partition.IsOtherOperatingSystemPartition}");
             }
 
             r.AppendLine();
 
-            if (_storage.TotalFreeSize != null)
+            if (_storage.TotalPartitionFreeSpaceBytes != null)
             {
-                r.AppendLine($"Total Free Size: {_storage.TotalFreeSize}");
+                r.AppendLine($"Total Free Size: {_storage.TotalPartitionFreeSpaceBytes}");
             }
         }
 
-        r.AppendLine($"Total Size: {_storage.TotalSize}");
+        r.AppendLine($"Total Size: {_storage.DiskSizeBytes}");
 
         return r.ToString();
     }
@@ -161,52 +204,62 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         _attributes.Clear();
 
-        var attributes = SmartAttributeTranslator.GetAttributesFor(_storage);
+        var attributes = _storage.SmartAttributes.Select(a => new SmartAttribute(a, null, 0, null));
 
         _attributes.AddRange(attributes.Where(a => a != null));
     }
 
     private void CreateSensors()
     {
-        if (_storage.IsNVMe)
+        if (_storage.Temperature.HasValue)
         {
-            // Different name for NVMe
-            AddSensor("Composite Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
-
-            TryAddTemperatureSensor(1, false, 1, SmartAttributeType.TemperatureSensor1);
-            TryAddTemperatureSensor(2, false, 2, SmartAttributeType.TemperatureSensor2);
-            TryAddTemperatureSensor(3, false, 3, SmartAttributeType.TemperatureSensor3);
-            TryAddTemperatureSensor(4, false, 4, SmartAttributeType.TemperatureSensor4);
-            TryAddTemperatureSensor(5, false, 5, SmartAttributeType.TemperatureSensor5);
-            TryAddTemperatureSensor(6, false, 6, SmartAttributeType.TemperatureSensor6);
-            TryAddTemperatureSensor(7, false, 7, SmartAttributeType.TemperatureSensor7);
-            TryAddTemperatureSensor(8, false, 8, SmartAttributeType.TemperatureSensor8);
-
-            AddSensor("Warning Temperature", 10, false, SensorType.Temperature, s => s.Smart.TemperatureWarning.GetValueOrDefault());
-            AddSensor("Critical Temperature", 11, false, SensorType.Temperature, s => s.Smart.TemperatureCritical.GetValueOrDefault());
-        }
-        else
-        {
-            AddSensor("Temperature", 0, false, SensorType.Temperature, s => s.Smart.Temperature.GetValueOrDefault());
+            AddSensor("Temperature", 0, false, SensorType.Temperature, s => s.Temperature.GetValueOrDefault());
         }
 
-        if (_storage.Smart.Life.HasValue)
+        // NVMe specific temperature sensors, if available
+        TryAddTemperatureSensor(_storage, 1, false, 1, SmartTextKeys.TemperatureSensor1);
+        TryAddTemperatureSensor(_storage, 2, false, 2, SmartTextKeys.TemperatureSensor2);
+        TryAddTemperatureSensor(_storage, 3, false, 3, SmartTextKeys.TemperatureSensor3);
+        TryAddTemperatureSensor(_storage, 4, false, 4, SmartTextKeys.TemperatureSensor4);
+        TryAddTemperatureSensor(_storage, 5, false, 5, SmartTextKeys.TemperatureSensor5);
+        TryAddTemperatureSensor(_storage, 6, false, 6, SmartTextKeys.TemperatureSensor6);
+        TryAddTemperatureSensor(_storage, 7, false, 7, SmartTextKeys.TemperatureSensor7);
+        TryAddTemperatureSensor(_storage, 8, false, 8, SmartTextKeys.TemperatureSensor8);
+
+        if (_storage.TemperatureWarning.HasValue)
         {
-            AddSensor("Life", 20, false, SensorType.Level, s => s.Smart.Life.GetValueOrDefault());
+            AddSensor("Warning Temperature", 10, false, SensorType.Temperature, s => s.TemperatureWarning.GetValueOrDefault());
         }
 
-        if (_storage.Smart.HostReads.HasValue)
+        if (_storage.TemperatureCritical.HasValue)
         {
-            AddSensor("Data Read", 21, false, SensorType.Data, s => s.Smart.HostReads.GetValueOrDefault());
+            AddSensor("Critical Temperature", 11, false, SensorType.Temperature, s => s.TemperatureCritical.GetValueOrDefault());
         }
 
-        if (_storage.Smart.HostWrites.HasValue)
+        if (_storage.Health.HasValue)
         {
-            AddSensor("Data Written", 22, false, SensorType.Data, s => s.Smart.HostWrites.GetValueOrDefault());
+            AddSensor("Life", 20, false, SensorType.Level, s => s.Health.GetValueOrDefault());
         }
 
-        AddSensor("Power On Count", 23, false, SensorType.Factor, s => s.Smart.PowerOnCount);
-        AddSensor("Power On Hours", 24, false, SensorType.Factor, s => Math.Max(s.Smart.MeasuredPowerOnHours, s.Smart.DetectedPowerOnHours));
+        if (_storage.HostReads.HasValue)
+        {
+            AddSensor("Data Read", 21, false, SensorType.Data, s => s.HostReads.GetValueOrDefault());
+        }
+
+        if (_storage.HostWrites.HasValue)
+        {
+            AddSensor("Data Written", 22, false, SensorType.Data, s => s.HostWrites.GetValueOrDefault());
+        }
+
+        if (_storage.PowerOnCount.HasValue)
+        {
+            AddSensor("Power On Count", 23, false, SensorType.Factor, s => s.PowerOnCount.GetValueOrDefault());
+        }
+
+        if (_storage.PowerOnHours.HasValue)
+        {
+            AddSensor("Power On Hours", 24, false, SensorType.Factor, s => s.PowerOnHours.GetValueOrDefault());
+        }
 
         _usageSensor = new Sensor("Used Space", 30, SensorType.Load, this, _settings);
         _freeSpaceSensor = new Sensor("Free Space", 31, SensorType.Data, this, _settings);
@@ -214,7 +267,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
         var totalSpaceSensor = new Sensor("Total Space", 32, SensorType.Data, this, _settings)
         {
-            Value = (float)DataUnitConverter.ToGigaByte(_storage.TotalSize, DataUnit.Byte)
+            Value = (float)DataUnitConverter.ToGigaByte(_storage.DiskSizeBytes.GetValueOrDefault(), DataUnit.Byte)
         };
         ActivateSensor(totalSpaceSensor);
 
@@ -236,27 +289,23 @@ public sealed class StorageDevice : Hardware, ISmart
         AddSmartAttributeSensors();
     }
 
-    private void TryAddTemperatureSensor(int index, bool defaultHidden, int thermalSensorIndex, SmartAttributeType type)
+    private void TryAddTemperatureSensor(StorageDeviceDIT storage, int index, bool defaultHidden, int thermalSensorIndex, string smartTextKey)
     {
-        var attr = GetSmartAttribute(type);
-        if (attr != null && attr.Attribute.RawValueULong > 0)
+        var attr = storage.SmartAttributes.FirstOrDefault(a => a.TextKey == smartTextKey);
+
+        if (attr != null && attr.RawValue > 0)
         {
             AddSensor($"Temperature #{thermalSensorIndex}", index, defaultHidden, SensorType.Temperature, s =>
             {
-                var a = GetSmartAttribute(type);
+                var a = s.SmartAttributes.FirstOrDefault(a => a.TextKey == smartTextKey);
                 if (a != null)
                 {
-                    return TemperatureConverter.KelvinToCelsius(a.Attribute.RawValueULong);
+                    return TemperatureConverter.KelvinToCelsius(a.RawValue);
                 }
 
                 return 0;
             });
         }
-    }
-
-    private DiskInfoToolkit.SmartAttribute GetSmartAttribute(SmartAttributeType type)
-    {
-        return _storage.Smart.SmartAttributes.FirstOrDefault(sa => sa.Info.Type == type);
     }
 
     private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetStorageDeviceSensorValue getValue)
@@ -274,7 +323,7 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         DISK_PERFORMANCE diskPerformance = new();
 
-        using var handle = PInvoke.CreateFile(_storage.PhysicalPath,
+        using var handle = PInvoke.CreateFile(_storage.DevicePath,
                                               (uint)FileAccess.ReadWrite,
                                               FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
                                               null,
@@ -336,11 +385,11 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void UpdateSpaceSensors()
     {
-        if (_storage.TotalSize > 0)
+        if (_storage.DiskSizeBytes > 0)
         {
             // Set sensor value
-            _usageSensor.Value = 100.0f - (100.0f * _storage.TotalFreeSize / _storage.TotalSize);
-            _freeSpaceSensor.Value = (float)DataUnitConverter.ToGigaByte(_storage.TotalFreeSize.GetValueOrDefault(), DataUnit.Byte);
+            _usageSensor.Value = 100.0f - (100.0f * _storage.TotalPartitionFreeSpaceBytes / _storage.DiskSizeBytes);
+            _freeSpaceSensor.Value = (float)DataUnitConverter.ToGigaByte(_storage.TotalPartitionFreeSpaceBytes.GetValueOrDefault(), DataUnit.Byte);
         }
         else
         {

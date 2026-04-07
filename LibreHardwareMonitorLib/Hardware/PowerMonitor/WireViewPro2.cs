@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
@@ -821,7 +822,11 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
         return offset != size ? null : buffer;
     }
 
-    private T BytesToStructure<T>(byte[] bytes) where T : struct
+    private T BytesToStructure<
+#if NET
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+#endif
+        T>(byte[] bytes) where T : struct
     {
         var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 
