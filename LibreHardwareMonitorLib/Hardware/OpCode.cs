@@ -212,7 +212,7 @@ internal static class OpCode
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate ulong RdtscDelegate();
 
-#if NET5_0_OR_GREATER
+#if NET
     [RequiresUnreferencedCode("Dynamic code generation for OpCode delegates")]
 #endif
     public static unsafe void Open()

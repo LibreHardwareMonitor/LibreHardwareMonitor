@@ -926,7 +926,7 @@ internal sealed class AmdGpu : GenericGpu
                 }
 
                 foreach (AtiAdlxx.ADLPMLogSensors sensorType in
-#if NET5_0_OR_GREATER
+#if NET
                     Enum.GetValues<AtiAdlxx.ADLPMLogSensors>()
 #else
                     (AtiAdlxx.ADLPMLogSensors[])Enum.GetValues(typeof(AtiAdlxx.ADLPMLogSensors))

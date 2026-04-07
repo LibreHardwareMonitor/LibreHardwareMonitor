@@ -823,7 +823,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
     }
 
     private T BytesToStructure<
-#if NET5_0_OR_GREATER
+#if NET
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 #endif
         T>(byte[] bytes) where T : struct

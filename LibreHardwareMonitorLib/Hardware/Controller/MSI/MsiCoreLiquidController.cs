@@ -354,7 +354,7 @@ internal class MsiCoreLiquidController : Hardware
     }
 
     private static T BytesToStruct<
-#if NET5_0_OR_GREATER
+#if NET
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 #endif
         T>(byte[] data, int startIndex) where T : struct
