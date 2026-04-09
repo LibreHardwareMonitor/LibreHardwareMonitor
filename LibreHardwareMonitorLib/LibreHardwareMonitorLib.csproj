@@ -46,9 +46,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <Optimize>true</Optimize>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <OutputPath>..\bin\Release\$(Platform)\</OutputPath>
   </PropertyGroup>
 
