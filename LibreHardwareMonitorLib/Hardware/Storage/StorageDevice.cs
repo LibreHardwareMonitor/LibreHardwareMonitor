@@ -80,16 +80,18 @@ public sealed class StorageDevice : Hardware, ISmart
             return;
         }
 
-        // If storage device has no changes, skip update
-        if (!StorageDIT.Refresh(_storage))
+        // If storage device has no changes, still update performance sensors to avoid stale throughput data.
+        bool hasChanges = StorageDIT.Refresh(_storage);
+        if (!hasChanges)
         {
-            // If not initialized, we need to initialize sensors with initial values, even if there are no changes
             if (!_initialized)
             {
                 _initialized = true;
             }
             else
             {
+                _lastUpdate = DateTime.UtcNow;
+                UpdatePerformanceSensors();
                 return;
             }
         }
@@ -357,13 +359,16 @@ public sealed class StorageDevice : Hardware, ISmart
         long currentTime = Stopwatch.GetTimestamp();
         if (_lastTime != 0)
         {
-            double timeDeltaSeconds = TimeSpan.FromTicks(currentTime - _lastTime).TotalSeconds;
+            double timeDeltaSeconds = (double)(currentTime - _lastTime) / Stopwatch.Frequency;
 
-            double writeSpeed = writeDiff * (1 / timeDeltaSeconds);
-            _sensorDiskWriteRate.Value = (float)writeSpeed;
+            if (timeDeltaSeconds > 0)
+            {
+                double writeSpeed = writeDiff / timeDeltaSeconds;
+                _sensorDiskWriteRate.Value = (float)writeSpeed;
 
-            double readSpeed = readDiff * (1 / timeDeltaSeconds);
-            _sensorDiskReadRate.Value = (float)readSpeed;
+                double readSpeed = readDiff / timeDeltaSeconds;
+                _sensorDiskReadRate.Value = (float)readSpeed;
+            }
         }
 
         _lastTime = currentTime;
