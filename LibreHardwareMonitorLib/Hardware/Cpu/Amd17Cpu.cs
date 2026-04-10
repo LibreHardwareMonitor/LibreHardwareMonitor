@@ -271,8 +271,9 @@ internal sealed class Amd17Cpu : AmdCpu
                 }
 
                 // current temp Bit [31:21]
-                // If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
-                bool tempOffsetFlag = (temperature & F17H_TEMP_OFFSET_FLAG) != 0;
+                // Newer Zen parts can signal the 49 C adjustment through TJ_SEL[17:16] as well as RANGE_SEL[19].
+                bool tempOffsetFlag = (temperature & F17H_TEMP_RANGE_SEL_MASK) != 0
+                                      || (temperature & F17H_TEMP_TJ_SEL_MASK) == F17H_TEMP_TJ_SEL_MASK;
                 temperature = (temperature >> 21) * 125;
 
                 float offset = 0.0f;
@@ -815,7 +816,8 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint F17H_M01H_THM_TCON_CUR_TMP = 0x00059800;
     private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
     private const uint F17H_M61H_CCD1_TEMP = 0x00059b08;
-    private const uint F17H_TEMP_OFFSET_FLAG = 0x80000;
+    private const uint F17H_TEMP_RANGE_SEL_MASK = 0x80000;
+    private const uint F17H_TEMP_TJ_SEL_MASK = 0x30000;
     private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
     private const uint HWCR = 0xC0010015;
     private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
