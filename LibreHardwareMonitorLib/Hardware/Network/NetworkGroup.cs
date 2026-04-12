@@ -92,9 +92,16 @@ internal class NetworkGroup : IGroup, IHardwareChanged
             {
                 if (hardware.All(x => x.NetworkInterface.Id != networkInterface.Id))
                 {
-                    Network network = new(networkInterface, settings);
-                    hardware.Add(network);
-                    additions.Add(network);
+                    try
+                    {
+                        Network network = new(networkInterface, settings);
+                        hardware.Add(network);
+                        additions.Add(network);
+                    }
+                    catch (NetworkInformationException)
+                    {
+                        // Interface became unavailable between enumeration and construction; skip it.
+                    }
                 }
             }
 
