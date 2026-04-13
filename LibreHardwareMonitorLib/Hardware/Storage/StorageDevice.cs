@@ -219,14 +219,14 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         // NVMe specific temperature sensors, if available
-        TryAddTemperatureSensor(_storage, 1, false, 1, SmartTextKeys.TemperatureSensor1);
-        TryAddTemperatureSensor(_storage, 2, false, 2, SmartTextKeys.TemperatureSensor2);
-        TryAddTemperatureSensor(_storage, 3, false, 3, SmartTextKeys.TemperatureSensor3);
-        TryAddTemperatureSensor(_storage, 4, false, 4, SmartTextKeys.TemperatureSensor4);
-        TryAddTemperatureSensor(_storage, 5, false, 5, SmartTextKeys.TemperatureSensor5);
-        TryAddTemperatureSensor(_storage, 6, false, 6, SmartTextKeys.TemperatureSensor6);
-        TryAddTemperatureSensor(_storage, 7, false, 7, SmartTextKeys.TemperatureSensor7);
-        TryAddTemperatureSensor(_storage, 8, false, 8, SmartTextKeys.TemperatureSensor8);
+        TryAddTemperatureSensor(_storage, 1, false, 1, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor1));
+        TryAddTemperatureSensor(_storage, 2, false, 2, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor2));
+        TryAddTemperatureSensor(_storage, 3, false, 3, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor3));
+        TryAddTemperatureSensor(_storage, 4, false, 4, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor4));
+        TryAddTemperatureSensor(_storage, 5, false, 5, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor5));
+        TryAddTemperatureSensor(_storage, 6, false, 6, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor6));
+        TryAddTemperatureSensor(_storage, 7, false, 7, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor7));
+        TryAddTemperatureSensor(_storage, 8, false, 8, SmartTextKeys.GetAttributeNameKey(SmartTextKeys.TemperatureSensor8));
 
         if (_storage.TemperatureWarning.HasValue)
         {
