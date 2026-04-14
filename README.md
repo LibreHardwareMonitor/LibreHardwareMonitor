@@ -41,16 +41,17 @@ You can check if it works properly on your motherboard. For many manufacturers, 
 ```c#
 public class UpdateVisitor : IVisitor
 {
-    public void VisitComputer(IComputer computer)
-    {
-        computer.Traverse(this);
-    }
+    public void VisitComputer(IComputer computer) => computer.Traverse(this);
+
     public void VisitHardware(IHardware hardware)
     {
         hardware.Update();
-        foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
+        foreach (IHardware subHardware in hardware.SubHardware)
+            subHardware.Accept(this);
     }
+
     public void VisitSensor(ISensor sensor) { }
+
     public void VisitParameter(IParameter parameter) { }
 }
 
@@ -79,15 +80,11 @@ public void Monitor()
             Console.WriteLine("\tSubhardware: {0}", subhardware.Name);
             
             foreach (ISensor sensor in subhardware.Sensors)
-            {
                 Console.WriteLine("\t\tSensor: {0}, value: {1}", sensor.Name, sensor.Value);
-            }
         }
 
         foreach (ISensor sensor in hardware.Sensors)
-        {
             Console.WriteLine("\tSensor: {0}, value: {1}", sensor.Name, sensor.Value);
-        }
     }
     
     computer.Close();
