@@ -80,8 +80,23 @@ public sealed class StorageDevice : Hardware, ISmart
             return;
         }
 
-        // If storage device has no changes, still update performance sensors to avoid stale throughput data.
-        bool hasChanges = StorageDIT.Refresh(_storage);
+        bool isDevicePoweredOn = _storage.IsDevicePowerOn.GetValueOrDefault(true);
+
+        // Try waking up storage device if it is asleep and ForceWakeup is enabled
+        if (ForceWakeup && !isDevicePoweredOn)
+        {
+            StorageDIT.TryWakeUp(_storage);
+            isDevicePoweredOn = _storage.IsDevicePowerOn.GetValueOrDefault(true);
+        }
+
+        bool hasChanges = false;
+
+        //No updates for sleeping devices if we should not wake it up
+        if (isDevicePoweredOn)
+        {
+            hasChanges = StorageDIT.Refresh(_storage);
+        }
+
         if (!hasChanges)
         {
             if (!_initialized)
@@ -90,16 +105,11 @@ public sealed class StorageDevice : Hardware, ISmart
             }
             else
             {
-                _lastUpdate = DateTime.UtcNow;
+                // If storage device has no changes, still update performance sensors to avoid stale throughput data
                 UpdatePerformanceSensors();
+                _lastUpdate = DateTime.UtcNow;
                 return;
             }
-        }
-
-        // Try waking up storage device if it is asleep and ForceWakeup is enabled
-        if (ForceWakeup && !_storage.IsDevicePowerOn.GetValueOrDefault(true))
-        {
-            StorageDIT.TryWakeUp(_storage);
         }
 
         _lastUpdate = DateTime.UtcNow;
