@@ -302,6 +302,9 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
+        // GPU Memory load: created after NVAPI utilization loads so it appears with other GPU metrics (before power/D3D loads).
+        _memoryLoad = new Sensor("GPU Memory", _nextLoadIndex++, SensorType.Load, this, settings);
+
         // Power.
         NvApi.NvPowerTopology powerTopology = GetPowerTopology(out NvApi.NvStatus powerStatus);
         if (powerStatus == NvApi.NvStatus.OK && powerTopology.Count > 0)
@@ -451,7 +454,6 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
         _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
-        _memoryLoad = new Sensor("GPU Memory", _nextLoadIndex++, SensorType.Load, this, settings);
 
         // Pin power sensors for NVIDIA RTX Astral series from ASUS
         if (NvApi.NvAPI_I2CReadEx != null && NvApi.NvAPI_GPU_GetPCIIdentifiers != null)
