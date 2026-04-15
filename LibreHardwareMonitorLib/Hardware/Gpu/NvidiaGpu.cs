@@ -42,7 +42,6 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
-    private int _nextLoadIndex; // next Load sensor index during construction
     private readonly Sensor _powerUsage;
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _temperatures;
@@ -247,6 +246,8 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
+        int nextLoadIndex = 0;
+
         // Load usages.
         NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
         if (status == NvApi.NvStatus.OK)
@@ -261,7 +262,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     string name = GetUtilizationDomainName(utilizationDomain);
 
                     if (name != null)
-                        loads.Add(new Sensor(name, _nextLoadIndex++, SensorType.Load, this, settings));
+                        loads.Add(new Sensor(name, nextLoadIndex++, SensorType.Load, this, settings));
                 }
             }
 
@@ -288,7 +289,7 @@ internal sealed class NvidiaGpu : GenericGpu
                         string name = GetUtilizationDomainName(utilizationDomain);
 
                         if (name != null)
-                            loads.Add(new Sensor(name, _nextLoadIndex++, SensorType.Load, this, settings));
+                            loads.Add(new Sensor(name, nextLoadIndex++, SensorType.Load, this, settings));
                     }
                 }
 
@@ -303,7 +304,7 @@ internal sealed class NvidiaGpu : GenericGpu
         }
 
         // GPU Memory load: created after NVAPI utilization loads so it appears with other GPU metrics (before power/D3D loads).
-        _memoryLoad = new Sensor("GPU Memory", _nextLoadIndex++, SensorType.Load, this, settings);
+        _memoryLoad = new Sensor("GPU Memory", nextLoadIndex++, SensorType.Load, this, settings);
 
         // Power.
         NvApi.NvPowerTopology powerTopology = GetPowerTopology(out NvApi.NvStatus powerStatus);
@@ -322,7 +323,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 if (name != null)
                 {
-                    _powers[i] = new Sensor(name, _nextLoadIndex++, SensorType.Load, this, settings);
+                    _powers[i] = new Sensor(name, nextLoadIndex++, SensorType.Load, this, settings);
                     ActivateSensor(_powers[i]);
                 }
             }
@@ -360,7 +361,7 @@ internal sealed class NvidiaGpu : GenericGpu
                         string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
                         if (deviceIds != null)
                         {
-                            int d3dLoadStartIndex = _nextLoadIndex;
+                            int d3dLoadStartIndex = nextLoadIndex;
                             foreach (string deviceId in deviceIds)
                             {
                                 if (deviceId.IndexOf("VEN_" + pci.pciVendorId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
@@ -441,7 +442,7 @@ internal sealed class NvidiaGpu : GenericGpu
                                             _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                                         }
 
-                                        _nextLoadIndex = nextD3dLoadIndex;
+                                        nextLoadIndex = nextD3dLoadIndex;
                                     }
                                 }
                             }
