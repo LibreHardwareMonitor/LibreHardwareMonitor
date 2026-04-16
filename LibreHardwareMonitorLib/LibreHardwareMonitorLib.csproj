@@ -83,7 +83,7 @@
   <ItemGroup>
     <PackageReference Include="DiskInfoToolkit" Version="2.0.2" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.269">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
