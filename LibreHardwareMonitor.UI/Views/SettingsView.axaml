@@ -1,0 +1,471 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LibreHardwareMonitor.UI.ViewModels"
+             x:Class="LibreHardwareMonitor.UI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <DockPanel>
+        <StackPanel Spacing="16" Margin="24">
+            <TextBlock Text="Settings" Classes="section-header" FontSize="22" />
+
+            <!-- Update Interval -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x23F1;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentBlueBrush}" />
+                        <TextBlock Text="Update Interval" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="How often sensor values are refreshed. Lower values increase CPU usage."
+                               FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" Margin="0,-4,0,0" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Slider Minimum="0.25" Maximum="10" Value="{Binding UpdateInterval}"
+                                TickFrequency="0.25" IsSnapToTickEnabled="True" />
+                        <Border Grid.Column="1" Background="{StaticResource BgSecondaryBrush}"
+                                CornerRadius="6" Padding="12,6" Margin="12,0,0,0">
+                            <TextBlock FontSize="14" FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       HorizontalAlignment="Center" MinWidth="50" TextAlignment="Center">
+                                <Run Text="{Binding UpdateInterval, StringFormat='{}{0:F2}'}" />
+                                <Run Text="s" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </TextBlock>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- System -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x2318;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentPurpleBrush}" />
+                        <TextBlock Text="System" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
+                        <CheckBox IsChecked="{Binding UseFahrenheit}" Content="Use Fahrenheit (&#x00B0;F)"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Column="1" IsChecked="{Binding MinimizeToTray}" Content="Minimize to tray on close"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="1" IsChecked="{Binding IsAutoStartEnabled}" Content="Start with Windows"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Hardware toggles -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x2699;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentGreenBrush}" />
+                        <TextBlock Text="Hardware Monitoring" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Enable or disable hardware categories. Changes require reload."
+                               FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,4" />
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,4,0,0">
+                        <CheckBox IsChecked="{Binding IsCpuEnabled}" Content="CPU"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Column="1" IsChecked="{Binding IsGpuEnabled}" Content="GPU"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="1" IsChecked="{Binding IsMemoryEnabled}" Content="Memory"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding IsMotherboardEnabled}" Content="Motherboard"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="2" IsChecked="{Binding IsStorageEnabled}" Content="Storage"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding IsNetworkEnabled}" Content="Network"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="3" IsChecked="{Binding IsBatteryEnabled}" Content="Battery"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding IsPsuEnabled}" Content="PSU"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                        <CheckBox Grid.Row="4" IsChecked="{Binding IsControllerEnabled}" Content="Controllers"
+                                  Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2" />
+                    </Grid>
+
+                    <Button Content="Apply &amp; Reload Hardware" Command="{Binding ApplyHardwareSettingsCommand}"
+                            HorizontalAlignment="Left" Padding="20,10"
+                            Background="{StaticResource AccentBlueBrush}" Foreground="White"
+                            CornerRadius="8" Margin="0,8,0,0" Cursor="Hand" />
+                </StackPanel>
+            </Border>
+
+            <!-- Sensor Management -->
+            <Border Classes="card" Padding="0">
+                <StackPanel>
+                    <StackPanel Spacing="8" Margin="20,16,20,12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="&#x2338;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentOrangeBrush}" />
+                            <TextBlock Text="Sensor Management" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Show/hide sensors and rename them. Expand a device to see its sensor groups and individual sensors. Changes apply after saving."
+                                   FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <!-- Hardware tree -->
+                    <ItemsControl ItemsSource="{Binding HardwareTree}" Margin="0,0,0,8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ConfigHardwareViewModel">
+                                <Border Margin="0,0,0,2">
+                                    <StackPanel>
+                                        <!-- Hardware device header -->
+                                        <Button Background="Transparent" BorderThickness="0" CornerRadius="0"
+                                                Padding="20,12" HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch" Cursor="Hand"
+                                                Command="{Binding ToggleExpandedCommand}">
+                                            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                                                <Border Background="#1A3B82F6" CornerRadius="5" Padding="5,2"
+                                                        MinWidth="30" HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center" Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding IconGlyph}" FontSize="9" FontWeight="Bold"
+                                                               Foreground="{StaticResource AccentBlueBrush}"
+                                                               HorizontalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="3" FontSize="11"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           VerticalAlignment="Center"
+                                                           Text="{Binding ExpandIcon}" />
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- Expanded: sensor groups + per-device actions -->
+                                        <StackPanel IsVisible="{Binding IsExpanded}" Margin="20,0,20,12" Spacing="4">
+                                            <!-- Per-device Export / Import -->
+                                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                                <Button Content="Export Names" Padding="10,5" FontSize="10" Cursor="Hand"
+                                                        Background="{StaticResource AccentGreenBrush}" Foreground="White"
+                                                        CornerRadius="4" BorderThickness="0"
+                                                        Command="{Binding ExportDeviceNamesCommand}" />
+                                                <Button Content="Import Names" Padding="10,5" FontSize="10" Cursor="Hand"
+                                                        Background="{StaticResource AccentBlueBrush}" Foreground="White"
+                                                        CornerRadius="4" BorderThickness="0"
+                                                        Command="{Binding ImportDeviceNamesCommand}" />
+                                                <TextBlock Text="{Binding ExportStatus}" FontSize="10"
+                                                           Foreground="{StaticResource AccentGreenBrush}"
+                                                           VerticalAlignment="Center" Margin="6,0,0,0" />
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding SensorGroups}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:ConfigSensorGroupViewModel">
+                                                        <Border Background="{StaticResource BgSecondaryBrush}"
+                                                                CornerRadius="8" Padding="0" Margin="0,2">
+                                                            <StackPanel>
+                                                                <!-- Group header with visibility checkbox -->
+                                                                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" Margin="12,8,12,8">
+                                                                    <CheckBox IsChecked="{Binding IsVisible}"
+                                                                              VerticalAlignment="Center" Margin="0,0,6,0"
+                                                                              MinWidth="0" Padding="0" />
+                                                                    <TextBlock Grid.Column="1" Text="{Binding GroupIcon}" FontSize="12"
+                                                                               VerticalAlignment="Center" Margin="0,0,6,0"
+                                                                               Foreground="{StaticResource TextTertiaryBrush}" />
+                                                                    <TextBlock Grid.Column="2" Text="{Binding GroupName}"
+                                                                               FontSize="12" FontWeight="Bold"
+                                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                                               VerticalAlignment="Center" />
+                                                                    <Border Grid.Column="3" Height="1" Margin="10,0"
+                                                                            Background="{StaticResource BorderSubtleBrush}"
+                                                                            VerticalAlignment="Center" />
+                                                                    <TextBlock Grid.Column="4" FontSize="10"
+                                                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                                                               VerticalAlignment="Center" Margin="0,0,6,0">
+                                                                        <Run Text="{Binding Sensors.Count}" />
+                                                                    </TextBlock>
+                                                                    <Button Grid.Column="5" Background="Transparent" BorderThickness="0"
+                                                                            Padding="4,2" Cursor="Hand"
+                                                                            Command="{Binding ToggleExpandedCommand}">
+                                                                        <TextBlock FontSize="9"
+                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                   Text="{Binding ExpandIcon}" />
+                                                                    </Button>
+                                                                </Grid>
+
+                                                                <!-- Expanded: individual sensors -->
+                                                                <StackPanel IsVisible="{Binding IsExpanded}" Margin="16,0,12,8">
+                                                                    <ItemsControl ItemsSource="{Binding Sensors}">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:ConfigSensorViewModel">
+                                                                                <Border Padding="0,4"
+                                                                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                                                        BorderThickness="0,0,0,1">
+                                                                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                                                                        <!-- Visibility checkbox -->
+                                                                                        <CheckBox IsChecked="{Binding IsVisible}"
+                                                                                                  VerticalAlignment="Center"
+                                                                                                  MinWidth="0" Padding="0" Margin="0,0,8,0" />
+
+                                                                                        <!-- Sensor name (display or edit mode) -->
+                                                                                        <Panel Grid.Column="1" VerticalAlignment="Center">
+                                                                                            <!-- Display mode -->
+                                                                                            <StackPanel Orientation="Horizontal" Spacing="6"
+                                                                                                        IsVisible="{Binding !IsEditing}">
+                                                                                                <TextBlock Text="{Binding Name}" FontSize="12"
+                                                                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                                           VerticalAlignment="Center"
+                                                                                                           TextTrimming="CharacterEllipsis" />
+                                                                                                <TextBlock Text="{Binding Unit}" FontSize="9"
+                                                                                                           Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                           VerticalAlignment="Center" />
+                                                                                            </StackPanel>
+                                                                                            <!-- Edit mode -->
+                                                                                            <StackPanel Orientation="Horizontal" Spacing="4"
+                                                                                                        IsVisible="{Binding IsEditing}">
+                                                                                                <TextBox Text="{Binding CustomName}"
+                                                                                                         FontSize="12" MinWidth="200"
+                                                                                                         Padding="6,4"
+                                                                                                         Background="{StaticResource BgCardBrush}"
+                                                                                                         Foreground="{StaticResource TextPrimaryBrush}"
+                                                                                                         BorderBrush="{StaticResource AccentBlueBrush}"
+                                                                                                         BorderThickness="1" CornerRadius="4" />
+                                                                                                <Button Content="&#x2713;" Padding="6,4"
+                                                                                                        FontSize="11" Cursor="Hand"
+                                                                                                        Background="{StaticResource AccentGreenBrush}"
+                                                                                                        Foreground="White" CornerRadius="4"
+                                                                                                        Command="{Binding ConfirmRenameCommand}" />
+                                                                                                <Button Content="&#x2715;" Padding="6,4"
+                                                                                                        FontSize="11" Cursor="Hand"
+                                                                                                        Background="Transparent"
+                                                                                                        Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                        CornerRadius="4"
+                                                                                                        Command="{Binding CancelEditingCommand}" />
+                                                                                            </StackPanel>
+                                                                                        </Panel>
+
+                                                                                        <!-- Rename / Reset buttons -->
+                                                                                        <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                                                                    Spacing="4" VerticalAlignment="Center"
+                                                                                                    IsVisible="{Binding !IsEditing}">
+                                                                                            <Button Content="Rename" Padding="8,3"
+                                                                                                    FontSize="10" Cursor="Hand"
+                                                                                                    Background="{StaticResource BgCardBrush}"
+                                                                                                    Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                    CornerRadius="4" BorderThickness="0"
+                                                                                                    Command="{Binding StartEditingCommand}" />
+                                                                                        </StackPanel>
+                                                                                    </Grid>
+                                                                                </Border>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Save / Import / Export buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="20,0,20,16">
+                        <Button Content="Save Configuration" Command="{Binding SaveSensorConfigCommand}"
+                                Padding="20,10"
+                                Background="{StaticResource AccentOrangeBrush}" Foreground="White"
+                                CornerRadius="8" Cursor="Hand" />
+                        <Button Content="Import Names" Command="{Binding ImportNamingProfileCommand}"
+                                Padding="20,10"
+                                Background="{StaticResource AccentBlueBrush}" Foreground="White"
+                                CornerRadius="8" Cursor="Hand" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Sensor Logging -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x1F4DD;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentYellowBrush}" />
+                        <TextBlock Text="Sensor Logging" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Record sensor values to a CSV file at a fixed interval."
+                               FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,4" />
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
+                        <TextBlock Text="Interval" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Slider Grid.Column="1" Minimum="1" Maximum="60" Value="{Binding LogInterval}"
+                                TickFrequency="1" IsSnapToTickEnabled="True" />
+                        <Border Grid.Column="2" Background="{StaticResource BgSecondaryBrush}"
+                                CornerRadius="6" Padding="10,4" Margin="8,0,0,0">
+                            <TextBlock FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                                       MinWidth="30" TextAlignment="Center">
+                                <Run Text="{Binding LogInterval}" /><Run Text="s" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </TextBlock>
+                        </Border>
+                        <TextBlock Grid.Row="1" Text="File" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="0,4,12,0" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LogFilePath}" FontSize="11"
+                                 Padding="8,6" Margin="0,4,0,0"
+                                 Background="{StaticResource BgSecondaryBrush}"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderBrush="{StaticResource BorderSubtleBrush}" CornerRadius="4" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                        <Button Padding="20,10" CornerRadius="8" Cursor="Hand"
+                                Command="{Binding ToggleLoggingCommand}"
+                                Content="{Binding IsLogging, Converter={x:Static vm:LogButtonConverter.Instance}}"
+                                Background="{Binding IsLogging, Converter={x:Static vm:LogButtonBgConverter.Instance}}"
+                                Foreground="White" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                    IsVisible="{Binding IsLogging}">
+                            <Ellipse Width="8" Height="8" Fill="{StaticResource AccentRedBrush}" />
+                            <TextBlock Text="Recording..." FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentRedBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Widget Configuration -->
+            <Border Classes="card" IsVisible="{Binding Gadget, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="&#x2B50;" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentCyanBrush}" />
+                        <TextBlock Text="Widget Sensors" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Choose which sensors appear in the floating desktop widget. Click the tray icon to show/hide it."
+                               FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" TextWrapping="Wrap" Margin="0,0,0,4" />
+
+                    <!-- Current widget items -->
+                    <ItemsControl ItemsSource="{Binding Gadget.Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GadgetItemViewModel">
+                                <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="6"
+                                        Padding="10,6" Margin="0,2">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                        <!-- Move up/down -->
+                                        <StackPanel Orientation="Vertical" Spacing="0" VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <Button Content="&#x25B2;" Padding="4,0" FontSize="8" Cursor="Hand"
+                                                    Background="Transparent" Foreground="{StaticResource TextTertiaryBrush}"
+                                                    BorderThickness="0" CornerRadius="2"
+                                                    Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).Gadget.MoveItemUpCommand}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="&#x25BC;" Padding="4,0" FontSize="8" Cursor="Hand"
+                                                    Background="Transparent" Foreground="{StaticResource TextTertiaryBrush}"
+                                                    BorderThickness="0" CornerRadius="2"
+                                                    Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).Gadget.MoveItemDownCommand}"
+                                                    CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="{Binding Label}" FontSize="12"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Unit}" FontSize="10"
+                                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="{Binding Value}" FontSize="12" FontWeight="Bold"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <Button Grid.Column="3" Content="&#x2715;" Padding="6,2" FontSize="10"
+                                                Background="Transparent" Foreground="{StaticResource TextTertiaryBrush}"
+                                                BorderThickness="0" CornerRadius="4" Cursor="Hand"
+                                                Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).Gadget.RemoveItemCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Sensor picker -->
+                    <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,4" />
+                    <TextBlock Text="ADD SENSORS" FontSize="10" FontWeight="Bold"
+                               Foreground="{StaticResource TextTertiaryBrush}" />
+                    <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Gadget.AvailableSensors}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:GadgetSensorOption">
+                                    <CheckBox IsChecked="{Binding IsSelected}" Padding="4,1" Margin="0,1">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="{Binding Label}" FontSize="10"
+                                                       TextTrimming="CharacterEllipsis" MaxWidth="440"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text="{Binding Unit}" FontSize="9"
+                                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Appearance -->
+                    <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,4" />
+                    <TextBlock Text="APPEARANCE" FontSize="10" FontWeight="Bold"
+                               Foreground="{StaticResource TextTertiaryBrush}" />
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+                        <TextBlock Text="Opacity" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Slider Grid.Column="1" Minimum="0.3" Maximum="1.0" Value="{Binding Gadget.Opacity}"
+                                TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                        <TextBlock Grid.Column="2" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}"
+                                   VerticalAlignment="Center" Margin="8,0,0,0"
+                                   Text="{Binding Gadget.Opacity, StringFormat='{}{0:P0}'}" MinWidth="35" />
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+                        <TextBlock Text="Font size" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                            <Button Content="10" Padding="10,4" FontSize="10" Cursor="Hand" CornerRadius="4"
+                                    Background="{StaticResource BgSecondaryBrush}" Foreground="{StaticResource TextSecondaryBrush}"
+                                    BorderThickness="0" Command="{Binding Gadget.SetFontSizeCommand}" CommandParameter="10" />
+                            <Button Content="13" Padding="10,4" FontSize="10" Cursor="Hand" CornerRadius="4"
+                                    Background="{StaticResource BgSecondaryBrush}" Foreground="{StaticResource TextSecondaryBrush}"
+                                    BorderThickness="0" Command="{Binding Gadget.SetFontSizeCommand}" CommandParameter="13" />
+                            <Button Content="16" Padding="10,4" FontSize="10" Cursor="Hand" CornerRadius="4"
+                                    Background="{StaticResource BgSecondaryBrush}" Foreground="{StaticResource TextSecondaryBrush}"
+                                    BorderThickness="0" Command="{Binding Gadget.SetFontSizeCommand}" CommandParameter="16" />
+                            <Button Content="20" Padding="10,4" FontSize="10" Cursor="Hand" CornerRadius="4"
+                                    Background="{StaticResource BgSecondaryBrush}" Foreground="{StaticResource TextSecondaryBrush}"
+                                    BorderThickness="0" Command="{Binding Gadget.SetFontSizeCommand}" CommandParameter="20" />
+                        </StackPanel>
+                    </Grid>
+                    <CheckBox IsChecked="{Binding Gadget.IsPositionLocked}" Content="Lock widget position"
+                              Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" />
+
+                    <!-- Action buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                        <Button Content="Apply Selection" Padding="16,8"
+                                Background="{StaticResource AccentCyanBrush}" Foreground="White"
+                                CornerRadius="6" Cursor="Hand"
+                                Command="{Binding Gadget.ApplySelectionCommand}" />
+                        <Button Content="Reset Defaults" Padding="16,8"
+                                Background="{StaticResource BgSecondaryBrush}"
+                                Foreground="{StaticResource TextSecondaryBrush}"
+                                CornerRadius="6" Cursor="Hand"
+                                Command="{Binding Gadget.AddDefaultsCommand}" />
+                        <Button Content="Toggle Widget" Padding="16,8"
+                                Background="{StaticResource AccentBlueBrush}" Foreground="White"
+                                CornerRadius="6" Cursor="Hand"
+                                Command="{Binding Gadget.ToggleVisibilityCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Status -->
+            <Border Classes="card" Padding="14,12">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StatusText}" FontSize="12"
+                               Foreground="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+
+        </StackPanel>
+    </DockPanel>
+</UserControl>

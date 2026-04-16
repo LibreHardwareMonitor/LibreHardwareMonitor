@@ -1,0 +1,303 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LibreHardwareMonitor.UI.ViewModels"
+             xmlns:conv="using:LibreHardwareMonitor.UI.Converters"
+             x:Class="LibreHardwareMonitor.UI.Views.HardwareDetailView"
+             x:DataType="vm:HardwareDetailViewModel">
+
+    <DockPanel>
+        <StackPanel Spacing="12" Margin="24">
+
+            <TextBlock Text="Hardware" Classes="section-header" FontSize="22" />
+
+            <!-- Each category is a collapsible group -->
+            <ItemsControl ItemsSource="{Binding HardwareCategories}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:HardwareCategoryViewModel">
+                        <Border Classes="card" Margin="0,0,0,4" Padding="0">
+                            <StackPanel>
+                                <!-- Category header — clickable to expand/collapse -->
+                                <Button Background="Transparent" BorderThickness="0" CornerRadius="12"
+                                        Padding="20,14" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch" Cursor="Hand"
+                                        Command="{Binding ToggleExpandedCommand}">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                        <TextBlock Text="{Binding CategoryIcon}" FontSize="16"
+                                                   VerticalAlignment="Center" Margin="0,0,10,0"
+                                                   Foreground="{StaticResource AccentBlueBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding CategoryName}"
+                                                   FontSize="15" FontWeight="Bold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" FontSize="11"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   VerticalAlignment="Center" Margin="0,0,12,0">
+                                            <Run Text="{Binding Items.Count}" /><Run Text=" device(s)" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="3" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding ExpandIcon}" />
+                                    </Grid>
+                                </Button>
+
+                                <!-- Expanded content: list of hardware devices -->
+                                <StackPanel IsVisible="{Binding IsExpanded}" Margin="20,0,20,16" Spacing="12">
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:HardwareViewModel">
+                                                <Border Background="{StaticResource BgSecondaryBrush}"
+                                                        CornerRadius="10" Padding="16,14" Margin="0,0,0,4">
+                                                    <StackPanel Spacing="10">
+                                                        <!-- Hardware name + quick stats -->
+                                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <Border Background="#1A3B82F6" CornerRadius="6" Padding="6,3"
+                                                                        MinWidth="34" HorizontalAlignment="Center">
+                                                                    <TextBlock Text="{Binding IconGlyph}" FontSize="10" FontWeight="Bold"
+                                                                               Foreground="{StaticResource AccentBlueBrush}"
+                                                                               HorizontalAlignment="Center" />
+                                                                </Border>
+                                                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                                           VerticalAlignment="Center" />
+                                                            </StackPanel>
+
+                                                            <!-- Quick stat badges -->
+                                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12">
+                                                                <StackPanel Orientation="Horizontal" Spacing="3"
+                                                                            IsVisible="{Binding MaxTemperature, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                    <TextBlock FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
+                                                                               Foreground="{Binding MaxTemperature, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
+                                                                        <Run Text="{Binding MaxTemperature, StringFormat='{}{0:F0}'}" /><Run Text="{Binding MaxTemperature, Converter={x:Static vm:TempUnitConverter.Instance}}" FontSize="10" />
+                                                                    </TextBlock>
+                                                                </StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Spacing="3"
+                                                                            IsVisible="{Binding TotalLoad, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                    <TextBlock FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
+                                                                               Foreground="{Binding TotalLoad, Converter={x:Static conv:LoadToColorConverter.Instance}}">
+                                                                        <Run Text="{Binding TotalLoad, StringFormat='{}{0:F0}'}" /><Run Text="%" FontSize="10" />
+                                                                    </TextBlock>
+                                                                </StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Spacing="3"
+                                                                            IsVisible="{Binding TotalPower, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                    <TextBlock FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
+                                                                               Foreground="{StaticResource AccentYellowBrush}">
+                                                                        <Run Text="{Binding TotalPower, StringFormat='{}{0:F1}'}" /><Run Text="W" FontSize="10" />
+                                                                    </TextBlock>
+                                                                </StackPanel>
+                                                                <Border Background="{StaticResource BgCardBrush}" CornerRadius="4" Padding="5,2">
+                                                                    <TextBlock FontSize="9" Foreground="{StaticResource TextTertiaryBrush}">
+                                                                        <Run Text="{Binding SensorCount}" /><Run Text=" sensors" />
+                                                                    </TextBlock>
+                                                                </Border>
+                                                            </StackPanel>
+                                                        </Grid>
+
+                                                        <!-- Sensor groups (Temperatures, Clocks, Load, etc.) -->
+                                                        <ItemsControl ItemsSource="{Binding SensorGroups}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="vm:SensorGroupViewModel">
+                                                                    <Border Margin="0,4,0,0">
+                                                                        <StackPanel>
+                                                                            <!-- Group header — clickable -->
+                                                                            <Button Background="Transparent" BorderThickness="0"
+                                                                                    Padding="0,6" HorizontalAlignment="Stretch"
+                                                                                    HorizontalContentAlignment="Stretch" Cursor="Hand"
+                                                                                    Command="{Binding ToggleExpandedCommand}">
+                                                                                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                                                                                    <TextBlock Text="{Binding GroupIcon}" FontSize="12"
+                                                                                               VerticalAlignment="Center" Margin="0,0,6,0"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}" />
+                                                                                    <TextBlock Grid.Column="1" Text="{Binding GroupName}"
+                                                                                               FontSize="12" FontWeight="Bold"
+                                                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                               VerticalAlignment="Center" />
+                                                                                    <Border Grid.Column="2" Height="1" Margin="10,0"
+                                                                                            Background="{StaticResource BorderSubtleBrush}"
+                                                                                            VerticalAlignment="Center" />
+                                                                                    <TextBlock Grid.Column="3" FontSize="10"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                               VerticalAlignment="Center" Margin="0,0,6,0">
+                                                                                        <Run Text="{Binding Sensors.Count}" />
+                                                                                    </TextBlock>
+                                                                                    <TextBlock Grid.Column="4" FontSize="9"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Text="{Binding ExpandIcon}" />
+                                                                                </Grid>
+                                                                            </Button>
+
+                                                                            <!-- Group sensors table -->
+                                                                            <StackPanel IsVisible="{Binding IsExpanded}" Margin="20,0,0,0">
+                                                                                <!-- Column headers -->
+                                                                                <Grid ColumnDefinitions="*,90,90,90" Margin="0,2,0,2">
+                                                                                    <TextBlock Text="SENSOR" FontSize="9" FontWeight="Bold"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}" />
+                                                                                    <TextBlock Grid.Column="1" Text="VALUE" FontSize="9" FontWeight="Bold"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Right" />
+                                                                                    <TextBlock Grid.Column="2" Text="MIN" FontSize="9" FontWeight="Bold"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Right" />
+                                                                                    <TextBlock Grid.Column="3" Text="MAX" FontSize="9" FontWeight="Bold"
+                                                                                               Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Right" />
+                                                                                </Grid>
+
+                                                                                <!-- Sensor rows -->
+                                                                                <ItemsControl ItemsSource="{Binding Sensors}">
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate x:DataType="vm:SensorViewModel">
+                                                                                            <Border Padding="0,4"
+                                                                                                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                                                                    BorderThickness="0,0,0,1">
+                                                                                                <Grid ColumnDefinitions="*,90,90,90">
+                                                                                                    <TextBlock Text="{Binding Name}" FontSize="12"
+                                                                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                                               VerticalAlignment="Center"
+                                                                                                               TextTrimming="CharacterEllipsis" />
+                                                                                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                                                                                HorizontalAlignment="Right" Spacing="2"
+                                                                                                                VerticalAlignment="Center">
+                                                                                                        <TextBlock Text="{Binding FormattedValue}" FontSize="13"
+                                                                                                                   FontWeight="SemiBold"
+                                                                                                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                                                                                                        <TextBlock Text="{Binding Unit}" FontSize="9"
+                                                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                                   VerticalAlignment="Bottom" Margin="0,0,0,1" />
+                                                                                                    </StackPanel>
+                                                                                                    <TextBlock Grid.Column="2" Text="{Binding FormattedMin}"
+                                                                                                               FontSize="11"
+                                                                                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                                                    <TextBlock Grid.Column="3" Text="{Binding FormattedMax}"
+                                                                                                               FontSize="11"
+                                                                                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                                                </Grid>
+                                                                                            </Border>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </StackPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Sub-hardware (e.g., SuperIO under Motherboard) -->
+                                                        <ItemsControl ItemsSource="{Binding SubHardware}" Margin="12,4,0,0">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="vm:HardwareViewModel">
+                                                                    <Border Background="{StaticResource BgCardBrush}"
+                                                                            CornerRadius="8" Padding="14,10" Margin="0,4">
+                                                                        <StackPanel Spacing="8">
+                                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                                <Border Background="#1AF97316" CornerRadius="5" Padding="5,2">
+                                                                                    <TextBlock Text="{Binding IconGlyph}" FontSize="9" FontWeight="Bold"
+                                                                                               Foreground="{StaticResource AccentOrangeBrush}"
+                                                                                               HorizontalAlignment="Center" />
+                                                                                </Border>
+                                                                                <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                                                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                                                           VerticalAlignment="Center" />
+                                                                                <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="4" Padding="5,1">
+                                                                                    <TextBlock FontSize="9" Foreground="{StaticResource TextTertiaryBrush}">
+                                                                                        <Run Text="{Binding SensorCount}" /><Run Text=" sensors" />
+                                                                                    </TextBlock>
+                                                                                </Border>
+                                                                            </StackPanel>
+
+                                                                            <!-- Sub-hardware sensor groups -->
+                                                                            <ItemsControl ItemsSource="{Binding SensorGroups}">
+                                                                                <ItemsControl.ItemTemplate>
+                                                                                    <DataTemplate x:DataType="vm:SensorGroupViewModel">
+                                                                                        <Border Margin="0,2,0,0">
+                                                                                            <StackPanel>
+                                                                                                <Button Background="Transparent" BorderThickness="0"
+                                                                                                        Padding="0,4" HorizontalAlignment="Stretch"
+                                                                                                        HorizontalContentAlignment="Stretch" Cursor="Hand"
+                                                                                                        Command="{Binding ToggleExpandedCommand}">
+                                                                                                    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                                                                                                        <TextBlock Text="{Binding GroupIcon}" FontSize="11"
+                                                                                                                   VerticalAlignment="Center" Margin="0,0,5,0"
+                                                                                                                   Foreground="{StaticResource TextTertiaryBrush}" />
+                                                                                                        <TextBlock Grid.Column="1" Text="{Binding GroupName}"
+                                                                                                                   FontSize="11" FontWeight="Bold"
+                                                                                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                                                   VerticalAlignment="Center" />
+                                                                                                        <Border Grid.Column="2" Height="1" Margin="8,0"
+                                                                                                                Background="{StaticResource BorderSubtleBrush}"
+                                                                                                                VerticalAlignment="Center" />
+                                                                                                        <TextBlock Grid.Column="3" FontSize="9"
+                                                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                                   VerticalAlignment="Center" Margin="0,0,5,0">
+                                                                                                            <Run Text="{Binding Sensors.Count}" />
+                                                                                                        </TextBlock>
+                                                                                                        <TextBlock Grid.Column="4" FontSize="8"
+                                                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                                   VerticalAlignment="Center"
+                                                                                                                   Text="{Binding ExpandIcon}" />
+                                                                                                    </Grid>
+                                                                                                </Button>
+
+                                                                                                <StackPanel IsVisible="{Binding IsExpanded}" Margin="18,0,0,0">
+                                                                                                    <ItemsControl ItemsSource="{Binding Sensors}">
+                                                                                                        <ItemsControl.ItemTemplate>
+                                                                                                            <DataTemplate x:DataType="vm:SensorViewModel">
+                                                                                                                <Border Padding="0,3"
+                                                                                                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                                                                                        BorderThickness="0,0,0,1">
+                                                                                                                    <Grid ColumnDefinitions="*,80,80,80">
+                                                                                                                        <TextBlock Text="{Binding Name}" FontSize="11"
+                                                                                                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                                                                   VerticalAlignment="Center"
+                                                                                                                                   TextTrimming="CharacterEllipsis" />
+                                                                                                                        <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                                                                                                    HorizontalAlignment="Right" Spacing="2"
+                                                                                                                                    VerticalAlignment="Center">
+                                                                                                                            <TextBlock Text="{Binding FormattedValue}" FontSize="12"
+                                                                                                                                       FontWeight="SemiBold"
+                                                                                                                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                                                                                                                            <TextBlock Text="{Binding Unit}" FontSize="9"
+                                                                                                                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                                                       VerticalAlignment="Bottom" Margin="0,0,0,1" />
+                                                                                                                        </StackPanel>
+                                                                                                                        <TextBlock Grid.Column="2" Text="{Binding FormattedMin}"
+                                                                                                                                   FontSize="10"
+                                                                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                                                                        <TextBlock Grid.Column="3" Text="{Binding FormattedMax}"
+                                                                                                                                   FontSize="10"
+                                                                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                                                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                                                                    </Grid>
+                                                                                                                </Border>
+                                                                                                            </DataTemplate>
+                                                                                                        </ItemsControl.ItemTemplate>
+                                                                                                    </ItemsControl>
+                                                                                                </StackPanel>
+                                                                                            </StackPanel>
+                                                                                        </Border>
+                                                                                    </DataTemplate>
+                                                                                </ItemsControl.ItemTemplate>
+                                                                            </ItemsControl>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LibreHardwareMonitor.UI.Views.AboutWindow"
+        Title="About"
+        Width="380" Height="280"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BgPrimaryBrush}">
+
+    <Border Margin="24">
+        <StackPanel Spacing="12" VerticalAlignment="Center">
+            <TextBlock Text="Libre Hardware Monitor" FontSize="20" FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+            <TextBlock Text="Avalonia UI Edition" FontSize="13"
+                       Foreground="{StaticResource AccentBlueBrush}" HorizontalAlignment="Center" />
+
+            <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,8" />
+
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="20,0">
+                <TextBlock Text="License" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                <TextBlock Grid.Column="1" Text="Mozilla Public License 2.0" FontSize="12"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                <TextBlock Grid.Row="1" Text="Framework" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="Avalonia 11.3" FontSize="12"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                <TextBlock Grid.Row="2" Text="Runtime" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text=".NET 10" FontSize="12"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+                <TextBlock Grid.Row="3" Text="Library" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="LibreHardwareMonitorLib" FontSize="12"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,3" />
+            </Grid>
+
+            <Button Content="Close" HorizontalAlignment="Center" Padding="24,8" Margin="0,8,0,0"
+                    Background="{StaticResource AccentBlueBrush}" Foreground="White"
+                    CornerRadius="6" Cursor="Hand" Click="CloseButton_Click" />
+        </StackPanel>
+    </Border>
+</Window>
