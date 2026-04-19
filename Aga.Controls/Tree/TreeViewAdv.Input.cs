@@ -116,14 +116,24 @@ namespace Aga.Controls.Tree
 			_search.EndSearch();
 			if (SystemInformation.MouseWheelScrollLines > 0)
 			{
-				int lines = e.Delta / 120 * SystemInformation.MouseWheelScrollLines;
-				int newValue = _vScrollBar.Value - lines;
-				newValue = Math.Min(_vScrollBar.Maximum - _vScrollBar.LargeChange + 1, newValue);
-				newValue = Math.Min(_vScrollBar.Maximum, newValue);
-				_vScrollBar.Value = Math.Max(_vScrollBar.Minimum, newValue);
+				// Accumulate sub-120 deltas from high-resolution precision trackpads.
+				// Classic scroll wheels always send multiples of 120; precision devices
+				// send smaller values (e.g. 15) that would integer-divide to zero.
+				_wheelDeltaRemainder += e.Delta;
+				int lines = _wheelDeltaRemainder / 120 * SystemInformation.MouseWheelScrollLines;
+				_wheelDeltaRemainder %= 120;
+				if (lines != 0)
+				{
+					int newValue = _vScrollBar.Value - lines;
+					newValue = Math.Min(_vScrollBar.Maximum - _vScrollBar.LargeChange + 1, newValue);
+					newValue = Math.Min(_vScrollBar.Maximum, newValue);
+					_vScrollBar.Value = Math.Max(_vScrollBar.Minimum, newValue);
+				}
 			}
 			base.OnMouseWheel(e);
 		}
+
+		private int _wheelDeltaRemainder;
 
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
