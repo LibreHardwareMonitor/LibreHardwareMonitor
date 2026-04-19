@@ -7,12 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using BlackSharp.Core.Converters;
 using BlackSharp.Core.Converters.Enums;
+using DiskInfoToolkit;
 using DiskInfoToolkit.Smart;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -49,8 +49,8 @@ public sealed class StorageDevice : Hardware, ISmart
     private Sensor _usageSensor;
     private Sensor _freeSpaceSensor;
 
-    public StorageDevice(StorageDeviceDIT storage, string id, ISettings settings)
-        : base(storage.ProductName, new Identifier(id, storage.StorageDeviceNumber.GetValueOrDefault().ToString(CultureInfo.InvariantCulture)), settings)
+    public StorageDevice(StorageDeviceDIT storage, ISettings settings)
+        : base(storage.ProductName, GetIdentifier(storage), settings)
     {
         _storage = storage;
 
@@ -202,6 +202,7 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         r.AppendLine($"Total Size: {_storage.DiskSizeBytes}");
+        _storage.ProbeTrace.ForEach(line => r.AppendLine($"Probe Trace: {line}"));
 
         return r.ToString();
     }
@@ -210,6 +211,56 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         foreach (ISensor sensor in Sensors)
             sensor.Accept(visitor);
+    }
+
+    private static string GetID(StorageDeviceDIT disk)
+    {
+        switch (disk.TransportKind)
+        {
+            case StorageTransportKind.Ata:
+                return "ata";
+            case StorageTransportKind.Scsi:
+                return "scsi";
+            case StorageTransportKind.Nvme:
+                return "nvme";
+            case StorageTransportKind.Usb:
+                return "usb";
+            case StorageTransportKind.Sd:
+                return "sd";
+            case StorageTransportKind.Mmc:
+                return "mmc";
+            case StorageTransportKind.Raid:
+                return "raid";
+            case StorageTransportKind.Sas:
+                return "sas";
+            case StorageTransportKind.Ahci:
+                return "ahci";
+            case StorageTransportKind.Virtual:
+                return "virtual";
+            case StorageTransportKind.Unknown:
+            default:
+                return "disk";
+        }
+    }
+
+    private static Identifier GetIdentifier(StorageDeviceDIT storage)
+    {
+        string id;
+
+        if (storage.StorageDeviceNumber.HasValue)
+        {
+            id = storage.StorageDeviceNumber.Value.ToString();
+        }
+        else if (storage.Scsi.PathID.HasValue && storage.Scsi.TargetID.HasValue)
+        {
+            id = $"{storage.Scsi.PathID}::{storage.Scsi.TargetID}";
+        }
+        else
+        {
+            id = "id_error";
+        }
+
+        return new Identifier(GetID(storage), id);
     }
 
     private void CreateAttributes()
