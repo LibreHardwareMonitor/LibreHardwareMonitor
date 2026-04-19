@@ -1205,6 +1205,19 @@ public sealed partial class MainForm : Form
                     treeContextMenu.Items.Add(item);
                 }
 
+                if (hardwareNode.IsVisible)
+                {
+                    ToolStripItem item = new ToolStripMenuItem("Hide");
+                    item.Click += delegate { hardwareNode.IsVisible = false; };
+                    treeContextMenu.Items.Add(item);
+                }
+                else
+                {
+                    ToolStripItem item = new ToolStripMenuItem("Unhide");
+                    item.Click += delegate { hardwareNode.IsVisible = true; };
+                    treeContextMenu.Items.Add(item);
+                }
+
                 treeContextMenu.Show(treeView, new Point(m.X, m.Y));
             }
         }
