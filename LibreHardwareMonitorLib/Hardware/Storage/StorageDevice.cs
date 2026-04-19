@@ -202,6 +202,7 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         r.AppendLine($"Total Size: {_storage.DiskSizeBytes}");
+        _storage.ProbeTrace.ForEach(line => r.AppendLine($"Probe Trace: {line}"));
 
         return r.ToString();
     }
