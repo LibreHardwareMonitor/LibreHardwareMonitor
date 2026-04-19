@@ -53,3 +53,11 @@ CM_Get_DevNode_Property
 CM_LOCATE_DEVNODE_FLAGS
 DEVPKEY_Device_BusNumber
 DEVPKEY_Device_Address
+PdhOpenQuery
+PdhAddEnglishCounterW
+PdhCollectQueryData
+PdhGetFormattedCounterArrayW
+PdhEnumObjectItemsW
+PdhCloseQuery
+PDH_FMT_COUNTERVALUE
+PDH_FMT_COUNTERVALUE_ITEM_W
