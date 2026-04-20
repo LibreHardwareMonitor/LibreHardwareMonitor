@@ -6099,22 +6099,21 @@ internal sealed class SuperIOHardware : Hardware
             {
                 if (_motherboard.Model == Model.X570_MS7C35) // Add Temp Value for CPU MOS TEMPERATURE & PCH TEMPERATURE
                 {
-                    float voltage;
+                    float? voltage = null;
 
                     if (sensor.Index == 24)
                     {
-                        voltage = (float)_readVoltage(6);
+                        voltage = _readVoltage(6);
                     }
                     else if (sensor.Index == 25)
                     {
-                        voltage = (float)_readVoltage(11);
-                    }
-                    else
-                    {
-                        voltage = 0;
+                        voltage = _readVoltage(11);
                     }
 
-                    double R = (10000.0 * voltage / (2.048 - 1.0));            //Convert voltage measured to resistance value
+                    if (!voltage.HasValue || voltage.Value <= 0)
+                        continue;
+
+                    double R = (10000.0 * voltage.Value / (2.048 - 1.0));            //Convert voltage measured to resistance value
                     double T = ((298.15 * 3435.0) / ((298.15 * Math.Log(R / 10000.0)) + 3435.0));  // Use R value in steinhart and hart equation, calculate temperature value in kelvin
                     float Tc = (float)(T - 273.15);                            // Converting kelvin to celsius
 

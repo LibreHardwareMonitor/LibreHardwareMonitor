@@ -246,6 +246,8 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
+        int nextLoadIndex = 0;
+
         // Load usages.
         NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
         if (status == NvApi.NvStatus.OK)
@@ -260,7 +262,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     string name = GetUtilizationDomainName(utilizationDomain);
 
                     if (name != null)
-                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings));
+                        loads.Add(new Sensor(name, nextLoadIndex++, SensorType.Load, this, settings));
                 }
             }
 
@@ -287,7 +289,7 @@ internal sealed class NvidiaGpu : GenericGpu
                         string name = GetUtilizationDomainName(utilizationDomain);
 
                         if (name != null)
-                            loads.Add(new Sensor(name, index, SensorType.Load, this, settings));
+                            loads.Add(new Sensor(name, nextLoadIndex++, SensorType.Load, this, settings));
                     }
                 }
 
@@ -300,6 +302,9 @@ internal sealed class NvidiaGpu : GenericGpu
                 }
             }
         }
+
+        // GPU Memory load: created after NVAPI utilization loads so it appears with other GPU metrics (before power/D3D loads).
+        _memoryLoad = new Sensor("GPU Memory", nextLoadIndex++, SensorType.Load, this, settings);
 
         // Power.
         NvApi.NvPowerTopology powerTopology = GetPowerTopology(out NvApi.NvStatus powerStatus);
@@ -318,7 +323,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 if (name != null)
                 {
-                    _powers[i] = new Sensor(name, i + (_loads?.Length ?? 0), SensorType.Load, this, settings);
+                    _powers[i] = new Sensor(name, nextLoadIndex++, SensorType.Load, this, settings);
                     ActivateSensor(_powers[i]);
                 }
             }
@@ -356,6 +361,7 @@ internal sealed class NvidiaGpu : GenericGpu
                         string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
                         if (deviceIds != null)
                         {
+                            int d3dLoadStartIndex = nextLoadIndex;
                             foreach (string deviceId in deviceIds)
                             {
                                 if (deviceId.IndexOf("VEN_" + pci.pciVendorId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
@@ -417,9 +423,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                     if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                     {
-                                        int sensorCount = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
-                                        int loadSensorIndex = sensorCount > 0 ? sensorCount + 1 : 0;
                                         int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
+                                        int nextD3dLoadIndex = d3dLoadStartIndex;
 
                                         _d3dDeviceId = deviceId;
 
@@ -432,10 +437,12 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
                                         {
-                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, loadSensorIndex++, SensorType.Load, this, settings);
+                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, nextD3dLoadIndex++, SensorType.Load, this, settings);
                                             _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                                             _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                                         }
+
+                                        nextLoadIndex = nextD3dLoadIndex;
                                     }
                                 }
                             }
@@ -448,7 +455,6 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
         _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
-        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
         // Pin power sensors for NVIDIA RTX Astral series from ASUS
         if (NvApi.NvAPI_I2CReadEx != null && NvApi.NvAPI_GPU_GetPCIIdentifiers != null)
