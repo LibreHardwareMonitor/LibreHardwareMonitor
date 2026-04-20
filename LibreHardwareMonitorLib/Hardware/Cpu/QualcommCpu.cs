@@ -116,7 +116,17 @@ internal class QualcommCpu : Hardware
             foreach (ManagementObject obj in searcher.Get())
             {
                 string instanceName = obj["InstanceName"]?.ToString() ?? $"Thermal Zone {idx}";
-                // Clean up the instance name for display
+
+                // Only register zones that already have a valid reading at startup.
+                // Zones that return no data (null CurrentTemperature or out-of-range
+                // Kelvin values) are ACPI placeholders that never provide useful data.
+                if (!(obj["CurrentTemperature"] is uint tempRaw))
+                    continue;
+
+                float tempCelsius = (tempRaw / 10.0f) - 273.15f;
+                if (tempCelsius is <= -40 or >= 150)
+                    continue;
+
                 string displayName = FormatThermalZoneName(instanceName, idx);
 
                 var sensor = new Sensor(displayName, idx, SensorType.Temperature, this, settings);
