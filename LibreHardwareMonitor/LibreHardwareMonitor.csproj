@@ -35,7 +35,7 @@
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Web" />
   </ItemGroup>

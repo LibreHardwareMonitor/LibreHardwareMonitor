@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -37,6 +37,9 @@ public class HardwareTypeImage
                 break;
             case HardwareType.GpuIntel:
                 image = Utilities.EmbeddedResources.GetImage("intel.png");
+                break;
+            case HardwareType.GpuQualcomm:
+                image = Utilities.EmbeddedResources.GetImage("chip.png");
                 break;
             case HardwareType.Storage:
                 image = Utilities.EmbeddedResources.GetImage("hdd.png");

@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -19,7 +18,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.UI;
 
@@ -190,12 +188,24 @@ public class HttpServer
         }
     }
 
-    public static IDictionary<string, string> ToDictionary(NameValueCollection col)
+    private static IDictionary<string, string> ParseQueryString(string query)
     {
-        IDictionary<string, string> dict = new Dictionary<string, string>();
-        foreach (string k in col.AllKeys)
+        var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(query))
+            return dict;
+
+        // Strip leading '?'
+        string s = query.Length > 0 && query[0] == '?' ? query.Substring(1) : query;
+
+        foreach (string part in s.Split('&'))
         {
-            dict.Add(k, col[k]);
+            if (part.Length == 0)
+                continue;
+
+            int eq = part.IndexOf('=');
+            string key = eq < 0 ? Uri.UnescapeDataString(part) : Uri.UnescapeDataString(part.Substring(0, eq));
+            string value = eq < 0 ? string.Empty : Uri.UnescapeDataString(part.Substring(eq + 1).Replace('+', ' '));
+            dict[key] = value;
         }
 
         return dict;
@@ -255,7 +265,7 @@ public class HttpServer
     //{"result":"ok"}
     private void HandleSensorRequest(HttpListenerRequest request, Dictionary<string, object> result)
     {
-        IDictionary<string, string> dict = ToDictionary(HttpUtility.ParseQueryString(request.Url.Query));
+        IDictionary<string, string> dict = ParseQueryString(request.Url.Query);
 
         if (dict.ContainsKey("action"))
         {
@@ -364,52 +374,65 @@ public class HttpServer
                     }
                 case "GET":
                     {
-                        string requestedFile = request.RawUrl.Substring(1);
-
-                        if (requestedFile == "data.json")
+                        try
                         {
-                            await SendJsonAsync(context.Response, request);
-                            return;
-                        }
+                            string requestedFile = request.RawUrl.Substring(1);
 
-                        if (requestedFile.Contains("images_icon"))
-                        {
-                            await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
-                            return;
-                        }
-
-                        if (requestedFile.StartsWith("metrics?") || requestedFile == "metrics")
-                        {
-                            await SendPrometheusAsync(context.Response, request);
-                            return;
-                        }
-
-                        if (requestedFile.Contains("Sensor"))
-                        {
-                            var sensorResult = new Dictionary<string, object>();
-                            HandleSensorRequest(request, sensorResult);
-                            await SendJsonSensorAsync(context.Response, sensorResult);
-                            return;
-                        }
-
-                        if (requestedFile.Contains("ResetAllMinMax"))
-                        {
-                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
+                            if (requestedFile == "data.json")
                             {
-                                sensor.ResetMin();
-                                sensor.ResetMax();
-                            }));
-                            await SendJsonAsync(context.Response, request);
-                            return;
+                                await SendJsonAsync(context.Response, request);
+                                return;
+                            }
+
+                            if (requestedFile.Contains("images_icon"))
+                            {
+                                await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
+                                return;
+                            }
+
+                            if (requestedFile.StartsWith("metrics?") || requestedFile == "metrics")
+                            {
+                                await SendPrometheusAsync(context.Response, request);
+                                return;
+                            }
+
+                            if (requestedFile.Contains("Sensor"))
+                            {
+                                var sensorResult = new Dictionary<string, object>();
+                                HandleSensorRequest(request, sensorResult);
+                                await SendJsonSensorAsync(context.Response, sensorResult);
+                                return;
+                            }
+
+                            if (requestedFile.Contains("ResetAllMinMax"))
+                            {
+                                _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
+                                {
+                                    sensor.ResetMin();
+                                    sensor.ResetMax();
+                                }));
+                                await SendJsonAsync(context.Response, request);
+                                return;
+                            }
+
+                            // default file to be served
+                            if (string.IsNullOrEmpty(requestedFile))
+                                requestedFile = "index.html";
+
+                            string[] splits = requestedFile.Split('.');
+                            string ext = splits[splits.Length - 1];
+                            await ServeResourceFileAsync(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
                         }
-
-                        // default file to be served
-                        if (string.IsNullOrEmpty(requestedFile))
-                            requestedFile = "index.html";
-
-                        string[] splits = requestedFile.Split('.');
-                        string ext = splits[splits.Length - 1];
-                        await ServeResourceFileAsync(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"HTTP GET error: {ex}");
+                            try
+                            {
+                                context.Response.StatusCode = 500;
+                                await SendResponseAsync(context.Response, "{\"error\":\"" + ex.Message.Replace("\"", "\\\"") + "\"}", "application/json");
+                            }
+                            catch { }
+                        }
                         break;
                     }
                 default:
@@ -713,13 +736,13 @@ public class HttpServer
         if (request != null && request.QueryString != null && request.QueryString.Count > 0)
         {
             int archive = 0, timestamps = 0, lastvalue = 1;
-            
+
             foreach (string key in request.QueryString.AllKeys)
             {
                 switch (key)
                 {
                     case "timestamps":
-                        int.TryParse(request.QueryString[key], out timestamps);     
+                        int.TryParse(request.QueryString[key], out timestamps);
 
                         if (timestamps < 0 || timestamps > 1)
                             timestamps = 0;     // Enforce boolean range 0 to 1
@@ -783,7 +806,7 @@ public class HttpServer
         response.AddHeader("Access-Control-Allow-Origin", "*");
         await SendResponseAsync(response, responseContent, "application/json");
     }
-        
+
     private Dictionary<string, object> GenerateJsonForNode(Node n, ref int nodeIndex)
     {
         Dictionary<string, object> jsonNode = new()
@@ -807,9 +830,9 @@ public class HttpServer
                 jsonNode["Max"] = sensorNode.Max;
 
                 // Unformatted values for external systems to have consistent readings, e.g. Throughput will always be measured in B/s
-                jsonNode["RawMin"] = sensorNode.Sensor.Min;
-                jsonNode["RawValue"] = sensorNode.Sensor.Value;
-                jsonNode["RawMax"] = sensorNode.Sensor.Max;
+                jsonNode["RawMin"] = SanitizeFloat(sensorNode.Sensor.Min);
+                jsonNode["RawValue"] = SanitizeFloat(sensorNode.Sensor.Value);
+                jsonNode["RawMax"] = SanitizeFloat(sensorNode.Sensor.Max);
 
                 jsonNode["ImageURL"] = "images/transparent.png";
                 break;
@@ -834,6 +857,14 @@ public class HttpServer
         jsonNode["Children"] = children;
 
         return jsonNode;
+    }
+
+    private static object SanitizeFloat(float? value)
+    {
+        if (value.HasValue && !float.IsNaN(value.Value) && !float.IsInfinity(value.Value))
+            return value.Value;
+
+        return null;
     }
 
     private static string GetContentType(string extension)
@@ -870,6 +901,8 @@ public class HttpServer
                 return "ati.png";
             case HardwareType.GpuIntel:
                 return "intel.png";
+            case HardwareType.GpuQualcomm:
+                return "chip.png";
             case HardwareType.Storage:
                 return "hdd.png";
             case HardwareType.Motherboard:
