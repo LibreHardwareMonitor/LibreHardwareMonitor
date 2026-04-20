@@ -7,7 +7,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using DiskInfoToolkit;
-using StorageDeviceDIT = DiskInfoToolkit.StorageDevice;
 using StorageDIT = DiskInfoToolkit.Storage;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -41,7 +40,7 @@ internal class StorageGroup : IGroup, IHardwareChanged
         var disks = StorageDIT.GetDisks();
 
         //Transform storage device to hardware
-        _hardware.AddRange(disks.Select(s => new StorageDevice(s, GetID(s), settings)));
+        _hardware.AddRange(disks.Select(s => new StorageDevice(s, settings)));
 
         StorageDIT.DevicesChanged += OnStoragesChanged;
     }
@@ -50,7 +49,7 @@ internal class StorageGroup : IGroup, IHardwareChanged
     {
         foreach (var added in e.Added)
         {
-            var storageDevice = new StorageDevice(added, GetID(added), _settings);
+            var storageDevice = new StorageDevice(added, _settings);
 
             _hardware.Add(storageDevice);
             HardwareAdded?.Invoke(storageDevice);
@@ -64,36 +63,6 @@ internal class StorageGroup : IGroup, IHardwareChanged
                 _hardware.Remove(storageDevice);
                 HardwareRemoved?.Invoke(storageDevice);
             }
-        }
-    }
-
-    private string GetID(StorageDeviceDIT disk)
-    {
-        switch (disk.TransportKind)
-        {
-            case StorageTransportKind.Ata:
-                return "ata";
-            case StorageTransportKind.Scsi:
-                return "scsi";
-            case StorageTransportKind.Nvme:
-                return "nvme";
-            case StorageTransportKind.Usb:
-                return "usb";
-            case StorageTransportKind.Sd:
-                return "sd";
-            case StorageTransportKind.Mmc:
-                return "mmc";
-            case StorageTransportKind.Raid:
-                return "raid";
-            case StorageTransportKind.Sas:
-                return "sas";
-            case StorageTransportKind.Ahci:
-                return "ahci";
-            case StorageTransportKind.Virtual:
-                return "virtual";
-            case StorageTransportKind.Unknown:
-            default:
-                return "disk";
         }
     }
 
