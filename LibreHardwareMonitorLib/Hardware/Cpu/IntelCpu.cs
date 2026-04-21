@@ -712,20 +712,17 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax, out uint vEdx))
+        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax1, out uint vEdx1))
         {
-            // 优先检查高 32 位 (MSR Bits 47:32)
-            uint vidBits = (vEdx & 0xFFFF);
-            
-            // 如果高位没数据，尝试读取低 32 位 (MSR Bits 15:0)
-            if (vidBits == 0)
+            uint vidBits = (vEdx1 & 0xFFFF);
+        
+            if (vidBits == 0 && _microArchitecture == MicroArchitecture.PantherLake)
             {
-                vidBits = (vEax & 0xFFFF);
+                vidBits = (vEax1 & 0xFFFF);
             }
         
             if (vidBits > 0)
             {
-                // 8192.0f 是 Intel 约定的 VID 换算比例
                 _coreVoltage.Value = vidBits / 8192.0f;
             }
             else
@@ -736,22 +733,19 @@ internal sealed class IntelCpu : GenericCpu
 
         for (int i = 0; i < _coreVIDs?.Length; i++)
         {
-            // 使用 vEax 和 vEdx 避免与方法开头的变量冲突，并直接在 out 中声明
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax, out uint vEdx, _cpuId[i][0].Affinity))
+
+            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax2, out uint vEdx2, _cpuId[i][0].Affinity))
             {
-                // 直接取低 16 位，不要右移 32 位！
-                uint vidBits = (vEdx & 0xFFFF);
+                uint vidBitsLoop = (vEdx2 & 0xFFFF);
         
-                // 针对 Panther Lake 的特殊处理：如果高位没读到，尝试从低位读
-                if (vidBits == 0 && _microArchitecture == MicroArchitecture.PantherLake)
+                if (vidBitsLoop == 0 && _microArchitecture == MicroArchitecture.PantherLake)
                 {
-                    vidBits = (vEax & 0xFFFF);
+                    vidBitsLoop = (vEax2 & 0xFFFF);
                 }
         
-                if (vidBits > 0)
+                if (vidBitsLoop > 0)
                 {
-                    // 8192.0f = (float)(1 << 13)
-                    _coreVIDs[i].Value = vidBits / 8192.0f;
+                    _coreVIDs[i].Value = vidBitsLoop / 8192.0f;
                     ActivateSensor(_coreVIDs[i]);
                 }
                 else
