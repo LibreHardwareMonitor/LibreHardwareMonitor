@@ -736,10 +736,28 @@ internal sealed class IntelCpu : GenericCpu
 
         for (int i = 0; i < _coreVIDs?.Length; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
+            // 使用 vEax 和 vEdx 避免与方法开头的变量冲突，并直接在 out 中声明
+            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax, out uint vEdx, _cpuId[i][0].Affinity))
             {
-                _coreVIDs[i].Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
-                ActivateSensor(_coreVIDs[i]);
+                // 直接取低 16 位，不要右移 32 位！
+                uint vidBits = (vEdx & 0xFFFF);
+        
+                // 针对 Panther Lake 的特殊处理：如果高位没读到，尝试从低位读
+                if (vidBits == 0 && _microArchitecture == MicroArchitecture.PantherLake)
+                {
+                    vidBits = (vEax & 0xFFFF);
+                }
+        
+                if (vidBits > 0)
+                {
+                    // 8192.0f = (float)(1 << 13)
+                    _coreVIDs[i].Value = vidBits / 8192.0f;
+                    ActivateSensor(_coreVIDs[i]);
+                }
+                else
+                {
+                    DeactivateSensor(_coreVIDs[i]);
+                }
             }
             else
             {
