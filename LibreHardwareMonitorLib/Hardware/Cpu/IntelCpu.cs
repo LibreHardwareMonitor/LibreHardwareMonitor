@@ -712,9 +712,26 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
+        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out uint eax, out uint edx))
         {
-            _coreVoltage.Value = (edx & 0xFFFF) / 8192.0f;
+            // 逻辑：如果高 32 位 (edx) 为 0，尝试从低 32 位 (eax) 读取。
+            // 某些移动端或新架构 CPU 会将状态信息重新分配到 EAX。
+            uint vidBits = (edx & 0xFFFF);
+            if (vidBits == 0)
+            {
+                vidBits = (eax & 0xFFFF); // 尝试从低位获取
+            }
+        
+            if (vidBits > 0)
+            {
+                // 使用 8192.0f 作为除数是 Intel 的标准换算比例
+                _coreVoltage.Value = vidBits / 8192.0f;
+            }
+            else
+            {
+                // 如果依然为 0，可能该 MSR 在此型号上不提供电压，后续可能需要尝试其他 MSR (如 0x198 以外的)
+                _coreVoltage.Value = 0;
+            }
         }
 
         for (int i = 0; i < _coreVIDs?.Length; i++)
