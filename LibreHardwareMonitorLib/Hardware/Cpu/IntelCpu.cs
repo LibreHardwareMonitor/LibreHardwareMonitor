@@ -267,6 +267,11 @@ internal sealed class IntelCpu : GenericCpu
                             _microArchitecture = MicroArchitecture.PantherLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
+
+                        default:
+                            _microArchitecture = MicroArchitecture.Unknown;
+                            tjMax = Floats(100);
+                            break;
                     }
                 }
 
