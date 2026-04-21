@@ -1,11 +1,8 @@
 name: pull requests
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+    branches: [master]
 
 jobs:
   build:
