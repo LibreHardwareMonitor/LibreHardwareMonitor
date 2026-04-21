@@ -712,17 +712,20 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out uint statusEax, out uint statusEdx))
+        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax, out uint vEdx))
         {
-            uint vidBits = (statusEdx & 0xFFFF);
+            // 优先检查高 32 位 (MSR Bits 47:32)
+            uint vidBits = (vEdx & 0xFFFF);
             
+            // 如果高位没数据，尝试读取低 32 位 (MSR Bits 15:0)
             if (vidBits == 0)
             {
-                vidBits = (statusEax & 0xFFFF);
+                vidBits = (vEax & 0xFFFF);
             }
         
             if (vidBits > 0)
             {
+                // 8192.0f 是 Intel 约定的 VID 换算比例
                 _coreVoltage.Value = vidBits / 8192.0f;
             }
             else
