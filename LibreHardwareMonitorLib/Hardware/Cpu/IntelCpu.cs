@@ -468,8 +468,8 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.KabyLake or
             MicroArchitecture.LunarLake or
             MicroArchitecture.MeteorLake or
-            MicroArchitecture.RaptorLake or
             MicroArchitecture.PantherLake or
+            MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
             MicroArchitecture.SandyBridge or
             MicroArchitecture.Silvermont or
