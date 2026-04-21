@@ -714,7 +714,7 @@ internal sealed class IntelCpu : GenericCpu
 
         if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
         {
-            _coreVoltage.Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
+            _coreVoltage.Value = (edx & 0xFFFF) / 8192.0f;
         }
 
         for (int i = 0; i < _coreVIDs?.Length; i++)
