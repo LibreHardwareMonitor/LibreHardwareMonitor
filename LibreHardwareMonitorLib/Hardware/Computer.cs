@@ -23,6 +23,7 @@ using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
+using LibreHardwareMonitor.Hardware.Npu;
 using LibreHardwareMonitor.Hardware.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
@@ -43,6 +44,7 @@ public class Computer : IComputer
     private bool _controllerEnabled;
     private bool _cpuEnabled;
     private bool _gpuEnabled;
+    private bool _npuEnabled;
     private bool _powerMonitorEnabled;
     private bool _memoryEnabled;
     private bool _motherboardEnabled;
@@ -195,6 +197,24 @@ public class Computer : IComputer
             }
 
             _gpuEnabled = value;
+        }
+    }
+
+    /// <inheritdoc />
+    public bool IsNpuEnabled
+    {
+        get { return _npuEnabled; }
+        set
+        {
+            if (_open && value != _npuEnabled)
+            {
+                if (value)
+                    Add(new NpuGroup(_settings));
+                else
+                    RemoveType<NpuGroup>();
+            }
+
+            _npuEnabled = value;
         }
     }
 
@@ -547,6 +567,9 @@ public class Computer : IComputer
 
         if (_powerMonitorEnabled)
             Add(new PowerMonitorGroup(_settings));
+
+        if (_npuEnabled)
+            Add(new NpuGroup(_settings));
 
         if (_controllerEnabled)
         {
