@@ -459,18 +459,15 @@ internal sealed class SuperIOHardware : Hardware
                     case Manufacturer.ASRock when model == Model.B850I_LIGHTNING_WIFI:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
-                        v.Add(new Voltage("Vcore", 2));
-                        v.Add(new Voltage("Voltage #1", 3));
-                        v.Add(new Voltage("DIMM", 4));
-                        v.Add(new Voltage("CPU I/O", 5));
-                        v.Add(new Voltage("CPU System Agent", 6));
-                        v.Add(new Voltage("Voltage #2", 7));
-                        v.Add(new Voltage("AVCC3", 8));
-                        v.Add(new Voltage("CPU Termination", 9));
-                        v.Add(new Voltage("VRef", 10));
-                        v.Add(new Voltage("VSB", 11));
+                        v.Add(new Voltage("VCore", 2));
+                        v.Add(new Voltage("SIO", 3));
+                        v.Add(new Voltage("DRAM", 4));
+                        v.Add(new Voltage("+3.3V", 8));
+                        v.Add(new Voltage("VTT", 9));
+                        v.Add(new Voltage("VREL", 10));
+                        v.Add(new Voltage("3VSB", 11));
                         v.Add(new Voltage("AVSB", 12));
-                        v.Add(new Voltage("CMOS Battery", 13));
+                        v.Add(new Voltage("VBAT", 13));
 
                         t.Add(new Temperature("M/B", 1));
                         t.Add(new Temperature("T_SENSOR", 2));
