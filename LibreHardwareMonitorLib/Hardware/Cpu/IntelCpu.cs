@@ -714,9 +714,9 @@ internal sealed class IntelCpu : GenericCpu
 
         if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
         {
-            uint vidBits = (edx & 0xFFFF);        
+            uint vidBits = edx & 0xFFFF;        
             if (vidBits == 0)
-                vidBits = (edx & 0xFFFF);
+                vidBits = edx & 0xFFFF;
         
             if (vidBits > 0)
             {
@@ -733,9 +733,9 @@ internal sealed class IntelCpu : GenericCpu
 
             if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
             {
-                uint vidBitsLoop = (edx & 0xFFFF);        
+                uint vidBitsLoop = edx & 0xFFFF;        
                 if (vidBitsLoop == 0)
-                    vidBitsLoop = (eax & 0xFFFF);
+                    vidBitsLoop = eax & 0xFFFF;
         
                 if (vidBitsLoop > 0)
                 {
