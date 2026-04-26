@@ -4,17 +4,34 @@
 # https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+
 updates:
-    # LibreHardwareMonitor.csproj
   - package-ecosystem: "nuget"
     directory: "/LibreHardwareMonitor"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
 
-    # LibreHardwareMonitorLib.csproj
   - package-ecosystem: "nuget"
-    directory: "/LibreHardwareMonitorLib" 
+    directory: "/LibreHardwareMonitorLib"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "nuget"
+    directory: "/Aga.Controls"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
