@@ -712,14 +712,11 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax1, out uint vEdx1))
+        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
         {
-            uint vidBits = (vEdx1 & 0xFFFF);
-        
-            if (vidBits == 0 && _microArchitecture == MicroArchitecture.PantherLake)
-            {
-                vidBits = (vEax1 & 0xFFFF);
-            }
+            uint vidBits = (edx & 0xFFFF);        
+            if (vidBits == 0)
+                vidBits = (edx & 0xFFFF);
         
             if (vidBits > 0)
             {
@@ -734,14 +731,11 @@ internal sealed class IntelCpu : GenericCpu
         for (int i = 0; i < _coreVIDs?.Length; i++)
         {
 
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint vEax2, out uint vEdx2, _cpuId[i][0].Affinity))
+            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
             {
-                uint vidBitsLoop = (vEdx2 & 0xFFFF);
-        
-                if (vidBitsLoop == 0 && _microArchitecture == MicroArchitecture.PantherLake)
-                {
-                    vidBitsLoop = (vEax2 & 0xFFFF);
-                }
+                uint vidBitsLoop = (edx & 0xFFFF);        
+                if (vidBitsLoop == 0)
+                    vidBitsLoop = (eax & 0xFFFF);
         
                 if (vidBitsLoop > 0)
                 {
