@@ -8,16 +8,16 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # 5.2.0
         with:
           dotnet-version: '10.0.x'
-      - uses: nuget/setup-nuget@v3
-      - uses: microsoft/setup-msbuild@v3
+      - uses: nuget/setup-nuget@fd55a6f3b34392fa83fde1454582407d8c714123 # 4.0.0
+      - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # 3.0.0
         with:
           msbuild-architecture: x64
 
-      - uses: dorny/paths-filter@v4
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # 4.0.1
         id: changes
         with:
           filters: |
@@ -40,14 +40,14 @@ jobs:
         run: dotnet build LibreHardwareMonitor\LibreHardwareMonitor.csproj -c Release --no-restore -p:Platform=x64
 
       - name: Publish net472 application
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: LibreHardwareMonitor
           path: |
             bin/Release/net472
 
       - name: Publish net10.0 application
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: LibreHardwareMonitor (.NET 10)
           path: |
@@ -60,7 +60,7 @@ jobs:
         run: dotnet build LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release --no-restore -p:Platform=x64
 
       - name: Publish x64 libraries
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: LibreHardwareMonitorLib (x64)
           path: |
@@ -70,7 +70,7 @@ jobs:
         run: dotnet build LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release --no-restore -p:Platform=x86
 
       - name: Publish x86 libraries
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: LibreHardwareMonitorLib (x86)
           path: |
@@ -80,7 +80,7 @@ jobs:
         run: dotnet build LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release --no-restore -p:Platform=ARM64
 
       - name: Publish ARM64 libraries
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: LibreHardwareMonitorLib (ARM64)
           path: |
@@ -93,7 +93,7 @@ jobs:
         run: dotnet pack LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release -p:PackMainNuget=true --no-build --output bin\Release
 
       - name: Publish nupkg
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: LibreHardwareMonitorLib-nupkg
           path: |
