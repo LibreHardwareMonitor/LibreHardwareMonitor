@@ -151,8 +151,8 @@ internal sealed class LinuxIntelCpu : IntelCpu
         {
             stream.Seek(0, SeekOrigin.Begin);
 
-            Span<byte> buffer = stackalloc byte[32];
-            int read = stream.Read(buffer);
+            byte[] buffer = new byte[32];
+            int read = stream.Read(buffer, 0, buffer.Length);
             if (read <= 0)
                 return false;
 
