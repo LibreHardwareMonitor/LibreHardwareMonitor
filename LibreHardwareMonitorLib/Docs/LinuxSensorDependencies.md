@@ -33,7 +33,3 @@ Recommended Linux-side setup:
 3. Ensure the process user is in that group and has refreshed group membership.
 
 Without this setup, read-only telemetry can still work while `SetControl` writes fail with permission errors.
-
-## Related Project Packages
-
-The project contains general dependencies in `LibreHardwareMonitorLib.csproj`, but there is no dedicated NuGet dependency that powers only LMSensors or Linux Intel coretemp reading.
