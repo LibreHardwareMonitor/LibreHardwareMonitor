@@ -175,6 +175,7 @@ internal class LMSensors
     private class LMChip : ISuperIO
     {
         private readonly FileStream[] _fanStreams;
+        private readonly string _path;
         private readonly string[] _pwmEnablePaths;
         private readonly string[] _pwmPaths;
         private readonly string[] _restorePwmEnableValues;
@@ -185,6 +186,7 @@ internal class LMSensors
         public LMChip(Chip chip, string path)
         {
             Chip = chip;
+            _path = path;
 
             string[] voltagePaths = Directory.GetFiles(path, "in*_input");
             Voltages = new float?[voltagePaths.Length];
@@ -204,8 +206,8 @@ internal class LMSensors
             for (int i = 0; i < fanPaths.Length; i++)
                 _fanStreams[i] = new FileStream(fanPaths[i], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-            var pwmPaths = GetIndexedPaths(path, @"^pwm(?<index>\d+)$");
-            var pwmEnablePaths = GetIndexedPaths(path, @"^pwm(?<index>\d+)_enable$");
+            string[] pwmPaths = GetIndexedPaths(path, @"^pwm(?<index>\d+)$");
+            string[] pwmEnablePaths = GetIndexedPaths(path, @"^pwm(?<index>\d+)_enable$");
             int controlCount = Math.Max(pwmPaths.Length, pwmEnablePaths.Length);
 
             Controls = controlCount > 0 ? new float?[controlCount] : Array.Empty<float?>();
@@ -239,7 +241,22 @@ internal class LMSensors
 
         public string GetReport()
         {
-            return null;
+            StringBuilder r = new();
+
+            r.AppendLine("LPC " + GetType().Name);
+            r.AppendLine();
+            r.Append("Chip: ");
+            r.AppendLine(Chip.ToString());
+            r.Append("Path: ");
+            r.AppendLine(_path);
+            r.AppendLine();
+
+            AppendStreamReport(r, "Voltages", _voltageStreams);
+            AppendStreamReport(r, "Temperatures", _temperatureStreams);
+            AppendStreamReport(r, "Fans", _fanStreams);
+            AppendControlReport(r);
+
+            return r.ToString();
         }
 
         public void SetControl(int index, byte? value)
@@ -247,7 +264,7 @@ internal class LMSensors
             if (index < 0 || index >= _pwmPaths.Length)
                 return;
 
-            var pwmPath = _pwmPaths[index];
+            string pwmPath = _pwmPaths[index];
             if (string.IsNullOrEmpty(pwmPath))
                 return;
 
@@ -314,14 +331,14 @@ internal class LMSensors
 
             for (int i = 0; i < Controls.Length; i++)
             {
-                var pwmPath = i < _pwmPaths.Length ? _pwmPaths[i] : null;
+                string? pwmPath = i < _pwmPaths.Length ? _pwmPaths[i] : null;
                 if (string.IsNullOrEmpty(pwmPath))
                 {
                     Controls[i] = null;
                     continue;
                 }
 
-                var raw = ReadWholeFile(pwmPath);
+                string raw = ReadWholeFile(pwmPath);
                 if (int.TryParse(raw?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int value))
                     Controls[i] = (float)Math.Round(value * 100.0f / 255.0f, 0);
                 else
@@ -350,7 +367,7 @@ internal class LMSensors
                 return Array.Empty<string>();
 
             int maxIndex = indexed.Max(x => x.index);
-            var paths = new string[maxIndex + 1];
+            string[] paths = new string[maxIndex + 1];
             foreach (var item in indexed)
                 paths[item.index] = item.path;
 
@@ -372,18 +389,90 @@ internal class LMSensors
             }
         }
 
+        private static void AppendStreamReport(StringBuilder report, string title, FileStream[] streams)
+        {
+            if (streams.Length == 0)
+                return;
+
+            report.AppendLine(title);
+            report.AppendLine();
+
+            foreach (FileStream stream in streams)
+            {
+                AppendNodeReport(report, stream.Name, ReadFirstLine(stream));
+            }
+
+            report.AppendLine();
+        }
+
+        private void AppendControlReport(StringBuilder report)
+        {
+            if (_pwmPaths.Length == 0 && _pwmEnablePaths.Length == 0)
+                return;
+
+            report.AppendLine("Controls");
+            report.AppendLine();
+
+            int controlCount = Math.Max(_pwmPaths.Length, _pwmEnablePaths.Length);
+            for (int i = 0; i < controlCount; i++)
+            {
+                if (i < _pwmPaths.Length && !string.IsNullOrEmpty(_pwmPaths[i]))
+                    AppendNodeReport(report, _pwmPaths[i], ReadWholeFile(_pwmPaths[i])?.Trim());
+
+                if (i < _pwmEnablePaths.Length && !string.IsNullOrEmpty(_pwmEnablePaths[i]))
+                {
+                    AppendNodeReport(report, _pwmEnablePaths[i], ReadWholeFile(_pwmEnablePaths[i])?.Trim());
+
+                    string restoreValue = _restorePwmEnableValues[i];
+                    if (!string.IsNullOrEmpty(restoreValue))
+                    {
+                        report.Append("  restore: ");
+                        report.AppendLine(restoreValue);
+                    }
+                }
+            }
+
+            report.AppendLine();
+        }
+
+        private static void AppendNodeReport(StringBuilder report, string path, string value)
+        {
+            report.Append("  ");
+            report.Append(Path.GetFileName(path));
+
+            string label = ReadLabel(path);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                report.Append(" (");
+                report.Append(label);
+                report.Append(")");
+            }
+
+            report.Append(": ");
+            report.AppendLine(string.IsNullOrEmpty(value) ? "<unavailable>" : value);
+        }
+
+        private static string ReadLabel(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !path.EndsWith("_input", StringComparison.Ordinal))
+                return null;
+
+            string labelPath = path[..^"_input".Length] + "_label";
+            return ReadWholeFile(labelPath)?.Trim();
+        }
+
         private void SetManualControlMode(int index)
         {
             if (index < 0 || index >= _pwmEnablePaths.Length)
                 return;
 
-            var pwmEnablePath = _pwmEnablePaths[index];
+            string pwmEnablePath = _pwmEnablePaths[index];
             if (string.IsNullOrEmpty(pwmEnablePath))
                 return;
 
             try
             {
-                var currentMode = ReadWholeFile(pwmEnablePath)?.Trim();
+                string? currentMode = ReadWholeFile(pwmEnablePath)?.Trim();
                 if (currentMode != "1")
                     File.WriteAllText(pwmEnablePath, "1");
             }
@@ -398,11 +487,11 @@ internal class LMSensors
             if (index < 0 || index >= _pwmEnablePaths.Length)
                 return;
 
-            var pwmEnablePath = _pwmEnablePaths[index];
+            string pwmEnablePath = _pwmEnablePaths[index];
             if (string.IsNullOrEmpty(pwmEnablePath))
                 return;
 
-            var restoreValue = _restorePwmEnableValues[index];
+            string restoreValue = _restorePwmEnableValues[index];
             if (string.IsNullOrEmpty(restoreValue))
                 return;
 
@@ -416,21 +505,26 @@ internal class LMSensors
             }
         }
 
-        private static string ReadFirstLine(Stream stream)
+        private static string ReadFirstLine(FileStream stream)
         {
+            const int EndOfStream = -1;
+            const char LineFeed = '\n';
+
             StringBuilder sb = new();
             try
             {
                 stream.Seek(0, SeekOrigin.Begin);
                 int b = stream.ReadByte();
-                while (b is not -1 and not 10)
+                while (b is not EndOfStream and not LineFeed)
                 {
                     sb.Append((char)b);
                     b = stream.ReadByte();
                 }
             }
             catch
-            { }
+            {
+                // Ignore transient read failures if the hwmon node disappears or the stream becomes unreadable.
+            }
 
             return sb.ToString();
         }
