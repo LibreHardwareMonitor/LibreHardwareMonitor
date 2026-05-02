@@ -12,7 +12,7 @@ using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
-internal sealed class IntelCpu : GenericCpu
+internal sealed class WindowsIntelCpu : IntelCpu
 {
     private readonly Sensor _busClock;
     private readonly Sensor _coreAvg;
@@ -36,11 +36,8 @@ internal sealed class IntelCpu : GenericCpu
 
     private readonly IntelMsr _pawnModule;
 
-    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
+    public WindowsIntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
-        if (Software.OperatingSystem.IsUnix)
-            return;
-
         _pawnModule = new IntelMsr();
 
         uint eax;
@@ -529,7 +526,7 @@ internal sealed class IntelCpu : GenericCpu
         Update();
     }
 
-    public float EnergyUnitsMultiplier { get; }
+    public override float EnergyUnitsMultiplier { get; }
 
     private float[] Floats(float f)
     {
@@ -570,7 +567,7 @@ internal sealed class IntelCpu : GenericCpu
     public override void Close()
     {
         base.Close();
-        _pawnModule.Close();
+        _pawnModule?.Close();
     }
 
     public override void Update()
