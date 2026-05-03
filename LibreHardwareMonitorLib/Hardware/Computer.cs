@@ -180,6 +180,7 @@ public class Computer : IComputer
                 {
                     Add(new AmdGpuGroup(_settings));
                     Add(new NvidiaGroup(_settings));
+                    Add(new QualcommGpuGroup(_settings));
 
                     if (_cpuEnabled)
                         Add(new IntelGpuGroup(GetIntelCpus(), _settings));
@@ -189,6 +190,7 @@ public class Computer : IComputer
                     RemoveType<AmdGpuGroup>();
                     RemoveType<NvidiaGroup>();
                     RemoveType<IntelGpuGroup>();
+                    RemoveType<QualcommGpuGroup>();
                 }
             }
 
@@ -537,6 +539,7 @@ public class Computer : IComputer
         {
             Add(new AmdGpuGroup(_settings));
             Add(new NvidiaGroup(_settings));
+            Add(new QualcommGpuGroup(_settings));
 
             if (_cpuEnabled)
                 Add(new IntelGpuGroup(GetIntelCpus(), _settings));
