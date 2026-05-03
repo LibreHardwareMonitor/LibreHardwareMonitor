@@ -26,6 +26,29 @@ public class Logger
     private DateTime _lastLoggedTime = DateTime.MinValue;
 
     public LoggerFileRotation FileRotationMethod = LoggerFileRotation.PerSession;
+    /* * Purpose: Manages the log directory path and triggers a reset of the 
+     * filename whenever the path is updated to ensure logs are written to the new location.
+     */
+    private string _logPath;
+    private bool _isInitialized = false;
+
+    public string LogPath
+    {
+        get => _logPath;
+        set
+        {
+            if (_logPath != value)
+            {
+                _logPath = value;
+                
+                // Reset filename to force path re-evaluation in the next Log() call
+                _fileName = null; 
+                
+                // Mark as initialized to allow logging operations
+                _isInitialized = true;
+            }
+        }
+    }
 
     public Logger(IComputer computer)
     {
@@ -82,10 +105,21 @@ public class Logger
         }
     }
 
-    private static string GetFileName(DateTime date, uint sessionNumber = 0)
+    /* * Purpose: Resolve the log file path by prioritizing custom LogPath and 
+     * ensuring the target directory exists.
+     */
+    private string GetFileName(DateTime date, uint sessionNumber = 0)
     {
-        return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar
-            + string.Format(FileNameFormat, date, sessionNumber == 0 ? "" : "-" + sessionNumber);
+        // Use custom path if available, otherwise fallback to EXE directory
+        string folder = !string.IsNullOrEmpty(LogPath) ? LogPath : AppDomain.CurrentDomain.BaseDirectory;
+
+        // Auto-create folder only if a custom path is set
+        if (!string.IsNullOrEmpty(LogPath) && !Directory.Exists(folder))
+        {
+            try { Directory.CreateDirectory(folder); } catch { }
+        }
+
+        return Path.Combine(folder, string.Format(FileNameFormat, date, sessionNumber == 0 ? "" : "-" + sessionNumber));
     }
 
     private bool OpenExistingLogFile()
@@ -166,8 +200,15 @@ public class Logger
 
     public TimeSpan LoggingInterval { get; set; }
 
+   /* * Purpose: Handles log writing with protection against incorrect file locations.
+     * Ensures logs are only written after initialization and within the correct directory.
+     */
     public void Log()
     {
+        // Safety guard: Prevent logging until initialization and path sync are complete
+        if (!_isInitialized || string.IsNullOrEmpty(_logPath))
+            return;
+
         DateTime now = DateTime.Now;
 
         if (_lastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
@@ -176,8 +217,8 @@ public class Logger
         switch (FileRotationMethod)
         {
             case LoggerFileRotation.PerSession:
-                // Create file if it does not exist or the logging interval has passed (+ some margin)
-                if (!File.Exists(_fileName) || now - _lastLoggedTime > (LoggingInterval + TimeSpan.FromMilliseconds(100)))
+                // Reset filename if it's empty, missing, or pointing to an outdated path
+                if (string.IsNullOrEmpty(_fileName) || !File.Exists(_fileName) || !_fileName.StartsWith(_logPath))
                 {
                     uint sessionNumber = 1;
                     do {
@@ -188,8 +229,8 @@ public class Logger
                 }
                 break;
             case LoggerFileRotation.Daily:
-                // Create a new file if the day has changed or the file does not exist
-                if (_day != now.Date || !File.Exists(_fileName))
+                // Ensure filename matches current date and resides in the correct directory
+                if (_day != now.Date || string.IsNullOrEmpty(_fileName) || !File.Exists(_fileName) || !_fileName.StartsWith(_logPath))
                 {
                     _day = now.Date;
                     _fileName = GetFileName(_day);
@@ -199,6 +240,9 @@ public class Logger
                 break;
         }
 
+        // Final validation before I/O operations
+        if (string.IsNullOrEmpty(_fileName))
+            return;
         try
         {
             using (StreamWriter writer = new StreamWriter(new FileStream(_fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))

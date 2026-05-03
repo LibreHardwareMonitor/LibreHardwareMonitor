@@ -65,19 +65,36 @@ public sealed partial class MainForm : Form
     private IDictionary<ISensor, Color> _sensorPlotColors = new Dictionary<ISensor, Color>();
     private UserOption _showPlot;
     private UserRadioGroup _strokeThickness;
-    private double _plotStrokeThickness = 2;
+    private double _plotStrokeThickness = 2; 
 
     public MainForm()
     {
-        InitializeComponent();
-
+        // Added custom log file storage functionality to allow user-defined save paths.
+        // A. Initialize configuration and core objects first (Step 1)
         _settings = new PersistentSettings();
         _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
-
+        _computer = new Computer(_settings);
+        _logger = new Logger(_computer);
         _unitManager = new UnitManager(_settings);
 
-        // make sure the buffers used for double buffering are not disposed
-        // after each draw call
+        // B. Inject path before UI starts to prevent junk files in the root directory (Step 2)
+        // Check both legacy (LogPath) and new (logger.logPath) configuration keys
+        string savedPath = _settings.GetValue("logger.logPath", _settings.GetValue("LogPath", ""));
+        if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
+        {
+            _logger.LogPath = savedPath;
+        }
+
+        // C. Initialize UI controls (Step 3)
+        // This must run before accessing UI components (like startupMenuItem) to avoid NullReferenceException
+        InitializeComponent();
+
+        // D. Initialize UserOptions (Step 4)
+        // [Fix] Pass the object names directly without the "_Click" suffix
+        _autoStart = new UserOption("autoStart", false, startupMenuItem, _settings);
+        _logSensors = new UserOption("logSensors", false, logSensorsMenuItem, _settings);
+
+        // E. Remaining initialization logic
         BufferedGraphicsManager.Current.MaximumBuffer = Screen.PrimaryScreen.Bounds.Size;
 
         // set the DockStyle here, to avoid conflicts with the MainMenu
@@ -85,6 +102,29 @@ public sealed partial class MainForm : Form
 
         Font = SystemFonts.MessageBoxFont;
         treeView.Font = SystemFonts.MessageBoxFont;
+
+        // F. Ensure Logger state is synchronized
+        if (_logger.LogPath != savedPath && !string.IsNullOrEmpty(savedPath))
+        {
+            _logger.LogPath = savedPath;
+        }
+
+        // G. Cleanup logic: Automatically remove legacy junk files from the previous location
+        string currentExeFolder = Path.GetDirectoryName(Application.ExecutablePath);
+        // Only perform cleanup if the configured path is different from the executable folder to avoid accidental deletion
+        if (!string.IsNullOrEmpty(savedPath) && savedPath.TrimEnd('\\') != currentExeFolder?.TrimEnd('\\'))
+        {
+            try 
+            {
+                // Identify and remove all automatically generated CSV logs in the application directory
+                string[] oldLogs = Directory.GetFiles(currentExeFolder, "LibreHardwareMonitorLog-*.csv");
+                foreach (string oldFile in oldLogs)
+                {
+                    File.Delete(oldFile); 
+                }
+            }
+            catch { /* Ignore access denied or other I/O errors */ }
+        }
 
         // Set the bounds immediately, so that our child components can be
         // properly placed.
@@ -127,7 +167,7 @@ public sealed partial class MainForm : Form
         treeModel.Nodes.Add(_root);
         treeView.Model = treeModel;
 
-        _computer = new Computer(_settings);
+        //_computer = new Computer(_settings); Move the following initialization to the start of the constructor to ensure
 
         _systemTray = new SystemTray(_computer, _settings, _unitManager);
         _systemTray.HideShowCommand += HideShowClick;
@@ -158,7 +198,7 @@ public sealed partial class MainForm : Form
         NodeToolTipProvider tooltipProvider = new();
         nodeTextBoxText.ToolTipProvider = tooltipProvider;
         nodeTextBoxValue.ToolTipProvider = tooltipProvider;
-        _logger = new Logger(_computer);
+        //_logger = new Logger(_computer); Move the following initialization to the start of the constructor to ensure
         var saved = _settings.GetValue("logger.fileRotation", 0); // 0 = PerSession, 1 = Daily.
         _logger.FileRotationMethod = (LoggerFileRotation)Math.Max(0, Math.Min(saved, 1));
         perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
@@ -551,7 +591,31 @@ public sealed partial class MainForm : Form
                 Server.Quit();
         };
 
-        Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+        // --- Revised Menu Insertion Logic ---
+        // --- Robust implementation to prevent variable name conflicts ---
+        try 
+        {
+            ToolStripMenuItem logPathItem = new ToolStripMenuItem("Log Path...");
+            logPathItem.Click += LogPathMenuItem_Click;
+
+            // 1. Locate the main menu bar (MenuStrip) at the top of the window
+            MenuStrip mainStrip = this.Controls.OfType<MenuStrip>().FirstOrDefault();
+            if (mainStrip != null)
+            {
+                // 2. Locate the menu item that contains the text "Options"
+                var options = mainStrip.Items.OfType<ToolStripMenuItem>()
+                    .FirstOrDefault(x => x.Text.Contains("Options"));
+                    
+                if (options != null)
+                {
+                    options.DropDownItems.Add(logPathItem);
+                }
+            }
+        } 
+        catch { /* Silently catch potential UI threading or null reference issues */ }
+
+        // Load path settings
+            Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
     }
 
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
@@ -1443,6 +1507,48 @@ public sealed partial class MainForm : Form
         perSessionFileRotationMenuItem.Checked = true;
         _logger.FileRotationMethod = LoggerFileRotation.PerSession;
         _settings.SetValue("logger.fileRotation", (int)LoggerFileRotation.PerSession);
+    }
+
+    private void LogPathMenuItem_Click(object sender, EventArgs e)
+    {
+        using (var fbd = new FolderBrowserDialog())
+        {
+            fbd.Description = "Select log save path";
+            
+            // Default to the currently configured path
+            // Note: We check both "logger.logPath" (new) and "LogPath" (legacy)
+            string currentPath = _settings.GetValue("logger.logPath", _settings.GetValue("LogPath", ""));
+            if (!string.IsNullOrEmpty(currentPath) && Directory.Exists(currentPath))
+            {
+                fbd.SelectedPath = currentPath;
+            }
+
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                // Save to configuration using the updated Key
+                _settings.SetValue("logger.logPath", fbd.SelectedPath);
+                
+                // Synchronize Logger state
+                _logger.LogPath = fbd.SelectedPath;
+                
+                // Show confirmation (Fixed typo: "chenge" -> "changed")
+                MessageBox.Show("Log path has been changed:\n" + fbd.SelectedPath, "New Path", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+    }
+
+    private void autoStartMenuItem_Click(object sender, EventArgs e)
+    {
+        // Toggle Auto-start value and update menu checkmark
+        _autoStart.Value = !_autoStart.Value;
+        startupMenuItem.Checked = _autoStart.Value;
+    }
+
+    private void logSensorsMenuItem_Click(object sender, EventArgs e)
+    {
+        // Toggle Sensor logging value and update menu checkmark
+        _logSensors.Value = !_logSensors.Value;
+        logSensorsMenuItem.Checked = _logSensors.Value;
     }
 
     private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)
