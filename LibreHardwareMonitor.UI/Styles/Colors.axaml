@@ -1,0 +1,64 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Background layers -->
+    <Color x:Key="BgPrimary">#0D1117</Color>
+    <Color x:Key="BgSecondary">#161B22</Color>
+    <Color x:Key="BgTertiary">#1C2333</Color>
+    <Color x:Key="BgCard">#1C2333</Color>
+    <Color x:Key="BgCardHover">#252D3D</Color>
+    <Color x:Key="BgSidebar">#0D1117</Color>
+    <Color x:Key="BgInput">#0D1117</Color>
+
+    <!-- Borders -->
+    <Color x:Key="BorderDefault">#2A3142</Color>
+    <Color x:Key="BorderSubtle">#1E2736</Color>
+    <Color x:Key="BorderActive">#3B82F6</Color>
+
+    <!-- Text -->
+    <Color x:Key="TextPrimary">#E6EDF3</Color>
+    <Color x:Key="TextSecondary">#8B949E</Color>
+    <Color x:Key="TextTertiary">#6E7681</Color>
+    <Color x:Key="TextAccent">#58A6FF</Color>
+
+    <!-- Accent / Status colors -->
+    <Color x:Key="AccentBlue">#3B82F6</Color>
+    <Color x:Key="AccentCyan">#22D3EE</Color>
+    <Color x:Key="AccentGreen">#10B981</Color>
+    <Color x:Key="AccentYellow">#F59E0B</Color>
+    <Color x:Key="AccentOrange">#F97316</Color>
+    <Color x:Key="AccentRed">#EF4444</Color>
+    <Color x:Key="AccentPurple">#A78BFA</Color>
+    <Color x:Key="AccentPink">#EC4899</Color>
+
+    <!-- Gauge arc backgrounds -->
+    <Color x:Key="GaugeTrack">#1E2736</Color>
+
+    <!-- Sidebar -->
+    <Color x:Key="SidebarItemHover">#1C2333</Color>
+    <Color x:Key="SidebarItemActive">#1F2A3D</Color>
+    <Color x:Key="SidebarAccent">#3B82F6</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}" />
+    <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}" />
+    <SolidColorBrush x:Key="BgTertiaryBrush" Color="{StaticResource BgTertiary}" />
+    <SolidColorBrush x:Key="BgCardBrush" Color="{StaticResource BgCard}" />
+    <SolidColorBrush x:Key="BgCardHoverBrush" Color="{StaticResource BgCardHover}" />
+    <SolidColorBrush x:Key="BgSidebarBrush" Color="{StaticResource BgSidebar}" />
+    <SolidColorBrush x:Key="BorderDefaultBrush" Color="{StaticResource BorderDefault}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtle}" />
+    <SolidColorBrush x:Key="BorderActiveBrush" Color="{StaticResource BorderActive}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}" />
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiary}" />
+    <SolidColorBrush x:Key="TextAccentBrush" Color="{StaticResource TextAccent}" />
+    <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlue}" />
+    <SolidColorBrush x:Key="AccentCyanBrush" Color="{StaticResource AccentCyan}" />
+    <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}" />
+    <SolidColorBrush x:Key="AccentYellowBrush" Color="{StaticResource AccentYellow}" />
+    <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}" />
+    <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRed}" />
+    <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}" />
+    <SolidColorBrush x:Key="GaugeTrackBrush" Color="{StaticResource GaugeTrack}" />
+</ResourceDictionary>
