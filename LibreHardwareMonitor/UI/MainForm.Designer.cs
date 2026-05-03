@@ -61,6 +61,7 @@ namespace LibreHardwareMonitor.UI
             this.hddMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nicMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.psuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.npuMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -299,6 +300,7 @@ namespace LibreHardwareMonitor.UI
             this.hddMenuItem,
             this.nicMenuItem,
             this.psuMenuItem,
+            this.npuMenuItem,
             this.batteryMenuItem});
             this.menuItemFileHardware.Name = "menuItem5";
             this.menuItemFileHardware.Size = new System.Drawing.Size(180, 22);
@@ -1095,6 +1097,12 @@ namespace LibreHardwareMonitor.UI
             this.treeView.SizeChanged += new System.EventHandler(this.TreeView_SizeChanged);
             this.treeView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TreeView_KeyDown);
             //
+            // npuMenuItem
+            //
+            this.npuMenuItem.Name = "npuMenuItem";
+            this.npuMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.npuMenuItem.Text = "NPU";
+            //
             // batteryMenuItem
             //
             this.batteryMenuItem.Name = "batteryMenuItem";
@@ -1235,6 +1243,7 @@ namespace LibreHardwareMonitor.UI
         private ToolStripRadioButtonMenuItem timeWindow24hMenuItem;
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem npuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem fileRotationMethod;

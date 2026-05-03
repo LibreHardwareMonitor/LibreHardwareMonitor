@@ -37,6 +37,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
     private readonly PlotPanel _plotPanel;
+    private readonly UserOption _readNpuSensors;
     private readonly UserOption _readBatterySensors;
     private readonly UserOption _readCpuSensors;
     private readonly UserOption _readFanControllersSensors;
@@ -281,6 +282,9 @@ public sealed partial class MainForm : Form
 
         _readPsuSensors = new UserOption("psuMenuItem", true, psuMenuItem, _settings);
         _readPsuSensors.Changed += delegate { _computer.IsPsuEnabled = _readPsuSensors.Value; };
+
+        _readNpuSensors = new UserOption("npuMenuItem", true, npuMenuItem, _settings);
+        _readNpuSensors.Changed += delegate { _computer.IsNpuEnabled = _readNpuSensors.Value; };
 
         _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
         _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
