@@ -12,9 +12,11 @@ namespace LibreHardwareMonitor.Windows.Forms.Utilities;
 
 public class EmbeddedResources
 {
+    const string ResourceNamespace = $"LibreHardwareMonitor.Windows.Forms.Resources";
+
     public static Image GetImage(string name)
     {
-        name = "LibreHardwareMonitor.Resources." + name;
+        name = $"{ResourceNamespace}." + name;
         string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
 
         for (int i = 0; i < names.Length; i++)
@@ -41,7 +43,7 @@ public class EmbeddedResources
 
     public static Icon GetIcon(string name)
     {
-        name = "LibreHardwareMonitor.Resources." + name;
+        name = $"{ResourceNamespace}." + name;
         string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
         for (int i = 0; i < names.Length; i++)
         {
