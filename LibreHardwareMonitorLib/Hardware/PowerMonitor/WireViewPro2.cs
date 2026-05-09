@@ -8,10 +8,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using BlackSharp.IO.Ports;
 using LibreHardwareMonitor.Interop.PowerMonitor;
 
 namespace LibreHardwareMonitor.Hardware.PowerMonitor;
@@ -271,7 +271,10 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             }
             finally
             {
-                _serialPort.Close();
+                if (!_serialPort.TryClose())
+                {
+                    Reconnect();
+                }
             }
         }
     }
@@ -622,7 +625,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
                 {
                     if (_serialPort.IsOpen)
                     {
-                        _serialPort.Close();
+                        _serialPort.TryClose();
                     }
                 }
                 catch
@@ -651,7 +654,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
             if (_serialPort != null)
             {
-                _serialPort.Close();
+                _serialPort.TryClose();
                 _serialPort.Dispose();
                 _serialPort = null;
             }
@@ -661,6 +664,12 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             VendorData = null;
             UniqueID = null;
         }
+    }
+
+    private void Reconnect()
+    {
+        Disconnect();
+        Connect();
     }
 
     private bool ReadWelcomeMessage(bool sendCmd = false)
@@ -789,7 +798,10 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
             }
             finally
             {
-                _serialPort.Close();
+                if (!_serialPort.TryClose())
+                {
+                    Reconnect();
+                }
             }
 
             return buf;
