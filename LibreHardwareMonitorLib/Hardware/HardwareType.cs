@@ -18,6 +18,7 @@ public enum HardwareType
     GpuNvidia,
     GpuAmd,
     GpuIntel,
+    GpuQualcomm,
     Storage,
     Network,
     Cooler,

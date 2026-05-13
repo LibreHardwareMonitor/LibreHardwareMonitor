@@ -870,6 +870,8 @@ public class HttpServer
                 return "ati.png";
             case HardwareType.GpuIntel:
                 return "intel.png";
+            case HardwareType.GpuQualcomm:
+                return "chip.png";
             case HardwareType.Storage:
                 return "hdd.png";
             case HardwareType.Motherboard:
