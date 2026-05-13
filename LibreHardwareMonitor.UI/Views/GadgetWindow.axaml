@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LibreHardwareMonitor.UI.ViewModels"
+        x:Class="LibreHardwareMonitor.UI.Views.GadgetWindow"
+        x:DataType="vm:GadgetViewModel"
+        Title="LHM Gadget"
+        Icon="avares://LibreHardwareMonitor.UI/Assets/Icons/tray-icon.ico"
+        Width="220" SizeToContent="Height"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        CanResize="False"
+        SystemDecorations="None"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome">
+
+    <Border Opacity="{Binding Opacity}" Background="#FF0D1117" CornerRadius="12" Padding="14,10"
+            BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1">
+        <StackPanel Spacing="6">
+
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:GadgetItemViewModel">
+                        <StackPanel Spacing="2" Margin="0,2">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="{Binding Label}" FontSize="9" FontWeight="Bold"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"
+                                            HorizontalAlignment="Right">
+                                    <TextBlock FontSize="{Binding $parent[Window].((vm:GadgetViewModel)DataContext).FontSize}"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TextPrimaryBrush}">
+                                        <Run Text="{Binding Value}" />
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Unit}" FontSize="9"
+                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                            <Border Height="3" CornerRadius="2"
+                                    Background="{StaticResource BgSecondaryBrush}"
+                                    IsVisible="{Binding Percent, Converter={x:Static vm:NonZeroConverter.Instance}}">
+                                <Border CornerRadius="2"
+                                        Background="{StaticResource AccentBlueBrush}"
+                                        HorizontalAlignment="Left"
+                                        Width="{Binding Percent, Converter={x:Static vm:PercentToWidthConverter.Instance}}" />
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Right-click tray icon &#x2192; Settings to add sensors"
+                       FontSize="9" Foreground="{StaticResource TextTertiaryBrush}"
+                       TextWrapping="Wrap" HorizontalAlignment="Center"
+                       IsVisible="{Binding !Items.Count}" Margin="0,4" />
+
+        </StackPanel>
+    </Border>
+</Window>

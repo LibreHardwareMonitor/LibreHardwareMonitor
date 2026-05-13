@@ -1,0 +1,366 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LibreHardwareMonitor.UI.ViewModels"
+             xmlns:controls="using:LibreHardwareMonitor.UI.Views.Controls"
+             xmlns:conv="using:LibreHardwareMonitor.UI.Converters"
+             x:Class="LibreHardwareMonitor.UI.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <DockPanel>
+        <StackPanel Spacing="16" Margin="24">
+
+            <!-- Header with sensor count -->
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="Dashboard" Classes="section-header" FontSize="22" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="6" Padding="8,4">
+                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="{Binding TotalHardwareCount}" /><Run Text=" devices" />
+                        </TextBlock>
+                    </Border>
+                    <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="6" Padding="8,4">
+                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="{Binding TotalSensorCount}" /><Run Text=" sensors" />
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 1: CPU + GPU — wide cards with gauge + stats -->
+            <Grid ColumnDefinitions="*,*">
+
+                <!-- CPU -->
+                <Border Classes="card" Margin="0,0,8,0">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <!-- Gauge -->
+                        <Grid Margin="0,0,16,0">
+                            <controls:ArcGauge Width="110" Height="110"
+                                               Value="{Binding CpuLoad}" Maximum="100" StrokeWidth="10"
+                                               TrackBrush="{StaticResource GaugeTrackBrush}"
+                                               ValueBrush="{StaticResource AccentBlueBrush}" />
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Text="{Binding CpuLoad, StringFormat='{}{0:F0}'}" />
+                                <TextBlock Text="%" FontSize="11" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource TextTertiaryBrush}" />
+                            </StackPanel>
+                        </Grid>
+                        <!-- Info -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Background="#1A3B82F6" CornerRadius="6" Padding="6,2">
+                                    <TextBlock Text="CPU" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource AccentBlueBrush}" />
+                                </Border>
+                                <TextBlock Text="{Binding CpuName}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center" MaxWidth="200" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+                                <TextBlock Text="Temp" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold"
+                                           Foreground="{Binding CpuTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
+                                    <Run Text="{Binding CpuTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding TempUnit}" FontSize="10" />
+                                </TextBlock>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="Power" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="{Binding CpuPower, StringFormat='{}{0:F1}'}" /><Run Text="W" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </TextBlock>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="Clock" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="{Binding CpuMaxClock, StringFormat='{}{0:F0}'}" /><Run Text="MHz" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </TextBlock>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- GPU (always shown, dimmed if not detected) -->
+                <Border Grid.Column="1" Classes="card" Margin="8,0,0,0" Opacity="{Binding HasGpu, Converter={x:Static conv:BoolToOpacityConverter.Instance}}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Grid Margin="0,0,16,0">
+                            <controls:ArcGauge Width="110" Height="110"
+                                               Value="{Binding GpuLoad}" Maximum="100" StrokeWidth="10"
+                                               TrackBrush="{StaticResource GaugeTrackBrush}"
+                                               ValueBrush="{StaticResource AccentGreenBrush}" />
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Text="{Binding GpuLoad, StringFormat='{}{0:F0}'}" />
+                                <TextBlock Text="%" FontSize="11" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource TextTertiaryBrush}" />
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Background="#1A10B981" CornerRadius="6" Padding="6,2">
+                                    <TextBlock Text="GPU" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource AccentGreenBrush}" />
+                                </Border>
+                                <TextBlock Text="{Binding GpuName}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center" MaxWidth="200" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+                                <TextBlock Text="Temp" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold"
+                                           Foreground="{Binding GpuTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
+                                    <Run Text="{Binding GpuTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding TempUnit}" FontSize="10" />
+                                </TextBlock>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="VRAM" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="{Binding GpuMemoryUsed, StringFormat='{}{0:F0}'}" /><Run Text="MB" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </TextBlock>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="Power" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="{Binding GpuPower, StringFormat='{}{0:F1}'}" /><Run Text="W" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </TextBlock>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Row 2: RAM + Motherboard + Storage — compact cards -->
+            <Grid ColumnDefinitions="*,*,*">
+
+                <!-- RAM -->
+                <Border Classes="card" Margin="0,0,8,0">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Grid Margin="0,0,14,0">
+                            <controls:ArcGauge Width="80" Height="80"
+                                               Value="{Binding RamLoad}" Maximum="100" StrokeWidth="8"
+                                               TrackBrush="{StaticResource GaugeTrackBrush}"
+                                               ValueBrush="{StaticResource AccentPurpleBrush}" />
+                            <TextBlock FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Text="{Binding RamLoad, StringFormat='{}{0:F0}%'}" />
+                        </Grid>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border Background="#1AA78BFA" CornerRadius="6" Padding="6,2">
+                                    <TextBlock Text="RAM" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentPurpleBrush}" />
+                                </Border>
+                                <TextBlock Text="Memory" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0">
+                                <Run Text="{Binding RamUsedFormatted}" /><Run Text=" / " />
+                                <Run Text="{Binding RamTotalFormatted}" /><Run Text=" GB" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Motherboard -->
+                <Border Grid.Column="1" Classes="card" Margin="4,0" Opacity="{Binding HasMotherboard, Converter={x:Static conv:BoolToOpacityConverter.Instance}}">
+                    <StackPanel VerticalAlignment="Center" Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Background="#1AF97316" CornerRadius="6" Padding="6,2">
+                                <TextBlock Text="MB" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentOrangeBrush}" />
+                            </Border>
+                            <TextBlock Text="{Binding MotherboardName}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"
+                                       MaxWidth="120" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2,0,0">
+                            <TextBlock Text="Chipset" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Grid.Column="2" FontSize="13" FontWeight="Bold"
+                                       Foreground="{Binding MotherboardTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
+                                <Run Text="{Binding MotherboardTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
+                            </TextBlock>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Text="VRM" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Grid.Column="2" FontSize="13" FontWeight="Bold"
+                                       Foreground="{Binding MotherboardVrmTemp, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
+                                <Run Text="{Binding MotherboardVrmTemp, StringFormat='{}{0:F0}'}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Storage — all drives -->
+                <Border Grid.Column="2" Classes="card" Margin="8,0,0,0" Opacity="{Binding HasStorage, Converter={x:Static conv:BoolToOpacityConverter.Instance}}">
+                    <StackPanel Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Background="#1AF59E0B" CornerRadius="6" Padding="6,2">
+                                <TextBlock Text="DISK" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentYellowBrush}" />
+                            </Border>
+                            <TextBlock FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center">
+                                <Run Text="{Binding StorageCount}" /><Run Text=" drive(s)" />
+                            </TextBlock>
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{Binding StorageDrives}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:StorageDriveInfo">
+                                    <Border Padding="0,4" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding Name}" FontSize="11"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                                <TextBlock FontSize="11" FontWeight="Bold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center">
+                                                    <Run Text="{Binding UsedPercent, StringFormat='{}{0:F0}'}" /><Run Text="%" FontSize="9" />
+                                                </TextBlock>
+                                                <TextBlock FontSize="11" FontWeight="Bold" IsVisible="{Binding HasTemp}"
+                                                           Foreground="{Binding Temperature, Converter={x:Static conv:TemperatureToColorConverter.Instance}}"
+                                                           VerticalAlignment="Center">
+                                                    <Run Text="{Binding Temperature, StringFormat='{}{0:F0}'}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Row 3: Network + Battery (battery shown only if present) -->
+            <Grid ColumnDefinitions="*,*">
+                <!-- Network -->
+                <Border Classes="card" Margin="0,0,8,0">
+                    <StackPanel VerticalAlignment="Center" Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Background="#1A22D3EE" CornerRadius="6" Padding="6,2">
+                                <TextBlock Text="NET" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentCyanBrush}" />
+                            </Border>
+                            <TextBlock Text="{Binding NetworkName}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"
+                                       MaxWidth="180" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2,0,0">
+                            <TextBlock Text="&#x2193;" FontSize="14" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold"
+                                       Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center"
+                                       Text="{Binding NetworkDown, Converter={x:Static vm:ThroughputFormatConverter.Instance}}" />
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Text="&#x2191;" FontSize="14" Foreground="{StaticResource AccentOrangeBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" FontSize="14" FontWeight="Bold"
+                                       Foreground="{StaticResource AccentOrangeBrush}" VerticalAlignment="Center"
+                                       Text="{Binding NetworkUp, Converter={x:Static vm:ThroughputFormatConverter.Instance}}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Battery (only visible when detected) -->
+                <Border Grid.Column="1" Classes="card" Margin="8,0,0,0" IsVisible="{Binding HasBattery}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Grid Margin="0,0,14,0">
+                            <controls:ArcGauge Width="80" Height="80"
+                                               Value="{Binding BatteryLevel}" Maximum="100" StrokeWidth="8"
+                                               TrackBrush="{StaticResource GaugeTrackBrush}"
+                                               ValueBrush="{StaticResource AccentGreenBrush}" />
+                            <TextBlock FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Text="{Binding BatteryLevel, StringFormat='{}{0:F0}%'}" />
+                        </Grid>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border Background="#1A10B981" CornerRadius="6" Padding="6,2">
+                                    <TextBlock Text="BAT" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                                </Border>
+                                <TextBlock Text="{Binding BatteryStatus}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2,0,0">
+                                <TextBlock Text="Voltage" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="{Binding BatteryVoltage, StringFormat='{}{0:F2}'}" /><Run Text="V" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </TextBlock>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="Rate" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="{Binding BatteryChargeRate, StringFormat='{}{0:F1}'}" /><Run Text="W" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </TextBlock>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Row 4: Temps + Fans + Power -->
+            <Grid ColumnDefinitions="*,*,*">
+                <Border Classes="card" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Hottest Sensors" FontSize="13" FontWeight="Bold"
+                                   Foreground="{StaticResource TextAccentBrush}" Margin="0,0,0,8" />
+                        <ItemsControl ItemsSource="{Binding TopTemperatures}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SensorViewModel">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                                        <TextBlock Text="{Binding DisplayName}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{Binding Value, Converter={x:Static conv:TemperatureToColorConverter.Instance}}">
+                                            <Run Text="{Binding FormattedValue}" /><Run Text="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TempUnit}" FontSize="9" />
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Classes="card" Margin="4,0">
+                    <StackPanel>
+                        <TextBlock Text="Fan Speeds" FontSize="13" FontWeight="Bold"
+                                   Foreground="{StaticResource TextAccentBrush}" Margin="0,0,0,8" />
+                        <ItemsControl ItemsSource="{Binding TopFans}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SensorViewModel">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                                        <TextBlock Text="{Binding DisplayName}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}">
+                                            <Run Text="{Binding FormattedValue}" /><Run Text="RPM" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Classes="card" Margin="8,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Power Draw" FontSize="13" FontWeight="Bold"
+                                   Foreground="{StaticResource TextAccentBrush}" Margin="0,0,0,8" />
+                        <ItemsControl ItemsSource="{Binding TopPower}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SensorViewModel">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                                        <TextBlock Text="{Binding DisplayName}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{StaticResource AccentYellowBrush}">
+                                            <Run Text="{Binding FormattedValue}" /><Run Text="W" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+        </StackPanel>
+    </DockPanel>
+</UserControl>
