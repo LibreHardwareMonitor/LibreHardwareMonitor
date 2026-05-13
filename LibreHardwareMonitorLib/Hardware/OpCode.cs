@@ -7,13 +7,15 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-#if !NETFRAMEWORK
+#if !NETFRAMEWORK && !WINDOWS
 using Mono.Unix.Native;
-#else
+#elif NETFRAMEWORK
 using System.Reflection;
 #endif
 using Windows.Win32;
 using Windows.Win32.System.Memory;
+
+// ReSharper disable InconsistentNaming
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -21,6 +23,12 @@ internal static class OpCode
 {
     public static CpuidDelegate CpuId;
     public static RdtscDelegate Rdtsc;
+
+    /// <summary>
+    /// Gets a value indicating whether the current process is running on an ARM architecture
+    /// where x86 CPUID and RDTSC instructions are not available.
+    /// </summary>
+    public static bool IsArm { get; } = RuntimeInformation.ProcessArchitecture is Architecture.Arm or Architecture.Arm64;
 
     private static IntPtr _codeBuffer;
     private static ulong _size;
@@ -217,6 +225,22 @@ internal static class OpCode
 #endif
     public static unsafe void Open()
     {
+            // On ARM architectures, x86 CPUID and RDTSC instructions do not exist.
+            // Set delegates to safe no-op implementations instead of injecting x86 machine code.
+            if (IsArm)
+            {
+                CpuId = static (uint _, uint _, out uint eax, out uint ebx, out uint ecx, out uint edx) =>
+                {
+                    eax = 0;
+                    ebx = 0;
+                    ecx = 0;
+                    edx = 0;
+                    return false;
+                };
+                Rdtsc = static () => 0;
+                return;
+            }
+
         byte[] rdTscCode;
         byte[] cpuidCode;
         if (IntPtr.Size == 4)
@@ -253,7 +277,7 @@ internal static class OpCode
 
             if (mmap != null)
                 _codeBuffer = (IntPtr)mmap.Invoke(null, [IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0]);
-#else
+#elif !WINDOWS
             _codeBuffer = Syscall.mmap(IntPtr.Zero, _size,
                 MmapProts.PROT_READ | MmapProts.PROT_WRITE | MmapProts.PROT_EXEC,
                 MmapFlags.MAP_ANONYMOUS | MmapFlags.MAP_PRIVATE, -1, 0);
@@ -276,6 +300,14 @@ internal static class OpCode
 
     public static unsafe void Close()
     {
+            // On ARM, no native code buffer was allocated.
+            if (IsArm)
+            {
+                Rdtsc = null;
+                CpuId = null;
+                return;
+            }
+
         Rdtsc = null;
         CpuId = null;
 
@@ -287,7 +319,7 @@ internal static class OpCode
             Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
             MethodInfo method = sysCall.GetMethod("munmap");
             method?.Invoke(null, [_codeBuffer, _size]);
-#else
+#elif !WINDOWS
             Syscall.munmap(_codeBuffer, _size);
 #endif
         }
