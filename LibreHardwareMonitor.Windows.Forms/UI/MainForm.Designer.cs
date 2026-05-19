@@ -153,6 +153,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.splitContainer = new LibreHardwareMonitor.Windows.Forms.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rtssMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundUpdater = new System.ComponentModel.BackgroundWorker();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
@@ -299,7 +300,8 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.hddMenuItem,
             this.nicMenuItem,
             this.psuMenuItem,
-            this.batteryMenuItem});
+            this.batteryMenuItem,
+            this.rtssMenuItem});
             this.menuItemFileHardware.Name = "menuItem5";
             this.menuItemFileHardware.Size = new System.Drawing.Size(180, 22);
             this.menuItemFileHardware.Text = "Hardware";
@@ -1101,6 +1103,12 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.batteryMenuItem.Size = new System.Drawing.Size(180, 22);
             this.batteryMenuItem.Text = "Batteries";
             //
+            // rtssMenuItem
+            //
+            this.rtssMenuItem.Name = "rtssMenuItem";
+            this.nicMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.rtssMenuItem.Text = "RivaTuner Statistics Server";
+            //
             // MainForm
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1236,6 +1244,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rtssMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem fileRotationMethod;
         private ToolStripRadioButtonMenuItem perSessionFileRotationMenuItem;
