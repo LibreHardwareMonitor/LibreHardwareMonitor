@@ -1165,6 +1165,9 @@ public class SensorGadget : Gadget
                     if ((sensor.SensorType != SensorType.Load &&
                          sensor.SensorType != SensorType.Control &&
                          sensor.SensorType != SensorType.Level &&
+                         sensor.SensorType != SensorType.WatchdogStageStatus &&
+                         sensor.SensorType != SensorType.WatchdogStageConfig &&
+                         sensor.SensorType != SensorType.LastResetCause &&
                          sensor.SensorType != SensorType.Humidity) || !sensor.Value.HasValue)
                     {
                         string formatted;
@@ -1222,8 +1225,11 @@ public class SensorGadget : Gadget
                                 case SensorType.Conductivity:
                                     format = "{0:F1} µS/cm";
                                     break;
+                                case SensorType.StageTimes:
+                                    format = "{0:g} s";
+                                    break;
                             }
-    
+
                             if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
                             {
                                 formatted = $"{UnitManager.CelsiusToFahrenheit(sensor.Value):F1} °F";
