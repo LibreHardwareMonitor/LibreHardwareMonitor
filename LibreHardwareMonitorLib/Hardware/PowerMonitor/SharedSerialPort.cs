@@ -1,4 +1,4 @@
-﻿using System.IO.Ports;
+﻿using BlackSharp.IO.Ports;
 
 namespace LibreHardwareMonitor.Hardware.PowerMonitor;
 
@@ -13,13 +13,6 @@ internal sealed class SharedSerialPort : SerialPort
     { }
 
     public SharedSerialPort(string portName, int baudRate) : base(portName, baudRate)
-    { }
-
-    public SharedSerialPort(string portName, int baudRate, Parity parity) : base(portName, baudRate, parity)
-    { }
-
-    public SharedSerialPort(string portName, int baudRate, Parity parity, int dataBits)
-        : base(portName, baudRate, parity, dataBits)
     { }
 
     public SharedSerialPort(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
@@ -37,18 +30,18 @@ internal sealed class SharedSerialPort : SerialPort
         }
     }
 
-    public new void Close()
+    public bool TryClose()
     {
         if (!_hasMutex)
         {
-            return;
+            return true;
         }
 
         try
         {
             if (IsOpen)
             {
-                base.Close();
+                return base.TryClose(CloseTimeout);
             }
         }
         finally
@@ -56,6 +49,8 @@ internal sealed class SharedSerialPort : SerialPort
             _hasMutex = false;
             Mutexes.ReleaseUsbSensors();
         }
+
+        return true;
     }
 
     public new void Write(byte[] buffer, int offset, int count)
