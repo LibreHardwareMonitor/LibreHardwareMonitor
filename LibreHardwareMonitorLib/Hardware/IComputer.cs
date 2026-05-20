@@ -115,12 +115,6 @@ public interface IComputer : IElement
     bool IsStorageEnabled { get; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Rtss" /> devices should be enabled and updated.
-    /// </summary>
-    /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
-    bool IsRtssEnabled { get; }
-
-    /// <summary>
     /// Generates full LibreHardwareMonitor report for devices that have been enabled.
     /// </summary>
     /// <returns>A formatted text string with library, OS and hardware information.</returns>

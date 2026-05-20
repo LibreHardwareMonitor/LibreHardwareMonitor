@@ -25,5 +25,4 @@ public enum HardwareType
     Psu,
     Battery,
     PowerMonitor,
-    Rtss,
 }

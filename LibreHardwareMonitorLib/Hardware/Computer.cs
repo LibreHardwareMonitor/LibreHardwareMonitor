@@ -26,7 +26,6 @@ using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
-using LibreHardwareMonitor.Hardware.Rtss;
 using LibreHardwareMonitor.Hardware.Storage;
 
 namespace LibreHardwareMonitor.Hardware;
@@ -52,7 +51,6 @@ public class Computer : IComputer
     private bool _psuEnabled;
     private SMBios _smbios;
     private bool _storageEnabled;
-    private bool _rtssEnabled;
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
@@ -309,24 +307,6 @@ public class Computer : IComputer
             }
 
             _storageEnabled = value;
-        }
-    }
-
-    /// <inheritdoc />
-    public bool IsRtssEnabled
-    {
-        get { return _rtssEnabled; }
-        set
-        {
-            if (_open && value != _rtssEnabled)
-            {
-                if (value)
-                    Add(new RtssGroup(_settings));
-                else
-                    RemoveType<RtssGroup>();
-            }
-
-            _rtssEnabled = value;
         }
     }
 
@@ -591,9 +571,6 @@ public class Computer : IComputer
 
         if (_batteryEnabled)
             Add(new BatteryGroup(_settings));
-
-        if (_rtssEnabled)
-            Add(new RtssGroup(_settings));
     }
 
     private static void NewSection(TextWriter writer)

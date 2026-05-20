@@ -111,6 +111,8 @@ internal class IntelIntegratedGpu : GenericGpu
 
     public override void Update()
     {
+        base.Update();
+
         // Update IGCL telemetry (temperature, clock, voltage).
         if (_igclHandle.HasValue && (_gtCoresTemperature != null || _gpuClockFrequency != null || _gpuVoltage != null))
         {

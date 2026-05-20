@@ -240,6 +240,8 @@ internal sealed class IntelDiscreteGpu : GenericGpu
 
     public override void Update()
     {
+        base.Update();
+
         if (!IsValid)
             return;
 

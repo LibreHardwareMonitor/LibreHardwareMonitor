@@ -527,6 +527,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Update()
     {
+        base.Update();
+
         try
         {
             if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
