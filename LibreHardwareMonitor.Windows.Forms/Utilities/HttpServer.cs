@@ -534,7 +534,13 @@ public class HttpServer
 
         json["Children"] = new List<object> { GenerateJsonForNode(_root, ref nodeIndex) };
 
-        byte[] buffer = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(json));
+        byte[] buffer = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(
+            json,
+            new System.Text.Json.JsonSerializerOptions
+            {
+                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals, // Allow "NaN"
+            }
+        ));
 
         bool acceptGzip;
         try
