@@ -15,12 +15,13 @@ using BlackSharp.Core.Interop.Windows.Native;
 using HidSharp.Reports;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
+using Windows.Win32;
 
 namespace LibreHardwareMonitor.Hardware.KontronWatchdog;
 
 internal sealed class KontronWatchdog : Hardware
 {
-    private static IntPtr _kontronKscDll = IntPtr.Zero;
+    private static FreeLibrarySafeHandle _kontronKscDll;
     private readonly StringBuilder _report = new();
 
     private static int _kscError = 0;
@@ -37,10 +38,10 @@ internal sealed class KontronWatchdog : Hardware
     private static KscApiFuncType_Byte_Byte_Ulong _kscApiWdgStageConfigFunc;
     private static KscApiFuncType_Byte_Ulong _kscApiLastResetCauseFunc;
 
-    public KontronWatchdog(IntPtr kontronKscDll, ISettings settings)
+    public KontronWatchdog(FreeLibrarySafeHandle kontronKscDll, ISettings settings)
         : base("Kontron_Watchdog",
-               new Identifier("Kontron_Watchdog"),
-               settings)
+          new Identifier("Kontron_Watchdog"),
+          settings)
     {
         _kontronKscDll = kontronKscDll;
 
@@ -340,28 +341,28 @@ internal sealed class KontronWatchdog : Hardware
     {
         // watchdog functions
 
-        IntPtr kscApiWdgConfigPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiWdgConfig");
+        IntPtr kscApiWdgConfigPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiWdgConfig");
         if (kscApiWdgConfigPtr == IntPtr.Zero)
             return false;
         _kscApiWdgConfigFunc =
             (KscApiFuncType_Byte_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiWdgConfigPtr,
                                                                              typeof(KscApiFuncType_Byte_Ulong));
 
-        IntPtr kscApiWdgStageStatusPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiWdgStageStatus");
+        IntPtr kscApiWdgStageStatusPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiWdgStageStatus");
         if (kscApiWdgStageStatusPtr == IntPtr.Zero)
             return false;
         _kscApiWdgStageStatusFunc =
             (KscApiFuncType_Byte_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiWdgStageStatusPtr,
                                                                              typeof(KscApiFuncType_Byte_Ulong));
 
-        IntPtr kscApiWdgStageConfigPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiWdgStageConfig");
+        IntPtr kscApiWdgStageConfigPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiWdgStageConfig");
         if (kscApiWdgStageConfigPtr == IntPtr.Zero)
             return false;
         _kscApiWdgStageConfigFunc =
             (KscApiFuncType_Byte_Byte_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiWdgStageConfigPtr,
                                                                                   typeof(KscApiFuncType_Byte_Byte_Ulong));
 
-        IntPtr _kscApiLastResetCausePtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiLastResetCause");
+        IntPtr _kscApiLastResetCausePtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiLastResetCause");
         if (_kscApiLastResetCausePtr == IntPtr.Zero)
             return false;
         _kscApiLastResetCauseFunc =

@@ -15,6 +15,7 @@ using BlackSharp.Core.Interop.Windows.Native;
 using HidSharp.Reports;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
+using Windows.Win32;
 
 namespace LibreHardwareMonitor.Hardware.KontronDll;
 
@@ -29,7 +30,7 @@ internal sealed class KontronDllHandler
     private static StringBuilder _report;
 
     private const string KontronKscDllName = "kscapi.dll";
-    private static IntPtr _kontronKscDll = IntPtr.Zero;
+    private static FreeLibrarySafeHandle _kontronKscDll;
 
     private delegate int KscApiInitDeInitFuncType();
 
@@ -46,7 +47,7 @@ internal sealed class KontronDllHandler
     {
         _report = report;
     }
-    public IntPtr kontronKscDll { get { return _kontronKscDll; } }
+    public FreeLibrarySafeHandle kontronKscDll { get { return _kontronKscDll; } }
 
     public bool CheckDllPrerequisites()
     {
@@ -71,26 +72,17 @@ internal sealed class KontronDllHandler
         return true;
     }
 
-    public static void UnloadKscDll()
-    {
-        if (_kontronKscDll != IntPtr.Zero)
-        {
-            Kernel32.FreeLibrary(_kontronKscDll);
-            _kontronKscDll = IntPtr.Zero;
-        }
-    }
-
     public bool OpenKscDll(LhmKscHardwareGroup hwGroup)
     {
         // load KSC DLL
 
-        _kontronKscDll = Kernel32.LoadLibrary(KontronKscDllName);
-        if (_kontronKscDll == IntPtr.Zero)
+        _kontronKscDll = PInvoke.LoadLibrary(KontronKscDllName);
+        if (_kontronKscDll.IsInvalid)
             return false;
 
         // get ~Init function address
 
-        IntPtr initFuncPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiInit");
+        IntPtr initFuncPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiInit");
         if (initFuncPtr == IntPtr.Zero)
             return false;
         KscApiInitDeInitFuncType kscApiInitFunc =
@@ -130,7 +122,7 @@ internal sealed class KontronDllHandler
 
         // get ~DeInit function address
 
-        IntPtr deinitFuncPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiDeInit");
+        IntPtr deinitFuncPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiDeInit");
         if (deinitFuncPtr == IntPtr.Zero)
             return false;
         KscApiInitDeInitFuncType kscApiDeInitFunc =
@@ -146,14 +138,6 @@ internal sealed class KontronDllHandler
             return false;
         }
 
-        // unload KSC DLL
-
-        if (_kontronKscDll != IntPtr.Zero)
-        {
-            Kernel32.FreeLibrary(_kontronKscDll);
-            _kontronKscDll = IntPtr.Zero;
-        }
-
         return true;
     }
 
@@ -162,7 +146,7 @@ internal sealed class KontronDllHandler
         //_report.Append("- Query KSC DLL Version .. ");
 
         // get ~SpecVersion function address
-        IntPtr specVersionFuncPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiSpecVersion");
+        IntPtr specVersionFuncPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiSpecVersion");
         if (specVersionFuncPtr == IntPtr.Zero)
         {
             _report.AppendLine("> Query KSC DLL Version - get ~SpecVersion function address - failed!");
@@ -200,7 +184,7 @@ internal sealed class KontronDllHandler
         // ----------------
 
         // get ~DriverVersion function address
-        IntPtr driverVersionFuncPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiGetDriverVersion");
+        IntPtr driverVersionFuncPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiGetDriverVersion");
         if (driverVersionFuncPtr == IntPtr.Zero)
         {
             _report.AppendLine("Query KSC Driver Version - get ~DriverVersion function address - failed!");
@@ -236,7 +220,7 @@ internal sealed class KontronDllHandler
         // ----------------
 
         // get ~DeviceInfo function address
-        IntPtr deviceInfoFuncPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiDeviceInfo");
+        IntPtr deviceInfoFuncPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiDeviceInfo");
         if (deviceInfoFuncPtr == IntPtr.Zero)
         {
             _report.AppendLine("Query KSC device info - get ~DeviceInfo function address - failed!");

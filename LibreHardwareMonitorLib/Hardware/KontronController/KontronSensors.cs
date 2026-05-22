@@ -15,12 +15,13 @@ using BlackSharp.Core.Interop.Windows.Native;
 using HidSharp.Reports;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
+using Windows.Win32;
 
 namespace LibreHardwareMonitor.Hardware.KontronSensors;
 
 internal sealed class KontronSensors : Hardware
 {
-    private static IntPtr _kontronKscDll = IntPtr.Zero;
+    private static FreeLibrarySafeHandle _kontronKscDll;
     private readonly StringBuilder _report = new();
 
     private static int _kscError = 0;
@@ -64,7 +65,7 @@ internal sealed class KontronSensors : Hardware
     private static KscApiFuncType_Byte_Ulong _kscApiFanInfoFunc;
     private static KscApiFuncType_Byte_Ulong _kscApiFanValueFunc;
 
-    public KontronSensors(IntPtr kontronKscDll, ISettings settings)
+    public KontronSensors(FreeLibrarySafeHandle kontronKscDll, ISettings settings)
         : base("Kontron_Sensors",
                new Identifier("Kontron_Sensors"),
                settings)
@@ -311,21 +312,21 @@ internal sealed class KontronSensors : Hardware
     {
         // voltage functions
 
-        IntPtr kscApiVoltCountPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiVoltCount");
+        IntPtr kscApiVoltCountPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiVoltCount");
         if (kscApiVoltCountPtr == IntPtr.Zero)
             return false;
         _kscApiVoltCountFunc =
             (KscApiFuncType_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiVoltCountPtr,
                                                                         typeof(KscApiFuncType_Ulong));
 
-        IntPtr kscApiVoltInfoPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiVoltInfo");
+        IntPtr kscApiVoltInfoPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiVoltInfo");
         if (kscApiVoltInfoPtr == IntPtr.Zero)
             return false;
         _kscApiVoltInfoFunc =
             (KscApiFuncType_Byte_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiVoltInfoPtr,
                                                                             typeof(KscApiFuncType_Byte_Ulong));
 
-        IntPtr kscApiVoltValuePtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiVoltValue");
+        IntPtr kscApiVoltValuePtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiVoltValue");
         if (kscApiVoltValuePtr == IntPtr.Zero)
             return false;
         _kscApiVoltValueFunc =
@@ -334,21 +335,21 @@ internal sealed class KontronSensors : Hardware
 
         // temperature functions
 
-        IntPtr kscApiTempCountPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiTempCount");
+        IntPtr kscApiTempCountPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiTempCount");
         if (kscApiTempCountPtr == IntPtr.Zero)
             return false;
         _kscApiTempCountFunc =
             (KscApiFuncType_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiTempCountPtr,
                                                                         typeof(KscApiFuncType_Ulong));
 
-        IntPtr kscApiTempInfoPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiTempInfo");
+        IntPtr kscApiTempInfoPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiTempInfo");
         if (kscApiTempInfoPtr == IntPtr.Zero)
             return false;
         _kscApiTempInfoFunc =
             (KscApiFuncType_Byte_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiTempInfoPtr,
                                                                             typeof(KscApiFuncType_Byte_Ulong));
 
-        IntPtr kscApiTempValuePtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiTempValue");
+        IntPtr kscApiTempValuePtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiTempValue");
         if (kscApiTempValuePtr == IntPtr.Zero)
             return false;
         _kscApiTempValueFunc =
@@ -357,21 +358,21 @@ internal sealed class KontronSensors : Hardware
 
         // fan functions
 
-        IntPtr kscApiFanCountPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiFanCount");
+        IntPtr kscApiFanCountPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiFanCount");
         if (kscApiFanCountPtr == IntPtr.Zero)
             return false;
         _kscApiFanCountFunc =
             (KscApiFuncType_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiFanCountPtr,
                                                                         typeof(KscApiFuncType_Ulong));
 
-        IntPtr kscApiFanInfoPtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiFanInfo");
+        IntPtr kscApiFanInfoPtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiFanInfo");
         if (kscApiFanInfoPtr == IntPtr.Zero)
             return false;
         _kscApiFanInfoFunc =
             (KscApiFuncType_Byte_Ulong)Marshal.GetDelegateForFunctionPointer(kscApiFanInfoPtr,
                                                                             typeof(KscApiFuncType_Byte_Ulong));
 
-        IntPtr kscApiFanValuePtr = Kernel32.GetProcAddress(_kontronKscDll, "KscApiFanValue");
+        IntPtr kscApiFanValuePtr = PInvoke.GetProcAddress(_kontronKscDll, "KscApiFanValue");
         if (kscApiFanValuePtr == IntPtr.Zero)
             return false;
         _kscApiFanValueFunc =
