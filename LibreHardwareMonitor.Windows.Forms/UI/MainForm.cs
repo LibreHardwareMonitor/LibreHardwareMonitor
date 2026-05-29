@@ -964,7 +964,7 @@ public sealed partial class MainForm : Form
         _settings.SetValue("listenerPort", Server.ListenerPort);
         _settings.SetValue("authenticationEnabled", Server.AuthEnabled);
         _settings.SetValue("authenticationUserName", Server.UserName);
-        _settings.SetValue("authenticationPassword", Server.Password);
+        _settings.SetValue("authenticationPassword", Server.PasswordSHA256);
 
         string fileName = Path.ChangeExtension(Application.ExecutablePath, ".config");
 
