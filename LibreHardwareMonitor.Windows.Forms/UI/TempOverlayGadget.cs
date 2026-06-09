@@ -66,6 +66,17 @@ public class TempOverlayGadget : Gadget
             settings.SetValue("tempOverlay.Location.Y", Location.Y);
         };
 
+        // keep the overlay on a visible screen when the restored position no
+        // longer fits (e.g. after a monitor or resolution change)
+        VisibleChanged += delegate
+        {
+            Rectangle bounds = new(Location, Size);
+            Screen screen = Screen.FromRectangle(bounds);
+            Rectangle intersection = Rectangle.Intersect(screen.WorkingArea, bounds);
+            if (intersection.Width < Math.Min(16, bounds.Width) || intersection.Height < Math.Min(16, bounds.Height))
+                Location = new Point(screen.WorkingArea.Width / 2 - bounds.Width / 2, screen.WorkingArea.Height / 2 - bounds.Height / 2);
+        };
+
         AlwaysOnTop = true;
 
         ContextMenuStrip menu = new();
@@ -281,14 +292,14 @@ public class TempOverlayGadget : Gadget
             cpuText += $" · {cpuLoad.Value:F0}%";
         string ramText = ram.HasValue ? $"{ram.Value:F0}%" : "--";
 
-        DrawRow(g, new Rectangle(0, 0, w, rowHeight), "CPU", cpuText, null, _cpuHistory, CpuColor, now);
-        DrawRow(g, new Rectangle(0, rowHeight, w, rowHeight), "GPU", gpu.HasValue ? $"{gpu.Value:F0} °C" : "--", null, _gpuHistory, GpuColor, now);
-        DrawRow(g, new Rectangle(0, 2 * rowHeight, w, rowHeight), "RAM", ramText, null, _ramHistory, RamColor, now);
-        DrawRow(g, new Rectangle(0, 3 * rowHeight, w, rowHeight), "NET ↓", FormatBytesPerSecond(download), null, _downloadHistory, DownloadColor, now);
-        DrawRow(g, new Rectangle(0, 4 * rowHeight, w, h - 4 * rowHeight), "NET ↑", FormatBytesPerSecond(upload), null, _uploadHistory, UploadColor, now);
+        DrawRow(g, new Rectangle(0, 0, w, rowHeight), "CPU", cpuText, _cpuHistory, CpuColor, now);
+        DrawRow(g, new Rectangle(0, rowHeight, w, rowHeight), "GPU", gpu.HasValue ? $"{gpu.Value:F0} °C" : "--", _gpuHistory, GpuColor, now);
+        DrawRow(g, new Rectangle(0, 2 * rowHeight, w, rowHeight), "RAM", ramText, _ramHistory, RamColor, now);
+        DrawRow(g, new Rectangle(0, 3 * rowHeight, w, rowHeight), "NET ↓", FormatBytesPerSecond(download), _downloadHistory, DownloadColor, now);
+        DrawRow(g, new Rectangle(0, 4 * rowHeight, w, h - 4 * rowHeight), "NET ↑", FormatBytesPerSecond(upload), _uploadHistory, UploadColor, now);
     }
 
-    private void DrawRow(Graphics g, Rectangle area, string label, string text, string suffix, Queue<Sample> history, Color color, DateTime now)
+    private void DrawRow(Graphics g, Rectangle area, string label, string text, Queue<Sample> history, Color color, DateTime now)
     {
         const int pad = 8;
         const int graphLeft = 124;
@@ -297,15 +308,7 @@ public class TempOverlayGadget : Gadget
             g.DrawString(label, _labelFont, labelBrush, area.Left + pad, area.Top + pad - 3);
 
         using (SolidBrush valueBrush = new(color))
-        {
             g.DrawString(text, _valueFont, valueBrush, area.Left + pad - 2, area.Top + pad + 9);
-
-            if (suffix != null)
-            {
-                float valueWidth = g.MeasureString(text, _valueFont).Width;
-                g.DrawString(suffix, _labelFont, valueBrush, area.Left + pad - 2 + valueWidth, area.Top + pad + 16);
-            }
-        }
 
         Rectangle graph = new(area.Left + graphLeft, area.Top + pad, area.Width - graphLeft - pad, area.Height - 2 * pad);
         DrawSparkline(g, graph, history, color, now);
