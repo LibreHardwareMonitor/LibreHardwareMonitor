@@ -42,6 +42,7 @@ public class TempOverlayGadget : Gadget
 
     private readonly Font _valueFont;
     private readonly Font _labelFont;
+    private readonly float _scale;
 
     public event EventHandler HideRequested;
 
@@ -52,12 +53,18 @@ public class TempOverlayGadget : Gadget
         _valueFont = new Font(SystemFonts.MessageBoxFont.FontFamily, 13f, FontStyle.Bold);
         _labelFont = new Font(SystemFonts.MessageBoxFont.FontFamily, 7.5f, FontStyle.Bold);
 
-        Size = new Size(230, 205);
+        // get the system to default (96) dpi ratio so the overlay stays
+        // readable at any display scaling; point-size fonts already scale with
+        // the dpi, so the pixel layout below is scaled by the same factor
+        using (Bitmap b = new(1, 1))
+            _scale = b.HorizontalResolution / 96f;
+
+        Size = new Size(Scale(230), Scale(205));
 
         // default position: top-right corner of the primary screen
         Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
-        int defaultX = workingArea.Right - Size.Width - 16;
-        int defaultY = workingArea.Top + 16;
+        int defaultX = workingArea.Right - Size.Width - Scale(16);
+        int defaultY = workingArea.Top + Scale(16);
         Location = new Point(settings.GetValue("tempOverlay.Location.X", defaultX),
                              settings.GetValue("tempOverlay.Location.Y", defaultY));
         LocationChanged += delegate
@@ -85,6 +92,8 @@ public class TempOverlayGadget : Gadget
         _labelFont.Dispose();
         base.Dispose();
     }
+
+    private int Scale(int value) => (int)Math.Round(value * _scale);
 
     /// <summary>
     /// Moves the overlay fully back onto the nearest visible working area when its
@@ -291,7 +300,7 @@ public class TempOverlayGadget : Gadget
         int h = Size.Height;
 
         using (SolidBrush background = new(BackgroundColor))
-        using (GraphicsPath path = CreateRoundedRectangle(new Rectangle(0, 0, w - 1, h - 1), 10))
+        using (GraphicsPath path = CreateRoundedRectangle(new Rectangle(0, 0, w - 1, h - 1), Scale(10)))
             g.FillPath(background, path);
 
         int rowHeight = h / 5;
@@ -309,25 +318,25 @@ public class TempOverlayGadget : Gadget
 
     private void DrawRow(Graphics g, Rectangle area, string label, string text, Queue<Sample> history, Color color, DateTime now)
     {
-        const int pad = 8;
-        const int graphLeft = 124;
+        int pad = Scale(8);
+        int graphLeft = Scale(124);
 
         using (SolidBrush labelBrush = new(LabelColor))
-            g.DrawString(label, _labelFont, labelBrush, area.Left + pad, area.Top + pad - 3);
+            g.DrawString(label, _labelFont, labelBrush, area.Left + pad, area.Top + pad - Scale(3));
 
         using (SolidBrush valueBrush = new(color))
-            g.DrawString(text, _valueFont, valueBrush, area.Left + pad - 2, area.Top + pad + 9);
+            g.DrawString(text, _valueFont, valueBrush, area.Left + pad - Scale(2), area.Top + pad + Scale(9));
 
         Rectangle graph = new(area.Left + graphLeft, area.Top + pad, area.Width - graphLeft - pad, area.Height - 2 * pad);
         DrawSparkline(g, graph, history, color, now);
     }
 
-    private static void DrawSparkline(Graphics g, Rectangle r, Queue<Sample> history, Color color, DateTime now)
+    private void DrawSparkline(Graphics g, Rectangle r, Queue<Sample> history, Color color, DateTime now)
     {
         if (r.Width <= 1 || r.Height <= 1)
             return;
 
-        using (Pen axisPen = new(Color.FromArgb(60, 255, 255, 255)))
+        using (Pen axisPen = new(Color.FromArgb(60, 255, 255, 255), _scale))
             g.DrawLine(axisPen, r.Left, r.Bottom, r.Right, r.Bottom);
 
         List<Sample> window = new();
@@ -373,7 +382,7 @@ public class TempOverlayGadget : Gadget
             points.Add(new PointF(x, y));
         }
 
-        using Pen pen = new(color, 1.5f);
+        using Pen pen = new(color, 1.5f * _scale);
         g.DrawLines(pen, points.ToArray());
     }
 
