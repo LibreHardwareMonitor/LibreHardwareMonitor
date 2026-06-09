@@ -52,8 +52,10 @@ internal class CpuGroup : IGroup
                             break;
                         case 0x17:
                         case 0x19:
-                        case 0x1A:
                             _hardware.Add(new Amd17Cpu(index, coreThreads, settings));
+                            break;
+                        case 0x1A:
+                            _hardware.Add(new Amd1ACpu(index, coreThreads, settings));
                             break;
                         default:
                             _hardware.Add(new GenericCpu(index, coreThreads, settings));

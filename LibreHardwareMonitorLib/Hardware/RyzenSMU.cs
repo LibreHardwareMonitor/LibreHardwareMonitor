@@ -141,7 +141,40 @@ internal class RyzenSMU
                 //{ 371, new SmuSensorType { Name = "Core #15 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
                 //{ 372, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
             }
-        }
+        },
+        {
+            // Zen 5 (Granite Ridge)
+            0x00621202, new Dictionary<uint, SmuSensorType>
+            {
+                { 0, new SmuSensorType { Name = "CPU PPT Limit", Type = SensorType.Power, Scale = 1 } },
+                { 1, new SmuSensorType { Name = "CPU PPT", Type = SensorType.Power, Scale = 1 } },
+                { 2, new SmuSensorType { Name = "PPT Fast Limit", Type = SensorType.Power, Scale = 1 } },
+                { 3, new SmuSensorType { Name = "PPT Slow", Type = SensorType.Power, Scale = 1 } },
+                { 26, new SmuSensorType { Name = "PPT Fast", Type = SensorType.Power, Scale = 1 } },
+                { 8, new SmuSensorType { Name = "TDC Limit", Type = SensorType.Current, Scale = 1 } },
+                { 63, new SmuSensorType { Name = "EDC Limit", Type = SensorType.Current, Scale = 1 } },
+                { 9, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                { 51, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                { 10, new SmuSensorType { Name = "CPU Temp Limit", Type = SensorType.Temperature, Scale = 1 } },
+                { 11, new SmuSensorType { Name = "Package", Type = SensorType.Temperature, Scale = 1 } },
+                { 595, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
+                { 596, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
+                { 52, new SmuSensorType { Name = "VDDCR_VDD", Type = SensorType.Temperature, Scale = 1 } },
+                { 57, new SmuSensorType { Name = "VDDCR_SOC", Type = SensorType.Temperature, Scale = 1 } },
+                { 62, new SmuSensorType { Name = "VDD_MISC", Type = SensorType.Temperature, Scale = 1 } },
+                { 21, new SmuSensorType { Name = "SoC Power", Type = SensorType.Power, Scale = 1 } },
+                { 54, new SmuSensorType { Name = "SoC Voltage", Type = SensorType.Voltage, Scale = 1 } },
+                { 55, new SmuSensorType { Name = "SoC Current", Type = SensorType.Current, Scale = 1 } },
+                { 71, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                { 75, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                { 79, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                { 58, new SmuSensorType { Name = "VDD_Misc", Type = SensorType.Voltage, Scale = 1 } },
+                { 83, new SmuSensorType { Name = "VDDCR_SoC", Type = SensorType.Voltage, Scale = 1 } },
+                { 259, new SmuSensorType { Name = "CLDO VDDG IOD", Type = SensorType.Voltage, Scale = 1 } },
+                { 261, new SmuSensorType { Name = "CLDO VDDG CCD", Type = SensorType.Voltage, Scale = 1 } },
+                { 269, new SmuSensorType { Name = "CLDO VDDP", Type = SensorType.Voltage, Scale = 1 } },
+            }
+        },
     };
 
     private uint _pmTableSize;
@@ -171,6 +204,8 @@ internal class RyzenSMU
             _unsupportedCPUException = e;
         }
     }
+
+    public uint PmTableVersion => _pmTableVersion;
 
     public void Close() => _ryzenSmu.Close();
 
@@ -363,7 +398,6 @@ internal class RyzenSMU
                 break;
 
             case CpuCodeName.Raphael:
-            case CpuCodeName.GraniteRidge:
                 switch (_pmTableVersion)
                 {
                     case 0x00540004:
@@ -380,6 +414,20 @@ internal class RyzenSMU
 
                 break;
 
+            case CpuCodeName.GraniteRidge:
+                switch (_pmTableVersion)
+                {
+                    case 0x00621202:
+                        _pmTableSize = 0x994;
+                        break;
+
+                    default:
+                        _pmTableSize = 0x994;
+                        break;
+                }
+
+                break;
+
             default:
                 return;
         }
@@ -391,7 +439,6 @@ internal class RyzenSMU
         public SensorType Type;
         public float Scale;
     }
-
 
     private enum CpuCodeName
     {
