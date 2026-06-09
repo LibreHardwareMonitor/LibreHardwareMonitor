@@ -68,14 +68,7 @@ public class TempOverlayGadget : Gadget
 
         // keep the overlay on a visible screen when the restored position no
         // longer fits (e.g. after a monitor or resolution change)
-        VisibleChanged += delegate
-        {
-            Rectangle bounds = new(Location, Size);
-            Screen screen = Screen.FromRectangle(bounds);
-            Rectangle intersection = Rectangle.Intersect(screen.WorkingArea, bounds);
-            if (intersection.Width < Math.Min(16, bounds.Width) || intersection.Height < Math.Min(16, bounds.Height))
-                Location = new Point(screen.WorkingArea.Width / 2 - bounds.Width / 2, screen.WorkingArea.Height / 2 - bounds.Height / 2);
-        };
+        VisibleChanged += delegate { EnsureOnScreen(); };
 
         AlwaysOnTop = true;
 
@@ -91,6 +84,21 @@ public class TempOverlayGadget : Gadget
         _valueFont.Dispose();
         _labelFont.Dispose();
         base.Dispose();
+    }
+
+    /// <summary>
+    /// Moves the overlay fully back onto the nearest visible working area when its
+    /// current position is partly or wholly off-screen (e.g. after a monitor is
+    /// disconnected or the resolution changes). Safe to call on every display change.
+    /// </summary>
+    public void EnsureOnScreen()
+    {
+        Rectangle area = Screen.FromRectangle(new Rectangle(Location, Size)).WorkingArea;
+        int x = Math.Min(Math.Max(Location.X, area.Left), area.Right - Size.Width);
+        int y = Math.Min(Math.Max(Location.Y, area.Top), area.Bottom - Size.Height);
+
+        if (x != Location.X || y != Location.Y)
+            Location = new Point(x, y);
     }
 
     private float? GetCpuTemperature()

@@ -564,6 +564,21 @@ public sealed partial class MainForm : Form
         };
 
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+
+        // keep the temperature overlay on a visible screen when the display
+        // layout changes (e.g. unplugging a monitor)
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
+    }
+
+    private void DisplaySettingsChanged(object sender, EventArgs e)
+    {
+        if (_tempOverlay == null)
+            return;
+
+        if (InvokeRequired)
+            BeginInvoke(new Action(_tempOverlay.EnsureOnScreen));
+        else
+            _tempOverlay.EnsureOnScreen();
     }
 
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
