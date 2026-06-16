@@ -370,6 +370,20 @@ public class Kernel32
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DeviceIoControl
+    (
+        SafeFileHandle device,
+        uint ioControlCode,
+        IntPtr inBuffer,
+        uint inBufferSize,
+        IntPtr outBuffer,
+        uint nOutBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern IntPtr CreateFile
     (
         string lpFileName,

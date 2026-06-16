@@ -109,45 +109,264 @@ internal class KernelDriver
 
     public bool DeviceIOControl(Kernel32.IOControlCode ioControlCode, object inBuffer)
     {
-        return _device != null && Kernel32.DeviceIoControl(_device, ioControlCode, inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer), null, 0, out uint _, IntPtr.Zero);
+        if (_device == null)
+            return false;
+
+        if (inBuffer == null)
+            return DeviceIOControlCore(ioControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0);
+
+        return inBuffer switch
+        {
+            byte value => DeviceIOControl(ioControlCode, value),
+            ushort value => DeviceIOControl(ioControlCode, value),
+            uint value => DeviceIOControl(ioControlCode, value),
+            ulong value => DeviceIOControl(ioControlCode, value),
+            _ => DeviceIOControlBoxed(ioControlCode, inBuffer),
+        };
+    }
+
+    public bool DeviceIOControl<TInput>(Kernel32.IOControlCode ioControlCode, TInput inBuffer)
+        where TInput : struct
+    {
+        if (_device == null)
+            return false;
+
+        IntPtr inPtr = StructureToPtr(inBuffer, out uint inSize);
+        try
+        {
+            return DeviceIOControlCore(ioControlCode, inPtr, inSize, IntPtr.Zero, 0);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(inPtr);
+        }
     }
 
     public bool DeviceIOControl<T>(Kernel32.IOControlCode ioControlCode, object inBuffer, ref T outBuffer)
+        where T : struct
     {
         if (_device == null)
             return false;
 
-        object boxedOutBuffer = outBuffer;
-        bool b = Kernel32.DeviceIoControl(_device,
-                                          ioControlCode,
-                                          inBuffer,
-                                          inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
-                                          boxedOutBuffer,
-                                          (uint)Marshal.SizeOf(boxedOutBuffer),
-                                          out uint _,
-                                          IntPtr.Zero);
+        if (inBuffer == null)
+            return DeviceIOControlNoInput(ioControlCode, ref outBuffer);
 
-        outBuffer = (T)boxedOutBuffer;
-        return b;
+        return inBuffer switch
+        {
+            byte value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            ushort value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            uint value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            ulong value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            _ => DeviceIOControlBoxed(ioControlCode, inBuffer, ref outBuffer),
+        };
+    }
+
+    public bool DeviceIOControl<TInput, TOutput>(
+        Kernel32.IOControlCode ioControlCode,
+        TInput inBuffer,
+        ref TOutput outBuffer)
+        where TInput : struct
+        where TOutput : struct
+    {
+        if (_device == null)
+            return false;
+
+        IntPtr inPtr = StructureToPtr(inBuffer, out uint inSize);
+        try
+        {
+            return DeviceIOControlWithInput(ioControlCode, inPtr, inSize, ref outBuffer);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(inPtr);
+        }
+    }
+
+    private bool DeviceIOControlNoInput<TOutput>(Kernel32.IOControlCode ioControlCode, ref TOutput outBuffer)
+        where TOutput : struct
+    {
+        return DeviceIOControlWithInput(ioControlCode, IntPtr.Zero, 0, ref outBuffer);
+    }
+
+    private bool DeviceIOControlWithInput<TOutput>(
+        Kernel32.IOControlCode ioControlCode,
+        IntPtr inPtr,
+        uint inSize,
+        ref TOutput outBuffer)
+        where TOutput : struct
+    {
+        int outSize = Marshal.SizeOf<TOutput>();
+        IntPtr outPtr = Marshal.AllocHGlobal(outSize);
+        try
+        {
+            Marshal.StructureToPtr(outBuffer, outPtr, false);
+            bool result = DeviceIOControlCore(ioControlCode, inPtr, inSize, outPtr, (uint)outSize);
+            if (result)
+                outBuffer = Marshal.PtrToStructure<TOutput>(outPtr);
+
+            return result;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(outPtr);
+        }
     }
 
     public bool DeviceIOControl<T>(Kernel32.IOControlCode ioControlCode, object inBuffer, ref T[] outBuffer)
+        where T : struct
     {
         if (_device == null)
             return false;
 
-        object boxedOutBuffer = outBuffer;
-        bool b = Kernel32.DeviceIoControl(_device,
-                                          ioControlCode,
-                                          inBuffer,
-                                          inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
-                                          boxedOutBuffer,
-                                          (uint)(Marshal.SizeOf(typeof(T)) * outBuffer.Length),
-                                          out uint _,
-                                          IntPtr.Zero);
+        if (inBuffer == null)
+            return DeviceIOControlNoInput(ioControlCode, ref outBuffer);
 
-        outBuffer = (T[])boxedOutBuffer;
-        return b;
+        return inBuffer switch
+        {
+            byte value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            ushort value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            uint value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            ulong value => DeviceIOControl(ioControlCode, value, ref outBuffer),
+            _ => DeviceIOControlBoxed(ioControlCode, inBuffer, ref outBuffer),
+        };
+    }
+
+    public bool DeviceIOControl<TInput, TOutput>(
+        Kernel32.IOControlCode ioControlCode,
+        TInput inBuffer,
+        ref TOutput[] outBuffer)
+        where TInput : struct
+        where TOutput : struct
+    {
+        if (_device == null)
+            return false;
+
+        IntPtr inPtr = StructureToPtr(inBuffer, out uint inSize);
+        try
+        {
+            return DeviceIOControlWithInput(ioControlCode, inPtr, inSize, ref outBuffer);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(inPtr);
+        }
+    }
+
+    private bool DeviceIOControlNoInput<TOutput>(Kernel32.IOControlCode ioControlCode, ref TOutput[] outBuffer)
+        where TOutput : struct
+    {
+        return DeviceIOControlWithInput(ioControlCode, IntPtr.Zero, 0, ref outBuffer);
+    }
+
+    private bool DeviceIOControlWithInput<TOutput>(
+        Kernel32.IOControlCode ioControlCode,
+        IntPtr inPtr,
+        uint inSize,
+        ref TOutput[] outBuffer)
+        where TOutput : struct
+    {
+        int elementSize = Marshal.SizeOf<TOutput>();
+        int outSize = elementSize * outBuffer.Length;
+        IntPtr outPtr = Marshal.AllocHGlobal(outSize);
+        try
+        {
+            bool result = DeviceIOControlCore(ioControlCode, inPtr, inSize, outPtr, (uint)outSize);
+            if (result)
+            {
+                for (int i = 0; i < outBuffer.Length; i++)
+                    outBuffer[i] = Marshal.PtrToStructure<TOutput>(IntPtr.Add(outPtr, i * elementSize));
+            }
+
+            return result;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(outPtr);
+        }
+    }
+
+    private bool DeviceIOControlBoxed(Kernel32.IOControlCode ioControlCode, object inBuffer)
+    {
+        IntPtr inPtr = BoxedStructureToPtr(inBuffer, out uint inSize);
+        try
+        {
+            return DeviceIOControlCore(ioControlCode, inPtr, inSize, IntPtr.Zero, 0);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(inPtr);
+        }
+    }
+
+    private bool DeviceIOControlBoxed<TOutput>(
+        Kernel32.IOControlCode ioControlCode,
+        object inBuffer,
+        ref TOutput outBuffer)
+        where TOutput : struct
+    {
+        IntPtr inPtr = BoxedStructureToPtr(inBuffer, out uint inSize);
+        try
+        {
+            return DeviceIOControlWithInput(ioControlCode, inPtr, inSize, ref outBuffer);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(inPtr);
+        }
+    }
+
+    private bool DeviceIOControlBoxed<TOutput>(
+        Kernel32.IOControlCode ioControlCode,
+        object inBuffer,
+        ref TOutput[] outBuffer)
+        where TOutput : struct
+    {
+        IntPtr inPtr = BoxedStructureToPtr(inBuffer, out uint inSize);
+        try
+        {
+            return DeviceIOControlWithInput(ioControlCode, inPtr, inSize, ref outBuffer);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(inPtr);
+        }
+    }
+
+    private bool DeviceIOControlCore(
+        Kernel32.IOControlCode ioControlCode,
+        IntPtr inBuffer,
+        uint inBufferSize,
+        IntPtr outBuffer,
+        uint outBufferSize)
+    {
+        return Kernel32.DeviceIoControl(
+            _device,
+            ioControlCode.Code,
+            inBuffer,
+            inBufferSize,
+            outBuffer,
+            outBufferSize,
+            out uint _,
+            IntPtr.Zero);
+    }
+
+    private static IntPtr StructureToPtr<T>(T value, out uint size)
+        where T : struct
+    {
+        int byteCount = Marshal.SizeOf<T>();
+        IntPtr ptr = Marshal.AllocHGlobal(byteCount);
+        Marshal.StructureToPtr(value, ptr, false);
+        size = (uint)byteCount;
+        return ptr;
+    }
+
+    private static IntPtr BoxedStructureToPtr(object value, out uint size)
+    {
+        int byteCount = Marshal.SizeOf(value);
+        IntPtr ptr = Marshal.AllocHGlobal(byteCount);
+        Marshal.StructureToPtr(value, ptr, false);
+        size = (uint)byteCount;
+        return ptr;
     }
 
     public void Close()

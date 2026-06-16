@@ -393,21 +393,23 @@ internal static class Ring0
     }
 
     public static bool ReadMemory<T>(ulong address, ref T buffer)
+        where T : struct
     {
         if (_driver == null)
             return false;
 
         ReadMemoryInput input = new() { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
+        return _driver.DeviceIOControl<ReadMemoryInput, T>(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
     }
 
     public static bool ReadMemory<T>(ulong address, ref T[] buffer)
+        where T : struct
     {
         if (_driver == null)
             return false;
 
         ReadMemoryInput input = new() { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
+        return _driver.DeviceIOControl<ReadMemoryInput, T>(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
