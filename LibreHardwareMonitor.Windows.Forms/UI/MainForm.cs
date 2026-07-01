@@ -204,7 +204,7 @@ public sealed partial class MainForm : Form
             try
             {
 
-                using Stream resourceStream = typeof(MainForm).Assembly.GetManifestResourceStream("LibreHardwareMonitor.Resources.PawnIO_setup.exe");
+                using Stream resourceStream = typeof(MainForm).Assembly.GetManifestResourceStream("LibreHardwareMonitor.Windows.Forms.Resources.PawnIO_setup.exe");
                 using FileStream fileStream = new(destination, FileMode.Create, FileAccess.Write);
                 resourceStream.CopyTo(fileStream);
 
