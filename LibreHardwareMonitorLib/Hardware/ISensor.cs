@@ -34,7 +34,12 @@ public enum SensorType
     Energy, // milliwatt-hour (mWh)
     Noise, // dBA
     Conductivity, // µS/cm
-    Humidity // %
+    Humidity, // %
+
+    WatchdogStageStatus, // -- [0|1]
+    StageTimes,          // s  [0..16,777]
+    WatchdogStageConfig, // -- [0|1, 0..6]
+    LastResetCause,      // -- [0|1]
 }
 
 /// <summary>

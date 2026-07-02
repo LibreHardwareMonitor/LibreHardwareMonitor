@@ -47,6 +47,8 @@ public sealed partial class MainForm : Form
     private readonly UserOption _readNicSensors;
     private readonly UserOption _readPsuSensors;
     private readonly UserOption _readRamSensors;
+    private readonly UserOption _readKontronControllerSensors;
+    private readonly UserOption _readKontronWatchdog;
     private readonly Node _root;
     private readonly UserOption _runWebServer;
     private readonly UserRadioGroup _sensorValuesTimeWindow;
@@ -284,6 +286,12 @@ public sealed partial class MainForm : Form
 
         _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
         _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };
+
+        _readKontronControllerSensors = new UserOption("kontronSensorsMenuItem", true, kontronSensorsMenuItem, _settings);
+        _readKontronControllerSensors.Changed += delegate { _computer.IsKontronSensorsEnabled = _readKontronControllerSensors.Value; };
+
+        _readKontronWatchdog = new UserOption("kontronWatchdogMenuItem", true, kontronWatchdogMenuItem, _settings);
+        _readKontronWatchdog.Changed += delegate { _computer.IsKontronWatchdogEnabled = _readKontronWatchdog.Value; };
 
         _showGadget = new UserOption("gadgetMenuItem", false, gadgetMenuItem, _settings);
 
