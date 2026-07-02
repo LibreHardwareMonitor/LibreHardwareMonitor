@@ -117,7 +117,7 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Sensor _coreVoltage;
         private readonly Amd17Cpu _cpu;
         private readonly Sensor _packagePower;
-        private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> _smuSensors = new();
+        private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> _smuSensors = [];
         private readonly Sensor _socVoltage;
 
         private uint _ccdTemperatureRegister;
@@ -156,9 +156,9 @@ internal sealed class Amd17Cpu : AmdCpu
             _cpu = (Amd17Cpu)hardware;
 
             _packagePower = new Sensor("Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings);
-            _coreTemperatureTctl = new Sensor("Core (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
-            _coreTemperatureTdie = new Sensor("Core (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
-            _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
+            _coreTemperatureTctl = new Sensor("Package (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
+            _coreTemperatureTdie = new Sensor("Package (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
+            _coreTemperatureTctlTdie = new Sensor("Package (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
             _ccdTemperatures = new Sensor[MAX_CCD_TEMPERATURE_SENSORS]; // Hardcoded until there's a way to get max CCDs.
             _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
@@ -176,7 +176,7 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
-        public List<NumaNode> Nodes { get; } = new();
+        public List<NumaNode> Nodes { get; } = [];
 
         public void UpdateSensors()
         {
@@ -261,7 +261,7 @@ internal sealed class Amd17Cpu : AmdCpu
                 TimeSpan deltaTime = sampleTime - _lastSampleTime;
                 if (_lastSampleTime.Ticks == 0)
                 {
-                    deltaTime = new(0);
+                    deltaTime = new TimeSpan(0);
                     _lastSampleTime = sampleTime;
                     _lastPwrValue = totalEnergy;
                 }
@@ -620,20 +620,11 @@ internal sealed class Amd17Cpu : AmdCpu
         }
     }
 
-    private class NumaNode
+    private class NumaNode(Amd17Cpu cpu, int id)
     {
-        private readonly Amd17Cpu _cpu;
+        public List<Core> Cores { get; } = [];
 
-        public NumaNode(Amd17Cpu cpu, int id)
-        {
-            Cores = new List<Core>();
-            NodeId = id;
-            _cpu = cpu;
-        }
-
-        public List<Core> Cores { get; }
-
-        public int NodeId { get; }
+        public int NodeId { get; } = id;
 
         public double CoreClock
         {
@@ -669,7 +660,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
             if (core == null)
             {
-                core = new Core(_cpu, coreId);
+                core = new Core(cpu, coreId);
                 Cores.Add(core);
             }
 
@@ -681,32 +672,22 @@ internal sealed class Amd17Cpu : AmdCpu
         { }
     }
 
-    private class CpuThread
+    private class CpuThread(Amd17Cpu cpu, CpuId cpuId)
     {
         private DateTime _sampleTime = new(0);
         private DateTime _lastSampleTime = new(0);
-        private ulong _mperf = 0;
-        private ulong _aperf = 0;
-        private ulong _mperfLast = 0;
-        private ulong _aperfLast = 0;
-        private ulong _mperfDelta = 0;
-        private ulong _aperfDelta = 0;
+        private ulong _mperf;
+        private ulong _aperf;
+        private ulong _mperfLast;
+        private ulong _aperfLast;
 
-        private CpuId _cpuId;
-        private Amd17Cpu _cpu;
-        public CpuId Cpu { get { return _cpuId; } }
+        public CpuId Cpu { get { return cpuId; } }
 
-        public TimeSpan SampleDuration { get; private set; }= TimeSpan.Zero;
-        public double EffectiveClock { get; private set; } = 0;
+        private TimeSpan SampleDuration { get; set; }= TimeSpan.Zero;
+        public double EffectiveClock { get; private set; }
 
-        public ulong MperfDelta { get {  return _mperfDelta; } }
-        public ulong AperfDelta { get { return _aperfDelta; } }
-
-        public CpuThread(Amd17Cpu cpu, CpuId cpuId)
-        {
-            _cpu = cpu;
-            _cpuId = cpuId;
-        }
+        public ulong MperfDelta { get; private set; }
+        public ulong AperfDelta { get; private set; }
 
         public void ReadPerformanceCounter()
         {
@@ -716,10 +697,10 @@ internal sealed class Amd17Cpu : AmdCpu
 
             // performance counter
             // MSRC000_00E7, P0 state counter
-            _cpu._pawnModule.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
+            cpu._pawnModule.ReadMsr(MSR_MPERF_RO, out ulong edxeax);
             _mperf = edxeax;
             // MSRC000_00E8, C0 state counter
-            _cpu._pawnModule.ReadMsr(MSR_APERF_RO, out edxeax);
+            cpu._pawnModule.ReadMsr(MSR_APERF_RO, out edxeax);
             _aperf = edxeax;
         }
 
@@ -728,7 +709,7 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_mperf < _mperfLast || _aperf < _aperfLast)
             {
                 // current measurment is invalid when _mperf or _aperf overflow
-                _lastSampleTime = new(0);
+                _lastSampleTime = new DateTime(0);
             }
 
             if (_lastSampleTime.Ticks == 0)
@@ -737,39 +718,39 @@ internal sealed class Amd17Cpu : AmdCpu
                 _mperfLast = _mperf;
                 _aperfLast = _aperf;
 
-                _mperfDelta = 0;
-                _aperfDelta = 0;
+                MperfDelta = 0;
+                AperfDelta = 0;
                 return;
             }
 
             SampleDuration = _sampleTime - _lastSampleTime;
             _lastSampleTime = _sampleTime;
 
-            _mperfDelta = _mperf - _mperfLast;
-            _aperfDelta = _aperf - _aperfLast;
+            MperfDelta = _mperf - _mperfLast;
+            AperfDelta = _aperf - _aperfLast;
             _mperfLast = _mperf;
             _aperfLast = _aperf;
 
-            if (_mperfDelta > 20000e6)
-                _mperfDelta = 0;
-            if (_aperfDelta > 20000e6)
-                _aperfDelta = 0;
+            if (MperfDelta > 20000e6)
+                MperfDelta = 0;
+            if (AperfDelta > 20000e6)
+                AperfDelta = 0;
 
-            if(_aperfDelta == 0 || _mperfDelta == 0)
+            if(AperfDelta == 0 || MperfDelta == 0)
             {
                 //overflow possible, numbers are > 20 GHz
-                _lastSampleTime = new(0);
+                _lastSampleTime = new DateTime(0);
                 return;
             }
 
             //effective clock
-            double freq = (double)_aperfDelta / (SampleDuration.TotalMilliseconds * 1000.0);
+            double freq = AperfDelta / (SampleDuration.TotalMilliseconds * 1000.0);
             EffectiveClock = Math.Round(freq);
         }
 
         public bool HasValidCounters()
         {
-            return _mperfDelta > 0 && _aperfDelta > 0 && SampleDuration.Ticks > 0;
+            return MperfDelta > 0 && AperfDelta > 0 && SampleDuration.Ticks > 0;
         }
     }
 
@@ -783,10 +764,10 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Sensor _vcore;
         private ISensor _busSpeed;
         private DateTime _lastSampleTime = new(0);
-        private uint _lastPwrValue = 0;
+        private uint _lastPwrValue;
 
-        public double CoreClock { get; set; } = 0;
-        public double EffectiveClock { get; set; } = 0;
+        public double CoreClock { get; private set; }
+        public double EffectiveClock { get; private set; }
 
         public Core(Amd17Cpu cpu, int id)
         {
@@ -807,11 +788,11 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public int CoreId { get; }
 
-        public List<CpuThread> Threads { get; } = new List<CpuThread>();
+        public List<CpuThread> Threads { get; } = [];
 
         public void AppedThread(CpuId cpuId)
         {
-            CpuThread t = new CpuThread(_cpu, cpuId);
+            CpuThread t = new(_cpu, cpuId);
             Threads.Add(t);
         }
 
@@ -847,7 +828,7 @@ internal sealed class Amd17Cpu : AmdCpu
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 
-            foreach(var t in Threads)
+            foreach(CpuThread t in Threads)
             {
                 t.ReadPerformanceCounter();
             }
@@ -877,7 +858,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
             if (thread.HasValidCounters())
             {
-                double coreClock = 0;
+                double coreClock;
                 double busClock = 100.0; //bus speed in MHz
                 _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
                 if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
@@ -914,7 +895,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 //clock values valid when AperfDelta < MperfDelta (ratio is < 1.0)
                 if (thread.AperfDelta < thread.MperfDelta)
-                    coreClock = ((double)thread.AperfDelta / (double)thread.MperfDelta) * coreClock;
+                    coreClock = thread.AperfDelta / (double)thread.MperfDelta * coreClock;
 
                 CoreClock = Math.Round(coreClock);
                 _clock.Value = (float)CoreClock;
@@ -930,7 +911,7 @@ internal sealed class Amd17Cpu : AmdCpu
             TimeSpan deltaTime = sampleTime - _lastSampleTime;
             if (_lastSampleTime.Ticks == 0)
             {
-                deltaTime = new(0);
+                deltaTime = new TimeSpan(0);
                 _lastSampleTime = sampleTime;
                 _lastPwrValue = totalEnergy;
             }
@@ -960,7 +941,6 @@ internal sealed class Amd17Cpu : AmdCpu
     }
 
     // ReSharper disable InconsistentNaming
-    private const uint COFVID_STATUS = 0xC0010071;
     private const uint CCD_TEMPERATURE_REGISTER_STRIDE = 0x4;
     private const uint CCD_TEMPERATURE_VALID_MASK = 0x800;
     private const uint CCD_TEMPERATURE_VALUE_MASK = 0x7FF;
@@ -970,23 +950,16 @@ internal sealed class Amd17Cpu : AmdCpu
     private const float CCD_TEMPERATURE_MAX = 125.0f;
     private const uint F17H_M01H_SVI = 0x0005A000;
     private const uint F17H_M01H_THM_TCON_CUR_TMP = 0x00059800;
-    private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
-    private const uint F17H_M61H_CCD1_TEMP = 0x00059b08;
     private const uint F17H_TEMP_RANGE_SEL_MASK = 0x80000;
     private const uint F17H_TEMP_TJ_SEL_MASK = 0x30000;
-    private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
     private const int MAX_CCD_TEMPERATURE_SENSORS = 16;
-    private const uint HWCR = 0xC0010015;
     private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
     private const uint MSR_HARDWARE_PSTATE_STATUS = 0xC0010293;
     private const uint MSR_PKG_ENERGY_STAT = 0xC001029B;
-    private const uint MSR_PSTATE_STATUS = 0xC0010063;
     private const uint MSR_PSTATE_0 = 0xC0010064;
     private const uint MSR_PWR_UNIT = 0xC0010299;
     private const uint MSR_MPERF_RO = 0xC000_00E7;
     private const uint MSR_APERF_RO = 0xC000_00E8;
-    private const uint PERF_CTL_0 = 0xC0010000;
-    private const uint PERF_CTR_0 = 0xC0010004;
     private const uint ZEN_CCD_TEMP_REGISTER_154 = 0x00059954;
     private const uint ZEN_CCD_TEMP_REGISTER_1F0 = 0x000599F0;
     private const uint ZEN_CCD_TEMP_REGISTER_300 = 0x00059B00;
