@@ -120,10 +120,36 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> _smuSensors = new();
         private readonly Sensor _socVoltage;
 
+        private uint _ccdTemperatureRegister;
         private Sensor _ccdsAverageTemperature;
         private Sensor _ccdsMaxTemperature;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue;
+
+        private static readonly uint[] _ccdTemperatureRegisterCandidates =
+        [
+            ZEN_CCD_TEMP_REGISTER_308,
+            ZEN_CCD_TEMP_REGISTER_300,
+            ZEN_CCD_TEMP_REGISTER_154
+        ];
+
+        private static readonly uint[] _family1AhModel00HCcdTemperatureRegisterCandidates =
+        [
+            ZEN_CCD_TEMP_REGISTER_1F0,
+            ZEN_CCD_TEMP_REGISTER_308,
+            ZEN_CCD_TEMP_REGISTER_300,
+            ZEN_CCD_TEMP_REGISTER_154
+        ];
+
+        private static readonly Dictionary<uint, uint[]> _ccdKnownTemperatureRegisterMappingsByCpu = new()
+        {
+            { GetCpuModelKey(0x17, 0x31), [ZEN_CCD_TEMP_REGISTER_154] }, // Threadripper 3000.
+            { GetCpuModelKey(0x17, 0x71), [ZEN_CCD_TEMP_REGISTER_154] }, // Zen 2.
+            { GetCpuModelKey(0x19, 0x21), [ZEN_CCD_TEMP_REGISTER_154] }, // Zen 3.
+            { GetCpuModelKey(0x19, 0x61), [ZEN_CCD_TEMP_REGISTER_308] }, // Zen 4.
+            { GetCpuModelKey(0x1A, 0x08), [ZEN_CCD_TEMP_REGISTER_1F0] }, // Threadripper 9000.
+            { GetCpuModelKey(0x1A, 0x44), [ZEN_CCD_TEMP_REGISTER_308] } // Zen 5.
+        };
 
         public Processor(Hardware hardware)
         {
@@ -133,7 +159,7 @@ internal sealed class Amd17Cpu : AmdCpu
             _coreTemperatureTctl = new Sensor("Core (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
             _coreTemperatureTdie = new Sensor("Core (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
             _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
-            _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
+            _ccdTemperatures = new Sensor[MAX_CCD_TEMPERATURE_SENSORS]; // Hardcoded until there's a way to get max CCDs.
             _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _busClock = new Sensor("Bus Speed", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
@@ -193,8 +219,6 @@ internal sealed class Amd17Cpu : AmdCpu
                 // SVI0_TFN_PLANE1 [1]
                 smuSvi0Tfn = _cpu._pawnModule.ReadSmn(F17H_M01H_SVI + 0x8);
 
-                bool supportsPerCcdTemperatures = false;
-
                 // TODO: find a better way because these will probably keep changing in the future.
 
                 uint sviPlane0Offset;
@@ -204,21 +228,18 @@ internal sealed class Amd17Cpu : AmdCpu
                     case 0x31: // Threadripper 3000.
                         sviPlane0Offset = F17H_M01H_SVI + 0x14;
                         sviPlane1Offset = F17H_M01H_SVI + 0x10;
-                        supportsPerCcdTemperatures = true;
                         break;
 
                     case 0x71: // Zen 2.
                     case 0x21: // Zen 3.
                         sviPlane0Offset = F17H_M01H_SVI + 0x10;
                         sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                        supportsPerCcdTemperatures = true;
                         break;
 
                     case 0x61: //Zen 4
                     case 0x44: //Zen 5
                         sviPlane0Offset = F17H_M01H_SVI + 0x10;
                         sviPlane1Offset = F17H_M01H_SVI + 0xC;
-                        supportsPerCcdTemperatures = true;
                         break;
 
                     default: // Zen and Zen+.
@@ -307,62 +328,9 @@ internal sealed class Amd17Cpu : AmdCpu
                     _cpu.ActivateSensor(_coreTemperatureTctlTdie);
                 }
 
-                // Tested only on R5 3600 & Threadripper 3960X, 5900X, 7900X
-                if (supportsPerCcdTemperatures)
-                {
-                    for (uint i = 0; i < _ccdTemperatures.Length; i++)
-                    {
-                        uint ccd1Offset = 0;
-                        if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
-                            ccd1Offset = F17H_M61H_CCD1_TEMP + i * 0x4;
-                        else
-                            ccd1Offset = F17H_M70H_CCD1_TEMP + i * 0x4;
-                        uint ccdRawTemp = _cpu._pawnModule.ReadSmn(ccd1Offset);
-
-                        ccdRawTemp &= 0xFFF;
-                        float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
-                        if (ccdRawTemp > 0 && ccdTemp < 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
-                        {
-                            if (_ccdTemperatures[i] == null)
-                            {
-                                _cpu.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
-                                                                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
-                                                                                     SensorType.Temperature,
-                                                                                     _cpu,
-                                                                                     _cpu._settings));
-                            }
-
-                            _ccdTemperatures[i].Value = ccdTemp;
-                        }
-                    }
-
-                    Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
-                    if (activeCcds.Length > 1)
-                    {
-                        // No need to get the max / average ccds temp if there is only one CCD.
-
-                        if (_ccdsMaxTemperature == null)
-                        {
-                            _cpu.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
-                                                                                 _cpu._sensorTypeIndex[SensorType.Temperature]++,
-                                                                                 SensorType.Temperature,
-                                                                                 _cpu,
-                                                                                 _cpu._settings));
-                        }
-
-                        if (_ccdsAverageTemperature == null)
-                        {
-                            _cpu.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
-                                                                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
-                                                                                     SensorType.Temperature,
-                                                                                     _cpu,
-                                                                                     _cpu._settings));
-                        }
-
-                        _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
-                        _ccdsAverageTemperature.Value = activeCcds.Average(x => x.Value);
-                    }
-                }
+                uint ccdTemperatureRegister = GetCcdTemperatureRegister(cpuId);
+                if (ccdTemperatureRegister != 0)
+                    UpdateCcdTemperatureSensors(ccdTemperatureRegister);
 
                 Mutexes.ReleasePciBus();
             }
@@ -428,6 +396,187 @@ internal sealed class Amd17Cpu : AmdCpu
 
             clock = Nodes.Average(x => x.EffectiveClock);
             _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
+        }
+
+        /// <summary>
+        /// Gets the first CCD temperature SMN register for the current processor.
+        /// </summary>
+        private uint GetCcdTemperatureRegister(CpuId cpuId)
+        {
+            if (_ccdTemperatureRegister != 0)
+                return _ccdTemperatureRegister;
+
+            _ccdTemperatureRegister = ProbeCcdTemperatureRegister(cpuId);
+            return _ccdTemperatureRegister;
+        }
+
+        /// <summary>
+        /// Finds the CCD temperature register layout exposed by this Zen processor.
+        /// </summary>
+        private uint ProbeCcdTemperatureRegister(CpuId cpuId)
+        {
+            uint bestRegister = 0;
+            int bestLeadingValidCount = 0;
+            int bestValidCount = 0;
+            int bestFirstValidIndex = MAX_CCD_TEMPERATURE_SENSORS;
+            uint[] candidateRegisters = GetCcdTemperatureRegisterCandidates(cpuId);
+
+            foreach (uint candidateRegister in candidateRegisters)
+            {
+                int leadingValidCount = 0;
+                int validCount = 0;
+                int firstValidIndex = MAX_CCD_TEMPERATURE_SENSORS;
+
+                for (int i = 0; i < MAX_CCD_TEMPERATURE_SENSORS; i++)
+                {
+                    uint register = candidateRegister + ((uint)i * CCD_TEMPERATURE_REGISTER_STRIDE);
+                    if (!TryReadSmn(register, out uint rawTemperature))
+                        continue;
+
+                    if (!TryDecodeCcdTemperature(rawTemperature, out _))
+                        continue;
+
+                    validCount++;
+                    if (firstValidIndex == MAX_CCD_TEMPERATURE_SENSORS)
+                        firstValidIndex = i;
+
+                    if (i == leadingValidCount)
+                        leadingValidCount++;
+                }
+
+                bool isBetterRegister = leadingValidCount > bestLeadingValidCount
+                                        || (leadingValidCount == bestLeadingValidCount && validCount > bestValidCount)
+                                        || (leadingValidCount == bestLeadingValidCount && validCount == bestValidCount && firstValidIndex < bestFirstValidIndex);
+
+                if (!isBetterRegister)
+                    continue;
+
+                bestRegister = candidateRegister;
+                bestLeadingValidCount = leadingValidCount;
+                bestValidCount = validCount;
+                bestFirstValidIndex = firstValidIndex;
+            }
+
+            return bestValidCount > 0 ? bestRegister : 0;
+        }
+
+        /// <summary>
+        /// Gets CCD temperature register candidates for the processor family and model.
+        /// </summary>
+        private static uint[] GetCcdTemperatureRegisterCandidates(CpuId cpuId)
+        {
+            uint cpuModelKey = GetCpuModelKey(cpuId.Family, cpuId.Model);
+            if (_ccdKnownTemperatureRegisterMappingsByCpu.TryGetValue(cpuModelKey, out uint[] candidates))
+                return candidates;
+
+            if (cpuId.Family == 0x1A && cpuId.Model <= 0x0F)
+                return _family1AhModel00HCcdTemperatureRegisterCandidates;
+
+            return _ccdTemperatureRegisterCandidates;
+        }
+
+        /// <summary>
+        /// Gets a lookup key for CPU family and model specific CCD temperature candidates.
+        /// </summary>
+        private static uint GetCpuModelKey(uint family, uint model)
+        {
+            return (family << 16) | model;
+        }
+
+        /// <summary>
+        /// Updates CCD temperature sensors from the resolved SMN register layout.
+        /// </summary>
+        private void UpdateCcdTemperatureSensors(uint ccdTemperatureRegister)
+        {
+            int activeCcdCount = 0;
+            float ccdTemperatureTotal = 0;
+            float ccdTemperatureMax = 0;
+
+            for (int i = 0; i < _ccdTemperatures.Length; i++)
+            {
+                uint register = ccdTemperatureRegister + ((uint)i * CCD_TEMPERATURE_REGISTER_STRIDE);
+                if (!TryReadSmn(register, out uint rawTemperature))
+                    continue;
+
+                if (!TryDecodeCcdTemperature(rawTemperature, out float ccdTemperature))
+                    continue;
+
+                if (_ccdTemperatures[i] == null)
+                {
+                    _cpu.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i} (Tdie)",
+                                                                         _cpu._sensorTypeIndex[SensorType.Temperature]++,
+                                                                         SensorType.Temperature,
+                                                                         _cpu,
+                                                                         _cpu._settings));
+                }
+
+                _ccdTemperatures[i].Value = ccdTemperature;
+
+                activeCcdCount++;
+                ccdTemperatureTotal += ccdTemperature;
+                if (activeCcdCount == 1 || ccdTemperature > ccdTemperatureMax)
+                    ccdTemperatureMax = ccdTemperature;
+            }
+
+            if (activeCcdCount <= 1)
+                return;
+
+            // No need to get the max / average CCD temp if there is only one CCD.
+            if (_ccdsMaxTemperature == null)
+            {
+                _cpu.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
+                                                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
+                                                                     SensorType.Temperature,
+                                                                     _cpu,
+                                                                     _cpu._settings));
+            }
+
+            if (_ccdsAverageTemperature == null)
+            {
+                _cpu.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
+                                                                         _cpu._sensorTypeIndex[SensorType.Temperature]++,
+                                                                         SensorType.Temperature,
+                                                                         _cpu,
+                                                                         _cpu._settings));
+            }
+
+            _ccdsMaxTemperature.Value = ccdTemperatureMax;
+            _ccdsAverageTemperature.Value = ccdTemperatureTotal / activeCcdCount;
+        }
+
+        /// <summary>
+        /// Converts a raw CCD temperature register value to Celsius.
+        /// </summary>
+        private static bool TryDecodeCcdTemperature(uint rawTemperature, out float ccdTemperature)
+        {
+            ccdTemperature = 0;
+
+            if ((rawTemperature & CCD_TEMPERATURE_VALID_MASK) == 0)
+                return false;
+
+            int rawTemperatureValue = (int)(rawTemperature & CCD_TEMPERATURE_VALUE_MASK);
+            int temperatureMilliCelsius = (rawTemperatureValue * CCD_TEMPERATURE_SCALE_MILLI_CELSIUS) - CCD_TEMPERATURE_OFFSET_MILLI_CELSIUS;
+            ccdTemperature = temperatureMilliCelsius * 0.001f;
+
+            return ccdTemperature is > CCD_TEMPERATURE_MIN and < CCD_TEMPERATURE_MAX;
+        }
+
+        /// <summary>
+        /// Reads an SMN register without failing the entire CPU update path.
+        /// </summary>
+        private bool TryReadSmn(uint register, out uint value)
+        {
+            try
+            {
+                value = _cpu._pawnModule.ReadSmn(register);
+                return true;
+            }
+            catch
+            {
+                // Some Zen SMN CCD temperature windows are sparse across products.
+                value = 0;
+                return false;
+            }
         }
 
         private double GetTimeStampCounterMultiplier()
@@ -812,6 +961,13 @@ internal sealed class Amd17Cpu : AmdCpu
 
     // ReSharper disable InconsistentNaming
     private const uint COFVID_STATUS = 0xC0010071;
+    private const uint CCD_TEMPERATURE_REGISTER_STRIDE = 0x4;
+    private const uint CCD_TEMPERATURE_VALID_MASK = 0x800;
+    private const uint CCD_TEMPERATURE_VALUE_MASK = 0x7FF;
+    private const int CCD_TEMPERATURE_SCALE_MILLI_CELSIUS = 125;
+    private const int CCD_TEMPERATURE_OFFSET_MILLI_CELSIUS = 49000;
+    private const float CCD_TEMPERATURE_MIN = -50.0f;
+    private const float CCD_TEMPERATURE_MAX = 125.0f;
     private const uint F17H_M01H_SVI = 0x0005A000;
     private const uint F17H_M01H_THM_TCON_CUR_TMP = 0x00059800;
     private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
@@ -819,6 +975,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint F17H_TEMP_RANGE_SEL_MASK = 0x80000;
     private const uint F17H_TEMP_TJ_SEL_MASK = 0x30000;
     private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
+    private const int MAX_CCD_TEMPERATURE_SENSORS = 16;
     private const uint HWCR = 0xC0010015;
     private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
     private const uint MSR_HARDWARE_PSTATE_STATUS = 0xC0010293;
@@ -830,5 +987,9 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint MSR_APERF_RO = 0xC000_00E8;
     private const uint PERF_CTL_0 = 0xC0010000;
     private const uint PERF_CTR_0 = 0xC0010004;
+    private const uint ZEN_CCD_TEMP_REGISTER_154 = 0x00059954;
+    private const uint ZEN_CCD_TEMP_REGISTER_1F0 = 0x000599F0;
+    private const uint ZEN_CCD_TEMP_REGISTER_300 = 0x00059B00;
+    private const uint ZEN_CCD_TEMP_REGISTER_308 = 0x00059B08;
     // ReSharper restore InconsistentNaming
 }
