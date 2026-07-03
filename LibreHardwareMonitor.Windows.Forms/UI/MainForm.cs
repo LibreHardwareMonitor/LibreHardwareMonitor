@@ -32,6 +32,7 @@ public sealed partial class MainForm : Form
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
     private readonly UserOption _throttleAtaUpdate;
+    private readonly UserRadioGroup _ataStorageUpdateInterval;
     private readonly UserOption _logSensors;
     private readonly UserOption _forceDriveWakeup;
     private readonly UserOption _minimizeOnClose;
@@ -419,27 +420,42 @@ public sealed partial class MainForm : Form
 
         _updateInterval.Changed += (sender, e) =>
         {
+            TimeSpan newInterval;
             switch (_updateInterval.Value)
             {
                 case 0:
                     timer.Interval = 250;
+                    newInterval = TimeSpan.FromMilliseconds(250);
                     break;
                 case 1:
                     timer.Interval = 500;
+                    newInterval = TimeSpan.FromMilliseconds(500);
                     break;
                 case 2:
                     timer.Interval = 1000;
+                    newInterval = TimeSpan.FromSeconds(1);
                     break;
                 case 3:
                     timer.Interval = 2000;
+                    newInterval = TimeSpan.FromSeconds(2);
                     break;
                 case 4:
                     timer.Interval = 5000;
+                    newInterval = TimeSpan.FromSeconds(5);
                     break;
                 case 5:
                     timer.Interval = 10000;
+                    newInterval = TimeSpan.FromSeconds(10);
                     break;
+                default:
+                    return;
             }
+
+            // If ATA Storage is in "Follow Update Interval" mode, sync DitRefreshInterval.
+            // Null check is required because _updateInterval is initialized before _ataStorageUpdateInterval,
+            // and the Changed event fires once during construction via UserRadioGroup.
+            if (_ataStorageUpdateInterval != null && _ataStorageUpdateInterval.Value == 0)
+                StorageDevice.DitRefreshInterval = newInterval;
         };
 
         _throttleAtaUpdate = new UserOption("throttleAtaUpdateMenuItem", false, throttleAtaUpdateMenuItem, _settings);
@@ -453,6 +469,41 @@ public sealed partial class MainForm : Form
 
                 case false:
                     StorageDevice.ThrottleInterval = TimeSpan.Zero;
+                    break;
+            }
+        };
+
+        _ataStorageUpdateInterval = new UserRadioGroup("ataStorageUpdateInterval",
+                                                       0,
+                                                       new[]
+                                                       {
+                                                           ataStorageUpdateFollowMenuItem,
+                                                           ataStorageUpdate10minMenuItem,
+                                                           ataStorageUpdate30minMenuItem,
+                                                           ataStorageUpdate1hMenuItem,
+                                                           ataStorageUpdate6hMenuItem
+                                                       },
+                                                       _settings);
+
+        _ataStorageUpdateInterval.Changed += (sender, e) =>
+        {
+            switch (_ataStorageUpdateInterval.Value)
+            {
+                case 0:
+                    // Follow global update interval
+                    StorageDevice.DitRefreshInterval = TimeSpan.FromMilliseconds(timer.Interval);
+                    break;
+                case 1:
+                    StorageDevice.DitRefreshInterval = TimeSpan.FromMinutes(10);
+                    break;
+                case 2:
+                    StorageDevice.DitRefreshInterval = TimeSpan.FromMinutes(30);
+                    break;
+                case 3:
+                    StorageDevice.DitRefreshInterval = TimeSpan.FromHours(1);
+                    break;
+                case 4:
+                    StorageDevice.DitRefreshInterval = TimeSpan.FromHours(6);
                     break;
             }
         };

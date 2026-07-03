@@ -37,6 +37,15 @@ public sealed class StorageDevice : Hardware, ISmart
     private long _lastWriteCount;
 
     private DateTime _lastUpdate = DateTime.MinValue;
+    private DateTime _lastDitRefreshTime = DateTime.MinValue;
+
+    /// <summary>
+    /// Gets or sets the interval between DiskInfoToolkit refresh calls.
+    /// DiskInfoToolkit refresh physically accesses the disk (waking it up), so this
+    /// should be set to a reasonable value (e.g. 1 hour) to avoid excessive disk head activation.
+    /// Default is 1 hour. Set to <see cref="TimeSpan.Zero"/> to disable throttling (refresh every update cycle).
+    /// </summary>
+    public static TimeSpan DitRefreshInterval { get; set; } = TimeSpan.FromHours(1);
 
     private readonly List<StorageDeviceSensor> _sensors = new();
     private readonly List<SmartAttribute> _attributes = new();
@@ -91,10 +100,14 @@ public sealed class StorageDevice : Hardware, ISmart
 
         bool hasChanges = false;
 
-        //No updates for sleeping devices if we should not wake it up
-        if (isDevicePoweredOn)
+        // Only call StorageDIT.Refresh every hour to avoid excessive disk head activation.
+        // DiskInfoToolkit refresh physically accesses the disk (waking it up), so we cache
+        // the data and reuse it between refreshes.
+        bool ditRefreshDue = DateTime.UtcNow - _lastDitRefreshTime >= DitRefreshInterval;
+        if (isDevicePoweredOn && ditRefreshDue)
         {
             hasChanges = StorageDIT.Refresh(_storage);
+            _lastDitRefreshTime = DateTime.UtcNow;
         }
 
         if (!hasChanges)
