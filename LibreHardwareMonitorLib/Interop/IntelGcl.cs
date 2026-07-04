@@ -232,13 +232,13 @@ internal static class IntelGcl
         if (IsInitialized)
             return true;
 
-        var initArgs = new ctl_init_args_t();
-        initArgs.Size = (uint)Marshal.SizeOf(typeof(ctl_init_args_t));
+        ctl_init_args_t initArgs = new ctl_init_args_t();
+        initArgs.Size = (uint)Marshal.SizeOf<ctl_init_args_t>();
         initArgs.Version = 0;
         initArgs.AppVersion = CTL_IMPL_VERSION;
         initArgs.flags = (uint)ctl_init_flag_t.CTL_INIT_FLAG_USE_LEVEL_ZERO;
 
-        var apiHandle = new ctl_api_handle_t();
+        ctl_api_handle_t apiHandle = new ctl_api_handle_t();
         int result = ctlInit(ref initArgs, ref apiHandle);
 
         if (result != (int)ctl_result_t.CTL_RESULT_SUCCESS)

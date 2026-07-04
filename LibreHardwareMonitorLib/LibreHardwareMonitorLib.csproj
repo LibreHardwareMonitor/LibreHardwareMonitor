@@ -22,6 +22,10 @@
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <DisableIpmiWmi Condition="'$(DisableIpmiWmi)' == '' and '$(TargetFramework)' == 'net10.0' and ('$(Configuration)' == 'Release' or '$(Configuration)' == 'ReleaseWithDebugging')">true</DisableIpmiWmi>
+    <DisableIpmiWmi Condition="'$(DisableIpmiWmi)' == ''">false</DisableIpmiWmi>
+    <DisableRamSpd Condition="'$(DisableRamSpd)' == '' and '$(TargetFramework)' == 'net10.0' and ('$(Configuration)' == 'Release' or '$(Configuration)' == 'ReleaseWithDebugging')">true</DisableRamSpd>
+    <DisableRamSpd Condition="'$(DisableRamSpd)' == ''">false</DisableRamSpd>
   </PropertyGroup>
 
   <!-- AOT/Trimming compatibility for modern .NET -->
@@ -31,8 +35,6 @@
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
-    <!-- Suppress known AOT warnings from System.Management WMI usage and OpCode dynamic code -->
-    <NoWarn>$(NoWarn);IL2026;IL3050;IL2075;IL2070</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildOnlyRefs)'=='true'">
@@ -57,6 +59,14 @@
     <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DisableIpmiWmi)' == 'true'">
+    <DefineConstants>$(DefineConstants);DISABLE_IPMI_WMI</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DisableRamSpd)' == 'true'">
+    <DefineConstants>$(DefineConstants);DISABLE_RAM_SPD</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />
@@ -73,6 +83,16 @@
     <EmbeddedResource Include="Resources\PawnIo\SmbusIntelSkylakeIMC.bin" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DisableIpmiWmi)' == 'true'">
+    <Compile Remove="Hardware\Motherboard\Lpc\Ipmi.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableRamSpd)' == 'true'">
+    <Compile Remove="Hardware\Memory\DimmMemory.cs" />
+    <Compile Remove="Hardware\Memory\Sensors\SpdThermalSensor.cs" />
+    <Compile Remove="RAMSPDToolkitDriver.cs" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
@@ -81,16 +101,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiskInfoToolkit" Version="2.1.1" />
-    <PackageReference Include="HidSharp" Version="2.6.4" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.298">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.5.0" />
-    <PackageReference Include="System.Management" Version="10.0.9" />
+    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.5.0" Condition="'$(DisableRamSpd)' != 'true'" />
+    <PackageReference Include="System.Management" Version="10.0.9" Condition="'$(DisableIpmiWmi)' != 'true'" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DiskInfoToolkit\DiskInfoToolkit\DiskInfoToolkit.csproj">
+      <SetConfiguration>Configuration=$(Configuration)</SetConfiguration>
+      <SetPlatform>Platform=AnyCPU</SetPlatform>
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+      <SetPlatformTarget>PlatformTarget=AnyCPU</SetPlatformTarget>
+      <SetGeneratePackageOnBuild>GeneratePackageOnBuild=false</SetGeneratePackageOnBuild>
+      <AdditionalProperties>EnableNETAnalyzers=false;TreatWarningsAsErrors=false;GeneratePackageOnBuild=false</AdditionalProperties>
+      <GlobalPropertiesToRemove>BaseIntermediateOutputPath;BuildOnlyRefs;IntermediateOutputPath;PublishAot;PublishSingleFile;SelfContained;PublishTrimmed;RuntimeIdentifier;RuntimeIdentifiers;OutputPath;OutDir;PublishDir</GlobalPropertiesToRemove>
+      <Private>true</Private>
+      <PrivateAssets>all</PrivateAssets>
+      <Visible>false</Visible>
+    </ProjectReference>
+    <ProjectReference Include="..\..\build\HIDSharp\HidSharp.Source.csproj">
+      <SetConfiguration>Configuration=$(Configuration)</SetConfiguration>
+      <SetPlatform>Platform=AnyCPU</SetPlatform>
+      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
+      <SetPlatformTarget>PlatformTarget=AnyCPU</SetPlatformTarget>
+      <GlobalPropertiesToRemove>BaseIntermediateOutputPath;BuildOnlyRefs;IntermediateOutputPath;PublishAot;PublishSingleFile;SelfContained;PublishTrimmed;RuntimeIdentifier;RuntimeIdentifiers;OutputPath;OutDir;PublishDir</GlobalPropertiesToRemove>
+      <Private>true</Private>
+      <PrivateAssets>all</PrivateAssets>
+      <Visible>false</Visible>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

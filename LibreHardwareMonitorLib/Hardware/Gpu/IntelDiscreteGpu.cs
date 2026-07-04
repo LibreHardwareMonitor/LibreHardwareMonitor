@@ -149,7 +149,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
     {
         properties = new IntelGcl.ctl_device_adapter_properties_t
         {
-            Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_device_adapter_properties_t)),
+            Size = (uint)Marshal.SizeOf<IntelGcl.ctl_device_adapter_properties_t>(),
             Version = 2
         };
 
@@ -298,9 +298,9 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         if (!IsValid)
             return false;
 
-        var telemetry = new IntelGcl.ctl_power_telemetry_t
+        IntelGcl.ctl_power_telemetry_t telemetry = new IntelGcl.ctl_power_telemetry_t
         {
-            Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_power_telemetry_t)),
+            Size = (uint)Marshal.SizeOf<IntelGcl.ctl_power_telemetry_t>(),
             Version = 1,
             psu = new IntelGcl.ctl_psu_info_t[IntelGcl.CTL_PSU_COUNT],
             fanSpeed = new IntelGcl.ctl_oc_telemetry_item_t[IntelGcl.CTL_FAN_COUNT]
@@ -326,16 +326,16 @@ internal sealed class IntelDiscreteGpu : GenericGpu
 
         if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS && freqCount > 0)
         {
-            var freqHandles = new IntelGcl.ctl_freq_handle_t[freqCount];
+            IntelGcl.ctl_freq_handle_t[] freqHandles = new IntelGcl.ctl_freq_handle_t[freqCount];
             result = IntelGcl.ctlEnumFrequencyDomains(_handle, ref freqCount, freqHandles);
 
             if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS)
             {
                 for (int i = 0; i < freqCount; i++)
                 {
-                    var properties = new IntelGcl.ctl_freq_properties_t
+                    IntelGcl.ctl_freq_properties_t properties = new IntelGcl.ctl_freq_properties_t
                     {
-                        Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_freq_properties_t)),
+                        Size = (uint)Marshal.SizeOf<IntelGcl.ctl_freq_properties_t>(),
                         Version = 0
                     };
 
@@ -344,9 +344,9 @@ internal sealed class IntelDiscreteGpu : GenericGpu
                     if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS &&
                         properties.type == IntelGcl.ctl_freq_domain_t.CTL_FREQ_DOMAIN_MEMORY)
                     {
-                        var state = new IntelGcl.ctl_freq_state_t
+                        IntelGcl.ctl_freq_state_t state = new IntelGcl.ctl_freq_state_t
                         {
-                            Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_freq_state_t)),
+                            Size = (uint)Marshal.SizeOf<IntelGcl.ctl_freq_state_t>(),
                             Version = 0
                         };
 

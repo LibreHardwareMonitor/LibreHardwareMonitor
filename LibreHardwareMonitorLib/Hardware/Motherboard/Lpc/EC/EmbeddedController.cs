@@ -508,9 +508,9 @@ public abstract class EmbeddedController : Hardware
         sourcesList.Sort((left, right) => left.Register.CompareTo(right.Register));
         _sources = sourcesList;
         var indices = new Dictionary<SensorType, int>();
-        foreach (SensorType t in Enum.GetValues(typeof(SensorType)))
+        foreach (SensorType type in Enum.GetValues<SensorType>())
         {
-            indices.Add(t, 0);
+            indices.Add(type, 0);
         }
 
         _sensors = new List<Sensor>();

@@ -23,7 +23,7 @@ internal sealed class Amd17Cpu : AmdCpu
         _pawnModule = new AmdFamily17();
 
         _sensorTypeIndex = new Dictionary<SensorType, int>();
-        foreach (SensorType type in Enum.GetValues(typeof(SensorType)))
+        foreach (SensorType type in Enum.GetValues<SensorType>())
         {
             _sensorTypeIndex.Add(type, 0);
         }
