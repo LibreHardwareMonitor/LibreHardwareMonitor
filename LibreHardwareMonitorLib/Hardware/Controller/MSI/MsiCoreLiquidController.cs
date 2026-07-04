@@ -88,6 +88,14 @@ internal class MsiCoreLiquidController : Hardware
         AddSensor("Temperature Sensor 1", 2, SensorType.Temperature, m => m.TemperatureSensor1 == 125 ? -100 : m.TemperatureSensor1);
         AddSensor("Temperature Sensor 2", 3, SensorType.Temperature, m => m.TemperatureSensor2 == 125 ? -100 : m.TemperatureSensor2);
 
+        //Fan Controls
+        TryAddFanControl(_fan1);
+        TryAddFanControl(_fan2);
+        TryAddFanControl(_fan3);
+        TryAddFanControl(_fan4);
+        TryAddFanControl(_fan5);
+        return;
+
         void TryAddFanControl(Sensor fan)
         {
             if (fan != null)
@@ -128,13 +136,6 @@ internal class MsiCoreLiquidController : Hardware
                 }
             }
         }
-
-        //Fan Controls
-        TryAddFanControl(_fan1);
-        TryAddFanControl(_fan2);
-        TryAddFanControl(_fan3);
-        TryAddFanControl(_fan4);
-        TryAddFanControl(_fan5);
     }
 
     private MsiSensor AddSensor(string name, int index, SensorType sensorType, GetMsiSensorValue getValue)

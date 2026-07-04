@@ -27,8 +27,10 @@ internal class LpcIO
 
         Mutexes.ReleaseIsaBus();
 
+#if !DISABLE_IPMI_WMI
         if (Ipmi.IsBmcPresent())
             _superIOs.Add(new Ipmi(motherboard.Manufacturer));
+#endif
     }
 
     public ISuperIO[] SuperIO => _superIOs.ToArray();

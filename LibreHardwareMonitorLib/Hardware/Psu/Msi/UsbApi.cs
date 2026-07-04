@@ -44,12 +44,12 @@ internal static class UsbApi
         if (!Request(stream, new byte[2] { 0xFA, 0x51 }, out byte[] productArr, 1))
             throw new ProtocolError(stream.Device, "Can't read product name");
 
+        return new FirmwareInfo { Vendor = "MSI", Product = ArrayToString(productArr) };
+
         static string ArrayToString(byte[] ar)
         {
             return Encoding.ASCII.GetString(ar.TakeWhile(x => x != 0).ToArray());
         }
-
-        return new FirmwareInfo { Vendor = "MSI", Product = ArrayToString(productArr) };
     }
 
     private static float Linear11ToFloat32(ushort val)

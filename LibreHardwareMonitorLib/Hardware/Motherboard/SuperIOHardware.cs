@@ -797,6 +797,7 @@ internal sealed class SuperIOHardware : Hardware
 
                 break;
 
+#if !DISABLE_IPMI_WMI
             case Chip.IPMI:
                 Ipmi ipmi = (Ipmi)superIO;
 
@@ -813,6 +814,7 @@ internal sealed class SuperIOHardware : Hardware
                     c.Add(control);
 
                 break;
+#endif
 
             default:
                 GetDefaultConfiguration(superIO, v, t, f, c);

@@ -115,12 +115,12 @@ internal static class UsbApi
         if (!SendCommand(stream, 3, Command.PROD_STR, 0, out byte[] productArr))
             throw new ProtocolError(stream.Device, "Can't read product");
 
+        return new FirmwareInfo { Vendor = ArrayToString(vendorArr), Product = ArrayToString(productArr) };
+
         static string ArrayToString(byte[] ar)
         {
             return Encoding.ASCII.GetString(ar.TakeWhile(x => x != 0).ToArray());
         }
-
-        return new FirmwareInfo { Vendor = ArrayToString(vendorArr), Product = ArrayToString(productArr) };
     }
 
     private static bool SendCommand(HidStream stream, byte length, Command cmd, byte arg, out byte[] replyData)

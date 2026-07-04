@@ -5,7 +5,6 @@
 // All Rights Reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 #if !NETFRAMEWORK
 using Mono.Unix.Native;
@@ -212,9 +211,6 @@ internal static class OpCode
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate ulong RdtscDelegate();
 
-#if NET
-    [RequiresUnreferencedCode("Dynamic code generation for OpCode delegates")]
-#endif
     public static unsafe void Open()
     {
         byte[] rdTscCode;

@@ -285,10 +285,6 @@ internal sealed class Amd10Cpu : AmdCpu
                     _coreClocks[i].Value = (float)TimeStampCounterFrequency;
                 }
 
-                float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - (0.00625f * vid) : 0;
-
-                float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - (0.0125f * vid) : 0;
-
                 float newCoreVoltage, newNbVoltage;
                 uint coreVid60 = (curEax >> 9) & 0x7F;
                 if (_isSvi2)
@@ -307,6 +303,11 @@ internal sealed class Amd10Cpu : AmdCpu
 
                 if (newNbVoltage > maxNbVoltage)
                     maxNbVoltage = newNbVoltage;
+                continue;
+
+                float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - (0.00625f * vid) : 0;
+
+                float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - (0.0125f * vid) : 0;
             }
 
             _coreVoltage.Value = maxCoreVoltage;

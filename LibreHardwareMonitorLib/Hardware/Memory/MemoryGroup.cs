@@ -6,8 +6,11 @@
 
 using System;
 using System.Collections.Generic;
+#if !DISABLE_RAM_SPD
 using System.Diagnostics;
+#endif
 using System.Text;
+#if !DISABLE_RAM_SPD
 using System.Threading;
 using System.Threading.Tasks;
 using RAMSPDToolkit.I2CSMBus;
@@ -15,6 +18,7 @@ using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Enums;
 using RAMSPDToolkit.SPD.Interop.Shared;
 using RAMSPDToolkit.Windows.Driver;
+#endif
 
 namespace LibreHardwareMonitor.Hardware.Memory;
 
@@ -23,21 +27,24 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     private static readonly object _lock = new();
     private List<Hardware> _hardware = [];
 
+#if !DISABLE_RAM_SPD
     private CancellationTokenSource _cancellationTokenSource;
     private Exception _lastException;
     private bool _disposed = false;
+#endif
 
     public MemoryGroup(ISettings settings)
     {
+        _hardware.Add(new VirtualMemory(settings));
+        _hardware.Add(new TotalMemory(settings));
+
+#if !DISABLE_RAM_SPD
         if (DriverManager.Driver is null || !DriverManager.Driver.IsOpen)
         {
             // Assign implementation of IDriver.
             DriverManager.Driver = new RAMSPDToolkitDriver();
             SMBusManager.UseWMI = false;
         }
-
-        _hardware.Add(new VirtualMemory(settings));
-        _hardware.Add(new TotalMemory(settings));
 
         if (DriverManager.Driver == null || !DriverManager.LoadDriver())
         {
@@ -48,6 +55,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         {
             StartRetryTask(settings);
         }
+#endif
     }
 
 #pragma warning disable 67
@@ -61,10 +69,12 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     {
         StringBuilder report = new();
         report.AppendLine("Memory Report:");
+#if !DISABLE_RAM_SPD
         if (_lastException != null)
         {
             report.AppendLine($"Error while detecting memory: {_lastException.Message}");
         }
+#endif
 
         foreach (Hardware hardware in _hardware)
         {
@@ -81,9 +91,11 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public void Close()
     {
+#if !DISABLE_RAM_SPD
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
+#endif
 
         lock (_lock)
         {
@@ -91,10 +103,13 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 ram.Close();
 
             _hardware = [];
+#if !DISABLE_RAM_SPD
             _disposed = true;
+#endif
         }
     }
 
+#if !DISABLE_RAM_SPD
     private bool TryAddDimms(ISettings settings)
     {
         try
@@ -194,4 +209,5 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         foreach (Hardware hardware in additions)
             HardwareAdded?.Invoke(hardware);
     }
+#endif
 }
