@@ -5397,6 +5397,44 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_STRIX_B850_A_GAMING_WIFI: // NCT6701D
+                    case Model.TUF_GAMING_B850_BTF_WIFI_W: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+5V", 1, 4.02f, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 10.98f, 1));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("Voltage #10", 9, true));
+                        v.Add(new Voltage("CPU VDDIO Memory", 10, 34, 34));
+                        v.Add(new Voltage("VMISC", 11, 34, 34));
+                        v.Add(new Voltage("1.8V Standby", 12, 7.66f, 10));
+                        v.Add(new Voltage("Voltage #14", 13, true));
+                        v.Add(new Voltage("Voltage #15", 14, true));
+                        v.Add(new Voltage("Voltage #16", 15, true));
+
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("CPU Package", 26));
+                        t.Add(new Temperature("CPU", 21));
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("T_Sensor", 24));
+
+                        fanControlNames = ["CPU Fan", "CPU Optional Fan", "Chassis Fan #1", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "AIO Pump"];
+
+                        System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length, $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
+                        System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length, "Expected counts of fans, controls and fan speed registers to be equal");
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            f.Add(new Fan(fanControlNames[i], i));
+
+                        for (int i = 0; i < fanControlNames.Length; i++)
+                            c.Add(new Control(fanControlNames[i], i));
+
+                        break;
+
                     case Model.ROG_STRIX_B850_E_GAMING_WIFI: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4.02f, 1));
