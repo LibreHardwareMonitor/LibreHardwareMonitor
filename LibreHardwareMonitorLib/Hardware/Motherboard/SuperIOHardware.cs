@@ -3527,11 +3527,29 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Auxiliary Index #2", 5));
                         //t.Add(new Temperature("Temperature #6", 6));
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
-                            f.Add(new Fan("Fan #" + (i + 1), i));
+                        if (model == Model.B450_Pro4)
+                        {
+                            f.Add(new Fan("CPU Fan", 1));
+                            c.Add(new Control("CPU Fan", 1));
+                            f.Add(new Fan("CPU Pump", 2));
+                            c.Add(new Control("CPU Pump", 2));
 
-                        for (int i = 0; i < superIO.Controls.Length; i++)
-                            c.Add(new Control("Fan #" + (i + 1), i));
+                            f.Add(new Fan("Chassis #1", 0));
+                            c.Add(new Control("Chassis #1", 0));
+                            f.Add(new Fan("Chassis #2", 3));
+                            c.Add(new Control("Chassis #2", 3));
+                            f.Add(new Fan("Chassis #3", 4));
+                            c.Add(new Control("Chassis #3", 4));
+                        }
+                        else
+                        {
+                            for (int i = 0; i < superIO.Fans.Length; i++)
+                                f.Add(new Fan("Fan #" + (i + 1), i));
+
+                            for (int i = 0; i < superIO.Controls.Length; i++)
+                                c.Add(new Control("Fan #" + (i + 1), i));
+                        }
+
 
                         break;
 
