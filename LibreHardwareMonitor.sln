@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorCli", "LibreHardwareMonitorCli\LibreHardwareMonitorCli.csproj", "{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -63,6 +65,15 @@ Global
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|x64.Build.0 = Release|x64
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|x86.ActiveCfg = Release|x86
 		{E73BB233-D88B-44A7-A98F-D71EE158381D}.Release|x86.Build.0 = Release|x86
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Debug|x64.ActiveCfg = Debug|x64
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Debug|x64.Build.0 = Debug|x64
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Debug|x86.ActiveCfg = Debug|x86
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Debug|x86.Build.0 = Debug|x86
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Release|x64.ActiveCfg = Release|x64
+		{C1CD4D59-91EC-4664-870C-A8BAE3170AD1}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
