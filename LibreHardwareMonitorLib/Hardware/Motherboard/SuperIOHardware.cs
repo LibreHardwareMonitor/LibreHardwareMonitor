@@ -1919,6 +1919,8 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM", 4));
+                        t.Add(new Temperature("EC_TEMP1", 5));
+                        t.Add(new Temperature("EC_TEMP2", 6));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));

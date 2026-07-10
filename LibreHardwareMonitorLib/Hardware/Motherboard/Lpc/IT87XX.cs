@@ -152,7 +152,7 @@ internal class IT87XX : ISuperIO
 
             case Chip.IT8686E:
                 Voltages = new float?[10];
-                Temperatures = new float?[6];
+                Temperatures = new float?[7];
                 Fans = new float?[6];
                 Controls = new float?[5];
                 break;
