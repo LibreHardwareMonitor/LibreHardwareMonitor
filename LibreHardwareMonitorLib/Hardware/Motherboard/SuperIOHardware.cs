@@ -5399,6 +5399,7 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.ROG_STRIX_B850_A_GAMING_WIFI: // NCT6701D
                     case Model.TUF_GAMING_B850_BTF_WIFI_W: // NCT6701D
+                    case Model.TUF_GAMING_X870_PRO_WIFI7_W_NEO: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4.02f, 1));
                         v.Add(new Voltage("AVSB", 2, 34, 34));
