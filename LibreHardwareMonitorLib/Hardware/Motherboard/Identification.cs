@@ -115,7 +115,7 @@ internal class Identification
                 return Model.TUF_GAMING_B850_BTF_WIFI_W;
             case var _ when name.Equals("TUF GAMING B850M-PLUS II", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_B850M_PLUS_II;
-            case var _ when name.Equals("ASUS TUF GAMING X870-PRO WIFI7 W NEO", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("TUF GAMING X870-PRO WIFI7 W NEO", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_X870_PRO_WIFI7_W_NEO;
             case var _ when name.Equals("MPG Z390 GAMING EDGE AC (MS-7B17)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z390_GAMING_EDGE_AC;
