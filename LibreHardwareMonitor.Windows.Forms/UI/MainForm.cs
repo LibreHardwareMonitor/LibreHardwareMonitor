@@ -28,6 +28,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _autoStart;
     private readonly Computer _computer;
     private readonly SensorGadget _gadget;
+    private readonly TempOverlayGadget _tempOverlay;
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _updateInterval;
@@ -52,6 +53,7 @@ public sealed partial class MainForm : Form
     private readonly UserRadioGroup _sensorValuesTimeWindow;
     private readonly PersistentSettings _settings;
     private readonly UserOption _showGadget;
+    private readonly UserOption _showTempOverlay;
     private readonly StartupManager _startupManager = new();
     private readonly SystemTray _systemTray;
     private readonly UnitManager _unitManager;
@@ -145,6 +147,7 @@ public sealed partial class MainForm : Form
             minCloseMenuItem.Visible = false;
             minTrayMenuItem.Visible = false;
             startMinMenuItem.Visible = false;
+            tempOverlayMenuItem.Visible = false;
         }
         else
         {
@@ -152,6 +155,8 @@ public sealed partial class MainForm : Form
             treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
             _gadget = new SensorGadget(_computer, _settings, _unitManager);
             _gadget.HideShowCommand += HideShowClick;
+            _tempOverlay = new TempOverlayGadget(_computer, _settings);
+            _tempOverlay.HideRequested += delegate { _showTempOverlay.Value = false; };
         }
 
         treeView.ShowNodeToolTips = true;
@@ -306,6 +311,13 @@ public sealed partial class MainForm : Form
         {
             if (_gadget != null)
                 _gadget.Visible = _showGadget.Value;
+        };
+
+        _showTempOverlay = new UserOption("tempOverlayMenuItem", false, tempOverlayMenuItem, _settings);
+        _showTempOverlay.Changed += delegate
+        {
+            if (_tempOverlay != null)
+                _tempOverlay.Visible = _showTempOverlay.Value;
         };
 
         celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
@@ -552,6 +564,21 @@ public sealed partial class MainForm : Form
         };
 
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+
+        // keep the temperature overlay on a visible screen when the display
+        // layout changes (e.g. unplugging a monitor)
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
+    }
+
+    private void DisplaySettingsChanged(object sender, EventArgs e)
+    {
+        if (_tempOverlay == null)
+            return;
+
+        if (InvokeRequired)
+            BeginInvoke(new Action(_tempOverlay.EnsureOnScreen));
+        else
+            _tempOverlay.EnsureOnScreen();
     }
 
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
@@ -945,6 +972,7 @@ public sealed partial class MainForm : Form
         treeView.Invalidate();
         _systemTray.Redraw();
         _gadget?.Redraw();
+        _tempOverlay?.Redraw();
 
         if (!backgroundUpdater.IsBusy)
             backgroundUpdater.RunWorkerAsync();
