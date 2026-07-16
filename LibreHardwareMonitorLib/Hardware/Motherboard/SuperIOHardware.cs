@@ -1919,8 +1919,8 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM", 4));
-                        t.Add(new Temperature("EC_TEMP1", 5));
-                        t.Add(new Temperature("EC_TEMP2", 6));
+                        t.Add(new Temperature("Sensor #1", 5));
+                        t.Add(new Temperature("Sensor #2", 6));
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
@@ -2102,7 +2102,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 1, 1));
                         v.Add(new Voltage("CMOS Battery", 8, 1, 1));
                         t.Add(new Temperature("System #1", 0));
-                        t.Add(new Temperature("EC_TEMP1", 1));
+                        t.Add(new Temperature("Sensor #1", 1));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
@@ -2132,7 +2132,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+3V Standby", 7, 1f, 10f));
                         v.Add(new Voltage("CMOS Battery", 8, 1f, 10f));
                         t.Add(new Temperature("System #1", 0));
-                        t.Add(new Temperature("EC_TEMP1", 1));
+                        t.Add(new Temperature("Sensor #1", 1));
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
@@ -2254,7 +2254,7 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("CPU", 2));
                         t.Add(new Temperature("PCIe x16", 3));
                         t.Add(new Temperature("VRM MOS", 4));
-                        t.Add(new Temperature("EC_TEMP1/System #2", 5));
+                        t.Add(new Temperature("Sensor #1/System #2", 5));
                         f.Add(new Fan("CPU Fan", 0));
                         f.Add(new Fan("System Fan #1", 1));
                         f.Add(new Fan("System Fan #2", 2));
