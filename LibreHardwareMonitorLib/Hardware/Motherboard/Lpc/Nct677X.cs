@@ -1,4 +1,4 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -40,6 +40,8 @@ internal class Nct677X : ISuperIO
     private const byte NCT6687DR_FAN_CFG_CHECK_DONE = 1 << 5;
     private const byte NCT6687DR_FAN_CFG_REQ = 0x80;
     private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
+    private const byte NCT6687DR_FAN_CFG_REQ_UPDATE_MASK = 0x7F;
+    private const byte NCT6687DR_FAN_CFG_DONE_UPDATE_MASK = 0xBF;
     // ReSharper restore InconsistentNaming
 
     // Chip identity
@@ -657,6 +659,9 @@ internal class Nct677X : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
+        if (Chip is Chip.NCT6687DR && !IsNct6687DrFanControlValid(index))
+            return;
+
         if (!Mutexes.WaitIsaBus(10))
             return;
 
@@ -674,18 +679,11 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR (MSI AM5/LGA1851): Direct PWM mode for ALL fans.
-                // Set the manual-mode bit to bypass the SmartFAN curve engine entirely.
-                // CPU/Pump/Chipset/EZ-Connect: bit in 0xA00.  System fans: bit in 0x80F.
-                // Derived from BIOS unk_104C0 table — entry[1] = set manual-mode bit.
+                // NCT6687DR (MSI AM5/LGA1851): Direct PWM mode for all mapped fans.
+                // Set the manual-mode bit and the PWM command value in one BIOS-style
+                // fan-configuration phase so the EC cannot sample a half-updated state.
                 int bitPos = FAN_CONTROL_MODE_BIT[index];
-                if (bitPos >= 0)
-                {
-                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    byte bitMask = (byte)(0x01 << bitPos);
-                    mode = (byte)(mode | bitMask);
-                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-                }
+                byte bitMask = (byte)(0x01 << bitPos);
 
                 // Retry up to 3 times if EC rejects the configuration (INVALID bit)
                 for (int attempt = 0; attempt < 3; attempt++)
@@ -693,7 +691,9 @@ internal class Nct677X : ISuperIO
                     if (!StartFanCfgUpdate(index))
                         break;
 
+                    UpdateByte(FAN_CONTROL_MODE_REG[index], unchecked((byte)~bitMask), bitMask);
                     Set6687DRControl(index, value.Value);
+
                     if (CompleteFanConfigUpdate(index))
                         break;
                 }
@@ -1266,6 +1266,21 @@ internal class Nct677X : ISuperIO
                ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
+    private void UpdateByte(ushort address, byte andMask, byte orMask)
+    {
+        byte value = ReadByte(address);
+        WriteByte(address, (byte)((value & andMask) | orMask));
+    }
+
+    private bool IsNct6687DrFanControlValid(int index)
+    {
+        return index >= 0 &&
+               index < FAN_PWM_COMMAND_REG.Length &&
+               index < FAN_CONTROL_MODE_BIT.Length &&
+               FAN_PWM_COMMAND_REG[index] != 0xFFF &&
+               FAN_CONTROL_MODE_BIT[index] >= 0;
+    }
+
     /// <summary>
     /// Request the EC to enter fan configuration phase and wait until registers are unlocked.
     /// Based on the Linux nct6687d driver's start_fan_cfg_update() function.
@@ -1294,8 +1309,9 @@ internal class Nct677X : ISuperIO
             Thread.Sleep(1);
         }
 
-        // Send config request
-        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ);
+        // Send config request. The BIOS uses read-modify-write on 0A:01,
+        // preserving unrelated status bits while setting CFG_REQ.
+        UpdateByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ_UPDATE_MASK, NCT6687DR_FAN_CFG_REQ);
         Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
 
         // Wait until EC enters config phase and unlocks registers
@@ -1324,8 +1340,9 @@ internal class Nct677X : ISuperIO
         if ((engineSts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engineSts & NCT6687DR_FAN_CFG_PHASE) == 0)
             return false;
 
-        // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
-        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
+        // Signal done. The BIOS uses read-modify-write on 0A:01,
+        // preserving CFG_REQ and unrelated bits while setting CFG_DONE.
+        UpdateByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_DONE_UPDATE_MASK, NCT6687DR_FAN_CFG_DONE);
         Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
 
         // Wait until EC checks the new configuration
@@ -1395,23 +1412,21 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR: Restore original manual-mode bit for all fans.
-                // Clear the bit we set in SetControl to return to SmartFAN curve mode.
+                // Restore the original manual-mode bit and PWM command value inside
+                // the same fan-configuration phase. Do not blindly clear the bit: BIOS
+                // defaults or firmware may have left a header in manual mode already.
                 int bitPos = FAN_CONTROL_MODE_BIT[index];
-                if (bitPos >= 0)
-                {
-                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    byte bitMask = (byte)(0x01 << bitPos);
-                    mode = (byte)(mode & ~bitMask);
-                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-                }
+                byte bitMask = (byte)(0x01 << bitPos);
+                byte restoreBit = (byte)(_initialFanControlMode[index] & bitMask);
 
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
                     if (!StartFanCfgUpdate(index))
                         break;
 
+                    UpdateByte(FAN_CONTROL_MODE_REG[index], unchecked((byte)~bitMask), restoreBit);
                     Set6687DRControl(index, _initialFanPwmCommand[index]);
+
                     if (CompleteFanConfigUpdate(index))
                         break;
                 }
