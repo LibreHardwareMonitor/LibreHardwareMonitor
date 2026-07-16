@@ -563,6 +563,8 @@ internal class Identification
             case var _ when name.Equals("B650I AX", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("A620I AX", StringComparison.OrdinalIgnoreCase):
                 return Model.B650I_AX;
+            case var _ when name.Equals("ROG STRIX Z370-G GAMING", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_Z370_G_GAMING;
             case var _ when name.Equals("ROG STRIX Z390-E GAMING", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_Z390_E_GAMING;
             case var _ when name.Equals("ROG STRIX Z390-F GAMING", StringComparison.OrdinalIgnoreCase):
