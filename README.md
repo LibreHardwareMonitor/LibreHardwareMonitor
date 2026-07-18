@@ -32,6 +32,38 @@ You can check if it works properly on your motherboard. For many manufacturers, 
 1. Add the [LibreHardwareMonitorLib](https://www.nuget.org/packages/LibreHardwareMonitorLib/) NuGet package to your application.
 2. Use the sample code below.
 
+### Build for x64 (net472)
+If you need a native x64 managed DLL (for example when hosting from a x64 native/C++ host), build the library for win-x64 net472.
+
+Prerequisites: Visual Studio (MSBuild) with the .NET desktop workload, and the dotnet SDK on PATH.
+
+Recommended (dotnet SDK):
+
+Open PowerShell in the repo root and run:
+
+```
+dotnet clean .\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj
+
+dotnet build .\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj -c Release -f net472 -r win-x64 /p:Platform=x64 /p:Prefer32Bit=false
+```
+
+This produces the x64 build under:
+```
+LibreHardwareMonitorLib\bin\Release\net472\win-x64\LibreHardwareMonitorLib.dll
+```
+
+Alternative (MSBuild / classic .NET projects):
+
+Open the "x64 Native Tools Command Prompt for VS" and run:
+
+```
+msbuild .\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:Prefer32Bit=false
+```
+
+If the project contains any explicit ARM/ARM64 RuntimeIdentifiers or PlatformTarget entries, remove or change them (e.g. delete `<RuntimeIdentifier>arm64</RuntimeIdentifier>` or set `<PlatformTarget>AnyCPU</PlatformTarget>`) so the build produces the win-x64/AnyCPU output above.
+
+Copy the resulting LibreHardwareMonitorLib.dll into your native app output folder before running your x64 native host (or point the /AI and /FU options of cl to the folder containing the x64 DLL).
+
 
 **Sample code**
 ```c#
