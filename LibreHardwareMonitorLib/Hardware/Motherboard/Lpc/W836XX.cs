@@ -189,25 +189,6 @@ internal class W836XX : ISuperIO
     public void WriteGpio(int index, byte value)
     { }
 
-    public byte? ReadPwm(int index)
-    {
-        if (index < 0 || index >= Controls.Length)
-            return null;
-
-        if (!Mutexes.WaitIsaBus(10))
-            return null;
-
-        try
-        {
-            byte pwmValue = ReadByte(0, _fanPwmRegister[index]);
-            return pwmValue;
-        }
-        finally
-        {
-            Mutexes.ReleaseIsaBus();
-        }
-    }
-
     public void WritePwm(int index, byte value)
     {
         if (index < 0 || index >= Controls.Length)

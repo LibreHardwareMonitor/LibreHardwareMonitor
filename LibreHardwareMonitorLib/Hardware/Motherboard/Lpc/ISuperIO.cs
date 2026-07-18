@@ -27,9 +27,7 @@ internal interface ISuperIO
 
     void WriteGpio(int index, byte value);
 
-    // read PWM for fan control (0-255 range)
-    byte? ReadPwm(int index);
-
+    // write PWM for fan control (0-255 range)
     void WritePwm(int index, byte value);
 
     // read fan RPM from tachometer

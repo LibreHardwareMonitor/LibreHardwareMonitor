@@ -215,14 +215,6 @@ internal class LMSensors
         public void WriteGpio(int index, byte value)
         { }
 
-        public byte? ReadPwm(int index)
-        {
-            if (index < 0 || index >= Controls.Length)
-                return null;
-
-            return (byte?)(Controls[index] * 2.55f);
-        }
-
         public void WritePwm(int index, byte value)
         {
             if (index < 0 || index >= Controls.Length)

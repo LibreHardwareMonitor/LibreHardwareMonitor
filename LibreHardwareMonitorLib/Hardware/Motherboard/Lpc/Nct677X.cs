@@ -652,41 +652,6 @@ internal class Nct677X : ISuperIO
     { }
 
     /// <summary>
-    /// Reads the current PWM value for a fan connected to a Nuvoton controller.
-    /// </summary>
-    /// <param name="index">The fan index (0-based)</param>
-    /// <returns>PWM value in 0-255 range, or null if invalid or not available</returns>
-    public byte? ReadPwm(int index)
-    {
-        if (!_isNuvotonVendor)
-            return null;
-
-        if (index < 0 || index >= Controls.Length)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        if (FAN_PWM_OUT_REG == null || index >= FAN_PWM_OUT_REG.Length)
-            return null;
-
-        if (!Mutexes.WaitIsaBus(10))
-            return null;
-
-        try
-        {
-            // Skip registers marked as invalid (0xFFF)
-            if (FAN_PWM_OUT_REG[index] == 0xFFF)
-                return null;
-
-            DisableIOSpaceLock();
-            byte pwmValue = ReadByte(FAN_PWM_OUT_REG[index]);
-            return pwmValue;
-        }
-        finally
-        {
-            Mutexes.ReleaseIsaBus();
-        }
-    }
-
-    /// <summary>
     /// Sets the PWM value for a fan connected to a Nuvoton controller.
     /// </summary>
     /// <param name="index">The fan index (0-based)</param>
