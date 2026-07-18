@@ -287,6 +287,22 @@ internal class Ipmi : ISuperIO
     public void WriteGpio(int index, byte value)
     { }
 
+    public byte? ReadPwm(int index)
+    {
+        if (index < 0 || index >= Controls.Length)
+            return null;
+
+        return (byte?)(Controls[index] * 2.55f);
+    }
+
+    public void WritePwm(int index, byte value)
+    {
+        if (index < 0 || index >= Controls.Length)
+            return;
+
+        SetControl(index, value);
+    }
+
     private byte[] RunIPMICommand(byte command, byte networkFunction, byte[] requestData)
     {
         using ManagementBaseObject inParams = _ipmi.GetMethodParameters("RequestResponse");

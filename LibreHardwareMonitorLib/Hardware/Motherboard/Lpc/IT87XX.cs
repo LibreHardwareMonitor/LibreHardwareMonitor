@@ -299,6 +299,43 @@ internal class IT87XX : ISuperIO
         _port.WriteIoPort((ushort)(_gpioAddress + index), value);
     }
 
+    public byte? ReadPwm(int index)
+    {
+        if (index < 0 || index >= Controls.Length)
+            return null;
+
+        if (!Mutexes.WaitIsaBus(10))
+            return null;
+
+        try
+        {
+            byte pwmValue;
+            if (_hasExtReg)
+            {
+                pwmValue = ReadByte(FAN_PWM_CTRL_EXT_REG[index], out _);
+            }
+            else
+            {
+                byte value = ReadByte(FAN_PWM_CTRL_REG[index], out _);
+                pwmValue = (byte)(value << 1);
+            }
+
+            return pwmValue;
+        }
+        finally
+        {
+            Mutexes.ReleaseIsaBus();
+        }
+    }
+
+    public void WritePwm(int index, byte value)
+    {
+        if (index < 0 || index >= Controls.Length)
+            return;
+
+        SetControl(index, value);
+    }
+
     public void SetControl(int index, byte? value)
     {
         if (index < 0 || index >= Controls.Length)

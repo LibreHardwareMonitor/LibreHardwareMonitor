@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael Mï¿½ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -214,6 +214,22 @@ internal class LMSensors
 
         public void WriteGpio(int index, byte value)
         { }
+
+        public byte? ReadPwm(int index)
+        {
+            if (index < 0 || index >= Controls.Length)
+                return null;
+
+            return (byte?)(Controls[index] * 2.55f);
+        }
+
+        public void WritePwm(int index, byte value)
+        {
+            if (index < 0 || index >= Controls.Length)
+                return;
+
+            SetControl(index, value);
+        }
 
         public string GetReport()
         {
