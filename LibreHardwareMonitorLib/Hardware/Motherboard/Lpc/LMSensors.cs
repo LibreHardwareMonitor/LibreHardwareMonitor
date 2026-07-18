@@ -231,6 +231,14 @@ internal class LMSensors
             SetControl(index, value);
         }
 
+        public float? ReadFanRpm(int index)
+        {
+            if (index < 0 || index >= Fans.Length)
+                return null;
+
+            return Fans[index];
+        }
+
         public string GetReport()
         {
             return null;

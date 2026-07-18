@@ -303,6 +303,14 @@ internal class Ipmi : ISuperIO
         SetControl(index, value);
     }
 
+    public float? ReadFanRpm(int index)
+    {
+        if (index < 0 || index >= Fans.Length)
+            return null;
+
+        return Fans[index];
+    }
+
     private byte[] RunIPMICommand(byte command, byte networkFunction, byte[] requestData)
     {
         using ManagementBaseObject inParams = _ipmi.GetMethodParameters("RequestResponse");

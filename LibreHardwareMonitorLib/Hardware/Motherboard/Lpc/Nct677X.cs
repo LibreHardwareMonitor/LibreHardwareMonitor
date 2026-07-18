@@ -709,6 +709,19 @@ internal class Nct677X : ISuperIO
         SetControl(index, value);
     }
 
+    /// <summary>
+    /// Reads the RPM value from a fan tachometer.
+    /// </summary>
+    /// <param name="index">The fan index (0-based)</param>
+    /// <returns>Fan speed in RPM, or null if not available</returns>
+    public float? ReadFanRpm(int index)
+    {
+        if (index < 0 || index >= Fans.Length)
+            return null;
+
+        return Fans[index];
+    }
+
     public void SetControl(int index, byte? value)
     {
         if (!_isNuvotonVendor)

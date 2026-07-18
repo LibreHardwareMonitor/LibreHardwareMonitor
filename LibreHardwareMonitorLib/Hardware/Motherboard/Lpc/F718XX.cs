@@ -76,6 +76,14 @@ internal class F718XX : ISuperIO
         SetControl(index, value);
     }
 
+    public float? ReadFanRpm(int index)
+    {
+        if (index < 0 || index >= Fans.Length)
+            return null;
+
+        return Fans[index];
+    }
+
     public void SetControl(int index, byte? value)
     {
         if (index < 0 || index >= Controls.Length)
