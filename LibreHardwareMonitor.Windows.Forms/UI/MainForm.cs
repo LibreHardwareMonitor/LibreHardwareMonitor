@@ -30,6 +30,7 @@ public sealed partial class MainForm : Form
     private readonly SensorGadget _gadget;
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
+    private readonly UserRadioGroup _smartUpdateCycle;
     private readonly UserRadioGroup _updateInterval;
     private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
@@ -455,6 +456,30 @@ public sealed partial class MainForm : Form
                     StorageDevice.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
+        };
+
+        _smartUpdateCycle = new UserRadioGroup("smartUpdateCycle",
+                                               0,
+                                               new[]
+                                               {
+                                                   smartUpdateFollowUpdateIntervalMenuItem,
+                                                   smartUpdate10CyclesMenuItem,
+                                                   smartUpdate25CyclesMenuItem,
+                                                   smartUpdate50CyclesMenuItem,
+                                                   smartUpdate100CyclesMenuItem
+                                               },
+                                               _settings);
+
+        _smartUpdateCycle.Changed += (sender, e) =>
+        {
+            StorageDevice.SmartUpdateCycleCount = _smartUpdateCycle.Value switch
+            {
+                1 => 10,
+                2 => 25,
+                3 => 50,
+                4 => 100,
+                _ => 1
+            };
         };
 
         _sensorValuesTimeWindow = new UserRadioGroup("sensorValuesTimeWindow",

@@ -128,6 +128,12 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.updateInterval5sMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.updateInterval10sMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.throttleAtaUpdateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.throttleSmartUpdateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.smartUpdateFollowUpdateIntervalMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
+            this.smartUpdate10CyclesMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
+            this.smartUpdate25CyclesMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
+            this.smartUpdate50CyclesMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
+            this.smartUpdate100CyclesMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.sensorValuesTimeWindowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timeWindow30sMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.timeWindow1minMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
@@ -823,7 +829,8 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.updateInterval2sMenuItem,
             this.updateInterval5sMenuItem,
             this.updateInterval10sMenuItem,
-            this.throttleAtaUpdateMenuItem});
+            this.throttleAtaUpdateMenuItem,
+            this.throttleSmartUpdateMenuItem});
             this.updateIntervalMenuItem.Name = "updateIntervalMenuItem";
             this.updateIntervalMenuItem.Size = new System.Drawing.Size(221, 22);
             this.updateIntervalMenuItem.Text = "Update Interval";
@@ -870,12 +877,59 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.updateInterval10sMenuItem.Size = new System.Drawing.Size(107, 22);
             this.updateInterval10sMenuItem.Text = "10s";
             //
-            // throttleATAUpdateMenuItem
+            // throttleAtaUpdateMenuItem
             //
             this.throttleAtaUpdateMenuItem.CheckOnClick = true;
-            this.throttleAtaUpdateMenuItem.Name = "throttleATAUpdateMenuItem";
-            this.throttleAtaUpdateMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.throttleAtaUpdateMenuItem.Name = "throttleAtaUpdateMenuItem";
+            this.throttleAtaUpdateMenuItem.Size = new System.Drawing.Size(221, 22);
             this.throttleAtaUpdateMenuItem.Text = "Throttle ATA Storage";
+            //
+            // throttleSmartUpdateMenuItem
+            //
+            this.throttleSmartUpdateMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.smartUpdateFollowUpdateIntervalMenuItem,
+            this.smartUpdate10CyclesMenuItem,
+            this.smartUpdate25CyclesMenuItem,
+            this.smartUpdate50CyclesMenuItem,
+            this.smartUpdate100CyclesMenuItem});
+            this.throttleSmartUpdateMenuItem.Name = "throttleSmartUpdateMenuItem";
+            this.throttleSmartUpdateMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.throttleSmartUpdateMenuItem.Text = "Throttle Disk S.M.A.R.T. Updates";
+            //
+            // smartUpdateFollowUpdateIntervalMenuItem
+            //
+            this.smartUpdateFollowUpdateIntervalMenuItem.CheckOnClick = true;
+            this.smartUpdateFollowUpdateIntervalMenuItem.Name = "smartUpdateFollowUpdateIntervalMenuItem";
+            this.smartUpdateFollowUpdateIntervalMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.smartUpdateFollowUpdateIntervalMenuItem.Text = "Follow Update Interval";
+            //
+            // smartUpdate10CyclesMenuItem
+            //
+            this.smartUpdate10CyclesMenuItem.CheckOnClick = true;
+            this.smartUpdate10CyclesMenuItem.Name = "smartUpdate10CyclesMenuItem";
+            this.smartUpdate10CyclesMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.smartUpdate10CyclesMenuItem.Text = "Each 10 Cycles";
+            //
+            // smartUpdate25CyclesMenuItem
+            //
+            this.smartUpdate25CyclesMenuItem.CheckOnClick = true;
+            this.smartUpdate25CyclesMenuItem.Name = "smartUpdate25CyclesMenuItem";
+            this.smartUpdate25CyclesMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.smartUpdate25CyclesMenuItem.Text = "Each 25 Cycles";
+            //
+            // smartUpdate50CyclesMenuItem
+            //
+            this.smartUpdate50CyclesMenuItem.CheckOnClick = true;
+            this.smartUpdate50CyclesMenuItem.Name = "smartUpdate50CyclesMenuItem";
+            this.smartUpdate50CyclesMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.smartUpdate50CyclesMenuItem.Text = "Each 50 Cycles";
+            //
+            // smartUpdate100CyclesMenuItem
+            //
+            this.smartUpdate100CyclesMenuItem.CheckOnClick = true;
+            this.smartUpdate100CyclesMenuItem.Name = "smartUpdate100CyclesMenuItem";
+            this.smartUpdate100CyclesMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.smartUpdate100CyclesMenuItem.Text = "Each 100 Cycles";
             //
             // sensorValuesTimeWindowMenuItem
             //
@@ -1220,6 +1274,12 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
         private ToolStripRadioButtonMenuItem updateInterval5sMenuItem;
         private ToolStripRadioButtonMenuItem updateInterval10sMenuItem;
         private System.Windows.Forms.ToolStripMenuItem throttleAtaUpdateMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem throttleSmartUpdateMenuItem;
+        private ToolStripRadioButtonMenuItem smartUpdateFollowUpdateIntervalMenuItem;
+        private ToolStripRadioButtonMenuItem smartUpdate10CyclesMenuItem;
+        private ToolStripRadioButtonMenuItem smartUpdate25CyclesMenuItem;
+        private ToolStripRadioButtonMenuItem smartUpdate50CyclesMenuItem;
+        private ToolStripRadioButtonMenuItem smartUpdate100CyclesMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nicMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sensorValuesTimeWindowMenuItem;
         private ToolStripRadioButtonMenuItem timeWindow30sMenuItem;

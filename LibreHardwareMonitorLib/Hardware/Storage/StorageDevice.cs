@@ -37,6 +37,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private long _lastWriteCount;
 
     private DateTime _lastUpdate = DateTime.MinValue;
+    private uint _smartUpdateCycle;
 
     private readonly List<StorageDeviceSensor> _sensors = new();
     private readonly List<SmartAttribute> _attributes = new();
@@ -73,12 +74,21 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public static TimeSpan ThrottleInterval { get; set; }
 
+    /// <summary>
+    /// Gets or sets the number of regular update cycles between S.M.A.R.T. data refreshes.
+    /// </summary>
+    public static uint SmartUpdateCycleCount { get; set; } = 1;
+
     public override void Update()
     {
         if (DateTime.UtcNow - _lastUpdate < ThrottleInterval)
         {
             return;
         }
+
+        bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
+        if (refreshSmartData)
+            _smartUpdateCycle = 0;
 
         bool isDevicePoweredOn = _storage.IsDevicePowerOn.GetValueOrDefault(true);
 
@@ -94,7 +104,7 @@ public sealed class StorageDevice : Hardware, ISmart
         //No updates for sleeping devices if we should not wake it up
         if (isDevicePoweredOn)
         {
-            hasChanges = StorageDIT.Refresh(_storage);
+            hasChanges = StorageDIT.Refresh(_storage, refreshSmartData);
         }
 
         if (!hasChanges)
