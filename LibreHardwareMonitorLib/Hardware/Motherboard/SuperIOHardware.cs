@@ -5420,10 +5420,21 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("CPU Package", 26));
                         t.Add(new Temperature("CPU", 21));
-                        t.Add(new Temperature("VRM", 1));
-                        t.Add(new Temperature("T_Sensor", 24));
 
-                        fanControlNames = ["CPU Fan", "CPU Optional Fan", "Chassis Fan #1", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "AIO Pump"];
+                        if (model == Model.TUF_GAMING_X870_PRO_WIFI7_W_NEO)
+                        {
+                            t.Add(new Temperature("Temp14", 27));
+                            t.Add(new Temperature("T_Sensor", 24));
+
+                            fanControlNames = ["Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "Water Pump+", "AIO Pump"];
+                        }
+                        else
+                        {
+                            t.Add(new Temperature("VRM", 1));
+                            t.Add(new Temperature("T_Sensor", 24));
+
+                            fanControlNames = ["CPU Fan", "CPU Optional Fan", "Chassis Fan #1", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "AIO Pump"];
+                        }
 
                         System.Diagnostics.Debug.Assert(fanControlNames.Length == superIO.Fans.Length, $"Expected {fanControlNames.Length} fan register in the SuperIO chip");
                         System.Diagnostics.Debug.Assert(superIO.Fans.Length == superIO.Controls.Length, "Expected counts of fans, controls and fan speed registers to be equal");

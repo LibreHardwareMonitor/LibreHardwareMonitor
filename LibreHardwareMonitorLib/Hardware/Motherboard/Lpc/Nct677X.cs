@@ -279,9 +279,10 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.PECI_0_CAL           , 0x4F4),                                                  // 21: PECI_0_CAL
                             new(SourceNct67Xxd.PECI_1_CAL           , 0x4F5),                                                  // 22: PECI_1_CAL
                             new(SourceNct67Xxd.VIRTUAL_TEMP         , 0),                                                      // 23: VIRTUAL_TEMP
-                            new(SourceNct67Xxd.SPARE_TEMP           , 0),                                                      // 24: SPARE_TEMP
+                            new(SourceNct67Xxd.SPARE_TEMP           , 0x07B, sourceRegister: 0x900),                           // 24: SPARE_TEMP
                             new(SourceNct67Xxd.SPARE_TEMP2          , 0),                                                      // 25: SPARE_TEMP2
                             new(null                                , 0x409),                                                  // 26: CPU PACKAGE
+                            new(null                                , 0x4A2),                                                  // 27: TEMP14
                         });
                         break;
 
