@@ -4,8 +4,10 @@
 // All Rights Reserved.
 
 using System;
+using System.IO;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Power;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32.SafeHandles;
@@ -14,13 +16,14 @@ namespace LibreHardwareMonitor.Hardware.Battery;
 
 internal sealed class Battery : Hardware
 {
-    private readonly SafeFileHandle _batteryHandle;
-    private readonly uint _batteryTag;
+    private SafeFileHandle _batteryHandle;
+    private uint _batteryTag;
     private readonly Sensor _chargeDischargeCurrent;
     private readonly Sensor _chargeDischargeRate;
     private readonly Sensor _chargeLevel;
     private readonly Sensor _degradationLevel;
     private readonly Sensor _designedCapacity;
+    private readonly string _devicePath;
     private readonly Sensor _fullChargedCapacity;
     private readonly Sensor _remainingCapacity;
     private readonly Sensor _remainingTime;
@@ -31,6 +34,7 @@ internal sealed class Battery : Hardware
     (
         string name,
         string manufacturer,
+        string devicePath,
         SafeFileHandle batteryHandle,
         BATTERY_INFORMATION batteryInfo,
         uint batteryTag,
@@ -41,6 +45,7 @@ internal sealed class Battery : Hardware
 
         _batteryTag = batteryTag;
         _batteryHandle = batteryHandle;
+        _devicePath = devicePath;
 
         byte[] chemistry = batteryInfo.Chemistry.ToArray();
 
@@ -84,19 +89,7 @@ internal sealed class Battery : Hardware
         _remainingTime = new Sensor("Remaining Time (Estimated)", 0, SensorType.TimeSpan, this, settings);
         _temperature = new Sensor("Battery Temperature", 0, SensorType.Temperature, this, settings);
 
-        if (batteryInfo.FullChargedCapacity is not PInvoke.BATTERY_UNKNOWN_CAPACITY &&
-            batteryInfo.DesignedCapacity is not PInvoke.BATTERY_UNKNOWN_CAPACITY)
-        {
-            _designedCapacity.Value = batteryInfo.DesignedCapacity;
-            _fullChargedCapacity.Value = batteryInfo.FullChargedCapacity;
-            _degradationLevel.Value = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
-            DesignedCapacity = batteryInfo.DesignedCapacity;
-            FullChargedCapacity = batteryInfo.FullChargedCapacity;
-
-            ActivateSensor(_designedCapacity);
-            ActivateSensor(_fullChargedCapacity);
-            ActivateSensor(_degradationLevel);
-        }
+        UpdateBatteryInformation(batteryInfo);
     }
 
     public float? ChargeDischargeCurrent { get; private set; }
@@ -109,9 +102,9 @@ internal sealed class Battery : Hardware
 
     public float? DegradationLevel => _degradationLevel.Value;
 
-    public float? DesignedCapacity { get; }
+    public float? DesignedCapacity { get; private set; }
 
-    public float? FullChargedCapacity { get; }
+    public float? FullChargedCapacity { get; private set; }
 
     public override HardwareType HardwareType => HardwareType.Battery;
 
@@ -133,19 +126,39 @@ internal sealed class Battery : Hardware
             DeactivateSensor(sensor);
     }
 
-    public override unsafe void Update()
+    public override void Update()
     {
+        // The OS invalidates the battery tag whenever the battery's characteristics
+        // change; IOCTLs carrying a stale tag then fail permanently. On failure,
+        // re-acquire the tag (and, if the handle died, the device handle) and retry
+        // once instead of polling with the stale tag forever.
+        if (!TryUpdate() && TryReacquireBattery())
+            TryUpdate();
+    }
+
+    private unsafe bool TryUpdate()
+    {
+        if (_batteryHandle.IsClosed || _batteryHandle.IsInvalid)
+        {
+            ClearStatusValues();
+            _remainingTime.Value = null;
+            _temperature.Value = null;
+            UpdateSensorActivation();
+            return false;
+        }
+
         BATTERY_WAIT_STATUS bws = default;
         bws.BatteryTag = _batteryTag;
         BATTERY_STATUS batteryStatus = default;
-        if (PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
-                                    PInvoke.IOCTL_BATTERY_QUERY_STATUS,
-                                    &bws,
-                                    (uint)sizeof(BATTERY_WAIT_STATUS),
-                                    &batteryStatus,
-                                    (uint)sizeof(BATTERY_STATUS),
-                                    null,
-                                    null))
+        bool statusRead = PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
+                                                  PInvoke.IOCTL_BATTERY_QUERY_STATUS,
+                                                  &bws,
+                                                  (uint)sizeof(BATTERY_WAIT_STATUS),
+                                                  &batteryStatus,
+                                                  (uint)sizeof(BATTERY_STATUS),
+                                                  null,
+                                                  null);
+        if (statusRead)
         {
             if (batteryStatus.Capacity != PInvoke.BATTERY_UNKNOWN_CAPACITY)
                 _remainingCapacity.Value = batteryStatus.Capacity;
@@ -197,6 +210,12 @@ internal sealed class Battery : Hardware
                 }
             }
         }
+        else
+        {
+            // Never keep reporting the previously read values after a failed query -
+            // they are stale data, not live readings.
+            ClearStatusValues();
+        }
 
         uint estimatedRunTime = 0;
         BATTERY_QUERY_INFORMATION bqi = default;
@@ -239,6 +258,23 @@ internal sealed class Battery : Hardware
             _temperature.Value = null;
         }
 
+        UpdateSensorActivation();
+        return statusRead;
+    }
+
+    private void ClearStatusValues()
+    {
+        ChargeDischargeCurrent = null;
+        ChargeDischargeRate = null;
+        _remainingCapacity.Value = null;
+        _chargeLevel.Value = null;
+        _voltage.Value = null;
+        _chargeDischargeCurrent.Value = null;
+        _chargeDischargeRate.Value = null;
+    }
+
+    private void UpdateSensorActivation()
+    {
         ActivateSensorIfValueNotNull(_remainingCapacity);
         ActivateSensorIfValueNotNull(_chargeLevel);
         ActivateSensorIfValueNotNull(_voltage);
@@ -246,6 +282,84 @@ internal sealed class Battery : Hardware
         ActivateSensorIfValueNotNull(_chargeDischargeRate);
         ActivateSensorIfValueNotNull(_remainingTime);
         ActivateSensorIfValueNotNull(_temperature);
+    }
+
+    private unsafe bool TryReacquireBattery()
+    {
+        // If the handle died (e.g. the battery device was re-attached), reopen it
+        // by the device path remembered from enumeration.
+        if (_batteryHandle.IsClosed || _batteryHandle.IsInvalid)
+        {
+            SafeFileHandle batteryHandle = PInvoke.CreateFile(_devicePath,
+                                                              (uint)FileAccess.ReadWrite,
+                                                              FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+                                                              null,
+                                                              FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+                                                              FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+                                                              null);
+            if (batteryHandle.IsInvalid)
+                return false;
+
+            _batteryHandle = batteryHandle;
+        }
+
+        uint dwWait = 0;
+        uint batteryTag = 0;
+        uint bytesReturned = 0;
+        if (!PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
+                                     PInvoke.IOCTL_BATTERY_QUERY_TAG,
+                                     &dwWait,
+                                     sizeof(uint),
+                                     &batteryTag,
+                                     sizeof(uint),
+                                     &bytesReturned,
+                                     null))
+        {
+            // No battery is reachable through this handle anymore. Close it so the
+            // next update attempts a clean reopen instead of polling a dead handle.
+            _batteryHandle.Close();
+            return false;
+        }
+
+        _batteryTag = batteryTag;
+
+        // A new tag can come with changed battery characteristics; per the battery
+        // IOCTL contract all cached information must be re-read at this point.
+        BATTERY_QUERY_INFORMATION bqi = default;
+        bqi.BatteryTag = batteryTag;
+        bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryInformation;
+        BATTERY_INFORMATION bi = default;
+        uint biBytesReturned = 0;
+        if (PInvoke.DeviceIoControl((HANDLE)_batteryHandle.DangerousGetHandle(),
+                                    PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
+                                    &bqi,
+                                    (uint)sizeof(BATTERY_QUERY_INFORMATION),
+                                    &bi,
+                                    (uint)sizeof(BATTERY_INFORMATION),
+                                    &biBytesReturned,
+                                    null))
+        {
+            UpdateBatteryInformation(bi);
+        }
+
+        return true;
+    }
+
+    private void UpdateBatteryInformation(BATTERY_INFORMATION batteryInfo)
+    {
+        if (batteryInfo.FullChargedCapacity is not PInvoke.BATTERY_UNKNOWN_CAPACITY &&
+            batteryInfo.DesignedCapacity is not PInvoke.BATTERY_UNKNOWN_CAPACITY)
+        {
+            _designedCapacity.Value = batteryInfo.DesignedCapacity;
+            _fullChargedCapacity.Value = batteryInfo.FullChargedCapacity;
+            _degradationLevel.Value = 100f - (batteryInfo.FullChargedCapacity * 100f / batteryInfo.DesignedCapacity);
+            DesignedCapacity = batteryInfo.DesignedCapacity;
+            FullChargedCapacity = batteryInfo.FullChargedCapacity;
+
+            ActivateSensor(_designedCapacity);
+            ActivateSensor(_fullChargedCapacity);
+            ActivateSensor(_degradationLevel);
+        }
     }
 
     public override void Close()

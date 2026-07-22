@@ -116,7 +116,7 @@ internal class BatteryGroup : IGroup
                                             bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
                                             QueryStringFromBatteryInfo(battery, bqi, out string manufacturer);
 
-                                            _hardware.Add(new Battery(batteryName, manufacturer, battery, bi, bqi.BatteryTag, settings));
+                                            _hardware.Add(new Battery(batteryName, manufacturer, devicePath, battery, bi, bqi.BatteryTag, settings));
                                         }
                                     }
                                 }
