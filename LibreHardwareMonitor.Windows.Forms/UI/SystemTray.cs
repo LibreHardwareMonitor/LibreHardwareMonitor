@@ -17,15 +17,17 @@ public class SystemTray : IDisposable
     private IComputer _computer;
     private readonly PersistentSettings _settings;
     private readonly UnitManager _unitManager;
+    private readonly Control _owner;
     private readonly List<SensorNotifyIcon> _sensorList = new List<SensorNotifyIcon>();
     private bool _mainIconEnabled;
     private readonly NotifyIconAdv _mainIcon;
 
-    public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager)
+    public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager, Control owner)
     {
         _computer = computer;
         _settings = settings;
         _unitManager = unitManager;
+        _owner = owner;
         computer.HardwareAdded += HardwareAdded;
         computer.HardwareRemoved += HardwareRemoved;
 
@@ -56,38 +58,50 @@ public class SystemTray : IDisposable
 
     private void HardwareRemoved(IHardware hardware)
     {
-        hardware.SensorAdded -= SensorAdded;
-        hardware.SensorRemoved -= SensorRemoved;
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            hardware.SensorAdded -= SensorAdded;
+            hardware.SensorRemoved -= SensorRemoved;
 
-        foreach (ISensor sensor in hardware.Sensors)
-            SensorRemoved(sensor);
+            foreach (ISensor sensor in hardware.Sensors)
+                SensorRemoved(sensor);
 
-        foreach (IHardware subHardware in hardware.SubHardware)
-            HardwareRemoved(subHardware);
+            foreach (IHardware subHardware in hardware.SubHardware)
+                HardwareRemoved(subHardware);
+        });
     }
 
     private void HardwareAdded(IHardware hardware)
     {
-        foreach (ISensor sensor in hardware.Sensors)
-            SensorAdded(sensor);
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            foreach (ISensor sensor in hardware.Sensors)
+                SensorAdded(sensor);
 
-        hardware.SensorAdded += SensorAdded;
-        hardware.SensorRemoved += SensorRemoved;
+            hardware.SensorAdded += SensorAdded;
+            hardware.SensorRemoved += SensorRemoved;
 
-        foreach (IHardware subHardware in hardware.SubHardware)
-            HardwareAdded(subHardware);
+            foreach (IHardware subHardware in hardware.SubHardware)
+                HardwareAdded(subHardware);
+        });
     }
 
     private void SensorAdded(ISensor sensor)
     {
-        if (_settings.GetValue(new Identifier(sensor.Identifier, "tray").ToString(), false))
-            Add(sensor, false);
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            if (_settings.GetValue(new Identifier(sensor.Identifier, "tray").ToString(), false))
+                Add(sensor, false);
+        });
     }
 
     private void SensorRemoved(ISensor sensor)
     {
-        if (Contains(sensor))
-            Remove(sensor, false);
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            if (Contains(sensor))
+                Remove(sensor, false);
+        });
     }
 
     public void Dispose()
