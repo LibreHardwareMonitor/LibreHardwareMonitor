@@ -32,7 +32,6 @@ public sealed partial class MainForm : Form
     private readonly UserRadioGroup _loggingInterval;
     private readonly UserRadioGroup _smartUpdateCycle;
     private readonly UserRadioGroup _updateInterval;
-    private readonly UserOption _throttleAtaUpdate;
     private readonly UserOption _logSensors;
     private readonly UserOption _forceDriveWakeup;
     private readonly UserOption _minimizeOnClose;
@@ -439,21 +438,6 @@ public sealed partial class MainForm : Form
                     break;
                 case 5:
                     timer.Interval = 10000;
-                    break;
-            }
-        };
-
-        _throttleAtaUpdate = new UserOption("throttleAtaUpdateMenuItem", false, throttleAtaUpdateMenuItem, _settings);
-        _throttleAtaUpdate.Changed += (sender, e) =>
-        {
-            switch (_throttleAtaUpdate.Value)
-            {
-                case true:
-                    StorageDevice.ThrottleInterval = TimeSpan.FromSeconds(30);
-                    break;
-
-                case false:
-                    StorageDevice.ThrottleInterval = TimeSpan.Zero;
                     break;
             }
         };

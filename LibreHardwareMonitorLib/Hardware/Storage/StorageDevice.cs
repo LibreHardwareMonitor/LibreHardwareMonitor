@@ -72,8 +72,6 @@ public sealed class StorageDevice : Hardware, ISmart
     /// <remarks>See <see cref="StorageDIT.TryWakeUp"/> for more information.</remarks>
     public bool ForceWakeup { get; set; }
 
-    public static TimeSpan ThrottleInterval { get; set; }
-
     /// <summary>
     /// Gets or sets the number of regular update cycles between S.M.A.R.T. data refreshes.
     /// </summary>
@@ -81,14 +79,11 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override void Update()
     {
-        if (DateTime.UtcNow - _lastUpdate < ThrottleInterval)
-        {
-            return;
-        }
-
         bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
         if (refreshSmartData)
+        {
             _smartUpdateCycle = 0;
+        }
 
         bool isDevicePoweredOn = _storage.IsDevicePowerOn.GetValueOrDefault(true);
 
