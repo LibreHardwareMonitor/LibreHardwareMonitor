@@ -736,6 +736,7 @@ internal class Identification
             case var _ when name.Equals("MAG X870E TOMAHAWK MAX WIFI PZ (MS-7E84)", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_TOMAHAWK_MAX_WIFI_PZ;
             case var _ when name.Equals("MEG X870E GODLIKE (MS-7E48)", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("MEG X870E GODLIKE X EDITION (MS-7E48)", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_GODLIKE;
             case var _ when name.Equals("PRO X870-P WIFI (MS-7E47)", StringComparison.OrdinalIgnoreCase):
                 return Model.X870P_PRO_WIFI;
