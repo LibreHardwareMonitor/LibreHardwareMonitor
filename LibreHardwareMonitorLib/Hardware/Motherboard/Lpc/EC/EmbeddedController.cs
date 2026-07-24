@@ -19,6 +19,15 @@ public abstract class EmbeddedController : Hardware
     // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
     private static readonly BoardInfo[] _boards =
     {
+        new(Model.ROG_STRIX_B850_E_GAMING_WIFI,
+            BoardFamily.Amd800,
+            ECSensor.TempCPUPackage,
+            ECSensor.TempVrm)
+            {
+                Sources = [
+                    new EmbeddedControllerSource("T_Sensor", SensorType.Temperature, 0x0035, blank: -40),
+                ]
+            },
         new (Model.ROG_CROSSHAIR_X870E_DARK_HERO,
             BoardFamily.Amd800,
             ECSensor.TempTSensor),
@@ -568,6 +577,7 @@ public abstract class EmbeddedController : Hardware
         }
 
         IEnumerable<EmbeddedControllerSource> sources = board.Sensors.Select(ecs => _knownSensors[board.Family][ecs]);
+        sources = sources.Concat(board.Sources);
 
         return Environment.OSVersion.Platform switch
         {
@@ -740,6 +750,7 @@ public abstract class EmbeddedController : Hardware
             Models = models;
             Family = family;
             Sensors = sensors;
+            Sources = [];
         }
 
         public BoardInfo(Model model, BoardFamily family, params ECSensor[] sensors)
@@ -747,6 +758,7 @@ public abstract class EmbeddedController : Hardware
             Models = new[] { model };
             Family = family;
             Sensors = sensors;
+            Sources = [];
         }
 
         public Model[] Models { get; }
@@ -754,6 +766,8 @@ public abstract class EmbeddedController : Hardware
         public BoardFamily Family { get; }
 
         public ECSensor[] Sensors { get; }
+
+        public EmbeddedControllerSource[] Sources { get; set; } = [];
     }
 
     public class IOException : System.IO.IOException
