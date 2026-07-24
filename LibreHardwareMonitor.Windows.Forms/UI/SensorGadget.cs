@@ -39,6 +39,7 @@ public class SensorGadget : Gadget
     private Image _barForeTinted;
     private Image _background = new Bitmap(1, 1);
     private bool _backgroundDirty = true;
+    private readonly Control _owner;
     private readonly float _scale;
     private float _fontSize;
     private int _iconSize;
@@ -63,10 +64,11 @@ public class SensorGadget : Gadget
     private Color _fontColor;
     private Color _backgroundColor;
 
-    public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
+    public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager, Control owner)
     {
         _unitManager = unitManager;
         _settings = settings;
+        _owner = owner;
         computer.HardwareAdded += HardwareAdded;
         computer.HardwareRemoved += HardwareRemoved;
 
@@ -385,38 +387,50 @@ public class SensorGadget : Gadget
 
     private void HardwareRemoved(IHardware hardware)
     {
-        hardware.SensorAdded -= SensorAdded;
-        hardware.SensorRemoved -= SensorRemoved;
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            hardware.SensorAdded -= SensorAdded;
+            hardware.SensorRemoved -= SensorRemoved;
 
-        foreach (ISensor sensor in hardware.Sensors)
-            SensorRemoved(sensor);
+            foreach (ISensor sensor in hardware.Sensors)
+                SensorRemoved(sensor);
 
-        foreach (IHardware subHardware in hardware.SubHardware)
-            HardwareRemoved(subHardware);
+            foreach (IHardware subHardware in hardware.SubHardware)
+                HardwareRemoved(subHardware);
+        });
     }
 
     private void HardwareAdded(IHardware hardware)
     {
-        foreach (ISensor sensor in hardware.Sensors)
-            SensorAdded(sensor);
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            foreach (ISensor sensor in hardware.Sensors)
+                SensorAdded(sensor);
 
-        hardware.SensorAdded += SensorAdded;
-        hardware.SensorRemoved += SensorRemoved;
+            hardware.SensorAdded += SensorAdded;
+            hardware.SensorRemoved += SensorRemoved;
 
-        foreach (IHardware subHardware in hardware.SubHardware)
-            HardwareAdded(subHardware);
+            foreach (IHardware subHardware in hardware.SubHardware)
+                HardwareAdded(subHardware);
+        });
     }
 
     private void SensorAdded(ISensor sensor)
     {
-        if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
-            Add(sensor);
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
+                Add(sensor);
+        });
     }
 
     private void SensorRemoved(ISensor sensor)
     {
-        if (Contains(sensor))
-            Remove(sensor, false);
+        UIThread.BeginInvoke(_owner, () =>
+        {
+            if (Contains(sensor))
+                Remove(sensor, false);
+        });
     }
 
     public bool Contains(ISensor sensor)
