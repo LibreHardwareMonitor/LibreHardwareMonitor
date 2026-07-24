@@ -7,27 +7,10 @@ version: 2
 
 updates:
   - package-ecosystem: "nuget"
-    directory: "/LibreHardwareMonitor.Windows.Forms"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: "nuget"
-    directory: "/LibreHardwareMonitorLib"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: "nuget"
-    directory: "/Aga.Controls"
+    directories: 
+     - "/LibreHardwareMonitor.Windows.Forms"
+     - "/LibreHardwareMonitorLib"
+     - "/Aga.Controls"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
