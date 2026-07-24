@@ -111,8 +111,12 @@ internal class Identification
     {
         switch (name)
         {
+            case var _ when name.Equals("TUF GAMING B850-BTF WIFI W", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_B850_BTF_WIFI_W;
             case var _ when name.Equals("TUF GAMING B850M-PLUS II", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_B850M_PLUS_II;
+            case var _ when name.Equals("TUF GAMING X870-PRO WIFI7 W NEO", StringComparison.OrdinalIgnoreCase):
+                return Model.TUF_GAMING_X870_PRO_WIFI7_W_NEO;
             case var _ when name.Equals("MPG Z390 GAMING EDGE AC (MS-7B17)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z390_GAMING_EDGE_AC;
             case var _ when name.Equals("X870 AORUS ELITE WIFI7", StringComparison.OrdinalIgnoreCase):
@@ -593,6 +597,8 @@ internal class Identification
                 return Model.ROG_STRIX_X670E_E_GAMING_WIFI;
             case var _ when name.Equals("ROG STRIX X670E-F GAMING WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_X670E_F_GAMING_WIFI;
+            case var _ when name.Equals("ROG STRIX B850-A GAMING WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_B850_A_GAMING_WIFI;
             case var _ when name.Equals("ROG STRIX B850-E GAMING WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_B850_E_GAMING_WIFI;
             case var _ when name.Equals("ROG STRIX B850-I GAMING WIFI", StringComparison.OrdinalIgnoreCase):
