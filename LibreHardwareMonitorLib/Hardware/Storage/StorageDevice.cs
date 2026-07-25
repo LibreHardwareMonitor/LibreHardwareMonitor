@@ -329,6 +329,13 @@ public sealed class StorageDevice : Hardware, ISmart
             AddSensor("Power On Hours", 24, false, SensorType.Factor, s => s.PowerOnHours.GetValueOrDefault());
         }
 
+        if (_storage.SmartAttributeProfile == SmartAttributeProfile.NVMe)
+        {
+            AddSensor("Available Spare", 25, false, SensorType.Level, s => (s.SmartAttributes.FirstOrDefault(sae => sae.ID == 0xE2)?.CurrentValue).GetValueOrDefault());
+            AddSensor("Available Spare Threshold", 26, false, SensorType.Level, s => (s.SmartAttributes.FirstOrDefault(sae => sae.ID == 0xE3)?.CurrentValue).GetValueOrDefault());
+            AddSensor("Percentage Used", 27, false, SensorType.Level, s => (s.SmartAttributes.FirstOrDefault(sae => sae.ID == 0xE4)?.CurrentValue).GetValueOrDefault());
+        }
+
         _usageSensor = new Sensor("Used Space", 30, SensorType.Load, this, _settings);
         _freeSpaceSensor = new Sensor("Free Space", 31, SensorType.Data, this, _settings);
         ToggleSpaceSensors();
