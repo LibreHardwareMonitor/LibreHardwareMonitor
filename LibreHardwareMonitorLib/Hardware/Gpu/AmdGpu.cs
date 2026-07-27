@@ -409,7 +409,8 @@ internal sealed class AmdGpu : GenericGpu
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_SOCCLK, _socClock);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_MEMCLK, _memoryClock, reset: false);
 
-            GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_EDGE, _temperatureCore, reset: false);
+            if (!GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_EDGE, _temperatureCore, reset: false))
+                GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_GFX, _temperatureCore, reset: false);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_MEM, _temperatureMemory, reset: false);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_VRVDDC, _temperatureVddc, reset: false);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_VRMVDD, _temperatureMvdd, reset: false);
