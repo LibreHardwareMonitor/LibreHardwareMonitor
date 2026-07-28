@@ -155,7 +155,7 @@ internal class RyzenSMU
                 { 63, new SmuSensorType { Name = "EDC Limit", Type = SensorType.Current, Scale = 1 } },
                 { 9, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
                 { 51, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
-                { 10, new SmuSensorType { Name = "CPU Temp Limit", Type = SensorType.Temperature, Scale = 1 } },
+                { 10, new SmuSensorType { Name = "CPU Temperature Limit", Type = SensorType.Temperature, Scale = 1 } },
                 { 11, new SmuSensorType { Name = "Package", Type = SensorType.Temperature, Scale = 1 } },
                 { 595, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
                 { 596, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
@@ -422,8 +422,7 @@ internal class RyzenSMU
                         break;
 
                     default:
-                        _pmTableSize = 0x994;
-                        break;
+                        return;
                 }
 
                 break;

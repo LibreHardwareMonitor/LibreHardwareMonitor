@@ -125,8 +125,6 @@ internal sealed class Amd17Cpu : AmdCpu
         private Sensor _coreVids;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue;
-        private float[] _pmTable;
-        private PerCoreBaseIndices _perCoreBaseIndices;
 
         public Processor(Hardware hardware)
         {
@@ -148,7 +146,6 @@ internal sealed class Amd17Cpu : AmdCpu
             _cpu.ActivateSensor(_avgClockEffective);
 
             _coreVids = new Sensor("Core VIDs", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
-            _perCoreBaseIndices = GetPerCoreBaseIndices(_cpu._smu.PmTableVersion);
 
             foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in _cpu._smu.GetPmTableStructure())
             {
@@ -157,10 +154,6 @@ internal sealed class Amd17Cpu : AmdCpu
         }
 
         public List<NumaNode> Nodes { get; } = new();
-
-        public float[] PmTable => _pmTable;
-
-        public PerCoreBaseIndices BaseIndices => _perCoreBaseIndices;
 
         public double BusClockValue
         {
@@ -189,7 +182,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // PU [3:0]
             _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
-            double energyBaseUnit = Math.Pow(0.5,esu);
+            double energyBaseUnit = Math.Pow(0.5, esu);
 
 
             // MSRC001_029B
@@ -425,7 +418,6 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_cpu._smu.IsPmTableLayoutDefined())
             {
                 float[] smuData = _cpu._smu.GetPmTable();
-                _pmTable = smuData;
 
                 foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
                 {
@@ -484,7 +476,7 @@ internal sealed class Amd17Cpu : AmdCpu
             public int Power;
         }
 
-        private static PerCoreBaseIndices GetPerCoreBaseIndices(uint pmTableVersion)
+        public static PerCoreBaseIndices GetPerCoreBaseIndices(uint pmTableVersion)
         {
             return pmTableVersion switch
             {
@@ -534,7 +526,7 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             get
             {
-                if(Cores == null)
+                if (Cores == null)
                     return 0;
 
                 return Cores.Average(x => x.CoreClock);
@@ -601,10 +593,10 @@ internal sealed class Amd17Cpu : AmdCpu
         private Amd17Cpu _cpu;
         public CpuId Cpu { get { return _cpuId; } }
 
-        public TimeSpan SampleDuration { get; private set; }= TimeSpan.Zero;
+        public TimeSpan SampleDuration { get; private set; } = TimeSpan.Zero;
         public double EffectiveClock { get; private set; } = 0;
 
-        public ulong MperfDelta { get {  return _mperfDelta; } }
+        public ulong MperfDelta { get { return _mperfDelta; } }
         public ulong AperfDelta { get { return _aperfDelta; } }
 
         public CpuThread(Amd17Cpu cpu, CpuId cpuId)
@@ -660,7 +652,7 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_aperfDelta > 20000e6)
                 _aperfDelta = 0;
 
-            if(_aperfDelta == 0 || _mperfDelta == 0)
+            if (_aperfDelta == 0 || _mperfDelta == 0)
             {
                 //overflow possible, numbers are > 20 GHz
                 _lastSampleTime = new(0);
@@ -712,7 +704,6 @@ internal sealed class Amd17Cpu : AmdCpu
             cpu.ActivateSensor(_multiplier);
             cpu.ActivateSensor(_power);
             cpu.ActivateSensor(_vcore);
-            cpu.ActivateSensor(_temperature);
         }
 
         public int CoreId { get; }
@@ -757,7 +748,7 @@ internal sealed class Amd17Cpu : AmdCpu
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 
-            foreach(var t in Threads)
+            foreach (var t in Threads)
             {
                 t.ReadPerformanceCounter();
             }
@@ -873,29 +864,23 @@ internal sealed class Amd17Cpu : AmdCpu
                 return;
             }
 
-            float[] pmTable = _cpu._processor.PmTable;
-            Processor.PerCoreBaseIndices baseIndices = _cpu._processor.BaseIndices;
-
+            float[] pmTable = _cpu._smu.GetPmTable();
             if (pmTable is { Length: > 0 })
             {
                 int pmTableCoreIdx = CoreId - 1;
+                var indices = Processor.GetPerCoreBaseIndices(_cpu._smu.PmTableVersion);
 
-                if (baseIndices.Voltage > 0)
+                int idx = indices.Voltage + pmTableCoreIdx;
+                if (idx < pmTable.Length)
                 {
-                    int idx = baseIndices.Voltage + pmTableCoreIdx;
-                    if (idx < pmTable.Length)
-                    {
-                        _pmTableVoltage = pmTable[idx];
-                    }
+                    _pmTableVoltage = pmTable[idx];
                 }
 
-                if (baseIndices.Temperature > 0)
+                idx = indices.Temperature + pmTableCoreIdx;
+                if (idx < pmTable.Length)
                 {
-                    int idx = baseIndices.Temperature + pmTableCoreIdx;
-                    if (idx < pmTable.Length)
-                    {
-                        _temperature.Value = pmTable[idx];
-                    }
+                    _temperature.Value = pmTable[idx];
+                    _cpu.ActivateSensor(_temperature);
                 }
             }
 
