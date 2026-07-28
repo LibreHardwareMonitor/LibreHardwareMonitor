@@ -39,6 +39,7 @@ internal static class NvApi
     public static NvAPI_GPU_GetAllClockFrequenciesDelegate NvAPI_GPU_GetAllClockFrequencies { get; internal set; }
     public static NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks { get; internal set; }
     public static NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId { get; internal set; }
+    public static NvAPI_GPU_GetBusSlotIdDelegate NvAPI_GPU_GetBusSlotId { get; internal set; }
     public static NvAPI_GPU_GetCoolerSettingsDelegate NvAPI_GPU_GetCoolerSettings { get; internal set; }
     public static NvAPI_GPU_GetDynamicPstatesInfoExDelegate NvAPI_GPU_GetDynamicPstatesInfoEx { get; internal set; }
     public static NvAPI_GPU_GetMemoryInfoDelegate NvAPI_GPU_GetMemoryInfo { get; internal set; }
@@ -90,6 +91,7 @@ internal static class NvApi
             _nvAPI_GetInterfaceVersionString = GetDelegate<NvAPI_GetInterfaceVersionStringDelegate>(0x01053FA5);
             NvAPI_GPU_GetPCIIdentifiers = GetDelegate<NvAPI_GPU_GetPCIIdentifiersDelegate>(0x2DDFB66E);
             NvAPI_GPU_GetBusId = GetDelegate<NvAPI_GPU_GetBusIdDelegate>(0x1BE0B8E5);
+            NvAPI_GPU_GetBusSlotId = GetDelegate<NvAPI_GPU_GetBusSlotIdDelegate>(0x2A0A350F);
             NvAPI_GPU_ClientFanCoolersGetStatus = GetDelegate<NvAPI_GPU_ClientFanCoolersGetStatusDelegate>(0x35AED5E8);
             NvAPI_GPU_GetAllClockFrequencies = GetDelegate<NvAPI_GPU_GetAllClockFrequenciesDelegate>(0xDCB616C3);
             NvAPI_GPU_ClientFanCoolersGetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersGetControlDelegate>(0x814B209F);
@@ -138,6 +140,9 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_GetBusIdDelegate(NvPhysicalGpuHandle gpuHandle, out uint busId);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_GetBusSlotIdDelegate(NvPhysicalGpuHandle gpuHandle, out uint busSlotId);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_GetCoolerSettingsDelegate(NvPhysicalGpuHandle gpuHandle, NvCoolerTarget coolerTarget, ref NvCoolerSettings NvCoolerSettings);
