@@ -19,6 +19,11 @@ public abstract class EmbeddedController : Hardware
     // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
     private static readonly BoardInfo[] _boards =
     {
+        new(Model.ROG_STRIX_B850_E_GAMING_WIFI,
+            BoardFamily.Amd800,
+            ECSensor.TempCPUPackage,
+            ECSensor.TempVrm,
+            ECSensor.TempTSensorAlt),
         new (Model.ROG_CROSSHAIR_X870E_DARK_HERO,
             BoardFamily.Amd800,
             ECSensor.TempTSensor),
@@ -445,6 +450,7 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x0032) },
                 { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0036, blank: -40) },
+                { ECSensor.TempTSensorAlt, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0035, blank: -40) },
                 { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
             }
         },
@@ -686,6 +692,9 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
         TempTSensor,
+
+        /// <summary>"T_Sensor" temperature sensor reading [℃]</summary>
+        TempTSensorAlt,
 
         /// <summary>"T_Sensor 2" temperature sensor reading [℃]</summary>
         TempTSensor2,
