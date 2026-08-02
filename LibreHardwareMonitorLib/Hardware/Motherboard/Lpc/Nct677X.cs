@@ -31,6 +31,7 @@ internal class Nct677X : ISuperIO
     private const byte EC_SPACE_PAGE_SELECT = 0xFF;
 
     private const ushort NUVOTON_VENDOR_ID = 0x5CA3;
+    private const byte NUVOTON_HARDWARE_MONITOR_LDN = 0x0B;
 
     // NCT6687DR EC engine status register and flags (based on Linux nct6687d driver)
     private const ushort NCT6687DR_REG_FAN_ENGINE_STS = 0xCF8;
@@ -1464,16 +1465,21 @@ internal class Nct677X : ISuperIO
             not Chip.NCT6797D and
             not Chip.NCT6798D and
             not Chip.NCT6799D and
+            not Chip.NCT6701D and
             not Chip.NCT5585D)
         {
             return;
         }
 
-        // the lock is disabled already if the vendor ID can be read
-        if (IsNuvotonVendor())
+        // The NCT6701D is accepted as a Nuvoton chip without reading the vendor
+        // ID, so IsNuvotonVendor() cannot tell whether its I/O space was locked
+        // again.  Re-check and clear its configuration-space lock every update.
+        if (Chip != Chip.NCT6701D && IsNuvotonVendor())
             return;
 
         _lpcPort.WinbondNuvotonFintekEnter();
+        if (Chip == Chip.NCT6701D)
+            _lpcPort.Select(NUVOTON_HARDWARE_MONITOR_LDN);
         _lpcPort.NuvotonDisableIOSpaceLock();
         _lpcPort.WinbondNuvotonFintekExit();
     }
