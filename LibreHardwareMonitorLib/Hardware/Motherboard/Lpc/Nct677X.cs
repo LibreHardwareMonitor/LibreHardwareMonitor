@@ -255,34 +255,34 @@ internal class Nct677X : ISuperIO
                     case Chip.NCT6701D:
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
-                            new(SourceNct67Xxd.PECI_0               , 0x073, sourceRegister: 0x100),                           //  0: PECI_0
-                            new(SourceNct67Xxd.CPUTIN               , 0x491),                                                  //  1: CPUTIN
-                            new(SourceNct67Xxd.SYSTIN               , 0x490),                                                  //  2: SYSTIN
-                            new(SourceNct67Xxd.AUXTIN0              , 0x492),                                                  //  3: AUXTIN0
-                            new(SourceNct67Xxd.AUXTIN1              , 0x493),                                                  //  4: AUXTIN1
-                            new(SourceNct67Xxd.AUXTIN2              , 0x494),                                                  //  5: AUXTIN2
-                            new(SourceNct67Xxd.AUXTIN3              , 0x495),                                                  //  6: AUXTIN3
-                            new(SourceNct67Xxd.AUXTIN4              , 0x027, sourceRegister: 0x621),                           //  7: AUXTIN4
-                            new(SourceNct67Xxd.PECI_1               , 0x672, sourceRegister: 0xC27),                           //  8: PECI_1
+                            new(SourceNct67Xxd.PECI_0, 0x073, sourceRegister: 0x100),                                          //  0: PECI_0
+                            new(SourceNct67Xxd.CPUTIN, 0x491),                                                                 //  1: CPUTIN
+                            new(SourceNct67Xxd.SYSTIN, 0x490),                                                                 //  2: SYSTIN
+                            new(SourceNct67Xxd.AUXTIN0, 0x492),                                                                //  3: AUXTIN0
+                            new(SourceNct67Xxd.AUXTIN1, 0x493),                                                                //  4: AUXTIN1
+                            new(SourceNct67Xxd.AUXTIN2, 0x494),                                                                //  5: AUXTIN2
+                            new(SourceNct67Xxd.AUXTIN3, 0x495),                                                                //  6: AUXTIN3
+                            new(SourceNct67Xxd.AUXTIN4, 0x027, sourceRegister: 0x621),                                         //  7: AUXTIN4
+                            new(SourceNct67Xxd.PECI_1, 0x672, sourceRegister: 0xC27),                                          //  8: PECI_1
                             new(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, sourceRegister: 0xC28, alternateRegister: 0x400), //  9: PCH_CHIP_CPU_MAX_TEMP
-                            new(SourceNct67Xxd.PCH_CHIP_TEMP        , 0x676, sourceRegister: 0xC29, alternateRegister: 0x401), // 10: PCH_CHIP_TEMP
-                            new(SourceNct67Xxd.PCH_CPU_TEMP         , 0x678, sourceRegister: 0xC2A, alternateRegister: 0x402), // 11: PCH_CPU_TEMP
-                            new(SourceNct67Xxd.PCH_MCH_TEMP         , 0x67A, sourceRegister: 0xC2B, alternateRegister: 0x404), // 12: PCH_MCH_TEMP
-                            new(SourceNct67Xxd.AGENT0_DIMM0         , 0x405),                                                  // 13: AGENT0_DIMM0
-                            new(SourceNct67Xxd.AGENT0_DIMM1         , 0x406),                                                  // 14: AGENT0_DIMM1
-                            new(SourceNct67Xxd.AGENT1_DIMM0         , 0x407),                                                  // 15: AGENT1_DIMM0
-                            new(SourceNct67Xxd.AGENT1_DIMM1         , 0x408),                                                  // 16: AGENT1_DIMM1
-                            new(SourceNct67Xxd.SMBUSMASTER0         , 0x150, sourceRegister: 0x622),                           // 17: SMBUSMASTER0
-                            new(SourceNct67Xxd.SMBUSMASTER1         , 0x670, sourceRegister: 0xC26),                           // 18: SMBUSMASTER1
-                            new(SourceNct67Xxd.BYTE_TEMP0           , 0x419),                                                  // 19: BYTE_TEMP0
-                            new(SourceNct67Xxd.BYTE_TEMP1           , 0x41A),                                                  // 20: BYTE_TEMP1
-                            new(SourceNct67Xxd.PECI_0_CAL           , 0x4F4),                                                  // 21: PECI_0_CAL
-                            new(SourceNct67Xxd.PECI_1_CAL           , 0x4F5),                                                  // 22: PECI_1_CAL
-                            new(SourceNct67Xxd.VIRTUAL_TEMP         , 0),                                                      // 23: VIRTUAL_TEMP
-                            new(SourceNct67Xxd.SPARE_TEMP           , 0x07B, sourceRegister: 0x900),                           // 24: SPARE_TEMP
-                            new(SourceNct67Xxd.SPARE_TEMP2          , 0),                                                      // 25: SPARE_TEMP2
-                            new(null                                , 0x409),                                                  // 26: CPU PACKAGE
-                            new(null                                , 0x4A2),                                                  // 27: TEMP14
+                            new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, sourceRegister: 0xC29, alternateRegister: 0x401),         // 10: PCH_CHIP_TEMP
+                            new(SourceNct67Xxd.PCH_CPU_TEMP, 0x678, sourceRegister: 0xC2A, alternateRegister: 0x402),          // 11: PCH_CPU_TEMP
+                            new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, sourceRegister: 0xC2B, alternateRegister: 0x404),          // 12: PCH_MCH_TEMP
+                            new(SourceNct67Xxd.AGENT0_DIMM0, 0x405),                                                           // 13: AGENT0_DIMM0
+                            new(SourceNct67Xxd.AGENT0_DIMM1, 0x406),                                                           // 14: AGENT0_DIMM1
+                            new(SourceNct67Xxd.AGENT1_DIMM0, 0x407),                                                           // 15: AGENT1_DIMM0
+                            new(SourceNct67Xxd.AGENT1_DIMM1, 0x408),                                                           // 16: AGENT1_DIMM1
+                            new(SourceNct67Xxd.SMBUSMASTER0, 0x150, sourceRegister: 0x622),                                    // 17: SMBUSMASTER0
+                            new(SourceNct67Xxd.SMBUSMASTER1, 0x670, sourceRegister: 0xC26),                                    // 18: SMBUSMASTER1
+                            new(SourceNct67Xxd.BYTE_TEMP0, 0x419),                                                             // 19: BYTE_TEMP0
+                            new(SourceNct67Xxd.BYTE_TEMP1, 0x41A),                                                             // 20: BYTE_TEMP1
+                            new(SourceNct67Xxd.PECI_0_CAL, 0x4F4),                                                             // 21: PECI_0_CAL
+                            new(SourceNct67Xxd.PECI_1_CAL, 0x4F5),                                                             // 22: PECI_1_CAL
+                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0),                                                               // 23: VIRTUAL_TEMP
+                            new(SourceNct67Xxd.SPARE_TEMP, 0x07B, sourceRegister: 0x900),                                      // 24: SPARE_TEMP
+                            new(SourceNct67Xxd.SPARE_TEMP2, 0),                                                                // 25: SPARE_TEMP2
+                            new(null, 0x409),                                                                                  // 26: CPU PACKAGE
+                            new(null, 0x4A2),                                                                                  // 27: TEMP14
                         });
                         break;
 
@@ -1542,9 +1542,7 @@ internal class Nct677X : ISuperIO
 
     private static float? DecodeNct6701Temperature(byte rawTemperature)
     {
-        return rawTemperature == 0x00 ||
-               rawTemperature == 0xA0 ||
-               rawTemperature is >= 0x7E and <= 0x80
+        return rawTemperature is 0x00 or 0xA0 or (>= 0x7E and <= 0x80)
             ? null
             : (sbyte)rawTemperature;
     }

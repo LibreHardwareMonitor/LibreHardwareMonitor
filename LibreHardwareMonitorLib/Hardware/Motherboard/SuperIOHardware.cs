@@ -5411,7 +5411,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
                         v.Add(new Voltage("Voltage #10", 9, true));
                         v.Add(new Voltage("CPU VDDIO Memory", 10, 34, 34));
-                        v.Add(new Voltage("VMISC", 11, 34, 34));
+                        v.Add(new Voltage("VMisc", 11, 34, 34));
                         v.Add(new Voltage("1.8V Standby", 12, 7.66f, 10));
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
@@ -5423,7 +5423,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         if (model == Model.TUF_GAMING_X870_PRO_WIFI7_W_NEO)
                         {
-                            t.Add(new Temperature("Temp14", 27));
+                            t.Add(new Temperature("Temperature #14", 27));
                             t.Add(new Temperature("T_Sensor", 24));
 
                             fanControlNames = ["Chassis Fan #1", "CPU Fan", "Chassis Fan #2", "Chassis Fan #3", "Chassis Fan #4", "Water Pump+", "AIO Pump"];
