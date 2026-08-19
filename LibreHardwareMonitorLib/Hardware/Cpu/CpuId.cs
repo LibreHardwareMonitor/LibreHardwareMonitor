@@ -175,7 +175,7 @@ public class CpuId
                 threadMaskWith = 0;
                 coreMaskWith = NextLog2(corePerPackage);
 
-                if (Family is 0x17 or 0x19)
+                if (Family is 0x17 or 0x19 or 0x1A)
                 {
                     // ApicIdCoreIdSize: APIC ID size.
                     // cores per DIE
