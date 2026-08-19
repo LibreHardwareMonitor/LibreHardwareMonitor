@@ -154,7 +154,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
                     for (int i = 0; i < _hotSpotTemperatures.Length; ++i)
                     {
-                        _hotSpotTemperatures[i] = new Sensor($"GPU Hot Spot {i + 1}", temperatureIndex + i, SensorType.Temperature, this, settings);
+                        _hotSpotTemperatures[i] = new Sensor($"GPU Hot Spot #{i + 1}", temperatureIndex + i, SensorType.Temperature, this, settings);
                     }
 
                     _pawnNvidia = pawnNvidia;
