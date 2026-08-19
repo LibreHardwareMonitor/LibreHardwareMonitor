@@ -25,4 +25,6 @@ public enum HardwareType
     Psu,
     Battery,
     PowerMonitor,
+    KontronSensors,
+    KontronWatchdog
 }

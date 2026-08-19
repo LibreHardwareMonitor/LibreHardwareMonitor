@@ -107,6 +107,22 @@ public sealed class TypeNode : Node, IExpandPersistNode
                 Image = Utilities.EmbeddedResources.GetImage("humidity.png");
                 Text = "Humidity Levels";
                 break;
+            case SensorType.WatchdogStageStatus:
+                Image = Utilities.EmbeddedResources.GetImage("_apply.png");
+                Text = "Watchdog / Stage Status";
+                break;
+            case SensorType.StageTimes:
+                Image = Utilities.EmbeddedResources.GetImage("_time_machine_black.png");
+                Text = "Stage Times";
+                break;
+            case SensorType.WatchdogStageConfig:
+                Image = Utilities.EmbeddedResources.GetImage("_switch.png");
+                Text = "Watchdog / Stage Config";
+                break;
+            case SensorType.LastResetCause:
+                Image = Utilities.EmbeddedResources.GetImage("_red-flag.png");
+                Text = "Last Reset Cause";
+                break;
         }
 
         NodeAdded += TypeNode_NodeAdded;

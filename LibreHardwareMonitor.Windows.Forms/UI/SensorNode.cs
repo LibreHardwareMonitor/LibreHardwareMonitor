@@ -91,6 +91,18 @@ public class SensorNode : Node
             case SensorType.Humidity:
                 Format = "{0:F0} %";
                 break;
+            case SensorType.WatchdogStageStatus:
+                Format = "{0:g}";
+                break;
+            case SensorType.StageTimes:
+                Format = "{0:g} s";
+                break;
+            case SensorType.WatchdogStageConfig:
+                Format = "{0:g}";
+                break;
+            case SensorType.LastResetCause:
+                Format = "{0:g}";
+                break;
         }
 
         bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
