@@ -39,6 +39,11 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _memoryUsed;
     private readonly Sensor _memoryLoad;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
+    private readonly PawnIo.Nvidia _pawnNvidia;
+    private readonly Sensor[] _hotSpotTemperatures;
+    private readonly float?[] _hotSpotTemperatureValues;
+    private readonly uint _pciBusId;
+    private readonly uint _pciDeviceId;
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
@@ -51,6 +56,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _12VHPwrPinPowerSensors;
     private readonly Sensor _12VHPwrConnectorPowerSensor;
     private readonly Sensor _12VHPwrConnectorCurrentSensor;
+    private bool _pawnHotSpotMaximumActive;
 
     // ASUS Astral subsystem IDs for 12VHPwr pin monitoring
     private static readonly uint[] AstralSubSystemIds =
@@ -124,6 +130,45 @@ internal sealed class NvidiaGpu : GenericGpu
         if (!hasAnyThermalSensor)
         {
             _thermalSensorsMask = 0;
+        }
+
+        if (!Software.OperatingSystem.IsUnix &&
+            hasBusId &&
+            NvApi.NvAPI_GPU_GetBusSlotId != null &&
+            NvApi.NvAPI_GPU_GetBusSlotId(handle, out uint busSlotId) == NvApi.NvStatus.OK)
+        {
+            PawnIo.Nvidia pawnNvidia = null;
+
+            try
+            {
+                pawnNvidia = new PawnIo.Nvidia();
+
+                if (pawnNvidia.IsLoaded)
+                {
+                    _pciBusId = busId;
+                    _pciDeviceId = busSlotId;
+                    _hotSpotTemperatureValues = new float?[PawnIo.Nvidia.ThermalChannelCount];
+                    _hotSpotTemperatures = new Sensor[PawnIo.Nvidia.ThermalChannelCount];
+
+                    int temperatureIndex = (int)thermalSettings.Count + 3;
+
+                    for (int i = 0; i < _hotSpotTemperatures.Length; ++i)
+                    {
+                        _hotSpotTemperatures[i] = new Sensor($"GPU Hot Spot #{i + 1}", temperatureIndex + i, SensorType.Temperature, this, settings);
+                    }
+
+                    _pawnNvidia = pawnNvidia;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{nameof(NvidiaGpu)} PawnIO module initialization failed for '{Name}' ({Identifier}): {e}");
+            }
+
+            if (_pawnNvidia == null)
+            {
+                pawnNvidia?.Close();
+            }
         }
 
         // Clock frequencies.
@@ -599,6 +644,8 @@ internal sealed class NvidiaGpu : GenericGpu
                 _memoryJunctionTemperature.Value = null;
             }
 
+            UpdateHotSpotTemperatures();
+
             if (_clocks is { Length: > 0 })
             {
                 NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out status);
@@ -799,6 +846,65 @@ internal sealed class NvidiaGpu : GenericGpu
         catch (Exception e)
         {
             Debug.WriteLine($"{nameof(NvidiaGpu)} {nameof(Update)} failed for '{Name}' ({Identifier}): {e}");
+        }
+    }
+
+    private void UpdateHotSpotTemperatures()
+    {
+        if (_pawnNvidia == null || _hotSpotTemperatures == null)
+        {
+            return;
+        }
+
+        if (!Mutexes.WaitPciBus(10))
+        {
+            return;
+        }
+
+        bool hasValidTemperatures = false;
+
+        try
+        {
+            hasValidTemperatures = _pawnNvidia.TryReadThermalChannels(_pciBusId, _pciDeviceId, 0, _hotSpotTemperatureValues);
+        }
+        finally
+        {
+            Mutexes.ReleasePciBus();
+        }
+
+        float? maximum = null;
+        for (int i = 0; i < _hotSpotTemperatures.Length; i++)
+        {
+            Sensor sensor = _hotSpotTemperatures[i];
+            float? value = hasValidTemperatures ? _hotSpotTemperatureValues[i] : null;
+            sensor.Value = value;
+
+            if (value.HasValue)
+            {
+                maximum = maximum.HasValue ? Math.Max(maximum.Value, value.Value) : value.Value;
+                ActivateSensor(sensor);
+            }
+            else
+            {
+                DeactivateSensor(sensor);
+            }
+        }
+
+        if (maximum.HasValue)
+        {
+            _hotSpotTemperature.Value = maximum.Value;
+
+            ActivateSensor(_hotSpotTemperature);
+
+            _pawnHotSpotMaximumActive = true;
+        }
+        else if (_pawnHotSpotMaximumActive)
+        {
+            _hotSpotTemperature.Value = null;
+
+            DeactivateSensor(_hotSpotTemperature);
+
+            _pawnHotSpotMaximumActive = false;
         }
     }
 
@@ -1452,6 +1558,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Close()
     {
+        _pawnNvidia?.Close();
+
         if (_fanControls != null)
         {
             for (int i = 0; i < _fanControls.Length; i++)

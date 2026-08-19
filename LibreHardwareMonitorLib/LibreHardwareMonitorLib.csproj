@@ -66,6 +66,7 @@
     <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcCrOSEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcIO.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\Nvidia.bin" />
     <EmbeddedResource Include="Resources\PawnIo\RyzenSMU.bin" />
     <EmbeddedResource Include="Resources\PawnIo\SmbusI801.bin" />
     <EmbeddedResource Include="Resources\PawnIo\SmbusNCT6793.bin" />
