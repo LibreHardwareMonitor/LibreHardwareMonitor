@@ -121,8 +121,7 @@ public sealed partial class MainForm : Form
         for (int i = 1; i < treeView.Columns.Count; i++)
         {
             TreeColumn column = treeView.Columns[i];
-            string key = column.Tag as string ?? column.Header;
-            column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + key + ".Width", column.Width)));
+            column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + GetColumnSettingsKey(column) + ".Width", column.Width)));
         }
 
         TreeModel treeModel = new();
@@ -971,10 +970,7 @@ public sealed partial class MainForm : Form
         _plotPanel.SetCurrentSettings();
 
         foreach (TreeColumn column in treeView.Columns)
-        {
-            string key = column.Tag as string ?? column.Header;
-            _settings.SetValue("treeView.Columns." + key + ".Width", column.Width);
-        }
+            _settings.SetValue("treeView.Columns." + GetColumnSettingsKey(column) + ".Width", column.Width);
 
         _settings.SetValue("listenerIp", Server.ListenerIp);
         _settings.SetValue("listenerPort", Server.ListenerPort);
@@ -1524,10 +1520,6 @@ public sealed partial class MainForm : Form
         helpMenuItem.Text = Strings.Help;
         aboutMenuItem.Text = Strings.About;
 
-        sensor.Tag = "Sensor";
-        value.Tag = "Value";
-        min.Tag = "Min";
-        max.Tag = "Max";
         sensor.Header = Strings.ColumnSensor;
         value.Header = Strings.ColumnValue;
         min.Header = Strings.ColumnMin;
@@ -1535,6 +1527,19 @@ public sealed partial class MainForm : Form
 
         saveFileDialog.Title = Strings.SaveReportTitle;
         saveFileDialog.Filter = Strings.SaveReportFilter;
+    }
+
+    private string GetColumnSettingsKey(TreeColumn column)
+    {
+        if (ReferenceEquals(column, sensor))
+            return "Sensor";
+        if (ReferenceEquals(column, value))
+            return "Value";
+        if (ReferenceEquals(column, min))
+            return "Min";
+        if (ReferenceEquals(column, max))
+            return "Max";
+        return column.Header;
     }
 
     private void InitializeLanguageMenu()
