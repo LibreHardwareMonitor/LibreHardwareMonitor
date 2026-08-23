@@ -36,7 +36,28 @@ var node = function(config, parent) {
   ko.mapping.fromJS(config, mappingOptions, this);
 }
 
+var LHM_I18N = {
+  en: { title: "Libre Hardware Monitor - Web Version", refresh: "Refresh", autoRefresh: "Auto Refresh", sensor: "Sensor", min: "Min", value: "Value", max: "Max" },
+  ru: { title: "Libre Hardware Monitor — веб-версия", refresh: "Обновить", autoRefresh: "Автообновление", sensor: "Датчик", min: "Мин.", value: "Значение", max: "Макс." }
+};
+
+function lhmApplyWebI18n() {
+  var lang = (document.documentElement.getAttribute("lang") || navigator.language || "en").toLowerCase();
+  var pack = lang.indexOf("ru") === 0 ? LHM_I18N.ru : LHM_I18N.en;
+  document.title = pack.title;
+  var refresh = document.getElementById("refresh");
+  if (refresh) refresh.textContent = pack.refresh;
+  var autoLabel = document.getElementById("auto_refresh_label");
+  if (autoLabel) autoLabel.textContent = pack.autoRefresh;
+  var map = { "col-sensor": pack.sensor, "col-min": pack.min, "col-value": pack.value, "col-max": pack.max };
+  Object.keys(map).forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = map[id];
+  });
+}
+
 $(function(){
+  lhmApplyWebI18n();
   $.getJSON('data.json', function(data) {
     viewModel = new node(data, undefined);
 

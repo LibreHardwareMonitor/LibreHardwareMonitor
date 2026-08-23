@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
 
@@ -20,6 +21,12 @@ public partial class ParameterForm : Form
     public ParameterForm()
     {
         InitializeComponent();
+        Text = Strings.ParametersTitle;
+        okButton.Text = Strings.OK;
+        cancelButton.Text = Strings.Cancel;
+        NameColumn.HeaderText = Strings.ParameterName;
+        Default.HeaderText = Strings.ParameterDefault;
+        ValueColumn.HeaderText = Strings.ParameterValue;
     }
 
     public IReadOnlyList<IParameter> Parameters
@@ -106,7 +113,7 @@ public partial class ParameterForm : Form
     {
         if (e.ColumnIndex == 2 && !float.TryParse(e.FormattedValue.ToString(), out float _))
         {
-            dataGridView.Rows[e.RowIndex].Cells[0].ErrorText = "Invalid value";
+            dataGridView.Rows[e.RowIndex].Cells[0].ErrorText = Strings.InvalidValue;
             e.Cancel = true;
         }
     }

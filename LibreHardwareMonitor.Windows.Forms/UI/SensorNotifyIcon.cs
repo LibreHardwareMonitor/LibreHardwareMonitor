@@ -12,6 +12,7 @@ using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -44,20 +45,20 @@ public class SensorNotifyIcon : IDisposable
 
         _pen = new Pen(Color.FromArgb(96, Color.Black));
         ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-        ToolStripItem hideShowItem = new ToolStripMenuItem("Hide/Show");
+        ToolStripItem hideShowItem = new ToolStripMenuItem(Strings.TrayHideShow);
         hideShowItem.Click += delegate
         {
             sensorSystemTray.SendHideShowCommand();
         };
         contextMenuStrip.Items.Add(hideShowItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripItem removeItem = new ToolStripMenuItem("Remove Sensor");
+        ToolStripItem removeItem = new ToolStripMenuItem(Strings.TrayRemoveSensor);
         removeItem.Click += delegate
         {
             sensorSystemTray.Remove(Sensor);
         };
         contextMenuStrip.Items.Add(removeItem);
-        ToolStripItem colorItem = new ToolStripMenuItem("Change Color...");
+        ToolStripItem colorItem = new ToolStripMenuItem(Strings.TrayChangeColor);
         colorItem.Click += delegate
         {
             ColorDialog dialog = new ColorDialog { Color = Color };
@@ -70,7 +71,7 @@ public class SensorNotifyIcon : IDisposable
         };
         contextMenuStrip.Items.Add(colorItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripItem exitItem = new ToolStripMenuItem("Exit");
+        ToolStripItem exitItem = new ToolStripMenuItem(Strings.Exit);
         exitItem.Click += delegate
         {
             sensorSystemTray.SendExitCommand();

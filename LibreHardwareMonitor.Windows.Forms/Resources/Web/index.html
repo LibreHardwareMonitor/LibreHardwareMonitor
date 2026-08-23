@@ -4,7 +4,7 @@
 	 
 	 - Copyright (C) 2012 Prince Samuel <prince.samuel@gmail.com>  -->
 
-<html>
+<html lang="en">
 <head>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <title>Libre Hardware Monitor - Web Version</title>
@@ -41,14 +41,14 @@
 
       <span id="toolbar" class="ui-widget-header ui-corner-all">
         <button id="refresh" data-bind="click: update">Refresh</button>
-        <input type="checkbox" id="auto_refresh" data-bind="checked: auto_refresh"/><label for="auto_refresh">Auto Refresh</label>
+        <input type="checkbox" id="auto_refresh" data-bind="checked: auto_refresh"/><label for="auto_refresh" id="auto_refresh_label">Auto Refresh</label>
         &nbsp;<div id="slider"></div>&nbsp;&nbsp;&nbsp;&nbsp;<span for="auto_refresh" id="lbl"></span>
       </span>
     </div>
 
     <div class="main">
       <table data-bind="treeTable: flattened, treeOptions: { initialState: 'expanded', clickableNodeNames: true } ">
-        <thead><td>Sensor</td><td>Min</td><td>Value</td><td>Max</td>
+        <thead><td id="col-sensor">Sensor</td><td id="col-min">Min</td><td id="col-value">Value</td><td id="col-max">Max</td>
           <tbody data-bind="foreach: flattened">
             <tr data-bind="attr: { 'id': 'node-' + id(), 'class': parent.id()?'child-of-node-' + parent.id():'' }">
               <td data-bind="html: '<img src=' + ImageURL() + ' />&nbsp; ' + Text()"></td>

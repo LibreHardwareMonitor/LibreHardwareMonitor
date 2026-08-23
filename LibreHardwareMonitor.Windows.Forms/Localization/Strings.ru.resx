@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true"><xsd:complexType><xsd:choice maxOccurs="unbounded">
+      <xsd:element name="data"><xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/></xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/></xsd:complexType></xsd:element>
+    </xsd:choice></xsd:complexType></xsd:element></xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>Libre Hardware Monitor</value></data>
+  <data name="File" xml:space="preserve"><value>Файл</value></data>
+  <data name="SaveReport" xml:space="preserve"><value>Сохранить отчёт...</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сброс</value></data>
+  <data name="Hardware" xml:space="preserve"><value>Оборудование</value></data>
+  <data name="Motherboard" xml:space="preserve"><value>Материнская плата</value></data>
+  <data name="CPU" xml:space="preserve"><value>ЦП</value></data>
+  <data name="RAM" xml:space="preserve"><value>ОЗУ</value></data>
+  <data name="GPU" xml:space="preserve"><value>ГП</value></data>
+  <data name="PowerMonitors" xml:space="preserve"><value>Мониторы питания</value></data>
+  <data name="FanControllers" xml:space="preserve"><value>Контроллеры вентиляторов</value></data>
+  <data name="StorageDevices" xml:space="preserve"><value>Накопители</value></data>
+  <data name="Network" xml:space="preserve"><value>Сеть</value></data>
+  <data name="PowerSupplies" xml:space="preserve"><value>Блоки питания</value></data>
+  <data name="Batteries" xml:space="preserve"><value>Батареи</value></data>
+  <data name="Exit" xml:space="preserve"><value>Выход</value></data>
+  <data name="View" xml:space="preserve"><value>Вид</value></data>
+  <data name="ResetMinMax" xml:space="preserve"><value>Сбросить мин./макс.</value></data>
+  <data name="ExpandAllNodes" xml:space="preserve"><value>Развернуть все узлы</value></data>
+  <data name="CollapseAllNodes" xml:space="preserve"><value>Свернуть все узлы</value></data>
+  <data name="ResetPlot" xml:space="preserve"><value>Сбросить график</value></data>
+  <data name="ShowHiddenSensors" xml:space="preserve"><value>Показывать скрытые датчики</value></data>
+  <data name="ShowPlot" xml:space="preserve"><value>Показывать график</value></data>
+  <data name="ShowGadget" xml:space="preserve"><value>Показывать гаджет</value></data>
+  <data name="Columns" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="ColumnSensor" xml:space="preserve"><value>Датчик</value></data>
+  <data name="ColumnValue" xml:space="preserve"><value>Значение</value></data>
+  <data name="ColumnMin" xml:space="preserve"><value>Мин.</value></data>
+  <data name="ColumnMax" xml:space="preserve"><value>Макс.</value></data>
+  <data name="Options" xml:space="preserve"><value>Параметры</value></data>
+  <data name="StartMinimized" xml:space="preserve"><value>Запускать свёрнутым</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Сворачивать в область уведомлений</value></data>
+  <data name="MinimizeOnClose" xml:space="preserve"><value>Сворачивать при закрытии</value></data>
+  <data name="RunOnWindowsStartup" xml:space="preserve"><value>Запускать вместе с Windows</value></data>
+  <data name="TemperatureUnit" xml:space="preserve"><value>Единица температуры</value></data>
+  <data name="Celsius" xml:space="preserve"><value>Градусы Цельсия</value></data>
+  <data name="Fahrenheit" xml:space="preserve"><value>Градусы Фаренгейта</value></data>
+  <data name="PlotLocation" xml:space="preserve"><value>Расположение графика</value></data>
+  <data name="PlotWindow" xml:space="preserve"><value>Окно</value></data>
+  <data name="PlotBottom" xml:space="preserve"><value>Снизу</value></data>
+  <data name="PlotRight" xml:space="preserve"><value>Справа</value></data>
+  <data name="Theme" xml:space="preserve"><value>Тема</value></data>
+  <data name="ThemeAuto" xml:space="preserve"><value>Авто</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Светлая</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Тёмная</value></data>
+  <data name="ThemeBlack" xml:space="preserve"><value>Чёрная</value></data>
+  <data name="StrokeThickness" xml:space="preserve"><value>Толщина линии</value></data>
+  <data name="SplitPanelScalingMode" xml:space="preserve"><value>Масштабирование панелей</value></data>
+  <data name="PercentageScaling" xml:space="preserve"><value>Пропорциональное</value></data>
+  <data name="FixedSizePlotPanel" xml:space="preserve"><value>Фиксированный график</value></data>
+  <data name="FixedSizeSensorPanel" xml:space="preserve"><value>Фиксированные датчики</value></data>
+  <data name="LogSensors" xml:space="preserve"><value>Журнал датчиков</value></data>
+  <data name="ForceDriveWakeup" xml:space="preserve"><value>Принудительно будить диски</value></data>
+  <data name="FileRotationMethod" xml:space="preserve"><value>Ротация файлов журнала</value></data>
+  <data name="PerSession" xml:space="preserve"><value>За сеанс</value></data>
+  <data name="Daily" xml:space="preserve"><value>Ежедневно</value></data>
+  <data name="LoggingInterval" xml:space="preserve"><value>Интервал записи</value></data>
+  <data name="UpdateInterval" xml:space="preserve"><value>Интервал обновления</value></data>
+  <data name="ThrottleSmartUpdates" xml:space="preserve"><value>Ограничить обновления S.M.A.R.T.</value></data>
+  <data name="FollowUpdateInterval" xml:space="preserve"><value>Как интервал обновления</value></data>
+  <data name="EveryNCycles" xml:space="preserve"><value>Каждые {0} циклов</value></data>
+  <data name="SensorValuesTimeWindow" xml:space="preserve"><value>Окно значений датчиков</value></data>
+  <data name="RemoteWebServer" xml:space="preserve"><value>Удалённый веб-сервер</value></data>
+  <data name="Run" xml:space="preserve"><value>Запустить</value></data>
+  <data name="InterfacePort" xml:space="preserve"><value>Интерфейс / порт</value></data>
+  <data name="Authentication" xml:space="preserve"><value>Проверка подлинности</value></data>
+  <data name="Help" xml:space="preserve"><value>Справка</value></data>
+  <data name="About" xml:space="preserve"><value>О программе</value></data>
+  <data name="Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Язык системы</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageRussian" xml:space="preserve"><value>Русский</value></data>
+  <data name="LanguageRestartHint" xml:space="preserve"><value>Язык будет применён после перезапуска программы.</value></data>
+  <data name="Error" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="FileNotFound" xml:space="preserve"><value>Не найден файл: {0}
+Распакуйте все файлы из архива.</value></data>
+  <data name="PawnIoOutdated" xml:space="preserve"><value>PawnIO устарел. Обновить?</value></data>
+  <data name="PawnIoMissing" xml:space="preserve"><value>PawnIO не установлен. Установить?</value></data>
+  <data name="AutoStartupFailed" xml:space="preserve"><value>Не удалось изменить автозапуск.</value></data>
+  <data name="ConfigAccessDenied" xml:space="preserve"><value>Нет доступа к пути «{0}». Настройки не сохранены.</value></data>
+  <data name="ConfigNotWritable" xml:space="preserve"><value>Путь «{0}» недоступен для записи. Настройки не сохранены.</value></data>
+  <data name="SaveReportTitle" xml:space="preserve"><value>Сохранить отчёт как</value></data>
+  <data name="SaveReportFilter" xml:space="preserve"><value>Текстовые документы|*.txt|Все файлы|*.*</value></data>
+  <data name="PlotWindowTitle" xml:space="preserve"><value>График</value></data>
+  <data name="ContextParameters" xml:space="preserve"><value>Параметры...</value></data>
+  <data name="ContextRename" xml:space="preserve"><value>Переименовать</value></data>
+  <data name="ContextHide" xml:space="preserve"><value>Скрыть</value></data>
+  <data name="ContextUnhide" xml:space="preserve"><value>Показать</value></data>
+  <data name="ContextPenColor" xml:space="preserve"><value>Цвет пера...</value></data>
+  <data name="ContextResetPenColor" xml:space="preserve"><value>Сбросить цвет пера</value></data>
+  <data name="ContextShowInTray" xml:space="preserve"><value>Показывать в области уведомлений</value></data>
+  <data name="ContextShowInGadget" xml:space="preserve"><value>Показывать в гаджете</value></data>
+  <data name="ContextControl" xml:space="preserve"><value>Управление</value></data>
+  <data name="ContextDefault" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="ContextManual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="TrayHideShow" xml:space="preserve"><value>Скрыть/показать</value></data>
+  <data name="TrayRemoveSensor" xml:space="preserve"><value>Убрать датчик</value></data>
+  <data name="TrayChangeColor" xml:space="preserve"><value>Изменить цвет...</value></data>
+  <data name="GadgetHardwareNames" xml:space="preserve"><value>Имена устройств</value></data>
+  <data name="GadgetFontSize" xml:space="preserve"><value>Размер шрифта</value></data>
+  <data name="GadgetFontColor" xml:space="preserve"><value>Цвет шрифта</value></data>
+  <data name="GadgetBackgroundColor" xml:space="preserve"><value>Цвет фона</value></data>
+  <data name="GadgetChoose" xml:space="preserve"><value>Выбрать...</value></data>
+  <data name="GadgetDefault" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="GadgetLockPosition" xml:space="preserve"><value>Зафиксировать положение и размер</value></data>
+  <data name="GadgetAlwaysOnTop" xml:space="preserve"><value>Поверх всех окон</value></data>
+  <data name="GadgetOpacity" xml:space="preserve"><value>Прозрачность</value></data>
+  <data name="GadgetHideShowMain" xml:space="preserve"><value>Скрыть/показать главное окно</value></data>
+  <data name="SelectColor" xml:space="preserve"><value>Выбор цвета</value></data>
+  <data name="Hex" xml:space="preserve"><value>HEX:</value></data>
+  <data name="OK" xml:space="preserve"><value>ОК</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="AboutTitle" xml:space="preserve"><value>О программе</value></data>
+  <data name="AboutVersion" xml:space="preserve"><value>Версия {0}</value></data>
+  <data name="AboutCopyright" xml:space="preserve"><value>© LibreHardwareMonitor и участники проекта</value></data>
+  <data name="ProjectWebsite" xml:space="preserve"><value>Сайт проекта</value></data>
+  <data name="LicensingInformation" xml:space="preserve"><value>Сведения о лицензии</value></data>
+  <data name="AuthTitle" xml:space="preserve"><value>Учётные данные HTTP</value></data>
+  <data name="AuthEnable" xml:space="preserve"><value>Включить базовую проверку подлинности HTTP</value></data>
+  <data name="AuthUserName" xml:space="preserve"><value>Имя пользователя HTTP:</value></data>
+  <data name="AuthPassword" xml:space="preserve"><value>Пароль HTTP:</value></data>
+  <data name="AuthCredentials" xml:space="preserve"><value>Учётные данные</value></data>
+  <data name="AuthPasswordHint" xml:space="preserve"><value>Пароль хранится в виде хеша. Если вы его забудете, задайте новый.</value></data>
+  <data name="AuthRestartHint" xml:space="preserve"><value>Если веб-сервер запущен, его нужно перезапустить, чтобы изменения вступили в силу.</value></data>
+  <data name="PortTitle" xml:space="preserve"><value>Порт</value></data>
+  <data name="PortNumber" xml:space="preserve"><value>Номер порта удалённого веб-сервера:</value></data>
+  <data name="PortFirewall" xml:space="preserve"><value>Примечание: откройте порт в параметрах брандмауэра операционной системы.</value></data>
+  <data name="PortRestartHint" xml:space="preserve"><value>Если веб-сервер запущен, его нужно перезапустить, чтобы смена порта вступила в силу.</value></data>
+  <data name="PortAccessibleAt" xml:space="preserve"><value>Веб-сервер будет доступен в браузере по адресу </value></data>
+  <data name="PortStartHint" xml:space="preserve"><value>Запустите сервер командой «Запустить» в меню.</value></data>
+  <data name="PortInterface" xml:space="preserve"><value>Сетевой интерфейс удалённого веб-сервера:</value></data>
+  <data name="ParametersTitle" xml:space="preserve"><value>Параметры</value></data>
+  <data name="ParameterName" xml:space="preserve"><value>Имя</value></data>
+  <data name="ParameterDefault" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="ParameterValue" xml:space="preserve"><value>Значение</value></data>
+  <data name="InvalidValue" xml:space="preserve"><value>Недопустимое значение</value></data>
+  <data name="TypeVoltages" xml:space="preserve"><value>Напряжения</value></data>
+  <data name="TypeCurrents" xml:space="preserve"><value>Токи</value></data>
+  <data name="TypeCapacities" xml:space="preserve"><value>Ёмкость</value></data>
+  <data name="TypeClocks" xml:space="preserve"><value>Частоты</value></data>
+  <data name="TypeLoad" xml:space="preserve"><value>Нагрузка</value></data>
+  <data name="TypeTemperatures" xml:space="preserve"><value>Температуры</value></data>
+  <data name="TypeFans" xml:space="preserve"><value>Вентиляторы</value></data>
+  <data name="TypeFlows" xml:space="preserve"><value>Потоки</value></data>
+  <data name="TypeControls" xml:space="preserve"><value>Управление</value></data>
+  <data name="TypeLevels" xml:space="preserve"><value>Уровни</value></data>
+  <data name="TypePowers" xml:space="preserve"><value>Мощность</value></data>
+  <data name="TypeData" xml:space="preserve"><value>Данные</value></data>
+  <data name="TypeFactors" xml:space="preserve"><value>Коэффициенты</value></data>
+  <data name="TypeFrequencies" xml:space="preserve"><value>Частоты</value></data>
+  <data name="TypeThroughput" xml:space="preserve"><value>Пропускная способность</value></data>
+  <data name="TypeTimes" xml:space="preserve"><value>Время</value></data>
+  <data name="TypeTimings" xml:space="preserve"><value>Тайминги</value></data>
+  <data name="TypeNoiseLevels" xml:space="preserve"><value>Уровень шума</value></data>
+  <data name="TypeConductivities" xml:space="preserve"><value>Проводимость</value></data>
+  <data name="TypeHumidityLevels" xml:space="preserve"><value>Влажность</value></data>
+  <data name="HardwareProperties" xml:space="preserve"><value>Свойства оборудования:</value></data>
+  <data name="RangeCritical" xml:space="preserve"><value>Критический диапазон: от {0} до {1}.</value></data>
+  <data name="MinCritical" xml:space="preserve"><value>Минимальное критическое значение: {0}.</value></data>
+  <data name="MaxCritical" xml:space="preserve"><value>Максимальное критическое значение: {0}.</value></data>
+  <data name="RangeNormal" xml:space="preserve"><value>Нормальный диапазон: от {0} до {1}.</value></data>
+  <data name="MinNormal" xml:space="preserve"><value>Минимальное нормальное значение: {0}.</value></data>
+  <data name="MaxNormal" xml:space="preserve"><value>Максимальное нормальное значение: {0}.</value></data>
+  <data name="PlotStackedAxes" xml:space="preserve"><value>Сложенные оси</value></data>
+  <data name="PlotShowAxesLabels" xml:space="preserve"><value>Подписи осей</value></data>
+  <data name="PlotTimeAxis" xml:space="preserve"><value>Ось времени</value></data>
+  <data name="PlotValueAxes" xml:space="preserve"><value>Оси значений</value></data>
+  <data name="PlotEnableZoom" xml:space="preserve"><value>Масштабирование</value></data>
+  <data name="PlotAuto" xml:space="preserve"><value>Авто</value></data>
+  <data name="PlotAutoscaleAll" xml:space="preserve"><value>Автомасштаб всех осей</value></data>
+  <data name="StartupTaskDescription" xml:space="preserve"><value>Запускает Libre Hardware Monitor при входе в Windows.</value></data>
+  <data name="WebTitle" xml:space="preserve"><value>Libre Hardware Monitor — веб-версия</value></data>
+  <data name="WebRefresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="WebAutoRefresh" xml:space="preserve"><value>Автообновление</value></data>
+  <data name="FontSmall" xml:space="preserve"><value>Мелкий</value></data>
+  <data name="FontMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="FontLarge" xml:space="preserve"><value>Крупный</value></data>
+  <data name="FontVeryLarge" xml:space="preserve"><value>Очень крупный</value></data>
+  <data name="FontExtremelyLarge" xml:space="preserve"><value>Огромный</value></data>
+</root>

@@ -16,6 +16,8 @@
 	  <LangVersion>latest</LangVersion>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <NeutralLanguage>en</NeutralLanguage>
+    <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -25,6 +27,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Localization\Strings.resx">
+      <LogicalName>LibreHardwareMonitor.Windows.Forms.Localization.Strings.resources</LogicalName>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Localization\Strings.ru.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="OxyPlot.Core" Version="2.2.0" />

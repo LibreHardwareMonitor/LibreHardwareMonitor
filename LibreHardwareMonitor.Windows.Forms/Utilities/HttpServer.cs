@@ -425,7 +425,11 @@ public class HttpServer
 
         if (context.Response.StatusCode == 401)
         {
-            const string responseString = @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
+            string responseString = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru"
+                ? @"<HTML><HEAD><TITLE>401 Требуется авторизация</TITLE></HEAD>
+  <BODY><H4>401 Требуется авторизация</H4>
+  Необходима авторизация.</BODY></HTML> "
+                : @"<HTML><HEAD><TITLE>401 Unauthorized</TITLE></HEAD>
   <BODY><H4>401 Unauthorized</H4>
   Authorization required.</BODY></HTML> ";
 
@@ -456,14 +460,26 @@ public class HttpServer
                 using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(names[i]);
 
                 response.ContentType = GetContentType("." + ext);
-                response.ContentLength64 = stream.Length;
-                byte[] buffer = new byte[512 * 1024];
                 try
                 {
-                    int len;
-                    while ((len = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    if (string.Equals(ext, "html", StringComparison.OrdinalIgnoreCase))
                     {
-                        await response.OutputStream.WriteAsync(buffer, 0, len);
+                        using StreamReader reader = new(stream, Encoding.UTF8, true, 1024, true);
+                        string html = await reader.ReadToEndAsync();
+                        html = html.Replace("lang=\"en\"", "lang=\"" + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName + "\"");
+                        byte[] bytes = Encoding.UTF8.GetBytes(html);
+                        response.ContentLength64 = bytes.Length;
+                        await response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+                    }
+                    else
+                    {
+                        response.ContentLength64 = stream.Length;
+                        byte[] buffer = new byte[512 * 1024];
+                        int len;
+                        while ((len = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await response.OutputStream.WriteAsync(buffer, 0, len);
+                        }
                     }
 
                     await response.OutputStream.FlushAsync();

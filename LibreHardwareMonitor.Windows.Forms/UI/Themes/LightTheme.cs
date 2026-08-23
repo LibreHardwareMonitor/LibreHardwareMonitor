@@ -33,6 +33,6 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         public override Color PlotGridMinorColor => Color.FromArgb(232, 232, 232);
         public override bool WindowTitlebarFallbackToImmersiveDarkMode => false;
 
-        public LightTheme() : base("light", "Light") { }
+        public LightTheme() : base("light", Localization.Strings.ThemeLight) { }
     }
 }

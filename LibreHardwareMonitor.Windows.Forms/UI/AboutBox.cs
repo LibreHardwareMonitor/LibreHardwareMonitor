@@ -7,6 +7,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.UI.Themes;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -17,7 +18,13 @@ public sealed partial class AboutBox : Form
     {
         InitializeComponent();
         Font = SystemFonts.MessageBoxFont;
-        label3.Text = "Version " + Application.ProductVersion;
+        Text = Strings.AboutTitle;
+        okButton.Text = Strings.OK;
+        label1.Text = Strings.AppTitle;
+        label2.Text = Strings.AboutCopyright;
+        label3.Text = string.Format(Strings.AboutVersion, Application.ProductVersion);
+        projectLinkLabel.Text = Strings.ProjectWebsite;
+        licenseLinkLabel.Text = Strings.LicensingInformation;
         projectLinkLabel.Links.Remove(projectLinkLabel.Links[0]);
         projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
         licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);

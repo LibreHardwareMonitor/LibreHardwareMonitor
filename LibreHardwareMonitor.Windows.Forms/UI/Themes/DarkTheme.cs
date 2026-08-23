@@ -18,7 +18,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         public override Color PlotGridMinorColor => Color.FromArgb(53, 53, 53);
         public override bool WindowTitlebarFallbackToImmersiveDarkMode => true;
 
-        public DarkTheme() : base("dark", "Dark")
+        public DarkTheme() : base("dark", Localization.Strings.ThemeDark)
         {
             string[] colors = {
                 "#F07178",

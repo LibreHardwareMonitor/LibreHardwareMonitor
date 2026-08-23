@@ -17,6 +17,7 @@ using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.UI.Themes;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
@@ -70,11 +71,13 @@ public sealed partial class MainForm : Form
     public MainForm()
     {
         InitializeComponent();
+        ApplyLocalizedUi();
 
         _settings = new PersistentSettings();
         _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
 
         _unitManager = new UnitManager(_settings);
+        InitializeLanguageMenu();
 
         // make sure the buffers used for double buffering are not disposed
         // after each draw call
@@ -118,7 +121,8 @@ public sealed partial class MainForm : Form
         for (int i = 1; i < treeView.Columns.Count; i++)
         {
             TreeColumn column = treeView.Columns[i];
-            column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + column.Header + ".Width", column.Width)));
+            string key = column.Tag as string ?? column.Header;
+            column.Width = Math.Max(20, Math.Min(400, _settings.GetValue("treeView.Columns." + key + ".Width", column.Width)));
         }
 
         TreeModel treeModel = new();
@@ -171,14 +175,14 @@ public sealed partial class MainForm : Form
         {
             if (PawnIo.PawnIo.Version < new Version(2, 0, 0, 0))
             {
-                DialogResult result = MessageBox.Show("PawnIO is outdated, do you want to update it?", nameof(LibreHardwareMonitor), MessageBoxButtons.OKCancel);
+                DialogResult result = MessageBox.Show(Strings.PawnIoOutdated, Strings.AppTitle, MessageBoxButtons.OKCancel);
                 if (result == DialogResult.OK)
                     InstallPawnIO();
             }
         }
         else
         {
-            DialogResult result = MessageBox.Show("PawnIO is not installed, do you want to install it?", nameof(LibreHardwareMonitor), MessageBoxButtons.OKCancel);
+            DialogResult result = MessageBox.Show(Strings.PawnIoMissing, Strings.AppTitle, MessageBoxButtons.OKCancel);
             if (result == DialogResult.OK)
                 InstallPawnIO();
         }
@@ -246,8 +250,8 @@ public sealed partial class MainForm : Form
             }
             catch (InvalidOperationException)
             {
-                MessageBox.Show("Updating the auto-startup option failed.",
-                                "Error",
+                MessageBox.Show(Strings.AutoStartupFailed,
+                                Strings.Error,
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
 
@@ -624,7 +628,7 @@ public sealed partial class MainForm : Form
         if (Theme.SupportsAutoThemeSwitching())
         {
             _autoThemeMenuItem = new ToolStripMenuItem();
-            _autoThemeMenuItem.Text = "Auto";
+            _autoThemeMenuItem.Text = Strings.ThemeAuto;
             _autoThemeMenuItem.Click += (o, e) =>
             {
                 ClearThemeMenu();
@@ -673,7 +677,7 @@ public sealed partial class MainForm : Form
 
     private void InitializePlotForm()
     {
-        _plotForm = new Form { FormBorderStyle = FormBorderStyle.SizableToolWindow, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual };
+        _plotForm = new Form { FormBorderStyle = FormBorderStyle.SizableToolWindow, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Text = Strings.PlotWindowTitle };
         AddOwnedForm(_plotForm);
         _plotForm.Bounds = new Rectangle
         {
@@ -967,7 +971,10 @@ public sealed partial class MainForm : Form
         _plotPanel.SetCurrentSettings();
 
         foreach (TreeColumn column in treeView.Columns)
-            _settings.SetValue("treeView.Columns." + column.Header + ".Width", column.Width);
+        {
+            string key = column.Tag as string ?? column.Header;
+            _settings.SetValue("treeView.Columns." + key + ".Width", column.Width);
+        }
 
         _settings.SetValue("listenerIp", Server.ListenerIp);
         _settings.SetValue("listenerPort", Server.ListenerPort);
@@ -983,21 +990,15 @@ public sealed partial class MainForm : Form
         }
         catch (UnauthorizedAccessException)
         {
-            MessageBox.Show("Access to the path '" +
-                            fileName +
-                            "' is denied. " +
-                            "The current settings could not be saved.",
-                            "Error",
+            MessageBox.Show(string.Format(Strings.ConfigAccessDenied, fileName),
+                            Strings.Error,
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
         }
         catch (IOException)
         {
-            MessageBox.Show("The path '" +
-                            fileName +
-                            "' is not writeable. " +
-                            "The current settings could not be saved.",
-                            "Error",
+            MessageBox.Show(string.Format(Strings.ConfigNotWritable, fileName),
+                            Strings.Error,
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
         }
@@ -1097,34 +1098,34 @@ public sealed partial class MainForm : Form
                 treeContextMenu.Items.Clear();
                 if (node.Sensor.Parameters.Count > 0)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Parameters...");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextParameters);
                     item.Click += delegate { ShowParameterForm(node.Sensor); };
                     treeContextMenu.Items.Add(item);
                 }
 
                 if (nodeTextBoxText.EditEnabled)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Rename");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextRename);
                     item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                     treeContextMenu.Items.Add(item);
                 }
 
                 if (node.IsVisible)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Hide");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextHide);
                     item.Click += delegate { node.IsVisible = false; };
                     treeContextMenu.Items.Add(item);
                 }
                 else
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Unhide");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextUnhide);
                     item.Click += delegate { node.IsVisible = true; };
                     treeContextMenu.Items.Add(item);
                 }
 
                 treeContextMenu.Items.Add(new ToolStripSeparator());
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Pen Color...");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextPenColor);
                     item.Click += delegate
                     {
                         ColorDialog dialog = new() { Color = node.PenColor.GetValueOrDefault() };
@@ -1136,14 +1137,14 @@ public sealed partial class MainForm : Form
                 }
 
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Reset Pen Color");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextResetPenColor);
                     item.Click += delegate { node.PenColor = null; };
                     treeContextMenu.Items.Add(item);
                 }
 
                 treeContextMenu.Items.Add(new ToolStripSeparator());
                 {
-                    ToolStripMenuItem item = new("Show in Tray") { Checked = _systemTray.Contains(node.Sensor) };
+                    ToolStripMenuItem item = new(Strings.ContextShowInTray) { Checked = _systemTray.Contains(node.Sensor) };
                     item.Click += delegate
                     {
                         if (item.Checked)
@@ -1157,7 +1158,7 @@ public sealed partial class MainForm : Form
 
                 if (_gadget != null)
                 {
-                    ToolStripMenuItem item = new("Show in Gadget") { Checked = _gadget.Contains(node.Sensor) };
+                    ToolStripMenuItem item = new(Strings.ContextShowInGadget) { Checked = _gadget.Contains(node.Sensor) };
                     item.Click += delegate
                     {
                         if (item.Checked)
@@ -1177,11 +1178,11 @@ public sealed partial class MainForm : Form
                 {
                     treeContextMenu.Items.Add(new ToolStripSeparator());
                     IControl control = node.Sensor.Control;
-                    ToolStripMenuItem controlItem = new("Control");
-                    ToolStripItem defaultItem = new ToolStripMenuItem("Default") { Checked = control.ControlMode == ControlMode.Default };
+                    ToolStripMenuItem controlItem = new(Strings.ContextControl);
+                    ToolStripItem defaultItem = new ToolStripMenuItem(Strings.ContextDefault) { Checked = control.ControlMode == ControlMode.Default };
                     controlItem.DropDownItems.Add(defaultItem);
                     defaultItem.Click += delegate { control.SetDefault(); };
-                    ToolStripMenuItem manualItem = new("Manual");
+                    ToolStripMenuItem manualItem = new(Strings.ContextManual);
                     controlItem.DropDownItems.Add(manualItem);
                     manualItem.Checked = control.ControlMode == ControlMode.Software;
                     for (int i = 0; i <= 100; i += 5)
@@ -1209,7 +1210,7 @@ public sealed partial class MainForm : Form
 
                 if (nodeTextBoxText.EditEnabled)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Rename");
+                    ToolStripItem item = new ToolStripMenuItem(Strings.ContextRename);
                     item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                     treeContextMenu.Items.Add(item);
                 }
@@ -1452,6 +1453,119 @@ public sealed partial class MainForm : Form
         perSessionFileRotationMenuItem.Checked = true;
         _logger.FileRotationMethod = LoggerFileRotation.PerSession;
         _settings.SetValue("logger.fileRotation", (int)LoggerFileRotation.PerSession);
+    }
+
+    private void ApplyLocalizedUi()
+    {
+        Text = Strings.AppTitle;
+        fileMenuItem.Text = Strings.File;
+        saveReportMenuItem.Text = Strings.SaveReport;
+        resetMenuItem.Text = Strings.Reset;
+        menuItemFileHardware.Text = Strings.Hardware;
+        mainboardMenuItem.Text = Strings.Motherboard;
+        cpuMenuItem.Text = Strings.CPU;
+        ramMenuItem.Text = Strings.RAM;
+        gpuMenuItem.Text = Strings.GPU;
+        powerMonitorMenuItem.Text = Strings.PowerMonitors;
+        fanControllerMenuItem.Text = Strings.FanControllers;
+        hddMenuItem.Text = Strings.StorageDevices;
+        nicMenuItem.Text = Strings.Network;
+        psuMenuItem.Text = Strings.PowerSupplies;
+        batteryMenuItem.Text = Strings.Batteries;
+        exitMenuItem.Text = Strings.Exit;
+        viewMenuItem.Text = Strings.View;
+        resetMinMaxMenuItem.Text = Strings.ResetMinMax;
+        expandAllNodesMenuItem.Text = Strings.ExpandAllNodes;
+        collpaseAllNodesMenuItem.Text = Strings.CollapseAllNodes;
+        resetPlotMenuItem.Text = Strings.ResetPlot;
+        hiddenMenuItem.Text = Strings.ShowHiddenSensors;
+        plotMenuItem.Text = Strings.ShowPlot;
+        gadgetMenuItem.Text = Strings.ShowGadget;
+        columnsMenuItem.Text = Strings.Columns;
+        valueMenuItem.Text = Strings.ColumnValue;
+        minMenuItem.Text = Strings.ColumnMin;
+        maxMenuItem.Text = Strings.ColumnMax;
+        optionsMenuItem.Text = Strings.Options;
+        startMinMenuItem.Text = Strings.StartMinimized;
+        minTrayMenuItem.Text = Strings.MinimizeToTray;
+        minCloseMenuItem.Text = Strings.MinimizeOnClose;
+        startupMenuItem.Text = Strings.RunOnWindowsStartup;
+        temperatureUnitsMenuItem.Text = Strings.TemperatureUnit;
+        celsiusMenuItem.Text = Strings.Celsius;
+        fahrenheitMenuItem.Text = Strings.Fahrenheit;
+        plotLocationMenuItem.Text = Strings.PlotLocation;
+        plotWindowMenuItem.Text = Strings.PlotWindow;
+        plotBottomMenuItem.Text = Strings.PlotBottom;
+        plotRightMenuItem.Text = Strings.PlotRight;
+        themeMenuItem.Text = Strings.Theme;
+        strokeThicknessMenuItem.Text = Strings.StrokeThickness;
+        splitPlotPanelScalingMenuItem.Text = Strings.SplitPanelScalingMode;
+        splitPanelPercentageScalingMenuItem.Text = Strings.PercentageScaling;
+        splitPanelFixedPlotScalingMenuItem.Text = Strings.FixedSizePlotPanel;
+        splitPanelFixedSensorScalingMenuItem.Text = Strings.FixedSizeSensorPanel;
+        logSensorsMenuItem.Text = Strings.LogSensors;
+        forceDriveWakeupItem.Text = Strings.ForceDriveWakeup;
+        fileRotationMethod.Text = Strings.FileRotationMethod;
+        perSessionFileRotationMenuItem.Text = Strings.PerSession;
+        dailyFileRotationMenuItem.Text = Strings.Daily;
+        loggingIntervalMenuItem.Text = Strings.LoggingInterval;
+        updateIntervalMenuItem.Text = Strings.UpdateInterval;
+        throttleSmartUpdateMenuItem.Text = Strings.ThrottleSmartUpdates;
+        smartUpdateFollowUpdateIntervalMenuItem.Text = Strings.FollowUpdateInterval;
+        smartUpdate10CyclesMenuItem.Text = string.Format(Strings.EveryNCycles, 10);
+        smartUpdate25CyclesMenuItem.Text = string.Format(Strings.EveryNCycles, 25);
+        smartUpdate50CyclesMenuItem.Text = string.Format(Strings.EveryNCycles, 50);
+        smartUpdate100CyclesMenuItem.Text = string.Format(Strings.EveryNCycles, 100);
+        sensorValuesTimeWindowMenuItem.Text = Strings.SensorValuesTimeWindow;
+        webMenuItem.Text = Strings.RemoteWebServer;
+        runWebServerMenuItem.Text = Strings.Run;
+        serverInterfacePortMenuItem.Text = Strings.InterfacePort;
+        authWebServerMenuItem.Text = Strings.Authentication;
+        helpMenuItem.Text = Strings.Help;
+        aboutMenuItem.Text = Strings.About;
+
+        sensor.Tag = "Sensor";
+        value.Tag = "Value";
+        min.Tag = "Min";
+        max.Tag = "Max";
+        sensor.Header = Strings.ColumnSensor;
+        value.Header = Strings.ColumnValue;
+        min.Header = Strings.ColumnMin;
+        max.Header = Strings.ColumnMax;
+
+        saveFileDialog.Title = Strings.SaveReportTitle;
+        saveFileDialog.Filter = Strings.SaveReportFilter;
+    }
+
+    private void InitializeLanguageMenu()
+    {
+        ToolStripMenuItem languageMenu = new(Strings.Language);
+        optionsMenuItem.DropDownItems.Insert(0, languageMenu);
+        optionsMenuItem.DropDownItems.Insert(1, new ToolStripSeparator());
+
+        void AddLanguage(string code, string title)
+        {
+            ToolStripMenuItem item = new(title) { Checked = string.Equals(UiCulture.CurrentCode, code, StringComparison.OrdinalIgnoreCase) };
+            item.Click += (_, _) =>
+            {
+                _settings.SetValue(UiCulture.SettingKey, code);
+                SaveConfiguration();
+                MessageBox.Show(Strings.LanguageRestartHint, Strings.Language, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    Application.Restart();
+                }
+                catch
+                {
+                    CloseApplication();
+                }
+            };
+            languageMenu.DropDownItems.Add(item);
+        }
+
+        AddLanguage(UiCulture.System, Strings.LanguageSystem);
+        AddLanguage(UiCulture.English, Strings.LanguageEnglish);
+        AddLanguage(UiCulture.Russian, Strings.LanguageRussian);
     }
 
     private void dailyFileRotationMenuItem_Click(object sender, EventArgs e)

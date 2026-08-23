@@ -6,9 +6,9 @@
 
 using System;
 using System.Drawing;
-using System.Globalization;
 using System.Text;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -169,10 +169,10 @@ public class SensorNode : Node
             StringBuilder stringBuilder = new();
 
             if (Sensor is ICriticalSensorLimits criticalSensorLimits)
-                OptionallyAppendCriticalRange(stringBuilder, criticalSensorLimits.CriticalLowLimit, criticalSensorLimits.CriticalHighLimit, "critical");
+                OptionallyAppendCriticalRange(stringBuilder, criticalSensorLimits.CriticalLowLimit, criticalSensorLimits.CriticalHighLimit, true);
 
             if (Sensor is ISensorLimits sensorLimits)
-                OptionallyAppendCriticalRange(stringBuilder, sensorLimits.LowLimit, sensorLimits.HighLimit, "normal");
+                OptionallyAppendCriticalRange(stringBuilder, sensorLimits.LowLimit, sensorLimits.HighLimit, false);
 
             return stringBuilder.ToString();
         }
@@ -255,17 +255,17 @@ public class SensorNode : Node
         return "-";
     }
 
-    private void OptionallyAppendCriticalRange(StringBuilder str, float? min, float? max, string kind)
+    private void OptionallyAppendCriticalRange(StringBuilder str, float? min, float? max, bool critical)
     {
         if (min.HasValue)
         {
             str.AppendLine(max.HasValue
-                               ? $"{CultureInfo.CurrentUICulture.TextInfo.ToTitleCase(kind)} range: {ValueToString(min)} to {ValueToString(max)}."
-                               : $"Minimal {kind} value: {ValueToString(min)}.");
+                               ? string.Format(critical ? Strings.RangeCritical : Strings.RangeNormal, ValueToString(min), ValueToString(max))
+                               : string.Format(critical ? Strings.MinCritical : Strings.MinNormal, ValueToString(min)));
         }
         else if (max.HasValue)
         {
-            str.AppendLine($"Maximal {kind} value: {ValueToString(max)}.");
+            str.AppendLine(string.Format(critical ? Strings.MaxCritical : Strings.MaxNormal, ValueToString(max)));
         }
     }
 

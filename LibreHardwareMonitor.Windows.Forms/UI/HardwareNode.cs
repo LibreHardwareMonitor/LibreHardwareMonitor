@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 using System;
 using System.Collections.Generic;
@@ -58,7 +59,7 @@ public class HardwareNode : Node, IExpandPersistNode
             if (properties.Count > 0)
             {
                 StringBuilder stringBuilder = new();
-                stringBuilder.AppendLine("Hardware properties:");
+                stringBuilder.AppendLine(Strings.HardwareProperties);
                     
                 foreach (KeyValuePair<string, string> property in properties)
                     stringBuilder.AppendFormat(" • {0}: {1}\n", property.Key, property.Value);

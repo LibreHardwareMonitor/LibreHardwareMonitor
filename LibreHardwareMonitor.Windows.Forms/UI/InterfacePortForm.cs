@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Net.NetworkInformation;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
 
@@ -22,6 +23,15 @@ public partial class InterfacePortForm : Form
     public InterfacePortForm(MainForm m)
     {
         InitializeComponent();
+        Text = Strings.PortTitle;
+        portOKButton.Text = Strings.OK;
+        portCancelButton.Text = Strings.Cancel;
+        label1.Text = Strings.PortFirewall;
+        label2.Text = Strings.PortNumber;
+        label3.Text = Strings.PortRestartHint;
+        label4.Text = Strings.PortAccessibleAt;
+        label5.Text = Strings.PortStartHint;
+        interfaceLabel.Text = Strings.PortInterface;
         _parent = m;
         _localIP = LoadNetworkInterfaces(_parent.Server.ListenerIp);
     }

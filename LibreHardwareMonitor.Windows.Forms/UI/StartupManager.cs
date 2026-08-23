@@ -11,6 +11,7 @@ using System.Security;
 using System.Security.Principal;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using Microsoft.Win32.TaskScheduler;
 using Action = Microsoft.Win32.TaskScheduler.Action;
 
@@ -142,7 +143,7 @@ public class StartupManager
     private void CreateTask()
     {
         TaskDefinition taskDefinition = TaskService.Instance.NewTask();
-        taskDefinition.RegistrationInfo.Description = "Starts LibreHardwareMonitor on Windows startup.";
+        taskDefinition.RegistrationInfo.Description = Strings.StartupTaskDescription;
 
         taskDefinition.Triggers.Add(new LogonTrigger());
 

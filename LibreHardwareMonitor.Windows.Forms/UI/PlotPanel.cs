@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 using OxyPlot;
 using OxyPlot.Annotations;
@@ -127,7 +128,7 @@ public class PlotPanel : UserControl
             }
         };
 
-        ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem("Stacked Axes");
+        ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem(Strings.PlotStackedAxes);
         _stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, _settings);
         _stackedAxes.Changed += (sender, e) =>
         {
@@ -136,7 +137,7 @@ public class PlotPanel : UserControl
         };
         menu.Items.Add(stackedAxesMenuItem);
 
-        ToolStripMenuItem showAxesLabelsMenuItem = new ToolStripMenuItem("Show Axes Labels");
+        ToolStripMenuItem showAxesLabelsMenuItem = new ToolStripMenuItem(Strings.PlotShowAxesLabels);
         _showAxesLabels = new UserOption("showAxesLabels", true, showAxesLabelsMenuItem, _settings);
         _showAxesLabels.Changed += (sender, e) =>
         {
@@ -147,10 +148,10 @@ public class PlotPanel : UserControl
         };
         menu.Items.Add(showAxesLabelsMenuItem);
 
-        ToolStripMenuItem timeAxisMenuItem = new ToolStripMenuItem("Time Axis");
+        ToolStripMenuItem timeAxisMenuItem = new ToolStripMenuItem(Strings.PlotTimeAxis);
         ToolStripMenuItem[] timeAxisMenuItems =
-        { new ToolStripMenuItem("Enable Zoom"),
-            new ToolStripMenuItem("Auto", null, (s, e) => { TimeAxisZoom(0, double.NaN); }),
+        { new ToolStripMenuItem(Strings.PlotEnableZoom),
+            new ToolStripMenuItem(Strings.PlotAuto, null, (s, e) => { TimeAxisZoom(0, double.NaN); }),
             new ToolStripMenuItem("5 min", null, (s, e) => { TimeAxisZoom(0, 5 * 60); }),
             new ToolStripMenuItem("10 min", null, (s, e) => { TimeAxisZoom(0, 10 * 60); }),
             new ToolStripMenuItem("20 min", null, (s, e) => { TimeAxisZoom(0, 20 * 60); }),
@@ -174,10 +175,10 @@ public class PlotPanel : UserControl
             _timeAxis.IsZoomEnabled = _timeAxisEnableZoom.Value;
         };
 
-        ToolStripMenuItem yAxesMenuItem = new ToolStripMenuItem("Value Axes");
+        ToolStripMenuItem yAxesMenuItem = new ToolStripMenuItem(Strings.PlotValueAxes);
         ToolStripMenuItem[] yAxesMenuItems =
-        { new ToolStripMenuItem("Enable Zoom"),
-            new ToolStripMenuItem("Autoscale All", null, (s, e) => { AutoscaleAllYAxes(); }) };
+        { new ToolStripMenuItem(Strings.PlotEnableZoom),
+            new ToolStripMenuItem(Strings.PlotAutoscaleAll, null, (s, e) => { AutoscaleAllYAxes(); }) };
 
         foreach (ToolStripItem mi in yAxesMenuItems)
             yAxesMenuItem.DropDownItems.Add(mi);

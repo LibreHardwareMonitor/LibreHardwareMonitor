@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true"><xsd:complexType><xsd:choice maxOccurs="unbounded">
+      <xsd:element name="data"><xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/></xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/></xsd:complexType></xsd:element>
+    </xsd:choice></xsd:complexType></xsd:element></xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>Libre Hardware Monitor</value></data>
+  <data name="File" xml:space="preserve"><value>File</value></data>
+  <data name="SaveReport" xml:space="preserve"><value>Save Report...</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Hardware" xml:space="preserve"><value>Hardware</value></data>
+  <data name="Motherboard" xml:space="preserve"><value>Motherboard</value></data>
+  <data name="CPU" xml:space="preserve"><value>CPU</value></data>
+  <data name="RAM" xml:space="preserve"><value>RAM</value></data>
+  <data name="GPU" xml:space="preserve"><value>GPU</value></data>
+  <data name="PowerMonitors" xml:space="preserve"><value>Power Monitors</value></data>
+  <data name="FanControllers" xml:space="preserve"><value>Fan Controllers</value></data>
+  <data name="StorageDevices" xml:space="preserve"><value>Storage Devices</value></data>
+  <data name="Network" xml:space="preserve"><value>Network</value></data>
+  <data name="PowerSupplies" xml:space="preserve"><value>Power supplies</value></data>
+  <data name="Batteries" xml:space="preserve"><value>Batteries</value></data>
+  <data name="Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="View" xml:space="preserve"><value>View</value></data>
+  <data name="ResetMinMax" xml:space="preserve"><value>Reset Min/Max</value></data>
+  <data name="ExpandAllNodes" xml:space="preserve"><value>Expand All Nodes</value></data>
+  <data name="CollapseAllNodes" xml:space="preserve"><value>Collapse All Nodes</value></data>
+  <data name="ResetPlot" xml:space="preserve"><value>Reset Plot</value></data>
+  <data name="ShowHiddenSensors" xml:space="preserve"><value>Show Hidden Sensors</value></data>
+  <data name="ShowPlot" xml:space="preserve"><value>Show Plot</value></data>
+  <data name="ShowGadget" xml:space="preserve"><value>Show Gadget</value></data>
+  <data name="Columns" xml:space="preserve"><value>Columns</value></data>
+  <data name="ColumnSensor" xml:space="preserve"><value>Sensor</value></data>
+  <data name="ColumnValue" xml:space="preserve"><value>Value</value></data>
+  <data name="ColumnMin" xml:space="preserve"><value>Min</value></data>
+  <data name="ColumnMax" xml:space="preserve"><value>Max</value></data>
+  <data name="Options" xml:space="preserve"><value>Options</value></data>
+  <data name="StartMinimized" xml:space="preserve"><value>Start Minimized</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Minimize To Tray</value></data>
+  <data name="MinimizeOnClose" xml:space="preserve"><value>Minimize On Close</value></data>
+  <data name="RunOnWindowsStartup" xml:space="preserve"><value>Run On Windows Startup</value></data>
+  <data name="TemperatureUnit" xml:space="preserve"><value>Temperature Unit</value></data>
+  <data name="Celsius" xml:space="preserve"><value>Celsius</value></data>
+  <data name="Fahrenheit" xml:space="preserve"><value>Fahrenheit</value></data>
+  <data name="PlotLocation" xml:space="preserve"><value>Plot Location</value></data>
+  <data name="PlotWindow" xml:space="preserve"><value>Window</value></data>
+  <data name="PlotBottom" xml:space="preserve"><value>Bottom</value></data>
+  <data name="PlotRight" xml:space="preserve"><value>Right</value></data>
+  <data name="Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeAuto" xml:space="preserve"><value>Auto</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="ThemeBlack" xml:space="preserve"><value>Black</value></data>
+  <data name="StrokeThickness" xml:space="preserve"><value>Stroke Thickness</value></data>
+  <data name="SplitPanelScalingMode" xml:space="preserve"><value>Split Panel Scaling Mode</value></data>
+  <data name="PercentageScaling" xml:space="preserve"><value>Percentage Scaling</value></data>
+  <data name="FixedSizePlotPanel" xml:space="preserve"><value>Fixed Size Plot Panel</value></data>
+  <data name="FixedSizeSensorPanel" xml:space="preserve"><value>Fixed Size Sensor Panel</value></data>
+  <data name="LogSensors" xml:space="preserve"><value>Log Sensors</value></data>
+  <data name="ForceDriveWakeup" xml:space="preserve"><value>Force Drive Wakeup</value></data>
+  <data name="FileRotationMethod" xml:space="preserve"><value>File rotation method</value></data>
+  <data name="PerSession" xml:space="preserve"><value>Per session</value></data>
+  <data name="Daily" xml:space="preserve"><value>Daily</value></data>
+  <data name="LoggingInterval" xml:space="preserve"><value>Logging Interval</value></data>
+  <data name="UpdateInterval" xml:space="preserve"><value>Update Interval</value></data>
+  <data name="ThrottleSmartUpdates" xml:space="preserve"><value>Throttle Disk S.M.A.R.T. Updates</value></data>
+  <data name="FollowUpdateInterval" xml:space="preserve"><value>Follow Update Interval</value></data>
+  <data name="EveryNCycles" xml:space="preserve"><value>Every {0} Cycles</value></data>
+  <data name="SensorValuesTimeWindow" xml:space="preserve"><value>Sensor Values Time Window</value></data>
+  <data name="RemoteWebServer" xml:space="preserve"><value>Remote Web Server</value></data>
+  <data name="Run" xml:space="preserve"><value>Run</value></data>
+  <data name="InterfacePort" xml:space="preserve"><value>Interface / Port</value></data>
+  <data name="Authentication" xml:space="preserve"><value>Authentication</value></data>
+  <data name="Help" xml:space="preserve"><value>Help</value></data>
+  <data name="About" xml:space="preserve"><value>About</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>System language</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageRussian" xml:space="preserve"><value>Русский</value></data>
+  <data name="LanguageRestartHint" xml:space="preserve"><value>The language will be applied after restarting the application.</value></data>
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="FileNotFound" xml:space="preserve"><value>The following file could not be found: {0}
+Please extract all files from the archive.</value></data>
+  <data name="PawnIoOutdated" xml:space="preserve"><value>PawnIO is outdated, do you want to update it?</value></data>
+  <data name="PawnIoMissing" xml:space="preserve"><value>PawnIO is not installed, do you want to install it?</value></data>
+  <data name="AutoStartupFailed" xml:space="preserve"><value>Updating the auto-startup option failed.</value></data>
+  <data name="ConfigAccessDenied" xml:space="preserve"><value>Access to the path '{0}' is denied. The current settings could not be saved.</value></data>
+  <data name="ConfigNotWritable" xml:space="preserve"><value>The path '{0}' is not writeable. The current settings could not be saved.</value></data>
+  <data name="SaveReportTitle" xml:space="preserve"><value>Save Report As</value></data>
+  <data name="SaveReportFilter" xml:space="preserve"><value>Text Documents|*.txt|All Files|*.*</value></data>
+  <data name="PlotWindowTitle" xml:space="preserve"><value>Plot</value></data>
+  <data name="ContextParameters" xml:space="preserve"><value>Parameters...</value></data>
+  <data name="ContextRename" xml:space="preserve"><value>Rename</value></data>
+  <data name="ContextHide" xml:space="preserve"><value>Hide</value></data>
+  <data name="ContextUnhide" xml:space="preserve"><value>Unhide</value></data>
+  <data name="ContextPenColor" xml:space="preserve"><value>Pen Color...</value></data>
+  <data name="ContextResetPenColor" xml:space="preserve"><value>Reset Pen Color</value></data>
+  <data name="ContextShowInTray" xml:space="preserve"><value>Show in Tray</value></data>
+  <data name="ContextShowInGadget" xml:space="preserve"><value>Show in Gadget</value></data>
+  <data name="ContextControl" xml:space="preserve"><value>Control</value></data>
+  <data name="ContextDefault" xml:space="preserve"><value>Default</value></data>
+  <data name="ContextManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="TrayHideShow" xml:space="preserve"><value>Hide/Show</value></data>
+  <data name="TrayRemoveSensor" xml:space="preserve"><value>Remove Sensor</value></data>
+  <data name="TrayChangeColor" xml:space="preserve"><value>Change Color...</value></data>
+  <data name="GadgetHardwareNames" xml:space="preserve"><value>Hardware Names</value></data>
+  <data name="GadgetFontSize" xml:space="preserve"><value>Font Size</value></data>
+  <data name="GadgetFontColor" xml:space="preserve"><value>Font Color</value></data>
+  <data name="GadgetBackgroundColor" xml:space="preserve"><value>Background Color</value></data>
+  <data name="GadgetChoose" xml:space="preserve"><value>Choose...</value></data>
+  <data name="GadgetDefault" xml:space="preserve"><value>Default</value></data>
+  <data name="GadgetLockPosition" xml:space="preserve"><value>Lock Position and Size</value></data>
+  <data name="GadgetAlwaysOnTop" xml:space="preserve"><value>Always on Top</value></data>
+  <data name="GadgetOpacity" xml:space="preserve"><value>Opacity</value></data>
+  <data name="GadgetHideShowMain" xml:space="preserve"><value>Hide/Show Main Window</value></data>
+  <data name="SelectColor" xml:space="preserve"><value>Select Color</value></data>
+  <data name="Hex" xml:space="preserve"><value>Hex:</value></data>
+  <data name="OK" xml:space="preserve"><value>OK</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AboutTitle" xml:space="preserve"><value>About</value></data>
+  <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="AboutCopyright" xml:space="preserve"><value>Copyright © LibreHardwareMonitor and Contributors</value></data>
+  <data name="ProjectWebsite" xml:space="preserve"><value>Project Website</value></data>
+  <data name="LicensingInformation" xml:space="preserve"><value>Licensing Information</value></data>
+  <data name="AuthTitle" xml:space="preserve"><value>Set HTTP Credentials</value></data>
+  <data name="AuthEnable" xml:space="preserve"><value>Enable HTTP Basic Authentication</value></data>
+  <data name="AuthUserName" xml:space="preserve"><value>HTTP UserName:</value></data>
+  <data name="AuthPassword" xml:space="preserve"><value>HTTP Password:</value></data>
+  <data name="AuthCredentials" xml:space="preserve"><value>Credentials</value></data>
+  <data name="AuthPasswordHint" xml:space="preserve"><value>Password is stored hashed, if you forget it you will need to set a new one.</value></data>
+  <data name="AuthRestartHint" xml:space="preserve"><value>If the web server is running then it will need to be restarted for the change to take effect.</value></data>
+  <data name="PortTitle" xml:space="preserve"><value>Set Port</value></data>
+  <data name="PortNumber" xml:space="preserve"><value>Port number for the remote web server:</value></data>
+  <data name="PortFirewall" xml:space="preserve"><value>Note: You will need to open the port in firewall settings of the operating system.</value></data>
+  <data name="PortRestartHint" xml:space="preserve"><value>If the web server is running then it will need to be restarted for the port change to take effect.</value></data>
+  <data name="PortAccessibleAt" xml:space="preserve"><value>The web server will be accessible from the browser at </value></data>
+  <data name="PortStartHint" xml:space="preserve"><value>You will have to start the server by clicking Run from the menu.</value></data>
+  <data name="PortInterface" xml:space="preserve"><value>Network interface for the remote web server:</value></data>
+  <data name="ParametersTitle" xml:space="preserve"><value>Parameters</value></data>
+  <data name="ParameterName" xml:space="preserve"><value>Name</value></data>
+  <data name="ParameterDefault" xml:space="preserve"><value>Default</value></data>
+  <data name="ParameterValue" xml:space="preserve"><value>Value</value></data>
+  <data name="InvalidValue" xml:space="preserve"><value>Invalid value</value></data>
+  <data name="TypeVoltages" xml:space="preserve"><value>Voltages</value></data>
+  <data name="TypeCurrents" xml:space="preserve"><value>Currents</value></data>
+  <data name="TypeCapacities" xml:space="preserve"><value>Capacities</value></data>
+  <data name="TypeClocks" xml:space="preserve"><value>Clocks</value></data>
+  <data name="TypeLoad" xml:space="preserve"><value>Load</value></data>
+  <data name="TypeTemperatures" xml:space="preserve"><value>Temperatures</value></data>
+  <data name="TypeFans" xml:space="preserve"><value>Fans</value></data>
+  <data name="TypeFlows" xml:space="preserve"><value>Flows</value></data>
+  <data name="TypeControls" xml:space="preserve"><value>Controls</value></data>
+  <data name="TypeLevels" xml:space="preserve"><value>Levels</value></data>
+  <data name="TypePowers" xml:space="preserve"><value>Powers</value></data>
+  <data name="TypeData" xml:space="preserve"><value>Data</value></data>
+  <data name="TypeFactors" xml:space="preserve"><value>Factors</value></data>
+  <data name="TypeFrequencies" xml:space="preserve"><value>Frequencies</value></data>
+  <data name="TypeThroughput" xml:space="preserve"><value>Throughput</value></data>
+  <data name="TypeTimes" xml:space="preserve"><value>Times</value></data>
+  <data name="TypeTimings" xml:space="preserve"><value>Timings</value></data>
+  <data name="TypeNoiseLevels" xml:space="preserve"><value>Noise Levels</value></data>
+  <data name="TypeConductivities" xml:space="preserve"><value>Conductivities</value></data>
+  <data name="TypeHumidityLevels" xml:space="preserve"><value>Humidity Levels</value></data>
+  <data name="HardwareProperties" xml:space="preserve"><value>Hardware properties:</value></data>
+  <data name="RangeCritical" xml:space="preserve"><value>Critical range: {0} to {1}.</value></data>
+  <data name="MinCritical" xml:space="preserve"><value>Minimal critical value: {0}.</value></data>
+  <data name="MaxCritical" xml:space="preserve"><value>Maximal critical value: {0}.</value></data>
+  <data name="RangeNormal" xml:space="preserve"><value>Normal range: {0} to {1}.</value></data>
+  <data name="MinNormal" xml:space="preserve"><value>Minimal normal value: {0}.</value></data>
+  <data name="MaxNormal" xml:space="preserve"><value>Maximal normal value: {0}.</value></data>
+  <data name="PlotStackedAxes" xml:space="preserve"><value>Stacked Axes</value></data>
+  <data name="PlotShowAxesLabels" xml:space="preserve"><value>Show Axes Labels</value></data>
+  <data name="PlotTimeAxis" xml:space="preserve"><value>Time Axis</value></data>
+  <data name="PlotValueAxes" xml:space="preserve"><value>Value Axes</value></data>
+  <data name="PlotEnableZoom" xml:space="preserve"><value>Enable Zoom</value></data>
+  <data name="PlotAuto" xml:space="preserve"><value>Auto</value></data>
+  <data name="PlotAutoscaleAll" xml:space="preserve"><value>Autoscale All</value></data>
+  <data name="StartupTaskDescription" xml:space="preserve"><value>Starts LibreHardwareMonitor on Windows startup.</value></data>
+  <data name="WebTitle" xml:space="preserve"><value>Libre Hardware Monitor - Web Version</value></data>
+  <data name="WebRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="WebAutoRefresh" xml:space="preserve"><value>Auto Refresh</value></data>
+  <data name="FontSmall" xml:space="preserve"><value>Small</value></data>
+  <data name="FontMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="FontLarge" xml:space="preserve"><value>Large</value></data>
+  <data name="FontVeryLarge" xml:space="preserve"><value>Very Large</value></data>
+  <data name="FontExtremelyLarge" xml:space="preserve"><value>Extremely Large</value></data>
+</root>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -32,14 +33,14 @@ public class SystemTray : IDisposable
         _mainIcon = new NotifyIconAdv();
 
         ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-        ToolStripItem hideShowItem = new ToolStripMenuItem("Hide/Show");
+        ToolStripItem hideShowItem = new ToolStripMenuItem(Strings.TrayHideShow);
         hideShowItem.Click += delegate
         {
             SendHideShowCommand();
         };
         contextMenuStrip.Items.Add(hideShowItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripItem exitItem = new ToolStripMenuItem("Exit");
+        ToolStripItem exitItem = new ToolStripMenuItem(Strings.Exit);
         exitItem.Click += delegate
         {
             SendExitCommand();
@@ -51,7 +52,7 @@ public class SystemTray : IDisposable
             SendHideShowCommand();
         };
         _mainIcon.Icon = EmbeddedResources.GetIcon("smallicon.ico");
-        _mainIcon.Text = "Libre Hardware Monitor";
+        _mainIcon.Text = Strings.AppTitle;
     }
 
     private void HardwareRemoved(IHardware hardware)

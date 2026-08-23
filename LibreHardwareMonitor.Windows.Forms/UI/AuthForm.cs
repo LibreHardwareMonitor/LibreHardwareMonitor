@@ -6,6 +6,7 @@
 
 using System;
 using System.Windows.Forms;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
 
@@ -16,6 +17,15 @@ public partial class AuthForm : Form
     public AuthForm(MainForm m)
     {
         InitializeComponent();
+        Text = Strings.AuthTitle;
+        enableHTTPAuthCheckBox.Text = Strings.AuthEnable;
+        httpUsernameLabel.Text = Strings.AuthUserName;
+        httpPasswordLabel.Text = Strings.AuthPassword;
+        credentialsGroupBox.Text = Strings.AuthCredentials;
+        httpAuthCancelButton.Text = Strings.Cancel;
+        httpAuthOkButton.Text = Strings.OK;
+        label1.Text = Strings.AuthPasswordHint;
+        label2.Text = Strings.AuthRestartHint;
         _parent = m;
     }
 

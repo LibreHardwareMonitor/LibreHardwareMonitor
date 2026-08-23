@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -25,87 +26,87 @@ public sealed class TypeNode : Node, IExpandPersistNode
         {
             case SensorType.Voltage:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Voltages";
+                Text = Strings.TypeVoltages;
                 break;
             case SensorType.Current:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Currents";
+                Text = Strings.TypeCurrents;
                 break;
             case SensorType.Energy:
                 Image = Utilities.EmbeddedResources.GetImage("battery.png");
-                Text = "Capacities";
+                Text = Strings.TypeCapacities;
                 break;
             case SensorType.Clock:
                 Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                Text = "Clocks";
+                Text = Strings.TypeClocks;
                 break;
             case SensorType.Load:
                 Image = Utilities.EmbeddedResources.GetImage("load.png");
-                Text = "Load";
+                Text = Strings.TypeLoad;
                 break;
             case SensorType.Temperature:
                 Image = Utilities.EmbeddedResources.GetImage("temperature.png");
-                Text = "Temperatures";
+                Text = Strings.TypeTemperatures;
                 break;
             case SensorType.Fan:
                 Image = Utilities.EmbeddedResources.GetImage("fan.png");
-                Text = "Fans";
+                Text = Strings.TypeFans;
                 break;
             case SensorType.Flow:
                 Image = Utilities.EmbeddedResources.GetImage("flow.png");
-                Text = "Flows";
+                Text = Strings.TypeFlows;
                 break;
             case SensorType.Control:
                 Image = Utilities.EmbeddedResources.GetImage("control.png");
-                Text = "Controls";
+                Text = Strings.TypeControls;
                 break;
             case SensorType.Level:
                 Image = Utilities.EmbeddedResources.GetImage("level.png");
-                Text = "Levels";
+                Text = Strings.TypeLevels;
                 break;
             case SensorType.Power:
                 Image = Utilities.EmbeddedResources.GetImage("power.png");
-                Text = "Powers";
+                Text = Strings.TypePowers;
                 break;
             case SensorType.Data:
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
+                Text = Strings.TypeData;
                 break;
             case SensorType.SmallData:
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
+                Text = Strings.TypeData;
                 break;
             case SensorType.Factor:
                 Image = Utilities.EmbeddedResources.GetImage("factor.png");
-                Text = "Factors";
+                Text = Strings.TypeFactors;
                 break;
             case SensorType.Frequency:
                 Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                Text = "Frequencies";
+                Text = Strings.TypeFrequencies;
                 break;
             case SensorType.Throughput:
                 Image = Utilities.EmbeddedResources.GetImage("throughput.png");
-                Text = "Throughput";
+                Text = Strings.TypeThroughput;
                 break;
             case SensorType.TimeSpan:
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
-                Text = "Times";
+                Text = Strings.TypeTimes;
                 break;
             case SensorType.Timing:
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
-                Text = "Timings";
+                Text = Strings.TypeTimings;
                 break;
             case SensorType.Noise:
                 Image = Utilities.EmbeddedResources.GetImage("loudspeaker.png");
-                Text = "Noise Levels";
+                Text = Strings.TypeNoiseLevels;
                 break;
             case SensorType.Conductivity:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Conductivities";
+                Text = Strings.TypeConductivities;
                 break;
             case SensorType.Humidity:
                 Image = Utilities.EmbeddedResources.GetImage("humidity.png");
-                Text = "Humidity Levels";
+                Text = Strings.TypeHumidityLevels;
                 break;
         }
 

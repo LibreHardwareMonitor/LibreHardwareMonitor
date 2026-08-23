@@ -7,6 +7,7 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.UI;
 
 namespace LibreHardwareMonitor.Windows.Forms;
@@ -16,6 +17,8 @@ public static class Program
     [STAThread]
     public static void Main()
     {
+        UiCulture.ApplyFromConfig();
+
         if (!AllRequiredFilesAvailable())
             Environment.Exit(0);
 
@@ -36,8 +39,7 @@ public static class Program
         string path = Path.GetDirectoryName(Application.ExecutablePath) + Path.DirectorySeparatorChar;
         if (!File.Exists(path + fileName))
         {
-            MessageBox.Show("The following file could not be found: " + fileName +
-                            "\nPlease extract all files from the archive.", "Error",
+            MessageBox.Show(string.Format(Strings.FileNotFound, fileName), Strings.Error,
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }

@@ -3,6 +3,7 @@ name: master
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -39,6 +40,20 @@ jobs:
       - name: Build application
         run: dotnet build LibreHardwareMonitor.Windows.Forms\LibreHardwareMonitor.Windows.Forms.csproj -c Release --no-restore -p:Platform=x64
 
+      - name: Zip net472 application
+        shell: pwsh
+        run: |
+          $out = "LibreHardwareMonitor-win-net472-x64.zip"
+          if (Test-Path $out) { Remove-Item $out }
+          Compress-Archive -Path "bin\Release\net472\*" -DestinationPath $out -CompressionLevel Optimal
+
+      - name: Zip net10.0 application
+        shell: pwsh
+        run: |
+          $out = "LibreHardwareMonitor-win-net10-x64.zip"
+          if (Test-Path $out) { Remove-Item $out }
+          Compress-Archive -Path "bin\Release\net10.0-windows\*" -DestinationPath $out -CompressionLevel Optimal
+
       - name: Publish net472 application
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
@@ -52,6 +67,14 @@ jobs:
           name: LibreHardwareMonitor.Windows.Forms (.NET 10)
           path: |
             bin/Release/net10.0-windows
+
+      - name: Publish application zip archives
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
+        with:
+          name: LibreHardwareMonitor-zips
+          path: |
+            LibreHardwareMonitor-win-net472-x64.zip
+            LibreHardwareMonitor-win-net10-x64.zip
 
       - name: Restore library packages
         run: dotnet restore LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj 
