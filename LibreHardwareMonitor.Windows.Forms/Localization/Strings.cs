@@ -189,4 +189,12 @@ internal static class Strings
     public static string FontLarge => Get(nameof(FontLarge));
     public static string FontVeryLarge => Get(nameof(FontVeryLarge));
     public static string FontExtremelyLarge => Get(nameof(FontExtremelyLarge));
+    public static string FormatPt => Get(nameof(FormatPt));
+    public static string FormatMs => Get(nameof(FormatMs));
+    public static string FormatS => Get(nameof(FormatS));
+    public static string FormatMin => Get(nameof(FormatMin));
+    public static string FormatH => Get(nameof(FormatH));
+    public static string FileRotationPerSessionTip => Get(nameof(FileRotationPerSessionTip));
+    public static string FileRotationDailyTip => Get(nameof(FileRotationDailyTip));
+    public static string FileRotationMethodTip => Get(nameof(FileRotationMethodTip));
 }

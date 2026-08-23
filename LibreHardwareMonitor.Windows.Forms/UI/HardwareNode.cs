@@ -46,7 +46,7 @@ public class HardwareNode : Node, IExpandPersistNode
 
     public override string Text
     {
-        get { return Hardware.Name; }
+        get { return HardwareDisplayNames.Translate(Hardware.Name); }
         set { Hardware.Name = value; }
     }
 

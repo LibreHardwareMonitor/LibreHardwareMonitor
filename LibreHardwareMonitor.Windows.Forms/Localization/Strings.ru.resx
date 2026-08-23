@@ -188,4 +188,12 @@
   <data name="FontLarge" xml:space="preserve"><value>Крупный</value></data>
   <data name="FontVeryLarge" xml:space="preserve"><value>Очень крупный</value></data>
   <data name="FontExtremelyLarge" xml:space="preserve"><value>Огромный</value></data>
+  <data name="FormatPt" xml:space="preserve"><value>{0} пт</value></data>
+  <data name="FormatMs" xml:space="preserve"><value>{0} мс</value></data>
+  <data name="FormatS" xml:space="preserve"><value>{0} с</value></data>
+  <data name="FormatMin" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="FormatH" xml:space="preserve"><value>{0} ч</value></data>
+  <data name="FileRotationMethodTip" xml:space="preserve"><value>Как создавать новые файлы журнала.</value></data>
+  <data name="FileRotationPerSessionTip" xml:space="preserve"><value>Новый файл журнала для каждого сеанса записи</value></data>
+  <data name="FileRotationDailyTip" xml:space="preserve"><value>Новый файл журнала каждый день. Если файл за текущий день уже есть, данные дописываются в конец.</value></data>
 </root>

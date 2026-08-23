@@ -158,7 +158,7 @@ public class SensorNode : Node
 
     public override string Text
     {
-        get { return Sensor.Name; }
+        get { return HardwareDisplayNames.Translate(Sensor.Name); }
         set { Sensor.Name = value; }
     }
 

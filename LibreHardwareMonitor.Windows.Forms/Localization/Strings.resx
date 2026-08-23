@@ -188,4 +188,12 @@ Please extract all files from the archive.</value></data>
   <data name="FontLarge" xml:space="preserve"><value>Large</value></data>
   <data name="FontVeryLarge" xml:space="preserve"><value>Very Large</value></data>
   <data name="FontExtremelyLarge" xml:space="preserve"><value>Extremely Large</value></data>
+  <data name="FormatPt" xml:space="preserve"><value>{0} pt</value></data>
+  <data name="FormatMs" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="FormatS" xml:space="preserve"><value>{0} s</value></data>
+  <data name="FormatMin" xml:space="preserve"><value>{0} min</value></data>
+  <data name="FormatH" xml:space="preserve"><value>{0} h</value></data>
+  <data name="FileRotationMethodTip" xml:space="preserve"><value>Determine how the log file should rotate.</value></data>
+  <data name="FileRotationPerSessionTip" xml:space="preserve"><value>Create a new log file for each logging session</value></data>
+  <data name="FileRotationDailyTip" xml:space="preserve"><value>Create a new log file every day. If a file already exists for the current day, new data will be appended at the end.</value></data>
 </root>

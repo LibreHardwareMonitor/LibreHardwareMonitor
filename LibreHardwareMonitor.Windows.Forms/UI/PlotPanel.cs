@@ -152,18 +152,18 @@ public class PlotPanel : UserControl
         ToolStripMenuItem[] timeAxisMenuItems =
         { new ToolStripMenuItem(Strings.PlotEnableZoom),
             new ToolStripMenuItem(Strings.PlotAuto, null, (s, e) => { TimeAxisZoom(0, double.NaN); }),
-            new ToolStripMenuItem("5 min", null, (s, e) => { TimeAxisZoom(0, 5 * 60); }),
-            new ToolStripMenuItem("10 min", null, (s, e) => { TimeAxisZoom(0, 10 * 60); }),
-            new ToolStripMenuItem("20 min", null, (s, e) => { TimeAxisZoom(0, 20 * 60); }),
-            new ToolStripMenuItem("30 min", null, (s, e) => { TimeAxisZoom(0, 30 * 60); }),
-            new ToolStripMenuItem("45 min", null, (s, e) => { TimeAxisZoom(0, 45 * 60); }),
-            new ToolStripMenuItem("1 h", null, (s, e) => { TimeAxisZoom(0, 60 * 60); }),
-            new ToolStripMenuItem("1.5 h", null, (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
-            new ToolStripMenuItem("2 h", null, (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
-            new ToolStripMenuItem("3 h", null, (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
-            new ToolStripMenuItem("6 h", null, (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
-            new ToolStripMenuItem("12 h", null, (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
-            new ToolStripMenuItem("24 h", null, (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
+            new ToolStripMenuItem(string.Format(Strings.FormatMin, 5), null, (s, e) => { TimeAxisZoom(0, 5 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatMin, 10), null, (s, e) => { TimeAxisZoom(0, 10 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatMin, 20), null, (s, e) => { TimeAxisZoom(0, 20 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatMin, 30), null, (s, e) => { TimeAxisZoom(0, 30 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatMin, 45), null, (s, e) => { TimeAxisZoom(0, 45 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 1), null, (s, e) => { TimeAxisZoom(0, 60 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 1.5), null, (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 2), null, (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 3), null, (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 6), null, (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 12), null, (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
+            new ToolStripMenuItem(string.Format(Strings.FormatH, 24), null, (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
 
         foreach (ToolStripItem mi in timeAxisMenuItems)
             timeAxisMenuItem.DropDownItems.Add(mi);
