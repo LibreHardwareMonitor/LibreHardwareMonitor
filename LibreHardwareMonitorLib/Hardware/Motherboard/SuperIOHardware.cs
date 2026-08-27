@@ -682,6 +682,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.X870E_ACE_MAX:
+                    case Model.X870E_UNIFY_X_MAX:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
                         v.Add(new Voltage("CPU Northbridge/SoC", 2));

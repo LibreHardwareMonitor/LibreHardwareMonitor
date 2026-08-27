@@ -756,6 +756,8 @@ internal class Identification
                 return Model.X870E_EDGE_TI_WIFI;
             case var _ when name.Equals("MEG X870E ACE MAX (MS-7E85)", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_ACE_MAX;
+            case var _ when name.Equals("MEG X870E UNIFY-X MAX (MS-7E73)", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_UNIFY_X_MAX;
             case var _ when name.Equals("MEG Z790 GODLIKE MAX (MS-7D85)", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_GODLIKE_MAX;
             case var _ when name.Equals("MEG Z890 ACE (MS-7E22)", StringComparison.OrdinalIgnoreCase):
