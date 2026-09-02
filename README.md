@@ -21,7 +21,7 @@ You can read information from devices such as:
 You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).
 
 ### Nightly builds
-If you have a **GitHub** account, you can download nightly builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Otherwise, you can download the *latest* nightly build [here](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.zip).
+If you have a **GitHub** account, you can download nightly builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions). Otherwise, you can download the *latest* nightly build [here](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.Windows.Forms.zip).
 
 ## How can I help improve it?
 The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
@@ -43,7 +43,8 @@ Computer computer = new Computer
     IsMotherboardEnabled = true,
     IsControllerEnabled = true,
     IsNetworkEnabled = true,
-    IsStorageEnabled = true
+    IsStorageEnabled = true,
+	IsPowerMonitorEnabled = true,
 };
 
 computer.Open();

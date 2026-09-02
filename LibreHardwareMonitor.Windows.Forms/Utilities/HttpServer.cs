@@ -35,7 +35,7 @@ public class HttpServer
     private Task _listenerTask;
     private CancellationTokenSource _cts;
 
-    public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string password = "")
+    public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string passwordSHA256 = "")
     {
         _root = node;
         _rootElement = rootElement;
@@ -43,7 +43,7 @@ public class HttpServer
         ListenerPort = port;
         AuthEnabled = authEnabled;
         UserName = userName;
-        Password = password;
+        PasswordSHA256 = passwordSHA256;
 
         try
         {
@@ -74,10 +74,9 @@ public class HttpServer
 
     public int ListenerPort { get; set; }
 
-    public string Password
+    public void SetPassword(string plainPassword)
     {
-        get { return PasswordSHA256; }
-        set { PasswordSHA256 = ComputeSHA256(value); }
+        PasswordSHA256 = ComputeSHA256(plainPassword);
     }
 
     public bool PlatformNotSupported
@@ -87,7 +86,7 @@ public class HttpServer
 
     public string UserName { get; set; }
 
-    private string PasswordSHA256 { get; set; }
+    public string PasswordSHA256 { get; set; }
 
     public bool StartHttpListener()
     {

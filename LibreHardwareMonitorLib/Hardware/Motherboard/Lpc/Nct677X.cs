@@ -1,4 +1,4 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -40,6 +40,8 @@ internal class Nct677X : ISuperIO
     private const byte NCT6687DR_FAN_CFG_CHECK_DONE = 1 << 5;
     private const byte NCT6687DR_FAN_CFG_REQ = 0x80;
     private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
+    private const byte NCT6687DR_FAN_CFG_REQ_UPDATE_MASK = 0x7F;
+    private const byte NCT6687DR_FAN_CFG_DONE_UPDATE_MASK = 0xBF;
     // ReSharper restore InconsistentNaming
 
     // Chip identity
@@ -252,12 +254,45 @@ internal class Nct677X : ISuperIO
 
                 switch (chip)
                 {
+                    case Chip.NCT6701D:
+                        temperaturesSources.AddRange(new TemperatureSourceData[]
+                        {
+                            new(SourceNct67Xxd.PECI_0, 0x073, sourceRegister: 0x100),                                          //  0: PECI_0
+                            new(SourceNct67Xxd.CPUTIN, 0x491),                                                                 //  1: CPUTIN
+                            new(SourceNct67Xxd.SYSTIN, 0x490),                                                                 //  2: SYSTIN
+                            new(SourceNct67Xxd.AUXTIN0, 0x492),                                                                //  3: AUXTIN0
+                            new(SourceNct67Xxd.AUXTIN1, 0x493),                                                                //  4: AUXTIN1
+                            new(SourceNct67Xxd.AUXTIN2, 0x494),                                                                //  5: AUXTIN2
+                            new(SourceNct67Xxd.AUXTIN3, 0x495),                                                                //  6: AUXTIN3
+                            new(SourceNct67Xxd.AUXTIN4, 0x027, sourceRegister: 0x621),                                         //  7: AUXTIN4
+                            new(SourceNct67Xxd.PECI_1, 0x672, sourceRegister: 0xC27),                                          //  8: PECI_1
+                            new(SourceNct67Xxd.PCH_CHIP_CPU_MAX_TEMP, 0x674, sourceRegister: 0xC28, alternateRegister: 0x400), //  9: PCH_CHIP_CPU_MAX_TEMP
+                            new(SourceNct67Xxd.PCH_CHIP_TEMP, 0x676, sourceRegister: 0xC29, alternateRegister: 0x401),         // 10: PCH_CHIP_TEMP
+                            new(SourceNct67Xxd.PCH_CPU_TEMP, 0x678, sourceRegister: 0xC2A, alternateRegister: 0x402),          // 11: PCH_CPU_TEMP
+                            new(SourceNct67Xxd.PCH_MCH_TEMP, 0x67A, sourceRegister: 0xC2B, alternateRegister: 0x404),          // 12: PCH_MCH_TEMP
+                            new(SourceNct67Xxd.AGENT0_DIMM0, 0x405),                                                           // 13: AGENT0_DIMM0
+                            new(SourceNct67Xxd.AGENT0_DIMM1, 0x406),                                                           // 14: AGENT0_DIMM1
+                            new(SourceNct67Xxd.AGENT1_DIMM0, 0x407),                                                           // 15: AGENT1_DIMM0
+                            new(SourceNct67Xxd.AGENT1_DIMM1, 0x408),                                                           // 16: AGENT1_DIMM1
+                            new(SourceNct67Xxd.SMBUSMASTER0, 0x150, sourceRegister: 0x622),                                    // 17: SMBUSMASTER0
+                            new(SourceNct67Xxd.SMBUSMASTER1, 0x670, sourceRegister: 0xC26),                                    // 18: SMBUSMASTER1
+                            new(SourceNct67Xxd.BYTE_TEMP0, 0x419),                                                             // 19: BYTE_TEMP0
+                            new(SourceNct67Xxd.BYTE_TEMP1, 0x41A),                                                             // 20: BYTE_TEMP1
+                            new(SourceNct67Xxd.PECI_0_CAL, 0x4F4),                                                             // 21: PECI_0_CAL
+                            new(SourceNct67Xxd.PECI_1_CAL, 0x4F5),                                                             // 22: PECI_1_CAL
+                            new(SourceNct67Xxd.VIRTUAL_TEMP, 0),                                                               // 23: VIRTUAL_TEMP
+                            new(SourceNct67Xxd.SPARE_TEMP, 0x07B, sourceRegister: 0x900),                                      // 24: SPARE_TEMP
+                            new(SourceNct67Xxd.SPARE_TEMP2, 0),                                                                // 25: SPARE_TEMP2
+                            new(null, 0x409),                                                                                  // 26: CPU PACKAGE
+                            new(null, 0x4A2),                                                                                  // 27: TEMP14
+                        });
+                        break;
+
                     // --- GROUP A: NCT6793D/6795D (Common features, separated from 6796/98 by AUXTIN4/TSENSOR) ---
                     case Chip.NCT6793D:
                     case Chip.NCT6795D:
                     case Chip.NCT6791D: // Assuming 6791/92 use a similar core map but less features than 6795
                     case Chip.NCT6792D:
-                    case Chip.NCT6701D: // Defaulting to this group if map is less feature-rich than 6796/98
                         temperaturesSources.AddRange(new TemperatureSourceData[]
                         {
                             // Note: Linux labels start at index 1 (0 is empty).
@@ -657,6 +692,9 @@ internal class Nct677X : ISuperIO
         if (index < 0 || index >= Controls.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
 
+        if (Chip is Chip.NCT6687DR && !IsNct6687DrFanControlValid(index))
+            return;
+
         if (!Mutexes.WaitIsaBus(10))
             return;
 
@@ -674,18 +712,11 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR (MSI AM5/LGA1851): Direct PWM mode for ALL fans.
-                // Set the manual-mode bit to bypass the SmartFAN curve engine entirely.
-                // CPU/Pump/Chipset/EZ-Connect: bit in 0xA00.  System fans: bit in 0x80F.
-                // Derived from BIOS unk_104C0 table — entry[1] = set manual-mode bit.
+                // NCT6687DR (MSI AM5/LGA1851): Direct PWM mode for all mapped fans.
+                // Set the manual-mode bit and the PWM command value in one BIOS-style
+                // fan-configuration phase so the EC cannot sample a half-updated state.
                 int bitPos = FAN_CONTROL_MODE_BIT[index];
-                if (bitPos >= 0)
-                {
-                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    byte bitMask = (byte)(0x01 << bitPos);
-                    mode = (byte)(mode | bitMask);
-                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-                }
+                byte bitMask = (byte)(0x01 << bitPos);
 
                 // Retry up to 3 times if EC rejects the configuration (INVALID bit)
                 for (int attempt = 0; attempt < 3; attempt++)
@@ -693,7 +724,9 @@ internal class Nct677X : ISuperIO
                     if (!StartFanCfgUpdate(index))
                         break;
 
+                    UpdateByte(FAN_CONTROL_MODE_REG[index], unchecked((byte)~bitMask), bitMask);
                     Set6687DRControl(index, value.Value);
+
                     if (CompleteFanConfigUpdate(index))
                         break;
                 }
@@ -784,6 +817,49 @@ internal class Nct677X : ISuperIO
 
             switch (Chip)
             {
+                case Chip.NCT6701D:
+                    if (ts.Source is not SourceNct67Xxd configuredSource)
+                    {
+                        Temperatures[i] = ts.Register == 0 ? null : DecodeNct6701Temperature(ReadByte(ts.Register));
+                        break;
+                    }
+
+                    source = configuredSource;
+                    if (ts.SourceRegister > 0)
+                    {
+                        source = (SourceNct67Xxd)ReadByte(ts.SourceRegister);
+
+                        bool sourceIsMapped = false;
+                        for (int j = 0; j < _temperaturesSource.Length; j++)
+                        {
+                            if (_temperaturesSource[j].Source is SourceNct67Xxd mappedSource && mappedSource == source)
+                            {
+                                sourceIsMapped = true;
+                                break;
+                            }
+                        }
+
+                        if (!sourceIsMapped)
+                            break;
+                    }
+
+                    long sourceMask = 1L << (byte)source;
+                    if ((temperatureSourceMask & sourceMask) > 0 || ts.Register == 0)
+                        break;
+
+                    temperature = DecodeNct6701Temperature(ReadByte(ts.Register));
+                    if (!temperature.HasValue)
+                        break;
+
+                    temperatureSourceMask |= sourceMask;
+                    for (int j = 0; j < Temperatures.Length; j++)
+                    {
+                        if (_temperaturesSource[j].Source is SourceNct67Xxd targetSource && targetSource == source)
+                            Temperatures[j] = temperature;
+                    }
+
+                    break;
+
                 case Chip.NCT610XD:
                     value = (sbyte)ReadByte(ts.Register);
                     int half = (ReadByte(ts.HalfRegister) >> ts.HalfBit) & 0x1;
@@ -1266,6 +1342,21 @@ internal class Nct677X : ISuperIO
                ((ReadByte(VENDOR_ID_HIGH_REGISTER) << 8) | ReadByte(VENDOR_ID_LOW_REGISTER)) == NUVOTON_VENDOR_ID;
     }
 
+    private void UpdateByte(ushort address, byte andMask, byte orMask)
+    {
+        byte value = ReadByte(address);
+        WriteByte(address, (byte)((value & andMask) | orMask));
+    }
+
+    private bool IsNct6687DrFanControlValid(int index)
+    {
+        return index >= 0 &&
+               index < FAN_PWM_COMMAND_REG.Length &&
+               index < FAN_CONTROL_MODE_BIT.Length &&
+               FAN_PWM_COMMAND_REG[index] != 0xFFF &&
+               FAN_CONTROL_MODE_BIT[index] >= 0;
+    }
+
     /// <summary>
     /// Request the EC to enter fan configuration phase and wait until registers are unlocked.
     /// Based on the Linux nct6687d driver's start_fan_cfg_update() function.
@@ -1294,8 +1385,9 @@ internal class Nct677X : ISuperIO
             Thread.Sleep(1);
         }
 
-        // Send config request
-        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ);
+        // Send config request. The BIOS uses read-modify-write on 0A:01,
+        // preserving unrelated status bits while setting CFG_REQ.
+        UpdateByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ_UPDATE_MASK, NCT6687DR_FAN_CFG_REQ);
         Thread.Sleep(10); // CC_Engine: fixed 10ms delay after request
 
         // Wait until EC enters config phase and unlocks registers
@@ -1324,8 +1416,9 @@ internal class Nct677X : ISuperIO
         if ((engineSts & NCT6687DR_FAN_CFG_LOCK) != 0 || (engineSts & NCT6687DR_FAN_CFG_PHASE) == 0)
             return false;
 
-        // Signal done — CC_Engine uses 0xC0 (REQ|DONE) to commit atomically
-        WriteByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_REQ | NCT6687DR_FAN_CFG_DONE);
+        // Signal done. The BIOS uses read-modify-write on 0A:01,
+        // preserving CFG_REQ and unrelated bits while setting CFG_DONE.
+        UpdateByte(FAN_PWM_REQUEST_REG[index], NCT6687DR_FAN_CFG_DONE_UPDATE_MASK, NCT6687DR_FAN_CFG_DONE);
         Thread.Sleep(10); // CC_Engine: fixed 10ms delay after commit
 
         // Wait until EC checks the new configuration
@@ -1395,23 +1488,21 @@ internal class Nct677X : ISuperIO
             }
             else if (Chip is Chip.NCT6687DR)
             {
-                // NCT6687DR: Restore original manual-mode bit for all fans.
-                // Clear the bit we set in SetControl to return to SmartFAN curve mode.
+                // Restore the original manual-mode bit and PWM command value inside
+                // the same fan-configuration phase. Do not blindly clear the bit: BIOS
+                // defaults or firmware may have left a header in manual mode already.
                 int bitPos = FAN_CONTROL_MODE_BIT[index];
-                if (bitPos >= 0)
-                {
-                    byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                    byte bitMask = (byte)(0x01 << bitPos);
-                    mode = (byte)(mode & ~bitMask);
-                    WriteByte(FAN_CONTROL_MODE_REG[index], mode);
-                }
+                byte bitMask = (byte)(0x01 << bitPos);
+                byte restoreBit = (byte)(_initialFanControlMode[index] & bitMask);
 
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
                     if (!StartFanCfgUpdate(index))
                         break;
 
+                    UpdateByte(FAN_CONTROL_MODE_REG[index], unchecked((byte)~bitMask), restoreBit);
                     Set6687DRControl(index, _initialFanPwmCommand[index]);
+
                     if (CompleteFanConfigUpdate(index))
                         break;
                 }
@@ -1449,6 +1540,7 @@ internal class Nct677X : ISuperIO
             not Chip.NCT6797D and
             not Chip.NCT6798D and
             not Chip.NCT6799D and
+            not Chip.NCT6701D and
             not Chip.NCT5585D)
         {
             return;
@@ -1461,6 +1553,13 @@ internal class Nct677X : ISuperIO
         _lpcPort.WinbondNuvotonFintekEnter();
         _lpcPort.NuvotonDisableIOSpaceLock();
         _lpcPort.WinbondNuvotonFintekExit();
+    }
+
+    private static float? DecodeNct6701Temperature(byte rawTemperature)
+    {
+        return rawTemperature is 0x00 or 0xA0 or (>= 0x7E and <= 0x80)
+            ? null
+            : (sbyte)rawTemperature;
     }
 
     [Conditional("DEBUG_LOG"), Conditional("NCT677X_DEBUG_LOG")]

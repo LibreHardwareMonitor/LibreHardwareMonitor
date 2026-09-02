@@ -37,6 +37,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private long _lastWriteCount;
 
     private DateTime _lastUpdate = DateTime.MinValue;
+    private uint _smartUpdateCycle;
 
     private readonly List<StorageDeviceSensor> _sensors = new();
     private readonly List<SmartAttribute> _attributes = new();
@@ -71,13 +72,17 @@ public sealed class StorageDevice : Hardware, ISmart
     /// <remarks>See <see cref="StorageDIT.TryWakeUp"/> for more information.</remarks>
     public bool ForceWakeup { get; set; }
 
-    public static TimeSpan ThrottleInterval { get; set; }
+    /// <summary>
+    /// Gets or sets the number of regular update cycles between S.M.A.R.T. data refreshes.
+    /// </summary>
+    public static uint SmartUpdateCycleCount { get; set; } = 1;
 
     public override void Update()
     {
-        if (DateTime.UtcNow - _lastUpdate < ThrottleInterval)
+        bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
+        if (refreshSmartData)
         {
-            return;
+            _smartUpdateCycle = 0;
         }
 
         bool isDevicePoweredOn = _storage.IsDevicePowerOn.GetValueOrDefault(true);
@@ -94,7 +99,7 @@ public sealed class StorageDevice : Hardware, ISmart
         //No updates for sleeping devices if we should not wake it up
         if (isDevicePoweredOn)
         {
-            hasChanges = StorageDIT.Refresh(_storage);
+            hasChanges = StorageDIT.Refresh(_storage, refreshSmartData);
         }
 
         if (!hasChanges)
@@ -322,6 +327,13 @@ public sealed class StorageDevice : Hardware, ISmart
         if (_storage.PowerOnHours.HasValue)
         {
             AddSensor("Power On Hours", 24, false, SensorType.Factor, s => s.PowerOnHours.GetValueOrDefault());
+        }
+
+        if (_storage.SmartAttributeProfile == SmartAttributeProfile.NVMe)
+        {
+            AddSensor("Available Spare", 25, false, SensorType.Level, s => (s.SmartAttributes.FirstOrDefault(sae => sae.ID == 0xE2)?.CurrentValue).GetValueOrDefault());
+            AddSensor("Available Spare Threshold", 26, false, SensorType.Level, s => (s.SmartAttributes.FirstOrDefault(sae => sae.ID == 0xE3)?.CurrentValue).GetValueOrDefault());
+            AddSensor("Percentage Used", 27, false, SensorType.Level, s => (s.SmartAttributes.FirstOrDefault(sae => sae.ID == 0xE4)?.CurrentValue).GetValueOrDefault());
         }
 
         _usageSensor = new Sensor("Used Space", 30, SensorType.Load, this, _settings);
