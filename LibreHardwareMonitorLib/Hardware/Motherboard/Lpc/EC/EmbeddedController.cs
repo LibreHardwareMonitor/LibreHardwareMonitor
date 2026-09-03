@@ -258,6 +258,13 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterIn,
             ECSensor.TempWaterOut,
             ECSensor.FanWaterFlow),
+        new(Model.PROART_Z490_CREATOR_10G,
+            BoardFamily.Intel400,
+            ECSensor.TempChipset,
+            ECSensor.TempCPU,
+            ECSensor.TempMB,
+            ECSensor.TempTSensor,
+            ECSensor.TempVrm),
         new(Model.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
             BoardFamily.Intel600,
             ECSensor.TempTSensor,
@@ -525,6 +532,8 @@ public abstract class EmbeddedController : Hardware
             BoardFamily.Intel400, new Dictionary<ECSensor, EmbeddedControllerSource>
             {
                 { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
+                { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                 { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
                 { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
