@@ -158,6 +158,8 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.splitContainer = new LibreHardwareMonitor.Windows.Forms.UI.SplitContainerAdv();
             this.treeView = new Aga.Controls.Tree.TreeViewAdv();
             this.batteryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kontronSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kontronWatchdogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundUpdater = new System.ComponentModel.BackgroundWorker();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
@@ -304,7 +306,9 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.hddMenuItem,
             this.nicMenuItem,
             this.psuMenuItem,
-            this.batteryMenuItem});
+            this.batteryMenuItem,
+            this.kontronSensorsMenuItem,
+            this.kontronWatchdogMenuItem});
             this.menuItemFileHardware.Name = "menuItem5";
             this.menuItemFileHardware.Size = new System.Drawing.Size(180, 22);
             this.menuItemFileHardware.Text = "Hardware";
@@ -1146,6 +1150,18 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.batteryMenuItem.Size = new System.Drawing.Size(180, 22);
             this.batteryMenuItem.Text = "Batteries";
             //
+            // kontronSensorsMenuItem
+            //
+            this.kontronSensorsMenuItem.Name = "kontronSensorsMenuItem";
+            this.kontronSensorsMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.kontronSensorsMenuItem.Text = "Kontron Sensors";
+            //
+            // kontronWatchdogMenuItem
+            //
+            this.kontronWatchdogMenuItem.Name = "kontronWatchdogMenuItem";
+            this.kontronWatchdogMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.kontronWatchdogMenuItem.Text = "Kontron Watchdog";
+            //
             // MainForm
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1286,6 +1302,8 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
         private System.Windows.Forms.ToolStripMenuItem authWebServerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem psuMenuItem;
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kontronSensorsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kontronWatchdogMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem fileRotationMethod;
         private ToolStripRadioButtonMenuItem perSessionFileRotationMenuItem;

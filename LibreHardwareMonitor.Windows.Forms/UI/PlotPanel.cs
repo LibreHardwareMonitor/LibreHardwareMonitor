@@ -232,7 +232,11 @@ public class PlotPanel : UserControl
             { SensorType.Energy, "mWh" },
             { SensorType.Noise, "dBA" },
             { SensorType.Conductivity, "µS/cm" },
-            { SensorType.Humidity, "%" }
+            { SensorType.Humidity, "%" },
+            { SensorType.WatchdogStageStatus, "" },
+            { SensorType.StageTimes, "" },
+            { SensorType.WatchdogStageConfig, "" },
+            { SensorType.LastResetCause, "" }
         };
 
         foreach (SensorType type in Enum.GetValues(typeof(SensorType)))

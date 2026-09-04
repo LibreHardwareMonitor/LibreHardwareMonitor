@@ -607,6 +607,10 @@ public class HttpServer
            { SensorType.TimeSpan, ("seconds", 1) },
            { SensorType.Timing, ("seconds", 0.000000001 ) },                  //originally nanoseconds
            { SensorType.Voltage, ("volts", 1) },
+           { SensorType.WatchdogStageStatus, ("", 1) },
+           { SensorType.StageTimes, ("seconds", 0.001 ) },                    //originally milliseconds
+           { SensorType.WatchdogStageConfig, ("", 1) },
+           { SensorType.LastResetCause, ("", 1) },
         };
 
         for (int i = 0; i < node.Nodes.Count; i++)
@@ -893,6 +897,9 @@ public class HttpServer
                 return "battery.png";
             case HardwareType.PowerMonitor:
                 return "powermonitor.png";
+            case HardwareType.KontronSensors:
+            case HardwareType.KontronWatchdog:
+                return "kontron_16x16.png";
             default:
                 return "cpu.png";
         }
@@ -930,6 +937,14 @@ public class HttpServer
                 return "throughput.png";
             case SensorType.Humidity:
                 return "flow.png";
+            case SensorType.WatchdogStageStatus:
+                return "_apply.png";
+            case SensorType.StageTimes:
+                return "_time_machine_black.png";
+            case SensorType.WatchdogStageConfig:
+                return "_switch.png";
+            case SensorType.LastResetCause:
+                return "_red-flag.png";
             default:
                 return "power.png";
         }
