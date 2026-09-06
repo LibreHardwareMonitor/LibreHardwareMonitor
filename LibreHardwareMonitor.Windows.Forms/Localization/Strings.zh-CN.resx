@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Menu.aboutMenuItem" xml:space="preserve"><value>关于</value></data>
+  <data name="Menu.authWebServerMenuItem" xml:space="preserve"><value>身份验证</value></data>
+  <data name="Menu.batteryMenuItem" xml:space="preserve"><value>电池</value></data>
+  <data name="Menu.celsiusMenuItem" xml:space="preserve"><value>摄氏度</value></data>
+  <data name="Menu.collpaseAllNodesMenuItem" xml:space="preserve"><value>折叠全部节点</value></data>
+  <data name="Menu.columnsMenuItem" xml:space="preserve"><value>列</value></data>
+  <data name="Menu.cpuMenuItem" xml:space="preserve"><value>CPU</value></data>
+  <data name="Menu.dailyFileRotationMenuItem" xml:space="preserve"><value>按天</value></data>
+  <data name="Menu.exitMenuItem" xml:space="preserve"><value>退出</value></data>
+  <data name="Menu.expandAllNodesMenuItem" xml:space="preserve"><value>展开全部节点</value></data>
+  <data name="Menu.fahrenheitMenuItem" xml:space="preserve"><value>华氏度</value></data>
+  <data name="Menu.fanControllerMenuItem" xml:space="preserve"><value>风扇控制器</value></data>
+  <data name="Menu.fileMenuItem" xml:space="preserve"><value>文件</value></data>
+  <data name="Menu.fileRotationMethod" xml:space="preserve"><value>日志文件轮换方式</value></data>
+  <data name="Menu.forceDriveWakeupItem" xml:space="preserve"><value>强制唤醒硬盘</value></data>
+  <data name="Menu.gadgetMenuItem" xml:space="preserve"><value>显示悬浮窗</value></data>
+  <data name="Menu.gpuMenuItem" xml:space="preserve"><value>显卡</value></data>
+  <data name="Menu.hddMenuItem" xml:space="preserve"><value>存储设备</value></data>
+  <data name="Menu.helpMenuItem" xml:space="preserve"><value>帮助</value></data>
+  <data name="Menu.hiddenMenuItem" xml:space="preserve"><value>显示隐藏传感器</value></data>
+  <data name="Menu.languageMenuItem" xml:space="preserve"><value>语言</value></data>
+  <data name="Menu.logSensorsMenuItem" xml:space="preserve"><value>记录传感器日志</value></data>
+  <data name="Menu.loggingIntervalMenuItem" xml:space="preserve"><value>日志记录间隔</value></data>
+  <data name="Menu.mainboardMenuItem" xml:space="preserve"><value>主板</value></data>
+  <data name="Menu.maxMenuItem" xml:space="preserve"><value>最大</value></data>
+  <data name="Menu.menuItemFileHardware" xml:space="preserve"><value>硬件</value></data>
+  <data name="Menu.minCloseMenuItem" xml:space="preserve"><value>关闭时最小化到托盘</value></data>
+  <data name="Menu.minMenuItem" xml:space="preserve"><value>最小</value></data>
+  <data name="Menu.minTrayMenuItem" xml:space="preserve"><value>最小化到托盘</value></data>
+  <data name="Menu.nicMenuItem" xml:space="preserve"><value>网络</value></data>
+  <data name="Menu.optionsMenuItem" xml:space="preserve"><value>选项</value></data>
+  <data name="Menu.perSessionFileRotationMenuItem" xml:space="preserve"><value>按会话</value></data>
+  <data name="Menu.plotBottomMenuItem" xml:space="preserve"><value>底部</value></data>
+  <data name="Menu.plotLocationMenuItem" xml:space="preserve"><value>图表位置</value></data>
+  <data name="Menu.plotMenuItem" xml:space="preserve"><value>显示图表</value></data>
+  <data name="Menu.plotRightMenuItem" xml:space="preserve"><value>右侧</value></data>
+  <data name="Menu.plotWindowMenuItem" xml:space="preserve"><value>窗口</value></data>
+  <data name="Menu.powerMonitorMenuItem" xml:space="preserve"><value>电源监控</value></data>
+  <data name="Menu.psuMenuItem" xml:space="preserve"><value>电源</value></data>
+  <data name="Menu.ramMenuItem" xml:space="preserve"><value>内存</value></data>
+  <data name="Menu.resetMenuItem" xml:space="preserve"><value>重置</value></data>
+  <data name="Menu.resetMinMaxMenuItem" xml:space="preserve"><value>重置最小/最大值</value></data>
+  <data name="Menu.resetPlotMenuItem" xml:space="preserve"><value>重置图表</value></data>
+  <data name="Menu.runWebServerMenuItem" xml:space="preserve"><value>运行</value></data>
+  <data name="Menu.saveReportMenuItem" xml:space="preserve"><value>保存报告…</value></data>
+  <data name="Menu.sensorValuesTimeWindowMenuItem" xml:space="preserve"><value>传感器数值统计窗口</value></data>
+  <data name="Menu.serverInterfacePortMenuItem" xml:space="preserve"><value>接口 / 端口</value></data>
+  <data name="Menu.smartUpdate10CyclesMenuItem" xml:space="preserve"><value>每 10 个周期</value></data>
+  <data name="Menu.smartUpdate100CyclesMenuItem" xml:space="preserve"><value>每 100 个周期</value></data>
+  <data name="Menu.smartUpdate25CyclesMenuItem" xml:space="preserve"><value>每 25 个周期</value></data>
+  <data name="Menu.smartUpdate50CyclesMenuItem" xml:space="preserve"><value>每 50 个周期</value></data>
+  <data name="Menu.smartUpdateFollowUpdateIntervalMenuItem" xml:space="preserve"><value>跟随刷新间隔</value></data>
+  <data name="Menu.splitPanelFixedPlotScalingMenuItem" xml:space="preserve"><value>固定图表面板</value></data>
+  <data name="Menu.splitPanelFixedSensorScalingMenuItem" xml:space="preserve"><value>固定传感器面板</value></data>
+  <data name="Menu.splitPanelPercentageScalingMenuItem" xml:space="preserve"><value>百分比缩放</value></data>
+  <data name="Menu.splitPlotPanelScalingMenuItem" xml:space="preserve"><value>分栏缩放模式</value></data>
+  <data name="Menu.startMinMenuItem" xml:space="preserve"><value>最小化启动</value></data>
+  <data name="Menu.startupMenuItem" xml:space="preserve"><value>随 Windows 启动</value></data>
+  <data name="Menu.strokeThicknessMenuItem" xml:space="preserve"><value>线条粗细</value></data>
+  <data name="Menu.temperatureUnitsMenuItem" xml:space="preserve"><value>温度单位</value></data>
+  <data name="Menu.themeMenuItem" xml:space="preserve"><value>主题</value></data>
+  <data name="Menu.throttleSmartUpdateMenuItem" xml:space="preserve"><value>限制磁盘 S.M.A.R.T. 更新</value></data>
+  <data name="Menu.updateIntervalMenuItem" xml:space="preserve"><value>刷新间隔</value></data>
+  <data name="Menu.valueMenuItem" xml:space="preserve"><value>数值</value></data>
+  <data name="Menu.viewMenuItem" xml:space="preserve"><value>视图</value></data>
+  <data name="Menu.webMenuItem" xml:space="preserve"><value>远程 Web 服务器</value></data>
+  <data name="SensorGroup.Voltage" xml:space="preserve"><value>电压</value></data>
+  <data name="SensorGroup.Current" xml:space="preserve"><value>电流</value></data>
+  <data name="SensorGroup.Energy" xml:space="preserve"><value>容量</value></data>
+  <data name="SensorGroup.Clock" xml:space="preserve"><value>时钟</value></data>
+  <data name="SensorGroup.Load" xml:space="preserve"><value>负载</value></data>
+  <data name="SensorGroup.Temperature" xml:space="preserve"><value>温度</value></data>
+  <data name="SensorGroup.Fan" xml:space="preserve"><value>风扇</value></data>
+  <data name="SensorGroup.Flow" xml:space="preserve"><value>流速</value></data>
+  <data name="SensorGroup.Control" xml:space="preserve"><value>控制</value></data>
+  <data name="SensorGroup.Level" xml:space="preserve"><value>健康等级</value></data>
+  <data name="SensorGroup.Power" xml:space="preserve"><value>功率</value></data>
+  <data name="SensorGroup.Data" xml:space="preserve"><value>数据</value></data>
+  <data name="SensorGroup.SmallData" xml:space="preserve"><value>数据</value></data>
+  <data name="SensorGroup.Factor" xml:space="preserve"><value>系数</value></data>
+  <data name="SensorGroup.Frequency" xml:space="preserve"><value>频率</value></data>
+  <data name="SensorGroup.Throughput" xml:space="preserve"><value>吞吐量</value></data>
+  <data name="SensorGroup.TimeSpan" xml:space="preserve"><value>时长</value></data>
+  <data name="SensorGroup.Timing" xml:space="preserve"><value>时序</value></data>
+  <data name="SensorGroup.Noise" xml:space="preserve"><value>噪音等级</value></data>
+  <data name="SensorGroup.Conductivity" xml:space="preserve"><value>电导率</value></data>
+  <data name="SensorGroup.Humidity" xml:space="preserve"><value>湿度等级</value></data>
+  <data name="Message.RestartRequired" xml:space="preserve"><value>语言设置已保存，重启程序后生效。</value></data>
+</root>

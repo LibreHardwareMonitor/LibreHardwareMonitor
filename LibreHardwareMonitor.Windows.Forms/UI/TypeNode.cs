@@ -1,10 +1,11 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -25,87 +26,87 @@ public sealed class TypeNode : Node, IExpandPersistNode
         {
             case SensorType.Voltage:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Voltages";
+                Text = LocalizationManager.GetGroupText(sensorType, "Voltages");
                 break;
             case SensorType.Current:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Currents";
+                Text = LocalizationManager.GetGroupText(sensorType, "Currents");
                 break;
             case SensorType.Energy:
                 Image = Utilities.EmbeddedResources.GetImage("battery.png");
-                Text = "Capacities";
+                Text = LocalizationManager.GetGroupText(sensorType, "Capacities");
                 break;
             case SensorType.Clock:
                 Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                Text = "Clocks";
+                Text = LocalizationManager.GetGroupText(sensorType, "Clocks");
                 break;
             case SensorType.Load:
                 Image = Utilities.EmbeddedResources.GetImage("load.png");
-                Text = "Load";
+                Text = LocalizationManager.GetGroupText(sensorType, "Load");
                 break;
             case SensorType.Temperature:
                 Image = Utilities.EmbeddedResources.GetImage("temperature.png");
-                Text = "Temperatures";
+                Text = LocalizationManager.GetGroupText(sensorType, "Temperatures");
                 break;
             case SensorType.Fan:
                 Image = Utilities.EmbeddedResources.GetImage("fan.png");
-                Text = "Fans";
+                Text = LocalizationManager.GetGroupText(sensorType, "Fans");
                 break;
             case SensorType.Flow:
                 Image = Utilities.EmbeddedResources.GetImage("flow.png");
-                Text = "Flows";
+                Text = LocalizationManager.GetGroupText(sensorType, "Flows");
                 break;
             case SensorType.Control:
                 Image = Utilities.EmbeddedResources.GetImage("control.png");
-                Text = "Controls";
+                Text = LocalizationManager.GetGroupText(sensorType, "Controls");
                 break;
             case SensorType.Level:
                 Image = Utilities.EmbeddedResources.GetImage("level.png");
-                Text = "Levels";
+                Text = LocalizationManager.GetGroupText(sensorType, "Levels");
                 break;
             case SensorType.Power:
                 Image = Utilities.EmbeddedResources.GetImage("power.png");
-                Text = "Powers";
+                Text = LocalizationManager.GetGroupText(sensorType, "Powers");
                 break;
             case SensorType.Data:
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
+                Text = LocalizationManager.GetGroupText(sensorType, "Data");
                 break;
             case SensorType.SmallData:
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
+                Text = LocalizationManager.GetGroupText(sensorType, "Data");
                 break;
             case SensorType.Factor:
                 Image = Utilities.EmbeddedResources.GetImage("factor.png");
-                Text = "Factors";
+                Text = LocalizationManager.GetGroupText(sensorType, "Factors");
                 break;
             case SensorType.Frequency:
                 Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                Text = "Frequencies";
+                Text = LocalizationManager.GetGroupText(sensorType, "Frequencies");
                 break;
             case SensorType.Throughput:
                 Image = Utilities.EmbeddedResources.GetImage("throughput.png");
-                Text = "Throughput";
+                Text = LocalizationManager.GetGroupText(sensorType, "Throughput");
                 break;
             case SensorType.TimeSpan:
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
-                Text = "Times";
+                Text = LocalizationManager.GetGroupText(sensorType, "Times");
                 break;
             case SensorType.Timing:
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
-                Text = "Timings";
+                Text = LocalizationManager.GetGroupText(sensorType, "Timings");
                 break;
             case SensorType.Noise:
                 Image = Utilities.EmbeddedResources.GetImage("loudspeaker.png");
-                Text = "Noise Levels";
+                Text = LocalizationManager.GetGroupText(sensorType, "Noise Levels");
                 break;
             case SensorType.Conductivity:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Conductivities";
+                Text = LocalizationManager.GetGroupText(sensorType, "Conductivities");
                 break;
             case SensorType.Humidity:
                 Image = Utilities.EmbeddedResources.GetImage("humidity.png");
-                Text = "Humidity Levels";
+                Text = LocalizationManager.GetGroupText(sensorType, "Humidity Levels");
                 break;
         }
 

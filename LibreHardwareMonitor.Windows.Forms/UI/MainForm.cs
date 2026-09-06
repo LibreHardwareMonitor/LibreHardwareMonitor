@@ -17,6 +17,7 @@ using Aga.Controls.Tree;
 using Aga.Controls.Tree.NodeControls;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.UI.Themes;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
@@ -73,6 +74,10 @@ public sealed partial class MainForm : Form
 
         _settings = new PersistentSettings();
         _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
+
+        // Apply the saved UI language before any text is resolved so that satellite resources
+        // and the display-layer localization below use the right culture from the start.
+        LocalizationManager.SetLanguage(_settings.GetValue("ui.language", "en"));
 
         _unitManager = new UnitManager(_settings);
 
@@ -534,6 +539,11 @@ public sealed partial class MainForm : Form
         InitializePlotForm();
         InitializeSplitter();
 
+        // The language selector is a display-layer control: it must be added before the menu
+        // texts are localized, but everything else in the UI is left untouched in English.
+        InitializeLanguageMenu();
+        LocalizationManager.ApplyToMenu(mainMenu.Items);
+
         startupMenuItem.Visible = _startupManager.IsAvailable;
 
         if (startMinMenuItem.Checked)
@@ -561,6 +571,38 @@ public sealed partial class MainForm : Form
         };
 
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
+    }
+
+    private void InitializeLanguageMenu()
+    {
+        ToolStripMenuItem languageMenuItem = new() { Name = "languageMenuItem", Text = "Language" };
+        ToolStripMenuItem englishMenuItem = new() { Name = "englishMenuItem", Text = "English" };
+        ToolStripMenuItem chineseMenuItem = new() { Name = "chineseMenuItem", Text = "中文" };
+
+        string current = _settings.GetValue("ui.language", "en");
+        englishMenuItem.Checked = current == "en";
+        chineseMenuItem.Checked = current != "en";
+
+        englishMenuItem.Click += (sender, e) => SelectLanguage("en", englishMenuItem, chineseMenuItem);
+        chineseMenuItem.Click += (sender, e) => SelectLanguage("zh-CN", englishMenuItem, chineseMenuItem);
+
+        languageMenuItem.DropDownItems.Add(englishMenuItem);
+        languageMenuItem.DropDownItems.Add(chineseMenuItem);
+
+        optionsMenuItem.DropDownItems.Insert(5, languageMenuItem);
+        optionsMenuItem.DropDownItems.Insert(6, new ToolStripSeparator());
+    }
+
+    private void SelectLanguage(string language, ToolStripMenuItem englishMenuItem, ToolStripMenuItem chineseMenuItem)
+    {
+        englishMenuItem.Checked = language == "en";
+        chineseMenuItem.Checked = language != "en";
+        _settings.SetValue("ui.language", language);
+
+        // Show the confirmation in the language the user just selected.
+        string title = LocalizationManager.GetFor("Menu.languageMenuItem", language) ?? "Language";
+        string message = LocalizationManager.GetFor("Message.RestartRequired", language) ?? "Language setting saved. Please restart the application for the change to take effect.";
+        MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
