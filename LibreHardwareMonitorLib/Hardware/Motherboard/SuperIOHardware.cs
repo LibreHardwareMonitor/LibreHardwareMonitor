@@ -2389,6 +2389,37 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("CPU Optional Fan", 4));
                         break;
 
+                    case Model.Z890_AORUS_MASTER: // ITE IT8696E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.49f, 10));
+                        v.Add(new Voltage("+12V", 2, 5f, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("iGPU VAXG", 4));
+                        v.Add(new Voltage("CPU Input Auxiliary", 5));
+                        v.Add(new Voltage("Dual DDR5 5V", 6, 1.5f, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 1f, 1f));
+                        v.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
+                        v.Add(new Voltage("AVCC3", 9, true));
+                        t.Add(new Temperature("System #1", 0));
+                        t.Add(new Temperature("PCH", 1));
+                        t.Add(new Temperature("CPU", 2));
+                        t.Add(new Temperature("PCIe x16", 3));
+                        t.Add(new Temperature("VRM MOS", 4));
+                        t.Add(new Temperature("EC_TEMP1", 5));
+                        f.Add(new Fan("CPU Fan", 0));
+                        f.Add(new Fan("System Fan #1", 1));
+                        f.Add(new Fan("System Fan #2", 2));
+                        f.Add(new Fan("System Fan #3", 3));
+                        f.Add(new Fan("System Fan #4", 4));
+                        f.Add(new Fan("CPU Optional Fan", 5));
+                        c.Add(new Control("CPU Fan", 0));
+                        c.Add(new Control("System Fan #1", 1));
+                        c.Add(new Control("System Fan #2", 2));
+                        c.Add(new Control("System Fan #3", 3));
+                        c.Add(new Control("System Fan #4", 4));
+                        c.Add(new Control("CPU Optional Fan", 5));
+                        break;
+
                     case Model.X870_AORUS_ELITE_WIFI7: // ITE IT8696E
                     case Model.X870_AORUS_ELITE_WIFI7_ICE: // ITE IT8696E
                         t.Add(new Temperature("System #1", 0));
@@ -3003,6 +3034,27 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("System Fan #4", 2));
                         break;
 
+                    case Model.Z890_AORUS_MASTER: // ITE IT87952E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("DIMM I/O", 1));
+                        v.Add(new Voltage("Chipset +0.82V", 2));
+                        v.Add(new Voltage("Voltage #4", 3, true));
+                        v.Add(new Voltage("CPU System Agent", 4));
+                        v.Add(new Voltage("Chipset +1.8V", 5));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("PCIe x4", 0));
+                        t.Add(new Temperature("EC_TEMP2", 1));
+                        t.Add(new Temperature("System #2", 2));
+                        f.Add(new Fan("FAN5_PUMP", 0));
+                        f.Add(new Fan("FAN6_PUMP", 1));
+                        f.Add(new Fan("FAN7_PUMP", 2));
+                        c.Add(new Control("FAN5_PUMP", 0));
+                        c.Add(new Control("FAN6_PUMP", 1));
+                        c.Add(new Control("FAN7_PUMP", 2));
+                        break;
+                        
                     case Model.X870E_AORUS_PRO:
                     case Model.X870E_AORUS_PRO_ICE: // ITE IT87952E
                     case Model.X870E_AORUS_XTREME_AI_TOP: // ITE IT87952E
