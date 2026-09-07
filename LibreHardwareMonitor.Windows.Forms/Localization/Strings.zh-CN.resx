@@ -54,7 +54,7 @@
   <data name="Menu.minTrayMenuItem" xml:space="preserve"><value>最小化到托盘</value></data>
   <data name="Menu.nicMenuItem" xml:space="preserve"><value>网络</value></data>
   <data name="Menu.optionsMenuItem" xml:space="preserve"><value>选项</value></data>
-  <data name="Menu.perSessionFileRotationMenuItem" xml:space="preserve"><value>按会话</value></data>
+  <data name="Menu.perSessionFileRotationMenuItem" xml:space="preserve"><value>每次运行一个文件</value></data>
   <data name="Menu.plotBottomMenuItem" xml:space="preserve"><value>底部</value></data>
   <data name="Menu.plotLocationMenuItem" xml:space="preserve"><value>图表位置</value></data>
   <data name="Menu.plotMenuItem" xml:space="preserve"><value>显示图表</value></data>
