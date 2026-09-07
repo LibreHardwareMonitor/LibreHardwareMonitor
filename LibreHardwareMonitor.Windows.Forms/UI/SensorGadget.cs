@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.UI.Themes;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
@@ -143,21 +144,23 @@ public class SensorGadget : Gadget
         SetFontSize(settings.GetValue("sensorGadget.FontSize", 7.5f));
         Resize(settings.GetValue("sensorGadget.Width", Size.Width));
 
+        string L(string key, string fallback) => LocalizationManager.Get("Gadget." + key) ?? fallback;
+
         ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-        ToolStripMenuItem hardwareNamesItem = new ToolStripMenuItem("Hardware Names");
+        ToolStripMenuItem hardwareNamesItem = new ToolStripMenuItem(L("HardwareNames", "Hardware Names"));
         contextMenuStrip.Items.Add(hardwareNamesItem);
-        ToolStripMenuItem fontSizeMenu = new ToolStripMenuItem("Font Size");
+        ToolStripMenuItem fontSizeMenu = new ToolStripMenuItem(L("FontSize", "Font Size"));
         for (int i = 0; i < 5; i++)
         {
             float size;
             string name;
             switch (i)
             {
-                case 0: size = 6.5f; name = "Small"; break;
-                case 1: size = 7.5f; name = "Medium"; break;
-                case 2: size = 9f; name = "Large"; break;
-                case 3: size = 11f; name = "Very Large"; break;
-                case 4: size = 22f; name = "Extremely Large"; break;
+                case 0: size = 6.5f; name = L("FontSizeSmall", "Small"); break;
+                case 1: size = 7.5f; name = L("FontSizeMedium", "Medium"); break;
+                case 2: size = 9f; name = L("FontSizeLarge", "Large"); break;
+                case 3: size = 11f; name = L("FontSizeVeryLarge", "Very Large"); break;
+                case 4: size = 22f; name = L("FontSizeExtremelyLarge", "Extremely Large"); break;
                 default: throw new NotImplementedException();
             }
 
@@ -176,8 +179,8 @@ public class SensorGadget : Gadget
         Color fontColor = settings.GetValue("sensorGadget.FontColor", Color.White);
         SetFontColor(fontColor);
 
-        ToolStripMenuItem fontColorMenu = new ToolStripMenuItem("Font Color");
-        ToolStripItem chooseFontColorItem = new ToolStripMenuItem("Choose...");
+        ToolStripMenuItem fontColorMenu = new ToolStripMenuItem(L("FontColor", "Font Color"));
+        ToolStripItem chooseFontColorItem = new ToolStripMenuItem(L("Choose", "Choose..."));
         chooseFontColorItem.Click += delegate
         {
             if (TrySelectColor(fontColor, out Color selectedColor))
@@ -190,7 +193,7 @@ public class SensorGadget : Gadget
         };
         fontColorMenu.DropDownItems.Add(chooseFontColorItem);
 
-        ToolStripItem defaultFontColorItem = new ToolStripMenuItem("Default");
+        ToolStripItem defaultFontColorItem = new ToolStripMenuItem(L("Default", "Default"));
         defaultFontColorItem.Click += delegate
         {
             fontColor = Color.White;
@@ -204,8 +207,8 @@ public class SensorGadget : Gadget
         Color backgroundColor = settings.GetValue("sensorGadget.BackgroundColor", Color.FromArgb(0));
         SetBackgroundColor(backgroundColor);
 
-        ToolStripMenuItem backgroundColorMenu = new ToolStripMenuItem("Background Color");
-        ToolStripItem chooseBackgroundItem = new ToolStripMenuItem("Choose...");
+        ToolStripMenuItem backgroundColorMenu = new ToolStripMenuItem(L("BackgroundColor", "Background Color"));
+        ToolStripItem chooseBackgroundItem = new ToolStripMenuItem(L("Choose", "Choose..."));
         chooseBackgroundItem.Click += delegate
         {
             if (TrySelectColor(backgroundColor.A == 0 ? Color.White : backgroundColor, out Color selectedColor))
@@ -217,7 +220,7 @@ public class SensorGadget : Gadget
         };
         backgroundColorMenu.DropDownItems.Add(chooseBackgroundItem);
 
-        ToolStripItem defaultBackgroundItem = new ToolStripMenuItem("Default");
+        ToolStripItem defaultBackgroundItem = new ToolStripMenuItem(L("Default", "Default"));
         defaultBackgroundItem.Click += delegate
         {
             Color color = Color.FromArgb(0);
@@ -228,12 +231,12 @@ public class SensorGadget : Gadget
         backgroundColorMenu.DropDownItems.Add(defaultBackgroundItem);
         contextMenuStrip.Items.Add(backgroundColorMenu);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripMenuItem lockItem = new ToolStripMenuItem("Lock Position and Size");
+        ToolStripMenuItem lockItem = new ToolStripMenuItem(L("LockPositionAndSize", "Lock Position and Size"));
         contextMenuStrip.Items.Add(lockItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripMenuItem alwaysOnTopItem = new ToolStripMenuItem("Always on Top");
+        ToolStripMenuItem alwaysOnTopItem = new ToolStripMenuItem(L("AlwaysOnTop", "Always on Top"));
         contextMenuStrip.Items.Add(alwaysOnTopItem);
-        ToolStripMenuItem opacityMenu = new ToolStripMenuItem("Opacity");
+        ToolStripMenuItem opacityMenu = new ToolStripMenuItem(L("Opacity", "Opacity"));
         contextMenuStrip.Items.Add(opacityMenu);
         Opacity = (byte)settings.GetValue("sensorGadget.Opacity", 255);
 
@@ -253,7 +256,7 @@ public class SensorGadget : Gadget
         }
 
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripMenuItem hideShowItem = new ToolStripMenuItem("Hide/Show Main Window");
+        ToolStripMenuItem hideShowItem = new ToolStripMenuItem(L("HideShowMainWindow", "Hide/Show Main Window"));
         contextMenuStrip.Items.Add(hideShowItem);
 
         ContextMenuStrip = contextMenuStrip;
@@ -693,7 +696,7 @@ public class SensorGadget : Gadget
     {
         using Form form = new Form
         {
-            Text = "Select Color",
+            Text = LocalizationManager.Get("Gadget.SelectColor") ?? "Select Color",
             FormBorderStyle = FormBorderStyle.Sizable,
             StartPosition = FormStartPosition.CenterScreen,
             MinimizeBox = false,
@@ -738,7 +741,7 @@ public class SensorGadget : Gadget
         {
             AutoSize = true,
             Location = new Point(0, 0),
-            Text = "Hex:"
+            Text = LocalizationManager.Get("Gadget.Hex") ?? "Hex:"
         };
         TextBox hexTextBox = new TextBox
         {
@@ -748,7 +751,7 @@ public class SensorGadget : Gadget
 
         Button okButton = new Button
         {
-            Text = "OK",
+            Text = LocalizationManager.Get("Gadget.Ok") ?? "OK",
             DialogResult = DialogResult.OK,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
@@ -757,7 +760,7 @@ public class SensorGadget : Gadget
         };
         Button cancelButton = new Button
         {
-            Text = "Cancel",
+            Text = LocalizationManager.Get("Gadget.Cancel") ?? "Cancel",
             DialogResult = DialogResult.Cancel,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
@@ -1138,7 +1141,8 @@ public class SensorGadget : Gadget
             if (_sensors.Count == 0)
             {
                 x = LeftBorder + 1;
-                g.DrawString("Right-click on a sensor in the main window and select " +
+                g.DrawString(LocalizationManager.Get("Gadget.EmptyHint") ??
+                             "Right-click on a sensor in the main window and select " +
                              "\"Show in Gadget\" to show the sensor here.",
                              _smallFont, _textBrush,
                              new Rectangle(x, y - 1, w - RightBorder - x, 0));
@@ -1296,7 +1300,7 @@ public class SensorGadget : Gadget
                     remainingWidth -= _leftMargin + 2;
                     if (remainingWidth > 0)
                     {
-                        g.DrawString(sensor.Name, _smallFont, _textBrush, new RectangleF(_leftMargin - 1, y - 1, remainingWidth, 0), _trimStringFormat);
+                        g.DrawString(LocalizedNames.SensorName(sensor.Name), _smallFont, _textBrush, new RectangleF(_leftMargin - 1, y - 1, remainingWidth, 0), _trimStringFormat);
                     }
                     y += _sensorLineHeight;
                 }

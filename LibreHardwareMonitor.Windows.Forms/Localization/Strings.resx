@@ -12,6 +12,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ContextMenu.Control" xml:space="preserve"><value>Control</value></data>
+  <data name="ContextMenu.Default" xml:space="preserve"><value>Default</value></data>
+  <data name="ContextMenu.Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="ContextMenu.Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="ContextMenu.Parameters" xml:space="preserve"><value>Parameters...</value></data>
+  <data name="ContextMenu.PenColor" xml:space="preserve"><value>Pen Color...</value></data>
+  <data name="ContextMenu.Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="ContextMenu.ResetPenColor" xml:space="preserve"><value>Reset Pen Color</value></data>
+  <data name="ContextMenu.ShowInGadget" xml:space="preserve"><value>Show in Gadget</value></data>
+  <data name="ContextMenu.ShowInTray" xml:space="preserve"><value>Show in Tray</value></data>
+  <data name="ContextMenu.Unhide" xml:space="preserve"><value>Unhide</value></data>
   <data name="Menu.aboutMenuItem" xml:space="preserve"><value>About</value></data>
   <data name="Menu.authWebServerMenuItem" xml:space="preserve"><value>Authentication</value></data>
   <data name="Menu.batteryMenuItem" xml:space="preserve"><value>Batteries</value></data>
@@ -100,4 +111,17 @@
   <data name="SensorGroup.Conductivity" xml:space="preserve"><value>Conductivities</value></data>
   <data name="SensorGroup.Humidity" xml:space="preserve"><value>Humidity Levels</value></data>
   <data name="Message.RestartRequired" xml:space="preserve"><value>Language setting saved. Please restart the application for the change to take effect.</value></data>
+  <data name="Tray.HideShow" xml:space="preserve"><value>Hide/Show</value></data>
+  <data name="Tray.Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Tray.RemoveSensor" xml:space="preserve"><value>Remove Sensor</value></data>
+  <data name="Tray.ChangeColor" xml:space="preserve"><value>Change Color...</value></data>
+  <data name="Menu.Theme.auto" xml:space="preserve"><value>Auto</value></data>
+  <data name="Menu.Theme.light" xml:space="preserve"><value>Light</value></data>
+  <data name="Menu.Theme.dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Menu.Theme.black" xml:space="preserve"><value>Black</value></data>
+  <data name="About.title" xml:space="preserve"><value>About</value></data>
+  <data name="About.ok" xml:space="preserve"><value>OK</value></data>
+  <data name="About.versionPrefix" xml:space="preserve"><value>Version </value></data>
+  <data name="About.projectWebsite" xml:space="preserve"><value>Project Website</value></data>
+  <data name="About.licensing" xml:space="preserve"><value>Licensing Information</value></data>
 </root>

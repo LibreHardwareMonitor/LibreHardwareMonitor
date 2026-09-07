@@ -599,10 +599,28 @@ public sealed partial class MainForm : Form
         chineseMenuItem.Checked = language != "en";
         _settings.SetValue("ui.language", language);
 
-        // Show the confirmation in the language the user just selected.
-        string title = LocalizationManager.GetFor("Menu.languageMenuItem", language) ?? "Language";
-        string message = LocalizationManager.GetFor("Message.RestartRequired", language) ?? "Language setting saved. Please restart the application for the change to take effect.";
-        MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        // Apply immediately (hot switch): menus and the dynamically generated
+        // sensor/group names are re-evaluated on the next repaint.
+        LocalizationManager.SetLanguage(language);
+        LocalizationManager.ApplyToMenu(mainMenu.Items);
+        LocalizeThemeMenuItems();
+
+        treeView.Invalidate();
+        _systemTray.Redraw();
+        _gadget?.Redraw();
+    }
+
+    private void LocalizeThemeMenuItems()
+    {
+        foreach (ToolStripItem item in themeMenuItem.DropDownItems)
+        {
+            if (item.Tag is string key)
+            {
+                string text = LocalizationManager.Get(key);
+                if (!string.IsNullOrEmpty(text))
+                    item.Text = text;
+            }
+        }
     }
 
     private void StopFileHardwareMenuFromClosing(object sender, ToolStripDropDownClosingEventArgs e)
@@ -666,7 +684,8 @@ public sealed partial class MainForm : Form
         if (Theme.SupportsAutoThemeSwitching())
         {
             _autoThemeMenuItem = new ToolStripMenuItem();
-            _autoThemeMenuItem.Text = "Auto";
+            _autoThemeMenuItem.Text = LocalizationManager.Get("Menu.Theme.auto") ?? "Auto";
+            _autoThemeMenuItem.Tag = "Menu.Theme.auto";
             _autoThemeMenuItem.Click += (o, e) =>
             {
                 ClearThemeMenu();
@@ -681,7 +700,8 @@ public sealed partial class MainForm : Form
         foreach (Theme theme in Theme.All)
         {
             ToolStripMenuItem item = new ToolStripMenuItem();
-            item.Text = theme.DisplayName;
+            item.Text = LocalizationManager.Get("Menu.Theme." + theme.Id) ?? theme.DisplayName;
+            item.Tag = "Menu.Theme." + theme.Id;
             item.Click += (o, e) =>
             {
                 ClearThemeMenu();
@@ -1139,34 +1159,34 @@ public sealed partial class MainForm : Form
                 treeContextMenu.Items.Clear();
                 if (node.Sensor.Parameters.Count > 0)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Parameters...");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.Parameters") ?? "Parameters...");
                     item.Click += delegate { ShowParameterForm(node.Sensor); };
                     treeContextMenu.Items.Add(item);
                 }
 
                 if (nodeTextBoxText.EditEnabled)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Rename");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.Rename") ?? "Rename");
                     item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                     treeContextMenu.Items.Add(item);
                 }
 
                 if (node.IsVisible)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Hide");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.Hide") ?? "Hide");
                     item.Click += delegate { node.IsVisible = false; };
                     treeContextMenu.Items.Add(item);
                 }
                 else
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Unhide");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.Unhide") ?? "Unhide");
                     item.Click += delegate { node.IsVisible = true; };
                     treeContextMenu.Items.Add(item);
                 }
 
                 treeContextMenu.Items.Add(new ToolStripSeparator());
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Pen Color...");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.PenColor") ?? "Pen Color...");
                     item.Click += delegate
                     {
                         ColorDialog dialog = new() { Color = node.PenColor.GetValueOrDefault() };
@@ -1178,14 +1198,14 @@ public sealed partial class MainForm : Form
                 }
 
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Reset Pen Color");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.ResetPenColor") ?? "Reset Pen Color");
                     item.Click += delegate { node.PenColor = null; };
                     treeContextMenu.Items.Add(item);
                 }
 
                 treeContextMenu.Items.Add(new ToolStripSeparator());
                 {
-                    ToolStripMenuItem item = new("Show in Tray") { Checked = _systemTray.Contains(node.Sensor) };
+                    ToolStripMenuItem item = new(LocalizationManager.Get("ContextMenu.ShowInTray") ?? "Show in Tray") { Checked = _systemTray.Contains(node.Sensor) };
                     item.Click += delegate
                     {
                         if (item.Checked)
@@ -1199,7 +1219,7 @@ public sealed partial class MainForm : Form
 
                 if (_gadget != null)
                 {
-                    ToolStripMenuItem item = new("Show in Gadget") { Checked = _gadget.Contains(node.Sensor) };
+                    ToolStripMenuItem item = new(LocalizationManager.Get("ContextMenu.ShowInGadget") ?? "Show in Gadget") { Checked = _gadget.Contains(node.Sensor) };
                     item.Click += delegate
                     {
                         if (item.Checked)
@@ -1219,11 +1239,11 @@ public sealed partial class MainForm : Form
                 {
                     treeContextMenu.Items.Add(new ToolStripSeparator());
                     IControl control = node.Sensor.Control;
-                    ToolStripMenuItem controlItem = new("Control");
-                    ToolStripItem defaultItem = new ToolStripMenuItem("Default") { Checked = control.ControlMode == ControlMode.Default };
+                    ToolStripMenuItem controlItem = new(LocalizationManager.Get("ContextMenu.Control") ?? "Control");
+                    ToolStripItem defaultItem = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.Default") ?? "Default") { Checked = control.ControlMode == ControlMode.Default };
                     controlItem.DropDownItems.Add(defaultItem);
                     defaultItem.Click += delegate { control.SetDefault(); };
-                    ToolStripMenuItem manualItem = new("Manual");
+                    ToolStripMenuItem manualItem = new(LocalizationManager.Get("ContextMenu.Manual") ?? "Manual");
                     controlItem.DropDownItems.Add(manualItem);
                     manualItem.Checked = control.ControlMode == ControlMode.Software;
                     for (int i = 0; i <= 100; i += 5)
@@ -1251,7 +1271,7 @@ public sealed partial class MainForm : Form
 
                 if (nodeTextBoxText.EditEnabled)
                 {
-                    ToolStripItem item = new ToolStripMenuItem("Rename");
+                    ToolStripItem item = new ToolStripMenuItem(LocalizationManager.Get("ContextMenu.Rename") ?? "Rename");
                     item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                     treeContextMenu.Items.Add(item);
                 }

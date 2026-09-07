@@ -12,6 +12,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ContextMenu.Control" xml:space="preserve"><value>控制</value></data>
+  <data name="ContextMenu.Default" xml:space="preserve"><value>默认</value></data>
+  <data name="ContextMenu.Hide" xml:space="preserve"><value>隐藏</value></data>
+  <data name="ContextMenu.Manual" xml:space="preserve"><value>手动</value></data>
+  <data name="ContextMenu.Parameters" xml:space="preserve"><value>参数…</value></data>
+  <data name="ContextMenu.PenColor" xml:space="preserve"><value>画笔颜色…</value></data>
+  <data name="ContextMenu.Rename" xml:space="preserve"><value>重命名</value></data>
+  <data name="ContextMenu.ResetPenColor" xml:space="preserve"><value>重置画笔颜色</value></data>
+  <data name="ContextMenu.ShowInGadget" xml:space="preserve"><value>在悬浮窗中显示</value></data>
+  <data name="ContextMenu.ShowInTray" xml:space="preserve"><value>在托盘中显示</value></data>
+  <data name="ContextMenu.Unhide" xml:space="preserve"><value>取消隐藏</value></data>
   <data name="Menu.aboutMenuItem" xml:space="preserve"><value>关于</value></data>
   <data name="Menu.authWebServerMenuItem" xml:space="preserve"><value>身份验证</value></data>
   <data name="Menu.batteryMenuItem" xml:space="preserve"><value>电池</value></data>
@@ -91,7 +102,7 @@
   <data name="SensorGroup.Power" xml:space="preserve"><value>功率</value></data>
   <data name="SensorGroup.Data" xml:space="preserve"><value>数据</value></data>
   <data name="SensorGroup.SmallData" xml:space="preserve"><value>数据</value></data>
-  <data name="SensorGroup.Factor" xml:space="preserve"><value>系数</value></data>
+  <data name="SensorGroup.Factor" xml:space="preserve"><value>因子</value></data>
   <data name="SensorGroup.Frequency" xml:space="preserve"><value>频率</value></data>
   <data name="SensorGroup.Throughput" xml:space="preserve"><value>吞吐量</value></data>
   <data name="SensorGroup.TimeSpan" xml:space="preserve"><value>时长</value></data>
@@ -100,4 +111,77 @@
   <data name="SensorGroup.Conductivity" xml:space="preserve"><value>电导率</value></data>
   <data name="SensorGroup.Humidity" xml:space="preserve"><value>湿度等级</value></data>
   <data name="Message.RestartRequired" xml:space="preserve"><value>语言设置已保存，重启程序后生效。</value></data>
+  <data name="Plot.StackedAxes" xml:space="preserve"><value>堆叠坐标轴</value></data>
+  <data name="Plot.ShowAxesLabels" xml:space="preserve"><value>显示坐标轴标签</value></data>
+  <data name="Plot.TimeAxis" xml:space="preserve"><value>时间轴</value></data>
+  <data name="Plot.EnableZoom" xml:space="preserve"><value>启用缩放</value></data>
+  <data name="Plot.Auto" xml:space="preserve"><value>自动</value></data>
+  <data name="Plot.Zoom5min" xml:space="preserve"><value>5 分钟</value></data>
+  <data name="Plot.Zoom10min" xml:space="preserve"><value>10 分钟</value></data>
+  <data name="Plot.Zoom20min" xml:space="preserve"><value>20 分钟</value></data>
+  <data name="Plot.Zoom30min" xml:space="preserve"><value>30 分钟</value></data>
+  <data name="Plot.Zoom45min" xml:space="preserve"><value>45 分钟</value></data>
+  <data name="Plot.Zoom1h" xml:space="preserve"><value>1 小时</value></data>
+  <data name="Plot.Zoom1_5h" xml:space="preserve"><value>1.5 小时</value></data>
+  <data name="Plot.Zoom2h" xml:space="preserve"><value>2 小时</value></data>
+  <data name="Plot.Zoom3h" xml:space="preserve"><value>3 小时</value></data>
+  <data name="Plot.Zoom6h" xml:space="preserve"><value>6 小时</value></data>
+  <data name="Plot.Zoom12h" xml:space="preserve"><value>12 小时</value></data>
+  <data name="Plot.Zoom24h" xml:space="preserve"><value>24 小时</value></data>
+  <data name="Plot.ValueAxes" xml:space="preserve"><value>数值轴</value></data>
+  <data name="Plot.AutoscaleAll" xml:space="preserve"><value>自动缩放全部轴</value></data>
+  <data name="PlotAxis.Voltage" xml:space="preserve"><value>电压</value></data>
+  <data name="PlotAxis.Current" xml:space="preserve"><value>电流</value></data>
+  <data name="PlotAxis.Energy" xml:space="preserve"><value>能量</value></data>
+  <data name="PlotAxis.Clock" xml:space="preserve"><value>时钟</value></data>
+  <data name="PlotAxis.Load" xml:space="preserve"><value>负载</value></data>
+  <data name="PlotAxis.Temperature" xml:space="preserve"><value>温度</value></data>
+  <data name="PlotAxis.Fan" xml:space="preserve"><value>风扇</value></data>
+  <data name="PlotAxis.Flow" xml:space="preserve"><value>流速</value></data>
+  <data name="PlotAxis.Control" xml:space="preserve"><value>控制</value></data>
+  <data name="PlotAxis.Level" xml:space="preserve"><value>健康等级</value></data>
+  <data name="PlotAxis.Power" xml:space="preserve"><value>功率</value></data>
+  <data name="PlotAxis.Data" xml:space="preserve"><value>数据</value></data>
+  <data name="PlotAxis.SmallData" xml:space="preserve"><value>数据</value></data>
+  <data name="PlotAxis.Factor" xml:space="preserve"><value>系数</value></data>
+  <data name="PlotAxis.Frequency" xml:space="preserve"><value>频率</value></data>
+  <data name="PlotAxis.Throughput" xml:space="preserve"><value>吞吐量</value></data>
+  <data name="PlotAxis.TimeSpan" xml:space="preserve"><value>时长</value></data>
+  <data name="PlotAxis.Timing" xml:space="preserve"><value>时序</value></data>
+  <data name="PlotAxis.Noise" xml:space="preserve"><value>噪音等级</value></data>
+  <data name="PlotAxis.Conductivity" xml:space="preserve"><value>电导率</value></data>
+  <data name="PlotAxis.Humidity" xml:space="preserve"><value>湿度等级</value></data>
+  <data name="Gadget.HardwareNames" xml:space="preserve"><value>显示硬件名称</value></data>
+  <data name="Gadget.FontSize" xml:space="preserve"><value>字体大小</value></data>
+  <data name="Gadget.FontSizeSmall" xml:space="preserve"><value>小</value></data>
+  <data name="Gadget.FontSizeMedium" xml:space="preserve"><value>中</value></data>
+  <data name="Gadget.FontSizeLarge" xml:space="preserve"><value>大</value></data>
+  <data name="Gadget.FontSizeVeryLarge" xml:space="preserve"><value>特大</value></data>
+  <data name="Gadget.FontSizeExtremelyLarge" xml:space="preserve"><value>极大</value></data>
+  <data name="Gadget.FontColor" xml:space="preserve"><value>字体颜色</value></data>
+  <data name="Gadget.Choose" xml:space="preserve"><value>选择…</value></data>
+  <data name="Gadget.Default" xml:space="preserve"><value>默认</value></data>
+  <data name="Gadget.BackgroundColor" xml:space="preserve"><value>背景颜色</value></data>
+  <data name="Gadget.LockPositionAndSize" xml:space="preserve"><value>锁定位置和大小</value></data>
+  <data name="Gadget.AlwaysOnTop" xml:space="preserve"><value>总在最前</value></data>
+  <data name="Gadget.Opacity" xml:space="preserve"><value>不透明度</value></data>
+  <data name="Gadget.HideShowMainWindow" xml:space="preserve"><value>隐藏/显示主窗口</value></data>
+  <data name="Gadget.SelectColor" xml:space="preserve"><value>选择颜色</value></data>
+  <data name="Gadget.Hex" xml:space="preserve"><value>十六进制:</value></data>
+  <data name="Gadget.Ok" xml:space="preserve"><value>确定</value></data>
+  <data name="Gadget.Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Gadget.EmptyHint" xml:space="preserve"><value>在主窗口中右键单击某个传感器，然后选择“在悬浮窗中显示”即可在此显示。</value></data>
+  <data name="Tray.HideShow" xml:space="preserve"><value>显示/隐藏</value></data>
+  <data name="Tray.Exit" xml:space="preserve"><value>退出</value></data>
+  <data name="Tray.RemoveSensor" xml:space="preserve"><value>移除传感器</value></data>
+  <data name="Tray.ChangeColor" xml:space="preserve"><value>更改颜色...</value></data>
+  <data name="Menu.Theme.auto" xml:space="preserve"><value>自动</value></data>
+  <data name="Menu.Theme.light" xml:space="preserve"><value>浅色</value></data>
+  <data name="Menu.Theme.dark" xml:space="preserve"><value>深色</value></data>
+  <data name="Menu.Theme.black" xml:space="preserve"><value>黑色</value></data>
+  <data name="About.title" xml:space="preserve"><value>关于</value></data>
+  <data name="About.ok" xml:space="preserve"><value>确定</value></data>
+  <data name="About.versionPrefix" xml:space="preserve"><value>版本 </value></data>
+  <data name="About.projectWebsite" xml:space="preserve"><value>项目网站</value></data>
+  <data name="About.licensing" xml:space="preserve"><value>许可信息</value></data>
 </root>
