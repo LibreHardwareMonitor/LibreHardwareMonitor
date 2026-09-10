@@ -2391,6 +2391,16 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X870_AORUS_ELITE_WIFI7: // ITE IT8696E
                     case Model.X870_AORUS_ELITE_WIFI7_ICE: // ITE IT8696E
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("+3.3V", 1, 6.49F, 10));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        v.Add(new Voltage("CPU NB/SoC", 4, 0, 1));
+                        v.Add(new Voltage("CPU Misc", 5, 0, 1));
+                        v.Add(new Voltage("CPU VDDIO", 6));
+                        v.Add(new Voltage("DRAM VDD", 7));
+                        v.Add(new Voltage("DRAM VDDQ", 8));
+
                         t.Add(new Temperature("System #1", 0));
                         t.Add(new Temperature("PCH", 1));
                         t.Add(new Temperature("CPU", 2));
@@ -3028,12 +3038,12 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X870_AORUS_ELITE_WIFI7: // ITE IT87952E
                     case Model.X870_AORUS_ELITE_WIFI7_ICE: // ITE IT87952E
-                        v.Add(new Voltage("Vcore", 0));
-                        v.Add(new Voltage("DIMM I/O", 1));
-                        v.Add(new Voltage("Chipset +0.82V", 2));
+                        v.Add(new Voltage("Voltage #1", 0, true));
+                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("Voltage #3", 2, true));
                         v.Add(new Voltage("Voltage #4", 3, true));
-                        v.Add(new Voltage("CPU System Agent", 4));
-                        v.Add(new Voltage("Chipset +1.8V", 5));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("Voltage #6", 5, true));
                         v.Add(new Voltage("Voltage #7", 6, true));
                         v.Add(new Voltage("+3V Standby", 7, 10, 10));
                         v.Add(new Voltage("CMOS Battery", 8, 10, 10));
