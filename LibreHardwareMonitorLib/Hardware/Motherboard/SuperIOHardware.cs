@@ -2396,7 +2396,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("+12V", 2, 5, 1));
                         v.Add(new Voltage("+5V", 3, 1.5F, 1));
                         v.Add(new Voltage("CPU NB/SoC", 4, 0, 1));
-                        v.Add(new Voltage("CPU MISC", 5, 0, 1));
+                        v.Add(new Voltage("CPU Misc", 5, 0, 1));
                         v.Add(new Voltage("CPU VDDIO", 6));
                         v.Add(new Voltage("DRAM VDD", 7));
                         v.Add(new Voltage("DRAM VDDQ", 8));
