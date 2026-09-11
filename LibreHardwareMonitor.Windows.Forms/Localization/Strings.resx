@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ContextMenu.Control" xml:space="preserve"><value>Control</value></data>
+  <data name="ContextMenu.Default" xml:space="preserve"><value>Default</value></data>
+  <data name="ContextMenu.Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="ContextMenu.Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="ContextMenu.Parameters" xml:space="preserve"><value>Parameters...</value></data>
+  <data name="ContextMenu.PenColor" xml:space="preserve"><value>Pen Color...</value></data>
+  <data name="ContextMenu.Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="ContextMenu.ResetPenColor" xml:space="preserve"><value>Reset Pen Color</value></data>
+  <data name="ContextMenu.ShowInGadget" xml:space="preserve"><value>Show in Gadget</value></data>
+  <data name="ContextMenu.ShowInTray" xml:space="preserve"><value>Show in Tray</value></data>
+  <data name="ContextMenu.Unhide" xml:space="preserve"><value>Unhide</value></data>
+  <data name="Menu.aboutMenuItem" xml:space="preserve"><value>About</value></data>
+  <data name="Menu.authWebServerMenuItem" xml:space="preserve"><value>Authentication</value></data>
+  <data name="Menu.batteryMenuItem" xml:space="preserve"><value>Batteries</value></data>
+  <data name="Menu.celsiusMenuItem" xml:space="preserve"><value>Celsius</value></data>
+  <data name="Menu.collpaseAllNodesMenuItem" xml:space="preserve"><value>Collapse All Nodes</value></data>
+  <data name="Menu.columnsMenuItem" xml:space="preserve"><value>Columns</value></data>
+  <data name="Menu.cpuMenuItem" xml:space="preserve"><value>CPU</value></data>
+  <data name="Menu.dailyFileRotationMenuItem" xml:space="preserve"><value>Daily</value></data>
+  <data name="Menu.exitMenuItem" xml:space="preserve"><value>Exit</value></data>
+  <data name="Menu.expandAllNodesMenuItem" xml:space="preserve"><value>Expand All Nodes</value></data>
+  <data name="Menu.fahrenheitMenuItem" xml:space="preserve"><value>Fahrenheit</value></data>
+  <data name="Menu.fanControllerMenuItem" xml:space="preserve"><value>Fan Controllers</value></data>
+  <data name="Menu.fileMenuItem" xml:space="preserve"><value>File</value></data>
+  <data name="Menu.fileRotationMethod" xml:space="preserve"><value>File Rotation Method</value></data>
+  <data name="Menu.forceDriveWakeupItem" xml:space="preserve"><value>Force Drive Wakeup</value></data>
+  <data name="Menu.gadgetMenuItem" xml:space="preserve"><value>Show Gadget</value></data>
+  <data name="Menu.gpuMenuItem" xml:space="preserve"><value>GPU</value></data>
+  <data name="Menu.hddMenuItem" xml:space="preserve"><value>Storage Devices</value></data>
+  <data name="Menu.helpMenuItem" xml:space="preserve"><value>Help</value></data>
+  <data name="Menu.hiddenMenuItem" xml:space="preserve"><value>Show Hidden Sensors</value></data>
+  <data name="Menu.languageMenuItem" xml:space="preserve"><value>Language</value></data>
+  <data name="Menu.logSensorsMenuItem" xml:space="preserve"><value>Log Sensors</value></data>
+  <data name="Menu.loggingIntervalMenuItem" xml:space="preserve"><value>Logging Interval</value></data>
+  <data name="Menu.mainboardMenuItem" xml:space="preserve"><value>Motherboard</value></data>
+  <data name="Menu.maxMenuItem" xml:space="preserve"><value>Max</value></data>
+  <data name="Menu.menuItemFileHardware" xml:space="preserve"><value>Hardware</value></data>
+  <data name="Menu.minCloseMenuItem" xml:space="preserve"><value>Minimize On Close</value></data>
+  <data name="Menu.minMenuItem" xml:space="preserve"><value>Min</value></data>
+  <data name="Menu.minTrayMenuItem" xml:space="preserve"><value>Minimize To Tray</value></data>
+  <data name="Menu.nicMenuItem" xml:space="preserve"><value>Network</value></data>
+  <data name="Menu.optionsMenuItem" xml:space="preserve"><value>Options</value></data>
+  <data name="Menu.perSessionFileRotationMenuItem" xml:space="preserve"><value>Per Session</value></data>
+  <data name="Menu.plotBottomMenuItem" xml:space="preserve"><value>Bottom</value></data>
+  <data name="Menu.plotLocationMenuItem" xml:space="preserve"><value>Plot Location</value></data>
+  <data name="Menu.plotMenuItem" xml:space="preserve"><value>Show Plot</value></data>
+  <data name="Menu.plotRightMenuItem" xml:space="preserve"><value>Right</value></data>
+  <data name="Menu.plotWindowMenuItem" xml:space="preserve"><value>Window</value></data>
+  <data name="Menu.powerMonitorMenuItem" xml:space="preserve"><value>Power Monitors</value></data>
+  <data name="Menu.psuMenuItem" xml:space="preserve"><value>Power supplies</value></data>
+  <data name="Menu.ramMenuItem" xml:space="preserve"><value>RAM</value></data>
+  <data name="Menu.resetMenuItem" xml:space="preserve"><value>Reset</value></data>
+  <data name="Menu.resetMinMaxMenuItem" xml:space="preserve"><value>Reset Min/Max</value></data>
+  <data name="Menu.resetPlotMenuItem" xml:space="preserve"><value>Reset Plot</value></data>
+  <data name="Menu.runWebServerMenuItem" xml:space="preserve"><value>Run</value></data>
+  <data name="Menu.saveReportMenuItem" xml:space="preserve"><value>Save Report...</value></data>
+  <data name="Menu.sensorValuesTimeWindowMenuItem" xml:space="preserve"><value>Sensor Values Time Window</value></data>
+  <data name="Menu.serverInterfacePortMenuItem" xml:space="preserve"><value>Interface / Port</value></data>
+  <data name="Menu.smartUpdate10CyclesMenuItem" xml:space="preserve"><value>Every 10 Cycles</value></data>
+  <data name="Menu.smartUpdate100CyclesMenuItem" xml:space="preserve"><value>Every 100 Cycles</value></data>
+  <data name="Menu.smartUpdate25CyclesMenuItem" xml:space="preserve"><value>Every 25 Cycles</value></data>
+  <data name="Menu.smartUpdate50CyclesMenuItem" xml:space="preserve"><value>Every 50 Cycles</value></data>
+  <data name="Menu.smartUpdateFollowUpdateIntervalMenuItem" xml:space="preserve"><value>Follow Update Interval</value></data>
+  <data name="Menu.splitPanelFixedPlotScalingMenuItem" xml:space="preserve"><value>Fixed Size Plot Panel</value></data>
+  <data name="Menu.splitPanelFixedSensorScalingMenuItem" xml:space="preserve"><value>Fixed Size Sensor Panel</value></data>
+  <data name="Menu.splitPanelPercentageScalingMenuItem" xml:space="preserve"><value>Percentage Scaling</value></data>
+  <data name="Menu.splitPlotPanelScalingMenuItem" xml:space="preserve"><value>Split Panel Scaling Mode</value></data>
+  <data name="Menu.startMinMenuItem" xml:space="preserve"><value>Start Minimized</value></data>
+  <data name="Menu.startupMenuItem" xml:space="preserve"><value>Run On Windows Startup</value></data>
+  <data name="Menu.strokeThicknessMenuItem" xml:space="preserve"><value>Stroke Thickness</value></data>
+  <data name="Menu.temperatureUnitsMenuItem" xml:space="preserve"><value>Temperature Unit</value></data>
+  <data name="Menu.themeMenuItem" xml:space="preserve"><value>Theme</value></data>
+  <data name="Menu.throttleSmartUpdateMenuItem" xml:space="preserve"><value>Throttle Disk S.M.A.R.T. Updates</value></data>
+  <data name="Menu.updateIntervalMenuItem" xml:space="preserve"><value>Update Interval</value></data>
+  <data name="Menu.valueMenuItem" xml:space="preserve"><value>Value</value></data>
+  <data name="Menu.viewMenuItem" xml:space="preserve"><value>View</value></data>
+  <data name="Menu.webMenuItem" xml:space="preserve"><value>Remote Web Server</value></data>
+  <data name="SensorGroup.Voltage" xml:space="preserve"><value>Voltages</value></data>
+  <data name="SensorGroup.Current" xml:space="preserve"><value>Currents</value></data>
+  <data name="SensorGroup.Energy" xml:space="preserve"><value>Capacities</value></data>
+  <data name="SensorGroup.Clock" xml:space="preserve"><value>Clocks</value></data>
+  <data name="SensorGroup.Load" xml:space="preserve"><value>Load</value></data>
+  <data name="SensorGroup.Temperature" xml:space="preserve"><value>Temperatures</value></data>
+  <data name="SensorGroup.Fan" xml:space="preserve"><value>Fans</value></data>
+  <data name="SensorGroup.Flow" xml:space="preserve"><value>Flows</value></data>
+  <data name="SensorGroup.Control" xml:space="preserve"><value>Controls</value></data>
+  <data name="SensorGroup.Level" xml:space="preserve"><value>Levels</value></data>
+  <data name="SensorGroup.Power" xml:space="preserve"><value>Powers</value></data>
+  <data name="SensorGroup.Data" xml:space="preserve"><value>Data</value></data>
+  <data name="SensorGroup.SmallData" xml:space="preserve"><value>Data</value></data>
+  <data name="SensorGroup.Factor" xml:space="preserve"><value>Factors</value></data>
+  <data name="SensorGroup.Frequency" xml:space="preserve"><value>Frequencies</value></data>
+  <data name="SensorGroup.Throughput" xml:space="preserve"><value>Throughput</value></data>
+  <data name="SensorGroup.TimeSpan" xml:space="preserve"><value>Times</value></data>
+  <data name="SensorGroup.Timing" xml:space="preserve"><value>Timings</value></data>
+  <data name="SensorGroup.Noise" xml:space="preserve"><value>Noise Levels</value></data>
+  <data name="SensorGroup.Conductivity" xml:space="preserve"><value>Conductivities</value></data>
+  <data name="SensorGroup.Humidity" xml:space="preserve"><value>Humidity Levels</value></data>
+  <data name="Message.RestartRequired" xml:space="preserve"><value>Language setting saved. Please restart the application for the change to take effect.</value></data>
+  <data name="Tray.HideShow" xml:space="preserve"><value>Hide/Show</value></data>
+  <data name="Tray.Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Tray.RemoveSensor" xml:space="preserve"><value>Remove Sensor</value></data>
+  <data name="Tray.ChangeColor" xml:space="preserve"><value>Change Color...</value></data>
+  <data name="Menu.Theme.auto" xml:space="preserve"><value>Auto</value></data>
+  <data name="Menu.Theme.light" xml:space="preserve"><value>Light</value></data>
+  <data name="Menu.Theme.dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Menu.Theme.black" xml:space="preserve"><value>Black</value></data>
+  <data name="About.title" xml:space="preserve"><value>About</value></data>
+  <data name="About.ok" xml:space="preserve"><value>OK</value></data>
+  <data name="About.versionPrefix" xml:space="preserve"><value>Version </value></data>
+  <data name="About.projectWebsite" xml:space="preserve"><value>Project Website</value></data>
+  <data name="About.licensing" xml:space="preserve"><value>Licensing Information</value></data>
+</root>

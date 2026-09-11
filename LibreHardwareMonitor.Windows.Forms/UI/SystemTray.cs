@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -20,6 +21,8 @@ public class SystemTray : IDisposable
     private readonly List<SensorNotifyIcon> _sensorList = new List<SensorNotifyIcon>();
     private bool _mainIconEnabled;
     private readonly NotifyIconAdv _mainIcon;
+    private readonly ToolStripItem _hideShowItem;
+    private readonly ToolStripItem _exitItem;
 
     public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager)
     {
@@ -32,19 +35,28 @@ public class SystemTray : IDisposable
         _mainIcon = new NotifyIconAdv();
 
         ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-        ToolStripItem hideShowItem = new ToolStripMenuItem("Hide/Show");
-        hideShowItem.Click += delegate
+        _hideShowItem = new ToolStripMenuItem();
+        _hideShowItem.Click += delegate
         {
             SendHideShowCommand();
         };
-        contextMenuStrip.Items.Add(hideShowItem);
+        contextMenuStrip.Items.Add(_hideShowItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripItem exitItem = new ToolStripMenuItem("Exit");
-        exitItem.Click += delegate
+        _exitItem = new ToolStripMenuItem();
+        _exitItem.Click += delegate
         {
             SendExitCommand();
         };
-        contextMenuStrip.Items.Add(exitItem);
+        contextMenuStrip.Items.Add(_exitItem);
+
+        // The menu is created before the language is known to be final (and the language can
+        // change at run time), so its text is resolved whenever the menu is opened.
+        contextMenuStrip.Opening += delegate
+        {
+            _hideShowItem.Text = LocalizationManager.Get("Tray.HideShow") ?? "Hide/Show";
+            _exitItem.Text = LocalizationManager.Get("Tray.Exit") ?? "Exit";
+        };
+
         _mainIcon.ContextMenuStrip = contextMenuStrip;
         _mainIcon.DoubleClick += delegate
         {

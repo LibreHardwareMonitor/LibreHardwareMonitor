@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Aga.Controls.Tree;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
@@ -89,7 +90,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
 
             TreeViewAdv.CustomColumnTextRenderFunc = (g, rect, font, text) =>
             {
-                TextRenderer.DrawText(g, text, font, rect, Current.TreeTextColor, TextFormatFlags.Left);
+                TextRenderer.DrawText(g, LocalizedNames.ColumnHeader(text), font, rect, Current.TreeTextColor, TextFormatFlags.Left);
             };
 
             TreeViewAdv.CustomHorizontalLinePen = new Pen(Current.TreeRowSepearatorColor);

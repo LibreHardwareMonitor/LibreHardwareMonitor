@@ -637,7 +637,7 @@ public class HttpServer
 
                 foreach (SensorNode sensor in node.Nodes[i].Nodes)
                 {
-                    string valueSensorName = sensor.Text.Replace("#", String.Empty);
+                    string valueSensorName = sensor.Sensor.Name.Replace("#", String.Empty);
 
                     // Variables needed in dictionary lookup and error message
                     string tagSensorType = sensor.Sensor.SensorType.ToString();
@@ -803,6 +803,7 @@ public class HttpServer
         switch (n)
         {
             case SensorNode sensorNode:
+                jsonNode["Text"] = sensorNode.Sensor.Name;
                 jsonNode["SensorId"] = sensorNode.Sensor.Identifier.ToString();
                 jsonNode["Type"] = sensorNode.Sensor.SensorType.ToString();
 
@@ -819,6 +820,7 @@ public class HttpServer
                 jsonNode["ImageURL"] = "images/transparent.png";
                 break;
             case HardwareNode hardwareNode:
+                jsonNode["Text"] = hardwareNode.Hardware.Name;
                 jsonNode["HardwareId"] = hardwareNode.Hardware.Identifier.ToString();
                 jsonNode["ImageURL"] = "images_icon/" + GetHardwareImageFile(hardwareNode);
                 break;
