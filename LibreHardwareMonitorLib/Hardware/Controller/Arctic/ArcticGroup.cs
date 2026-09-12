@@ -26,13 +26,12 @@ internal class ArcticGroup : IGroup
         _report.AppendLine();
         try
         {
-            var devices = DeviceList.Local.GetHidDevices(VendorId, ProductId);
-            var hidDevice = devices.FirstOrDefault();
+            IEnumerable<HidDevice> devices = DeviceList.Local.GetHidDevices(VendorId, ProductId);
 
-            if (hidDevice != null)
+            foreach (HidDevice device in devices)
             {
-                _hardware.Add(new ArcticFanController(hidDevice, settings));
-                _report.AppendLine("ARCTIC Fan Controller initialized successfully");
+                _hardware.Add(new ArcticFanController(device, settings));
+                _report.AppendLine($"ARCTIC Fan Controller {device.DevicePath} initialized successfully");
             }
         }
         catch (Exception ex)
