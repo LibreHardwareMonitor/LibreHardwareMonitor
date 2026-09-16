@@ -18,15 +18,16 @@ internal static class MemoryLinux
             string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
 
             {
-                float totalMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
-                float freeMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
-                float cachedMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
+                // /proc/meminfo reports kB, convert to bytes for the sensor.
+                float totalMemoryBytes = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) * 1024.0f;
+                float freeMemoryBytes = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) * 1024.0f;
+                float cachedMemoryBytes = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) * 1024.0f;
 
-                float usedMemoryGb = totalMemoryGb - freeMemoryGb - cachedMemoryGb;
+                float usedMemoryBytes = totalMemoryBytes - freeMemoryBytes - cachedMemoryBytes;
 
-                memory.PhysicalMemoryUsed.Value = usedMemoryGb;
-                memory.PhysicalMemoryAvailable.Value = totalMemoryGb;
-                memory.PhysicalMemoryLoad.Value = 100.0f * (usedMemoryGb / totalMemoryGb);
+                memory.PhysicalMemoryUsed.Value = usedMemoryBytes;
+                memory.PhysicalMemoryAvailable.Value = totalMemoryBytes;
+                memory.PhysicalMemoryLoad.Value = 100.0f * (usedMemoryBytes / totalMemoryBytes);
             }
         }
         catch
@@ -44,13 +45,14 @@ internal static class MemoryLinux
             string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
 
             {
-                float totalSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
-                float freeSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
-                float usedSwapMemoryGb = totalSwapMemoryGb - freeSwapMemoryGb;
+                // /proc/meminfo reports kB, convert to bytes for the sensor.
+                float totalSwapMemoryBytes = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) * 1024.0f;
+                float freeSwapMemoryBytes = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) * 1024.0f;
+                float usedSwapMemoryBytes = totalSwapMemoryBytes - freeSwapMemoryBytes;
 
-                memory.VirtualMemoryUsed.Value = usedSwapMemoryGb;
-                memory.VirtualMemoryAvailable.Value = totalSwapMemoryGb;
-                memory.VirtualMemoryLoad.Value = 100.0f * (usedSwapMemoryGb / totalSwapMemoryGb);
+                memory.VirtualMemoryUsed.Value = usedSwapMemoryBytes;
+                memory.VirtualMemoryAvailable.Value = totalSwapMemoryBytes;
+                memory.VirtualMemoryLoad.Value = 100.0f * (usedSwapMemoryBytes / totalSwapMemoryBytes);
             }
         }
         catch

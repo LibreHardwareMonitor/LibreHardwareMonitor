@@ -155,7 +155,7 @@ internal sealed class AmdGpu : GenericGpu
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get)) &&
             AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get(_context, _adapterInfo.AdapterIndex, out memoryInfo) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            _memoryTotal.Value = memoryInfo.iMemorySize / 1024 / 1024;
+            _memoryTotal.Value = memoryInfo.iMemorySize;
             ActivateSensor(_memoryTotal);
         }
 
@@ -314,11 +314,11 @@ internal sealed class AmdGpu : GenericGpu
     {
         if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
-            _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit / 1024 / 1024;
-            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
+            _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit;
+            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed;
             _gpuDedicatedMemoryFree.Value = _gpuDedicatedMemoryTotal.Value - _gpuDedicatedMemoryUsage.Value;
-            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
-            _gpuSharedMemoryTotal.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024;
+            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed;
+            _gpuSharedMemoryTotal.Value = 1f * deviceInfo.GpuSharedLimit;
             _gpuSharedMemoryFree.Value = _gpuSharedMemoryTotal.Value - _gpuSharedMemoryUsage.Value;
             ActivateSensor(_gpuDedicatedMemoryTotal);
             ActivateSensor(_gpuDedicatedMemoryFree);
@@ -343,7 +343,8 @@ internal sealed class AmdGpu : GenericGpu
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get)) &&
             AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get(_context, _adapterInfo.AdapterIndex, out vramUsed) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            _memoryUsed.Value = vramUsed;
+            //ADL reports VRAM usage in megabytes, convert to bytes for the sensor.
+            _memoryUsed.Value = vramUsed * 1024f * 1024f;
             ActivateSensor(_memoryUsed);
         }
 

@@ -16,6 +16,8 @@ public enum TemperatureUnit
 
 public class UnitManager
 {
+    private const float BytesPerGigaByte = 1024f * 1024f * 1024f;
+    private const float BytesPerMegaByte = 1024f * 1024f;
 
     private readonly PersistentSettings _settings;
     private TemperatureUnit _temperatureUnit;
@@ -39,5 +41,21 @@ public class UnitManager
     public static float? CelsiusToFahrenheit(float? valueInCelsius)
     {
         return valueInCelsius * 1.8f + 32;
+    }
+
+    /// <summary>
+    /// Converts a Data sensor value to the GB (2^30 bytes) it is displayed in.
+    /// </summary>
+    public static float? BytesToGigaBytes(float? valueInBytes)
+    {
+        return valueInBytes / BytesPerGigaByte;
+    }
+
+    /// <summary>
+    /// Converts a SmallData sensor value to the MB (2^20 bytes) it is displayed in.
+    /// </summary>
+    public static float? BytesToMegaBytes(float? valueInBytes)
+    {
+        return valueInBytes / BytesPerMegaByte;
     }
 }

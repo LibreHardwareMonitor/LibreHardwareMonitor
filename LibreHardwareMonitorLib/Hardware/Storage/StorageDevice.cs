@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BlackSharp.Core.Converters;
-using BlackSharp.Core.Converters.Enums;
 using DiskInfoToolkit.Devices;
 using DiskInfoToolkit.Smart;
 using Windows.Win32;
@@ -311,12 +310,12 @@ public sealed class StorageDevice : Hardware, ISmart
 
         if (_storage.HostReads.HasValue)
         {
-            AddSensor("Data Read", 21, false, SensorType.Data, s => (float)DataUnitConverter.ToGigaByte(s.HostReads.GetValueOrDefault(), DataUnit.Byte));
+            AddSensor("Data Read", 21, false, SensorType.Data, s => s.HostReads.GetValueOrDefault());
         }
 
         if (_storage.HostWrites.HasValue)
         {
-            AddSensor("Data Written", 22, false, SensorType.Data, s => (float)DataUnitConverter.ToGigaByte(s.HostWrites.GetValueOrDefault(), DataUnit.Byte));
+            AddSensor("Data Written", 22, false, SensorType.Data, s => s.HostWrites.GetValueOrDefault());
         }
 
         if (_storage.PowerOnCount.HasValue)
@@ -342,7 +341,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
         var totalSpaceSensor = new Sensor("Total Space", 32, SensorType.Data, this, _settings)
         {
-            Value = (float)DataUnitConverter.ToGigaByte(_storage.DiskSizeBytes.GetValueOrDefault(), DataUnit.Byte)
+            Value = _storage.DiskSizeBytes.GetValueOrDefault()
         };
         ActivateSensor(totalSpaceSensor);
 
@@ -467,7 +466,7 @@ public sealed class StorageDevice : Hardware, ISmart
         {
             // Set sensor value
             _usageSensor.Value = 100.0f - (100.0f * _storage.TotalPartitionFreeSpaceBytes / _storage.DiskSizeBytes);
-            _freeSpaceSensor.Value = (float)DataUnitConverter.ToGigaByte(_storage.TotalPartitionFreeSpaceBytes.GetValueOrDefault(), DataUnit.Byte);
+            _freeSpaceSensor.Value = _storage.TotalPartitionFreeSpaceBytes.GetValueOrDefault();
         }
         else
         {

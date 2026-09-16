@@ -58,10 +58,10 @@ internal sealed class Network : Hardware
 
             IPv4InterfaceStatistics interfaceStats = NetworkInterface.GetIPv4Statistics();
 
-            // Report out the number of GB (2^30 Bytes) that this interface has up/downloaded. Note
-            // that these values can reset back at zero (eg: after waking from sleep).
-            _dataUploaded.Value = (float)(interfaceStats.BytesSent / (double)0x40000000);
-            _dataDownloaded.Value = (float)(interfaceStats.BytesReceived / (double)0x40000000);
+            // Report out the number of bytes that this interface has up/downloaded. Note that these
+            // values can reset back at zero (eg: after waking from sleep).
+            _dataUploaded.Value = interfaceStats.BytesSent;
+            _dataDownloaded.Value = interfaceStats.BytesReceived;
 
             // Detect a reset in interface stats if the new total is less than what was previously
             // seen. While setting the previous values to zero doesn't encapsulate the value the
