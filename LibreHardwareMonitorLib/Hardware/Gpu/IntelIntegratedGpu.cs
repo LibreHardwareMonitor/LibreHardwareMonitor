@@ -132,13 +132,13 @@ internal class IntelIntegratedGpu : GenericGpu
         {
             if (_dedicatedMemoryUsage != null)
             {
-                _dedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
+                _dedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed;
                 ActivateSensor(_dedicatedMemoryUsage);
             }
 
             if (_sharedMemoryLimit != null)
             {
-                _sharedMemoryLimit.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024;
+                _sharedMemoryLimit.Value = 1f * deviceInfo.GpuSharedLimit;
                 ActivateSensor(_sharedMemoryLimit);
                 if (_sharedMemoryUsage != null)
                 {
@@ -147,7 +147,7 @@ internal class IntelIntegratedGpu : GenericGpu
                 }
             }
 
-            _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
+            _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed;
             ActivateSensor(_sharedMemoryUsage);
 
             if (_powerSensor != null && _pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))

@@ -576,8 +576,8 @@ internal sealed class NvidiaGpu : GenericGpu
         {
             if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
             {
-                _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
-                _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
+                _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed;
+                _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed;
                 ActivateSensor(_gpuDedicatedMemoryUsage);
                 ActivateSensor(_gpuSharedMemoryUsage);
 
@@ -760,15 +760,15 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (NvApi.NvAPI_GPU_GetMemoryInfoEx != null || _displayHandle != null)
             {
-                uint free = 0;
-                uint total = 0;
+                ulong free = 0;
+                ulong total = 0;
 
                 //Size in bytes
                 NvApi.NvMemoryInfoEx memoryInfoEx = GetMemoryInfoEx(out status);
                 if (status == NvApi.NvStatus.OK)
                 {
-                    free = (uint)(memoryInfoEx.CurrentAvailableDedicatedVideoMemory / 1024);
-                    total = (uint)(memoryInfoEx.DedicatedVideoMemory / 1024);
+                    free = memoryInfoEx.CurrentAvailableDedicatedVideoMemory;
+                    total = memoryInfoEx.DedicatedVideoMemory;
                 }
                 else
                 {
@@ -776,20 +776,20 @@ internal sealed class NvidiaGpu : GenericGpu
                     NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
                     if (status == NvApi.NvStatus.OK)
                     {
-                        free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
-                        total = memoryInfo.DedicatedVideoMemory;
+                        free = memoryInfo.CurrentAvailableDedicatedVideoMemory * 1024UL;
+                        total = memoryInfo.DedicatedVideoMemory * 1024UL;
                     }
                 }
 
                 if (status == NvApi.NvStatus.OK)
                 {
-                    _memoryTotal.Value = total / 1024;
+                    _memoryTotal.Value = total;
                     ActivateSensor(_memoryTotal);
 
-                    _memoryFree.Value = free / 1024;
+                    _memoryFree.Value = free;
                     ActivateSensor(_memoryFree);
 
-                    _memoryUsed.Value = (total - free) / 1024;
+                    _memoryUsed.Value = total - free;
                     ActivateSensor(_memoryUsed);
 
                     _memoryLoad.Value = ((float)(total - free) / total) * 100;

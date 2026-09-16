@@ -550,14 +550,13 @@ internal sealed class IntelDiscreteGpu : GenericGpu
 
             if (totalBytes > 0)
             {
-                // Convert bytes to MB for display
-                _memoryTotal.Value = totalBytes / (1024.0f * 1024.0f);
+                _memoryTotal.Value = totalBytes;
                 ActivateSensor(_memoryTotal);
 
-                _memoryUsed.Value = usedBytes / (1024.0f * 1024.0f);
+                _memoryUsed.Value = usedBytes;
                 ActivateSensor(_memoryUsed);
 
-                _memoryFree.Value = freeBytes / (1024.0f * 1024.0f);
+                _memoryFree.Value = freeBytes;
                 ActivateSensor(_memoryFree);
 
                 // Calculate load percentage

@@ -59,10 +59,8 @@ public class SensorNode : Node
                 Format = "{0:F1} W";
                 break;
             case SensorType.Data:
-                Format = "{0:F1} GB";
-                break;
             case SensorType.SmallData:
-                Format = "{0:F1} MB";
+                Format = "{0:F1} B";
                 break;
             case SensorType.Factor:
                 Format = "{0:F3}";
@@ -192,6 +190,14 @@ public class SensorNode : Node
                 case SensorType.Temperature when _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit:
                     {
                         return $"{value * 1.8 + 32:F1} °F";
+                    }
+                case SensorType.Data:
+                    {
+                        return $"{UnitManager.BytesToGigaBytes(value):F1} GB";
+                    }
+                case SensorType.SmallData:
+                    {
+                        return $"{UnitManager.BytesToMegaBytes(value):F1} MB";
                     }
                 case SensorType.Throughput:
                     {

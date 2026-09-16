@@ -18,8 +18,8 @@ internal static unsafe class MemoryWindows
         if (!PInvoke.GlobalMemoryStatusEx(ref status))
             return;
 
-        memory.PhysicalMemoryUsed.Value = (float)(status.ullTotalPhys - status.ullAvailPhys) / (1024 * 1024 * 1024);
-        memory.PhysicalMemoryAvailable.Value = (float)status.ullAvailPhys / (1024 * 1024 * 1024);
+        memory.PhysicalMemoryUsed.Value = (float)(status.ullTotalPhys - status.ullAvailPhys);
+        memory.PhysicalMemoryAvailable.Value = (float)status.ullAvailPhys;
         memory.PhysicalMemoryLoad.Value = 100.0f - ((100.0f * status.ullAvailPhys) / status.ullTotalPhys);
     }
 
@@ -30,8 +30,8 @@ internal static unsafe class MemoryWindows
         if (!PInvoke.GlobalMemoryStatusEx(ref status))
             return;
 
-        memory.VirtualMemoryUsed.Value = (float)(status.ullTotalPageFile - status.ullAvailPageFile) / (1024 * 1024 * 1024);
-        memory.VirtualMemoryAvailable.Value = (float)status.ullAvailPageFile / (1024 * 1024 * 1024);
+        memory.VirtualMemoryUsed.Value = (float)(status.ullTotalPageFile - status.ullAvailPageFile);
+        memory.VirtualMemoryAvailable.Value = (float)status.ullAvailPageFile;
         memory.VirtualMemoryLoad.Value = 100.0f - ((100.0f * status.ullAvailPageFile) / status.ullTotalPageFile);
     }
 }
