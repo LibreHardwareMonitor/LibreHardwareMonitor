@@ -436,6 +436,7 @@ internal class LpcIO
                         switch (motherboard.Model)
                         {
                             case Model.X870E_NOVA_WIFI:
+                            case Model.B650M_HDV_M_2:
                                 chip = Chip.NCT6796DS;
                                 break;
                             default:
