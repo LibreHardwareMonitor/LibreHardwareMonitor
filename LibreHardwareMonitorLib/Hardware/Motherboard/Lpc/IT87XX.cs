@@ -580,7 +580,7 @@ internal class IT87XX : ISuperIO
             _initialFanPwmControl[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
 
             if (index < 3)
-                _initialFanOutputModeEnabled[index] = ReadByte(FAN_MAIN_CTRL_REG, out bool _) != 0; // Save default control reg value.
+                _initialFanOutputModeEnabled[index] = (ReadByte(FAN_MAIN_CTRL_REG, out bool _) & (1 << index)) != 0; // Save default control bit value.
 
             if (_hasExtReg)
                 _initialFanPwmControlExt[index] = ReadByte(FAN_PWM_CTRL_EXT_REG[index], out _);
