@@ -4136,6 +4136,57 @@ internal sealed class SuperIOHardware : Hardware
                         c.Add(new Control("Chassis Fan #3", 6)); // CHA_FAN3
                         break;
 
+                    case Model.B650M_HDV_M_2: //NCT6796D-S
+                        v.Add(new Voltage("Vcore", 0)); // CPU Core Voltage
+                        v.Add(new Voltage("+12V", 1, 56, 10)); // +12V
+                        v.Add(new Voltage("Analog VCC", 2, 34, 34)); // AVCC
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+5V", 4, 20, 10));
+                        v.Add(new Voltage("+1.05V Standby", 5, 0, 1)); // +1.05V_ALW
+                        v.Add(new Voltage("Voltage #7", 6, 0, 1)); // VIN4
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9, 1, 1)); // VTT
+                        v.Add(new Voltage("CPU NB/SoC", 10, 1, 1)); // VDDCR_SOC
+                        v.Add(new Voltage("CPU Misc", 11, 34, 34)); // VDD_MISC
+                        v.Add(new Voltage("Voltage #13", 12, 0, 1)); // VIN2
+                        v.Add(new Voltage("+1.8V", 13, 10, 10));
+                        v.Add(new Voltage("CPU VDDIO", 14, 0, 1)); // VDDIO
+                        v.Add(new Voltage("VIN9", 15, 0, 1));
+                        // These volates are displayed in HwInfo, but there are only 16 voltage registers currenty defined
+                        // They sit at registers 0x470, 0x471
+                        //v.Add(new Voltage("VHIF", 16, 34, 34));
+                        //v.Add(new Voltage("Voltage #18", 17, 0, 1)); // VIN10
+
+                        t.Add(new Temperature("CPU Socket", 0)); // CPUTIN
+                        t.Add(new Temperature("Motherboard", 1)); // SYSTIN
+                        t.Add(new Temperature("Auxiliary #0", 2)); // AUXTIN0
+                        t.Add(new Temperature("Auxiliary #1", 3)); // AUXTIN1
+                        t.Add(new Temperature("T Sensor #1", 4)); // AUXTIN2 (T_SEN1)
+                        t.Add(new Temperature("T Sensor #2", 5)); // AUXTIN3 (T_SEN2)
+                        t.Add(new Temperature("Auxiliary #4", 6)); // AUXTIN4
+                        t.Add(new Temperature("T Sensor #3", 7)); // AUXTIN5 (T_SEN3)
+                        t.Add(new Temperature("CPU Core", 8)); // SMBUSMASTER0 (CPU Core)
+                        t.Add(new Temperature("CPU (PECI)", 9)); // CPU (PECI)
+                        t.Add(new Temperature("Virtual", 10)); // VIRTUAL_TEMP
+
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan #1", 1)); // CPU1
+                        f.Add(new Fan("CPU Fan #2", 2));
+                        f.Add(new Fan("AIO Pump", 3));
+                        f.Add(new Fan("Chassis Fan #2", 4)); // Chassis2
+                        f.Add(new Fan("Fan #6", 5));
+                        f.Add(new Fan("Chassis Fan #3", 6));
+
+                        c.Add(new Control("Chassis Fan #1", 0));
+                        c.Add(new Control("CPU Fan #1", 1));
+                        c.Add(new Control("CPU Fan #2", 2));
+                        c.Add(new Control("AIO Pump", 3));
+                        c.Add(new Control("Chassis Fan #2", 4));
+                        c.Add(new Control("Fan #6", 5));
+                        c.Add(new Control("Chassis Fan #3", 6));
+                        break;
+
                     default:
                         v.Add(new Voltage("Vcore", 0, 10, 10));
                         v.Add(new Voltage("Voltage #2", 1, true));

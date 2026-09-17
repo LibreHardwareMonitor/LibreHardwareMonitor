@@ -793,6 +793,8 @@ internal class Identification
                 return Model.X870E_NOVA_WIFI;
             case var _ when name.Equals("B850I Lightning WiFi", StringComparison.OrdinalIgnoreCase):
                 return Model.B850I_LIGHTNING_WIFI;
+            case var _ when name.StartsWith("B650M-HDV/M.2", StringComparison.OrdinalIgnoreCase):
+                return Model.B650M_HDV_M_2;
             case var _ when name.Equals("X670 AORUS ELITE AX", StringComparison.OrdinalIgnoreCase):
                 return Model.X670_AORUS_ELITE_AX;
             case var _ when name.Equals("PROART B760-CREATOR D4", StringComparison.OrdinalIgnoreCase):
