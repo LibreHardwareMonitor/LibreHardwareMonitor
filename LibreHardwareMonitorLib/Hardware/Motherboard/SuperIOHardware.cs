@@ -4162,10 +4162,10 @@ internal sealed class SuperIOHardware : Hardware
                         t.Add(new Temperature("Motherboard", 1)); // SYSTIN
                         t.Add(new Temperature("Auxiliary #0", 2)); // AUXTIN0
                         t.Add(new Temperature("Auxiliary #1", 3)); // AUXTIN1
-                        t.Add(new Temperature("T_SEN #1", 4)); // AUXTIN2 (T_SEN1)
-                        t.Add(new Temperature("T_SEN #2", 5)); // AUXTIN3 (T_SEN2)
+                        t.Add(new Temperature("T Sensor #1", 4)); // AUXTIN2 (T_SEN1)
+                        t.Add(new Temperature("T Sensor #2", 5)); // AUXTIN3 (T_SEN2)
                         t.Add(new Temperature("Auxiliary #4", 6)); // AUXTIN4
-                        t.Add(new Temperature("T_SEN #3", 7)); // AUXTIN5 (T_SEN3)
+                        t.Add(new Temperature("T Sensor #3", 7)); // AUXTIN5 (T_SEN3)
                         t.Add(new Temperature("CPU Core", 8)); // SMBUSMASTER0 (CPU Core)
                         t.Add(new Temperature("CPU (PECI)", 9)); // CPU (PECI)
                         t.Add(new Temperature("Virtual", 10)); // VIRTUAL_TEMP
