@@ -169,6 +169,8 @@ internal class W836XX : ISuperIO
                 Fans = new float?[3];
                 break;
         }
+
+        _restoreDefaultFanPwmControlRequired = new bool[_fanPrimaryControlModeRegister.Length];
     }
 
     public Chip Chip { get; }
