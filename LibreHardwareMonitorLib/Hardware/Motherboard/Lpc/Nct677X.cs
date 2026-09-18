@@ -42,6 +42,8 @@ internal class Nct677X : ISuperIO
     private const byte NCT6687DR_FAN_CFG_DONE = 0x40;
     private const byte NCT6687DR_FAN_CFG_REQ_UPDATE_MASK = 0x7F;
     private const byte NCT6687DR_FAN_CFG_DONE_UPDATE_MASK = 0xBF;
+    private const byte NCT668X_FAN_CFG_REQUEST = 0x80;
+    private const byte NCT668X_FAN_CFG_COMPLETE = 0x40;
     // ReSharper restore InconsistentNaming
 
     // Chip identity
@@ -743,8 +745,7 @@ internal class Nct677X : ISuperIO
                 // bit 5 : SYS Fan 4
                 // bit 6 : SYS Fan 5
                 // bit 7 : SYS Fan 6
-
-                WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
+                WriteByte(FAN_PWM_REQUEST_REG[index], NCT668X_FAN_CFG_REQUEST);
                 Thread.Sleep(50);
 
                 byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
@@ -754,7 +755,7 @@ internal class Nct677X : ISuperIO
 
                 WriteByte(FAN_PWM_COMMAND_REG[index], value.Value);
 
-                WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
+                WriteByte(FAN_PWM_REQUEST_REG[index], NCT668X_FAN_CFG_COMPLETE);
                 Thread.Sleep(50);
             }
         }
@@ -1511,15 +1512,17 @@ internal class Nct677X : ISuperIO
             {
                 // NCT6683D / NCT6686D / NCT6687D (non-DR)
                 byte mode = ReadByte(FAN_CONTROL_MODE_REG[index]);
-                mode = (byte)(mode & ~_initialFanControlMode[index]);
-                WriteByte(FAN_CONTROL_MODE_REG[index], mode);
+                byte fanControlBitMask = (byte)(0x01 << index);
+                byte modeWithFanControlBitCleared = (byte)(mode & ~fanControlBitMask);
+                byte restoredMode = (byte)(modeWithFanControlBitCleared | _initialFanControlMode[index]);
+                WriteByte(FAN_CONTROL_MODE_REG[index], restoredMode);
 
-                WriteByte(FAN_PWM_REQUEST_REG[index], 0x80);
+                WriteByte(FAN_PWM_REQUEST_REG[index], NCT668X_FAN_CFG_REQUEST);
                 Thread.Sleep(50);
 
                 WriteByte(FAN_PWM_COMMAND_REG[index], _initialFanPwmCommand[index]);
 
-                WriteByte(FAN_PWM_REQUEST_REG[index], 0x40);
+                WriteByte(FAN_PWM_REQUEST_REG[index], NCT668X_FAN_CFG_COMPLETE);
                 Thread.Sleep(50);
             }
 
