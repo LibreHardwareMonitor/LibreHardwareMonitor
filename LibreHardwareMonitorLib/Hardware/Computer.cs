@@ -27,6 +27,7 @@ using LibreHardwareMonitor.Hardware.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.Hardware.Storage.StorageSpaces;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -301,9 +302,15 @@ public class Computer : IComputer
             if (_open && value != _storageEnabled)
             {
                 if (value)
+                {
+                    Add(new StorageSpacesGroup(_settings));
                     Add(new StorageGroup(_settings));
+                }
                 else
+                {
+                    RemoveType<StorageSpacesGroup>();
                     RemoveType<StorageGroup>();
+                }
             }
 
             _storageEnabled = value;
@@ -558,7 +565,10 @@ public class Computer : IComputer
         }
 
         if (_storageEnabled)
+        {
+            Add(new StorageSpacesGroup(_settings));
             Add(new StorageGroup(_settings));
+        }
 
         if (_networkEnabled)
             Add(new NetworkGroup(_settings));
