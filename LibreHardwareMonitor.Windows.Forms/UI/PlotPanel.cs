@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -16,6 +16,7 @@ using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.UI.Themes;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -127,7 +128,9 @@ public class PlotPanel : UserControl
             }
         };
 
-        ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem("Stacked Axes");
+        string L(string key, string fallback) => LocalizationManager.Get("Plot." + key) ?? fallback;
+
+        ToolStripMenuItem stackedAxesMenuItem = new ToolStripMenuItem(L("StackedAxes", "Stacked Axes"));
         _stackedAxes = new UserOption("stackedAxes", true, stackedAxesMenuItem, _settings);
         _stackedAxes.Changed += (sender, e) =>
         {
@@ -136,7 +139,7 @@ public class PlotPanel : UserControl
         };
         menu.Items.Add(stackedAxesMenuItem);
 
-        ToolStripMenuItem showAxesLabelsMenuItem = new ToolStripMenuItem("Show Axes Labels");
+        ToolStripMenuItem showAxesLabelsMenuItem = new ToolStripMenuItem(L("ShowAxesLabels", "Show Axes Labels"));
         _showAxesLabels = new UserOption("showAxesLabels", true, showAxesLabelsMenuItem, _settings);
         _showAxesLabels.Changed += (sender, e) =>
         {
@@ -147,22 +150,22 @@ public class PlotPanel : UserControl
         };
         menu.Items.Add(showAxesLabelsMenuItem);
 
-        ToolStripMenuItem timeAxisMenuItem = new ToolStripMenuItem("Time Axis");
+        ToolStripMenuItem timeAxisMenuItem = new ToolStripMenuItem(L("TimeAxis", "Time Axis"));
         ToolStripMenuItem[] timeAxisMenuItems =
-        { new ToolStripMenuItem("Enable Zoom"),
-            new ToolStripMenuItem("Auto", null, (s, e) => { TimeAxisZoom(0, double.NaN); }),
-            new ToolStripMenuItem("5 min", null, (s, e) => { TimeAxisZoom(0, 5 * 60); }),
-            new ToolStripMenuItem("10 min", null, (s, e) => { TimeAxisZoom(0, 10 * 60); }),
-            new ToolStripMenuItem("20 min", null, (s, e) => { TimeAxisZoom(0, 20 * 60); }),
-            new ToolStripMenuItem("30 min", null, (s, e) => { TimeAxisZoom(0, 30 * 60); }),
-            new ToolStripMenuItem("45 min", null, (s, e) => { TimeAxisZoom(0, 45 * 60); }),
-            new ToolStripMenuItem("1 h", null, (s, e) => { TimeAxisZoom(0, 60 * 60); }),
-            new ToolStripMenuItem("1.5 h", null, (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
-            new ToolStripMenuItem("2 h", null, (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
-            new ToolStripMenuItem("3 h", null, (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
-            new ToolStripMenuItem("6 h", null, (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
-            new ToolStripMenuItem("12 h", null, (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
-            new ToolStripMenuItem("24 h", null, (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
+        { new ToolStripMenuItem(L("EnableZoom", "Enable Zoom")),
+            new ToolStripMenuItem(L("Auto", "Auto"), null, (s, e) => { TimeAxisZoom(0, double.NaN); }),
+            new ToolStripMenuItem(L("Zoom5min", "5 min"), null, (s, e) => { TimeAxisZoom(0, 5 * 60); }),
+            new ToolStripMenuItem(L("Zoom10min", "10 min"), null, (s, e) => { TimeAxisZoom(0, 10 * 60); }),
+            new ToolStripMenuItem(L("Zoom20min", "20 min"), null, (s, e) => { TimeAxisZoom(0, 20 * 60); }),
+            new ToolStripMenuItem(L("Zoom30min", "30 min"), null, (s, e) => { TimeAxisZoom(0, 30 * 60); }),
+            new ToolStripMenuItem(L("Zoom45min", "45 min"), null, (s, e) => { TimeAxisZoom(0, 45 * 60); }),
+            new ToolStripMenuItem(L("Zoom1h", "1 h"), null, (s, e) => { TimeAxisZoom(0, 60 * 60); }),
+            new ToolStripMenuItem(L("Zoom1_5h", "1.5 h"), null, (s, e) => { TimeAxisZoom(0, 1.5 * 60 * 60); }),
+            new ToolStripMenuItem(L("Zoom2h", "2 h"), null, (s, e) => { TimeAxisZoom(0, 2 * 60 * 60); }),
+            new ToolStripMenuItem(L("Zoom3h", "3 h"), null, (s, e) => { TimeAxisZoom(0, 3 * 60 * 60); }),
+            new ToolStripMenuItem(L("Zoom6h", "6 h"), null, (s, e) => { TimeAxisZoom(0, 6 * 60 * 60); }),
+            new ToolStripMenuItem(L("Zoom12h", "12 h"), null, (s, e) => { TimeAxisZoom(0, 12 * 60 * 60); }),
+            new ToolStripMenuItem(L("Zoom24h", "24 h"), null, (s, e) => { TimeAxisZoom(0, 24 * 60 * 60); }) };
 
         foreach (ToolStripItem mi in timeAxisMenuItems)
             timeAxisMenuItem.DropDownItems.Add(mi);
@@ -174,10 +177,10 @@ public class PlotPanel : UserControl
             _timeAxis.IsZoomEnabled = _timeAxisEnableZoom.Value;
         };
 
-        ToolStripMenuItem yAxesMenuItem = new ToolStripMenuItem("Value Axes");
+        ToolStripMenuItem yAxesMenuItem = new ToolStripMenuItem(L("ValueAxes", "Value Axes"));
         ToolStripMenuItem[] yAxesMenuItems =
-        { new ToolStripMenuItem("Enable Zoom"),
-            new ToolStripMenuItem("Autoscale All", null, (s, e) => { AutoscaleAllYAxes(); }) };
+        { new ToolStripMenuItem(L("EnableZoom", "Enable Zoom")),
+            new ToolStripMenuItem(L("AutoscaleAll", "Autoscale All"), null, (s, e) => { AutoscaleAllYAxes(); }) };
 
         foreach (ToolStripItem mi in yAxesMenuItems)
             yAxesMenuItem.DropDownItems.Add(mi);
@@ -248,7 +251,7 @@ public class PlotPanel : UserControl
                 MinorGridlineThickness = 1,
                 MinorGridlineColor = _timeAxis.MinorGridlineColor,
                 AxislineStyle = LineStyle.Solid,
-                Title = typeName,
+                Title = LocalizationManager.Get("PlotAxis." + typeName) ?? typeName,
                 Key = typeName,
             };
 
@@ -341,7 +344,7 @@ public class PlotPanel : UserControl
                 Color = colors[sensor].ToOxyColor(),
                 StrokeThickness = strokeThickness,
                 YAxisKey = _axes[sensor.SensorType].Key,
-                Title = sensor.Hardware.Name + " " + sensor.Name
+                Title = sensor.Hardware.Name + " " + LocalizedNames.SensorName(sensor.Name)
             };
 
             _model.Series.Add(series);
