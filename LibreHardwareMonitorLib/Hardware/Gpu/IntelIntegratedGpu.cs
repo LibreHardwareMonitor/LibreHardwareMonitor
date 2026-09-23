@@ -68,15 +68,15 @@ internal class IntelIntegratedGpu : GenericGpu
 
         if (deviceInfo.GpuDedicatedLimit > 0)
         {
-            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.Data, this, settings);
         }
 
-        _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+        _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.Data, this, settings);
 
         if (deviceInfo.GpuSharedLimit > 0)
         {
-            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
-            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
+            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.Data, this, settings);
+            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.Data, this, settings);
         }
 
         if (_pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))

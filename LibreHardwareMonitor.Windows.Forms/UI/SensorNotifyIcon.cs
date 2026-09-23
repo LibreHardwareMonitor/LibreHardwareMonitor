@@ -1,4 +1,4 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -171,8 +171,6 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Fan:
             case SensorType.Flow:
                 return $"{1e-3f * Sensor.Value:F1}";
-            case SensorType.SmallData:
-                return $"{UnitManager.BytesToMegaBytes(Sensor.Value):F1}";
             case SensorType.Data:
                 return $"{UnitManager.BytesToGigaBytes(Sensor.Value):F0}";
             case SensorType.Voltage:
@@ -208,7 +206,7 @@ public class SensorNotifyIcon : IDisposable
         Rectangle bounds = new Rectangle(Point.Empty, _bitmap.Size);
         TextRenderer.DrawText(_graphics, text, small ? _smallFont : _font,
             bounds, Color.White, Color.Black, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-        
+
         BitmapData data = _bitmap.LockBits(
             new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
             ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
@@ -288,7 +286,6 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Level: format = "\n{0}: {1:F1} %"; break;
             case SensorType.Power: format = "\n{0}: {1:F0} W"; break;
             case SensorType.Data: format = "\n{0}: {1:F0} GB"; break;
-            case SensorType.SmallData: format = "\n{0}: {1:F0} MB"; break;
             case SensorType.Factor: format = "\n{0}: {1:F3} GB"; break;
             case SensorType.Energy: format = "\n{0}: {0:F0} mWh"; break;
             case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
@@ -307,10 +304,6 @@ public class SensorNotifyIcon : IDisposable
         else if (Sensor.SensorType == SensorType.Data)
         {
             formattedValue = string.Format(format, Sensor.Name, UnitManager.BytesToGigaBytes(Sensor.Value));
-        }
-        else if (Sensor.SensorType == SensorType.SmallData)
-        {
-            formattedValue = string.Format(format, Sensor.Name, UnitManager.BytesToMegaBytes(Sensor.Value));
         }
 
         string hardwareName = Sensor.Hardware.Name;

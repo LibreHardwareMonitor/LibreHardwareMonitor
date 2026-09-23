@@ -59,7 +59,6 @@ public class SensorNode : Node
                 Format = "{0:F1} W";
                 break;
             case SensorType.Data:
-            case SensorType.SmallData:
                 Format = "{0:F1} B";
                 break;
             case SensorType.Factor:
@@ -193,11 +192,7 @@ public class SensorNode : Node
                     }
                 case SensorType.Data:
                     {
-                        return $"{UnitManager.BytesToGigaBytes(value):F1} GB";
-                    }
-                case SensorType.SmallData:
-                    {
-                        return $"{UnitManager.BytesToMegaBytes(value):F1} MB";
+                        return UnitManager.BytesToString(value);
                     }
                 case SensorType.Throughput:
                     {
@@ -237,9 +232,7 @@ public class SensorNode : Node
                                 }
                             default:
                                 {
-                                    const int _1MB = 1048576;
-
-                                    result = value < _1MB ? $"{value / 1024:F1} KB/s" : $"{value / _1MB:F1} MB/s";
+                                    result = UnitManager.BytesPerSecondToString(value);
 
                                     break;
                                 }

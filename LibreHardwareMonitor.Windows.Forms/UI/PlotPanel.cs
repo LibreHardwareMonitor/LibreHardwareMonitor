@@ -228,7 +228,6 @@ public class PlotPanel : UserControl
             { SensorType.Factor, "1" },
             { SensorType.Power, "W" },
             { SensorType.Data, "GB" },
-            { SensorType.SmallData, "MB" },
             { SensorType.Frequency, "Hz" },
             { SensorType.Energy, "mWh" },
             { SensorType.Noise, "dBA" },
@@ -328,10 +327,6 @@ public class PlotPanel : UserControl
             else if (type == SensorType.Data)
             {
                 displayedValue = UnitManager.BytesToGigaBytes(value.Value).Value;
-            }
-            else if (type == SensorType.SmallData)
-            {
-                displayedValue = UnitManager.BytesToMegaBytes(value.Value).Value;
             }
             else
             {

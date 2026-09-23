@@ -468,13 +468,13 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                     if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                     {
-                                        int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
+                                        int dataSensorIndex = 3; // There are three normal GPU memory sensors.
                                         int nextD3dLoadIndex = d3dLoadStartIndex;
 
                                         _d3dDeviceId = deviceId;
 
-                                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", smallDataSensorIndex++, SensorType.SmallData, this, settings);
-                                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", smallDataSensorIndex, SensorType.SmallData, this, settings);
+                                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", dataSensorIndex++, SensorType.Data, this, settings);
+                                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", dataSensorIndex, SensorType.Data, this, settings);
 
                                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -497,9 +497,9 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
-        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
 
         // Pin power sensors for NVIDIA RTX Astral series from ASUS
         if (NvApi.NvAPI_I2CReadEx != null && NvApi.NvAPI_GPU_GetPCIIdentifiers != null)
