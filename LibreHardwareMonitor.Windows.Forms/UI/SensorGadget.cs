@@ -1224,11 +1224,7 @@ public class SensorGadget : Gadget
                             }
                             else if (sensor.SensorType == SensorType.Data)
                             {
-                                formatted = $"{UnitManager.BytesToGigaBytes(sensor.Value):F1} GB";
-                            }
-                            else if (sensor.SensorType == SensorType.SmallData)
-                            {
-                                formatted = $"{UnitManager.BytesToMegaBytes(sensor.Value):F0} MB";
+                                formatted = UnitManager.BytesToString(sensor.Value);
                             }
                             else if (sensor.SensorType == SensorType.Throughput)
                             {
@@ -1262,10 +1258,7 @@ public class SensorGadget : Gadget
                                         break;
                                     default:
                                         {
-                                            if (sensor.Value < 1048576)
-                                                result = $"{sensor.Value / 1024:F1} KB/s";
-                                            else
-                                                result = $"{sensor.Value / 1048576:F1} MB/s";
+                                            result = UnitManager.BytesPerSecondToString(sensor.Value);
                                         }
                                         break;
                                 }

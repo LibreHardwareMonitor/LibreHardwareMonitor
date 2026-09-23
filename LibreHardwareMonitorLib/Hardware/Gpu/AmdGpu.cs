@@ -105,9 +105,9 @@ internal sealed class AmdGpu : GenericGpu
 
         _fullscreenFps = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
 
-        _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.SmallData, this, settings);
-        _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.SmallData, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.Data, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.Data, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
 
         if (!Software.OperatingSystem.IsUnix)
         {
@@ -127,12 +127,12 @@ internal sealed class AmdGpu : GenericGpu
                         int nodeSensorIndex = 2;
                         int memorySensorIndex = 3;
 
-                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuDedicatedMemoryFree = new Sensor("D3D Dedicated Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuDedicatedMemoryTotal = new Sensor("D3D Dedicated Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuSharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuSharedMemoryTotal = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
+                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuDedicatedMemoryFree = new Sensor("D3D Dedicated Memory Free", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuDedicatedMemoryTotal = new Sensor("D3D Dedicated Memory Total", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuSharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuSharedMemoryTotal = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.Data, this, settings);
 
                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];

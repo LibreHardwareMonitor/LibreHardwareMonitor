@@ -27,7 +27,6 @@ public enum SensorType
     Level, // %
     Factor, // 1
     Data, // B
-    SmallData, // B
     Throughput, // B/s
     TimeSpan, // Seconds
     Timing, // ns

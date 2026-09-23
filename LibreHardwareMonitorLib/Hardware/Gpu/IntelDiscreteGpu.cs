@@ -111,9 +111,9 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         _loadMedia = new Sensor("GPU Media", 2, SensorType.Load, this, settings);
 
         // Initialize memory sensors
-        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
-        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
         _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
         // Initialize bandwidth sensors

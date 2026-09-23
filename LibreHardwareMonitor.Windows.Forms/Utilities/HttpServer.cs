@@ -601,7 +601,6 @@ public class HttpServer
            { SensorType.Load, ("percent", 1) },
            { SensorType.Noise, ("decibels", 1) },
            { SensorType.Power, ("watts", 1) },
-           { SensorType.SmallData, ("bytes", 1) },
            { SensorType.Temperature, ("celsius", 1) },
            { SensorType.Throughput, ("bytes_per_second", 1) },
            { SensorType.TimeSpan, ("seconds", 1) },
