@@ -1,10 +1,11 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -25,93 +26,114 @@ public sealed class TypeNode : Node, IExpandPersistNode
         {
             case SensorType.Voltage:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Voltages";
                 break;
             case SensorType.Current:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Currents";
                 break;
             case SensorType.Energy:
                 Image = Utilities.EmbeddedResources.GetImage("battery.png");
-                Text = "Capacities";
                 break;
             case SensorType.Clock:
                 Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                Text = "Clocks";
                 break;
             case SensorType.Load:
                 Image = Utilities.EmbeddedResources.GetImage("load.png");
-                Text = "Load";
                 break;
             case SensorType.Temperature:
                 Image = Utilities.EmbeddedResources.GetImage("temperature.png");
-                Text = "Temperatures";
                 break;
             case SensorType.Fan:
                 Image = Utilities.EmbeddedResources.GetImage("fan.png");
-                Text = "Fans";
                 break;
             case SensorType.Flow:
                 Image = Utilities.EmbeddedResources.GetImage("flow.png");
-                Text = "Flows";
                 break;
             case SensorType.Control:
                 Image = Utilities.EmbeddedResources.GetImage("control.png");
-                Text = "Controls";
                 break;
             case SensorType.Level:
                 Image = Utilities.EmbeddedResources.GetImage("level.png");
-                Text = "Levels";
                 break;
             case SensorType.Power:
                 Image = Utilities.EmbeddedResources.GetImage("power.png");
-                Text = "Powers";
                 break;
             case SensorType.Data:
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
                 break;
             case SensorType.SmallData:
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
                 break;
             case SensorType.Factor:
                 Image = Utilities.EmbeddedResources.GetImage("factor.png");
-                Text = "Factors";
                 break;
             case SensorType.Frequency:
                 Image = Utilities.EmbeddedResources.GetImage("clock.png");
-                Text = "Frequencies";
                 break;
             case SensorType.Throughput:
                 Image = Utilities.EmbeddedResources.GetImage("throughput.png");
-                Text = "Throughput";
                 break;
             case SensorType.TimeSpan:
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
-                Text = "Times";
                 break;
             case SensorType.Timing:
                 Image = Utilities.EmbeddedResources.GetImage("time.png");
-                Text = "Timings";
                 break;
             case SensorType.Noise:
                 Image = Utilities.EmbeddedResources.GetImage("loudspeaker.png");
-                Text = "Noise Levels";
                 break;
             case SensorType.Conductivity:
                 Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-                Text = "Conductivities";
                 break;
             case SensorType.Humidity:
                 Image = Utilities.EmbeddedResources.GetImage("humidity.png");
-                Text = "Humidity Levels";
                 break;
         }
 
         NodeAdded += TypeNode_NodeAdded;
         NodeRemoved += TypeNode_NodeRemoved;
         _expanded = settings.GetValue(_expandedIdentifier, true);
+    }
+
+    /// <summary>
+    /// The group heading is derived from the current UI culture on every read, so a simple
+    /// repaint is enough to hot-switch the language. English is used as the fallback.
+    /// </summary>
+    public override string Text
+    {
+        get { return LocalizationManager.GetGroupText(SensorType, EnglishTitle); }
+        set { /* group headings always follow the current language */ }
+    }
+
+    private string EnglishTitle
+    {
+        get
+        {
+            switch (SensorType)
+            {
+                case SensorType.Voltage: return "Voltages";
+                case SensorType.Current: return "Currents";
+                case SensorType.Energy: return "Capacities";
+                case SensorType.Clock: return "Clocks";
+                case SensorType.Load: return "Load";
+                case SensorType.Temperature: return "Temperatures";
+                case SensorType.Fan: return "Fans";
+                case SensorType.Flow: return "Flows";
+                case SensorType.Control: return "Controls";
+                case SensorType.Level: return "Levels";
+                case SensorType.Power: return "Powers";
+                case SensorType.Data: return "Data";
+                case SensorType.SmallData: return "Data";
+                case SensorType.Factor: return "Factors";
+                case SensorType.Frequency: return "Frequencies";
+                case SensorType.Throughput: return "Throughput";
+                case SensorType.TimeSpan: return "Times";
+                case SensorType.Timing: return "Timings";
+                case SensorType.Noise: return "Noise Levels";
+                case SensorType.Conductivity: return "Conductivities";
+                case SensorType.Humidity: return "Humidity Levels";
+                default: return string.Empty;
+            }
+        }
     }
 
     private void TypeNode_NodeRemoved(Node node)

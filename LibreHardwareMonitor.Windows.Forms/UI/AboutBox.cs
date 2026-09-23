@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -17,7 +17,11 @@ public sealed partial class AboutBox : Form
     {
         InitializeComponent();
         Font = SystemFonts.MessageBoxFont;
-        label3.Text = "Version " + Application.ProductVersion;
+        Text = LibreHardwareMonitor.Windows.Forms.Localization.LocalizationManager.Get("About.title") ?? "About";
+        okButton.Text = LibreHardwareMonitor.Windows.Forms.Localization.LocalizationManager.Get("About.ok") ?? "OK";
+        label3.Text = (LibreHardwareMonitor.Windows.Forms.Localization.LocalizationManager.Get("About.versionPrefix") ?? "Version ") + Application.ProductVersion;
+        projectLinkLabel.Text = LibreHardwareMonitor.Windows.Forms.Localization.LocalizationManager.Get("About.projectWebsite") ?? "Project Website";
+        licenseLinkLabel.Text = LibreHardwareMonitor.Windows.Forms.Localization.LocalizationManager.Get("About.licensing") ?? "Licensing Information";
         projectLinkLabel.Links.Remove(projectLinkLabel.Links[0]);
         projectLinkLabel.Links.Add(0, projectLinkLabel.Text.Length, "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor");
         licenseLinkLabel.Links.Remove(licenseLinkLabel.Links[0]);

@@ -1,10 +1,11 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ public class HardwareNode : Node, IExpandPersistNode
 
     public override string Text
     {
-        get { return Hardware.Name; }
+        get { return LocalizedNames.HardwareName(Hardware.Name); }
         set { Hardware.Name = value; }
     }
 

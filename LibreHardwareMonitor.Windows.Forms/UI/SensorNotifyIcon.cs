@@ -12,6 +12,7 @@ using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Windows.Forms.Localization;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -29,6 +30,10 @@ public class SensorNotifyIcon : IDisposable
     private readonly Pen _pen;
     private readonly Font _font;
     private readonly Font _smallFont;
+    private readonly ToolStripItem _hideShowItem;
+    private readonly ToolStripItem _removeItem;
+    private readonly ToolStripItem _colorItem;
+    private readonly ToolStripItem _exitItem;
 
     public SensorNotifyIcon(SystemTray sensorSystemTray, ISensor sensor, PersistentSettings settings, UnitManager unitManager)
     {
@@ -44,21 +49,21 @@ public class SensorNotifyIcon : IDisposable
 
         _pen = new Pen(Color.FromArgb(96, Color.Black));
         ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-        ToolStripItem hideShowItem = new ToolStripMenuItem("Hide/Show");
-        hideShowItem.Click += delegate
+        _hideShowItem = new ToolStripMenuItem();
+        _hideShowItem.Click += delegate
         {
             sensorSystemTray.SendHideShowCommand();
         };
-        contextMenuStrip.Items.Add(hideShowItem);
+        contextMenuStrip.Items.Add(_hideShowItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripItem removeItem = new ToolStripMenuItem("Remove Sensor");
-        removeItem.Click += delegate
+        _removeItem = new ToolStripMenuItem();
+        _removeItem.Click += delegate
         {
             sensorSystemTray.Remove(Sensor);
         };
-        contextMenuStrip.Items.Add(removeItem);
-        ToolStripItem colorItem = new ToolStripMenuItem("Change Color...");
-        colorItem.Click += delegate
+        contextMenuStrip.Items.Add(_removeItem);
+        _colorItem = new ToolStripMenuItem();
+        _colorItem.Click += delegate
         {
             ColorDialog dialog = new ColorDialog { Color = Color };
             if (dialog.ShowDialog() == DialogResult.OK)
@@ -68,14 +73,25 @@ public class SensorNotifyIcon : IDisposable
                                                  "traycolor").ToString(), Color);
             }
         };
-        contextMenuStrip.Items.Add(colorItem);
+        contextMenuStrip.Items.Add(_colorItem);
         contextMenuStrip.Items.Add(new ToolStripSeparator());
-        ToolStripItem exitItem = new ToolStripMenuItem("Exit");
-        exitItem.Click += delegate
+        _exitItem = new ToolStripMenuItem();
+        _exitItem.Click += delegate
         {
             sensorSystemTray.SendExitCommand();
         };
-        contextMenuStrip.Items.Add(exitItem);
+        contextMenuStrip.Items.Add(_exitItem);
+
+        // Resolve the text every time the menu is opened, so that a run-time language
+        // switch is reflected here as well.
+        contextMenuStrip.Opening += delegate
+        {
+            _hideShowItem.Text = LocalizationManager.Get("Tray.HideShow") ?? "Hide/Show";
+            _removeItem.Text = LocalizationManager.Get("Tray.RemoveSensor") ?? "Remove Sensor";
+            _colorItem.Text = LocalizationManager.Get("Tray.ChangeColor") ?? "Change Color...";
+            _exitItem.Text = LocalizationManager.Get("Tray.Exit") ?? "Exit";
+        };
+
         _notifyIcon.ContextMenuStrip = contextMenuStrip;
         _notifyIcon.DoubleClick += delegate
         {
@@ -294,12 +310,12 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Timing: format = "\n{0}: {0:F3} ns"; break;
         }
 
-        string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
+        string formattedValue = string.Format(format, LocalizedNames.SensorName(Sensor.Name), Sensor.Value);
 
         if (Sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
         {
             format = "\n{0}: {1:F1} °F";
-            formattedValue = string.Format(format, Sensor.Name, UnitManager.CelsiusToFahrenheit(Sensor.Value));
+            formattedValue = string.Format(format, LocalizedNames.SensorName(Sensor.Name), UnitManager.CelsiusToFahrenheit(Sensor.Value));
         }
 
         string hardwareName = Sensor.Hardware.Name;
