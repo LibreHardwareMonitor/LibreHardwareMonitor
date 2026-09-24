@@ -590,7 +590,7 @@ public class HttpServer
            { SensorType.Conductivity, ("seconds_per_centimeter", 0.000001) }, //originally microseconds per centimeter
            { SensorType.Control, ("percent", 1) },
            { SensorType.Current, ("amperes", 1) },
-           { SensorType.Data, ("bytes", 1000000000) },                        //originally GB
+           { SensorType.Data, ("bytes", 1) },
            { SensorType.Energy, ("watthour", 0.001) },
            { SensorType.Factor, ("", 1) },
            { SensorType.Fan, ("rpm", 1) },
@@ -601,7 +601,6 @@ public class HttpServer
            { SensorType.Load, ("percent", 1) },
            { SensorType.Noise, ("decibels", 1) },
            { SensorType.Power, ("watts", 1) },
-           { SensorType.SmallData, ("bytes", 1024*1024) },                    //originally MiB
            { SensorType.Temperature, ("celsius", 1) },
            { SensorType.Throughput, ("bytes_per_second", 1) },
            { SensorType.TimeSpan, ("seconds", 1) },

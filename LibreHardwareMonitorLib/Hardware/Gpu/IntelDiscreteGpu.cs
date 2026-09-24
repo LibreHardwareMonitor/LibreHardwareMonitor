@@ -111,9 +111,9 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         _loadMedia = new Sensor("GPU Media", 2, SensorType.Load, this, settings);
 
         // Initialize memory sensors
-        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
-        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
         _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
         // Initialize bandwidth sensors
@@ -550,14 +550,13 @@ internal sealed class IntelDiscreteGpu : GenericGpu
 
             if (totalBytes > 0)
             {
-                // Convert bytes to MB for display
-                _memoryTotal.Value = totalBytes / (1024.0f * 1024.0f);
+                _memoryTotal.Value = totalBytes;
                 ActivateSensor(_memoryTotal);
 
-                _memoryUsed.Value = usedBytes / (1024.0f * 1024.0f);
+                _memoryUsed.Value = usedBytes;
                 ActivateSensor(_memoryUsed);
 
-                _memoryFree.Value = freeBytes / (1024.0f * 1024.0f);
+                _memoryFree.Value = freeBytes;
                 ActivateSensor(_memoryFree);
 
                 // Calculate load percentage

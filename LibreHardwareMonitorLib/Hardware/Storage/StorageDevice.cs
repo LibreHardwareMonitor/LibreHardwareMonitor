@@ -309,14 +309,15 @@ public sealed class StorageDevice : Hardware, ISmart
             AddSensor("Life", 20, false, SensorType.Level, s => s.Health.GetValueOrDefault());
         }
 
+        //HostReads and HostWrites are reported as whole GiB, convert to bytes for the sensors.
         if (_storage.HostReads.HasValue)
         {
-            AddSensor("Data Read", 21, false, SensorType.Data, s => s.HostReads.GetValueOrDefault());
+            AddSensor("Data Read", 21, false, SensorType.Data, s => (float)DataUnitConverter.ToByte(s.HostReads.GetValueOrDefault(), DataUnit.GibiByte));
         }
 
         if (_storage.HostWrites.HasValue)
         {
-            AddSensor("Data Written", 22, false, SensorType.Data, s => s.HostWrites.GetValueOrDefault());
+            AddSensor("Data Written", 22, false, SensorType.Data, s => (float)DataUnitConverter.ToByte(s.HostWrites.GetValueOrDefault(), DataUnit.GibiByte));
         }
 
         if (_storage.PowerOnCount.HasValue)
@@ -342,7 +343,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
         var totalSpaceSensor = new Sensor("Total Space", 32, SensorType.Data, this, _settings)
         {
-            Value = (float)DataUnitConverter.ToGigaByte(_storage.DiskSizeBytes.GetValueOrDefault(), DataUnit.Byte)
+            Value = _storage.DiskSizeBytes.GetValueOrDefault()
         };
         ActivateSensor(totalSpaceSensor);
 
@@ -467,7 +468,7 @@ public sealed class StorageDevice : Hardware, ISmart
         {
             // Set sensor value
             _usageSensor.Value = 100.0f - (100.0f * _storage.TotalPartitionFreeSpaceBytes / _storage.DiskSizeBytes);
-            _freeSpaceSensor.Value = (float)DataUnitConverter.ToGigaByte(_storage.TotalPartitionFreeSpaceBytes.GetValueOrDefault(), DataUnit.Byte);
+            _freeSpaceSensor.Value = _storage.TotalPartitionFreeSpaceBytes.GetValueOrDefault();
         }
         else
         {
