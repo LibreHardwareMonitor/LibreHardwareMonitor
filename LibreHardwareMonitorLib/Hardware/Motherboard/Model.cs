@@ -308,6 +308,7 @@ public enum Model
     Z790_UD_AC,
     Z790_GAMING_X,
     Z790_GAMING_X_AX,
+    Z890_AORUS_MASTER,
     Z170N_WIFI,
     B450_AORUS_M,
     B450_AORUS_PRO,
