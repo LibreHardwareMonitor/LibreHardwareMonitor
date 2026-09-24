@@ -34,7 +34,8 @@ public enum SensorType
     Energy, // milliwatt-hour (mWh)
     Noise, // dBA
     Conductivity, // µS/cm
-    Humidity // %
+    Humidity, // %
+    Health // 0 = Healthy, 1 = Warning, 2 = Critical
 }
 
 /// <summary>
