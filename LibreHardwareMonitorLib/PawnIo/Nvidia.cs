@@ -10,6 +10,7 @@ namespace LibreHardwareMonitor.PawnIo;
 internal sealed class Nvidia
 {
     public const int ThermalChannelCount = 6;
+    public const int MemoryTemperatureSensorCount = 48;
 
     private const uint ThermalChannelValid = 1u << 30;
     private const uint ThermalChannelValueMask = 0xFFFF;
@@ -52,6 +53,55 @@ internal sealed class Nvidia
                 }
 
                 temperatures[i] = (rawTemperature & ThermalChannelValueMask) / 256.0f;
+                hasValidTemperature = true;
+            }
+
+            return hasValidTemperature;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool TryReadMemoryTemperatures(uint bus, uint device, uint function, float?[] temperatures)
+    {
+        if (temperatures == null)
+        {
+            throw new ArgumentNullException(nameof(temperatures));
+        }
+
+        if (temperatures.Length != MemoryTemperatureSensorCount)
+        {
+            throw new ArgumentException($"Exactly {MemoryTemperatureSensorCount} output values are required.", nameof(temperatures));
+        }
+
+        Array.Clear(temperatures, 0, temperatures.Length);
+
+        if (!_pawnIo.IsLoaded)
+        {
+            return false;
+        }
+
+        try
+        {
+            var rawTemperatures = _pawnIo.Execute("ioctl_read_memory_temperatures", [bus, device, function], MemoryTemperatureSensorCount + 2);
+            if (rawTemperatures.Length != MemoryTemperatureSensorCount + 2 || rawTemperatures[1] != MemoryTemperatureSensorCount)
+            {
+                return false;
+            }
+
+            bool hasValidTemperature = false;
+
+            for (int i = 0; i < MemoryTemperatureSensorCount; i++)
+            {
+                int rawTemperature = unchecked((int)rawTemperatures[i + 2]);
+                if (rawTemperature == int.MinValue)
+                {
+                    continue;
+                }
+
+                temperatures[i] = rawTemperature;
                 hasValidTemperature = true;
             }
 

@@ -35,6 +35,8 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _loads;
     private readonly Sensor _memoryFree;
     private readonly Sensor _memoryJunctionTemperature;
+    private readonly Sensor[] _memoryTemperatures;
+    private readonly float?[] _memoryTemperatureValues;
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
     private readonly Sensor _memoryLoad;
@@ -149,12 +151,21 @@ internal sealed class NvidiaGpu : GenericGpu
                     _pciDeviceId = busSlotId;
                     _hotSpotTemperatureValues = new float?[PawnIo.Nvidia.ThermalChannelCount];
                     _hotSpotTemperatures = new Sensor[PawnIo.Nvidia.ThermalChannelCount];
+                    _memoryTemperatureValues = new float?[PawnIo.Nvidia.MemoryTemperatureSensorCount];
+                    _memoryTemperatures = new Sensor[PawnIo.Nvidia.MemoryTemperatureSensorCount];
 
                     int temperatureIndex = (int)thermalSettings.Count + 3;
 
                     for (int i = 0; i < _hotSpotTemperatures.Length; ++i)
                     {
                         _hotSpotTemperatures[i] = new Sensor($"GPU Hot Spot #{i + 1}", temperatureIndex + i, SensorType.Temperature, this, settings);
+                    }
+
+                    temperatureIndex += _hotSpotTemperatures.Length;
+
+                    for (int i = 0; i < _memoryTemperatures.Length; ++i)
+                    {
+                        _memoryTemperatures[i] = new Sensor($"GPU Memory #{i + 1}", temperatureIndex + i, SensorType.Temperature, this, settings);
                     }
 
                     _pawnNvidia = pawnNvidia;
@@ -645,6 +656,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
 
             UpdateHotSpotTemperatures();
+            UpdateMemoryTemperatures();
 
             if (_clocks is { Length: > 0 })
             {
@@ -905,6 +917,47 @@ internal sealed class NvidiaGpu : GenericGpu
             DeactivateSensor(_hotSpotTemperature);
 
             _pawnHotSpotMaximumActive = false;
+        }
+    }
+
+    private void UpdateMemoryTemperatures()
+    {
+        if (_pawnNvidia == null || _memoryTemperatures == null)
+        {
+            return;
+        }
+
+        if (!Mutexes.WaitPciBus(10))
+        {
+            return;
+        }
+
+        bool hasValidTemperatures = false;
+
+        try
+        {
+            hasValidTemperatures = _pawnNvidia.TryReadMemoryTemperatures(_pciBusId, _pciDeviceId, 0, _memoryTemperatureValues);
+        }
+        finally
+        {
+            Mutexes.ReleasePciBus();
+        }
+
+        for (int i = 0; i < _memoryTemperatures.Length; ++i)
+        {
+            Sensor sensor = _memoryTemperatures[i];
+
+            float? value = hasValidTemperatures ? _memoryTemperatureValues[i] : null;
+            sensor.Value = value;
+
+            if (value.HasValue)
+            {
+                ActivateSensor(sensor);
+            }
+            else
+            {
+                DeactivateSensor(sensor);
+            }
         }
     }
 
