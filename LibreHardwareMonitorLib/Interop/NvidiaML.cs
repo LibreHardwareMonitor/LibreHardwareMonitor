@@ -138,6 +138,8 @@ internal static class NvidiaML
 
     public static bool IsAvailable { get; private set; }
 
+    public static object SyncRoot => _syncRoot;
+
     public static bool Initialize()
     {
         lock (_syncRoot)
@@ -184,6 +186,9 @@ internal static class NvidiaML
                 }
 
                 IsAvailable = !_windowsDll.IsInvalid && InitialiseDelegates() && (_windowsNvmlInit() == NvmlReturn.Success);
+
+                if (!IsAvailable)
+                    _windowsDll.Dispose();
             }
 
             return IsAvailable;
