@@ -623,7 +623,8 @@ public class HttpServer
                 string valueHardwareName = "";
                 string valueHardwareId = ((HardwareNode)node).Hardware.Identifier.ToString();
 
-                if (((HardwareNode)node).Hardware.Parent != null)
+                // A disk under a Storage Spaces pool is a disk in its own right, so it keeps its own labels.
+                if (((HardwareNode)node).Hardware.Parent != null && ((HardwareNode)node).Hardware.HardwareType != HardwareType.Storage)
                 {
                     tagHardware = ((HardwareNode)node).Hardware.Parent.HardwareType.ToString();
                     valueHardwareName = ((HardwareNode)node).Hardware.Parent.Name;
