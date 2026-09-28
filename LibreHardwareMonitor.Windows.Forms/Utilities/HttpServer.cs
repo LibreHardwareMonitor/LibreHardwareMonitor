@@ -596,6 +596,7 @@ public class HttpServer
            { SensorType.Fan, ("rpm", 1) },
            { SensorType.Flow, ("liters_per_hour", 1) },
            { SensorType.Frequency, ("hertz", 1) },
+           { SensorType.Health, ("", 1) },
            { SensorType.Humidity, ("percent", 1) },
            { SensorType.Level, ("percent", 1) },
            { SensorType.Load, ("percent", 1) },
@@ -919,6 +920,7 @@ public class HttpServer
             case SensorType.Control:
                 return "control.png";
             case SensorType.Level:
+            case SensorType.Health:
                 return "level.png";
             case SensorType.Power:
                 return "power.png";
