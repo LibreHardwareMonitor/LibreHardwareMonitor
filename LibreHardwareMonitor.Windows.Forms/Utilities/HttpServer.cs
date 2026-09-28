@@ -878,6 +878,8 @@ public class HttpServer
                 return "intel.png";
             case HardwareType.Storage:
                 return "hdd.png";
+            case HardwareType.StorageSpaces:
+                return "storagespaces.png";
             case HardwareType.Motherboard:
                 return "mainboard.png";
             case HardwareType.SuperIO:
