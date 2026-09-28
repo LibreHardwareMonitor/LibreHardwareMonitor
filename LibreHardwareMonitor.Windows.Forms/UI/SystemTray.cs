@@ -58,32 +58,26 @@ public class SystemTray : IDisposable
 
     private void HardwareRemoved(IHardware hardware)
     {
-        UIThread.BeginInvoke(_owner, () =>
-        {
-            hardware.SensorAdded -= SensorAdded;
-            hardware.SensorRemoved -= SensorRemoved;
+        hardware.SensorAdded -= SensorAdded;
+        hardware.SensorRemoved -= SensorRemoved;
 
-            foreach (ISensor sensor in hardware.Sensors)
-                SensorRemoved(sensor);
+        foreach (ISensor sensor in hardware.Sensors)
+            SensorRemoved(sensor);
 
-            foreach (IHardware subHardware in hardware.SubHardware)
-                HardwareRemoved(subHardware);
-        });
+        foreach (IHardware subHardware in hardware.SubHardware)
+            HardwareRemoved(subHardware);
     }
 
     private void HardwareAdded(IHardware hardware)
     {
-        UIThread.BeginInvoke(_owner, () =>
-        {
-            foreach (ISensor sensor in hardware.Sensors)
-                SensorAdded(sensor);
+        foreach (ISensor sensor in hardware.Sensors)
+            SensorAdded(sensor);
 
-            hardware.SensorAdded += SensorAdded;
-            hardware.SensorRemoved += SensorRemoved;
+        hardware.SensorAdded += SensorAdded;
+        hardware.SensorRemoved += SensorRemoved;
 
-            foreach (IHardware subHardware in hardware.SubHardware)
-                HardwareAdded(subHardware);
-        });
+        foreach (IHardware subHardware in hardware.SubHardware)
+            HardwareAdded(subHardware);
     }
 
     private void SensorAdded(ISensor sensor)
