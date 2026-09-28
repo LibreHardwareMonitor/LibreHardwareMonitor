@@ -27,10 +27,12 @@ namespace LibreHardwareMonitor.Windows.Forms.UI;
 public sealed partial class MainForm : Form
 {
     private static readonly TimeSpan ResumeResetDelay = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan ResetShutdownTimeout = TimeSpan.FromSeconds(5);
 
     private ToolStripMenuItem _autoThemeMenuItem;
     private readonly UserOption _autoStart;
     private readonly Computer _computer;
+    private readonly object _computerResetLock = new();
     private readonly SensorGadget _gadget;
     private readonly Logger _logger;
     private readonly UserRadioGroup _loggingInterval;
@@ -64,6 +66,7 @@ public sealed partial class MainForm : Form
     private int _delayCount;
     private Form _plotForm;
     private UserRadioGroup _plotLocation;
+    private volatile bool _computerClosing;
     private CancellationTokenSource _resumeResetCancellationTokenSource;
     private UserRadioGroup _splitPanelScalingSetting;
     private bool _selectionDragging;
@@ -550,8 +553,9 @@ public sealed partial class MainForm : Form
         // Make sure the settings are saved when the user logs off
         Microsoft.Win32.SystemEvents.SessionEnded += delegate
         {
-            _computer.Close();
+            CloseComputer();
             SaveConfiguration();
+
             if (_runWebServer.Value)
                 Server.Quit();
         };
@@ -613,7 +617,18 @@ public sealed partial class MainForm : Form
         timer.Enabled = false;
 
         CancellationTokenSource cancellationTokenSource = new();
-        _resumeResetCancellationTokenSource = cancellationTokenSource;
+
+        lock (_computerResetLock)
+        {
+            if (_computerClosing)
+            {
+                cancellationTokenSource.Dispose();
+                return;
+            }
+
+            _resumeResetCancellationTokenSource = cancellationTokenSource;
+        }
+
         _ = ResetAfterResumeAsync(cancellationTokenSource);
     }
 
@@ -622,7 +637,15 @@ public sealed partial class MainForm : Form
         try
         {
             await Task.Delay(ResumeResetDelay, cancellationTokenSource.Token).ConfigureAwait(false);
-            await Task.Run(() => _computer.Reset(), cancellationTokenSource.Token).ConfigureAwait(false);
+
+            await Task.Run(() =>
+            {
+                lock (_computerResetLock)
+                {
+                    if (!_computerClosing && !cancellationTokenSource.IsCancellationRequested)
+                        _computer.Reset();
+                }
+            }, cancellationTokenSource.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -636,28 +659,51 @@ public sealed partial class MainForm : Form
         {
             UIThread.BeginInvoke(this, () =>
             {
-                cancellationTokenSource.Dispose();
-
-                if (_resumeResetCancellationTokenSource != cancellationTokenSource)
+                lock (_computerResetLock)
                 {
-                    return;
-                }
+                    cancellationTokenSource.Dispose();
 
-                _resumeResetCancellationTokenSource = null;
-                timer.Enabled = true;
+                    if (_resumeResetCancellationTokenSource != cancellationTokenSource || _computerClosing)
+                        return;
+
+                    _resumeResetCancellationTokenSource = null;
+                    timer.Enabled = true;
+                }
             });
         }
     }
 
     private void CancelPendingResumeReset()
     {
-        if (_resumeResetCancellationTokenSource == null)
+        lock (_computerResetLock)
         {
+            _resumeResetCancellationTokenSource?.Cancel();
+            _resumeResetCancellationTokenSource = null;
+        }
+    }
+
+    private void CloseComputer()
+    {
+        _computerClosing = true;
+
+        // A running reset cannot be cancelled, so do not close its resources on timeout.
+        if (!Monitor.TryEnter(_computerResetLock, ResetShutdownTimeout))
+        {
+            Debug.WriteLine("Skipping computer close because a reset is still running.");
             return;
         }
 
-        _resumeResetCancellationTokenSource.Cancel();
-        _resumeResetCancellationTokenSource = null;
+        try
+        {
+            _resumeResetCancellationTokenSource?.Cancel();
+            _resumeResetCancellationTokenSource = null;
+
+            _computer.Close();
+        }
+        finally
+        {
+            Monitor.Exit(_computerResetLock);
+        }
     }
 
     private void InitializeTheme()
@@ -1118,10 +1164,9 @@ public sealed partial class MainForm : Form
         Visible = false;
         _systemTray.IsMainIconEnabled = false;
 
-        CancelPendingResumeReset();
-
         timer.Enabled = false;
-        _computer.Close();
+
+        CloseComputer();
         SaveConfiguration();
 
         if (_runWebServer.Value)
@@ -1431,7 +1476,13 @@ public sealed partial class MainForm : Form
         // disable the fallback MainIcon during reset, otherwise icon visibility
         // might be lost
         _systemTray.IsMainIconEnabled = false;
-        _computer.Reset();
+
+        lock (_computerResetLock)
+        {
+            if (!_computerClosing)
+                _computer.Reset();
+        }
+
         // restore the MainIcon setting
         _systemTray.IsMainIconEnabled = _minimizeToTray.Value;
     }
