@@ -324,6 +324,10 @@ public class PlotPanel : UserControl
             {
                 displayedValue = UnitManager.CelsiusToFahrenheit(value.Value).Value;
             }
+            else if (type == SensorType.Data)
+            {
+                displayedValue = UnitManager.BytesToGigaBytes(value.Value).Value;
+            }
             else
             {
                 displayedValue = value.Value;

@@ -1198,12 +1198,6 @@ public class SensorGadget : Gadget
                                 case SensorType.Power:
                                     format = "{0:F1} W";
                                     break;
-                                case SensorType.Data:
-                                    format = "{0:F1} GB";
-                                    break;
-                                case SensorType.SmallData:
-                                    format = "{0:F0} MB";
-                                    break;
                                 case SensorType.Factor:
                                     format = "{0:F3}";
                                     break;
@@ -1227,6 +1221,10 @@ public class SensorGadget : Gadget
                             if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)
                             {
                                 formatted = $"{UnitManager.CelsiusToFahrenheit(sensor.Value):F1} °F";
+                            }
+                            else if (sensor.SensorType == SensorType.Data)
+                            {
+                                formatted = UnitManager.BytesToString(sensor.Value);
                             }
                             else if (sensor.SensorType == SensorType.Throughput)
                             {
@@ -1260,10 +1258,7 @@ public class SensorGadget : Gadget
                                         break;
                                     default:
                                         {
-                                            if (sensor.Value < 1048576)
-                                                result = $"{sensor.Value / 1024:F1} KB/s";
-                                            else
-                                                result = $"{sensor.Value / 1048576:F1} MB/s";
+                                            result = UnitManager.BytesPerSecondToString(sensor.Value);
                                         }
                                         break;
                                 }

@@ -71,10 +71,6 @@ public sealed class TypeNode : Node, IExpandPersistNode
                 Image = Utilities.EmbeddedResources.GetImage("data.png");
                 Text = "Data";
                 break;
-            case SensorType.SmallData:
-                Image = Utilities.EmbeddedResources.GetImage("data.png");
-                Text = "Data";
-                break;
             case SensorType.Factor:
                 Image = Utilities.EmbeddedResources.GetImage("factor.png");
                 Text = "Factors";

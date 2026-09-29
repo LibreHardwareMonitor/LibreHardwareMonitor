@@ -171,9 +171,10 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Fan:
             case SensorType.Flow:
                 return $"{1e-3f * Sensor.Value:F1}";
+            case SensorType.Data:
+                return $"{UnitManager.BytesToGigaBytes(Sensor.Value):F0}";
             case SensorType.Voltage:
             case SensorType.Current:
-            case SensorType.SmallData:
             case SensorType.Factor:
             case SensorType.Throughput:
             case SensorType.Conductivity:
@@ -182,7 +183,6 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Frequency:
             case SensorType.Level:
             case SensorType.Power:
-            case SensorType.Data:
             case SensorType.Load:
             case SensorType.Energy:
             case SensorType.Noise:
@@ -300,6 +300,10 @@ public class SensorNotifyIcon : IDisposable
         {
             format = "\n{0}: {1:F1} °F";
             formattedValue = string.Format(format, Sensor.Name, UnitManager.CelsiusToFahrenheit(Sensor.Value));
+        }
+        else if (Sensor.SensorType == SensorType.Data)
+        {
+            formattedValue = string.Format(format, Sensor.Name, UnitManager.BytesToGigaBytes(Sensor.Value));
         }
 
         string hardwareName = Sensor.Hardware.Name;
