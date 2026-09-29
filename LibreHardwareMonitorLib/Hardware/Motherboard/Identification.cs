@@ -365,6 +365,11 @@ internal class Identification
             case var _ when name.Equals("Z790 AORUS PRO X", StringComparison.OrdinalIgnoreCase):
             case var _ when name.Equals("Z790 AORUS PRO X WIFI7", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_AORUS_PRO_X;
+            case var _ when name.Equals("Z890 AORUS MASTER", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z890 AORUS MASTER-CF", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z890 AORUS MASTER AI TOP", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("Z890 AORUS MASTER AI TOP-CF", StringComparison.OrdinalIgnoreCase):
+                return Model.Z890_AORUS_MASTER;
             case var _ when name.Equals("Z790 UD", StringComparison.OrdinalIgnoreCase):
                 return Model.Z790_UD;
             case var _ when name.Equals("Z790 UD AC", StringComparison.OrdinalIgnoreCase):
