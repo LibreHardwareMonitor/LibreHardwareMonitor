@@ -4,7 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using StorageDeviceDIT = DiskInfoToolkit.StorageDevice;
+using StorageDeviceDIT = DiskInfoToolkit.Devices.StorageDevice;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 

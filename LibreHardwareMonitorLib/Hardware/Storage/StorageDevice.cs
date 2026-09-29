@@ -12,13 +12,13 @@ using System.Linq;
 using System.Text;
 using BlackSharp.Core.Converters;
 using BlackSharp.Core.Converters.Enums;
-using DiskInfoToolkit;
+using DiskInfoToolkit.Devices;
 using DiskInfoToolkit.Smart;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
-using StorageDeviceDIT = DiskInfoToolkit.StorageDevice;
+using StorageDeviceDIT = DiskInfoToolkit.Devices.StorageDevice;
 using StorageDIT = DiskInfoToolkit.Storage;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
@@ -311,12 +311,12 @@ public sealed class StorageDevice : Hardware, ISmart
 
         if (_storage.HostReads.HasValue)
         {
-            AddSensor("Data Read", 21, false, SensorType.Data, s => s.HostReads.GetValueOrDefault());
+            AddSensor("Data Read", 21, false, SensorType.Data, s => (float)DataUnitConverter.ToGigaByte(s.HostReads.GetValueOrDefault(), DataUnit.Byte));
         }
 
         if (_storage.HostWrites.HasValue)
         {
-            AddSensor("Data Written", 22, false, SensorType.Data, s => s.HostWrites.GetValueOrDefault());
+            AddSensor("Data Written", 22, false, SensorType.Data, s => (float)DataUnitConverter.ToGigaByte(s.HostWrites.GetValueOrDefault(), DataUnit.Byte));
         }
 
         if (_storage.PowerOnCount.HasValue)

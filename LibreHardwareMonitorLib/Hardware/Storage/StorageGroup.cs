@@ -6,7 +6,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using DiskInfoToolkit;
+using DiskInfoToolkit.Monitoring;
 using StorageDIT = DiskInfoToolkit.Storage;
 
 namespace LibreHardwareMonitor.Hardware.Storage;

@@ -4,7 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using DiskInfoToolkit;
+using DiskInfoToolkit.Smart;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
