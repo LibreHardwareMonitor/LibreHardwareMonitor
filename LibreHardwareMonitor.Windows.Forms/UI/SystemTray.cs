@@ -82,7 +82,7 @@ public class SystemTray : IDisposable
 
     private void SensorAdded(ISensor sensor)
     {
-        UIThread.BeginInvoke(_owner, () =>
+        _owner.BeginInvoke(() =>
         {
             if (_settings.GetValue(new Identifier(sensor.Identifier, "tray").ToString(), false))
                 Add(sensor, false);
@@ -91,7 +91,7 @@ public class SystemTray : IDisposable
 
     private void SensorRemoved(ISensor sensor)
     {
-        UIThread.BeginInvoke(_owner, () =>
+        _owner.BeginInvoke(() =>
         {
             if (Contains(sensor))
                 Remove(sensor, false);
