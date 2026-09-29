@@ -55,7 +55,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private StorageSpacesDiskSensors _storageSpacesSensors;
 
     public StorageDevice(StorageDeviceDIT storage, ISettings settings)
-        : base(storage.ProductName, GetIdentifier(storage), settings)
+        : base(StorageSpacesDiskSensors.GetName(storage) ?? storage.ProductName, GetIdentifier(storage), settings)
     {
         _storage = storage;
 
@@ -71,7 +71,7 @@ public sealed class StorageDevice : Hardware, ISmart
     public StorageDeviceDIT Storage => _storage;
 
     /// <summary>
-    /// Gets the Storage Spaces object this disk shows, or <see langword="null" /> when it is not a pool member.
+    /// Gets the Storage Spaces object this disk shows, or <see langword="null" /> when it is neither a space nor a pool member.
     /// </summary>
     internal string StorageSpacesObjectId => _storageSpacesSensors?.ObjectId;
 
@@ -369,7 +369,7 @@ public sealed class StorageDevice : Hardware, ISmart
         };
         ActivateSensor(totalSpaceSensor);
 
-        // A pool member also shows its state in the pool.
+        // A storage space's disk also shows the state of the space, and a pool member its state in the pool.
         _storageSpacesSensors = StorageSpacesDiskSensors.Create(this, _storage, _settings);
         if (_storageSpacesSensors != null)
         {
