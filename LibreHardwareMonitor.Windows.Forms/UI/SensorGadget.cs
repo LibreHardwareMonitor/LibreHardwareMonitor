@@ -411,7 +411,7 @@ public class SensorGadget : Gadget
 
     private void SensorAdded(ISensor sensor)
     {
-        UIThread.BeginInvoke(_owner, () =>
+        _owner.BeginInvoke(() =>
         {
             if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
                 Add(sensor);
@@ -420,7 +420,7 @@ public class SensorGadget : Gadget
 
     private void SensorRemoved(ISensor sensor)
     {
-        UIThread.BeginInvoke(_owner, () =>
+        _owner.BeginInvoke(() =>
         {
             if (Contains(sensor))
                 Remove(sensor, false);

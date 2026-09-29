@@ -107,7 +107,7 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorRemoved(ISensor sensor)
     {
-        UIThread.BeginInvoke(_owner, () =>
+        _owner.BeginInvoke(() =>
         {
             foreach (TypeNode typeNode in _typeNodes)
             {
@@ -150,7 +150,7 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorAdded(ISensor sensor)
     {
-        UIThread.BeginInvoke(_owner, () =>
+        _owner.BeginInvoke(() =>
         {
             foreach (TypeNode typeNode in _typeNodes)
             {

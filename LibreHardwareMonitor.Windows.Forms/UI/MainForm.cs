@@ -594,7 +594,7 @@ public sealed partial class MainForm : Form
 
     private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
     {
-        UIThread.BeginInvoke(this, () => HandlePowerModeChanged(eventArgs.Mode));
+        BeginInvoke(() => HandlePowerModeChanged(eventArgs.Mode));
     }
 
     private void HandlePowerModeChanged(Microsoft.Win32.PowerModes mode)
@@ -657,7 +657,7 @@ public sealed partial class MainForm : Form
         }
         finally
         {
-            UIThread.BeginInvoke(this, () =>
+            BeginInvoke(() =>
             {
                 lock (_computerResetLock)
                 {
@@ -939,7 +939,7 @@ public sealed partial class MainForm : Form
 
     private void HardwareAdded(IHardware hardware)
     {
-        UIThread.BeginInvoke(this, () =>
+        BeginInvoke(() =>
         {
             SubHardwareAdded(hardware, _root);
             PlotSelectionChanged(this, null);
@@ -948,7 +948,7 @@ public sealed partial class MainForm : Form
 
     private void HardwareRemoved(IHardware hardware)
     {
-        UIThread.BeginInvoke(this, () =>
+        BeginInvoke(() =>
         {
             List<HardwareNode> nodesToRemove = new();
             foreach (Node node in _root.Nodes)
