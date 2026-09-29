@@ -82,6 +82,13 @@ internal class StorageGroup : IGroup, IHardwareChanged
                     continue;
                 }
 
+                //A pool member whose disk has gone stays under its pool, so that it shows which disk is missing
+                if (storageDevice.StorageSpacesObjectId != null && storageDevice.Parent is StorageSpacesPool)
+                {
+                    storageDevice.SetMissing();
+                    continue;
+                }
+
                 _disks.Remove(storageDevice);
 
                 if (_hardware.Remove(storageDevice))
@@ -129,7 +136,7 @@ internal class StorageGroup : IGroup, IHardwareChanged
         for (int i = 0; i < _disks.Count; i++)
         {
             var storageDevice = _disks[i];
-            if (!HasNewStorageSpacesRole(storageDevice))
+            if (storageDevice.IsMissing || !HasNewStorageSpacesRole(storageDevice))
             {
                 continue;
             }
@@ -141,6 +148,11 @@ internal class StorageGroup : IGroup, IHardwareChanged
 
             _disks[i] = new StorageDevice(storageDevice.Storage, _settings);
         }
+
+        //A missing disk is dropped once it is back, which can be with a new disk number, once another disk has its identifier, or once it has left its pool
+        _disks.RemoveAll(missing => missing.IsMissing &&
+                                    (_disks.Any(sd => !sd.IsMissing && (sd.StorageSpacesObjectId == missing.StorageSpacesObjectId || sd.Storage == missing.Storage || sd.Identifier == missing.Identifier)) ||
+                                     StorageSpacesData.FindPhysicalDisk(missing.StorageSpacesObjectId) == null));
 
         CreatePools();
 
@@ -187,7 +199,7 @@ internal class StorageGroup : IGroup, IHardwareChanged
     {
         foreach (var pool in StorageSpacesData.Pools)
         {
-            //Matched by the pool member each disk shows
+            //Matched by the pool member each disk shows, which stays the same while the disk is missing
             var members = _disks.Where(sd => sd.StorageSpacesObjectId != null && pool.PhysicalDisks.Any(pd => pd.ObjectId == sd.StorageSpacesObjectId));
 
             _pools.Add(new StorageSpacesPool(pool, members, _settings));

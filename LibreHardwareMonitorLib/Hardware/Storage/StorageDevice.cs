@@ -51,6 +51,7 @@ public sealed class StorageDevice : Hardware, ISmart
     private Sensor _usageSensor;
     private Sensor _freeSpaceSensor;
 
+    private volatile bool _isMissing;
     private IHardware _parent;
     private StorageSpacesDiskSensors _storageSpacesSensors;
 
@@ -69,6 +70,11 @@ public sealed class StorageDevice : Hardware, ISmart
     public override IHardware Parent => _parent;
 
     public StorageDeviceDIT Storage => _storage;
+
+    /// <summary>
+    /// Gets whether this pool member's disk has gone, while it is still shown under its pool.
+    /// </summary>
+    internal bool IsMissing => _isMissing;
 
     /// <summary>
     /// Gets the Storage Spaces object this disk shows, or <see langword="null" /> when it is neither a space nor a pool member.
@@ -92,6 +98,14 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         // Updated first, as the rest of the update ends early when the disk itself is unchanged.
         _storageSpacesSensors?.Update();
+
+        if (_isMissing)
+        {
+            // Only Storage Spaces still knows about a disk that has gone. Cleared on every update, so
+            // an update that was already running cannot leave a stale value behind.
+            ClearDiskSensors();
+            return;
+        }
 
         bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
         if (refreshSmartData)
@@ -239,6 +253,25 @@ public sealed class StorageDevice : Hardware, ISmart
     internal void SetParent(IHardware parent)
     {
         _parent = parent;
+    }
+
+    /// <summary>
+    /// Marks a pool member whose disk has gone, so that it can stay under its pool until it comes back.
+    /// </summary>
+    internal void SetMissing()
+    {
+        _isMissing = true;
+    }
+
+    private void ClearDiskSensors()
+    {
+        foreach (ISensor sensor in _active)
+        {
+            if (sensor is Sensor diskSensor && _storageSpacesSensors?.Sensors.Contains(diskSensor) != true)
+            {
+                diskSensor.Value = null;
+            }
+        }
     }
 
     private static string GetID(StorageDeviceDIT disk)

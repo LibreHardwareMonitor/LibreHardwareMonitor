@@ -119,7 +119,7 @@ public sealed class StorageSpacesPool : Hardware
             StorageDevice member = _members.FirstOrDefault(m => m.StorageSpacesObjectId == physicalDisk.ObjectId);
 
             r.AppendLine($"Physical Disk: {GetName(physicalDisk)}");
-            r.AppendLine($"  Shown As: {(member != null ? $"{member.Name} ({member.Identifier})" : "-")}");
+            r.AppendLine($"  Shown As: {(member != null ? $"{member.Name} ({member.Identifier}){(member.IsMissing ? ", missing" : "")}" : "-")}");
             r.AppendLine($"  Disk Number: {physicalDisk.DiskNumber?.ToString() ?? "-"}");
             r.AppendLine($"  Health Status: {StorageSpacesData.GetHealthStatusText(physicalDisk.HealthStatus)}");
             r.AppendLine($"  Operational Status: {StorageSpacesData.GetOperationalStatusText(physicalDisk.OperationalStatus)}");
