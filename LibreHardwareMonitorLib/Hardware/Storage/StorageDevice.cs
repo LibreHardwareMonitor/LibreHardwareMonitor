@@ -14,6 +14,7 @@ using BlackSharp.Core.Converters;
 using BlackSharp.Core.Converters.Enums;
 using DiskInfoToolkit.Devices;
 using DiskInfoToolkit.Smart;
+using LibreHardwareMonitor.Hardware.Storage.StorageSpaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
@@ -50,6 +51,9 @@ public sealed class StorageDevice : Hardware, ISmart
     private Sensor _usageSensor;
     private Sensor _freeSpaceSensor;
 
+    private IHardware _parent;
+    private StorageSpacesDiskSensors _storageSpacesSensors;
+
     public StorageDevice(StorageDeviceDIT storage, ISettings settings)
         : base(storage.ProductName, GetIdentifier(storage), settings)
     {
@@ -62,7 +66,14 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override HardwareType HardwareType => HardwareType.Storage;
 
+    public override IHardware Parent => _parent;
+
     public StorageDeviceDIT Storage => _storage;
+
+    /// <summary>
+    /// Gets the Storage Spaces object this disk shows, or <see langword="null" /> when it is not a pool member.
+    /// </summary>
+    internal string StorageSpacesObjectId => _storageSpacesSensors?.ObjectId;
 
     public IReadOnlyList<SmartAttribute> Attributes => _attributes;
 
@@ -79,6 +90,9 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override void Update()
     {
+        // Updated first, as the rest of the update ends early when the disk itself is unchanged.
+        _storageSpacesSensors?.Update();
+
         bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
         if (refreshSmartData)
         {
@@ -207,6 +221,7 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         r.AppendLine($"Total Size: {_storage.DiskSizeBytes}");
+        _storageSpacesSensors?.AppendReport(r);
         _storage.ProbeTrace.ForEach(line => r.AppendLine($"Probe Trace: {line}"));
 
         return r.ToString();
@@ -216,6 +231,14 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         foreach (ISensor sensor in Sensors)
             sensor.Accept(visitor);
+    }
+
+    /// <summary>
+    /// Sets the Storage Spaces pool this disk is shown under, or <see langword="null" /> to show it at the top level.
+    /// </summary>
+    internal void SetParent(IHardware parent)
+    {
+        _parent = parent;
     }
 
     private static string GetID(StorageDeviceDIT disk)
@@ -345,6 +368,16 @@ public sealed class StorageDevice : Hardware, ISmart
             Value = (float)DataUnitConverter.ToGigaByte(_storage.DiskSizeBytes.GetValueOrDefault(), DataUnit.Byte)
         };
         ActivateSensor(totalSpaceSensor);
+
+        // A pool member also shows its state in the pool.
+        _storageSpacesSensors = StorageSpacesDiskSensors.Create(this, _storage, _settings);
+        if (_storageSpacesSensors != null)
+        {
+            foreach (Sensor sensor in _storageSpacesSensors.Sensors)
+            {
+                ActivateSensor(sensor);
+            }
+        }
 
         _sensorDiskReadActivity = new Sensor("Read Activity", 51, SensorType.Load, this, _settings);
         ActivateSensor(_sensorDiskReadActivity);

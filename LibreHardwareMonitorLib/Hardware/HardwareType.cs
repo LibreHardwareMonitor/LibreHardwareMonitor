@@ -19,6 +19,7 @@ public enum HardwareType
     GpuAmd,
     GpuIntel,
     Storage,
+    StorageSpaces,
     Network,
     Cooler,
     EmbeddedController,

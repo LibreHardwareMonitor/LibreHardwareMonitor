@@ -7,15 +7,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using DiskInfoToolkit.Monitoring;
+using LibreHardwareMonitor.Hardware.Storage.StorageSpaces;
 using StorageDIT = DiskInfoToolkit.Storage;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
 internal class StorageGroup : IGroup, IHardwareChanged
 {
-    private readonly List<StorageDevice> _hardware = new();
+    //Every disk, including those shown under a Storage Spaces pool
+    private readonly List<StorageDevice> _disks = new();
+
+    //The top level: disks that are not in a pool, and the pools
+    private readonly List<IHardware> _hardware = new();
+
+    private readonly List<StorageSpacesPool> _pools = new();
 
     private readonly ISettings _settings;
+
+    //Tree changes come from both the disk monitor and the pool refresh, each on its own thread
+    private readonly object _lock = new();
+
+    private bool _closed;
 
     public event HardwareEventHandler HardwareAdded;
     public event HardwareEventHandler HardwareRemoved;
@@ -32,44 +44,176 @@ internal class StorageGroup : IGroup, IHardwareChanged
     private void AddHardware(ISettings settings)
     {
         StorageDIT.DevicesChanged -= OnStoragesChanged;
+        StorageSpacesData.MembersChanged -= OnPoolMembersChanged;
 
         //Get all disks
         var disks = StorageDIT.GetDisks();
 
+        //Read the Storage Spaces pools first, so that a space's disk and pool members can show their state
+        StorageSpacesData.Initialize();
+
         //Transform storage device to hardware
-        _hardware.AddRange(disks.Select(s => new StorageDevice(s, settings)));
+        _disks.AddRange(disks.Select(s => new StorageDevice(s, settings)));
+
+        //Pool members are shown under their pool instead of at the top level
+        CreatePools();
+
+        _hardware.AddRange(_disks.Where(d => d.Parent == null));
+        _hardware.AddRange(_pools);
 
         StorageDIT.DevicesChanged += OnStoragesChanged;
+        StorageSpacesData.MembersChanged += OnPoolMembersChanged;
     }
 
     private void OnStoragesChanged(object sender, StorageDevicesChangedEventArgs e)
     {
-        foreach (var added in e.Added)
+        lock (_lock)
         {
-            var storageDevice = new StorageDevice(added, _settings);
+            if (_closed)
+            {
+                return;
+            }
 
-            _hardware.Add(storageDevice);
-            HardwareAdded?.Invoke(storageDevice);
+            foreach (var removed in e.Removed)
+            {
+                var storageDevice = _disks.Find(sd => sd.Storage == removed);
+                if (storageDevice == null)
+                {
+                    continue;
+                }
+
+                _disks.Remove(storageDevice);
+
+                if (_hardware.Remove(storageDevice))
+                {
+                    HardwareRemoved?.Invoke(storageDevice);
+                }
+            }
+
+            StorageSpacesData.Initialize();
+
+            foreach (var added in e.Added)
+            {
+                _disks.Add(new StorageDevice(added, _settings));
+            }
+
+            UpdateTree();
+        }
+    }
+
+    private void OnPoolMembersChanged()
+    {
+        //WMI can see a disk join or leave a pool after the disk itself was added or removed
+        lock (_lock)
+        {
+            if (!_closed)
+            {
+                UpdateTree();
+            }
+        }
+    }
+
+    private void UpdateTree()
+    {
+        //A disk can join or leave a pool, so the pools are built again on every change
+        foreach (var pool in _pools)
+        {
+            _hardware.Remove(pool);
+            HardwareRemoved?.Invoke(pool);
+            pool.Close();
         }
 
-        foreach (var removed in e.Removed)
+        _pools.Clear();
+
+        //Storage Spaces sensors are created with the disk, so a disk that became a space or pool member, or stopped being one, is created again
+        for (int i = 0; i < _disks.Count; i++)
         {
-            var storageDevice = _hardware.Find(sd => sd.Storage == removed);
-            if (storageDevice != null)
+            var storageDevice = _disks[i];
+            if (!HasNewStorageSpacesRole(storageDevice))
+            {
+                continue;
+            }
+
+            if (_hardware.Remove(storageDevice))
+            {
+                HardwareRemoved?.Invoke(storageDevice);
+            }
+
+            _disks[i] = new StorageDevice(storageDevice.Storage, _settings);
+        }
+
+        CreatePools();
+
+        //Move disks between the top level and their pool
+        foreach (var storageDevice in _disks)
+        {
+            bool isTopLevel = storageDevice.Parent == null;
+            bool isShown = _hardware.Contains(storageDevice);
+
+            if (isTopLevel && !isShown)
+            {
+                _hardware.Add(storageDevice);
+                HardwareAdded?.Invoke(storageDevice);
+            }
+            else if (!isTopLevel && isShown)
             {
                 _hardware.Remove(storageDevice);
                 HardwareRemoved?.Invoke(storageDevice);
             }
+        }
+
+        foreach (var pool in _pools)
+        {
+            _hardware.Add(pool);
+            HardwareAdded?.Invoke(pool);
+        }
+    }
+
+    private static bool HasNewStorageSpacesRole(StorageDevice storageDevice)
+    {
+        string current = storageDevice.StorageSpacesObjectId;
+        string now = StorageSpacesDiskSensors.GetObjectId(storageDevice.Storage);
+
+        if (now != null)
+        {
+            return now != current;
+        }
+
+        //WMI can report a member missing before the disk is removed, so a member keeps its role for as long as its pool lists it
+        return current != null && StorageSpacesData.FindPhysicalDisk(current) == null && StorageSpacesData.FindSpace(current) == null;
+    }
+
+    private void CreatePools()
+    {
+        foreach (var pool in StorageSpacesData.Pools)
+        {
+            //Matched by the pool member each disk shows
+            var members = _disks.Where(sd => sd.StorageSpacesObjectId != null && pool.PhysicalDisks.Any(pd => pd.ObjectId == sd.StorageSpacesObjectId));
+
+            _pools.Add(new StorageSpacesPool(pool, members, _settings));
         }
     }
 
     public void Close()
     {
         StorageDIT.DevicesChanged -= OnStoragesChanged;
+        StorageSpacesData.MembersChanged -= OnPoolMembersChanged;
 
-        foreach (var hardware in _hardware)
+        lock (_lock)
         {
-            hardware.Close();
+            _closed = true;
+
+            foreach (var pool in _pools)
+            {
+                pool.Close();
+            }
+
+            foreach (var hardware in _disks)
+            {
+                hardware.Close();
+            }
+
+            StorageSpacesData.Close();
         }
     }
 
