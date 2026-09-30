@@ -27,16 +27,30 @@ internal static class StorageSpacesReader
     public static List<StorageSpacesPoolInfo> Read()
     {
         var pools = new List<StorageSpacesPoolInfo>();
+        bool hasPrimordialPool = false;
 
-        using (var searcher = new ManagementObjectSearcher(Scope, "SELECT * FROM MSFT_StoragePool WHERE IsPrimordial = FALSE"))
+        using (var searcher = new ManagementObjectSearcher(Scope, "SELECT * FROM MSFT_StoragePool"))
         using (ManagementObjectCollection collection = searcher.Get())
         {
             foreach (ManagementBaseObject item in collection)
             {
                 using var pool = (ManagementObject)item;
+
+                if (GetValue(pool, "IsPrimordial") is true)
+                {
+                    hasPrimordialPool = true;
+                    continue;
+                }
+
                 pools.Add(ReadPool(pool));
             }
         }
+
+        // The primordial pool lists every disk, so it is only missing while the storage provider
+        // has no disks at all. That happens after WMI restarts, until the provider reconnects, and
+        // would otherwise read as every pool being gone.
+        if (!hasPrimordialPool)
+            throw new InvalidOperationException("The storage provider has not listed any disks.");
 
         if (pools.Count > 0)
             ReadRepairProgress(pools);
@@ -139,7 +153,7 @@ internal static class StorageSpacesReader
 
                 foreach (string resultClass in new[] { "MSFT_StoragePool", "MSFT_VirtualDisk" })
                 {
-                    foreach (ManagementObject affected in GetRelated(job, resultClass))
+                    foreach (ManagementObject affected in GetJobRelated(job, resultClass))
                     {
                         using (affected)
                         {
@@ -165,13 +179,28 @@ internal static class StorageSpacesReader
         }
     }
 
+    /// <summary>
+    /// Gets the objects associated with a pool or space. A failure fails the whole read, as a pool
+    /// read without its disks or spaces would look like they had left it.
+    /// </summary>
     private static IEnumerable<ManagementObject> GetRelated(ManagementObject source, string resultClass)
+    {
+        using ManagementObjectCollection related = source.GetRelated(resultClass);
+
+        foreach (ManagementBaseObject item in related)
+            yield return (ManagementObject)item;
+    }
+
+    /// <summary>
+    /// Gets the objects associated with a job, or as many as could be read before the job was gone.
+    /// </summary>
+    private static IEnumerable<ManagementObject> GetJobRelated(ManagementObject job, string resultClass)
     {
         ManagementObjectCollection related;
 
         try
         {
-            related = source.GetRelated(resultClass);
+            related = job.GetRelated(resultClass);
         }
         catch (ManagementException)
         {

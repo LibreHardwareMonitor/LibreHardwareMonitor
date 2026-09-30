@@ -96,8 +96,12 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override void Update()
     {
-        // Updated first, as the rest of the update ends early when the disk itself is unchanged.
-        _storageSpacesSensors?.Update();
+        // Updated first, as the rest of the update ends early when the disk itself is unchanged. A
+        // space's disk found while the pools could not be read keeps trying to read them.
+        if (_storageSpacesSensors != null)
+            _storageSpacesSensors.Update();
+        else if (_storage.BusType == StorageBusType.Spaces)
+            StorageSpacesData.Update();
 
         if (_isMissing)
         {

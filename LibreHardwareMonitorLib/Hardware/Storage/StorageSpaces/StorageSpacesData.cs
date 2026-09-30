@@ -47,6 +47,7 @@ internal static class StorageSpacesData
     private static DateTime _lastRefresh = DateTime.MinValue;
     private static bool _closed;
     private static int _generation;
+    private static bool _lastReadFailed;
 
     /// <summary>
     /// Gets or sets how long to wait between refreshes. Health and capacity change slowly, so this
@@ -74,7 +75,7 @@ internal static class StorageSpacesData
 
     /// <summary>
     /// Reads the pools synchronously. Used while building the hardware tree, which cannot be
-    /// populated from pools that have not been read yet.
+    /// populated from pools that have not been read yet. Keeps the last pools read if WMI fails.
     /// </summary>
     public static IReadOnlyList<StorageSpacesPoolInfo> Initialize()
     {
@@ -84,11 +85,14 @@ internal static class StorageSpacesData
         {
             _closed = false;
             _generation++;
-            _pools = pools;
+            _lastReadFailed = pools == null;
             _lastRefresh = DateTime.UtcNow;
-        }
 
-        return pools;
+            if (pools != null)
+                _pools = pools;
+
+            return _pools;
+        }
     }
 
     /// <summary>
@@ -98,9 +102,9 @@ internal static class StorageSpacesData
     {
         lock (_lock)
         {
-            // Without pools there is nothing to refresh. A new pool is picked up by Initialize, as
-            // creating a space adds a disk.
-            if (_closed || _pools.Count == 0 || (_refresh != null && !_refresh.IsCompleted))
+            // Without pools there is nothing to refresh, unless the pools could not be read. A new
+            // pool is picked up by Initialize, as creating a space adds a disk.
+            if (_closed || (_pools.Count == 0 && !_lastReadFailed) || (_refresh != null && !_refresh.IsCompleted))
                 return;
 
             if (DateTime.UtcNow - _lastRefresh < UpdateInterval)
@@ -232,9 +236,16 @@ internal static class StorageSpacesData
             if (_closed || generation != _generation)
                 return;
 
+            _lastReadFailed = pools == null;
+            _lastRefresh = DateTime.UtcNow;
+
+            // A failed read keeps the last pools, rather than showing every pool as gone until the
+            // next read.
+            if (pools == null)
+                return;
+
             membersChanged = GetMembers(pools) != GetMembers(_pools);
             _pools = pools;
-            _lastRefresh = DateTime.UtcNow;
         }
 
         if (membersChanged)
@@ -252,6 +263,9 @@ internal static class StorageSpacesData
                                           .OrderBy(pool => pool, StringComparer.Ordinal));
     }
 
+    /// <summary>
+    /// Reads the pools, or returns <see langword="null" /> when WMI could not be read.
+    /// </summary>
     private static IReadOnlyList<StorageSpacesPoolInfo> Read()
     {
         try
@@ -261,7 +275,7 @@ internal static class StorageSpacesData
         catch (Exception)
         {
             // A failed read must not take the rest of the storage tree down with it.
-            return _noPools;
+            return null;
         }
     }
 }
