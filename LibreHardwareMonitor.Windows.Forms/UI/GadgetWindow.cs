@@ -10,6 +10,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
@@ -25,6 +26,8 @@ public sealed class GadgetWindow : NativeWindow, IDisposable
     private IntPtr _handleBitmapDC;
     private Size _bufferSize;
     private Graphics _graphics;
+    private int _redrawing;
+    private bool _disposed;
 
     public event EventHandler SizeChanged;
     public event EventHandler LocationChanged;
@@ -230,12 +233,19 @@ public sealed class GadgetWindow : NativeWindow, IDisposable
 
     private void DisposeBuffer()
     {
-        _graphics.Dispose();
-        NativeMethods.DeleteDC(_handleBitmapDC);
+        _graphics?.Dispose();
+        _graphics = null;
+
+        if (_handleBitmapDC != IntPtr.Zero)
+        {
+            NativeMethods.DeleteDC(_handleBitmapDC);
+            _handleBitmapDC = IntPtr.Zero;
+        }
     }
 
     public void Dispose()
     {
+        _disposed = true;
         DisposeBuffer();
     }
 
@@ -246,18 +256,34 @@ public sealed class GadgetWindow : NativeWindow, IDisposable
         if (!_visible || Paint == null)
             return;
 
-        if (_size != _bufferSize)
-        {
-            DisposeBuffer();
-            CreateBuffer();
-        }
+        // The buffer and its Graphics are shared state: a nested or concurrent redraw would use the
+        // same Graphics object and make GDI+ throw "Object is currently in use elsewhere", or paint
+        // into a buffer another call is disposing. Skip instead of waiting, the next tick redraws.
+        if (Interlocked.CompareExchange(ref _redrawing, 1, 0) != 0)
+            return;
 
-        Paint(this, new PaintEventArgs(_graphics, new Rectangle(Point.Empty, _size)));
-        Point pointSource = Point.Empty;
-        BlendFunction blend = CreateBlendFunction();
-        NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero, IntPtr.Zero, ref _size, _handleBitmapDC, ref pointSource, 0, ref blend, ULW_ALPHA);
-        // make sure the window is at the right location
-        NativeMethods.SetWindowPos(Handle, IntPtr.Zero, _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+        try
+        {
+            if (_disposed)
+                return;
+
+            if (_size != _bufferSize)
+            {
+                DisposeBuffer();
+                CreateBuffer();
+            }
+
+            Paint(this, new PaintEventArgs(_graphics, new Rectangle(Point.Empty, _size)));
+            Point pointSource = Point.Empty;
+            BlendFunction blend = CreateBlendFunction();
+            NativeMethods.UpdateLayeredWindow(Handle, IntPtr.Zero, IntPtr.Zero, ref _size, _handleBitmapDC, ref pointSource, 0, ref blend, ULW_ALPHA);
+            // make sure the window is at the right location
+            NativeMethods.SetWindowPos(Handle, IntPtr.Zero, _location.X, _location.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _redrawing, 0);
+        }
     }
 
     public byte Opacity
