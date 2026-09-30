@@ -13,6 +13,7 @@ using System.Text;
 using BlackSharp.Core.Converters;
 using DiskInfoToolkit.Devices;
 using DiskInfoToolkit.Smart;
+using LibreHardwareMonitor.Hardware.Storage.StorageSpaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
@@ -49,8 +50,12 @@ public sealed class StorageDevice : Hardware, ISmart
     private Sensor _usageSensor;
     private Sensor _freeSpaceSensor;
 
+    private volatile bool _isMissing;
+    private IHardware _parent;
+    private StorageSpacesDiskSensors _storageSpacesSensors;
+
     public StorageDevice(StorageDeviceDIT storage, ISettings settings)
-        : base(storage.ProductName, GetIdentifier(storage), settings)
+        : base(StorageSpacesDiskSensors.GetName(storage) ?? storage.ProductName, GetIdentifier(storage), settings)
     {
         _storage = storage;
 
@@ -61,7 +66,19 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override HardwareType HardwareType => HardwareType.Storage;
 
+    public override IHardware Parent => _parent;
+
     public StorageDeviceDIT Storage => _storage;
+
+    /// <summary>
+    /// Gets whether this pool member's disk has gone, while it is still shown under its pool.
+    /// </summary>
+    internal bool IsMissing => _isMissing;
+
+    /// <summary>
+    /// Gets the Storage Spaces object this disk shows, or <see langword="null" /> when it is neither a space nor a pool member.
+    /// </summary>
+    internal string StorageSpacesObjectId => _storageSpacesSensors?.ObjectId;
 
     public IReadOnlyList<SmartAttribute> Attributes => _attributes;
 
@@ -78,6 +95,21 @@ public sealed class StorageDevice : Hardware, ISmart
 
     public override void Update()
     {
+        // Updated first, as the rest of the update ends early when the disk itself is unchanged. A
+        // space's disk found while the pools could not be read keeps trying to read them.
+        if (_storageSpacesSensors != null)
+            _storageSpacesSensors.Update();
+        else if (_storage.BusType == StorageBusType.Spaces)
+            StorageSpacesData.Update();
+
+        if (_isMissing)
+        {
+            // Only Storage Spaces still knows about a disk that has gone. Cleared on every update, so
+            // an update that was already running cannot leave a stale value behind.
+            ClearDiskSensors();
+            return;
+        }
+
         bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
         if (refreshSmartData)
         {
@@ -206,6 +238,7 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         r.AppendLine($"Total Size: {_storage.DiskSizeBytes}");
+        _storageSpacesSensors?.AppendReport(r);
         _storage.ProbeTrace.ForEach(line => r.AppendLine($"Probe Trace: {line}"));
 
         return r.ToString();
@@ -215,6 +248,33 @@ public sealed class StorageDevice : Hardware, ISmart
     {
         foreach (ISensor sensor in Sensors)
             sensor.Accept(visitor);
+    }
+
+    /// <summary>
+    /// Sets the Storage Spaces pool this disk is shown under, or <see langword="null" /> to show it at the top level.
+    /// </summary>
+    internal void SetParent(IHardware parent)
+    {
+        _parent = parent;
+    }
+
+    /// <summary>
+    /// Marks a pool member whose disk has gone, so that it can stay under its pool until it comes back.
+    /// </summary>
+    internal void SetMissing()
+    {
+        _isMissing = true;
+    }
+
+    private void ClearDiskSensors()
+    {
+        foreach (ISensor sensor in _active)
+        {
+            if (sensor is Sensor diskSensor && _storageSpacesSensors?.Sensors.Contains(diskSensor) != true)
+            {
+                diskSensor.Value = null;
+            }
+        }
     }
 
     private static string GetID(StorageDeviceDIT disk)
@@ -344,6 +404,16 @@ public sealed class StorageDevice : Hardware, ISmart
             Value = _storage.DiskSizeBytes.GetValueOrDefault()
         };
         ActivateSensor(totalSpaceSensor);
+
+        // A storage space's disk also shows the state of the space, and a pool member its state in the pool.
+        _storageSpacesSensors = StorageSpacesDiskSensors.Create(this, _storage, _settings);
+        if (_storageSpacesSensors != null)
+        {
+            foreach (Sensor sensor in _storageSpacesSensors.Sensors)
+            {
+                ActivateSensor(sensor);
+            }
+        }
 
         _sensorDiskReadActivity = new Sensor("Read Activity", 51, SensorType.Load, this, _settings);
         ActivateSensor(_sensorDiskReadActivity);
