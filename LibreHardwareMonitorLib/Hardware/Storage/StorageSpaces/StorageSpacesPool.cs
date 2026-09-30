@@ -45,6 +45,11 @@ public sealed class StorageSpacesPool : Hardware
 
     public override HardwareType HardwareType => HardwareType.StorageSpaces;
 
+    /// <summary>
+    /// Gets the Storage Spaces identifier of the pool.
+    /// </summary>
+    internal Guid PoolId => _id;
+
     public override IHardware[] SubHardware => _members;
 
     public override IDictionary<string, string> Properties

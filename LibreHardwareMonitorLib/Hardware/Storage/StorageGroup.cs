@@ -67,6 +67,12 @@ internal class StorageGroup : IGroup, IHardwareChanged
 
     private void OnStoragesChanged(object sender, StorageDevicesChangedEventArgs e)
     {
+        //A rescan also reports disks whose details changed, such as their temperature, which leaves the tree as it is
+        if (e.Added.Count == 0 && e.Removed.Count == 0)
+        {
+            return;
+        }
+
         lock (_lock)
         {
             if (_closed)
@@ -122,16 +128,6 @@ internal class StorageGroup : IGroup, IHardwareChanged
 
     private void UpdateTree()
     {
-        //A disk can join or leave a pool, so the pools are built again on every change
-        foreach (var pool in _pools)
-        {
-            _hardware.Remove(pool);
-            HardwareRemoved?.Invoke(pool);
-            pool.Close();
-        }
-
-        _pools.Clear();
-
         //Storage Spaces sensors are created with the disk, so a disk that became a space or pool member, or stopped being one, is created again
         for (int i = 0; i < _disks.Count; i++)
         {
@@ -154,7 +150,21 @@ internal class StorageGroup : IGroup, IHardwareChanged
                                     (_disks.Any(sd => !sd.IsMissing && (sd.StorageSpacesObjectId == missing.StorageSpacesObjectId || sd.Storage == missing.Storage || sd.Identifier == missing.Identifier)) ||
                                      StorageSpacesData.FindPhysicalDisk(missing.StorageSpacesObjectId) == null));
 
-        CreatePools();
+        //A pool is only built again when it gains or loses a disk, as that removes it and its disks from the tree and adds them again
+        bool rebuildPools = !HasSamePools();
+        if (rebuildPools)
+        {
+            foreach (var pool in _pools)
+            {
+                _hardware.Remove(pool);
+                HardwareRemoved?.Invoke(pool);
+                pool.Close();
+            }
+
+            _pools.Clear();
+
+            CreatePools();
+        }
 
         //Move disks between the top level and their pool
         foreach (var storageDevice in _disks)
@@ -174,11 +184,40 @@ internal class StorageGroup : IGroup, IHardwareChanged
             }
         }
 
-        foreach (var pool in _pools)
+        if (rebuildPools)
         {
-            _hardware.Add(pool);
-            HardwareAdded?.Invoke(pool);
+            foreach (var pool in _pools)
+            {
+                _hardware.Add(pool);
+                HardwareAdded?.Invoke(pool);
+            }
         }
+    }
+
+    private bool HasSamePools()
+    {
+        var pools = StorageSpacesData.Pools;
+        if (pools.Count != _pools.Count)
+        {
+            return false;
+        }
+
+        foreach (var pool in pools)
+        {
+            var shown = _pools.Find(sp => sp.PoolId == pool.Id);
+            if (shown == null)
+            {
+                return false;
+            }
+
+            var members = GetMembers(pool).ToList();
+            if (members.Count != shown.SubHardware.Length || members.Any(sd => !shown.SubHardware.Contains(sd)))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool HasNewStorageSpacesRole(StorageDevice storageDevice)
@@ -199,11 +238,14 @@ internal class StorageGroup : IGroup, IHardwareChanged
     {
         foreach (var pool in StorageSpacesData.Pools)
         {
-            //Matched by the pool member each disk shows, which stays the same while the disk is missing
-            var members = _disks.Where(sd => sd.StorageSpacesObjectId != null && pool.PhysicalDisks.Any(pd => pd.ObjectId == sd.StorageSpacesObjectId));
-
-            _pools.Add(new StorageSpacesPool(pool, members, _settings));
+            _pools.Add(new StorageSpacesPool(pool, GetMembers(pool), _settings));
         }
+    }
+
+    private IEnumerable<StorageDevice> GetMembers(StorageSpacesPoolInfo pool)
+    {
+        //Matched by the pool member each disk shows, which stays the same while the disk is missing
+        return _disks.Where(sd => sd.StorageSpacesObjectId != null && pool.PhysicalDisks.Any(pd => pd.ObjectId == sd.StorageSpacesObjectId));
     }
 
     public void Close()
