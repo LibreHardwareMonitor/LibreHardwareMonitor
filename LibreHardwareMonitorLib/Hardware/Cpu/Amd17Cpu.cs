@@ -133,7 +133,7 @@ internal sealed class Amd17Cpu : AmdCpu
             _coreTemperatureTctl = new Sensor("Core (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
             _coreTemperatureTdie = new Sensor("Core (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
             _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
-            _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
+            _ccdTemperatures = new Sensor[16]; // Turin / Shimada Peak expose up to 16 CCDs (k10temp).
             _coreVoltage = new Sensor("Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _busClock = new Sensor("Bus Speed", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
@@ -227,6 +227,12 @@ internal sealed class Amd17Cpu : AmdCpu
                         break;
                 }
 
+                // Zen 5 HEDT/server: family 0x1A models 0x00-0x2F (Turin / Shimada Peak).
+                // Threadripper 9970X is model 0x08. Desktop Granite Ridge is 0x40-0x4F (0x44 above).
+                bool isZen5Turin = cpuId.Family == 0x1A && cpuId.Model <= 0x2F;
+                if (isZen5Turin)
+                    supportsPerCcdTemperatures = true;
+
                 // SVI0_PLANE0_VDDCOR [24:16]
                 // SVI0_PLANE0_IDDCOR [7:0]
                 smuSvi0TelPlane0 = _cpu._pawnModule.ReadSmn(sviPlane0Offset);
@@ -307,21 +313,37 @@ internal sealed class Amd17Cpu : AmdCpu
                     _cpu.ActivateSensor(_coreTemperatureTctlTdie);
                 }
 
-                // Tested only on R5 3600 & Threadripper 3960X, 5900X, 7900X
+                // Tested only on R5 3600 & Threadripper 3960X, 5900X, 7900X.
+                // Zen 5 Turin CCD map: linux/drivers/hwmon/k10temp.c (offset 0x1F0 from 0x59800).
                 if (supportsPerCcdTemperatures)
                 {
-                    for (uint i = 0; i < _ccdTemperatures.Length; i++)
+                    uint ccdBase;
+                    uint ccdCount;
+                    if (isZen5Turin)
                     {
-                        uint ccd1Offset = 0;
-                        if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
-                            ccd1Offset = F17H_M61H_CCD1_TEMP + i * 0x4;
-                        else
-                            ccd1Offset = F17H_M70H_CCD1_TEMP + i * 0x4;
-                        uint ccdRawTemp = _cpu._pawnModule.ReadSmn(ccd1Offset);
+                        ccdBase = F1AH_M00H_CCD1_TEMP;
+                        ccdCount = 16;
+                    }
+                    else if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
+                    {
+                        ccdBase = F17H_M61H_CCD1_TEMP;
+                        ccdCount = 8;
+                    }
+                    else
+                    {
+                        ccdBase = F17H_M70H_CCD1_TEMP;
+                        ccdCount = 8;
+                    }
 
+                    for (uint i = 0; i < ccdCount; i++)
+                    {
+                        uint ccdRawTemp = _cpu._pawnModule.ReadSmn(ccdBase + i * 0x4);
+                        bool ccdPresent = isZen5Turin
+                            ? (ccdRawTemp & F17H_CCD_TEMP_VALID) != 0
+                            : (ccdRawTemp & 0xFFF) > 0;
                         ccdRawTemp &= 0xFFF;
                         float ccdTemp = ((ccdRawTemp * 125) - 305000) * 0.001f;
-                        if (ccdRawTemp > 0 && ccdTemp < 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
+                        if (ccdPresent && ccdTemp < 125) // Zen 2 reports 95 degrees C max, but it might exceed that.
                         {
                             if (_ccdTemperatures[i] == null)
                             {
@@ -816,6 +838,8 @@ internal sealed class Amd17Cpu : AmdCpu
     private const uint F17H_M01H_THM_TCON_CUR_TMP = 0x00059800;
     private const uint F17H_M70H_CCD1_TEMP = 0x00059954;
     private const uint F17H_M61H_CCD1_TEMP = 0x00059b08;
+    private const uint F1AH_M00H_CCD1_TEMP = 0x000599F0; // 0x59800 + 0x1F0 (k10temp Turin / Shimada Peak)
+    private const uint F17H_CCD_TEMP_VALID = 0x800;
     private const uint F17H_TEMP_RANGE_SEL_MASK = 0x80000;
     private const uint F17H_TEMP_TJ_SEL_MASK = 0x30000;
     private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
