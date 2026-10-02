@@ -22,6 +22,7 @@ public class Logger
     private DateTime _day = DateTime.MinValue;
     private string _fileName;
     private string _logDirectory = string.Empty;
+    private string _sessionFileName;
     private string[] _identifiers;
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
@@ -40,6 +41,7 @@ public class Logger
             _logDirectory = value ?? string.Empty;
             // Force the next Log() call to open a file in the new folder.
             _fileName = null;
+            _sessionFileName = null;
             _day = DateTime.MinValue;
         }
     }
@@ -213,8 +215,9 @@ public class Logger
         switch (FileRotationMethod)
         {
             case LoggerFileRotation.PerSession:
-                // Create file if it does not exist or the logging interval has passed (+ some margin)
-                if (!File.Exists(_fileName) || now - _lastLoggedTime > (LoggingInterval + TimeSpan.FromMilliseconds(100)))
+                // One file for the whole application run; only create a new one if there is none yet
+                // (first log, folder changed) or it was deleted.
+                if (_sessionFileName == null || !File.Exists(_sessionFileName))
                 {
                     uint sessionNumber = 1;
                     do {
@@ -222,6 +225,11 @@ public class Logger
                         sessionNumber++;
                     } while (File.Exists(_fileName));
                     CreateNewLogFile();
+                    _sessionFileName = _fileName;
+                }
+                else
+                {
+                    _fileName = _sessionFileName;
                 }
                 break;
             case LoggerFileRotation.Daily:
