@@ -91,7 +91,7 @@ internal class Control : IControl
 
     public void SetSoftware(float value)
     {
-        ControlMode = ControlMode.Software;
         SoftwareValue = value;
+        ControlMode = ControlMode.Software;
     }
 }
