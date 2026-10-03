@@ -27,6 +27,8 @@ using LibreHardwareMonitor.Hardware.PowerMonitor;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
 using LibreHardwareMonitor.Hardware.Storage;
+using LibreHardwareMonitor.Hardware.KontronSensors;
+using LibreHardwareMonitor.Hardware.KontronWatchdog;
 
 namespace LibreHardwareMonitor.Hardware;
 
@@ -51,6 +53,8 @@ public class Computer : IComputer
     private bool _psuEnabled;
     private SMBios _smbios;
     private bool _storageEnabled;
+    private bool _KontronSensorsEnabled;
+    private bool _KontronWatchdogEnabled;
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
@@ -307,6 +311,40 @@ public class Computer : IComputer
             }
 
             _storageEnabled = value;
+        }
+    }
+
+    /// <inheritdoc />
+    public bool IsKontronSensorsEnabled
+    {
+        get { return _KontronSensorsEnabled; }
+        set
+        {
+            if (_open && value != _KontronSensorsEnabled)
+            {
+                if (value)
+                    Add(new KontronSensorGroup(_settings));
+                else
+                    RemoveType<KontronSensorGroup>();
+            }
+
+            _KontronSensorsEnabled = value;
+        }
+    }
+    public bool IsKontronWatchdogEnabled
+    {
+        get { return _KontronWatchdogEnabled; }
+        set
+        {
+            if (_open && value != _KontronWatchdogEnabled)
+            {
+                if (value)
+                    Add(new KontronWatchdogGroup(_settings));
+                else
+                    RemoveType<KontronWatchdogGroup>();
+            }
+
+            _KontronWatchdogEnabled = value;
         }
     }
 
@@ -571,6 +609,12 @@ public class Computer : IComputer
 
         if (_batteryEnabled)
             Add(new BatteryGroup(_settings));
+
+        if (_KontronSensorsEnabled)
+            Add(new KontronSensorGroup(_settings));
+
+        if (_KontronWatchdogEnabled)
+            Add(new KontronWatchdogGroup(_settings));
     }
 
     private static void NewSection(TextWriter writer)
