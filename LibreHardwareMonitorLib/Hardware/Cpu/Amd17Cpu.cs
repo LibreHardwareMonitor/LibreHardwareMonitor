@@ -108,7 +108,7 @@ internal sealed class Amd17Cpu : AmdCpu
     {
         private readonly Sensor _busClock;
         private readonly Sensor _avgClock;
-        private readonly Sensor _avgClockEffcetive;
+        private readonly Sensor _avgClockEffective;
 
         private readonly Sensor[] _ccdTemperatures;
         private readonly Sensor _coreTemperatureTctl;
@@ -122,6 +122,8 @@ internal sealed class Amd17Cpu : AmdCpu
 
         private Sensor _ccdsAverageTemperature;
         private Sensor _ccdsMaxTemperature;
+        private Sensor _coreVids;
+        private float[] _pmTable = [];
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue;
 
@@ -138,11 +140,13 @@ internal sealed class Amd17Cpu : AmdCpu
             _socVoltage = new Sensor("SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
             _busClock = new Sensor("Bus Speed", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
             _avgClock = new Sensor("Cores (Average)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _avgClockEffcetive = new Sensor("Cores (Average Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _avgClockEffective = new Sensor("Cores (Average Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
 
             _cpu.ActivateSensor(_packagePower);
             _cpu.ActivateSensor(_avgClock);
-            _cpu.ActivateSensor(_avgClockEffcetive);
+            _cpu.ActivateSensor(_avgClockEffective);
+
+            _coreVids = new Sensor("Core VIDs", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
 
             foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in _cpu._smu.GetPmTableStructure())
             {
@@ -151,6 +155,8 @@ internal sealed class Amd17Cpu : AmdCpu
         }
 
         public List<NumaNode> Nodes { get; } = new();
+
+        public float[] PmTable => _pmTable;
 
         public void UpdateSensors()
         {
@@ -169,7 +175,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // PU [3:0]
             _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
-            double energyBaseUnit = Math.Pow(0.5,esu);
+            double energyBaseUnit = Math.Pow(0.5, esu);
 
 
             // MSRC001_029B
@@ -402,18 +408,15 @@ internal sealed class Amd17Cpu : AmdCpu
                 _cpu.ActivateSensor(_busClock);
             }
 
-            if (_cpu._smu.IsPmTableLayoutDefined())
-            {
-                float[] smuData = _cpu._smu.GetPmTable();
+            _pmTable = _cpu._smu.IsPmTableLayoutDefined() ? _cpu._smu.GetPmTable() : [];
 
-                foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
+            foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
+            {
+                if (_pmTable.Length > sensor.Key.Key)
                 {
-                    if (smuData.Length > sensor.Key.Key)
-                    {
-                        sensor.Value.Value = smuData[sensor.Key.Key] * sensor.Key.Value.Scale;
-                        if (sensor.Value.Value != 0)
-                            _cpu.ActivateSensor(sensor.Value);
-                    }
+                    sensor.Value.Value = _pmTable[sensor.Key.Key] * sensor.Key.Value.Scale;
+                    if (sensor.Value.Value != 0)
+                        _cpu.ActivateSensor(sensor.Value);
                 }
             }
         }
@@ -427,7 +430,14 @@ internal sealed class Amd17Cpu : AmdCpu
             _avgClock.Value = (float)Math.Round(clock, 0);
 
             clock = Nodes.Average(x => x.EffectiveClock);
-            _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
+            _avgClockEffective.Value = (float)Math.Round(clock, 0);
+
+            double voltage = Nodes.Average(x => x.CoreVoltage);
+            if (voltage > 0)
+            {
+                _coreVids.Value = (float)Math.Round(voltage, 4);
+                _cpu.ActivateSensor(_coreVids);
+            }
         }
 
         private double GetTimeStampCounterMultiplier()
@@ -446,6 +456,23 @@ internal sealed class Amd17Cpu : AmdCpu
                 uint cpuFid = eax & 0xff;
                 return 2.0 * cpuFid / cpuDfsId;
             }
+        }
+
+        public sealed class PerCoreBaseIndices
+        {
+            public int Frequency { get; set; }
+            public int Voltage { get; set; }
+            public int Temperature { get; set; }
+            public int Power { get; set; }
+        }
+
+        public static PerCoreBaseIndices GetPerCoreBaseIndices(uint pmTableVersion)
+        {
+            return pmTableVersion switch
+            {
+                0x00621202 => new PerCoreBaseIndices { Frequency = 349, Voltage = 317, Temperature = 333, Power = 301 },
+                _ => null,
+            };
         }
 
         public void AppendThread(CpuId thread, int numaId, int coreId)
@@ -490,7 +517,7 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             get
             {
-                if(Cores == null)
+                if (Cores == null)
                     return 0;
 
                 return Cores.Average(x => x.CoreClock);
@@ -508,6 +535,16 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
+        public double CoreVoltage
+        {
+            get
+            {
+                if (Cores == null)
+                    return 0;
+
+                return Cores.Average(x => x.CoreVoltage);
+            }
+        }
 
         public void AppendThread(CpuId thread, int coreId)
         {
@@ -525,7 +562,7 @@ internal sealed class Amd17Cpu : AmdCpu
             }
 
             if (thread != null)
-                core.AppedThread(thread);
+                core.AppendThread(thread);
         }
 
         public static void UpdateSensors()
@@ -547,10 +584,10 @@ internal sealed class Amd17Cpu : AmdCpu
         private Amd17Cpu _cpu;
         public CpuId Cpu { get { return _cpuId; } }
 
-        public TimeSpan SampleDuration { get; private set; }= TimeSpan.Zero;
+        public TimeSpan SampleDuration { get; private set; } = TimeSpan.Zero;
         public double EffectiveClock { get; private set; } = 0;
 
-        public ulong MperfDelta { get {  return _mperfDelta; } }
+        public ulong MperfDelta { get { return _mperfDelta; } }
         public ulong AperfDelta { get { return _aperfDelta; } }
 
         public CpuThread(Amd17Cpu cpu, CpuId cpuId)
@@ -606,7 +643,7 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_aperfDelta > 20000e6)
                 _aperfDelta = 0;
 
-            if(_aperfDelta == 0 || _mperfDelta == 0)
+            if (_aperfDelta == 0 || _mperfDelta == 0)
             {
                 //overflow possible, numbers are > 20 GHz
                 _lastSampleTime = new(0);
@@ -631,13 +668,16 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Amd17Cpu _cpu;
         private readonly Sensor _multiplier;
         private readonly Sensor _power;
+        private readonly Sensor _temperature;
         private readonly Sensor _vcore;
         private ISensor _busSpeed;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue = 0;
+        private float _pmTableVoltage;
 
         public double CoreClock { get; set; } = 0;
         public double EffectiveClock { get; set; } = 0;
+        public double CoreVoltage => _pmTableVoltage is > 0.1f and < 3.0f ? _pmTableVoltage : 0;
 
         public Core(Amd17Cpu cpu, int id)
         {
@@ -648,6 +688,7 @@ internal sealed class Amd17Cpu : AmdCpu
             _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings);
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
+            _temperature = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, cpu, cpu._settings);
 
             cpu.ActivateSensor(_clock);
             cpu.ActivateSensor(_clockEffective);
@@ -660,7 +701,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public List<CpuThread> Threads { get; } = new List<CpuThread>();
 
-        public void AppedThread(CpuId cpuId)
+        public void AppendThread(CpuId cpuId)
         {
             CpuThread t = new CpuThread(_cpu, cpuId);
             Threads.Add(t);
@@ -698,7 +739,7 @@ internal sealed class Amd17Cpu : AmdCpu
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 
-            foreach(var t in Threads)
+            foreach (var t in Threads)
             {
                 t.ReadPerformanceCounter();
             }
@@ -806,6 +847,47 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 if (!double.IsNaN(energy))
                     _power.Value = (float)energy;
+            }
+
+            UpdatePmTableSensors();
+
+            if (_pmTableVoltage is > 0.1f and < 3.0f)
+            {
+                _vcore.Value = _pmTableVoltage;
+            }
+        }
+
+        private void UpdatePmTableSensors()
+        {
+            Processor.PerCoreBaseIndices indices = Processor.GetPerCoreBaseIndices(_cpu._smu.PmTableVersion);
+            if (indices is null)
+            {
+                return;
+            }
+
+            float[] pmTable = _cpu._processor.PmTable;
+            if (pmTable.Length == 0)
+            {
+                return;
+            }
+
+            int coreIndex = CoreId - 1;
+
+            int voltageIndex = indices.Voltage + coreIndex;
+            if ((uint)voltageIndex < (uint)pmTable.Length)
+            {
+                _pmTableVoltage = pmTable[voltageIndex];
+            }
+
+            int temperatureIndex = indices.Temperature + coreIndex;
+            if ((uint)temperatureIndex < (uint)pmTable.Length)
+            {
+                float temperature = pmTable[temperatureIndex];
+                if (temperature is > 0 and < 125)
+                {
+                    _temperature.Value = temperature;
+                    _cpu.ActivateSensor(_temperature);
+                }
             }
         }
     }
