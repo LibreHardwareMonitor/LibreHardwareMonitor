@@ -163,6 +163,8 @@ public sealed partial class MainForm : Form
         _logger.FileRotationMethod = (LoggerFileRotation)Math.Max(0, Math.Min(saved, 1));
         perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
         dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
+        _logger.LogDirectory = _settings.GetValue("logger.folder", string.Empty);
+        UpdateLogFolderMenuItems();
 
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
@@ -1460,5 +1462,43 @@ public sealed partial class MainForm : Form
         perSessionFileRotationMenuItem.Checked = false;
         _logger.FileRotationMethod = LoggerFileRotation.Daily;
         _settings.SetValue("logger.fileRotation", (int)LoggerFileRotation.Daily);
+    }
+
+    private void selectLogFolderMenuItem_Click(object sender, EventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "Select the folder where log files are written.",
+            ShowNewFolderButton = true
+        };
+
+        if (!string.IsNullOrWhiteSpace(_logger.LogDirectory))
+            dialog.SelectedPath = _logger.LogDirectory;
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        SetLogFolder(dialog.SelectedPath);
+    }
+
+    private void defaultLogFolderMenuItem_Click(object sender, EventArgs e)
+    {
+        SetLogFolder(string.Empty);
+    }
+
+    private void SetLogFolder(string folder)
+    {
+        _logger.LogDirectory = folder;
+        _settings.SetValue("logger.folder", folder);
+        UpdateLogFolderMenuItems();
+    }
+
+    private void UpdateLogFolderMenuItems()
+    {
+        bool isDefault = string.IsNullOrWhiteSpace(_logger.LogDirectory);
+        defaultLogFolderMenuItem.Checked = isDefault;
+        logFolderMenuItem.ToolTipText = isDefault
+            ? "Choose the folder where log files are written. Currently: application folder."
+            : "Choose the folder where log files are written. Currently: " + _logger.LogDirectory;
     }
 }

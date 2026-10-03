@@ -104,6 +104,9 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.forceDriveWakeupItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileRotationMethod = new System.Windows.Forms.ToolStripMenuItem();
+            this.logFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectLogFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.defaultLogFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.perSessionFileRotationMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.dailyFileRotationMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.loggingIntervalMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -495,6 +498,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.loggingIntervalMenuItem,
             this.updateIntervalMenuItem,
             this.fileRotationMethod,
+            this.logFolderMenuItem,
             this.sensorValuesTimeWindowMenuItem,
             this.webMenuItemSeparator,
             this.webMenuItem});
@@ -689,6 +693,32 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.fileRotationMethod.Size = new System.Drawing.Size(246, 24);
             this.fileRotationMethod.Text = "File rotation method";
             this.fileRotationMethod.ToolTipText = "Determine how the log file should rotate.";
+            //
+            // logFolderMenuItem
+            //
+            this.logFolderMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selectLogFolderMenuItem,
+            this.defaultLogFolderMenuItem});
+            this.logFolderMenuItem.Name = "logFolderMenuItem";
+            this.logFolderMenuItem.Size = new System.Drawing.Size(246, 24);
+            this.logFolderMenuItem.Text = "Log Folder";
+            this.logFolderMenuItem.ToolTipText = "Choose the folder where log files are written.";
+            //
+            // selectLogFolderMenuItem
+            //
+            this.selectLogFolderMenuItem.Name = "selectLogFolderMenuItem";
+            this.selectLogFolderMenuItem.Size = new System.Drawing.Size(198, 24);
+            this.selectLogFolderMenuItem.Text = "Select Folder...";
+            this.selectLogFolderMenuItem.ToolTipText = "Select a custom log folder. It is created automatically if it does not exist.";
+            this.selectLogFolderMenuItem.Click += new System.EventHandler(this.selectLogFolderMenuItem_Click);
+            //
+            // defaultLogFolderMenuItem
+            //
+            this.defaultLogFolderMenuItem.Name = "defaultLogFolderMenuItem";
+            this.defaultLogFolderMenuItem.Size = new System.Drawing.Size(198, 24);
+            this.defaultLogFolderMenuItem.Text = "Use Default Folder";
+            this.defaultLogFolderMenuItem.ToolTipText = "Write log files next to the application.";
+            this.defaultLogFolderMenuItem.Click += new System.EventHandler(this.defaultLogFolderMenuItem_Click);
             //
             // perSessionFileRotationMenuItem
             //
@@ -1288,6 +1318,9 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
         private System.Windows.Forms.ToolStripMenuItem batteryMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundUpdater;
         private System.Windows.Forms.ToolStripMenuItem fileRotationMethod;
+        private System.Windows.Forms.ToolStripMenuItem logFolderMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectLogFolderMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem defaultLogFolderMenuItem;
         private ToolStripRadioButtonMenuItem perSessionFileRotationMenuItem;
         private ToolStripRadioButtonMenuItem dailyFileRotationMenuItem;
         private System.Windows.Forms.ToolStripMenuItem themeMenuItem;
