@@ -187,7 +187,12 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Energy:
             case SensorType.Noise:
             case SensorType.Humidity:
+            case SensorType.WatchdogStageStatus:
+            case SensorType.WatchdogStageConfig:
+            case SensorType.LastResetCause:
                 return $"{Sensor.Value:F0}";
+            case SensorType.StageTimes:
+                return $"{TimeSpan.FromSeconds(Sensor.Value.Value):g}";
             default:
                 return "-";
         }
@@ -292,6 +297,10 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Conductivity: format = "\n{0}: {0:F1} µS/cm"; break;
             case SensorType.Humidity: format = "\n{0}: {0:F0} %"; break;
             case SensorType.Timing: format = "\n{0}: {0:F3} ns"; break;
+            case SensorType.WatchdogStageStatus: format = "\n{0}: {0:F0}"; break;
+            case SensorType.StageTimes: format = "\n{0}: {0:F0} s"; break;
+            case SensorType.WatchdogStageConfig: format = "\n{0}: {0:F0}"; break;
+            case SensorType.LastResetCause: format = "\n{0}: {0:F0}"; break;
         }
 
         string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
