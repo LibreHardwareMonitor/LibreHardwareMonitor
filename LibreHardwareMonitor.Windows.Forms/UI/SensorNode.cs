@@ -88,6 +88,9 @@ public class SensorNode : Node
             case SensorType.Humidity:
                 Format = "{0:F0} %";
                 break;
+            case SensorType.Health:
+                Format = "{0}";
+                break;
         }
 
         bool hidden = settings.GetValue(new Identifier(sensor.Identifier, "hidden").ToString(), sensor.IsDefaultHidden);
@@ -243,6 +246,10 @@ public class SensorNode : Node
                 case SensorType.TimeSpan:
                     {
                         return string.Format(Format, TimeSpan.FromSeconds(value.Value));
+                    }
+                case SensorType.Health:
+                    {
+                        return SensorHealth.ToDisplayString(value);
                     }
                 default:
                     {
