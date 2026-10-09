@@ -104,6 +104,9 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorRemoved(ISensor sensor)
     {
+        if (UiThread.Post(() => SensorRemoved(sensor)))
+            return;
+
         foreach (TypeNode typeNode in _typeNodes)
         {
             if (typeNode.SensorType == sensor.SensorType)
@@ -143,6 +146,9 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorAdded(ISensor sensor)
     {
+        if (UiThread.Post(() => SensorAdded(sensor)))
+            return;
+
         foreach (TypeNode typeNode in _typeNodes)
         {
             if (typeNode.SensorType == sensor.SensorType)

@@ -165,6 +165,7 @@ public sealed partial class MainForm : Form
         perSessionFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.PerSession;
         dailyFileRotationMenuItem.Checked = _logger.FileRotationMethod == LoggerFileRotation.Daily;
 
+        UiThread.Capture();
         _computer.HardwareAdded += HardwareAdded;
         _computer.HardwareRemoved += HardwareRemoved;
 
@@ -837,12 +838,18 @@ public sealed partial class MainForm : Form
 
     private void HardwareAdded(IHardware hardware)
     {
+        if (UiThread.Post(() => HardwareAdded(hardware)))
+            return;
+
         SubHardwareAdded(hardware, _root);
         PlotSelectionChanged(this, null);
     }
 
     private void HardwareRemoved(IHardware hardware)
     {
+        if (UiThread.Post(() => HardwareRemoved(hardware)))
+            return;
+
         List<HardwareNode> nodesToRemove = new();
         foreach (Node node in _root.Nodes)
         {
