@@ -37,6 +37,7 @@
 
   <PropertyGroup Condition="'$(BuildOnlyRefs)'=='true'">
     <Platform>AnyCPU</Platform>
+    <CsWin32PlatformTarget>x64</CsWin32PlatformTarget>
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
