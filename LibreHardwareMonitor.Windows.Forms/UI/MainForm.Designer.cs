@@ -102,7 +102,9 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.splitPanelFixedSensorScalingMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.logSeparatorMenuItem = new System.Windows.Forms.ToolStripSeparator();
             this.logSensorsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.storageMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.forceDriveWakeupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.excludeUsbDevicesItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileRotationMethod = new System.Windows.Forms.ToolStripMenuItem();
             this.perSessionFileRotationMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
             this.dailyFileRotationMenuItem = new LibreHardwareMonitor.Windows.Forms.UI.ToolStripRadioButtonMenuItem();
@@ -491,7 +493,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.splitPlotPanelScalingMenuItem,
             this.logSeparatorMenuItem,
             this.logSensorsMenuItem,
-            this.forceDriveWakeupItem,
+            this.storageMenuItem,
             this.loggingIntervalMenuItem,
             this.updateIntervalMenuItem,
             this.fileRotationMethod,
@@ -674,11 +676,26 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.logSensorsMenuItem.Size = new System.Drawing.Size(221, 22);
             this.logSensorsMenuItem.Text = "Log Sensors";
             //
+            // storageMenuItem
+            //
+            this.storageMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.forceDriveWakeupItem,
+            this.excludeUsbDevicesItem});
+            this.storageMenuItem.Name = "storageMenuItem";
+            this.storageMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.storageMenuItem.Text = "Storage";
+            //
             // forceDriveWakeupItem
             //
             this.forceDriveWakeupItem.Name = "forceDriveWakeupItem";
             this.forceDriveWakeupItem.Size = new System.Drawing.Size(221, 22);
             this.forceDriveWakeupItem.Text = "Force Drive Wakeup";
+            //
+            // excludeUsbDevicesItem
+            //
+            this.excludeUsbDevicesItem.Name = "excludeUsbDevicesItem";
+            this.excludeUsbDevicesItem.Size = new System.Drawing.Size(221, 22);
+            this.excludeUsbDevicesItem.Text = "Exclude USB Devices";
             //
             // fileRotationMethod
             //
@@ -1241,7 +1258,9 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
         private System.Windows.Forms.ToolStripMenuItem fanControllerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ramMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logSensorsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem storageMenuItem;
         private System.Windows.Forms.ToolStripMenuItem forceDriveWakeupItem;
+        private System.Windows.Forms.ToolStripMenuItem excludeUsbDevicesItem;
         private System.Windows.Forms.ToolStripSeparator logSeparatorMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loggingIntervalMenuItem;
         private ToolStripRadioButtonMenuItem log1sMenuItem;

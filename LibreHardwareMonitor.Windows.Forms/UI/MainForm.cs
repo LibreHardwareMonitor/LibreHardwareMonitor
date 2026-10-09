@@ -33,6 +33,7 @@ public sealed partial class MainForm : Form
     private readonly UserRadioGroup _smartUpdateCycle;
     private readonly UserRadioGroup _updateInterval;
     private readonly UserOption _logSensors;
+    private readonly UserOption _excludeUsbDevices;
     private readonly UserOption _forceDriveWakeup;
     private readonly UserOption _minimizeOnClose;
     private readonly UserOption _minimizeToTray;
@@ -272,6 +273,9 @@ public sealed partial class MainForm : Form
 
         _readFanControllersSensors = new UserOption("fanControllerMenuItem", true, fanControllerMenuItem, _settings);
         _readFanControllersSensors.Changed += delegate { _computer.IsControllerEnabled = _readFanControllersSensors.Value; };
+
+        _excludeUsbDevices = new UserOption("excludeUsbDevicesItem", false, excludeUsbDevicesItem, _settings);
+        _excludeUsbDevices.Changed += delegate { StorageDevice.ExcludeUsbDevices = _excludeUsbDevices.Value; };
 
         _readHddSensors = new UserOption("hddMenuItem", true, hddMenuItem, _settings);
         _readHddSensors.Changed += delegate { _computer.IsStorageEnabled = _readHddSensors.Value; };
