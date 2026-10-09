@@ -37,6 +37,7 @@
 
   <PropertyGroup Condition="'$(BuildOnlyRefs)'=='true'">
     <Platform>AnyCPU</Platform>
+    <CsWin32PlatformTarget>x64</CsWin32PlatformTarget>
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -84,7 +85,7 @@
   <ItemGroup>
     <PackageReference Include="DiskInfoToolkit" Version="2.2.1" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.335">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.360">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
