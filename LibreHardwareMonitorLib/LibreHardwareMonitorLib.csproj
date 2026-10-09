@@ -62,6 +62,7 @@
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily0F.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily17.bin" />
+    <EmbeddedResource Include="Resources\PawnIo\IntelMCHBAR.bin" />
     <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
     <EmbeddedResource Include="Resources\PawnIo\IsaBridgeEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
