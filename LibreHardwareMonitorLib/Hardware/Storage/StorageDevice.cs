@@ -76,6 +76,13 @@ public sealed class StorageDevice : Hardware, ISmart
     /// </summary>
     public static uint SmartUpdateCycleCount { get; set; } = 1;
 
+    /// <inheritdoc cref="StorageDIT.ExcludeUsbDevices"/>
+    public static bool ExcludeUsbDevices
+    {
+        get => StorageDIT.ExcludeUsbDevices;
+        set => StorageDIT.ExcludeUsbDevices = value;
+    }
+
     public override void Update()
     {
         bool refreshSmartData = ++_smartUpdateCycle >= Math.Max(SmartUpdateCycleCount, 1);
