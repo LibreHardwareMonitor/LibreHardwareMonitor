@@ -391,10 +391,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetStorageDeviceSensorValue getValue)
     {
-        var sensor = new StorageDeviceSensor(name, index, defaultHidden, sensorType, this, _settings, getValue)
-        {
-            Value = 0
-        };
+        var sensor = new StorageDeviceSensor(name, index, defaultHidden, sensorType, this, _settings, getValue);
 
         ActivateSensor(sensor);
         _sensors.Add(sensor);
