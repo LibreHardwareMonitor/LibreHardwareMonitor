@@ -1432,6 +1432,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.TUF_X470_PLUS_GAMING: // IT8665E
+                    case Model.ROG_STRIX_B450_F_GAMING: // IT8665E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Southbridge 2.5V", 1));
                         v.Add(new Voltage("+12V", 2, 5, 1));
