@@ -1111,6 +1111,12 @@ public class SensorGadget : Gadget
 
     private void DrawProgress(Graphics g, float x, float y, float width, float height, float progress)
     {
+        // A NaN, infinite or huge value makes GDI+ throw an OverflowException.
+        if (float.IsNaN(progress) || progress < 0)
+            progress = 0;
+        else if (progress > 1)
+            progress = 1;
+
         Image barBack = _barBackTinted ?? _barBack;
         Image barFore = _barForeTinted ?? _barFore;
         g.DrawImage(barBack,
