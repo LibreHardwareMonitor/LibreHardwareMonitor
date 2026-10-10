@@ -270,7 +270,12 @@ public class PlotPanel : UserControl
 
 #pragma warning restore CS0618 //obsolete warning
 
-            axis.Zoom(_settings.GetValue("plotPanel.Min" + axis.Key, float.NaN), _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN));
+            float min = _settings.GetValue("plotPanel.Min" + axis.Key, float.NaN);
+            float max = _settings.GetValue("plotPanel.Max" + axis.Key, float.NaN);
+
+            // Skip unset and broken ranges (e.g. Infinity saved after zooming out too far), as OxyPlot can't draw them.
+            if (min < max && !float.IsInfinity(min) && !float.IsInfinity(max))
+                axis.Zoom(min, max);
 
             if (units.ContainsKey(type))
                 axis.Unit = units[type];
