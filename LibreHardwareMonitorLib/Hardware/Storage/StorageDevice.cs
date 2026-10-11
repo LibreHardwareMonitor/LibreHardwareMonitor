@@ -391,10 +391,7 @@ public sealed class StorageDevice : Hardware, ISmart
 
     private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetStorageDeviceSensorValue getValue)
     {
-        var sensor = new StorageDeviceSensor(name, index, defaultHidden, sensorType, this, _settings, getValue)
-        {
-            Value = 0
-        };
+        var sensor = new StorageDeviceSensor(name, index, defaultHidden, sensorType, this, _settings, getValue);
 
         ActivateSensor(sensor);
         _sensors.Add(sensor);
@@ -419,13 +416,8 @@ public sealed class StorageDevice : Hardware, ISmart
         }
 
         _perfRead.Update(diskPerformance.ReadTime, diskPerformance.QueryTime);
-        _sensorDiskReadActivity.Value = (float)_perfRead.Result;
-
         _perfWrite.Update(diskPerformance.WriteTime, diskPerformance.QueryTime);
-        _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
-
         _perfTotal.Update(diskPerformance.IdleTime, diskPerformance.QueryTime);
-        _sensorDiskTotalActivity.Value = (float)(100 - _perfTotal.Result);
 
         long readCount = diskPerformance.BytesRead;
         long readDiff = readCount - _lastReadCount;
@@ -438,6 +430,11 @@ public sealed class StorageDevice : Hardware, ISmart
         long currentTime = Stopwatch.GetTimestamp();
         if (_lastTime != 0)
         {
+            // The disk counters are totals, so the first sample only sets the baseline.
+            _sensorDiskReadActivity.Value = (float)_perfRead.Result;
+            _sensorDiskWriteActivity.Value = (float)_perfWrite.Result;
+            _sensorDiskTotalActivity.Value = (float)(100 - _perfTotal.Result);
+
             double timeDeltaSeconds = (double)(currentTime - _lastTime) / Stopwatch.Frequency;
 
             if (timeDeltaSeconds > 0)
