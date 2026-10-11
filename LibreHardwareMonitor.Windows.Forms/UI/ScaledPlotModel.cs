@@ -30,4 +30,17 @@ class ScaledPlotModel : PlotModel
 
         Legends.Add(legend);
     }
+
+    public override void HandleMouseDown(object sender, OxyMouseDownEventArgs e)
+    {
+        // With many unstacked axes the plot area can collapse to zero size, and hit testing
+        // the series then passes NaN to the time axis, which throws.
+        if (PlotArea.Width <= 0 || PlotArea.Height <= 0)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        base.HandleMouseDown(sender, e);
+    }
 }
