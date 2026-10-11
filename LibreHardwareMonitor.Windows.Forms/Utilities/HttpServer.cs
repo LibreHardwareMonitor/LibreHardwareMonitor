@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Windows.Forms.UI;
 
@@ -28,6 +29,7 @@ namespace LibreHardwareMonitor.Windows.Forms.Utilities;
 public class HttpServer
 {
     private readonly HttpListener _listener;
+    private readonly Control _owner;
     private readonly Node _root;
     private readonly IElement _rootElement;
     private readonly Version _version = typeof(HttpServer).Assembly.GetName().Version;
@@ -35,8 +37,10 @@ public class HttpServer
     private Task _listenerTask;
     private CancellationTokenSource _cts;
 
-    public HttpServer(Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string passwordSHA256 = "")
+    public HttpServer(Control owner, Node node, IElement rootElement, string ip, int port, bool authEnabled = false, string userName = "", string passwordSHA256 = "")
     {
+        _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
         _root = node;
         _rootElement = rootElement;
         ListenerIp = ip;
@@ -236,6 +240,17 @@ public class HttpServer
         }
     }
 
+    private void InvokeOnUiThread(Action action)
+    {
+        // Node collections are changed on the UI thread, so their readers run there too.
+        _owner.Invoke(action);
+    }
+
+    private T InvokeOnUiThread<T>(Func<T> action)
+    {
+        return (T)_owner.Invoke(action);
+    }
+
     //Handles "/Sensor" requests.
     //Parameters are taken from the query part of the URL.
     //Get:
@@ -357,7 +372,8 @@ public class HttpServer
             {
                 case "POST":
                     {
-                        string postResult = HandlePostRequest(request);
+                        string postResult = InvokeOnUiThread(() => HandlePostRequest(request));
+
                         await SendResponseAsync(context.Response, postResult, "application/json");
                         break;
                     }
@@ -386,18 +402,20 @@ public class HttpServer
                         if (requestedFile.Contains("Sensor"))
                         {
                             var sensorResult = new Dictionary<string, object>();
-                            HandleSensorRequest(request, sensorResult);
+                            InvokeOnUiThread(() => HandleSensorRequest(request, sensorResult));
+
                             await SendJsonSensorAsync(context.Response, sensorResult);
                             return;
                         }
 
                         if (requestedFile.Contains("ResetAllMinMax"))
                         {
-                            _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
+                            InvokeOnUiThread(() => _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
                             {
                                 sensor.ResetMin();
                                 sensor.ResetMax();
-                            }));
+                            })));
+
                             await SendJsonAsync(context.Response, request);
                             return;
                         }
@@ -519,19 +537,7 @@ public class HttpServer
 
     private async Task SendJsonAsync(HttpListenerResponse response, HttpListenerRequest request = null)
     {
-        Dictionary<string, object> json = new();
-
-        int nodeIndex = 0;
-
-        json["id"] = nodeIndex++;
-        json["Version"] = $"{_version.Major}.{_version.Minor}.{_version.Build}";
-        json["Text"] = "Sensor";
-        json["Min"] = "Min";
-        json["Value"] = "Value";
-        json["Max"] = "Max";
-        json["ImageURL"] = string.Empty;
-
-        json["Children"] = new List<object> { GenerateJsonForNode(_root, ref nodeIndex) };
+        Dictionary<string, object> json = InvokeOnUiThread(CreateJsonSnapshot);
 
         byte[] buffer = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(
             json,
@@ -575,6 +581,25 @@ public class HttpServer
         { }
 
         response.Close();
+    }
+
+    private Dictionary<string, object> CreateJsonSnapshot()
+    {
+        Dictionary<string, object> json = new();
+
+        int nodeIndex = 0;
+
+        json["id"] = nodeIndex++;
+        json["Version"] = $"{_version.Major}.{_version.Minor}.{_version.Build}";
+        json["Text"] = "Sensor";
+        json["Min"] = "Min";
+        json["Value"] = "Value";
+        json["Max"] = "Max";
+        json["ImageURL"] = string.Empty;
+
+        json["Children"] = new List<object> { GenerateJsonForNode(_root, ref nodeIndex) };
+
+        return json;
     }
 
     private string GeneratePrometheusResponse(Node node, Dictionary<string, int> prometheusSettings)
@@ -767,7 +792,7 @@ public class HttpServer
             prometheusSettings["lastvalue"] = lastvalue;
         }
 
-        string responseContent = GeneratePrometheusResponse(_root, prometheusSettings);
+        string responseContent = InvokeOnUiThread(() => GeneratePrometheusResponse(_root, prometheusSettings));
         response.AddHeader("Cache-Control", "no-cache");
         response.AddHeader("Access-Control-Allow-Origin", "*");
 

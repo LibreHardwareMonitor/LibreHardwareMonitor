@@ -319,7 +319,12 @@ public sealed partial class MainForm : Form
         celsiusMenuItem.Checked = _unitManager.TemperatureUnit == TemperatureUnit.Celsius;
         fahrenheitMenuItem.Checked = !celsiusMenuItem.Checked;
 
-        Server = new HttpServer(_root,
+        // The web server can start before Show() and uses Invoke() to read the node tree.
+        // Create the form handle now so early requests can run on the UI thread.
+        _ = Handle;
+
+        Server = new HttpServer(this,
+                                _root,
                                 _computer,
                                 _settings.GetValue("listenerIp", "?"),
                                 _settings.GetValue("listenerPort", 8085),
