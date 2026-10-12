@@ -39,7 +39,7 @@ public class SensorGadget : Gadget
     private Image _barForeTinted;
     private Image _background = new Bitmap(1, 1);
     private bool _backgroundDirty = true;
-    private readonly Control _owner;
+    private readonly UiThread _uiThread;
     private readonly float _scale;
     private float _fontSize;
     private int _iconSize;
@@ -65,10 +65,16 @@ public class SensorGadget : Gadget
     private Color _backgroundColor;
 
     public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager, Control owner)
+        : this(computer, settings, unitManager, new UiThread(owner))
+    {
+    }
+
+    internal SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager, UiThread uiThread)
     {
         _unitManager = unitManager;
         _settings = settings;
-        _owner = owner;
+        _uiThread = uiThread;
+
         computer.HardwareAdded += HardwareAdded;
         computer.HardwareRemoved += HardwareRemoved;
 
@@ -411,7 +417,7 @@ public class SensorGadget : Gadget
 
     private void SensorAdded(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
+        _uiThread.Post(() =>
         {
             if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
                 Add(sensor);
@@ -420,7 +426,7 @@ public class SensorGadget : Gadget
 
     private void SensorRemoved(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
+        _uiThread.Post(() =>
         {
             if (Contains(sensor))
                 Remove(sensor, false);

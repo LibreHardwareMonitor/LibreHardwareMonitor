@@ -61,6 +61,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _showGadget;
     private readonly StartupManager _startupManager = new();
     private readonly SystemTray _systemTray;
+    private readonly UiThread _uiThread;
     private readonly UnitManager _unitManager;
     private readonly UpdateVisitor _updateVisitor = new();
 
@@ -79,6 +80,8 @@ public sealed partial class MainForm : Form
     public MainForm()
     {
         InitializeComponent();
+
+        _uiThread = new UiThread(this);
 
         _settings = new PersistentSettings();
         _settings.Load(Path.ChangeExtension(Application.ExecutablePath, ".config"));
@@ -138,7 +141,7 @@ public sealed partial class MainForm : Form
 
         _computer = new Computer(_settings);
 
-        _systemTray = new SystemTray(_computer, _settings, _unitManager, this);
+        _systemTray = new SystemTray(_computer, _settings, _unitManager, _uiThread);
         _systemTray.HideShowCommand += HideShowClick;
         _systemTray.ExitCommand += ExitClick;
 
@@ -159,7 +162,7 @@ public sealed partial class MainForm : Form
         {
             // Windows
             treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
-            _gadget = new SensorGadget(_computer, _settings, _unitManager, this);
+            _gadget = new SensorGadget(_computer, _settings, _unitManager, _uiThread);
             _gadget.HideShowCommand += HideShowClick;
         }
 
@@ -612,7 +615,7 @@ public sealed partial class MainForm : Form
 
     private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
     {
-        BeginInvoke(() => HandlePowerModeChanged(eventArgs.Mode));
+        _uiThread.Post(() => HandlePowerModeChanged(eventArgs.Mode));
     }
 
     private void HandlePowerModeChanged(Microsoft.Win32.PowerModes mode)
@@ -675,7 +678,7 @@ public sealed partial class MainForm : Form
         }
         finally
         {
-            BeginInvoke(() =>
+            _uiThread.Post(() =>
             {
                 lock (_computerResetLock)
                 {
@@ -948,16 +951,18 @@ public sealed partial class MainForm : Form
 
     private void SubHardwareAdded(IHardware hardware, Node node)
     {
-        HardwareNode hardwareNode = new(hardware, _settings, _unitManager, this);
+        HardwareNode hardwareNode = new(hardware, _settings, _unitManager, _uiThread);
         hardwareNode.PlotSelectionChanged += PlotSelectionChanged;
+
         InsertSorted(node.Nodes, hardwareNode);
+
         foreach (IHardware subHardware in hardware.SubHardware)
             SubHardwareAdded(subHardware, hardwareNode);
     }
 
     private void HardwareAdded(IHardware hardware)
     {
-        BeginInvoke(() =>
+        _uiThread.Post(() =>
         {
             SubHardwareAdded(hardware, _root);
             PlotSelectionChanged(this, null);
@@ -966,7 +971,7 @@ public sealed partial class MainForm : Form
 
     private void HardwareRemoved(IHardware hardware)
     {
-        BeginInvoke(() =>
+        _uiThread.Post(() =>
         {
             List<HardwareNode> nodesToRemove = new();
             foreach (Node node in _root.Nodes)
