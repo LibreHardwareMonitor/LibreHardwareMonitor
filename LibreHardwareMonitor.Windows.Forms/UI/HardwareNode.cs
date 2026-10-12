@@ -9,7 +9,6 @@ using LibreHardwareMonitor.Windows.Forms.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Forms;
 
 namespace LibreHardwareMonitor.Windows.Forms.UI;
 
@@ -17,18 +16,16 @@ public class HardwareNode : Node, IExpandPersistNode
 {
     private readonly PersistentSettings _settings;
     private readonly UnitManager _unitManager;
-    private readonly Control _owner;
     private readonly List<TypeNode> _typeNodes = new List<TypeNode>();
     private readonly string _expandedIdentifier;
     private bool _expanded;
 
     public event EventHandler PlotSelectionChanged;
 
-    public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager, Control owner)
+    public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager)
     {
         _settings = settings;
         _unitManager = unitManager;
-        _owner = owner;
         _expandedIdentifier = new Identifier(hardware.Identifier, "expanded").ToString();
         Hardware = hardware;
         Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
@@ -107,29 +104,25 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorRemoved(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
+        foreach (TypeNode typeNode in _typeNodes)
         {
-            foreach (TypeNode typeNode in _typeNodes)
+            if (typeNode.SensorType == sensor.SensorType)
             {
-                if (typeNode.SensorType == sensor.SensorType)
+                SensorNode sensorNode = null;
+                foreach (Node node in typeNode.Nodes)
                 {
-                    SensorNode sensorNode = null;
-                    foreach (Node node in typeNode.Nodes)
-                    {
-                        if (node is SensorNode n && n.Sensor == sensor)
-                            sensorNode = n;
-                    }
-                    if (sensorNode != null)
-                    {
-                        sensorNode.PlotSelectionChanged -= SensorPlotSelectionChanged;
-                        typeNode.Nodes.Remove(sensorNode);
-                        UpdateNode(typeNode);
-                    }
+                    if (node is SensorNode n && n.Sensor == sensor)
+                        sensorNode = n;
+                }
+                if (sensorNode != null)
+                {
+                    sensorNode.PlotSelectionChanged -= SensorPlotSelectionChanged;
+                    typeNode.Nodes.Remove(sensorNode);
+                    UpdateNode(typeNode);
                 }
             }
-
-            PlotSelectionChanged?.Invoke(this, null);
-        });
+        }
+        PlotSelectionChanged?.Invoke(this, null);
     }
 
     private void InsertSorted(Node node, ISensor sensor)
@@ -150,18 +143,15 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorAdded(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
+        foreach (TypeNode typeNode in _typeNodes)
         {
-            foreach (TypeNode typeNode in _typeNodes)
+            if (typeNode.SensorType == sensor.SensorType)
             {
-                if (typeNode.SensorType == sensor.SensorType)
-                {
-                    InsertSorted(typeNode, sensor);
-                    UpdateNode(typeNode);
-                }
+                InsertSorted(typeNode, sensor);
+                UpdateNode(typeNode);
             }
+        }
 
-            PlotSelectionChanged?.Invoke(this, null);
-        });
+        PlotSelectionChanged?.Invoke(this, null);
     }
 }

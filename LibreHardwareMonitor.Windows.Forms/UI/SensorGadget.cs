@@ -39,7 +39,6 @@ public class SensorGadget : Gadget
     private Image _barForeTinted;
     private Image _background = new Bitmap(1, 1);
     private bool _backgroundDirty = true;
-    private readonly Control _owner;
     private readonly float _scale;
     private float _fontSize;
     private int _iconSize;
@@ -64,11 +63,10 @@ public class SensorGadget : Gadget
     private Color _fontColor;
     private Color _backgroundColor;
 
-    public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager, Control owner)
+    public SensorGadget(IComputer computer, PersistentSettings settings, UnitManager unitManager)
     {
         _unitManager = unitManager;
         _settings = settings;
-        _owner = owner;
         computer.HardwareAdded += HardwareAdded;
         computer.HardwareRemoved += HardwareRemoved;
 
@@ -411,20 +409,14 @@ public class SensorGadget : Gadget
 
     private void SensorAdded(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
-        {
-            if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
-                Add(sensor);
-        });
+        if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
+            Add(sensor);
     }
 
     private void SensorRemoved(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
-        {
-            if (Contains(sensor))
-                Remove(sensor, false);
-        });
+        if (Contains(sensor))
+            Remove(sensor, false);
     }
 
     public bool Contains(ISensor sensor)
