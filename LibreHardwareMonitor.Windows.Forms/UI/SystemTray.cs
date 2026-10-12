@@ -17,15 +17,17 @@ public class SystemTray : IDisposable
     private IComputer _computer;
     private readonly PersistentSettings _settings;
     private readonly UnitManager _unitManager;
+    private readonly Control _owner;
     private readonly List<SensorNotifyIcon> _sensorList = new List<SensorNotifyIcon>();
     private bool _mainIconEnabled;
     private readonly NotifyIconAdv _mainIcon;
 
-    public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager)
+    public SystemTray(IComputer computer, PersistentSettings settings, UnitManager unitManager, Control owner)
     {
         _computer = computer;
         _settings = settings;
         _unitManager = unitManager;
+        _owner = owner;
         computer.HardwareAdded += HardwareAdded;
         computer.HardwareRemoved += HardwareRemoved;
 
@@ -80,14 +82,20 @@ public class SystemTray : IDisposable
 
     private void SensorAdded(ISensor sensor)
     {
-        if (_settings.GetValue(new Identifier(sensor.Identifier, "tray").ToString(), false))
-            Add(sensor, false);
+        _owner.BeginInvoke(() =>
+        {
+            if (_settings.GetValue(new Identifier(sensor.Identifier, "tray").ToString(), false))
+                Add(sensor, false);
+        });
     }
 
     private void SensorRemoved(ISensor sensor)
     {
-        if (Contains(sensor))
-            Remove(sensor, false);
+        _owner.BeginInvoke(() =>
+        {
+            if (Contains(sensor))
+                Remove(sensor, false);
+        });
     }
 
     public void Dispose()
