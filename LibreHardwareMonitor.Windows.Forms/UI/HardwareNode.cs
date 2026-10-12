@@ -17,7 +17,7 @@ public class HardwareNode : Node, IExpandPersistNode
 {
     private readonly PersistentSettings _settings;
     private readonly UnitManager _unitManager;
-    private readonly Control _owner;
+    private readonly UiThread _uiThread;
     private readonly List<TypeNode> _typeNodes = new List<TypeNode>();
     private readonly string _expandedIdentifier;
     private bool _expanded;
@@ -25,11 +25,17 @@ public class HardwareNode : Node, IExpandPersistNode
     public event EventHandler PlotSelectionChanged;
 
     public HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager, Control owner)
+        : this(hardware, settings, unitManager, new UiThread(owner))
+    {
+    }
+
+    internal HardwareNode(IHardware hardware, PersistentSettings settings, UnitManager unitManager, UiThread uiThread)
     {
         _settings = settings;
         _unitManager = unitManager;
-        _owner = owner;
+        _uiThread = uiThread;
         _expandedIdentifier = new Identifier(hardware.Identifier, "expanded").ToString();
+
         Hardware = hardware;
         Image = HardwareTypeImage.Instance.GetImage(hardware.HardwareType);
 
@@ -107,7 +113,7 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorRemoved(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
+        _uiThread.Post(() =>
         {
             foreach (TypeNode typeNode in _typeNodes)
             {
@@ -150,7 +156,7 @@ public class HardwareNode : Node, IExpandPersistNode
 
     private void SensorAdded(ISensor sensor)
     {
-        _owner.BeginInvoke(() =>
+        _uiThread.Post(() =>
         {
             foreach (TypeNode typeNode in _typeNodes)
             {
