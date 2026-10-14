@@ -100,7 +100,7 @@ public class HttpServer
 
             // validate that the selected IP exists (it could have been previously selected before switching networks)
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-            bool ipFound = false;
+            bool ipFound = ListenerIp == IPAddress.Loopback.ToString();
             foreach (IPAddress ip in host.AddressList)
             {
                 if (ListenerIp == ip.ToString())

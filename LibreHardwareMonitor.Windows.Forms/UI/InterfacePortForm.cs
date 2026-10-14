@@ -37,6 +37,11 @@ public partial class InterfacePortForm : Form
                 interfaceComboBox.Items.Add(ip.ToString());
         }
 
+        if (!interfaceComboBox.Items.Contains(IPAddress.Loopback.ToString()))
+        {
+            interfaceComboBox.Items.Add(IPAddress.Loopback.ToString());
+        }
+
         interfaceComboBox.Items.Add("0.0.0.0");
 
         // select the last one by default to match the existing behavior
