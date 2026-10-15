@@ -29,7 +29,10 @@ public sealed partial class AboutBox : Form
     {
         try
         {
-            Process.Start(new ProcessStartInfo(e.Link.LinkData.ToString()));
+            Process.Start(new ProcessStartInfo(e.Link.LinkData.ToString())
+            {
+                UseShellExecute = true
+            });
         }
         catch { }
     }
