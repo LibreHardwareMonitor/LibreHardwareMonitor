@@ -532,6 +532,9 @@ internal sealed class IntelCpu : GenericCpu
 
     public float EnergyUnitsMultiplier { get; }
 
+    // MCHBAR 0x59C0 (THERM_STATUS_GT) holds the iGPU temperature; offset only verified on Meteor Lake.
+    internal bool HasMchbarGTThermalStatus => _microArchitecture is MicroArchitecture.MeteorLake;
+
     private float[] Floats(float f)
     {
         float[] result = new float[_coreCount];
