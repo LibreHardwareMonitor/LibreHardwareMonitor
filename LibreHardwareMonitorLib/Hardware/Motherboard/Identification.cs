@@ -244,6 +244,8 @@ internal class Identification
                 return Model.EP45_DS3R;
             case var _ when name.Equals("EP45-UD3R", StringComparison.OrdinalIgnoreCase):
                 return Model.EP45_UD3R;
+            case var _ when name.Equals("EX58-UD5", StringComparison.OrdinalIgnoreCase):
+                return Model.EX58_UD5;
             case var _ when name.Equals("EX58-EXTREME", StringComparison.OrdinalIgnoreCase):
                 return Model.EX58_EXTREME;
             case var _ when name.Equals("EX58-UD3R", StringComparison.OrdinalIgnoreCase):
