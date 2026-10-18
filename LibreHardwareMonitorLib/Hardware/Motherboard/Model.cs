@@ -259,6 +259,7 @@ public enum Model
     B660M_DS3H_AX_DDR4,
     EP45_DS3R,
     EP45_UD3R,
+    EX58_UD5,
     EX58_EXTREME,
     EX58_UD3R,
     G41M_COMBO,
