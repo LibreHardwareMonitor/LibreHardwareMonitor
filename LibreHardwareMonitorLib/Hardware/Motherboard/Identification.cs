@@ -670,6 +670,8 @@ internal class Identification
                 return Model.ROG_MAXIMUS_XII_HERO_WIFI;
             case var _ when name.Equals("X670E AORUS XTREME", StringComparison.OrdinalIgnoreCase):
                 return Model.X670E_AORUS_XTREME;
+            case var _ when name.Equals("X670E AORUS MASTER", StringComparison.OrdinalIgnoreCase):
+                return Model.X670E_AORUS_MASTER;
             case var _ when name.Equals("X870E AORUS PRO", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_AORUS_PRO;
             case var _ when name.Equals("X870E AORUS PRO ICE", StringComparison.OrdinalIgnoreCase):
@@ -678,6 +680,10 @@ internal class Identification
                 return Model.ROG_STRIX_X870_I_GAMING_WIFI;
             case var _ when name.Equals("X870E AORUS XTREME AI TOP", StringComparison.OrdinalIgnoreCase):
                 return Model.X870E_AORUS_XTREME_AI_TOP;
+            case var _ when name.Equals("X870E AORUS MASTER X3D", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_AORUS_MASTER_X3D;
+            case var _ when name.Equals("X870E AORUS MASTER X3D ICE", StringComparison.OrdinalIgnoreCase):
+                return Model.X870E_AORUS_MASTER_X3D_ICE;
             case var _ when name.Equals("PROART X870E-CREATOR WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.PROART_X870E_CREATOR_WIFI;
             case var _ when name.Equals("PRIME X870-P", StringComparison.OrdinalIgnoreCase):

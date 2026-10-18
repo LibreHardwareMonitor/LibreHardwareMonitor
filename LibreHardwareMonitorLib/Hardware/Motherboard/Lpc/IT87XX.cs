@@ -33,12 +33,13 @@ internal class IT87XX : ISuperIO
     private readonly byte _version;
     private readonly float _voltageGain;
     private IGigabyteController _gigabyteController;
+    private readonly bool _keepGigabyteControllerEnabled;
     private readonly LpcPort _port;
     private readonly bool _requiresBankSelect;  // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
 
     private bool SupportsMultipleBanks => _bankCount > 1;
 
-    public IT87XX(LpcPort port, Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, IGigabyteController gigabyteController)
+    public IT87XX(LpcPort port, Chip chip, ushort address, ushort gpioAddress, byte version, Motherboard motherboard, IGigabyteController gigabyteController, bool keepGigabyteControllerEnabled)
     {
         _port = port;
         _address = address;
@@ -47,6 +48,7 @@ internal class IT87XX : ISuperIO
         _dataReg = (ushort)(address + DATA_REGISTER_OFFSET);
         _gpioAddress = gpioAddress;
         _gigabyteController = gigabyteController;
+        _keepGigabyteControllerEnabled = keepGigabyteControllerEnabled;
         _requiresBankSelect = false;
 
         Chip = chip;
@@ -307,6 +309,18 @@ internal class IT87XX : ISuperIO
 
         if (!Mutexes.WaitIsaBus(10))
             return;
+
+        // An IT5701 on the same EC only works while the controller is enabled, so drive the fan through the EC instead.
+        if (_gigabyteController != null && _keepGigabyteControllerEnabled)
+        {
+            // Like RestoreDefaultFanPwmControl, only hand back fans this instance has taken.
+            if (value.HasValue || _restoreDefaultFanPwmControlRequired[index])
+                _gigabyteController.SetControl(index, value);
+
+            _restoreDefaultFanPwmControlRequired[index] = value.HasValue;
+            Mutexes.ReleaseIsaBus();
+            return;
+        }
 
         if (value.HasValue)
         {

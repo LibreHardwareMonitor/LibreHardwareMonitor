@@ -17,6 +17,7 @@ internal class EcioPortGigabyteController : IGigabyteController
     private const ushort ControllerVersionOffset = 0x00;
     private const ushort ControllerEnableRegister = 0x47;
     private const ushort ControllerFanControlArea = 0x900;
+    private const ushort ControllerFanDutyRegister = 0x0E;
 
     private readonly IT879xEcioPort _port;
 
@@ -89,6 +90,33 @@ internal class EcioPortGigabyteController : IGigabyteController
     public void Dispose()
     {
         Restore();
+    }
+
+    public bool SetControl(int index, byte? value)
+    {
+        if (index is < 0 or > 2)
+            return false;
+
+        if (!Enable(true))
+            return false;
+
+        return Write((ushort)(ControllerFanControlArea + ControllerFanDutyRegister + index), value ?? 0);
+    }
+
+    public bool Read(ushort offset, byte[] buffer)
+    {
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            if (!_port.Read((ushort)(offset + i), out buffer[i]))
+                return false;
+        }
+
+        return true;
+    }
+
+    public bool Write(ushort offset, byte value)
+    {
+        return _port.Write(offset, value);
     }
 
     /// <summary>

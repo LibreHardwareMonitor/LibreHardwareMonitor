@@ -244,6 +244,10 @@ internal sealed class SuperIOHardware : Hardware
                 GetIteConfigurationsC(superIO, manufacturer, model, v, t, f, c);
                 break;
 
+            case Chip.IT5701:
+                GetIteConfigurationsD(superIO, manufacturer, model, v, t, f, c);
+                break;
+
             case Chip.F71858:
                 v.Add(new Voltage("VCC3V", 0, 150, 150));
                 v.Add(new Voltage("VSB3V", 1, 150, 150));
@@ -2679,9 +2683,12 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.X670E_AORUS_XTREME: // IT8689E
+                    case Model.X670E_AORUS_MASTER: // IT8689E
                     case Model.X870E_AORUS_PRO: // ITE IT8696E
                     case Model.X870E_AORUS_PRO_ICE: // ITE IT8696E
                     case Model.X870E_AORUS_XTREME_AI_TOP: // ITE IT8696E
+                    case Model.X870E_AORUS_MASTER_X3D: // ITE IT8696E
+                    case Model.X870E_AORUS_MASTER_X3D_ICE: // ITE IT8696E
                         v.Add(new Voltage("Vcore", 0, 0, 1));
                         v.Add(new Voltage("+3.3V", 1, 6.49F, 10));
                         v.Add(new Voltage("+12V", 2, 5, 1));
@@ -3039,6 +3046,9 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.X870_AORUS_ELITE_WIFI7: // ITE IT87952E
                     case Model.X870_AORUS_ELITE_WIFI7_ICE: // ITE IT87952E
+                    case Model.X670E_AORUS_MASTER: // ITE IT8792E
+                    case Model.X870E_AORUS_MASTER_X3D: // ITE IT87952E
+                    case Model.X870E_AORUS_MASTER_X3D_ICE: // ITE IT87952E
                         v.Add(new Voltage("Voltage #1", 0, true));
                         v.Add(new Voltage("Voltage #2", 1, true));
                         v.Add(new Voltage("Voltage #3", 2, true));
@@ -3104,6 +3114,37 @@ internal sealed class SuperIOHardware : Hardware
                 for (int i = 0; i < superIO.Controls.Length; i++)
                     c.Add(new Control("Fan #" + (i + 1), i));
 
+                break;
+        }
+    }
+
+    private static void GetIteConfigurationsD(ISuperIO superIO, Manufacturer manufacturer, Model model, IList<Voltage> v, IList<Temperature> t, IList<Fan> f, IList<Control> c)
+    {
+        switch (manufacturer)
+        {
+            case Manufacturer.Gigabyte:
+                switch (model)
+                {
+                    case Model.X670E_AORUS_MASTER: // ITE IT5701
+                    case Model.X870E_AORUS_MASTER_X3D: // ITE IT5701
+                    case Model.X870E_AORUS_MASTER_X3D_ICE: // ITE IT5701
+                        t.Add(new Temperature("Temperature #1", 0));
+                        t.Add(new Temperature("Temperature #2", 1));
+                        f.Add(new Fan("System Fan #7 / Pump", 0));
+                        f.Add(new Fan("System Fan #8 / Pump", 1));
+                        c.Add(new Control("System Fan #7 / Pump", 0));
+                        c.Add(new Control("System Fan #8 / Pump", 1));
+                        break;
+
+                    default:
+                        GetDefaultConfiguration(superIO, v, t, f, c);
+                        break;
+                }
+
+                break;
+
+            default:
+                GetDefaultConfiguration(superIO, v, t, f, c);
                 break;
         }
     }
