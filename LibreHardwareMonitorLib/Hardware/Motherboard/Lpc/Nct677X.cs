@@ -877,6 +877,7 @@ internal class Nct677X : ISuperIO
                     Temperatures[i] = value + (0.5f * half);
                     break;
 
+                case Chip.NCT6792D:
                 case Chip.NCT6796D:
                 case Chip.NCT6796DR:
                 case Chip.NCT6796DS:
