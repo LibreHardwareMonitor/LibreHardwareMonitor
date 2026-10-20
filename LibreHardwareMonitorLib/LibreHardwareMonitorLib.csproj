@@ -89,7 +89,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.6.2" />
+    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.6.3" />
     <PackageReference Include="System.Management" Version="10.0.13" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="10.0.13" />
