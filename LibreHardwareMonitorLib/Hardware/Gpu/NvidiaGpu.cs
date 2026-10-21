@@ -52,6 +52,8 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
     private readonly Sensor _powerUsage;
+    private readonly Sensor[] _throttleReasons;
+    private readonly long _enabledThrottleReasons;
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
@@ -70,6 +72,20 @@ internal sealed class NvidiaGpu : GenericGpu
         0x89EC1043, // Astral 5090 LC
         0x89E31043, // Astral 5090 OC
         0x89DE1043, // Astral 5080 OC
+    ];
+
+    private static readonly (NvidiaML.nvmlClocksThrottleReason reason, string name)[] PossibleThrottleReasons = [
+        (NvidiaML.nvmlClocksThrottleReason.GpuIdle,                     "Limited by utilization"),
+        (NvidiaML.nvmlClocksThrottleReason.ApplicationsClocksSetting,   "Limited by per-app clock cap"),
+        (NvidiaML.nvmlClocksThrottleReason.SwPowerCap,                  "Limited by software power cap"),
+        (NvidiaML.nvmlClocksThrottleReason.HwSlowdown,                  "Limited by hardware slowdown"),
+        (NvidiaML.nvmlClocksThrottleReason.SyncBoost,                   "Limited by sync boost cap"),
+        (NvidiaML.nvmlClocksThrottleReason.SwThermalSlowdown,           "Limited by temperatures, software cap"),
+        (NvidiaML.nvmlClocksThrottleReason.HwThermalSlowdown,           "Limited by temperatures, hardware cap"),
+        (NvidiaML.nvmlClocksThrottleReason.HwPowerBrakeSlowdown,        "Limited by power brake assertion"),
+        (NvidiaML.nvmlClocksThrottleReason.DisplayClockSetting,         "Limited by display clock settings"),
+        (NvidiaML.nvmlClocksThrottleReason.BoardLimit,                  "Limited by board limit policy"),
+        (NvidiaML.nvmlClocksThrottleReason.Reliability,                 "Limited by reliability policy"),
     ];
 
     // Call while holding NvidiaML.SyncRoot so Close cannot invalidate the handle before its use.
@@ -431,6 +447,31 @@ internal sealed class NvidiaGpu : GenericGpu
         _powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
         _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings);
         _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings);
+
+        // Possible throttle reasons.
+        _throttleReasons = new Sensor[PossibleThrottleReasons.Length];
+        for (int k = 0; k < PossibleThrottleReasons.Length; k++)
+        {
+            _throttleReasons[k] = new Sensor(PossibleThrottleReasons[k].name, k, SensorType.Factor, this, settings);
+        }
+
+        _enabledThrottleReasons = 0;
+        lock (NvidiaML.SyncRoot)
+        {
+            var nvmlDevice = GetNvmlDevice();
+            if (nvmlDevice.HasValue)
+            {
+                long? enabledThrottleReasons;
+
+                enabledThrottleReasons = NvidiaML.NvmlDeviceGetSupportedClocksEventReasons(nvmlDevice.Value);
+
+                if (!enabledThrottleReasons.HasValue)
+                    enabledThrottleReasons = NvidiaML.NvmlDeviceGetSupportedClocksThrottleReasons(nvmlDevice.Value);
+
+                if (enabledThrottleReasons.HasValue)
+                    _enabledThrottleReasons = enabledThrottleReasons.Value;
+            }
+        }
 
         NvidiaML.NvmlPciInfo? pciInfo = null;
 
@@ -842,6 +883,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
 
             int? powerUsage = null;
+            long? currentThrottleReasons = null;
             uint? rx = null;
             uint? tx = null;
 
@@ -852,6 +894,9 @@ internal sealed class NvidiaGpu : GenericGpu
                 if (nvmlDevice.HasValue)
                 {
                     powerUsage = NvidiaML.NvmlDeviceGetPowerUsage(nvmlDevice.Value);
+                    currentThrottleReasons = NvidiaML.NvmlDeviceGetCurrentClocksEventReasons(nvmlDevice.Value);
+                    if (!currentThrottleReasons.HasValue)
+                        currentThrottleReasons = NvidiaML.NvmlDeviceGetCurrentClocksThrottleReasons(nvmlDevice.Value);
 
                     rx = NvidiaML.NvmlDeviceGetPcieThroughput(nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
                     tx = NvidiaML.NvmlDeviceGetPcieThroughput(nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
@@ -862,6 +907,18 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (powerUsage.HasValue)
                 ActivateSensor(_powerUsage);
+
+            if (currentThrottleReasons.HasValue)
+            {
+                for (int k = 0; k < PossibleThrottleReasons.Length; k++)
+                {
+                    _throttleReasons[k].Value = (currentThrottleReasons.Value & (long)PossibleThrottleReasons[k].reason) != 0 ? 1 : 0;
+                    if ((_enabledThrottleReasons & (long)PossibleThrottleReasons[k].reason) != 0)
+                    {
+                        ActivateSensor(_throttleReasons[k]);
+                    }
+                }
+            }
 
             // In MB/s, throughput sensors are passed as in KB/s.
             _pcieThroughputRx.Value = rx * 1024;
