@@ -93,8 +93,10 @@ internal class AmdGpuGroup : IGroup
                                 AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
                                 AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)))
                             {
-                                if (AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, adapterInfo[i].AdapterIndex, ref device) &&
-                                    AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context, adapterInfo[i].AdapterIndex, ref pmLogSupportInfo))
+                                AtiAdlxx.ADLStatus createStatus = AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, adapterInfo[i].AdapterIndex, ref device);
+                                AtiAdlxx.ADLStatus supportStatus = createStatus == AtiAdlxx.ADLStatus.ADL_OK ? AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context, adapterInfo[i].AdapterIndex, ref pmLogSupportInfo) : createStatus;
+                                _report.AppendLine("PMLog Device_Create: " + createStatus + ", Support_Get: " + supportStatus);
+                                if (createStatus == AtiAdlxx.ADLStatus.ADL_OK && supportStatus == AtiAdlxx.ADLStatus.ADL_OK)
                                 {
                                     int k = 0;
                                     while (pmLogSupportInfo.usSensors[k] != (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES)

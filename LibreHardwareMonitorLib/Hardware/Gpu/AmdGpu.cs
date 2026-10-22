@@ -312,8 +312,10 @@ internal sealed class AmdGpu : GenericGpu
 
     public override void Update()
     {
+        float? d3dTemperature = null;
         if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
+            d3dTemperature = deviceInfo.Temperature;
             _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit;
             _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed;
             _gpuDedicatedMemoryFree.Value = _gpuDedicatedMemoryTotal.Value - _gpuDedicatedMemoryUsage.Value;
@@ -438,6 +440,14 @@ internal sealed class AmdGpu : GenericGpu
 
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_GFX_POWER, _powerCore, reset: false);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_SOC_POWER, _powerSoC, reset: false);
+        }
+
+        // Some cards (e.g. Instinct MI50 running the Radeon VII driver) are rejected by every ADL call, but WDDM still reports
+        // their temperature (this is what Windows Task Manager shows). Use it when ADL did not provide a core temperature.
+        if (_temperatureCore.Value == null && d3dTemperature.HasValue)
+        {
+            _temperatureCore.Value = d3dTemperature.Value;
+            ActivateSensor(_temperatureCore);
         }
     }
 
