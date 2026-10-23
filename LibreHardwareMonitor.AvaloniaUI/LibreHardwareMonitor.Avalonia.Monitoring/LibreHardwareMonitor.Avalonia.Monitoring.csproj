@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlackSharp.Core" Version="1.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Localization\LibreHardwareMonitor.Avalonia.Localization.csproj" />
+    <ProjectReference Include="..\..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj" />
+  </ItemGroup>
+</Project>

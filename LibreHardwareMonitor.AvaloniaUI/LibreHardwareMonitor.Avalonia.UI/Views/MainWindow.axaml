@@ -1,0 +1,136 @@
+﻿<!-- SPDX-License-Identifier: MPL-2.0 -->
+
+<ui:DecoratedWindow x:Class="LibreHardwareMonitor.Avalonia.UI.Views.MainWindow"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:hier="clr-namespace:Avalonia.Controls.DataGridHierarchical;assembly=Avalonia.Controls.DataGrid"
+                    xmlns:converters="using:LibreHardwareMonitor.Avalonia.UI.Converters"
+                    xmlns:language="using:LibreHardwareMonitor.Avalonia.Localization.Resources"
+                    xmlns:mockData="using:LibreHardwareMonitor.Avalonia.UI.MockData"
+                    xmlns:ui="using:BlackSharp.UI.Avalonia.Controls"
+                    xmlns:vm="using:LibreHardwareMonitor.Avalonia.Mvvm.ViewModels"
+                    x:DataType="vm:MainWindowViewModel"
+                    Design.DataContext="{x:Static mockData:MainWindowDesignData.MainWindow}"
+                    Title="{x:Static language:Resources.ApplicationTitle}"
+                    Icon="{StaticResource LibreHardwareMonitorWindowIcon}"
+                    TitleBarIcon="{StaticResource LibreHardwareMonitorTitleBarIcon}"
+                    Width="900" Height="680"
+                    MinWidth="600" MinHeight="400"
+                    WindowStartupLocation="CenterScreen">
+
+    <ui:DecoratedWindow.Resources>
+        <converters:SensorIconConverter x:Key="SensorIconConverter"/>
+    </ui:DecoratedWindow.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+        <DataGrid x:Name="SensorDataGrid"
+                  Grid.Row="0"
+                  Margin="12"
+                  AutoGenerateColumns="False"
+                  CanUserReorderColumns="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="False"
+                  DoubleTapped="SensorDataGridDoubleTapped"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  HierarchicalRowsEnabled="True"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  ScrollViewer.AllowAutoHide="False"
+                  UseLogicalScrollable="True">
+            <DataGrid.Styles>
+                <Style Selector="DataGridCell">
+                    <Setter Property="Padding" Value="6,0,10,0"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                </Style>
+            </DataGrid.Styles>
+            <DataGrid.Columns>
+                <!-- Hardware/Sensor Name -->
+                <DataGridHierarchicalColumn Header="{x:Static language:Resources.ColumnSensor}"
+                                            Width="4*"
+                                            MinWidth="240"
+                                            Binding="{Binding Item, DataType={x:Type hier:HierarchicalNode}}">
+                    <DataGridHierarchicalColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Image Width="16"
+                                       Height="16"
+                                       Source="{Binding IconName, Converter={StaticResource SensorIconConverter}}"/>
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{Binding Name}"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridHierarchicalColumn.CellTemplate>
+                </DataGridHierarchicalColumn>
+
+                <!-- Sensor Value -->
+                <DataGridTemplateColumn Header="{x:Static language:Resources.ColumnValue}"
+                                        Width="*"
+                                        MinWidth="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="hier:HierarchicalNode">
+                            <ContentControl Content="{Binding Item}">
+                                <ContentControl.ContentTemplate>
+                                    <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
+                                        <TextBlock HorizontalAlignment="Right"
+                                                   Margin="0,0,6,0"
+                                                   Text="{Binding Value}"/>
+                                    </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                            </ContentControl>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Sensor Min -->
+                <DataGridTemplateColumn Header="{x:Static language:Resources.ColumnMinimum}"
+                                        Width="*"
+                                        MinWidth="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="hier:HierarchicalNode">
+                            <ContentControl Content="{Binding Item}">
+                                <ContentControl.ContentTemplate>
+                                    <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
+                                        <TextBlock HorizontalAlignment="Right"
+                                                   Margin="0,0,6,0"
+                                                   Text="{Binding Min}"/>
+                                    </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                            </ContentControl>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Sensor Max -->
+                <DataGridTemplateColumn Header="{x:Static language:Resources.ColumnMaximum}"
+                                        Width="*"
+                                        MinWidth="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="hier:HierarchicalNode">
+                            <ContentControl Content="{Binding Item}">
+                                <ContentControl.ContentTemplate>
+                                    <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
+                                        <TextBlock HorizontalAlignment="Right"
+                                                   Margin="0,0,6,0"
+                                                   Text="{Binding Max}"/>
+                                    </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                            </ContentControl>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Status -->
+        <Border Grid.Row="1"
+                Padding="20,10"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="0,1,0,0">
+            <TextBlock Opacity="0.7"
+                       Text="{Binding Status}"/>
+        </Border>
+    </Grid>
+
+</ui:DecoratedWindow>
