@@ -30,6 +30,7 @@ public enum Model
     B450_Steel_Legend,
     B450M_Pro4,
     B450M_Pro4_R2_0,
+    B550M_ITX_AC,
     B550M_Pro4,
     B450M_Steel_Legend,
     B85M_DGS,

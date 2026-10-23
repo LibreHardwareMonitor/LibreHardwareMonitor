@@ -4211,13 +4211,28 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #13", 12, true));
                         v.Add(new Voltage("Voltage #14", 13, true));
                         v.Add(new Voltage("Voltage #15", 14, true));
-                        t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1));
-                        t.Add(new Temperature("Temperature #2", 2));
-                        t.Add(new Temperature("Temperature #3", 3));
-                        t.Add(new Temperature("Temperature #4", 4));
-                        t.Add(new Temperature("Temperature #5", 5));
-                        t.Add(new Temperature("Temperature #6", 6));
+                        if (model == Model.B550M_ITX_AC && superIO.Chip == Chip.NCT6792D)
+                        {
+                            // Keep chip source names until the board's physical sensor locations are verified.
+                            t.Add(new Temperature("PECI 0", 0));
+                            t.Add(new Temperature("CPUTIN", 1));
+                            t.Add(new Temperature("SYSTIN", 2));
+                            t.Add(new Temperature("AUXTIN0", 3));
+                            t.Add(new Temperature("AUXTIN1", 4));
+                            t.Add(new Temperature("AUXTIN2", 5));
+                            t.Add(new Temperature("AUXTIN3", 6));
+                            t.Add(new Temperature("SMBUSMASTER0", 17));
+                        }
+                        else
+                        {
+                            t.Add(new Temperature("CPU Core", 0));
+                            t.Add(new Temperature("Temperature #1", 1));
+                            t.Add(new Temperature("Temperature #2", 2));
+                            t.Add(new Temperature("Temperature #3", 3));
+                            t.Add(new Temperature("Temperature #4", 4));
+                            t.Add(new Temperature("Temperature #5", 5));
+                            t.Add(new Temperature("Temperature #6", 6));
+                        }
 
                         for (int i = 0; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
