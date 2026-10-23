@@ -21,8 +21,7 @@ public sealed class SensorTreeNodeSnapshot
     /// <param name="min">The minimum sensor value, when available.</param>
     /// <param name="max">The maximum sensor value, when available.</param>
     /// <param name="children">The child nodes.</param>
-    public SensorTreeNodeSnapshot(
-        string identifier,
+    public SensorTreeNodeSnapshot(string identifier,
         string name,
         SensorTreeNodeKind kind,
         HardwareType? hardwareType,

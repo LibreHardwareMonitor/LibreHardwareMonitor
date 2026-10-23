@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Avalonia UI", "Avalonia UI"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Monitoring", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.Monitoring\LibreHardwareMonitor.Avalonia.Monitoring.csproj", "{4C062AB5-B3D7-4FAD-983E-D796F049C0C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.MVVM", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.MVVM\LibreHardwareMonitor.Avalonia.MVVM.csproj", "{61EFF828-7182-49B0-84DD-0404B9F311BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Mvvm", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.Mvvm\LibreHardwareMonitor.Avalonia.Mvvm.csproj", "{61EFF828-7182-49B0-84DD-0404B9F311BF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.UI", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.UI\LibreHardwareMonitor.Avalonia.UI.csproj", "{3F98C401-FB69-46C2-B4C6-14252D0735F4}"
 EndProject

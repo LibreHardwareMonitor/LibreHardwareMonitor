@@ -1,17 +1,17 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
 using System.Collections.ObjectModel;
-using BlackSharp.MVVM.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
-using LibreHardwareMonitor.Avalonia.MVVM.Formatting;
-using LibreHardwareMonitor.Avalonia.MVVM.Services;
+using LibreHardwareMonitor.Avalonia.Mvvm.Formatting;
+using LibreHardwareMonitor.Avalonia.Mvvm.Services;
 
-namespace LibreHardwareMonitor.Avalonia.MVVM.ViewModels;
+namespace LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 
 /// <summary>
 /// Presents one computer, hardware, category or sensor node in the grid.
 /// </summary>
-public sealed class SensorTreeNodeViewModel : ViewModelBase
+public sealed class SensorTreeNodeViewModel : ObservableObject
 {
     private string _name;
     private string _iconName;
@@ -55,7 +55,7 @@ public sealed class SensorTreeNodeViewModel : ViewModelBase
     public bool IsExpanded
     {
         get { return _isExpanded; }
-        set { SetField(ref _isExpanded, value); }
+        set { SetProperty(ref _isExpanded, value); }
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public sealed class SensorTreeNodeViewModel : ViewModelBase
     public string Name
     {
         get { return _name; }
-        private set { SetField(ref _name, value); }
+        private set { SetProperty(ref _name, value); }
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public sealed class SensorTreeNodeViewModel : ViewModelBase
     public string IconName
     {
         get { return _iconName; }
-        private set { SetField(ref _iconName, value); }
+        private set { SetProperty(ref _iconName, value); }
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public sealed class SensorTreeNodeViewModel : ViewModelBase
     public string Value
     {
         get { return _value; }
-        private set { SetField(ref _value, value); }
+        private set { SetProperty(ref _value, value); }
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public sealed class SensorTreeNodeViewModel : ViewModelBase
     public string Min
     {
         get { return _min; }
-        private set { SetField(ref _min, value); }
+        private set { SetProperty(ref _min, value); }
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public sealed class SensorTreeNodeViewModel : ViewModelBase
     public string Max
     {
         get { return _max; }
-        private set { SetField(ref _max, value); }
+        private set { SetProperty(ref _max, value); }
     }
 
     /// <summary>

@@ -4,7 +4,7 @@ using System.Globalization;
 using LibreHardwareMonitor.Hardware;
 using LanguageResources = LibreHardwareMonitor.Avalonia.Localization.Resources.Resources;
 
-namespace LibreHardwareMonitor.Avalonia.MVVM.Formatting;
+namespace LibreHardwareMonitor.Avalonia.Mvvm.Formatting;
 
 /// <summary>
 /// Formats sensor values for the selected user interface language.

@@ -19,7 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Localization\LibreHardwareMonitor.Avalonia.Localization.csproj" />
     <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Monitoring\LibreHardwareMonitor.Avalonia.Monitoring.csproj" />
-    <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.MVVM\LibreHardwareMonitor.Avalonia.MVVM.csproj" />
+    <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Mvvm\LibreHardwareMonitor.Avalonia.Mvvm.csproj" />
   </ItemGroup>
 
   <ItemGroup>

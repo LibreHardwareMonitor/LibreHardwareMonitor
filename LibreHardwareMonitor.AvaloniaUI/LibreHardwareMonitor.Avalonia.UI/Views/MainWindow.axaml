@@ -8,7 +8,7 @@
                     xmlns:language="using:LibreHardwareMonitor.Avalonia.Localization.Resources"
                     xmlns:mockData="using:LibreHardwareMonitor.Avalonia.UI.MockData"
                     xmlns:ui="using:BlackSharp.UI.Avalonia.Controls"
-                    xmlns:vm="using:LibreHardwareMonitor.Avalonia.MVVM.ViewModels"
+                    xmlns:vm="using:LibreHardwareMonitor.Avalonia.Mvvm.ViewModels"
                     x:DataType="vm:MainWindowViewModel"
                     Design.DataContext="{x:Static mockData:MainWindowDesignData.MainWindow}"
                     Title="{x:Static language:Resources.ApplicationTitle}"

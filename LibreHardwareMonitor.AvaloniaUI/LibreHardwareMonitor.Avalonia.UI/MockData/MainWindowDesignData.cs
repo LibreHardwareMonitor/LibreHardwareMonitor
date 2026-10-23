@@ -2,7 +2,7 @@
 
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
 using LibreHardwareMonitor.Avalonia.Monitoring.Services;
-using LibreHardwareMonitor.Avalonia.MVVM.ViewModels;
+using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 using LibreHardwareMonitor.Hardware;
 using LanguageResources = LibreHardwareMonitor.Avalonia.Localization.Resources.Resources;
 
@@ -24,8 +24,7 @@ public static class MainWindowDesignData
     /// <returns>The populated designer view model.</returns>
     private static MainWindowViewModel CreateMainWindow()
     {
-        SensorTreeNodeSnapshot computer = new(
-            "computer",
+        SensorTreeNodeSnapshot computer = new("computer",
             LanguageResources.MockComputer,
             SensorTreeNodeKind.Computer,
             null,
@@ -85,14 +84,12 @@ public static class MainWindowDesignData
     /// <param name="hardwareType">The hardware type.</param>
     /// <param name="children">The sample sensor categories.</param>
     /// <returns>The hardware snapshot node.</returns>
-    private static SensorTreeNodeSnapshot CreateHardware(
-        string identifier,
+    private static SensorTreeNodeSnapshot CreateHardware(string identifier,
         string name,
         HardwareType hardwareType,
         params SensorTreeNodeSnapshot[] children)
     {
-        return new SensorTreeNodeSnapshot(
-            identifier, name, SensorTreeNodeKind.Hardware, hardwareType,
+        return new SensorTreeNodeSnapshot(identifier, name, SensorTreeNodeKind.Hardware, hardwareType,
             null, null, null, null, children);
     }
 
@@ -103,13 +100,11 @@ public static class MainWindowDesignData
     /// <param name="sensorType">The category measurement type.</param>
     /// <param name="children">The sample sensors.</param>
     /// <returns>The category snapshot node.</returns>
-    private static SensorTreeNodeSnapshot CreateCategory(
-        string hardwareIdentifier,
+    private static SensorTreeNodeSnapshot CreateCategory(string hardwareIdentifier,
         SensorType sensorType,
         params SensorTreeNodeSnapshot[] children)
     {
-        return new SensorTreeNodeSnapshot(
-            hardwareIdentifier + "/" + sensorType,
+        return new SensorTreeNodeSnapshot(hardwareIdentifier + "/" + sensorType,
             SensorCategoryName.GetName(sensorType),
             SensorTreeNodeKind.Category,
             null,
@@ -130,16 +125,14 @@ public static class MainWindowDesignData
     /// <param name="min">The minimum sample value.</param>
     /// <param name="max">The maximum sample value.</param>
     /// <returns>The sensor snapshot node.</returns>
-    private static SensorTreeNodeSnapshot CreateSensor(
-        string identifier,
+    private static SensorTreeNodeSnapshot CreateSensor(string identifier,
         string name,
         SensorType sensorType,
         float value,
         float min,
         float max)
     {
-        return new SensorTreeNodeSnapshot(
-            identifier, name, SensorTreeNodeKind.Sensor, null,
+        return new SensorTreeNodeSnapshot(identifier, name, SensorTreeNodeKind.Sensor, null,
             sensorType, value, min, max, Array.Empty<SensorTreeNodeSnapshot>());
     }
 }

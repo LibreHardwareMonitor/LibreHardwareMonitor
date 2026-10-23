@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.DataGridHierarchical;
 using Avalonia.Markup.Xaml;
 using BlackSharp.UI.Avalonia.Controls;
-using LibreHardwareMonitor.Avalonia.MVVM.ViewModels;
+using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 using LibreHardwareMonitor.Avalonia.UI.MockData;
 
 namespace LibreHardwareMonitor.Avalonia.UI.Views;

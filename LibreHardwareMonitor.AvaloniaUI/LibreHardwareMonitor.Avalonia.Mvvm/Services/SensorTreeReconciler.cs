@@ -2,9 +2,9 @@
 
 using System.Collections.ObjectModel;
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
-using LibreHardwareMonitor.Avalonia.MVVM.ViewModels;
+using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 
-namespace LibreHardwareMonitor.Avalonia.MVVM.Services;
+namespace LibreHardwareMonitor.Avalonia.Mvvm.Services;
 
 /// <summary>
 /// Reconciles a visible sensor tree with the latest monitoring snapshot.
@@ -16,8 +16,7 @@ internal static class SensorTreeReconciler
     /// </summary>
     /// <param name="nodes">The existing visible nodes.</param>
     /// <param name="snapshots">The latest snapshot nodes.</param>
-    public static void Reconcile(
-        ObservableCollection<SensorTreeNodeViewModel> nodes,
+    public static void Reconcile(ObservableCollection<SensorTreeNodeViewModel> nodes,
         IReadOnlyList<SensorTreeNodeSnapshot> snapshots)
     {
         // Reconcile the nodes with the snapshots

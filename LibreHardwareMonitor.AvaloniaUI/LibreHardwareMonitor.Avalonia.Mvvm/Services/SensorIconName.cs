@@ -3,7 +3,7 @@
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
 using LibreHardwareMonitor.Hardware;
 
-namespace LibreHardwareMonitor.Avalonia.MVVM.Services;
+namespace LibreHardwareMonitor.Avalonia.Mvvm.Services;
 
 /// <summary>
 /// Maps sensor tree node kinds to icon asset names.

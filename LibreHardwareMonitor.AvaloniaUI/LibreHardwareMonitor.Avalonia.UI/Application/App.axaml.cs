@@ -4,7 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using LibreHardwareMonitor.Avalonia.Monitoring.Services;
-using LibreHardwareMonitor.Avalonia.MVVM.ViewModels;
+using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 using LibreHardwareMonitor.Avalonia.UI.Views;
 using AvaloniaApplication = Avalonia.Application;
 

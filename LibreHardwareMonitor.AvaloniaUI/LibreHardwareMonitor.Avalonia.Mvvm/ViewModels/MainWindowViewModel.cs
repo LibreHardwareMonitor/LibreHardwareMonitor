@@ -2,17 +2,17 @@
 
 using System.Collections.ObjectModel;
 using System.Globalization;
-using BlackSharp.MVVM.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
-using LibreHardwareMonitor.Avalonia.MVVM.Services;
+using LibreHardwareMonitor.Avalonia.Mvvm.Services;
 using LanguageResources = LibreHardwareMonitor.Avalonia.Localization.Resources.Resources;
 
-namespace LibreHardwareMonitor.Avalonia.MVVM.ViewModels;
+namespace LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 
 /// <summary>
 /// Holds the current sensor tree and monitoring status for the main window.
 /// </summary>
-public sealed class MainWindowViewModel : ViewModelBase
+public sealed class MainWindowViewModel : ObservableObject
 {
     private string _status = LanguageResources.StatusSearching;
 
@@ -27,7 +27,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string Status
     {
         get { return _status; }
-        private set { SetField(ref _status, value); }
+        private set { SetProperty(ref _status, value); }
     }
 
     /// <summary>

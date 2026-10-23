@@ -131,8 +131,7 @@ public sealed class SensorMonitor : IDisposable
             hardware.Add(CreateHardwareNode(item));
         }
 
-        SensorTreeNodeSnapshot computer = new(
-            "computer",
+        SensorTreeNodeSnapshot computer = new("computer",
             Environment.MachineName,
             SensorTreeNodeKind.Computer,
             null,
@@ -164,8 +163,7 @@ public sealed class SensorMonitor : IDisposable
 
             foreach (ISensor sensor in group)
             {
-                sensors.Add(new SensorTreeNodeSnapshot(
-                    sensor.Identifier.ToString(),
+                sensors.Add(new SensorTreeNodeSnapshot(sensor.Identifier.ToString(),
                     sensor.Name,
                     SensorTreeNodeKind.Sensor,
                     null,
@@ -176,8 +174,7 @@ public sealed class SensorMonitor : IDisposable
                     Array.Empty<SensorTreeNodeSnapshot>()));
             }
 
-            children.Add(new SensorTreeNodeSnapshot(
-                hardware.Identifier + "/" + group.Key,
+            children.Add(new SensorTreeNodeSnapshot(hardware.Identifier + "/" + group.Key,
                 SensorCategoryName.GetName(group.Key),
                 SensorTreeNodeKind.Category,
                 null,
@@ -193,8 +190,7 @@ public sealed class SensorMonitor : IDisposable
             children.Add(CreateHardwareNode(subHardware));
         }
 
-        return new SensorTreeNodeSnapshot(
-            hardware.Identifier.ToString(),
+        return new SensorTreeNodeSnapshot(hardware.Identifier.ToString(),
             hardware.Name,
             SensorTreeNodeKind.Hardware,
             hardware.HardwareType,

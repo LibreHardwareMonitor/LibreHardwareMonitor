@@ -47,8 +47,7 @@ public static class AppCulture
         {
             CultureInfo supportedCulture = CultureInfo.GetCultureInfo(name);
 
-            if (string.Equals(
-                supportedCulture.TwoLetterISOLanguageName,
+            if (string.Equals(supportedCulture.TwoLetterISOLanguageName,
                 systemCulture.TwoLetterISOLanguageName,
                 StringComparison.OrdinalIgnoreCase))
             {
