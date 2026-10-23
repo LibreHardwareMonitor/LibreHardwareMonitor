@@ -83,13 +83,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiskInfoToolkit" Version="2.2.1" />
+    <PackageReference Include="DiskInfoToolkit" Version="2.2.2" />
     <PackageReference Include="HidSharp" Version="2.6.4" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.366">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.6.3" />
+    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.6.4" />
     <PackageReference Include="System.Management" Version="10.0.13" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="10.0.13" />
