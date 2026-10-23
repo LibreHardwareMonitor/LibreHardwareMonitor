@@ -1,8 +1,11 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.DataGridHierarchical;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using BlackSharp.UI.Avalonia.Controls;
 using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 using LibreHardwareMonitor.Avalonia.UI.MockData;
@@ -34,6 +37,40 @@ public sealed partial class MainWindow : DecoratedWindow
     public MainWindow(MainWindowViewModel viewModel) : this()
     {
         InitializeViewModel(viewModel);
+    }
+
+    /// <summary>
+    /// Toggles the hardware tree node represented by the double-clicked row.
+    /// </summary>
+    /// <param name="sender">The data grid that raised the event.</param>
+    /// <param name="e">The double-tap event data.</param>
+    private void SensorDataGridDoubleTapped(object sender, TappedEventArgs e)
+    {
+        if (sender is not DataGrid dataGrid ||
+            dataGrid.HierarchicalModel is not IHierarchicalModel model ||
+            e.Source is not Visual visual)
+        {
+            return;
+        }
+
+        for (Visual current = visual; current is not null; current = current.GetVisualParent())
+        {
+            if (current is DataGridRow row && row.DataContext is HierarchicalNode node)
+            {
+                if (!node.IsLeaf)
+                {
+                    model.Toggle(node);
+                    e.Handled = true;
+                }
+
+                return;
+            }
+
+            if (ReferenceEquals(current, dataGrid))
+            {
+                return;
+            }
+        }
     }
 
     /// <summary>

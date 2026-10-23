@@ -30,14 +30,17 @@
                   CanUserReorderColumns="False"
                   CanUserResizeColumns="True"
                   CanUserSortColumns="False"
+                  DoubleTapped="SensorDataGridDoubleTapped"
                   GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column"
                   HierarchicalRowsEnabled="True"
                   IsReadOnly="True"
                   SelectionMode="Single"
+                  ScrollViewer.AllowAutoHide="False"
                   UseLogicalScrollable="True">
             <DataGrid.Styles>
                 <Style Selector="DataGridCell">
+                    <Setter Property="Padding" Value="6,0,10,0"/>
                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                 </Style>
             </DataGrid.Styles>
@@ -71,6 +74,7 @@
                                 <ContentControl.ContentTemplate>
                                     <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
                                         <TextBlock HorizontalAlignment="Right"
+                                                   Margin="0,0,6,0"
                                                    Text="{Binding Value}"/>
                                     </DataTemplate>
                                 </ContentControl.ContentTemplate>
@@ -89,6 +93,7 @@
                                 <ContentControl.ContentTemplate>
                                     <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
                                         <TextBlock HorizontalAlignment="Right"
+                                                   Margin="0,0,6,0"
                                                    Text="{Binding Min}"/>
                                     </DataTemplate>
                                 </ContentControl.ContentTemplate>
@@ -107,6 +112,7 @@
                                 <ContentControl.ContentTemplate>
                                     <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
                                         <TextBlock HorizontalAlignment="Right"
+                                                   Margin="0,0,6,0"
                                                    Text="{Binding Max}"/>
                                     </DataTemplate>
                                 </ContentControl.ContentTemplate>

@@ -69,10 +69,6 @@ public static class MainWindowDesignData
         MainWindowViewModel viewModel = new();
         viewModel.Apply(new SensorTreeSnapshot(DateTime.Now, new[] { computer }));
 
-        viewModel.Hardware[0].Children[0].IsExpanded = true;
-        viewModel.Hardware[0].Children[0].Children[0].IsExpanded = true;
-        viewModel.Hardware[0].Children[0].Children[1].IsExpanded = true;
-
         return viewModel;
     }
 
