@@ -53,6 +53,9 @@ internal enum Chip : ushort
     IT8792E = 0x8733, // Could also be IT8791E, IT8795E
     IT87952E = 0x8695,
 
+    // Not an LPC chip ID: second EC-driven fan controller found on some Gigabyte boards (e.g. X670E AORUS MASTER)
+    IT5701 = 0x5701,
+
     NCT5585D = 0xFFF0, // Chip reports 0xD42A but that's in use
     NCT610XD = 0xC452,
     NCT6771F = 0xB470,
@@ -130,6 +133,7 @@ internal class ChipName
             case Chip.IT8790E: return "ITE IT8790E";
             case Chip.IT8792E: return "ITE IT8791E/IT8792E/IT8795E";
             case Chip.IT87952E: return "ITE IT87952E";
+            case Chip.IT5701: return "ITE IT5701";
 
             case Chip.NCT5585D: return "Nuvoton NCT5585D";
             case Chip.NCT610XD: return "Nuvoton NCT6102D/NCT6104D/NCT6106D";
