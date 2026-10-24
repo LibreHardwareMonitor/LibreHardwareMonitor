@@ -94,9 +94,18 @@ internal class Sensor : ISensor
         get { return _name; }
         set
         {
-            _name = !string.IsNullOrEmpty(value) ? value : _defaultName;
+            string identifier = new Identifier(Identifier, "name").ToString();
 
-            _settings.SetValue(new Identifier(Identifier, "name").ToString(), _name);
+            if (!string.IsNullOrEmpty(value))
+            {
+                _name = value;
+                _settings.SetValue(identifier, value);
+            }
+            else
+            {
+                _name = _defaultName;
+                _settings.Remove(identifier);
+            }
         }
     }
 

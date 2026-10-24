@@ -94,6 +94,7 @@ public interface ISensor : IElement
     /// <summary>
     /// Gets or sets a sensor name.
     /// <para>By default determined by the library.</para>
+    /// <para>Setting a <see langword="null" /> or empty value reverts to the default name.</para>
     /// </summary>
     string Name { get; set; }
 
