@@ -70,6 +70,7 @@ internal class Nct677X : ISuperIO
     private readonly int _minFanCount;
     private readonly int _minFanRpm;
     private readonly TemperatureSourceData[] _temperaturesSource;
+    private readonly int[] _temperatureReadOrder;
     private readonly ushort _vBatMonitorControlRegister;
     private readonly ushort[] _voltageRegisters;
     private readonly ushort _voltageVBatRegister;
@@ -287,6 +288,7 @@ internal class Nct677X : ISuperIO
                             new(SourceNct67Xxd.SPARE_TEMP2, 0),                                                                // 25: SPARE_TEMP2
                             new(null, 0x409),                                                                                  // 26: CPU PACKAGE
                             new(null, 0x4A2),                                                                                  // 27: TEMP14
+                            new(null, 0xC2F),                                                                                  // 28: Tracks the ASUS EC DIMM thermistor on ROG CROSSHAIR X870E APEX
                         });
                         break;
 
@@ -469,6 +471,11 @@ internal class Nct677X : ISuperIO
 
                 _temperaturesSource = temperaturesSources.ToArray();
                 Temperatures = new float?[_temperaturesSource.Length];
+
+                // Read fixed-source registers first; source-selected ones like 0x073 (a fan control input) can differ from the selected sensor's own register.
+                if (chip == Chip.NCT6701D)
+                    _temperatureReadOrder = Enumerable.Range(0, _temperaturesSource.Length).OrderBy(i => _temperaturesSource[i].SourceRegister > 0).ToArray();
+
                 break;
 
             case Chip.NCT610XD:
@@ -809,8 +816,10 @@ internal class Nct677X : ISuperIO
 
         Log("Updating temperatures.");
         long temperatureSourceMask = 0;
-        for (int i = 0; i < _temperaturesSource.Length; i++)
+        for (int k = 0; k < _temperaturesSource.Length; k++)
         {
+            // NCT6701D reads fixed-source registers before source-selected ones; other chips keep the table order.
+            int i = _temperatureReadOrder?[k] ?? k;
             TemperatureSourceData ts = _temperaturesSource[i];
             int value;
             SourceNct67Xxd source;
