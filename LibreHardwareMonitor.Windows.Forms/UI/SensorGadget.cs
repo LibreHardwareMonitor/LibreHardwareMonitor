@@ -1222,6 +1222,9 @@ public class SensorGadget : Gadget
                                 case SensorType.Conductivity:
                                     format = "{0:F1} µS/cm";
                                     break;
+                                case SensorType.Health:
+                                    format = "{0}";
+                                    break;
                             }
     
                             if (sensor.SensorType == SensorType.Temperature && _unitManager.TemperatureUnit == TemperatureUnit.Fahrenheit)

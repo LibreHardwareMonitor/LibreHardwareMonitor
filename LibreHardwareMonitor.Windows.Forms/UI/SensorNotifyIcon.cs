@@ -167,6 +167,8 @@ public class SensorNotifyIcon : IDisposable
                 return $"{TimeSpan.FromSeconds(Sensor.Value.Value):g}";
             case SensorType.Timing:
                 return $"{Sensor.Value.Value:F3}";
+            case SensorType.Health:
+                return SensorHealth.ToDisplayString(Sensor.Value);
             case SensorType.Clock:
             case SensorType.Fan:
             case SensorType.Flow:
@@ -292,6 +294,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Conductivity: format = "\n{0}: {0:F1} µS/cm"; break;
             case SensorType.Humidity: format = "\n{0}: {0:F0} %"; break;
             case SensorType.Timing: format = "\n{0}: {0:F3} ns"; break;
+            case SensorType.Health: format = "\n{0}: {1}"; break;
         }
 
         string formattedValue = string.Format(format, Sensor.Name, Sensor.Value);
