@@ -4547,6 +4547,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.ROG_MAXIMUS_XI_FORMULA: //NC6798D
+                    case Model.ROG_MAXIMUS_XI_HERO: //NCT6798D, same fan header layout as the XI Formula
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVSB", 2, 34, 34));
