@@ -1,7 +1,9 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using LibreHardwareMonitor.Avalonia.Monitoring.Services;
 using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
@@ -26,6 +28,11 @@ public sealed partial class App : AvaloniaApplication
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+        if (Design.IsDesignMode)
+        {
+            RequestedThemeVariant = ThemeVariant.Dark;
+        }
     }
 
     /// <summary>
