@@ -3,6 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using HidSharp;
@@ -27,80 +28,39 @@ public class AquaComputerGroup : IGroup
             switch (dev.ProductID)
             {
                 case 0xF00E:
-                    var d5Next = new D5Next(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {d5Next.FirmwareVersion}");
-                    _report.AppendLine();
-                    _hardware.Add(d5Next);
+                    TryAddDevice(AddD5Next, dev, settings, productName);
                     break;
 
                 case 0xf0b6:
-                    var aquastreamXt = new AquastreamXT(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Device variant: {aquastreamXt.Variant}");
-                    _report.AppendLine($"Firmware version: {aquastreamXt.FirmwareVersion}");
-                    _report.AppendLine($"{aquastreamXt.Status}");
-                    _report.AppendLine();
-                    _hardware.Add(aquastreamXt);
+                    TryAddDevice(AddAquastreamXT, dev, settings, productName);
                     break;
 
                 case 0xf003:
-                    var mps = new MPS(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {mps.FirmwareVersion}");
-                    _report.AppendLine($"{mps.Status}");
-                    _report.AppendLine();
-                    _hardware.Add(mps);
+                    TryAddDevice(AddMPS, dev, settings, productName);
                     break;
                     
                 case 0xF00D:
-                    var quadro = new Quadro(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {quadro.FirmwareVersion}");
-                    _report.AppendLine();
-                    _hardware.Add(quadro);
+                    TryAddDevice(AddQuadro, dev, settings, productName);
                     break;
                     
                 case 0xF00B:
-                    var aquastreamUltimate = new AquastreamUltimate(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {aquastreamUltimate.FirmwareVersion}");
-                    _report.AppendLine();
-                    _hardware.Add(aquastreamUltimate);
+                    TryAddDevice(AddAquastreamUltimate, dev, settings, productName);
                     break;
                     
                 case 0xF011:
-                    var octo = new Octo(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {octo.FirmwareVersion}");
-                    _report.AppendLine();
-                    _hardware.Add(octo);
+                    TryAddDevice(AddOcto, dev, settings, productName);
                     break;
 
                 case 0xF00A:
-                    var farbwerk = new Farbwerk(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {farbwerk.FirmwareVersion}");
-                    _report.AppendLine($"{farbwerk.Status}");
-                    _report.AppendLine();
-                    _hardware.Add(farbwerk);
+                    TryAddDevice(AddFarbwerk, dev, settings, productName);
                     break;
                 
                 case 0xF010:
-                    var farbwerk360 = new Farbwerk360(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {farbwerk360.FirmwareVersion}");
-                    _report.AppendLine($"{farbwerk360.Status}");
-                    _report.AppendLine();
-                    _hardware.Add(farbwerk360);
+                    TryAddDevice(AddFarbwerk360, dev, settings, productName);
                     break;
 
                 case 0xF012:
-                    var highflownext = new HighFlowNext(dev, settings);
-                    _report.AppendLine($"Device name: {productName}");
-                    _report.AppendLine($"Firmware version: {highflownext.FirmwareVersion}");
-                    _report.AppendLine();
-                    _hardware.Add(highflownext);
+                    TryAddDevice(AddHighFlowNext, dev, settings, productName);
                     break;
 
                 default:
@@ -131,5 +91,114 @@ public class AquaComputerGroup : IGroup
     public string GetReport()
     {
         return _report.ToString();
+    }
+
+    private void TryAddDevice(Func<HidDevice, ISettings, string, IHardware> createDevice, HidDevice dev, ISettings settings, string productName)
+    {
+        try
+        {
+            IHardware hardware = createDevice(dev, settings, productName);
+            _hardware.Add(hardware);
+        }
+        catch (Exception e)
+        {
+            _report.AppendLine($"Error while adding {productName}: {e.Message}");
+            _report.AppendLine();
+        }
+    }
+
+    private IHardware AddD5Next(HidDevice dev, ISettings settings, string productName)
+    {
+        var d5Next = new D5Next(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {d5Next.FirmwareVersion}");
+        _report.AppendLine();
+
+        return d5Next;
+    }
+
+    private IHardware AddAquastreamXT(HidDevice dev, ISettings settings, string productName)
+    {
+        var aquastreamXt = new AquastreamXT(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Device variant: {aquastreamXt.Variant}");
+        _report.AppendLine($"Firmware version: {aquastreamXt.FirmwareVersion}");
+        _report.AppendLine($"{aquastreamXt.Status}");
+        _report.AppendLine();
+
+        return aquastreamXt;
+    }
+
+    private IHardware AddMPS(HidDevice dev, ISettings settings, string productName)
+    {
+        var mps = new MPS(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {mps.FirmwareVersion}");
+        _report.AppendLine($"{mps.Status}");
+        _report.AppendLine();
+
+        return mps;
+    }
+
+    private IHardware AddQuadro(HidDevice dev, ISettings settings, string productName)
+    {
+        var quadro = new Quadro(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {quadro.FirmwareVersion}");
+        _report.AppendLine();
+
+        return quadro;
+    }
+
+    private IHardware AddAquastreamUltimate(HidDevice dev, ISettings settings, string productName)
+    {
+        var aquastreamUltimate = new AquastreamUltimate(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {aquastreamUltimate.FirmwareVersion}");
+        _report.AppendLine();
+
+        return aquastreamUltimate;
+    }
+
+    private IHardware AddOcto(HidDevice dev, ISettings settings, string productName)
+    {
+        var octo = new Octo(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {octo.FirmwareVersion}");
+        _report.AppendLine();
+
+        return octo;
+    }
+
+    private IHardware AddFarbwerk(HidDevice dev, ISettings settings, string productName)
+    {
+        var farbwerk = new Farbwerk(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {farbwerk.FirmwareVersion}");
+        _report.AppendLine($"{farbwerk.Status}");
+        _report.AppendLine();
+
+        return farbwerk;
+    }
+
+    private IHardware AddFarbwerk360(HidDevice dev, ISettings settings, string productName)
+    {
+        var farbwerk360 = new Farbwerk360(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {farbwerk360.FirmwareVersion}");
+        _report.AppendLine($"{farbwerk360.Status}");
+        _report.AppendLine();
+
+        return farbwerk360;
+    }
+
+    private IHardware AddHighFlowNext(HidDevice dev, ISettings settings, string productName)
+    {
+        var highflownext = new HighFlowNext(dev, settings);
+        _report.AppendLine($"Device name: {productName}");
+        _report.AppendLine($"Firmware version: {highflownext.FirmwareVersion}");
+        _report.AppendLine();
+
+        return highflownext;
     }
 }
