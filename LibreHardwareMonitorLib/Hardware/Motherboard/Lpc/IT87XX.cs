@@ -34,6 +34,11 @@ internal class IT87XX : ISuperIO
     private readonly float _voltageGain;
     private IGigabyteController _gigabyteController;
     private readonly LpcPort _port;
+    private readonly LibreHardwareMonitor.PawnIo.LpcAcpiEc _lpcAcpiEc;
+    private readonly byte[][] _initialEcCurve = new byte[6][];
+    private readonly byte[] _initialSioTempLimit = new byte[3];
+    private readonly byte[] _initialSioPwm = new byte[3];
+    private readonly byte[] _initialSioManualPwm = new byte[3];
     private readonly bool _requiresBankSelect;  // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
 
     private bool SupportsMultipleBanks => _bankCount > 1;
@@ -112,8 +117,8 @@ internal class IT87XX : ISuperIO
             case Chip.IT8613E:
                 Voltages = new float?[10];
                 Temperatures = new float?[4];
-                Fans = new float?[5];
-                Controls = new float?[4];
+                Fans = motherboard.Model == Model.MS_iCraft_Z890_Arctic ? new float?[6] : new float?[5];
+                Controls = motherboard.Model == Model.MS_iCraft_Z890_Arctic ? new float?[6] : new float?[4];
                 break;
 
             case Chip.IT8625E:
@@ -241,6 +246,15 @@ internal class IT87XX : ISuperIO
         // Disable any fans that aren't set with 16-bit fan counters
         if (_has16BitFanCounter)
         {
+            if (chip is Chip.IT8613E or Chip.IT8625E)
+            {
+                byte cur12 = ReadByte(12, out valid);
+                if ((cur12 & 0x3F) != 0x3F)
+                {
+                    WriteByte(12, (byte)(cur12 | 0x3F));
+                }
+            }
+
             int modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER, out valid);
 
             if (!valid)
@@ -248,8 +262,8 @@ internal class IT87XX : ISuperIO
 
             if (Fans.Length >= 5)
             {
-                _fansDisabled[3] = (modes & (1 << 4)) == 0;
-                _fansDisabled[4] = (modes & (1 << 5)) == 0;
+                _fansDisabled[3] = (modes & (1 << 4)) == 0 && chip != Chip.IT8613E && chip != Chip.IT8625E;
+                _fansDisabled[4] = (modes & (1 << 5)) == 0 && chip != Chip.IT8613E && chip != Chip.IT8625E;
             }
 
             if (Fans.Length >= 6)
@@ -261,7 +275,7 @@ internal class IT87XX : ISuperIO
                         _fansDisabled[5] = (modes & (1 << 3)) == 0;
                 }
                 else
-                    _fansDisabled[5] = (modes & (1 << 2)) == 0;
+                    _fansDisabled[5] = (modes & (1 << 2)) == 0 && chip != Chip.IT8613E && chip != Chip.IT8625E;
             }
         }
 
@@ -272,6 +286,48 @@ internal class IT87XX : ISuperIO
             Chip.IT8720F or Chip.IT8721F or Chip.IT8772E => 8,
             _ => 0
         };
+
+        if (motherboard.Model == Model.MS_iCraft_Z890_Arctic && chip == Chip.IT8613E)
+        {
+            try
+            {
+                _lpcAcpiEc = new LibreHardwareMonitor.PawnIo.LpcAcpiEc();
+                _initialEcCurve[3] = new byte[5] { 0x64, 0x8C, 0xA8, 0xBC, 0xC8 };
+                _initialEcCurve[4] = new byte[5] { 0x78, 0x96, 0xA8, 0xBC, 0xC8 };
+                _initialEcCurve[5] = new byte[5] { 0x64, 0xA6, 0xA6, 0xA6, 0xA6 };
+
+                byte cur60 = ReadEc(0x60);
+                if ((cur60 & 7) != 7)
+                {
+                    WriteEc(0x60, 0x07);
+                }
+
+                byte[] baseRegs = new byte[6] { 0, 0, 0, 0x1B, 0x4B, 0x2B };
+                for (int idx = 3; idx <= 5; idx++)
+                {
+                    byte val0 = ReadEc(baseRegs[idx]);
+                    byte val1 = ReadEc((byte)(baseRegs[idx] + 1));
+                    byte val4 = ReadEc((byte)(baseRegs[idx] + 4));
+                    if (val0 == val1 && val1 == val4)
+                    {
+                        for (byte j = 0; j < 5; j++)
+                        {
+                            WriteEc((byte)(baseRegs[idx] + j), _initialEcCurve[idx][j]);
+                        }
+                    }
+                }
+
+                for (int s = 0; s < 3; s++)
+                {
+                    _initialSioTempLimit[s] = ReadByte((byte)(97 + s * 8), out _);
+                    _initialSioPwm[s] = ReadByte((byte)(99 + s * 8), out _);
+                    _initialSioManualPwm[s] = ReadByte((byte)(103 + s * 8), out _);
+                }
+            }
+            catch
+            {
+            }
+        }
     }
 
     public Chip Chip { get; }
@@ -307,6 +363,71 @@ internal class IT87XX : ISuperIO
 
         if (!Mutexes.WaitIsaBus(10))
             return;
+
+        if (Chip == Chip.IT8613E && index >= 3 && _lpcAcpiEc != null)
+        {
+            byte baseDutyReg = index == 3 ? (byte)0x1B : (index == 4 ? (byte)0x4B : (byte)0x2B);
+            byte ecBit = index == 3 ? (byte)0x01 : (index == 4 ? (byte)0x04 : (byte)0x02);
+            if (value.HasValue)
+            {
+                byte cur60 = ReadEc(0x60);
+                WriteEc(0x60, (byte)(cur60 & ~ecBit));
+                byte ecDuty = (byte)Math.Max(0, Math.Min(200, (int)Math.Round((float)value.Value * 200f / 255f)));
+                for (byte i = 0; i < 5; i++)
+                {
+                    WriteEc((byte)(baseDutyReg + i), ecDuty);
+                }
+            }
+            else
+            {
+                if (_initialEcCurve[index] != null)
+                {
+                    for (byte i = 0; i < 5; i++)
+                    {
+                        WriteEc((byte)(baseDutyReg + i), _initialEcCurve[index][i]);
+                    }
+                }
+                byte cur60 = ReadEc(0x60);
+                WriteEc(0x60, (byte)(cur60 | ecBit));
+            }
+
+            Mutexes.ReleaseIsaBus();
+            return;
+        }
+
+        if (Chip == Chip.IT8613E && index < 3)
+        {
+            byte tempLimitReg = (byte)(97 + index * 8);
+            byte pwmDutyReg = (byte)(99 + index * 8);
+            byte manualDutyReg = (byte)(103 + index * 8);
+            if (value.HasValue)
+            {
+                SaveDefaultFanPwmControl(index);
+                if (!_initialFanOutputModeEnabled[index])
+                {
+                    WriteByte(FAN_MAIN_CTRL_REG, (byte)(ReadByte(FAN_MAIN_CTRL_REG, out _) | (1 << index)));
+                }
+
+                byte duty7Bit = (byte)(value.Value >> 1);
+                WriteByte(FAN_PWM_CTRL_REG[index], duty7Bit);
+                WriteByte(tempLimitReg, 16);
+                WriteByte(pwmDutyReg, value.Value);
+                WriteByte(manualDutyReg, value.Value);
+            }
+            else
+            {
+                RestoreDefaultFanPwmControl(index);
+                if (_initialSioTempLimit[index] > 0)
+                {
+                    WriteByte(tempLimitReg, _initialSioTempLimit[index]);
+                    WriteByte(pwmDutyReg, _initialSioPwm[index]);
+                    WriteByte(manualDutyReg, _initialSioManualPwm[index]);
+                }
+            }
+
+            Mutexes.ReleaseIsaBus();
+            return;
+        }
 
         if (value.HasValue)
         {
@@ -477,6 +598,15 @@ internal class IT87XX : ISuperIO
         {
             for (int i = 0; i < Fans.Length; i++)
             {
+                if (Chip == Chip.IT8613E && i >= 3 && _lpcAcpiEc != null)
+                {
+                    byte ecMsbReg = i == 3 ? (byte)0x10 : (i == 4 ? (byte)0x40 : (byte)0x20);
+                    byte ecLsbReg = i == 3 ? (byte)0x11 : (i == 4 ? (byte)0x41 : (byte)0x21);
+                    int ecRpm = (ReadEc(ecMsbReg) << 8) | ReadEc(ecLsbReg);
+                    Fans[i] = ecRpm is > 0 and < 20000 ? (float)ecRpm : 0f;
+                    continue;
+                }
+
                 if (_fansDisabled[i])
                     continue;
 
@@ -521,6 +651,14 @@ internal class IT87XX : ISuperIO
 
         for (int i = 0; i < Controls.Length; i++)
         {
+            if (Chip == Chip.IT8613E && i >= 3 && _lpcAcpiEc != null)
+            {
+                byte ecDutyReg = i == 3 ? (byte)0x12 : (i == 4 ? (byte)0x42 : (byte)0x22);
+                byte rawDuty = ReadEc(ecDutyReg);
+                Controls[i] = (float)Math.Round((float)rawDuty * 100f / 200f);
+                continue;
+            }
+
             byte value = ReadByte(FAN_PWM_CTRL_REG[i], out bool valid);
             if (!valid)
                 continue;
@@ -551,8 +689,66 @@ internal class IT87XX : ISuperIO
 
     public void Close()
     {
+        if (Chip == Chip.IT8613E)
+        {
+            for (int idx = 0; idx < Controls.Length; idx++)
+            {
+                try
+                {
+                    SetControl(idx, null);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        _lpcAcpiEc?.Close();
         _gigabyteController?.Dispose();
         _port.Close();
+    }
+
+    private byte ReadEc(byte reg)
+    {
+        if (_lpcAcpiEc == null)
+            return 0;
+
+        try
+        {
+            _lpcAcpiEc.WritePort(0x66, 0x80);
+            int timeout = 5000;
+            while (--timeout > 0 && (_lpcAcpiEc.ReadPort(0x66) & 2) != 0) { }
+            _lpcAcpiEc.WritePort(0x62, reg);
+            timeout = 5000;
+            while (--timeout > 0 && (_lpcAcpiEc.ReadPort(0x66) & 1) == 0) { }
+            return _lpcAcpiEc.ReadPort(0x62);
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private void WriteEc(byte reg, byte val)
+    {
+        if (_lpcAcpiEc == null)
+            return;
+
+        try
+        {
+            int timeout = 5000;
+            while (--timeout > 0 && (_lpcAcpiEc.ReadPort(0x66) & 2) != 0) { }
+            _lpcAcpiEc.WritePort(0x66, 0x81);
+            timeout = 5000;
+            while (--timeout > 0 && (_lpcAcpiEc.ReadPort(0x66) & 2) != 0) { }
+            _lpcAcpiEc.WritePort(0x62, reg);
+            timeout = 5000;
+            while (--timeout > 0 && (_lpcAcpiEc.ReadPort(0x66) & 2) != 0) { }
+            _lpcAcpiEc.WritePort(0x62, val);
+        }
+        catch
+        {
+        }
     }
 
     private byte ReadByte(byte register, out bool valid)

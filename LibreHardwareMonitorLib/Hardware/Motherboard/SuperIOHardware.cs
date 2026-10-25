@@ -877,6 +877,37 @@ internal sealed class SuperIOHardware : Hardware
     {
         switch (manufacturer)
         {
+            case Manufacturer.Maxsun:
+                v.Add(new Voltage("Vcore", 0));
+                v.Add(new Voltage("Voltage #2", 1));
+                v.Add(new Voltage("+12V", 2, 5, 1));
+                v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                v.Add(new Voltage("Voltage #5", 4, hidden: true));
+                v.Add(new Voltage("Voltage #6", 5, hidden: true));
+                v.Add(new Voltage("Voltage #7", 6, hidden: true));
+                v.Add(new Voltage("+3.3V", 7, 10, 10));
+                v.Add(new Voltage("CMOS Battery", 8));
+                t.Add(new Temperature("System", 0));
+                t.Add(new Temperature("CPU", 1));
+                t.Add(new Temperature("VRM / Aux 1", 2));
+                t.Add(new Temperature("Aux 2", 3));
+                for (int numT = 4; numT < superIO.Temperatures.Length; numT++)
+                {
+                    t.Add(new Temperature("Temperature #" + (numT + 1), numT));
+                }
+                f.Add(new Fan("CPU Fan", 0));
+                f.Add(new Fan("Pump Fan 1", 1));
+                f.Add(new Fan("System Fan 1", 2));
+                f.Add(new Fan("System Fan 2", 3));
+                f.Add(new Fan("System Fan 3", 4));
+                f.Add(new Fan("System Fan 4", 5));
+                c.Add(new Control("CPU Fan Control", 0));
+                c.Add(new Control("Pump Fan 1 Control", 1));
+                c.Add(new Control("System Fan 1 Control", 2));
+                c.Add(new Control("System Fan 2 Control", 3));
+                c.Add(new Control("System Fan 3 Control", 4));
+                c.Add(new Control("System Fan 4 Control", 5));
+                break;
             case Manufacturer.ASUS:
                 switch (model)
                 {

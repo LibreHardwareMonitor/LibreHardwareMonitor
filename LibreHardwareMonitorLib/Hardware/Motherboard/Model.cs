@@ -388,6 +388,8 @@ public enum Model
     FRANMGCP07, // FW13 AMD Ryzen AI 7 350
     FRANMGCP09, // FW13 AMD Ryzen AI 9 HX 370
 
+    MS_iCraft_Z890_Arctic,
+
     // Unknown
     Unknown
 }

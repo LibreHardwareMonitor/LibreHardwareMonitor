@@ -70,6 +70,8 @@ internal class Identification
                 return Manufacturer.Jetway;
             case var _ when name.StartsWith("Lenovo", StringComparison.OrdinalIgnoreCase):
                 return Manufacturer.Lenovo;
+            case var _ when name.StartsWith("MAXSUN", StringComparison.OrdinalIgnoreCase):
+                return Manufacturer.Maxsun;
             case var _ when name.Equals("LattePanda", StringComparison.OrdinalIgnoreCase):
                 return Manufacturer.LattePanda;
             case var _ when name.StartsWith("Medion", StringComparison.OrdinalIgnoreCase):
@@ -111,6 +113,8 @@ internal class Identification
     {
         switch (name)
         {
+            case var _ when name.Equals("MS-iCraft Z890 Arctic", StringComparison.OrdinalIgnoreCase):
+                return Model.MS_iCraft_Z890_Arctic;
             case var _ when name.Equals("TUF GAMING B850-BTF WIFI W", StringComparison.OrdinalIgnoreCase):
                 return Model.TUF_GAMING_B850_BTF_WIFI_W;
             case var _ when name.Equals("TUF GAMING B850M-PLUS II", StringComparison.OrdinalIgnoreCase):

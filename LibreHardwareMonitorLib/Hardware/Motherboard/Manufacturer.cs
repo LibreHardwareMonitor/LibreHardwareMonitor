@@ -40,6 +40,7 @@ public enum Manufacturer
     Jetway,
     LattePanda,
     Lenovo,
+    Maxsun,
     Medion,
     Microsoft,
     MSI,
