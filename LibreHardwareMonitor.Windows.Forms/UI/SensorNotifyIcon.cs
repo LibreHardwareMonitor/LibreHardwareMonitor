@@ -172,7 +172,9 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Flow:
                 return $"{1e-3f * Sensor.Value:F1}";
             case SensorType.Data:
-                return $"{UnitManager.BytesToGigaBytes(Sensor.Value):F0}";
+                float? gigabytes = UnitManager.BytesToGigaBytes(Sensor.Value);
+                string formatted = $"{gigabytes:F1}";
+                return formatted.Length <= 4 ? formatted : $"{gigabytes:F0}";
             case SensorType.Voltage:
             case SensorType.Current:
             case SensorType.Factor:
@@ -285,7 +287,7 @@ public class SensorNotifyIcon : IDisposable
             case SensorType.Control: format = "\n{0}: {1:F1} %"; break;
             case SensorType.Level: format = "\n{0}: {1:F1} %"; break;
             case SensorType.Power: format = "\n{0}: {1:F0} W"; break;
-            case SensorType.Data: format = "\n{0}: {1:F0} GB"; break;
+            case SensorType.Data: format = "\n{0}: {1:F1} GB"; break;
             case SensorType.Factor: format = "\n{0}: {1:F3} GB"; break;
             case SensorType.Energy: format = "\n{0}: {0:F0} mWh"; break;
             case SensorType.Noise: format = "\n{0}: {0:F0} dBA"; break;
