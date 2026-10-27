@@ -5356,16 +5356,16 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("1.8V PLL", 14, 17, 36));
 
                             // The following mappings only apply when FanXpert is off in Armoury Crate.
-                            t.Add(new Temperature("CPU Package", 26));
-                            t.Add(new Temperature("CPUTIN", 1));
-                            t.Add(new Temperature("Motherboard", 2));
+                            t.Add(new Temperature("CPU Package", 26)); // CPU PACKAGE
+                            t.Add(new Temperature("CPU Socket", 1)); // CPUTIN
+                            t.Add(new Temperature("Motherboard", 2)); // SYSTIN
                             t.Add(new Temperature("DIMM Thermistor", 28));
 
                             // BIOS 1804 or above moved CPU Temp Sensor to 21
-                            t.Add(new Temperature("CPU", 21));
+                            t.Add(new Temperature("CPU", 21)); // PECI_0_CAL
 
                             // For BIOS 1803 or older
-                            t.Add(new Temperature("CPU", 22));
+                            t.Add(new Temperature("CPU", 22)); // PECI_1_CAL
 
                             // Add all unmapped temperature sensors
                             for (int i = 0; i < superIO.Temperatures.Length; i++)
