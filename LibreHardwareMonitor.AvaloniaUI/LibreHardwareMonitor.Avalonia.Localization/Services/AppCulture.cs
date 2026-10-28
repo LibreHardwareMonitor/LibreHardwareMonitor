@@ -12,6 +12,11 @@ namespace LibreHardwareMonitor.Avalonia.Localization.Services;
 public static class AppCulture
 {
     /// <summary>
+    /// Gets the operating system's regional formatting culture before UI localization.
+    /// </summary>
+    public static CultureInfo SystemFormattingCulture { get; } = CultureInfo.CurrentCulture;
+
+    /// <summary>
     /// Gets the culture used when the system language is not supported.
     /// </summary>
     public const string DefaultName = "en-US";

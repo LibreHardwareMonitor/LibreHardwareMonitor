@@ -3,6 +3,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LibreHardwareMonitor.Avalonia.Localization.Services;
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
 using LibreHardwareMonitor.Avalonia.Mvvm.Services;
 using LanguageResources = LibreHardwareMonitor.Avalonia.Localization.Resources.Resources;
@@ -42,7 +43,9 @@ public sealed class MainWindowViewModel : ObservableObject
             ? LanguageResources.StatusUpdatedNoHardwareFormat
             : LanguageResources.StatusUpdatedFormat;
 
-        Status = string.Format(CultureInfo.CurrentCulture, format, snapshot.Updated.ToString("T", CultureInfo.CurrentCulture));
+        CultureInfo systemCulture = AppCulture.SystemFormattingCulture;
+
+        Status = string.Format(systemCulture, format, snapshot.Updated.ToString("T", systemCulture));
     }
 
     /// <summary>
