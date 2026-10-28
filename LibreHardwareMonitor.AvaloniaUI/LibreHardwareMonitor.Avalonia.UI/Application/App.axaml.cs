@@ -7,6 +7,8 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using LibreHardwareMonitor.Avalonia.Monitoring.Services;
 using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
+using LibreHardwareMonitor.Avalonia.UI.MockData;
+using LibreHardwareMonitor.Avalonia.UI.Services;
 using LibreHardwareMonitor.Avalonia.UI.Views;
 using AvaloniaApplication = Avalonia.Application;
 
@@ -31,7 +33,13 @@ public sealed partial class App : AvaloniaApplication
 
         if (Design.IsDesignMode)
         {
+            Global.FontManager = MainWindowDesignData.FontService;
+
             RequestedThemeVariant = ThemeVariant.Dark;
+        }
+        else
+        {
+            Global.FontManager = new FontService();
         }
     }
 

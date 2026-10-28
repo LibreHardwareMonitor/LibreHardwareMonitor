@@ -20,7 +20,7 @@
 
     <Application.Styles>
         <FluentTheme/>
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.v2.xaml"/>
+        <StyleInclude Source="avares://BlackSharp.UI.Avalonia.TreeDataGrid/Themes/Fluent.axaml"/>
         <StyleInclude Source="avares://BlackSharp.UI.Avalonia/Styles/Styles.axaml"/>
     </Application.Styles>
 

@@ -2,6 +2,7 @@
 
 using LibreHardwareMonitor.Avalonia.Monitoring.Models;
 using LibreHardwareMonitor.Avalonia.Monitoring.Services;
+using LibreHardwareMonitor.Avalonia.Mvvm.Services;
 using LibreHardwareMonitor.Avalonia.Mvvm.ViewModels;
 using LibreHardwareMonitor.Hardware;
 using LanguageResources = LibreHardwareMonitor.Avalonia.Localization.Resources.Resources;
@@ -17,6 +18,11 @@ public static class MainWindowDesignData
     /// Gets the main window view model used by the XAML designer.
     /// </summary>
     public static MainWindowViewModel MainWindow { get; } = CreateMainWindow();
+
+    /// <summary>
+    /// Gets the font service.
+    /// </summary>
+    public static IFontService FontService { get; } = new MockFontService();
 
     /// <summary>
     /// Builds the representative computer, hardware and sensor hierarchy.
