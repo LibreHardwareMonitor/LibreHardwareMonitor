@@ -18,7 +18,7 @@ public sealed class SensorTreeNodeViewModel : ObservableObject
     private string _value;
     private string _min;
     private string _max;
-    private bool _isExpanded = true;
+    private bool _isExpanded;
 
     /// <summary>
     /// Initializes the node from a captured sensor tree snapshot.
@@ -28,6 +28,8 @@ public sealed class SensorTreeNodeViewModel : ObservableObject
     {
         Identifier = snapshot.Identifier;
         Kind = snapshot.Kind;
+
+        _isExpanded = Kind == SensorTreeNodeKind.Computer;
 
         Update(snapshot);
     }
