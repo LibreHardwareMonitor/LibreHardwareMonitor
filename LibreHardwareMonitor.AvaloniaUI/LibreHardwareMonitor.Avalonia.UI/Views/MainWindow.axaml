@@ -29,6 +29,8 @@
         <tree:TreeDataGrid Grid.Row="0"
                            Margin="12"
                            ItemsSource="{Binding Hardware}"
+                           ExpanderChevronHeight="{data:ScaleFontBinding Path=GlobalFontSize, Source={x:Static global:Global.FontManager}}"
+                           ExpanderChevronWidth="{data:ScaleFontBinding Path=GlobalFontSize, Source={x:Static global:Global.FontManager}}"
                            CanUserReorderColumns="False"
                            CanUserResizeColumns="True"
                            CanUserSortColumns="False"
