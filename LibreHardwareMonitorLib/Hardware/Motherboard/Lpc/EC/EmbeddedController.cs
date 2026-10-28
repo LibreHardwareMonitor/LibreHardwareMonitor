@@ -251,6 +251,15 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_XI_HERO,
+            BoardFamily.Intel300,
+            ECSensor.TempVrm,
+            ECSensor.TempChipset,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.TempTSensor,
+            ECSensor.FanCPUOpt,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
             BoardFamily.Intel400,
             ECSensor.TempTSensor,
@@ -509,7 +518,8 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
-                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f) }
             }
         },
         {
