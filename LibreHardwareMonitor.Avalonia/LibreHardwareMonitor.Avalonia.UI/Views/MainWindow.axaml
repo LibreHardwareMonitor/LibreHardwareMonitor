@@ -1,0 +1,120 @@
+﻿<!-- SPDX-License-Identifier: MPL-2.0 -->
+
+<ui:DecoratedWindow x:Class="LibreHardwareMonitor.Avalonia.UI.Views.MainWindow"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="using:LibreHardwareMonitor.Avalonia.UI.Converters"
+                    xmlns:data="using:BlackSharp.UI.Avalonia.Data"
+                    xmlns:global="using:LibreHardwareMonitor.Avalonia.UI.Application"
+                    xmlns:language="using:LibreHardwareMonitor.Avalonia.Localization.Resources"
+                    xmlns:mockData="using:LibreHardwareMonitor.Avalonia.UI.MockData"
+                    xmlns:primitives="using:BlackSharp.UI.Avalonia.TreeDataGrid.Primitives"
+                    xmlns:tree="using:BlackSharp.UI.Avalonia.TreeDataGrid"
+                    xmlns:ui="using:BlackSharp.UI.Avalonia.Controls"
+                    xmlns:vm="using:LibreHardwareMonitor.Avalonia.Mvvm.ViewModels"
+                    x:DataType="vm:MainWindowViewModel"
+                    Design.DataContext="{x:Static mockData:MainWindowDesignData.MainWindow}"
+                    Title="{x:Static language:Resources.ApplicationTitle}"
+                    Icon="{StaticResource LibreHardwareMonitorWindowIcon}"
+                    TitleBarIcon="{StaticResource LibreHardwareMonitorTitleBarIcon}"
+                    Width="900" Height="680"
+                    MinWidth="600" MinHeight="400"
+                    WindowStartupLocation="CenterScreen">
+
+    <ui:DecoratedWindow.Resources>
+        <converters:SensorIconConverter x:Key="SensorIconConverter"/>
+    </ui:DecoratedWindow.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+        <tree:TreeDataGrid Grid.Row="0"
+                           Margin="12"
+                           ItemsSource="{Binding Hardware}"
+                           ExpanderChevronHeight="{data:ScaleFontBinding Path=GlobalFontSize, Source={x:Static global:Global.FontManager}}"
+                           ExpanderChevronWidth="{data:ScaleFontBinding Path=GlobalFontSize, Source={x:Static global:Global.FontManager}}"
+                           CanUserReorderColumns="False"
+                           CanUserResizeColumns="True"
+                           CanUserSortColumns="False"
+                           ExpandCollapseOnDoubleTap="True"
+                           SelectParentOnLeftArrow="True"
+                           PreserveSelectionOnCtrlArrowScroll="True"
+                           GridLinesVisibility="Horizontal"
+                           SelectionMode="Row"
+                           ScrollViewer.AllowAutoHide="False">
+            <tree:TreeDataGrid.Styles>
+                <Style Selector="primitives|TreeDataGridTextCell">
+                    <Setter Property="Padding" Value="6,2,10,2"/>
+                </Style>
+            </tree:TreeDataGrid.Styles>
+
+            <tree:TreeDataGrid.Columns>
+                <!-- Hardware/Sensor Name -->
+                <tree:TreeDataGridHierarchicalExpanderColumn x:DataType="vm:SensorTreeNodeViewModel"
+                                                             Header="{x:Static language:Resources.ColumnSensor}"
+                                                             Width="4*"
+                                                             MinWidth="240"
+                                                             ChildrenBinding="{CompiledBinding Children}"
+                                                             IsExpandedBinding="{CompiledBinding IsExpanded, Mode=TwoWay}">
+                    <tree:TreeDataGridHierarchicalExpanderColumn.Inner>
+                        <tree:TreeDataGridTemplateColumn>
+                            <tree:TreeDataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="vm:SensorTreeNodeViewModel">
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="6"
+                                                Margin="6,2,10,2">
+                                        <Image Width="{data:ScaleFontBinding Path=GlobalFontSize, Factor=1.33, Source={x:Static global:Global.FontManager}}"
+                                               Height="{data:ScaleFontBinding Path=GlobalFontSize, Factor=1.33, Source={x:Static global:Global.FontManager}}"
+                                               MaxWidth="16"
+                                               MaxHeight="16"
+                                               Source="{Binding IconName, Converter={StaticResource SensorIconConverter}}"/>
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{Binding Name}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </tree:TreeDataGridTemplateColumn.CellTemplate>
+                        </tree:TreeDataGridTemplateColumn>
+                    </tree:TreeDataGridHierarchicalExpanderColumn.Inner>
+                </tree:TreeDataGridHierarchicalExpanderColumn>
+
+                <!-- Sensor Value -->
+                <tree:TreeDataGridTextColumn x:DataType="vm:SensorTreeNodeViewModel"
+                                             Header="{x:Static language:Resources.ColumnValue}"
+                                             Width="*"
+                                             MinWidth="110"
+                                             Binding="{CompiledBinding Value}"
+                                             HorizontalContentAlignment="Stretch"
+                                             TextAlignment="Right"
+                                             IsReadOnly="True"/>
+
+                <!-- Sensor Minimum -->
+                <tree:TreeDataGridTextColumn x:DataType="vm:SensorTreeNodeViewModel"
+                                             Header="{x:Static language:Resources.ColumnMinimum}"
+                                             Width="*"
+                                             MinWidth="110"
+                                             Binding="{CompiledBinding Min}"
+                                             HorizontalContentAlignment="Stretch"
+                                             TextAlignment="Right"
+                                             IsReadOnly="True"/>
+
+                <!-- Sensor Maximum -->
+                <tree:TreeDataGridTextColumn x:DataType="vm:SensorTreeNodeViewModel"
+                                             Header="{x:Static language:Resources.ColumnMaximum}"
+                                             Width="*"
+                                             MinWidth="110"
+                                             Binding="{CompiledBinding Max}"
+                                             HorizontalContentAlignment="Stretch"
+                                             TextAlignment="Right"
+                                             IsReadOnly="True"/>
+            </tree:TreeDataGrid.Columns>
+        </tree:TreeDataGrid>
+
+        <Border Grid.Row="1"
+                Padding="20,10"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="0,1,0,0">
+            <TextBlock Opacity="0.7"
+                       Text="{Binding Status}"/>
+        </Border>
+    </Grid>
+
+</ui:DecoratedWindow>
