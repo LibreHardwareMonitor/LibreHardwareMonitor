@@ -116,9 +116,18 @@ internal class AmdGpuGroup : IGroup
                             if (!string.IsNullOrEmpty(adapterInfo[i].UDID) && adapterInfo[i].VendorID == AtiAdlxx.ATI_VENDOR_ID &&
                                 !IsAlreadyAdded(adapterInfo[i].BusNumber, adapterInfo[i].DeviceNumber))
                             {
+                                // Without PMLog sensors from the System32 ADL (e.g. an older driver package next to a newer one), try the ADL of the adapter's own driver package.
+                                AtiAdlxxPackage adlPackage = null;
+                                if (sensorsSupported == 0 && AtiAdlxx.UsePmLogForFamily(gcnInfo.ASICFamilyId) && !Software.OperatingSystem.IsUnix)
+                                {
+                                    adlPackage = AtiAdlxxPackage.TryOpen(adapterInfo[i], _report);
+                                    if (adlPackage != null)
+                                        sensorsSupported = adlPackage.Sensors.Length;
+                                }
+
                                 if (sensorsSupported > 0)
                                 {
-                                    _hardware.Add(new AmdGpu(_context, adapterInfo[i], gcnInfo, settings));
+                                    _hardware.Add(new AmdGpu(_context, adapterInfo[i], gcnInfo, settings, adlPackage));
                                 }
                                 else
                                 {

@@ -64,11 +64,13 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _temperatureVddc;
     private readonly ushort _pmLogSampleRate = 1000;
     private bool _overdrive8LogExists;
+    private readonly AtiAdlxxPackage _adlPackage;
 
-    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
+    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings, AtiAdlxxPackage adlPackage = null)
         : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _context = amdContext;
+        _adlPackage = adlPackage;
         _adlGcnInfo = gcnInfo;
         _adapterInfo = adapterInfo;
         BusNumber = adapterInfo.BusNumber;
@@ -173,7 +175,12 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_fullscreenFps);
         }
 
-        if (AtiAdlxx.UsePmLogForFamily(_adlGcnInfo.ASICFamilyId) &&
+        if (_adlPackage != null)
+        {
+            // ADL of the adapter's own driver package (see AtiAdlxxPackage); the log buffer has the same layout as with the System32 ADL.
+            _pmLogStarted = _adlPackage.TryStartPmLog(_pmLogSampleRate, out _adlPMLogSupportInfo, out _adlPMLogStartOutput);
+        }
+        else if (AtiAdlxx.UsePmLogForFamily(_adlGcnInfo.ASICFamilyId) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Start)))
@@ -682,7 +689,11 @@ internal sealed class AmdGpu : GenericGpu
         if (_frameMetricsStarted)
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Stop(_context, _adapterInfo.AdapterIndex, 0);
 
-        if (_pmLogStarted && _device != 0)
+        if (_adlPackage != null)
+        {
+            _adlPackage.Dispose();
+        }
+        else if (_pmLogStarted && _device != 0)
         {
             AtiAdlxx.ADL2_Adapter_PMLog_Stop(_context, _adapterInfo.AdapterIndex, _device);
         }
