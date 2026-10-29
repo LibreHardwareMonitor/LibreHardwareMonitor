@@ -55,7 +55,7 @@ jobs:
             bin/Release/net10.0-windows
 
       - name: Build and package Avalonia application (win-x64)
-        run: dotnet publish LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-x64
+        run: dotnet publish LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-x64
 
       - name: Publish Avalonia application (win-x64)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
@@ -65,7 +65,7 @@ jobs:
           if-no-files-found: error
 
       - name: Build and package Avalonia application (win-x86)
-        run: dotnet publish LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=x86 -r win-x86 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-x86
+        run: dotnet publish LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=x86 -r win-x86 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-x86
 
       - name: Publish Avalonia application (win-x86)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
@@ -75,7 +75,7 @@ jobs:
           if-no-files-found: error
 
       - name: Build and package Avalonia application (win-arm64)
-        run: dotnet publish LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=ARM64 -r win-arm64 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-arm64
+        run: dotnet publish LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=ARM64 -r win-arm64 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-arm64
 
       - name: Publish Avalonia application (win-arm64)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1

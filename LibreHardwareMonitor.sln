@@ -17,17 +17,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Avalonia UI", "Avalonia UI", "{3E6AFFB3-E84B-CEEF-C46D-5CAAE29FEE0E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Avalonia", "Avalonia", "{3E6AFFB3-E84B-CEEF-C46D-5CAAE29FEE0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Monitoring", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.Monitoring\LibreHardwareMonitor.Avalonia.Monitoring.csproj", "{4C062AB5-B3D7-4FAD-983E-D796F049C0C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Monitoring", "LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.Monitoring\LibreHardwareMonitor.Avalonia.Monitoring.csproj", "{4C062AB5-B3D7-4FAD-983E-D796F049C0C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Mvvm", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.Mvvm\LibreHardwareMonitor.Avalonia.Mvvm.csproj", "{61EFF828-7182-49B0-84DD-0404B9F311BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Mvvm", "LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.Mvvm\LibreHardwareMonitor.Avalonia.Mvvm.csproj", "{61EFF828-7182-49B0-84DD-0404B9F311BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.UI", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.UI\LibreHardwareMonitor.Avalonia.UI.csproj", "{3F98C401-FB69-46C2-B4C6-14252D0735F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.UI", "LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.UI\LibreHardwareMonitor.Avalonia.UI.csproj", "{3F98C401-FB69-46C2-B4C6-14252D0735F4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj", "{6C84786F-5AAE-43CA-A6A2-103B55FE5472}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia", "LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj", "{6C84786F-5AAE-43CA-A6A2-103B55FE5472}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Localization", "LibreHardwareMonitor.AvaloniaUI\LibreHardwareMonitor.Avalonia.Localization\LibreHardwareMonitor.Avalonia.Localization.csproj", "{0BB3E5A5-9668-474D-B6FC-13BE2E5314B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Localization", "LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.Localization\LibreHardwareMonitor.Avalonia.Localization.csproj", "{0BB3E5A5-9668-474D-B6FC-13BE2E5314B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
