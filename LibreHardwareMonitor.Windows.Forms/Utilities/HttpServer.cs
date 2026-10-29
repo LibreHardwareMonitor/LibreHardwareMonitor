@@ -303,8 +303,59 @@ public class HttpServer
         }
     }
 
-    //Handles http POST requests in a REST like manner.
-    //Currently the only supported base URL is http://localhost:8085/Sensor.
+    // A page open in the user's browser can send requests to this server too: an <img> or a <form> needs no CORS permission to do it, and a DNS rebinding page even runs under this server's origin.
+    // A change (Set, ResetMinMax, ResetAllMinMax) is refused when the browser marks the request as sent from another site, or when the Host is not this computer.
+    // Scripts and tools send neither Sec-Fetch-Site nor Origin, so they keep working over GET and POST.
+    private bool IsForbidden(HttpListenerRequest request)
+    {
+        string action = HttpUtility.ParseQueryString(request.Url.Query)["action"];
+        if ((action == null || string.Equals(action, "Get", StringComparison.OrdinalIgnoreCase)) &&
+            !request.RawUrl.Contains("ResetAllMinMax", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        string site = request.Headers["Sec-Fetch-Site"];
+        if (site != null && !string.Equals(site, "same-origin", StringComparison.OrdinalIgnoreCase) && !string.Equals(site, "none", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        string origin = request.Headers["Origin"];
+        if (origin != null && !IsSameOrigin(origin, request.Url))
+            return true;
+
+        return !IsLocalMachine(request.Url.Host);
+    }
+
+    private bool IsSameOrigin(string origin, Uri target)
+    {
+        return Uri.TryCreate(origin, UriKind.Absolute, out Uri uri) &&
+               uri.Scheme == Uri.UriSchemeHttp && target.Scheme == Uri.UriSchemeHttp &&
+               uri.Port == ListenerPort && target.Port == ListenerPort &&
+               string.Equals(uri.IdnHost, target.IdnHost, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsLocalMachine(string host)
+    {
+        if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        try
+        {
+            if (IPAddress.TryParse(host.Trim('[', ']'), out IPAddress address))
+                return IPAddress.IsLoopback(address) || Dns.GetHostEntry(Dns.GetHostName()).AddressList.Contains(address);
+
+            string machineName = Dns.GetHostName();
+            return string.Equals(host, machineName, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(host, Dns.GetHostEntry(machineName).HostName, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    // Handles http POST requests in a REST like manner.
+    // Currently the only supported base URL is http://localhost:8085/Sensor.
     private string HandlePostRequest(HttpListenerRequest request)
     {
         var result = new Dictionary<string, object> { ["result"] = "ok" };
@@ -351,7 +402,16 @@ public class HttpServer
             }
         }
 
-        if (authenticated)
+        if (authenticated && IsForbidden(request))
+        {
+            context.Response.StatusCode = 403;
+            await SendResponseAsync(context.Response, System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>
+            {
+                ["result"] = "fail",
+                ["message"] = "Changes are forbidden from a page of another site and under a different host name"
+            }), "application/json");
+        }
+        else if (authenticated)
         {
             switch (request.HttpMethod)
             {
