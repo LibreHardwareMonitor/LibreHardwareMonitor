@@ -159,6 +159,8 @@ public class SensorNode : Node
         set { Sensor.Name = value; }
     }
 
+    public bool HasCustomName => _settings.Contains(new Identifier(Sensor.Identifier, "name").ToString());
+
     public override string ToolTip
     {
         get

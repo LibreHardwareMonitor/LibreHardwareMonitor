@@ -54,9 +54,18 @@ public abstract class Hardware : IHardware
         get { return _customName; }
         set
         {
-            _customName = !string.IsNullOrEmpty(value) ? value : _name;
+            string identifier = new Identifier(Identifier, "name").ToString();
 
-            _settings.SetValue(new Identifier(Identifier, "name").ToString(), _customName);
+            if (!string.IsNullOrEmpty(value))
+            {
+                _customName = value;
+                _settings.SetValue(identifier, value);
+            }
+            else
+            {
+                _customName = _name;
+                _settings.Remove(identifier);
+            }
         }
     }
 
