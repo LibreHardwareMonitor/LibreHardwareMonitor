@@ -1,4 +1,4 @@
-# LibreHardwareMonitor
+﻿# LibreHardwareMonitor
 [![GitHub license](https://img.shields.io/github/license/LibreHardwareMonitor/LibreHardwareMonitor?label=License)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LICENSE)
 
 [![NuGet](https://img.shields.io/nuget/v/LibreHardwareMonitorLib?label=NuGet&logo=nuget&logoColor=white)](https://www.nuget.org/packages/LibreHardwareMonitorLib/)
@@ -65,7 +65,7 @@ Computer computer = new Computer
     IsControllerEnabled = true,
     IsNetworkEnabled = true,
     IsStorageEnabled = true,
-	IsPowerMonitorEnabled = true,
+    IsPowerMonitorEnabled = true,
 };
 
 computer.Open();
