@@ -5434,6 +5434,41 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_CROSSHAIR_X870E_GLACIAL: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0, 15, 136));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("VMISC", 5, 9, 82));
+                        v.Add(new Voltage("CPU SOC", 6, 9, 82));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("Chipset 0 VDD", 10, 1, 1));
+                        v.Add(new Voltage("Chipset 1 VDD", 11, 1, 1));
+                        v.Add(new Voltage("Chipset Standby", 12));
+                        v.Add(new Voltage("CPU VDDIO Memory", 13, 9, 82));
+                        v.Add(new Voltage("1.8V PLL", 14, 17, 36));
+
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Temperature #3", 3));
+                        t.Add(new Temperature("Temperature #4", 4));
+                        t.Add(new Temperature("Temperature #5", 5));
+                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("Temperature #7", 7));
+                        t.Add(new Temperature("CPU", 21));
+                        t.Add(new Temperature("Temperature #26", 26));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.PROART_X870E_CREATOR_WIFI: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
