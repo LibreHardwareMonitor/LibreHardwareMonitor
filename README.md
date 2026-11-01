@@ -21,8 +21,8 @@ Libre Hardware Monitor is free software that can monitor the temperature sensors
 | .NET Framework 4.7.2 | ✅ | ✅ | ❌ |
 | .NET Framework 4.8.1 | ✅ | ✅ | ❌ |
 | .NET Standard 2.0 | ✅ | ✅ | ❌ |
-| .NET 8 | ✅ | ✅ | ✅ |
-| .NET 9 | ✅ | ✅ | ✅ |
+| .NET 8 | ✅ | ✅ | ❌ |
+| .NET 9 | ✅ | ✅ | ❌ |
 | .NET 10 | ✅ | ✅ | ✅ |
 
 ## What can it do?
