@@ -683,13 +683,14 @@ internal sealed class SuperIOHardware : Hardware
 
                 switch (model)
                 {
+                    case Model.B650_TOMAHAWK_WIFI:
                     case Model.X870E_TOMAHAWK_WIFI:
                     case Model.X870E_TOMAHAWK_MAX_WIFI_PZ:
                     case Model.X870E_EDGE_TI_WIFI:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
                         v.Add(new Voltage("CPU Northbridge/SoC", 2));
-                        v.Add(new Voltage("DIMM", 3, 1, 1));
+                        v.Add(new Voltage("CPU VDDIO", 3, 1, 1));
                         v.Add(new Voltage("Vcore", 4, -1, 2));
                         v.Add(new Voltage("Chipset", 5));
                         v.Add(new Voltage("CPU System Agent", 6));
