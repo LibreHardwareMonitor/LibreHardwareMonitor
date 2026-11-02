@@ -90,6 +90,8 @@ internal sealed class NvidiaGpu : GenericGpu
         0x89DE1043, // Astral 5080 OC
     ];
 
+    private const int PowerPolicySensorIndexBase = 1000;
+
     // Call while holding NvidiaML.SyncRoot so Close cannot invalidate the handle before its use.
     private NvidiaML.NvmlDevice? GetNvmlDevice(bool allowIndexWithoutBusId = false)
     {
@@ -1599,8 +1601,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 continue;
             }
 
-            List<Sensor> sensors = [];
-            List<int> domains = [];
+            List<(string Name, SensorType Type, int Domain)> candidates = [];
             byte[] mask = new byte[NvApi.NvOcpPolicyLayout.MASK_LENGTH];
             int maxDomain = 0;
             uint limit = 0;
@@ -1639,8 +1640,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     name = $"GPU Power Policy {domain}";
                 }
 
-                sensors.Add(new Sensor(name, sensors.Count, sensorType, this, settings));
-                domains.Add(domain);
+                candidates.Add((name, sensorType, domain));
                 mask[domain >> 3] |= (byte)(1 << (domain & 7));
                 maxDomain = domain;
 
@@ -1650,7 +1650,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 }
             }
 
-            if (sensors.Count == 0)
+            if (candidates.Count == 0)
             {
                 continue;
             }
@@ -1665,10 +1665,10 @@ internal sealed class NvidiaGpu : GenericGpu
 
             bool valid = true;
 
-            for (int i = 0; i < domains.Count; i++)
+            for (int i = 0; i < candidates.Count; i++)
             {
-                int expected = NvApi.NvOcpPolicyLayout.GetInfoField(info, mode, domains[i], NvApi.NvOcpPolicyLayout.INFO_FIELD_TYPE);
-                int actual = NvApi.NvOcpPolicyLayout.GetMeasurementField(buffer, mode, domains[i], NvApi.NvOcpPolicyLayout.MEAS_FIELD_TYPE);
+                int expected = NvApi.NvOcpPolicyLayout.GetInfoField(info, mode, candidates[i].Domain, NvApi.NvOcpPolicyLayout.INFO_FIELD_TYPE);
+                int actual = NvApi.NvOcpPolicyLayout.GetMeasurementField(buffer, mode, candidates[i].Domain, NvApi.NvOcpPolicyLayout.MEAS_FIELD_TYPE);
 
                 if (actual != expected)
                 {
@@ -1682,8 +1682,22 @@ internal sealed class NvidiaGpu : GenericGpu
                 continue;
             }
 
-            _powerPolicySensors = sensors.ToArray();
-            _powerPolicyDomains = domains.ToArray();
+            Sensor[] sensors = new Sensor[candidates.Count];
+            int[] domains = new int[candidates.Count];
+            int nextPowerIndex = PowerPolicySensorIndexBase;
+            int nextCurrentIndex = PowerPolicySensorIndexBase;
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                (string name, SensorType sensorType, int domain) = candidates[i];
+                int index = sensorType == SensorType.Power ? nextPowerIndex++ : nextCurrentIndex++;
+
+                sensors[i] = new Sensor(name, index, sensorType, this, settings);
+                domains[i] = domain;
+            }
+
+            _powerPolicySensors = sensors;
+            _powerPolicyDomains = domains;
             _powerPolicyBuffer = buffer;
             _powerPolicyMask = mask;
             _powerPolicyMode = mode;
