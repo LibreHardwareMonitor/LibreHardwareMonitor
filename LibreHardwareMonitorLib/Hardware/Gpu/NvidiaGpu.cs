@@ -452,12 +452,6 @@ internal sealed class NvidiaGpu : GenericGpu
         _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings);
         _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings);
 
-        if (TryCreatePowerPolicySensors(settings, out uint powerLimit) && powerLimit > 0)
-        {
-            _powerLimitSensor = new Sensor("GPU Power Limit", int.MaxValue, SensorType.Power, this, settings);
-            _powerLimit = (int)powerLimit;
-        }
-
         NvidiaML.NvmlPciInfo? pciInfo = null;
 
         if (!Software.OperatingSystem.IsUnix)
@@ -579,12 +573,12 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 _12VHPwrPinVoltageSensors =
                 [
-                    new Sensor("12VHPWR Pin 1", 0, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 2", 1, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 3", 2, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 4", 3, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 5", 4, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 6", 5, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 1", 1, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 2", 2, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 3", 3, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 4", 4, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 5", 5, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 6", 6, SensorType.Voltage, this, settings),
                 ];
                 _12VHPwrPinCurrentSensors =
                 [
@@ -620,6 +614,12 @@ internal sealed class NvidiaGpu : GenericGpu
                 ActivateSensor(_12VHPwrConnectorPowerSensor);
                 ActivateSensor(_12VHPwrConnectorCurrentSensor);
             }
+        }
+
+        if (TryCreatePowerPolicySensors(settings, out uint powerLimit) && powerLimit > 0)
+        {
+            _powerLimitSensor = new Sensor("GPU Power Limit", int.MaxValue, SensorType.Power, this, settings);
+            _powerLimit = (int)powerLimit;
         }
 
         Update();
