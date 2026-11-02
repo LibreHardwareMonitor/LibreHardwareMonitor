@@ -655,8 +655,9 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 if (status == NvApi.NvStatus.OK)
                 {
-                    // RTX 50xx series
-                    if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+                    // RTX 50xx series and RTX PRO Blackwell
+                    if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase) ||
+                        Name.IndexOf("Blackwell", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         _hotSpotTemperature.Value = 0;
                         _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
