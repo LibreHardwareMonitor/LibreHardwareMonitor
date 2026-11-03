@@ -10,20 +10,9 @@ Libre Hardware Monitor is free software that can monitor the temperature sensors
 ## What's included?
 | Name| Build Status |
 | --- | --- |
-| **LibreHardwareMonitor.Avalonia** <br /> Avalonia UI based application that presents all data in a graphical interface <br/> _Please note that it is still in development_ | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions/workflows/master.yml/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) |
-| **LibreHardwareMonitor.Windows.Forms** <br /> Windows Forms based application that presents all data in a graphical interface | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions/workflows/master.yml/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) |
 | **LibreHardwareMonitorLib** <br /> Library that allows you to use all features in your own application | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions/workflows/master.yml/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) |
-
-### What .NET version are supported?
-
-| Target | LibreHardwareMonitorLib | LHM-Windows.Forms | LHM-Avalonia |
-| --- | --- | --- | --- |
-| .NET Framework 4.7.2 | ✅ | ✅ | ❌ |
-| .NET Framework 4.8.1 | ✅ | ✅ | ❌ |
-| .NET Standard 2.0 | ✅ | ✅ | ❌ |
-| .NET 8 | ✅ | ✅ | ❌ |
-| .NET 9 | ✅ | ✅ | ❌ |
-| .NET 10 | ✅ | ✅ | ✅ |
+| **LibreHardwareMonitor.Windows.Forms** <br /> Windows Forms based application that presents all data in a graphical interface | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions/workflows/master.yml/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) |
+| **LibreHardwareMonitor.Avalonia** <br /> Avalonia based application that presents all data in a graphical interface <br/> _In development, not recommended yet_ | [![Build status](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions/workflows/master.yml/badge.svg)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions) |
 
 ## What can it do?
 You can read information from devices such as:
@@ -40,19 +29,28 @@ You can download the latest release [here](https://github.com/LibreHardwareMonit
 If you have a **GitHub** account, you can download nightly builds [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/actions).
 
 Otherwise, you can download the *latest* nightly build
-[here (Windows Forms)](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.Windows.Forms.zip)
-or the new UI
-[here (Avalonia UI)](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.Avalonia%20%28win-x64%29.zip).
+[here (Windows.Forms)](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.Windows.Forms.zip)
+or [here (Avalonia)](https://nightly.link/LibreHardwareMonitor/LibreHardwareMonitor/workflows/master/master/LibreHardwareMonitor.Avalonia%20%28win-x64%29.zip).
 
 ## How can I help improve it?
 The LibreHardwareMonitor team welcomes feedback and contributions!<br/>
 You can check if it works properly on your motherboard. For many manufacturers, the way of reading data differs a bit, so if you notice any inaccuracies, please send us a pull request. If you have any suggestions or improvements, don't hesitate to create an issue.
 
+### Which .NET versions are supported?
+
+| Target | Library | Windows.Forms | Avalonia |
+| --- | --- | --- | --- |
+| .NET Framework 4.7.2 | ✅ | ✅ | ❌ |
+| .NET Framework 4.8.1 | ✅ | ✅ | ❌ |
+| .NET Standard 2.0 | ✅ | ✅ | ❌ |
+| .NET 8 | ✅ | ✅ | ❌ |
+| .NET 9 | ✅ | ✅ | ❌ |
+| .NET 10 | ✅ | ✅ | ✅ |
+
 ## Developer information
 **Integrate the library in own application**
 1. Add the [LibreHardwareMonitorLib](https://www.nuget.org/packages/LibreHardwareMonitorLib/) NuGet package to your application.
 2. Use the sample code below.
-
 
 **Sample code**
 ```c#
