@@ -194,11 +194,11 @@ public class AquaComputerGroup : IGroup
 
     private IHardware AddHighFlowNext(HidDevice dev, ISettings settings, string productName)
     {
-        var highflownext = new HighFlowNext(dev, settings);
+        var highflowNext = new HighFlowNext(dev, settings);
         _report.AppendLine($"Device name: {productName}");
-        _report.AppendLine($"Firmware version: {highflownext.FirmwareVersion}");
+        _report.AppendLine($"Firmware version: {highflowNext.FirmwareVersion}");
         _report.AppendLine();
 
-        return highflownext;
+        return highflowNext;
     }
 }
