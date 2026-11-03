@@ -102,7 +102,7 @@ public class AquaComputerGroup : IGroup
         }
         catch (Exception e)
         {
-            _report.AppendLine($"Error while adding {productName}: {e.Message}");
+            _report.AppendLine($"Error while adding {productName} ({dev.VendorID:X4}:{dev.ProductID:X4}): {e.GetType().Name}: {e.Message}");
             _report.AppendLine();
         }
     }
