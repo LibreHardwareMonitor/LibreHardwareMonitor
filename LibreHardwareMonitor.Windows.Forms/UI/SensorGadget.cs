@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Windows.Forms.UI.Themes;
 using LibreHardwareMonitor.Windows.Forms.Utilities;
@@ -53,6 +54,9 @@ public class SensorGadget : Gadget
     private readonly IDictionary<IHardware, IList<ISensor>> _sensors = new SortedDictionary<IHardware, IList<ISensor>>(new HardwareComparer());
     private readonly PersistentSettings _settings;
     private readonly UserOption _hardwareNames;
+    private readonly SynchronizationContext _syncContext;
+    private readonly int _uiThreadId;
+    private bool _disposed;
 
     private Font _largeFont;
     private Font _smallFont;
@@ -67,6 +71,8 @@ public class SensorGadget : Gadget
     {
         _unitManager = unitManager;
         _settings = settings;
+        _syncContext = SynchronizationContext.Current;
+        _uiThreadId = Environment.CurrentManagedThreadId;
         computer.HardwareAdded += HardwareAdded;
         computer.HardwareRemoved += HardwareRemoved;
 
@@ -321,6 +327,7 @@ public class SensorGadget : Gadget
 
     public override void Dispose()
     {
+        _disposed = true;
 
         _largeFont.Dispose();
         _largeFont = null;
@@ -409,14 +416,37 @@ public class SensorGadget : Gadget
 
     private void SensorAdded(ISensor sensor)
     {
-        if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
-            Add(sensor);
+        RunOnUIThread(() =>
+        {
+            if (_settings.GetValue(new Identifier(sensor.Identifier, "gadget").ToString(), false))
+                Add(sensor);
+        });
     }
 
     private void SensorRemoved(ISensor sensor)
     {
-        if (Contains(sensor))
-            Remove(sensor, false);
+        RunOnUIThread(() =>
+        {
+            if (Contains(sensor))
+                Remove(sensor, false);
+        });
+    }
+
+    // Sensors can be added or removed by the background updater thread, but _sensors and the
+    // GDI+ drawing buffer may only be touched from the UI thread.
+    private void RunOnUIThread(Action action)
+    {
+        if (_syncContext == null || Environment.CurrentManagedThreadId == _uiThreadId)
+        {
+            action();
+            return;
+        }
+
+        _syncContext.Post(_ =>
+        {
+            if (!_disposed)
+                action();
+        }, null);
     }
 
     public bool Contains(ISensor sensor)
