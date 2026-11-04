@@ -841,6 +841,17 @@ internal sealed class SuperIOHardware : Hardware
 
                 break;
 
+            case Chip.HpOmenWmi:
+                HpOmenWmi hpOmenWmi = (HpOmenWmi)superIO;
+
+                foreach (Fan fan in hpOmenWmi.GetFans())
+                    f.Add(fan);
+
+                foreach (Control control in hpOmenWmi.GetControls())
+                    c.Add(control);
+
+                break;
+
             default:
                 GetDefaultConfiguration(superIO, v, t, f, c);
                 break;
