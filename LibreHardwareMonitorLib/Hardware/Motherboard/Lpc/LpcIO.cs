@@ -20,6 +20,21 @@ internal class LpcIO
 
     public LpcIO(Motherboard motherboard)
     {
+        // HP OMEN desktops expose their fans only through HP BIOS WMI, which does not use the ISA bus.
+        if (HpOmenWmi.IsVerifiedBoard(motherboard))
+        {
+            try
+            {
+                _superIOs.Add(new HpOmenWmi());
+            }
+            catch (Exception e)
+            {
+                _report.Append("HP OMEN WMI: ");
+                _report.AppendLine(e.Message);
+                _report.AppendLine();
+            }
+        }
+
         if (!Mutexes.WaitIsaBus(100))
             return;
 

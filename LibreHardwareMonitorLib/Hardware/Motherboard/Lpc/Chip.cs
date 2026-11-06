@@ -85,6 +85,8 @@ internal enum Chip : ushort
     W83687THF = 0x8541,
 
     IPMI = 0x4764,
+
+    HpOmenWmi = 0x4850,
 }
 
 internal class ChipName
@@ -163,6 +165,8 @@ internal class ChipName
             case Chip.W83687THF: return "Winbond W83687THF";
 
             case Chip.IPMI: return "IPMI";
+
+            case Chip.HpOmenWmi: return "HP OMEN";
 
             default: return "Unknown";
         }
