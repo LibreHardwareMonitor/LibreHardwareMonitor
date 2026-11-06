@@ -64,11 +64,13 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _temperatureVddc;
     private readonly ushort _pmLogSampleRate = 1000;
     private bool _overdrive8LogExists;
+    private readonly AtiAdlxxPackage _adlPackage;
 
-    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
+    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings, AtiAdlxxPackage adlPackage = null)
         : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _context = amdContext;
+        _adlPackage = adlPackage;
         _adlGcnInfo = gcnInfo;
         _adapterInfo = adapterInfo;
         BusNumber = adapterInfo.BusNumber;
@@ -173,7 +175,12 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_fullscreenFps);
         }
 
-        if (AtiAdlxx.UsePmLogForFamily(_adlGcnInfo.ASICFamilyId) &&
+        if (_adlPackage != null)
+        {
+            // ADL of the adapter's own driver package (see AtiAdlxxPackage); the log buffer has the same layout as with the System32 ADL.
+            _pmLogStarted = _adlPackage.TryStartPmLog(_pmLogSampleRate, out _adlPMLogSupportInfo, out _adlPMLogStartOutput);
+        }
+        else if (AtiAdlxx.UsePmLogForFamily(_adlGcnInfo.ASICFamilyId) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Start)))
@@ -312,8 +319,10 @@ internal sealed class AmdGpu : GenericGpu
 
     public override void Update()
     {
+        float? d3dTemperature = null;
         if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
+            d3dTemperature = deviceInfo.Temperature;
             _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit;
             _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed;
             _gpuDedicatedMemoryFree.Value = _gpuDedicatedMemoryTotal.Value - _gpuDedicatedMemoryUsage.Value;
@@ -438,6 +447,14 @@ internal sealed class AmdGpu : GenericGpu
 
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_GFX_POWER, _powerCore, reset: false);
             GetAdlSensor(adlPMLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_SOC_POWER, _powerSoC, reset: false);
+        }
+
+        // Some cards (e.g. Instinct MI50 running the Radeon VII driver) are rejected by every ADL call, but WDDM still reports
+        // their temperature (this is what Windows Task Manager shows). Use it when ADL did not provide a core temperature.
+        if (_temperatureCore.Value == null && d3dTemperature.HasValue)
+        {
+            _temperatureCore.Value = d3dTemperature.Value;
+            ActivateSensor(_temperatureCore);
         }
     }
 
@@ -672,7 +689,11 @@ internal sealed class AmdGpu : GenericGpu
         if (_frameMetricsStarted)
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Stop(_context, _adapterInfo.AdapterIndex, 0);
 
-        if (_pmLogStarted && _device != 0)
+        if (_adlPackage != null)
+        {
+            _adlPackage.Dispose();
+        }
+        else if (_pmLogStarted && _device != 0)
         {
             AtiAdlxx.ADL2_Adapter_PMLog_Stop(_context, _adapterInfo.AdapterIndex, _device);
         }
