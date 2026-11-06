@@ -52,6 +52,14 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
     private readonly Sensor _powerUsage;
+    private Sensor[] _powerPolicySensors;
+    private int[] _powerPolicyDomains;
+    private byte[] _powerPolicyBuffer;
+    private byte[] _powerPolicyMask;
+    private int _powerPolicyMode = -1;
+    private int _powerPolicyMaxDomain;
+    private Sensor _powerLimitSensor;
+    private int _powerLimit;
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
@@ -62,6 +70,16 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _12VHPwrConnectorCurrentSensor;
     private bool _pawnHotSpotMaximumActive;
 
+    private static readonly Dictionary<int, (string Name, SensorType Type)> PowerPolicies = new()
+    {
+        { 2, ("GPU Board Power", SensorType.Power) },
+        { 7, ("GPU Board Power #1", SensorType.Power) },
+        { 8, ("GPU Board Power #2", SensorType.Power) },
+        { 9, ("GPU Board Input Current", SensorType.Current) },
+        { 13, ("GPU MSVDD Current", SensorType.Current) },
+        { 14, ("GPU NVVDD Current", SensorType.Current) },
+    };
+
     // ASUS Astral subsystem IDs for 12VHPwr pin monitoring
     private static readonly uint[] AstralSubSystemIds =
     [
@@ -71,6 +89,8 @@ internal sealed class NvidiaGpu : GenericGpu
         0x89E31043, // Astral 5090 OC
         0x89DE1043, // Astral 5080 OC
     ];
+
+    private const int PowerPolicySensorIndexBase = 1000;
 
     // Call while holding NvidiaML.SyncRoot so Close cannot invalidate the handle before its use.
     private NvidiaML.NvmlDevice? GetNvmlDevice(bool allowIndexWithoutBusId = false)
@@ -553,12 +573,12 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 _12VHPwrPinVoltageSensors =
                 [
-                    new Sensor("12VHPWR Pin 1", 0, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 2", 1, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 3", 2, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 4", 3, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 5", 4, SensorType.Voltage, this, settings),
-                    new Sensor("12VHPWR Pin 6", 5, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 1", 1, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 2", 2, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 3", 3, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 4", 4, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 5", 5, SensorType.Voltage, this, settings),
+                    new Sensor("12VHPWR Pin 6", 6, SensorType.Voltage, this, settings),
                 ];
                 _12VHPwrPinCurrentSensors =
                 [
@@ -594,6 +614,12 @@ internal sealed class NvidiaGpu : GenericGpu
                 ActivateSensor(_12VHPwrConnectorPowerSensor);
                 ActivateSensor(_12VHPwrConnectorCurrentSensor);
             }
+        }
+
+        if (TryCreatePowerPolicySensors(settings, out uint powerLimit) && powerLimit > 0)
+        {
+            _powerLimitSensor = new Sensor("GPU Power Limit", int.MaxValue, SensorType.Power, this, settings);
+            _powerLimit = (int)powerLimit;
         }
 
         Update();
@@ -784,10 +810,12 @@ internal sealed class NvidiaGpu : GenericGpu
                 NvApi.NvPowerTopology powerTopology = GetPowerTopology(out status);
                 if (status == NvApi.NvStatus.OK && powerTopology.Count > 0)
                 {
-                    for (int i = 0; i < powerTopology.Count; i++)
+                    for (int i = 0; i < powerTopology.Count && i < _powers.Length; i++)
                     {
-                        NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
-                        _powers[i].Value = entry.PowerUsage / 1000f;
+                        if (_powers[i] == null)
+                            continue;
+
+                        _powers[i].Value = powerTopology.Entries[i].PowerUsage / 1000f;
                     }
                 }
             }
@@ -863,6 +891,9 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (powerUsage.HasValue)
                 ActivateSensor(_powerUsage);
+
+            if (_powerPolicySensors is { Length: > 0 })
+                UpdatePowerPolicies();
 
             // In MB/s, throughput sensors are passed as in KB/s.
             _pcieThroughputRx.Value = rx * 1024;
@@ -1293,7 +1324,8 @@ internal sealed class NvidiaGpu : GenericGpu
                 for (int i = 0; i < powerTopology.Count; i++)
                 {
                     NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
-                    _powers[i].Value = entry.PowerUsage / 1000f;
+                    if (_powers != null && i < _powers.Length && _powers[i] != null)
+                        _powers[i].Value = entry.PowerUsage / 1000f;
 
                     r.AppendFormat(" Entries[{0}].Domain: {1}{2}", i, entry.Domain, Environment.NewLine);
                     r.AppendFormat(" Entries[{0}].PowerUsage: {1}{2}", i, entry.PowerUsage, Environment.NewLine);
@@ -1544,6 +1576,160 @@ internal sealed class NvidiaGpu : GenericGpu
 
         status = NvApi.NvAPI_GPU_GetUsages(_handle, ref usages);
         return status == NvApi.NvStatus.OK ? usages : default;
+    }
+
+    private bool TryCreatePowerPolicySensors(ISettings settings, out uint powerLimit)
+    {
+        powerLimit = 0;
+
+        if (NvApi.NvAPI_GPU_ClientOcInfoGetStatus == null || NvApi.NvAPI_GPU_ClientOcMeasurementGetStatus == null)
+            return false;
+
+        for (int mode = 0; mode < NvApi.NvOcpPolicyLayout.Modes.Length; mode++)
+        {
+            byte[] info = NvApi.NvOcpPolicyLayout.CreateInfoRequest(mode);
+
+            if (NvApi.NvAPI_GPU_ClientOcInfoGetStatus(_handle, info) != NvApi.NvStatus.OK)
+                continue;
+
+            List<(string Name, SensorType Type, int Domain)> candidates = [];
+            byte[] mask = new byte[NvApi.NvOcpPolicyLayout.MASK_LENGTH];
+            int maxDomain = 0;
+            uint limit = 0;
+
+            for (int domain = 0; domain < NvApi.NvOcpPolicyLayout.DOMAIN_COUNT; domain++)
+            {
+                if (!NvApi.NvOcpPolicyLayout.IsDomainSupported(info, domain))
+                    continue;
+
+                uint max = (uint)NvApi.NvOcpPolicyLayout.GetInfoField(info, mode, domain, NvApi.NvOcpPolicyLayout.INFO_FIELD_MAX);
+
+                if (!NvApi.NvOcpPolicyLayout.IsSupportedLimit(max))
+                    continue;
+
+                string name;
+                SensorType sensorType;
+
+                if (PowerPolicies.TryGetValue(domain, out var known))
+                {
+                    name = known.Name;
+                    sensorType = known.Type;
+                }
+                else
+                {
+                    int unit = NvApi.NvOcpPolicyLayout.GetInfoField(info, mode, domain, NvApi.NvOcpPolicyLayout.INFO_FIELD_UNIT);
+
+                    if (!TryGetPolicySensorType(unit, out sensorType))
+                        continue;
+
+                    name = $"GPU Power Policy {domain}";
+                }
+
+                candidates.Add((name, sensorType, domain));
+                mask[domain >> 3] |= (byte)(1 << (domain & 7));
+                maxDomain = domain;
+
+                if (sensorType == SensorType.Power && (limit == 0 || max < limit))
+                    limit = max;
+            }
+
+            if (candidates.Count == 0)
+                continue;
+
+            byte[] buffer = new byte[NvApi.NvOcpPolicyLayout.GetMeasurementBufferSize(mode, maxDomain)];
+            NvApi.NvOcpPolicyLayout.WriteMeasurementRequest(buffer, mode, mask, maxDomain);
+
+            if (NvApi.NvAPI_GPU_ClientOcMeasurementGetStatus(_handle, buffer) != NvApi.NvStatus.OK)
+                continue;
+
+            bool valid = true;
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                int expected = NvApi.NvOcpPolicyLayout.GetInfoField(info, mode, candidates[i].Domain, NvApi.NvOcpPolicyLayout.INFO_FIELD_TYPE);
+                int actual = NvApi.NvOcpPolicyLayout.GetMeasurementField(buffer, mode, candidates[i].Domain, NvApi.NvOcpPolicyLayout.MEAS_FIELD_TYPE);
+
+                if (actual != expected)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (!valid)
+                continue;
+
+            Sensor[] sensors = new Sensor[candidates.Count];
+            int[] domains = new int[candidates.Count];
+            int nextPowerIndex = PowerPolicySensorIndexBase;
+            int nextCurrentIndex = PowerPolicySensorIndexBase;
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                (string name, SensorType sensorType, int domain) = candidates[i];
+                int index = sensorType == SensorType.Power ? nextPowerIndex++ : nextCurrentIndex++;
+
+                sensors[i] = new Sensor(name, index, sensorType, this, settings);
+                domains[i] = domain;
+            }
+
+            _powerPolicySensors = sensors;
+            _powerPolicyDomains = domains;
+            _powerPolicyBuffer = buffer;
+            _powerPolicyMask = mask;
+            _powerPolicyMode = mode;
+            _powerPolicyMaxDomain = maxDomain;
+            powerLimit = limit;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void UpdatePowerPolicies()
+    {
+        NvApi.NvOcpPolicyLayout.WriteMeasurementRequest(_powerPolicyBuffer, _powerPolicyMode, _powerPolicyMask, _powerPolicyMaxDomain);
+
+        if (NvApi.NvAPI_GPU_ClientOcMeasurementGetStatus(_handle, _powerPolicyBuffer) != NvApi.NvStatus.OK)
+            return;
+
+        for (int i = 0; i < _powerPolicySensors.Length; i++)
+        {
+            Sensor sensor = _powerPolicySensors[i];
+            int measurement = NvApi.NvOcpPolicyLayout.GetMeasurementField(_powerPolicyBuffer, _powerPolicyMode, _powerPolicyDomains[i], NvApi.NvOcpPolicyLayout.MEAS_FIELD_MEASUREMENT);
+
+            if (measurement <= 0)
+            {
+                sensor.Value = null;
+                continue;
+            }
+
+            sensor.Value = measurement / (float)NvApi.NvOcpPolicyLayout.MILLI_SCALE;
+            ActivateSensor(sensor);
+        }
+
+        if (_powerLimitSensor != null)
+        {
+            _powerLimitSensor.Value = _powerLimit / (float)NvApi.NvOcpPolicyLayout.MILLI_SCALE;
+            ActivateSensor(_powerLimitSensor);
+        }
+    }
+
+    private static bool TryGetPolicySensorType(int unit, out SensorType sensorType)
+    {
+        switch (unit)
+        {
+            case 0:
+                sensorType = SensorType.Power;
+                return true;
+            case 1:
+                sensorType = SensorType.Current;
+                return true;
+            default:
+                sensorType = default;
+                return false;
+        }
     }
 
     private NvApi.NvPowerTopology GetPowerTopology(out NvApi.NvStatus status)
