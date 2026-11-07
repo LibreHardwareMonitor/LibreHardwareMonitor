@@ -49,6 +49,8 @@ public class HardwareNode : Node, IExpandPersistNode
         set { Hardware.Name = value; }
     }
 
+    public bool HasCustomName => _settings.Contains(new Identifier(Hardware.Identifier, "name").ToString());
+
     public override string ToolTip
     {
         get

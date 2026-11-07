@@ -1111,6 +1111,18 @@ public sealed partial class MainForm : Form
                     ToolStripItem item = new ToolStripMenuItem("Rename");
                     item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                     treeContextMenu.Items.Add(item);
+
+                    if (node.HasCustomName)
+                    {
+                        ToolStripItem resetItem = new ToolStripMenuItem("Revert to Default");
+                        resetItem.Click += delegate
+                        {
+                            node.Text = string.Empty;
+                            treeView.Invalidate();
+                        };
+
+                        treeContextMenu.Items.Add(resetItem);
+                    }
                 }
 
                 if (node.IsVisible)
@@ -1216,6 +1228,18 @@ public sealed partial class MainForm : Form
                     ToolStripItem item = new ToolStripMenuItem("Rename");
                     item.Click += delegate { nodeTextBoxText.BeginEdit(); };
                     treeContextMenu.Items.Add(item);
+
+                    if (hardwareNode.HasCustomName)
+                    {
+                        ToolStripItem resetItem = new ToolStripMenuItem("Revert to Default");
+                        resetItem.Click += delegate
+                        {
+                            hardwareNode.Text = string.Empty;
+                            treeView.Invalidate();
+                        };
+
+                        treeContextMenu.Items.Add(resetItem);
+                    }
                 }
 
                 treeContextMenu.Show(treeView, new Point(m.X, m.Y));
