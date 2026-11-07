@@ -748,7 +748,7 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("AVSB", 12));
                         v.Add(new Voltage("CMOS Battery", 13));
 
-                        t.Add(new Temperature("PCIe x1", 5));
+                        t.Add(new Temperature("Chipset B", 5));
                         t.Add(new Temperature("Thermistor Sensor #1", 6));
                         t.Add(new Temperature("Thermistor Sensor #2", 4));
 
