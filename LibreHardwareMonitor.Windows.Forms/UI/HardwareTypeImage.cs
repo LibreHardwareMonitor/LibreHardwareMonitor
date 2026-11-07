@@ -41,6 +41,9 @@ public class HardwareTypeImage
             case HardwareType.Storage:
                 image = Utilities.EmbeddedResources.GetImage("hdd.png");
                 break;
+            case HardwareType.StorageSpaces:
+                image = Utilities.EmbeddedResources.GetImage("storagespaces.png");
+                break;
             case HardwareType.Motherboard:
                 image = Utilities.EmbeddedResources.GetImage("mainboard.png");
                 break;
