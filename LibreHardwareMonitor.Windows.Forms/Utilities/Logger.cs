@@ -21,11 +21,30 @@ public class Logger
 
     private DateTime _day = DateTime.MinValue;
     private string _fileName;
+    private string _logDirectory = string.Empty;
+    private string _sessionFileName;
     private string[] _identifiers;
     private ISensor[] _sensors;
     private DateTime _lastLoggedTime = DateTime.MinValue;
 
     public LoggerFileRotation FileRotationMethod = LoggerFileRotation.PerSession;
+
+    // Folder where log files are written. Empty means the application directory.
+    public string LogDirectory
+    {
+        get => _logDirectory;
+        set
+        {
+            if (_logDirectory == value)
+                return;
+
+            _logDirectory = value ?? string.Empty;
+            // Force the next Log() call to open a file in the new folder.
+            _fileName = null;
+            _sessionFileName = null;
+            _day = DateTime.MinValue;
+        }
+    }
 
     public Logger(IComputer computer)
     {
@@ -82,10 +101,27 @@ public class Logger
         }
     }
 
-    private static string GetFileName(DateTime date, uint sessionNumber = 0)
+    private string GetFileName(DateTime date, uint sessionNumber = 0)
     {
-        return AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar
-            + string.Format(FileNameFormat, date, sessionNumber == 0 ? "" : "-" + sessionNumber);
+        string directory = string.IsNullOrWhiteSpace(LogDirectory) ? AppDomain.CurrentDomain.BaseDirectory : LogDirectory;
+        return Path.Combine(directory, string.Format(FileNameFormat, date, sessionNumber == 0 ? "" : "-" + sessionNumber));
+    }
+
+    // Creates the log folder if it is missing (e.g. deleted, or a removable drive was re-attached).
+    private bool EnsureLogDirectory()
+    {
+        if (string.IsNullOrWhiteSpace(LogDirectory))
+            return true;
+
+        try
+        {
+            Directory.CreateDirectory(LogDirectory);
+            return true;
+        }
+        catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is NotSupportedException)
+        {
+            return false;
+        }
     }
 
     private bool OpenExistingLogFile()
@@ -173,11 +209,15 @@ public class Logger
         if (_lastLoggedTime + LoggingInterval - new TimeSpan(5000000) > now)
             return;
 
+        if (!EnsureLogDirectory())
+            return;
+
         switch (FileRotationMethod)
         {
             case LoggerFileRotation.PerSession:
-                // Create file if it does not exist or the logging interval has passed (+ some margin)
-                if (!File.Exists(_fileName) || now - _lastLoggedTime > (LoggingInterval + TimeSpan.FromMilliseconds(100)))
+                // One file for the whole application run; only create a new one if there is none yet
+                // (first log, folder changed) or it was deleted.
+                if (_sessionFileName == null || !File.Exists(_sessionFileName))
                 {
                     uint sessionNumber = 1;
                     do {
@@ -185,6 +225,11 @@ public class Logger
                         sessionNumber++;
                     } while (File.Exists(_fileName));
                     CreateNewLogFile();
+                    _sessionFileName = _fileName;
+                }
+                else
+                {
+                    _fileName = _sessionFileName;
                 }
                 break;
             case LoggerFileRotation.Daily:
