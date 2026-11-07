@@ -4233,6 +4233,62 @@ internal sealed class SuperIOHardware : Hardware
                 string[] fanControlNames;
                 switch (model)
                 {
+                    case Model.PROART_Z490_CREATOR_10G: // NCT6798D
+                        // Expose fan input registers with a matching PWM control (same
+                        // index — NCT6798D has 7 fan / 7 control channels). Names follow
+                        // the board manual's connector labels. Indices 4 and 5 are not
+                        // exposed: the manual lists no connector for them on this board
+                        // and they read as unpopulated.
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            if (i != 4 && i != 5)
+                                f.Add(new Fan(FanName(i), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            if (i != 4 && i != 5)
+                                c.Add(new Control(FanName(i), i));
+
+                        // Name fans as per motherboard user manual
+                        static string FanName(int index) => index switch
+                        {
+                            0 => "CHA_FAN1",
+                            1 => "CPU_FAN",
+                            2 => "CHA_FAN2",
+                            3 => "CHA_FAN3",
+                            6 => "AIO_PUMP",
+                            _ => "Fan #" + (index + 1)
+                        };
+
+                        // Voltages/temperatures: same as the generic Nuvoton "D"
+                        // mapping below (unrecognized ASUS boards fall through to it,
+                        // and LHM shows these on this board too).
+                        v.Add(new Voltage("Vcore", 0));
+                        v.Add(new Voltage("Voltage #2", 1, true));
+                        v.Add(new Voltage("AVCC", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("Voltage #5", 4, true));
+                        v.Add(new Voltage("Voltage #6", 5, true));
+                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("CPU Termination", 9));
+                        v.Add(new Voltage("Voltage #11", 10, true));
+                        v.Add(new Voltage("Voltage #12", 11, true));
+                        v.Add(new Voltage("Voltage #13", 12, true));
+                        v.Add(new Voltage("Voltage #14", 13, true));
+                        v.Add(new Voltage("Voltage #15", 14, true));
+                        // Same naming as in Asus Armory Crate
+                        t.Add(new Temperature("CPU Package", 0));
+                        // Not a CPU reading: CPUTIN (idx 1) only rose ~2 °C while the
+                        // package went +16 °C under load — a slow socket-adjacent pad or
+                        // unlabelled ambient thermistor (~47–49 °C). Named "Socket" tentatively.
+                        t.Add(new Temperature("Socket", 1));
+                        // Same as EC readings
+                        t.Add(new Temperature("Motherboard", 2));
+                        // Very close to EC CPU readings
+                        t.Add(new Temperature("CPU", 22));
+
+                        break;
+
                     case Model.P8Z77_V: // NCT6779D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
