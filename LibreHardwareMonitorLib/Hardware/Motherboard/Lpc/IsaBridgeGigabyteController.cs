@@ -24,6 +24,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     private bool? _restoreEnabled;
     private const int ControllerEnableRegister = 0x47;
     private const uint ControllerFanControlArea = 0x900;
+    private const uint ControllerFanDutyRegister = 0x0E;
 
     private IsaBridgeGigabyteController(IsaBridgeEc isaBridgeEc, MMIOMapping mmio)
     {
@@ -154,6 +155,63 @@ internal class IsaBridgeGigabyteController : IGigabyteController
             {
                 ExitMmio(_isaBridgeEc);
             }
+        }
+    }
+
+    public bool SetControl(int index, byte? value)
+    {
+        if (index is < 0 or > 2)
+            return false;
+
+        if (!Enable(true))
+            return false;
+
+        return Write((ushort)(ControllerFanControlArea + ControllerFanDutyRegister + index), value ?? 0);
+    }
+
+    public bool Read(ushort offset, byte[] buffer)
+    {
+        if (!EnterMmio(_isaBridgeEc))
+            return false;
+
+        try
+        {
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                if (!_isaBridgeEc.ReadMmio(
+                        superIoIndex: _mmio.Index,
+                        offset: offset + i,
+                        size: 1,
+                        value: out buffer[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        finally
+        {
+            ExitMmio(_isaBridgeEc);
+        }
+    }
+
+    public bool Write(ushort offset, byte value)
+    {
+        if (!EnterMmio(_isaBridgeEc))
+            return false;
+
+        try
+        {
+            return _isaBridgeEc.WriteMmio(
+                superIoIndex: _mmio.Index,
+                offset: offset,
+                size: 1,
+                value: value);
+        }
+        finally
+        {
+            ExitMmio(_isaBridgeEc);
         }
     }
 

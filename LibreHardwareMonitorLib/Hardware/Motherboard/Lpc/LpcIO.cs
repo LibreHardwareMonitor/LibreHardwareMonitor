@@ -99,6 +99,11 @@ internal class LpcIO
 
     private bool DetectWinbondFintek(LpcPort port, Motherboard motherboard)
     {
+        // A secondary ITE chip left in configuration mode on 0x4E already answers with its ID.
+        // The Winbond entry sequence would corrupt its state, so leave it to DetectIT87.
+        if (port.RegisterPort == 0x4E && port.TryReadWord(CHIP_ID_REGISTER, out ushort chipId) && chipId is >= 0x8000 and <= 0x8FFF)
+            return false;
+
         port.WinbondNuvotonFintekEnter();
 
         byte logicalDeviceNumber = 0;
@@ -636,6 +641,7 @@ internal class LpcIO
             0x8772 => Chip.IT8772E,
             0x8790 => Chip.IT8790E,
             0x8733 => Chip.IT8792E,
+            0x8883 => Chip.IT8792E, // Reported once a previous run has left it in configuration mode.
             0x8695 => Chip.IT87952E,
             _ => Chip.Unknown
         };
@@ -694,7 +700,9 @@ internal class LpcIO
                 return false;
             }
 
-            if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0)
+            // IT879x chips have no GPIO pins, so an unmapped GPIO base is valid for them (e.g. X670E AORUS MASTER).
+            bool gpioMapped = chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E);
+            if (gpioAddress != gpioVerify || (gpioMapped && (gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0)))
             {
                 _report.Append("Chip ID: 0x");
                 _report.AppendLine(chip.ToString("X"));
@@ -707,7 +715,11 @@ internal class LpcIO
                 return false;
             }
 
-            _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, gigabyteController));
+            IT5701 it5701 = MayHaveGigabyteEC(port, chip, motherboard) ? IT5701.TryCreate(gigabyteController, IsEcioAvailable(chip, motherboard)) : null;
+
+            _superIOs.Add(new IT87XX(port, chip, address, gpioAddress, version, motherboard, gigabyteController, keepGigabyteControllerEnabled: it5701 != null));
+            if (it5701 != null)
+                _superIOs.Add(it5701);
 
             return true;
         }
@@ -715,22 +727,42 @@ internal class LpcIO
         return false;
     }
 
+    // The controller only affects the 2nd ITE chip if present, and only a few
+    // models are known to use this controller.
+    // IT8795E likely to need this too, but may use different registers.
+    private static bool MayHaveGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
+    {
+        return motherboard.Manufacturer == Manufacturer.Gigabyte && port.RegisterPort == 0x4E && chip is (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E);
+    }
+
+    // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
+    private static bool IsEcioAvailable(Chip chip, Motherboard motherboard)
+    {
+        return chip == Chip.IT8792E && DetectVendor(motherboard) == Vendor.AMD;
+    }
+
+    private static Vendor DetectVendor(Motherboard motherboard)
+    {
+        string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
+        if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
+            return Vendor.Intel;
+
+        if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+            return Vendor.AMD;
+
+        return Vendor.Unknown;
+    }
+
     private IGigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
     {
-        // The controller only affects the 2nd ITE chip if present, and only a few
-        // models are known to use this controller.
-        // IT8795E likely to need this too, but may use different registers.
-        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
+        if (!MayHaveGigabyteEC(port, chip, motherboard))
             return null;
-
-        Vendor vendor = DetectVendor();
 
         IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port);
         if (gigabyteController != null)
             return gigabyteController;
 
-        // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
-        if (chip == Chip.IT8792E && vendor == Vendor.AMD)
+        if (IsEcioAvailable(chip, motherboard))
         {
             gigabyteController = EcioPortGigabyteController.TryCreate(port);
             if (gigabyteController != null)
@@ -738,18 +770,6 @@ internal class LpcIO
         }
 
         return null;
-
-        Vendor DetectVendor()
-        {
-            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
-            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
-                return Vendor.Intel;
-
-            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
-                return Vendor.AMD;
-
-            return Vendor.Unknown;
-        }
     }
 
     private static bool IsInvalidRuntimeBase(ushort address)
