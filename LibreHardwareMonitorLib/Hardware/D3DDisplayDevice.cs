@@ -139,6 +139,41 @@ internal static class D3DDisplayDevice
         return status == NTSTATUS.STATUS_SUCCESS;
     }
 
+    public static unsafe bool TryGetTemperature(string deviceIdentifier, out float temperature)
+    {
+        temperature = 0;
+        if (string.IsNullOrEmpty(deviceIdentifier))
+            return false;
+
+        OpenAdapterFromDeviceName(out NTSTATUS status, deviceIdentifier, out D3DKMT_OPENADAPTERFROMDEVICENAME adapter);
+        if (status != NTSTATUS.STATUS_SUCCESS)
+            return false;
+
+        try
+        {
+            // WDDM 2.4 reports the adapter's main temperature in tenths of a degree Celsius.
+            D3DKMT_ADAPTER_PERFDATA performanceData = default;
+            var query = new D3DKMT_QUERYADAPTERINFO
+            {
+                hAdapter = adapter.hAdapter,
+                Type = KMTQUERYADAPTERINFOTYPE.KMTQAITYPE_ADAPTERPERFDATA,
+                pPrivateDriverData = &performanceData,
+                PrivateDriverDataSize = (uint)sizeof(D3DKMT_ADAPTER_PERFDATA)
+            };
+
+            status = Windows.Wdk.PInvoke.D3DKMTQueryAdapterInfo(ref query);
+            if (status != NTSTATUS.STATUS_SUCCESS || performanceData.Temperature == 0)
+                return false;
+
+            temperature = performanceData.Temperature / 10f;
+            return true;
+        }
+        finally
+        {
+            CloseAdapter(out _, adapter);
+        }
+    }
+
     private static string GetNodeEngineTypeString(D3DKMT_NODEMETADATA nodeMetaData)
     {
         return nodeMetaData.NodeData.EngineType switch
