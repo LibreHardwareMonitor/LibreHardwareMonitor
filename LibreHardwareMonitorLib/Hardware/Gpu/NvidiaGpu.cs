@@ -18,6 +18,7 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 internal sealed class NvidiaGpu : GenericGpu
 {
     private readonly int _adapterIndex;
+    private readonly bool _isBlackwell;
     private readonly bool _busIdKnown;
     private readonly uint _busId;
     private readonly Sensor[] _clocks;
@@ -107,6 +108,8 @@ internal sealed class NvidiaGpu : GenericGpu
                settings)
     {
         _adapterIndex = adapterIndex;
+        _isBlackwell = _name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase) ||
+                       _name.IndexOf("Blackwell", StringComparison.OrdinalIgnoreCase) != -1;
         _handle = handle;
         _displayHandle = displayHandle;
 
@@ -637,8 +640,6 @@ internal sealed class NvidiaGpu : GenericGpu
             }
 
             NvApi.NvStatus status;
-            bool isBlackwell = Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase) ||
-                               Name.IndexOf("Blackwell", StringComparison.OrdinalIgnoreCase) != -1;
             float? coreTemperature = null;
 
             if (_temperatures is { Length: > 0 })
@@ -650,7 +651,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     foreach (Sensor sensor in _temperatures)
                     {
                         uint temperature = settings.Sensor[sensor.Index].CurrentTemp;
-                        if (isBlackwell && sensor.Index == 0)
+                        if (_isBlackwell && sensor.Index == 0)
                         {
                             // Select the final reading before updating Min/Max and history.
                             // The legacy thermal API can return zero on Blackwell.
@@ -672,7 +673,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 if (status == NvApi.NvStatus.OK)
                 {
                     // RTX 50xx series and RTX PRO Blackwell
-                    if (isBlackwell)
+                    if (_isBlackwell)
                     {
                         _hotSpotTemperature.Value = 0;
                         if (thermalSensors.Temperatures[1] > 0)
@@ -704,7 +705,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 _memoryJunctionTemperature.Value = null;
             }
 
-            if (isBlackwell && _temperatures is { Length: > 0 })
+            if (_isBlackwell && _temperatures is { Length: > 0 })
                 _temperatures[0].Value = coreTemperature;
 
             UpdateHotSpotTemperatures();
