@@ -44,6 +44,7 @@ public class HardwareTypeImage
             case HardwareType.Motherboard:
                 image = Utilities.EmbeddedResources.GetImage("mainboard.png");
                 break;
+            case HardwareType.PresentMon:
             case HardwareType.SuperIO:
             case HardwareType.EmbeddedController:
                 image = Utilities.EmbeddedResources.GetImage("chip.png");

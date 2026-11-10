@@ -128,3 +128,18 @@ jobs:
           name: LibreHardwareMonitorLib-nupkg
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
+
+  presentmon-regression:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # 5.2.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test optional PresentMon integration without a service
+        shell: cmd
+        run: |
+          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cl /nologo /LD /EHsc Tests\PresentMon\NativeStub.cpp /Fe:Tests\PresentMon\NativeStub.dll /Fo:Tests\PresentMon\NativeStub.obj
+          if errorlevel 1 exit /b 1
+          dotnet run --project Tests\PresentMon\PresentMonRegression.csproj -c Release -p:Platform=x64 -- Tests\PresentMon\NativeStub.dll

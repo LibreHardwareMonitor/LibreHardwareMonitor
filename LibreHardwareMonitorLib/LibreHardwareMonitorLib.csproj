@@ -96,6 +96,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\Licenses\PresentMon.txt" Link="Licenses\PresentMon.txt" Pack="true" PackagePath="licenses/" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Resources\packageicon.png" PackagePath="">
       <Pack>True</Pack>
     </None>
