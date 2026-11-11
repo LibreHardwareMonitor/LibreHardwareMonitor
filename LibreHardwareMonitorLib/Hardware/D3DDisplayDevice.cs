@@ -104,6 +104,11 @@ internal static class D3DDisplayDevice
             };
         }
 
+        // Adapter performance data (the source of the temperature shown in Windows Task Manager); optional, not every driver supports it.
+        GetAdapterPerfData(out NTSTATUS perfStatus, adapter, out D3DKMT_ADAPTER_PERFDATA perfData);
+        if (perfStatus == NTSTATUS.STATUS_SUCCESS)
+            deviceInfo.Temperature = perfData.Temperature / 10f;
+
         GetSegmentSize(out status, adapter, out D3DKMT_SEGMENTSIZEINFO segmentSizeInfo);
         if (status != NTSTATUS.STATUS_SUCCESS)
             return false;
@@ -188,6 +193,22 @@ internal static class D3DDisplayDevice
         status = Windows.Wdk.PInvoke.D3DKMTQueryAdapterInfo(ref queryAdapterInfo);
         sizeInformation = *(D3DKMT_SEGMENTSIZEINFO*)segmentSizePtr;
         Marshal.FreeHGlobal(segmentSizePtr);
+    }
+
+    private static unsafe void GetAdapterPerfData(out NTSTATUS status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, out D3DKMT_ADAPTER_PERFDATA perfDataResult)
+    {
+        D3DKMT_ADAPTER_PERFDATA perfData = new() { PhysicalAdapterIndex = 0 };
+
+        var queryAdapterInfo = new D3DKMT_QUERYADAPTERINFO
+        {
+            hAdapter = adapter.hAdapter,
+            Type = KMTQUERYADAPTERINFOTYPE.KMTQAITYPE_ADAPTERPERFDATA,
+            pPrivateDriverData = &perfData,
+            PrivateDriverDataSize = (uint)sizeof(D3DKMT_ADAPTER_PERFDATA)
+        };
+
+        status = Windows.Wdk.PInvoke.D3DKMTQueryAdapterInfo(ref queryAdapterInfo);
+        perfDataResult = perfData;
     }
 
     private static unsafe void GetNodeMetaData(out NTSTATUS status, D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, out D3DKMT_NODEMETADATA nodeMetaDataResult)
@@ -305,5 +326,8 @@ internal static class D3DDisplayDevice
 
         public D3DDeviceNodeInfo[] Nodes;
         public bool Integrated;
+
+        /// <summary>Adapter temperature in degrees Celsius as reported by WDDM, or <c>null</c> if the driver does not provide it.</summary>
+        public float? Temperature;
     }
 }
