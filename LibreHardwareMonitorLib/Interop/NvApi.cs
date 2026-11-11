@@ -36,6 +36,8 @@ internal static class NvApi
     public static NvAPI_GPU_ClientFanCoolersGetStatusDelegate NvAPI_GPU_ClientFanCoolersGetStatus { get; internal set; }
     public static NvAPI_GPU_ClientFanCoolersSetControlDelegate NvAPI_GPU_ClientFanCoolersSetControl { get; internal set; }
     public static NvAPI_GPU_ClientPowerTopologyGetStatusDelegate NvAPI_GPU_ClientPowerTopologyGetStatus { get; internal set; }
+    public static NvAPI_GPU_ClientOcInfoGetStatusDelegate NvAPI_GPU_ClientOcInfoGetStatus { get; internal set; }
+    public static NvAPI_GPU_ClientOcMeasurementGetStatusDelegate NvAPI_GPU_ClientOcMeasurementGetStatus { get; internal set; }
     public static NvAPI_GPU_GetAllClockFrequenciesDelegate NvAPI_GPU_GetAllClockFrequencies { get; internal set; }
     public static NvAPI_GPU_GetAllClocksDelegate NvAPI_GPU_GetAllClocks { get; internal set; }
     public static NvAPI_GPU_GetBusIdDelegate NvAPI_GPU_GetBusId { get; internal set; }
@@ -97,6 +99,8 @@ internal static class NvApi
             NvAPI_GPU_ClientFanCoolersGetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersGetControlDelegate>(0x814B209F);
             NvAPI_GPU_ClientFanCoolersSetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersSetControlDelegate>(0xA58971A5);
             NvAPI_GPU_ClientPowerTopologyGetStatus = GetDelegate<NvAPI_GPU_ClientPowerTopologyGetStatusDelegate>(0x0EDCF624E);
+            NvAPI_GPU_ClientOcInfoGetStatus = GetDelegate<NvAPI_GPU_ClientOcInfoGetStatusDelegate>(0x67F31384);
+            NvAPI_GPU_ClientOcMeasurementGetStatus = GetDelegate<NvAPI_GPU_ClientOcMeasurementGetStatusDelegate>(0x31B7A4CD);
             NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
             NvAPI_I2CReadEx = GetDelegate<NvAPI_I2CReadExDelegate>(0x4D7B0709);
             NvAPI_GPU_ClientVoltRailsGetStatus = GetDelegate<NvAPI_GPU_ClientVoltRailsGetStatusDelegate>(0x465F9BCF);
@@ -131,6 +135,12 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_ClientPowerTopologyGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref NvPowerTopology powerTopology);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_ClientOcInfoGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, [In, Out] byte[] ocInfo);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_ClientOcMeasurementGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, [In, Out] byte[] status);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_GetAllClockFrequenciesDelegate(NvPhysicalGpuHandle gpuHandle, ref NvGpuClockFrequencies clockFrequencies);
@@ -321,6 +331,82 @@ internal static class NvApi
         private readonly uint _reserved;
         public uint PowerUsage;
         private readonly uint _reserved1;
+    }
+
+    internal static class NvOcpPolicyLayout
+    {
+        public const int INFO_RECORD_STRIDE = 10604;
+        public const int MEAS_RECORD_STRIDE = 14184;
+        public const int MASK_OFFSET = 4;
+        public const int MASK_LENGTH = 32;
+        public const int DOMAIN_COUNT = 256;
+
+        public const int INFO_FIELD_TYPE = 0;
+        public const int INFO_FIELD_UNIT = 8;
+        public const int INFO_FIELD_MAX = 20;
+
+        public const int MEAS_FIELD_TYPE = 0;
+        public const int MEAS_FIELD_MEASUREMENT = 8;
+
+        public const uint UNCAPPED_LIMIT = 1001000;
+        public const int MILLI_SCALE = 1000;
+
+        public static readonly (uint InfoVersion, int InfoSize, int InfoBase, uint MeasVersion, int MeasSize, int MeasBase)[] Modes =
+        [
+            (0x000F4BF4, 0x00054BF4, 1088, 0x000B00B8, 0x000B00B8, 4536),
+            (0x002BA030, 0x002BA030, 1200, 0x004B3850, 0x00493850, 4664),
+        ];
+
+        private static readonly byte[] _allDomainsMask = CreateAllDomainsMask();
+
+        public static int GetInfoBufferSize(int mode) =>
+            Math.Max(Modes[mode].InfoSize, Modes[mode].InfoBase + (INFO_RECORD_STRIDE * DOMAIN_COUNT));
+
+        public static int GetMeasurementBufferSize(int mode, int maxDomain) =>
+            Math.Max(Modes[mode].MeasSize, Modes[mode].MeasBase + (MEAS_RECORD_STRIDE * (maxDomain + 1)) + 16);
+
+        public static byte[] CreateInfoRequest(int mode)
+        {
+            byte[] buffer = new byte[GetInfoBufferSize(mode)];
+            WriteHeader(buffer, Modes[mode].InfoVersion, _allDomainsMask);
+            return buffer;
+        }
+
+        public static void WriteMeasurementRequest(byte[] buffer, int mode, byte[] mask, int maxDomain)
+        {
+            Array.Clear(buffer, 0, Modes[mode].MeasBase + (MEAS_RECORD_STRIDE * (maxDomain + 1)));
+            WriteHeader(buffer, Modes[mode].MeasVersion, mask);
+        }
+
+        public static bool IsDomainSupported(byte[] info, int domain) =>
+            (info[MASK_OFFSET + (domain >> 3)] & (1 << (domain & 7))) != 0;
+
+        public static bool IsSupportedLimit(uint max) => max > 0 && max < UNCAPPED_LIMIT;
+
+        public static int GetInfoField(byte[] info, int mode, int domain, int field)
+        {
+            int offset = Modes[mode].InfoBase + (INFO_RECORD_STRIDE * domain) + field;
+            return offset + sizeof(int) <= info.Length ? BitConverter.ToInt32(info, offset) : 0;
+        }
+
+        public static int GetMeasurementField(byte[] buffer, int mode, int domain, int field)
+        {
+            int offset = Modes[mode].MeasBase + (MEAS_RECORD_STRIDE * domain) + field;
+            return offset + sizeof(int) <= buffer.Length ? BitConverter.ToInt32(buffer, offset) : 0;
+        }
+
+        private static void WriteHeader(byte[] buffer, uint version, byte[] mask)
+        {
+            BitConverter.GetBytes(version).CopyTo(buffer, 0);
+            Buffer.BlockCopy(mask, 0, buffer, MASK_OFFSET, MASK_LENGTH);
+        }
+
+        private static byte[] CreateAllDomainsMask()
+        {
+            byte[] mask = new byte[MASK_LENGTH];
+            mask.AsSpan().Fill(0xFF);
+            return mask;
+        }
     }
 
     internal enum NvStatus
