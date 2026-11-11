@@ -39,6 +39,7 @@ public sealed partial class MainForm : Form
     private readonly UserOption _minimizeToTray;
     private readonly PlotPanel _plotPanel;
     private readonly UserOption _readBatterySensors;
+    private readonly UserOption _readPresentMonSensors;
     private readonly UserOption _readCpuSensors;
     private readonly UserOption _readFanControllersSensors;
     private readonly UserOption _readGpuSensors;
@@ -285,6 +286,11 @@ public sealed partial class MainForm : Form
 
         _readPsuSensors = new UserOption("psuMenuItem", true, psuMenuItem, _settings);
         _readPsuSensors.Changed += delegate { _computer.IsPsuEnabled = _readPsuSensors.Value; };
+
+        ToolStripMenuItem presentMonMenuItem = new("PresentMon FPS (foreground application)");
+        menuItemFileHardware.DropDownItems.Add(presentMonMenuItem);
+        _readPresentMonSensors = new UserOption("presentMonMenuItem", false, presentMonMenuItem, _settings);
+        _readPresentMonSensors.Changed += delegate { _computer.IsPresentMonEnabled = _readPresentMonSensors.Value; };
 
         _readBatterySensors = new UserOption("batteryMenuItem", true, batteryMenuItem, _settings);
         _readBatterySensors.Changed += delegate { _computer.IsBatteryEnabled = _readBatterySensors.Value; };

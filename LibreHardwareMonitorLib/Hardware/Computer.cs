@@ -24,6 +24,7 @@ using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.PowerMonitor;
+using LibreHardwareMonitor.Hardware.PresentMon;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
 using LibreHardwareMonitor.Hardware.Storage;
@@ -40,6 +41,8 @@ public class Computer : IComputer
     private readonly ISettings _settings;
 
     private bool _batteryEnabled;
+    private bool _presentMonEnabled;
+    private uint _presentMonProcessId;
     private bool _controllerEnabled;
     private bool _cpuEnabled;
     private bool _gpuEnabled;
@@ -89,6 +92,34 @@ public class Computer : IComputer
 
                 return list;
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the process to monitor with PresentMon. Zero follows the foreground window.
+    /// PresentMon monitoring must be enabled separately through <see cref="IsPresentMonEnabled"/>.
+    /// </summary>
+    public uint PresentMonProcessId
+    {
+        get => _presentMonProcessId;
+        set => _presentMonProcessId = value;
+    }
+
+    /// <inheritdoc />
+    public bool IsPresentMonEnabled
+    {
+        get => _presentMonEnabled;
+        set
+        {
+            if (_open && value != _presentMonEnabled)
+            {
+                if (value)
+                    Add(new PresentMonGroup(_settings, () => PresentMonProcessId));
+                else
+                    RemoveType<PresentMonGroup>();
+            }
+
+            _presentMonEnabled = value;
         }
     }
 
@@ -524,6 +555,9 @@ public class Computer : IComputer
 
     private void AddGroups()
     {
+        if (_presentMonEnabled)
+            Add(new PresentMonGroup(_settings, () => PresentMonProcessId));
+
         if (_motherboardEnabled)
             Add(new MotherboardGroup(_smbios, _settings));
 

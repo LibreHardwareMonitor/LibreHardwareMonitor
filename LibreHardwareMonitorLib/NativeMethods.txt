@@ -45,6 +45,9 @@ VirtualAlloc
 DeviceIoControl
 IOCTL_*
 LoadLibrary
+LoadLibraryEx
+GetForegroundWindow
+GetWindowThreadProcessId
 FreeLibrary
 GetProcAddress
 BATTERY_UNKNOWN_*

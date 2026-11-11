@@ -22,6 +22,12 @@ You can read information from devices such as:
 - HDD, SSD and NVMe hard drives
 - Network cards
 
+### Optional FPS monitoring
+
+The Windows Forms application and library can optionally read FPS through the
+official PresentMon SDK. This is disabled by default and requires a separately
+installed compatible PresentMon service. See [setup and limitations](docs/PresentMon.md).
+
 ## Where can I download it?
 You can download the latest release [here](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases).
 

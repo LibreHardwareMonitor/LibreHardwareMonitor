@@ -43,6 +43,12 @@ public interface IComputer : IElement
     bool IsBatteryEnabled { get; }
 
     /// <summary>
+    /// Gets whether optional PresentMon FPS monitoring is enabled. Disabled by default.
+    /// Requires Windows and a separately installed compatible PresentMon service.
+    /// </summary>
+    bool IsPresentMonEnabled { get; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether collecting information about:
     /// <list>
     ///     <item>
