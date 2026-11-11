@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # 5.2.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - uses: nuget/setup-nuget@fd55a6f3b34392fa83fde1454582407d8c714123 # 4.0.0
       - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # 3.0.0
         with:

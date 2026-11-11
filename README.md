@@ -43,9 +43,8 @@ You can check if it works properly on your motherboard. For many manufacturers, 
 | .NET Framework 4.7.2 | ✅ | ✅ | ❌ |
 | .NET Framework 4.8.1 | ✅ | ✅ | ❌ |
 | .NET Standard 2.0 | ✅ | ✅ | ❌ |
-| .NET 8 | ✅ | ✅ | ❌ |
-| .NET 9 | ✅ | ✅ | ❌ |
 | .NET 10 | ✅ | ✅ | ✅ |
+| .NET 11 | ✅ | ❌ | ❌ |
 
 ## Developer information
 **Integrate the library in own application**
