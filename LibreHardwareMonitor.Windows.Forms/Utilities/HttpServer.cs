@@ -125,7 +125,8 @@ public class HttpServer
             _listener.Start();
 
             _cts = new CancellationTokenSource();
-            _listenerTask = Task.Run(() => ProcessRequestsAsync(_cts.Token));
+            CancellationToken token = _cts.Token;
+            _listenerTask = Task.Run(() => ProcessRequestsAsync(token));
         }
         catch (Exception)
         {
@@ -143,9 +144,8 @@ public class HttpServer
         try
         {
             _cts?.Cancel();
-            _listenerTask?.Wait(TimeSpan.FromSeconds(5)); // Graceful wait
             _listener?.Stop();
-            _cts?.Dispose();
+            _listenerTask?.Wait(TimeSpan.FromSeconds(5));
         }
         catch (HttpListenerException)
         { }
@@ -155,6 +155,12 @@ public class HttpServer
         { }
         catch (Exception)
         { }
+        finally
+        {
+            _cts?.Dispose();
+            _cts = null;
+            _listenerTask = null;
+        }
 
         return true;
     }
@@ -166,7 +172,12 @@ public class HttpServer
             try
             {
                 var context = await _listener.GetContextAsync();
-                _ = Task.Run(() => HandleContextAsync(context), cancellationToken);
+                // Every accepted request must be handled/closed, even during shutdown.
+                _ = HandleContextAsync(context);
+            }
+            catch (HttpListenerException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
             }
             catch (HttpListenerException ex) when (ex.ErrorCode == 50)
             {
@@ -194,7 +205,8 @@ public class HttpServer
         IDictionary<string, string> dict = new Dictionary<string, string>();
         foreach (string k in col.AllKeys)
         {
-            dict.Add(k, col[k]);
+            if (k != null)
+                dict.Add(k, col[k]);
         }
 
         return dict;
@@ -386,6 +398,36 @@ public class HttpServer
 
     private async Task HandleContextAsync(HttpListenerContext context)
     {
+        try
+        {
+            await HandleRequestAsync(context);
+        }
+        catch (Exception exception)
+        {
+            System.Diagnostics.Debug.WriteLine(exception);
+            try
+            {
+                context.Response.StatusCode = exception is ArgumentException ? 400 : 500;
+                await SendResponseAsync(context.Response, System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    result = "fail",
+                    message = exception is ArgumentException ? exception.Message : "Internal server error"
+                }), "application/json");
+            }
+            catch (Exception)
+            {
+                // The client may have disconnected, or shutdown closed the response.
+            }
+        }
+        finally
+        {
+            try { context.Response.Close(); }
+            catch (Exception) { }
+        }
+    }
+
+    private async Task HandleRequestAsync(HttpListenerContext context)
+    {
         HttpListenerRequest request = context.Request;
         bool authenticated = true;
 
@@ -423,7 +465,7 @@ public class HttpServer
                     }
                 case "GET":
                     {
-                        string requestedFile = request.RawUrl.Substring(1);
+                        string requestedFile = request.Url.AbsolutePath.Substring(1);
 
                         if (requestedFile == "data.json")
                         {
@@ -431,19 +473,19 @@ public class HttpServer
                             return;
                         }
 
-                        if (requestedFile.Contains("images_icon"))
+                        if (requestedFile.StartsWith("images_icon/", StringComparison.Ordinal))
                         {
-                            await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
+                            await ServeResourceImageAsync(context.Response, requestedFile.Substring("images_icon/".Length));
                             return;
                         }
 
-                        if (requestedFile.StartsWith("metrics?") || requestedFile == "metrics")
+                        if (requestedFile == "metrics")
                         {
                             await SendPrometheusAsync(context.Response, request);
                             return;
                         }
 
-                        if (requestedFile.Contains("Sensor"))
+                        if (requestedFile == "Sensor")
                         {
                             var sensorResult = new Dictionary<string, object>();
                             HandleSensorRequest(request, sensorResult);
@@ -451,7 +493,7 @@ public class HttpServer
                             return;
                         }
 
-                        if (requestedFile.Contains("ResetAllMinMax"))
+                        if (requestedFile == "ResetAllMinMax")
                         {
                             _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
                             {
@@ -473,7 +515,8 @@ public class HttpServer
                     }
                 default:
                     {
-                        context.Response.StatusCode = 404;
+                        context.Response.StatusCode = 405;
+                        context.Response.AddHeader("Allow", "GET, POST");
                         break;
                     }
             }
@@ -601,17 +644,10 @@ public class HttpServer
             }
         ));
 
-        bool acceptGzip;
-        try
-        {
-            acceptGzip = (request != null) && (request.Headers["Accept-Encoding"].IndexOf("gzip", StringComparison.OrdinalIgnoreCase) >= 0);
-        }
-        catch
-        {
-            acceptGzip = false;
-        }
+        bool acceptGzip = AcceptsGzip(request?.Headers["Accept-Encoding"]);
 
         response.AddHeader("Cache-Control", "no-cache");
+        response.AddHeader("Vary", "Accept-Encoding");
         response.AddHeader("Access-Control-Allow-Origin", "*");
         response.ContentType = "application/json";
 
@@ -635,6 +671,38 @@ public class HttpServer
         { }
 
         response.Close();
+    }
+
+    private static bool AcceptsGzip(string header)
+    {
+        double wildcardQuality = 0;
+        double? gzipQuality = null;
+        foreach (string entry in (header ?? string.Empty).Split(','))
+        {
+            string[] parts = entry.Split(';');
+            string coding = parts[0].Trim();
+            if (!coding.Equals("gzip", StringComparison.OrdinalIgnoreCase) && coding != "*")
+                continue;
+
+            double quality = 1;
+            foreach (string parameter in parts.Skip(1))
+            {
+                string[] pair = parameter.Split('=');
+                if (pair[0].Trim().Equals("q", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (pair.Length != 2 || !double.TryParse(pair[1].Trim(), NumberStyles.AllowDecimalPoint,
+                            CultureInfo.InvariantCulture, out quality) || quality < 0 || quality > 1)
+                        quality = 0;
+                }
+            }
+
+            if (coding == "*")
+                wildcardQuality = quality;
+            else
+                gzipQuality = quality;
+        }
+
+        return (gzipQuality ?? wildcardQuality) > 0;
     }
 
     private string GeneratePrometheusResponse(Node node, Dictionary<string, int> prometheusSettings)
