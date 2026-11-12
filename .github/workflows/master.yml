@@ -1,4 +1,4 @@
-name: master
+﻿name: master
 
 on:
   push:
@@ -7,12 +7,15 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # 5.2.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - uses: nuget/setup-nuget@fd55a6f3b34392fa83fde1454582407d8c714123 # 4.0.0
       - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # 3.0.0
         with:
@@ -53,6 +56,36 @@ jobs:
           name: LibreHardwareMonitor.Windows.Forms (.NET 10)
           path: |
             bin/Release/net10.0-windows
+
+      - name: Build and package Avalonia application (win-x64)
+        run: dotnet publish LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-x64
+
+      - name: Publish Avalonia application (win-x64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
+        with:
+          name: LibreHardwareMonitor.Avalonia (win-x64)
+          path: bin/Release/Avalonia/win-x64
+          if-no-files-found: error
+
+      - name: Build and package Avalonia application (win-x86)
+        run: dotnet publish LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=x86 -r win-x86 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-x86
+
+      - name: Publish Avalonia application (win-x86)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
+        with:
+          name: LibreHardwareMonitor.Avalonia (win-x86)
+          path: bin/Release/Avalonia/win-x86
+          if-no-files-found: error
+
+      - name: Build and package Avalonia application (win-arm64)
+        run: dotnet publish LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.csproj -c Release -p:Platform=ARM64 -r win-arm64 --self-contained false '-p:UsedAvaloniaProducts=' -o bin\Release\Avalonia\win-arm64
+
+      - name: Publish Avalonia application (win-arm64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
+        with:
+          name: LibreHardwareMonitor.Avalonia (win-arm64)
+          path: bin/Release/Avalonia/win-arm64
+          if-no-files-found: error
 
       - name: Restore library packages
         run: dotnet restore LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj 
@@ -100,6 +133,13 @@ jobs:
           path: |
             bin/Release/LibreHardwareMonitorLib.*.nupkg
 
+      - name: NuGet login (OIDC → temporary API key)
+        if: github.repository == 'LibreHardwareMonitor/LibreHardwareMonitor'
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # 1.2.0
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Publish to NuGet
         if: github.repository == 'LibreHardwareMonitor/LibreHardwareMonitor'
-        run: nuget push bin\Release\LibreHardwareMonitorLib.*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
+        run: nuget push bin\Release\LibreHardwareMonitorLib.*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey "${{ steps.login.outputs.NUGET_API_KEY }}"

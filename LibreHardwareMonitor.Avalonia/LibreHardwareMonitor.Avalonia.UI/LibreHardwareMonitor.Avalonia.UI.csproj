@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="BlackSharp.Core" Version="1.2.6" />
+    <PackageReference Include="BlackSharp.UI.Avalonia" Version="1.2.6" />
+    <PackageReference Include="BlackSharp.UI.Avalonia.TreeDataGrid" Version="1.2.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Localization\LibreHardwareMonitor.Avalonia.Localization.csproj" />
+    <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Monitoring\LibreHardwareMonitor.Avalonia.Monitoring.csproj" />
+    <ProjectReference Include="..\LibreHardwareMonitor.Avalonia.Mvvm\LibreHardwareMonitor.Avalonia.Mvvm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\*.png" />
+    <AvaloniaResource Include="Assets\Brand\*.png" />
+    <AvaloniaResource Include="Assets\Brand\*.ico" />
+  </ItemGroup>
+</Project>

@@ -1078,6 +1078,7 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.EX58_UD5: // IT8720F
                     case Model.EX58_EXTREME: // IT8720F
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("DIMM", 1));
@@ -1090,6 +1091,12 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("System Fan #2", 1));
                         f.Add(new Fan("Power Fan", 2));
                         f.Add(new Fan("System Fan #1", 3));
+
+                        // usually CPU_FAN and SYS_FAN2 can be controlled
+                        // on some mainboards PWR_FAN (2) controlls CPU_FAN (0)
+                        // default detection to assign available controls manually
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
 
                         break;
 
@@ -4581,6 +4588,7 @@ internal sealed class SuperIOHardware : Hardware
                         break;
 
                     case Model.ROG_MAXIMUS_XI_FORMULA: //NC6798D
+                    case Model.ROG_MAXIMUS_XI_HERO: //NCT6798D, same fan header layout as the XI Formula
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVSB", 2, 34, 34));
@@ -5397,21 +5405,22 @@ internal sealed class SuperIOHardware : Hardware
                             v.Add(new Voltage("1.8V PLL", 14, 17, 36));
 
                             // The following mappings only apply when FanXpert is off in Armoury Crate.
-                            t.Add(new Temperature("CPU Package", 0));
-                            t.Add(new Temperature("VRM", 1));
-                            t.Add(new Temperature("Motherboard", 2));
+                            t.Add(new Temperature("CPU Package", 26)); // CPU PACKAGE
+                            t.Add(new Temperature("CPU Socket", 1)); // CPUTIN
+                            t.Add(new Temperature("Motherboard", 2)); // SYSTIN
+                            t.Add(new Temperature("DIMM Thermistor", 28));
 
                             // BIOS 1804 or above moved CPU Temp Sensor to 21
-                            t.Add(new Temperature("CPU", 21));
+                            t.Add(new Temperature("CPU", 21)); // PECI_0_CAL
 
                             // For BIOS 1803 or older
-                            t.Add(new Temperature("CPU", 22));
+                            t.Add(new Temperature("CPU", 22)); // PECI_1_CAL
 
                             // Add all unmapped temperature sensors
-                            for (int i = 3; i < superIO.Temperatures.Length; i++)
+                            for (int i = 0; i < superIO.Temperatures.Length; i++)
                             {
                                 // 21 and 22 are not used at the same time
-                                if (i != 21 && i != 22)
+                                if (i is not (1 or 2 or 21 or 22 or 26 or 28))
                                 {
                                     t.Add(new Temperature($"Temperature #{i}", i));
                                 }

@@ -1,0 +1,27 @@
+﻿<!-- SPDX-License-Identifier: MPL-2.0 -->
+
+<Application x:Class="LibreHardwareMonitor.Avalonia.UI.Application.App"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Avalonia.Controls"
+             xmlns:imaging="clr-namespace:Avalonia.Media.Imaging;assembly=Avalonia.Base"
+             RequestedThemeVariant="Default">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <controls:WindowIcon x:Key="LibreHardwareMonitorWindowIcon">avares://LibreHardwareMonitor.Avalonia.UI/Assets/Brand/icon.ico</controls:WindowIcon>
+            <imaging:Bitmap x:Key="LibreHardwareMonitorTitleBarIcon">avares://LibreHardwareMonitor.Avalonia.UI/Assets/Brand/packageicon.png</imaging:Bitmap>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://BlackSharp.UI.Avalonia/Themes/Themes.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme/>
+        <StyleInclude Source="avares://BlackSharp.UI.Avalonia.TreeDataGrid/Themes/Fluent.axaml"/>
+        <StyleInclude Source="avares://BlackSharp.UI.Avalonia/Styles/Styles.axaml"/>
+    </Application.Styles>
+
+</Application>

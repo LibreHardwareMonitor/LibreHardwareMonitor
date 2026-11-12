@@ -244,6 +244,8 @@ internal class Identification
                 return Model.EP45_DS3R;
             case var _ when name.Equals("EP45-UD3R", StringComparison.OrdinalIgnoreCase):
                 return Model.EP45_UD3R;
+            case var _ when name.Equals("EX58-UD5", StringComparison.OrdinalIgnoreCase):
+                return Model.EX58_UD5;
             case var _ when name.Equals("EX58-EXTREME", StringComparison.OrdinalIgnoreCase):
                 return Model.EX58_EXTREME;
             case var _ when name.Equals("EX58-UD3R", StringComparison.OrdinalIgnoreCase):
@@ -586,6 +588,9 @@ internal class Identification
                 return Model.ROG_STRIX_Z690_G_GAMING_WIFI;
             case var _ when name.Equals("ROG MAXIMUS XI FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XI_FORMULA;
+            case var _ when name.Equals("ROG MAXIMUS XI HERO", StringComparison.OrdinalIgnoreCase):
+            case var _ when name.Equals("ROG MAXIMUS XI HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_MAXIMUS_XI_HERO;
             case var _ when name.Equals("ROG MAXIMUS XII FORMULA", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_MAXIMUS_XII_Z490_FORMULA;
             case var _ when name.Equals("ROG MAXIMUS X HERO (WI-FI AC)", StringComparison.OrdinalIgnoreCase):
@@ -610,6 +615,12 @@ internal class Identification
                 return Model.ROG_STRIX_B850_I_GAMING_WIFI;
             case var _ when name.Equals("ROG STRIX X870E-E GAMING WIFI", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_STRIX_X870E_E_GAMING_WIFI;
+            case var _ when name.Equals("ROG STRIX X870E-E GAMING WIFI7 R2", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X870E_E_GAMING_WIFI;
+            case var _ when name.Equals("ROG STRIX X870E-H GAMING WIFI7", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X870E_H_GAMING_WIFI7;
+            case var _ when name.Equals("ROG STRIX X870-F GAMING WIFI", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_STRIX_X870_F_GAMING_WIFI;
             case var _ when name.Equals("B660GTN", StringComparison.OrdinalIgnoreCase):
                 return Model.B660GTN;
             case var _ when name.Equals("X670E VALKYRIE", StringComparison.OrdinalIgnoreCase):

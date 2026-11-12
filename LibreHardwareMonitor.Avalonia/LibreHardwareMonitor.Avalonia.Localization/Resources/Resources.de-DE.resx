@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApplicationTitle" xml:space="preserve">
+    <value>LibreHardwareMonitor</value>
+  </data>
+  <data name="ColumnSensor" xml:space="preserve">
+    <value>Sensor</value>
+  </data>
+  <data name="ColumnValue" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ColumnMinimum" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="ColumnMaximum" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="StatusSearching" xml:space="preserve">
+    <value>Sensoren werden gesucht...</value>
+  </data>
+  <data name="StatusUpdatedFormat" xml:space="preserve">
+    <value>Aktualisiert {0}</value>
+  </data>
+  <data name="StatusUpdatedNoHardwareFormat" xml:space="preserve">
+    <value>Aktualisiert {0} · Keine Hardware erkannt</value>
+  </data>
+  <data name="StatusMonitoringUnavailableFormat" xml:space="preserve">
+    <value>Sensorüberwachung nicht verfügbar: {0}</value>
+  </data>
+  <data name="GroupVoltages" xml:space="preserve">
+    <value>Spannungen</value>
+  </data>
+  <data name="GroupCurrents" xml:space="preserve">
+    <value>Ströme</value>
+  </data>
+  <data name="GroupCapacities" xml:space="preserve">
+    <value>Kapazitäten</value>
+  </data>
+  <data name="GroupClocks" xml:space="preserve">
+    <value>Taktraten</value>
+  </data>
+  <data name="GroupLoad" xml:space="preserve">
+    <value>Auslastung</value>
+  </data>
+  <data name="GroupTemperatures" xml:space="preserve">
+    <value>Temperaturen</value>
+  </data>
+  <data name="GroupFans" xml:space="preserve">
+    <value>Lüfter</value>
+  </data>
+  <data name="GroupFlows" xml:space="preserve">
+    <value>Durchflüsse</value>
+  </data>
+  <data name="GroupControls" xml:space="preserve">
+    <value>Steuerungen</value>
+  </data>
+  <data name="GroupLevels" xml:space="preserve">
+    <value>Füllstände</value>
+  </data>
+  <data name="GroupPowers" xml:space="preserve">
+    <value>Leistungen</value>
+  </data>
+  <data name="GroupData" xml:space="preserve">
+    <value>Daten</value>
+  </data>
+  <data name="GroupFactors" xml:space="preserve">
+    <value>Faktoren</value>
+  </data>
+  <data name="GroupFrequencies" xml:space="preserve">
+    <value>Frequenzen</value>
+  </data>
+  <data name="GroupThroughput" xml:space="preserve">
+    <value>Datendurchsatz</value>
+  </data>
+  <data name="GroupTimes" xml:space="preserve">
+    <value>Zeiten</value>
+  </data>
+  <data name="GroupTimings" xml:space="preserve">
+    <value>Timings</value>
+  </data>
+  <data name="GroupNoise" xml:space="preserve">
+    <value>Geräuschpegel</value>
+  </data>
+  <data name="GroupConductivities" xml:space="preserve">
+    <value>Leitfähigkeiten</value>
+  </data>
+  <data name="GroupHumidity" xml:space="preserve">
+    <value>Luftfeuchtigkeit</value>
+  </data>
+  <data name="GroupOther" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="ValueUnavailable" xml:space="preserve">
+    <value>–</value>
+  </data>
+  <data name="ValueVoltageFormat" xml:space="preserve">
+    <value>{0:F3} V</value>
+  </data>
+  <data name="ValueCurrentFormat" xml:space="preserve">
+    <value>{0:F3} A</value>
+  </data>
+  <data name="ValuePowerFormat" xml:space="preserve">
+    <value>{0:F1} W</value>
+  </data>
+  <data name="ValueClockFormat" xml:space="preserve">
+    <value>{0:F1} MHz</value>
+  </data>
+  <data name="ValueTemperatureFormat" xml:space="preserve">
+    <value>{0:F1} °C</value>
+  </data>
+  <data name="ValuePercentFormat" xml:space="preserve">
+    <value>{0:F1} %</value>
+  </data>
+  <data name="ValueFanFormat" xml:space="preserve">
+    <value>{0:F0} U/min</value>
+  </data>
+  <data name="ValueFlowFormat" xml:space="preserve">
+    <value>{0:F1} l/h</value>
+  </data>
+  <data name="ValueFactorFormat" xml:space="preserve">
+    <value>{0:F3}</value>
+  </data>
+  <data name="ValueFrequencyFormat" xml:space="preserve">
+    <value>{0:F1} Hz</value>
+  </data>
+  <data name="ValueTimingFormat" xml:space="preserve">
+    <value>{0:F3} ns</value>
+  </data>
+  <data name="ValueEnergyFormat" xml:space="preserve">
+    <value>{0:F0} mWh</value>
+  </data>
+  <data name="ValueNoiseFormat" xml:space="preserve">
+    <value>{0:F0} dBA</value>
+  </data>
+  <data name="ValueConductivityFormat" xml:space="preserve">
+    <value>{0:F1} µS/cm</value>
+  </data>
+  <data name="ValueHumidityFormat" xml:space="preserve">
+    <value>{0:F0} %</value>
+  </data>
+  <data name="ValueNumberFormat" xml:space="preserve">
+    <value>{0:F1}</value>
+  </data>
+  <data name="ValueDataFormat" xml:space="preserve">
+    <value>{0:F1} {1}</value>
+  </data>
+  <data name="ValueThroughputFormat" xml:space="preserve">
+    <value>{0:F1} {1}/s</value>
+  </data>
+  <data name="UnitBytes" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="UnitKilobytes" xml:space="preserve">
+    <value>KB</value>
+  </data>
+  <data name="UnitMegabytes" xml:space="preserve">
+    <value>MB</value>
+  </data>
+  <data name="UnitGigabytes" xml:space="preserve">
+    <value>GB</value>
+  </data>
+  <data name="UnitTerabytes" xml:space="preserve">
+    <value>TB</value>
+  </data>
+  <data name="UnitPetabytes" xml:space="preserve">
+    <value>PB</value>
+  </data>
+  <data name="MockComputer" xml:space="preserve">
+    <value>DESIGN-PC</value>
+  </data>
+  <data name="MockCpu" xml:space="preserve">
+    <value>Beispiel-CPU</value>
+  </data>
+  <data name="MockGpu" xml:space="preserve">
+    <value>Beispiel-GPU</value>
+  </data>
+  <data name="MockMemoryHardware" xml:space="preserve">
+    <value>Beispiel-Arbeitsspeicher</value>
+  </data>
+  <data name="MockStorage" xml:space="preserve">
+    <value>Beispiel-SSD</value>
+  </data>
+  <data name="MockMotherboard" xml:space="preserve">
+    <value>Beispiel-Mainboard</value>
+  </data>
+  <data name="MockCpuPackage" xml:space="preserve">
+    <value>CPU-Paket</value>
+  </data>
+  <data name="MockCpuCore" xml:space="preserve">
+    <value>CPU-Kern Nr. 1</value>
+  </data>
+  <data name="MockCpuTotal" xml:space="preserve">
+    <value>CPU gesamt</value>
+  </data>
+  <data name="MockGpuCore" xml:space="preserve">
+    <value>GPU-Kern</value>
+  </data>
+  <data name="MockGpuFan" xml:space="preserve">
+    <value>GPU-Lüfter</value>
+  </data>
+  <data name="MockMemoryLoad" xml:space="preserve">
+    <value>Arbeitsspeicher</value>
+  </data>
+  <data name="MockMemoryUsed" xml:space="preserve">
+    <value>Belegter Arbeitsspeicher</value>
+  </data>
+  <data name="MockDriveTemperature" xml:space="preserve">
+    <value>Laufwerkstemperatur</value>
+  </data>
+  <data name="MockDriveActivity" xml:space="preserve">
+    <value>Laufwerksaktivität</value>
+  </data>
+  <data name="MockCpuVcore" xml:space="preserve">
+    <value>CPU-Kernspannung</value>
+  </data>
+  <data name="MockCpuFan" xml:space="preserve">
+    <value>CPU-Lüfter</value>
+  </data>
+</root>

@@ -24,6 +24,16 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempCPUPackage,
             ECSensor.TempVrm,
             ECSensor.TempTSensorAlt),
+        new (Model.ROG_CROSSHAIR_X870E_APEX,
+            BoardFamily.Amd800,
+            ECSensor.TempVrm,
+            ECSensor.TempVrmSoc,
+            ECSensor.TempDimm,
+            ECSensor.VoltageVrmCore,
+            ECSensor.VoltageVrmSoc,
+            ECSensor.PowerVrmCore,
+            ECSensor.PowerVrmSoc,
+            ECSensor.FanCPUOpt),
         new (Model.ROG_CROSSHAIR_X870E_DARK_HERO,
             BoardFamily.Amd800,
             ECSensor.TempTSensor),
@@ -53,7 +63,23 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempCPUPackage,
             ECSensor.TempMB,
             ECSensor.TempVrm,
+            ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new (Model.ROG_STRIX_X870E_H_GAMING_WIFI7,
+            BoardFamily.Amd800,
+            ECSensor.TempCPU,
+            ECSensor.TempCPUPackage,
+            ECSensor.TempMB,
+            ECSensor.TempVrm,
+            ECSensor.TempTSensor,
+            ECSensor.FanCPUOpt),
+        new (Model.ROG_STRIX_X870_F_GAMING_WIFI,
+            BoardFamily.Amd800,
+            ECSensor.TempCPU,
+            ECSensor.TempCPUPackage,
+            ECSensor.TempMB,
+            ECSensor.TempVrm,
+            ECSensor.TempTSensor),
         new(Model.PRIME_X470_PRO,
             BoardFamily.Amd400,
             ECSensor.TempChipset,
@@ -235,6 +261,15 @@ public abstract class EmbeddedController : Hardware
             ECSensor.TempWaterOut,
             ECSensor.TempTSensor,
             ECSensor.FanCPUOpt),
+        new(Model.ROG_MAXIMUS_XI_HERO,
+            BoardFamily.Intel300,
+            ECSensor.TempVrm,
+            ECSensor.TempChipset,
+            ECSensor.TempWaterIn,
+            ECSensor.TempWaterOut,
+            ECSensor.TempTSensor,
+            ECSensor.FanCPUOpt,
+            ECSensor.FanWaterFlow),
         new(Model.ROG_MAXIMUS_XII_Z490_FORMULA,
             BoardFamily.Intel400,
             ECSensor.TempTSensor,
@@ -469,6 +504,12 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempCPUPackage, new EmbeddedControllerSource("CPU Package", SensorType.Temperature, 0x0031) },
                 { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x0032) },
                 { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
+                { ECSensor.TempDimm, new EmbeddedControllerSource("DIMM Thermistor", SensorType.Temperature, 0x0055) },
+                { ECSensor.TempVrmSoc, new EmbeddedControllerSource("VRM SOC", SensorType.Temperature, 0x0418) },
+                { ECSensor.VoltageVrmCore, new EmbeddedControllerSource("VRM Vcore (Voltage Out)", SensorType.Voltage, 0x015A, 2, factor: 0.000125f) },
+                { ECSensor.VoltageVrmSoc, new EmbeddedControllerSource("VRM SOC (Voltage Out)", SensorType.Voltage, 0x041A, 2, factor: 0.001f, isLittleEndian: true) },
+                { ECSensor.PowerVrmCore, new EmbeddedControllerSource("VRM Vcore (Power Out)", SensorType.Power, 0x015C, 2, factor: 0.125f) },
+                { ECSensor.PowerVrmSoc, new EmbeddedControllerSource("VRM SOC (Power Out)", SensorType.Power, 0x041E, 2, isLittleEndian: true) },
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0036, blank: -40) },
                 { ECSensor.TempTSensorAlt, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0035, blank: -40) },
                 { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
@@ -493,7 +534,8 @@ public abstract class EmbeddedController : Hardware
                 { ECSensor.TempTSensor, new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40) },
                 { ECSensor.TempWaterIn, new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40) },
                 { ECSensor.TempWaterOut, new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40) },
-                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
+                { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                { ECSensor.FanWaterFlow, new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f) }
             }
         },
         {
@@ -735,8 +777,20 @@ public abstract class EmbeddedController : Hardware
         /// <summary>VRM temperature [℃]</summary>
         TempVrm,
 
+        /// <summary>VRM SOC temperature [℃]</summary>
+        TempVrmSoc,
+
+        /// <summary>DIMM thermistor temperature [℃]</summary>
+        TempDimm,
+
         /// <summary>CPU Core voltage [mV]</summary>
         VoltageCPU,
+
+        /// <summary>VRM Vcore output voltage [V]</summary>
+        VoltageVrmCore,
+
+        /// <summary>VRM SOC output voltage [V]</summary>
+        VoltageVrmSoc,
 
         /// <summary>CPU_Opt fan [RPM]</summary>
         FanCPUOpt,
@@ -755,6 +809,12 @@ public abstract class EmbeddedController : Hardware
 
         /// <summary>CPU current [A]</summary>
         CurrCPU,
+
+        /// <summary>VRM Vcore output power [W]</summary>
+        PowerVrmCore,
+
+        /// <summary>VRM SOC output power [W]</summary>
+        PowerVrmSoc,
 
         /// <summary>"Water_In" temperature sensor reading [℃]</summary>
         TempWaterIn,
