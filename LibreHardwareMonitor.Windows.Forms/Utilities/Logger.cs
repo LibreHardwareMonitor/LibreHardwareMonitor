@@ -127,7 +127,7 @@ public class Logger
         return true;
     }
 
-    private void CreateNewLogFile()
+    private bool CreateNewLogFile()
     {
         IList<ISensor> list = new List<ISensor>();
         SensorVisitor visitor = new SensorVisitor(sensor =>
@@ -135,33 +135,33 @@ public class Logger
             list.Add(sensor);
         });
         visitor.VisitComputer(_computer);
+
+        if (list.Count == 0)
+            return false;
+
         _sensors = list.ToArray();
         _identifiers = _sensors.Select(s => s.Identifier.ToString()).ToArray();
 
         using (StreamWriter writer = new StreamWriter(_fileName, false))
         {
-            writer.Write(",");
             for (int i = 0; i < _sensors.Length; i++)
             {
+                writer.Write(",");
                 writer.Write(_sensors[i].Identifier);
-                if (i < _sensors.Length - 1)
-                    writer.Write(",");
-                else
-                    writer.WriteLine();
             }
+            writer.WriteLine();
 
-            writer.Write("Time,");
+            writer.Write("Time");
             for (int i = 0; i < _sensors.Length; i++)
             {
-                writer.Write('"');
+                writer.Write(",\"");
                 writer.Write(_sensors[i].Name);
                 writer.Write('"');
-                if (i < _sensors.Length - 1)
-                    writer.Write(",");
-                else
-                    writer.WriteLine();
             }
+            writer.WriteLine();
         }
+
+        return true;
     }
 
     public TimeSpan LoggingInterval { get; set; }
@@ -181,10 +181,12 @@ public class Logger
                 {
                     uint sessionNumber = 1;
                     do {
-                        _fileName = GetFileName(DateTime.Now, sessionNumber);
+                        _fileName = GetFileName(now, sessionNumber);
                         sessionNumber++;
                     } while (File.Exists(_fileName));
-                    CreateNewLogFile();
+
+                    if (!CreateNewLogFile())
+                        return;
                 }
                 break;
             case LoggerFileRotation.Daily:
@@ -193,8 +195,12 @@ public class Logger
                 {
                     _day = now.Date;
                     _fileName = GetFileName(_day);
-                    if (!OpenExistingLogFile())
-                        CreateNewLogFile();
+
+                    if (OpenExistingLogFile())
+                        break;
+
+                    if (!CreateNewLogFile())
+                        return;
                 }
                 break;
         }
@@ -204,20 +210,17 @@ public class Logger
             using (StreamWriter writer = new StreamWriter(new FileStream(_fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))
             {
                 writer.Write(now.ToString("G", CultureInfo.InvariantCulture));
-                writer.Write(",");
                 for (int i = 0; i < _sensors.Length; i++)
                 {
+                    writer.Write(",");
                     if (_sensors[i] != null)
                     {
                         float? value = _sensors[i].Value;
                         if (value.HasValue)
                             writer.Write(value.Value.ToString("R", CultureInfo.InvariantCulture));
                     }
-                    if (i < _sensors.Length - 1)
-                        writer.Write(",");
-                    else
-                        writer.WriteLine();
                 }
+                writer.WriteLine();
             }
         }
         catch (IOException) { }
