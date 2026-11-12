@@ -11,6 +11,8 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 internal class IntelIntegratedGpu : GenericGpu
 {
     private const uint MSR_PP1_ENERGY_STATUS = 0x641;
+    private const uint IA32_TEMPERATURE_TARGET = 0x1A2;
+    private const uint MCHBAR_THERM_STATUS_GT = 0x59C0;
 
     private readonly Sensor _dedicatedMemoryUsage;
     private readonly Sensor _sharedMemoryLimit;
@@ -23,6 +25,7 @@ internal class IntelIntegratedGpu : GenericGpu
     private readonly Sensor _powerSensor;
     private readonly Sensor _sharedMemoryUsage;
     private readonly Sensor _gtCoresTemperature;
+    private readonly Sensor _mchbarGtTemperature;
     private readonly Sensor _gpuClockFrequency;
     private readonly Sensor _gpuVoltage;
 
@@ -30,6 +33,8 @@ internal class IntelIntegratedGpu : GenericGpu
     private DateTime _lastEnergyTime;
 
     private readonly IntelMsr _pawnModule;
+    private readonly IntelMchbar _mchbar;
+    private readonly uint _tjMax;
 
     private readonly IntelGcl.ctl_device_adapter_handle_t? _igclHandle;
 
@@ -61,6 +66,28 @@ internal class IntelIntegratedGpu : GenericGpu
             {
                 _gpuVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
                 ActivateSensor(_gpuVoltage);
+            }
+        }
+
+        if (_gtCoresTemperature == null && intelCpu.HasMchbarGTThermalStatus && _pawnModule.ReadMsr(IA32_TEMPERATURE_TARGET, out uint temperatureTarget, out uint _))
+        {
+            _tjMax = (temperatureTarget >> 16) & 0xFF;
+            if (_tjMax > 0)
+            {
+                _mchbar = new IntelMchbar();
+                if (TryReadMchbarGtTemperature(out float initialTemperature))
+                {
+                    _mchbarGtTemperature = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings)
+                    {
+                        Value = initialTemperature
+                    };
+                    ActivateSensor(_mchbarGtTemperature);
+                }
+                else
+                {
+                    _mchbar.Close();
+                    _mchbar = null;
+                }
             }
         }
 
@@ -128,6 +155,11 @@ internal class IntelIntegratedGpu : GenericGpu
             }
         }
 
+        if (_mchbar != null)
+        {
+            _mchbarGtTemperature.Value = TryReadMchbarGtTemperature(out float temperature) ? temperature : null;
+        }
+
         if (D3DDisplayDevice.GetDeviceInfoByIdentifier(_deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             if (_dedicatedMemoryUsage != null)
@@ -183,6 +215,27 @@ internal class IntelIntegratedGpu : GenericGpu
     {
         base.Close();
         _pawnModule.Close();
+        _mchbar?.Close();
+    }
+
+    private bool TryReadMchbarGtTemperature(out float temperature)
+    {
+        temperature = 0;
+
+        if (!_mchbar.ReadDword(MCHBAR_THERM_STATUS_GT, out uint value))
+        {
+            return false;
+        }
+
+        // THERM_STATUS_GT: bit 31 = valid bit, bits 23:16 = degrees below TjMax
+        if ((value & 0x80000000) == 0)
+        {
+            return false;
+        }
+
+        uint degreesBelowTjMax = (value >> 16) & 0xFF;
+        temperature = (int)_tjMax - (int)degreesBelowTjMax;
+        return true;
     }
 
     private static bool TryReadTelemetry(IntelGcl.ctl_device_adapter_handle_t handle, out IntelGcl.ctl_power_telemetry_t telemetry)
