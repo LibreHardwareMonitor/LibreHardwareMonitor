@@ -24,6 +24,10 @@ internal static class NvidiaML
     private static WindowsNvmlDeviceGetPcieThroughputDelegate _windowsNvmlDeviceGetPcieThroughputDelegate;
     private static WindowsNvmlDeviceGetPciInfo _windowsNvmlDeviceGetPciInfo;
     private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
+    private static WindowsNvmlDeviceGetSupportedClocksThrottleReasonsDelegate _windowsNvmlDeviceGetSupportedClocksThrottleReasons;
+    private static WindowsNvmlDeviceGetCurrentClocksThrottleReasonsDelegate _windowsNvmlDeviceGetCurrentClocksThrottleReasons;
+    private static WindowsNvmlDeviceGetSupportedClocksEventReasonsDelegate _windowsNvmlDeviceGetSupportedClocksEventReasons;
+    private static WindowsNvmlDeviceGetCurrentClocksEventReasonsDelegate _windowsNvmlDeviceGetCurrentClocksEventReasons;
     private static WindowsNvmlDelegate _windowsNvmlInit;
     private static WindowsNvmlDelegate _windowsNvmlShutdown;
 
@@ -136,6 +140,28 @@ internal static class NvidiaML
         Unknown = 999
     }
 
+    // NVML API has two sets of constants describing throttle reasons: older
+    // nvmlClocksThrottleReason* family that was the only one before v535, and
+    // newer nvmlClocksEventReason* family that was introduced in v535. Each
+    // has a corresponding pair of functions to get possible and current
+    // throttle reasons.
+    // Actual numbers behind the named constants are the same for both sets.
+    [Flags]
+    public enum nvmlClocksThrottleReason
+    {
+        GpuIdle                     = 0x0000000000000001,
+        ApplicationsClocksSetting   = 0x0000000000000002,
+        SwPowerCap                  = 0x0000000000000004,
+        HwSlowdown                  = 0x0000000000000008,
+        SyncBoost                   = 0x0000000000000010,
+        SwThermalSlowdown           = 0x0000000000000020,
+        HwThermalSlowdown           = 0x0000000000000040,
+        HwPowerBrakeSlowdown        = 0x0000000000000080,
+        DisplayClockSetting         = 0x0000000000000100,
+        BoardLimit                  = 0x0000000000000200,
+        Reliability                 = 0x0000000000000400,
+    }
+
     public static bool IsAvailable { get; private set; }
 
     public static object SyncRoot => _syncRoot;
@@ -240,6 +266,34 @@ internal static class NvidiaML
             _windowsNvmlDeviceGetPowerUsage = Marshal.GetDelegateForFunctionPointer<WindowsNvmlGetPowerUsageDelegate>(nvmlGetPowerUsage);
         else
             return false;
+
+        // Function deprecated since v535. May stop working or be removed in later versions.
+        IntPtr nvmlDeviceGetSupportedClocksThrottleReasons = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetSupportedClocksThrottleReasons");
+        if (nvmlDeviceGetSupportedClocksThrottleReasons != IntPtr.Zero)
+            _windowsNvmlDeviceGetSupportedClocksThrottleReasons = Marshal.GetDelegateForFunctionPointer<WindowsNvmlDeviceGetSupportedClocksThrottleReasonsDelegate>(nvmlDeviceGetSupportedClocksThrottleReasons);
+        else
+            _windowsNvmlDeviceGetSupportedClocksThrottleReasons = null;
+
+        // Function deprecated since v535. May stop working or be removed in later versions.
+        IntPtr nvmlDeviceGetCurrentClocksThrottleReasons = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetCurrentClocksThrottleReasons");
+        if (nvmlDeviceGetCurrentClocksThrottleReasons != IntPtr.Zero)
+            _windowsNvmlDeviceGetCurrentClocksThrottleReasons = Marshal.GetDelegateForFunctionPointer<WindowsNvmlDeviceGetCurrentClocksThrottleReasonsDelegate>(nvmlDeviceGetCurrentClocksThrottleReasons);
+        else
+            _windowsNvmlDeviceGetCurrentClocksThrottleReasons = null;
+
+        // Function introduced in v535.
+        IntPtr nvmlDeviceGetSupportedClocksEventReasons = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetSupportedClocksEventReasons");
+        if (nvmlDeviceGetSupportedClocksEventReasons != IntPtr.Zero)
+            _windowsNvmlDeviceGetSupportedClocksEventReasons = Marshal.GetDelegateForFunctionPointer<WindowsNvmlDeviceGetSupportedClocksEventReasonsDelegate>(nvmlDeviceGetSupportedClocksEventReasons);
+        else
+            _windowsNvmlDeviceGetSupportedClocksEventReasons = null;
+
+        // Function introduced in v535.
+        IntPtr nvmlDeviceGetCurrentClocksEventReasons = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetCurrentClocksEventReasons");
+        if (nvmlDeviceGetCurrentClocksEventReasons != IntPtr.Zero)
+            _windowsNvmlDeviceGetCurrentClocksEventReasons = Marshal.GetDelegateForFunctionPointer<WindowsNvmlDeviceGetCurrentClocksEventReasonsDelegate>(nvmlDeviceGetCurrentClocksEventReasons);
+        else
+            _windowsNvmlDeviceGetCurrentClocksEventReasons = null;
 
         IntPtr nvmlGetPcieThroughput = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetPcieThroughput");
         if (nvmlGetPcieThroughput != IntPtr.Zero)
@@ -363,6 +417,119 @@ internal static class NvidiaML
         return null;
     }
 
+    public static long? NvmlDeviceGetSupportedClocksThrottleReasons(NvmlDevice nvmlDevice)
+    {
+        if (IsAvailable)
+        {
+            long supportedReasons;
+            if (Software.OperatingSystem.IsUnix)
+            {
+                try
+                {
+                    if (nvmlDeviceGetSupportedClocksThrottleReasons(nvmlDevice, out supportedReasons) == NvmlReturn.Success)
+                        return supportedReasons;
+                }
+                catch { }
+            }
+            else
+            {
+                try
+                {
+                    if (_windowsNvmlDeviceGetSupportedClocksThrottleReasons(nvmlDevice, out supportedReasons) == NvmlReturn.Success)
+                        return supportedReasons;
+                }
+                catch { }
+            }
+        }
+
+        return null;
+    }
+
+    public static long? NvmlDeviceGetCurrentClocksThrottleReasons(NvmlDevice nvmlDevice)
+    {
+        if (IsAvailable)
+        {
+            long currentReasons;
+            if (Software.OperatingSystem.IsUnix)
+            {
+                try
+                {
+                    if (nvmlDeviceGetCurrentClocksThrottleReasons(nvmlDevice, out currentReasons) == NvmlReturn.Success)
+                        return currentReasons;
+                }
+                catch { }
+            }
+            else
+            {
+                try
+                {
+                    if (_windowsNvmlDeviceGetCurrentClocksThrottleReasons(nvmlDevice, out currentReasons) == NvmlReturn.Success)
+                        return currentReasons;
+                }
+                catch { }
+            }
+        }
+
+        return null;
+    }
+
+    public static long? NvmlDeviceGetSupportedClocksEventReasons(NvmlDevice nvmlDevice)
+    {
+        if (IsAvailable)
+        {
+            long supportedReasons;
+            if (Software.OperatingSystem.IsUnix)
+            {
+                try
+                {
+                    if (nvmlDeviceGetSupportedClocksEventReasons(nvmlDevice, out supportedReasons) == NvmlReturn.Success)
+                        return supportedReasons;
+                }
+                catch { }
+            }
+            else
+            {
+                try
+                {
+                    if (_windowsNvmlDeviceGetSupportedClocksEventReasons(nvmlDevice, out supportedReasons) == NvmlReturn.Success)
+                        return supportedReasons;
+                }
+                catch { }
+            }
+        }
+
+        return null;
+    }
+
+
+    public static long? NvmlDeviceGetCurrentClocksEventReasons(NvmlDevice nvmlDevice)
+    {
+        if (IsAvailable)
+        {
+            long currentReasons;
+            if (Software.OperatingSystem.IsUnix)
+            {
+                try
+                {
+                    if (nvmlDeviceGetCurrentClocksEventReasons(nvmlDevice, out currentReasons) == NvmlReturn.Success)
+                        return currentReasons;
+                }
+                catch { }
+            }
+            else
+            {
+                try
+                {
+                    if (_windowsNvmlDeviceGetCurrentClocksEventReasons(nvmlDevice, out currentReasons) == NvmlReturn.Success)
+                        return currentReasons;
+                }
+                catch { }
+            }
+        }
+
+        return null;
+    }
+
     public static uint? NvmlDeviceGetPcieThroughput(NvmlDevice nvmlDevice, NvmlPcieUtilCounter counter)
     {
         if (IsAvailable)
@@ -434,6 +601,18 @@ internal static class NvidiaML
     [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPowerUsage", ExactSpelling = true)]
     private static extern NvmlReturn nvmlDeviceGetPowerUsage(NvmlDevice device, out int power);
 
+    [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetSupportedClocksThrottleReasons", ExactSpelling = true)]
+    private static extern NvmlReturn nvmlDeviceGetSupportedClocksThrottleReasons(NvmlDevice device, out long supportedClocksThrottleReasons);
+
+    [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetCurrentClocksThrottleReasons", ExactSpelling = true)]
+    private static extern NvmlReturn nvmlDeviceGetCurrentClocksThrottleReasons(NvmlDevice device, out long currentClocksThrottleReasons);
+
+    [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetSupportedClocksEventReasons", ExactSpelling = true)]
+    private static extern NvmlReturn nvmlDeviceGetSupportedClocksEventReasons(NvmlDevice device, out long supportedClocksEventReasons);
+
+    [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetCurrentClocksEventReasons", ExactSpelling = true)]
+    private static extern NvmlReturn nvmlDeviceGetCurrentClocksEventReasons(NvmlDevice device, out long currentClocksEventReasons);
+
     [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPcieThroughput", ExactSpelling = true)]
     private static extern NvmlReturn nvmlDeviceGetPcieThroughput(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
 
@@ -447,6 +626,14 @@ internal static class NvidiaML
     private delegate NvmlReturn WindowsNvmlGetHandleByPciBusIdDelegate([MarshalAs(UnmanagedType.LPStr)] string pciBusId, out NvmlDevice device);
 
     private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
+
+    private delegate NvmlReturn WindowsNvmlDeviceGetSupportedClocksThrottleReasonsDelegate(NvmlDevice device, out long supportedClocksThrottleReasons);
+
+    private delegate NvmlReturn WindowsNvmlDeviceGetCurrentClocksThrottleReasonsDelegate(NvmlDevice device, out long currentClocksThrottleReasons);
+
+    private delegate NvmlReturn WindowsNvmlDeviceGetSupportedClocksEventReasonsDelegate(NvmlDevice device, out long supportedClocksEventReasons);
+
+    private delegate NvmlReturn WindowsNvmlDeviceGetCurrentClocksEventReasonsDelegate(NvmlDevice device, out long currentClocksEventReasons);
 
     private delegate NvmlReturn WindowsNvmlDeviceGetPcieThroughputDelegate(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
 
