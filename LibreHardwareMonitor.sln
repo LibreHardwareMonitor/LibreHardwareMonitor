@@ -30,6 +30,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Avalonia.Localization", "LibreHardwareMonitor.Avalonia\LibreHardwareMonitor.Avalonia.Localization\LibreHardwareMonitor.Avalonia.Localization.csproj", "{0BB3E5A5-9668-474D-B6FC-13BE2E5314B8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreHardwareMonitor.Mcp", "LibreHardwareMonitor.Mcp\LibreHardwareMonitor.Mcp.csproj", "{C3B43498-2632-4FD4-AF02-69B5BF453927}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -136,6 +138,18 @@ Global
 		{0BB3E5A5-9668-474D-B6FC-13BE2E5314B8}.Release|x64.Build.0 = Release|Any CPU
 		{0BB3E5A5-9668-474D-B6FC-13BE2E5314B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{0BB3E5A5-9668-474D-B6FC-13BE2E5314B8}.Release|x86.Build.0 = Release|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Debug|x64.Build.0 = Debug|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Debug|x86.Build.0 = Debug|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Release|ARM64.Build.0 = Release|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Release|x64.ActiveCfg = Release|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Release|x64.Build.0 = Release|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Release|x86.ActiveCfg = Release|Any CPU
+		{C3B43498-2632-4FD4-AF02-69B5BF453927}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
