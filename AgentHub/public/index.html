@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#11131a">
+    <title>Agent Hub</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Agent Hub home">
+          <span class="brand-mark">A</span>
+          <span>agent<span class="brand-light">hub</span></span>
+        </a>
+        <div class="workspace-label">WORKSPACE</div>
+        <nav aria-label="Main navigation">
+          <a class="nav-link active" href="#overview"><span class="nav-icon">◫</span> Overview</a>
+          <a class="nav-link" href="#connections"><span class="nav-icon">⌘</span> Connections</a>
+          <a class="nav-link" href="#tasks"><span class="nav-icon">↗</span> Tasks</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="local-status"><span class="status-dot"></span><span>Running on this PC</span></div>
+          <p>Local starter · Demo mode</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumbs">Workspace <span>/</span> Overview</div>
+          <div class="topbar-right"><span class="demo-pill">DEMO MODE</span><span class="avatar">AH</span></div>
+        </header>
+
+        <section class="page" id="overview">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">YOUR PRIVATE WORKSPACE</p>
+              <h1>Agent Hub</h1>
+              <p class="subtitle">A home for your AI agents, tools, and tasks.</p>
+            </div>
+            <a class="button button-primary" href="#connections">＋ Add a connection</a>
+          </div>
+
+          <div class="notice">
+            <span class="notice-icon">i</span>
+            <div><strong>Starter preview</strong><span> This dashboard runs locally. Connections are saved only in memory; LLM calls, tools, and remote device access are not enabled yet.</span></div>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-label">CONNECTIONS</div><div class="stat-bottom"><span class="stat-value" id="connection-count">0</span><span class="stat-note">agents &amp; tools</span></div></article>
+            <article class="stat-card"><div class="stat-label">ACTIVE TASKS</div><div class="stat-bottom"><span class="stat-value">0</span><span class="stat-note">ready when you are</span></div></article>
+            <article class="stat-card"><div class="stat-label">HUB STATUS</div><div class="stat-bottom"><span class="stat-value status-value"><span class="status-dot"></span>Local</span><span class="stat-note">this device only</span></div></article>
+          </div>
+
+          <section class="content-card" id="connections">
+            <div class="section-heading">
+              <div><h2>Connections</h2><p>Keep agents and tools organized in one place.</p></div>
+              <button class="button button-secondary" id="open-connection-form">＋ Add connection</button>
+            </div>
+            <form class="connection-form hidden" id="connection-form">
+              <label>Connection name<input id="connection-name" maxlength="80" placeholder="e.g. Research assistant" required></label>
+              <label>Type<select id="connection-kind"><option>Agent</option><option>Tool</option></select></label>
+              <button class="button button-primary" type="submit">Add</button>
+              <button class="button button-quiet" id="cancel-connection-form" type="button">Cancel</button>
+            </form>
+            <div class="empty-state" id="connections-empty">
+              <div class="empty-icon">⌘</div>
+              <strong>No connections yet</strong>
+              <p>Add an agent or tool to start building your workspace.</p>
+              <button class="text-button" id="empty-add-connection">Add your first connection <span>→</span></button>
+            </div>
+            <div class="connection-list" id="connection-list"></div>
+          </section>
+
+          <section class="content-card task-card" id="tasks">
+            <div class="section-heading">
+              <div><h2>Start a task</h2><p>Describe what you want your agents to work on.</p></div>
+              <span class="demo-pill">SIMULATED</span>
+            </div>
+            <form id="task-form" class="task-form">
+              <label class="sr-only" for="task-prompt">Describe a task</label>
+              <textarea id="task-prompt" maxlength="2000" placeholder="e.g. Summarize the latest project updates…" required></textarea>
+              <div class="task-form-footer"><span>Up to 2,000 characters</span><button class="button button-primary" type="submit">Create task <span>→</span></button></div>
+            </form>
+            <div class="task-list" id="task-list"></div>
+          </section>
+          <footer>Agent Hub Starter <span>·</span> Local-first by design</footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
