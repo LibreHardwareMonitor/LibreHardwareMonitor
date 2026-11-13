@@ -35,6 +35,7 @@ public interface IHardware : IElement
 
     /// <summary>
     /// Gets or sets device name.
+    /// <para>Setting a <see langword="null" /> or empty value reverts to the default name.</para>
     /// </summary>
     string Name { get; set; }
 
