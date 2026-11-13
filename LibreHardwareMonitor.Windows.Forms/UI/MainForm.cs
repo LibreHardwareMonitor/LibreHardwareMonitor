@@ -598,10 +598,25 @@ public sealed partial class MainForm : Form
 
     private void PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs eventArgs)
     {
-        if (eventArgs.Mode == Microsoft.Win32.PowerModes.Resume)
+        if (eventArgs.Mode != Microsoft.Win32.PowerModes.Resume)
+            return;
+
+        // SystemEvents raises this on its own thread. Resetting the computer there would run the
+        // hardware added/removed handlers (tree model, gadget, system tray) off the UI thread and
+        // race with the update timer, so marshal the reset back to the UI thread.
+        if (IsDisposed || !IsHandleCreated)
+            return;
+
+        try
         {
-            _computer.Reset();
+            BeginInvoke(new Action(() =>
+            {
+                if (!IsDisposed)
+                    _computer.Reset();
+            }));
         }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
     }
 
     private void InitializeTheme()
