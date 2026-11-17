@@ -671,7 +671,13 @@ public sealed partial class MainForm : Form
 
     private void InitializeSplitter()
     {
-        splitContainer.SplitterDistance = _settings.GetValue("splitContainer.SplitterDistance", 400);
+        // Clamp to the current container size: a very short/narrow window (e.g. shrunk to show only the plot)
+        // makes the saved/default distance out of range, and WinForms throws on startup.
+        int size = splitContainer.Orientation == Orientation.Horizontal ? splitContainer.Height : splitContainer.Width;
+        int max = size - splitContainer.Panel2MinSize - splitContainer.SplitterWidth;
+        if (max >= splitContainer.Panel1MinSize)
+            splitContainer.SplitterDistance = Math.Max(splitContainer.Panel1MinSize, Math.Min(_settings.GetValue("splitContainer.SplitterDistance", 400), max));
+
         splitContainer.SplitterMoved += delegate { _settings.SetValue("splitContainer.SplitterDistance", splitContainer.SplitterDistance); };
     }
 
