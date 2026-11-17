@@ -451,10 +451,12 @@ internal sealed class SuperIOHardware : Hardware
                         f.Add(new Fan("Water Pump", 0)); // W_PUMP
                         f.Add(new Fan("Chassis Fan #3", 1)); // CHA_FAN3
                         f.Add(new Fan("Chassis Fan #4", 2)); // CHA_FAN4
+                        f.Add(new Fan("MOS Fan", 3)); // MOS_FAN1
 
                         c.Add(new Control("Water Pump", 0)); // W_PUMP
                         c.Add(new Control("Chassis Fan #3", 1)); // CHA_FAN3
                         c.Add(new Control("Chassis Fan #4", 2)); // CHA_FAN4
+                        c.Add(new Control("MOS Fan", 3)); // MOS_FAN1
                         break;
                     case Manufacturer.ASRock when model == Model.B850I_LIGHTNING_WIFI:
                         v.Add(new Voltage("+12V", 0));
