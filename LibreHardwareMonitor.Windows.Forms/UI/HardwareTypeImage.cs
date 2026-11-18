@@ -66,6 +66,10 @@ public class HardwareTypeImage
             case HardwareType.PowerMonitor:
                 image = Utilities.EmbeddedResources.GetImage("powermonitor.png");
                 break;
+            case HardwareType.KontronSensors:
+            case HardwareType.KontronWatchdog:
+                image = Utilities.EmbeddedResources.GetImage("kontron_16x16.png");
+                break;
             default:
                 image = new Bitmap(1, 1);
                 break;
