@@ -30,6 +30,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
     private const byte VendorID = 0xEF;
     private const byte ProductID = 0x05;
+    private const byte NoctuaEditionProductID = 0x06;
 
     /// <summary>
     /// Time the fan needs to ramp up by 10%.
@@ -594,7 +595,7 @@ public sealed class WireViewPro2 : Hardware, IPowerMonitor
 
             if (vendorData.HasValue &&
                 vendorData.Value.VendorId == VendorID &&
-                vendorData.Value.ProductId == ProductID)
+                (vendorData.Value.ProductId == ProductID || vendorData.Value.ProductId == NoctuaEditionProductID))
             {
                 VendorData = vendorData.Value;
 
