@@ -1405,6 +1405,37 @@ internal sealed class SuperIOHardware : Hardware
             case Manufacturer.ASUS:
                 switch (model)
                 {
+                    case Model.ROG_CROSSHAIR_VI_HERO: // IT8665E
+                        // Matched against the ASUS WMI sensors and BIOS
+                        v.Add(new Voltage("Vcore", 0, 1, 1));
+                        v.Add(new Voltage("DIMM", 1, 1, 1));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("CPU SOC", 4, 1, 1));
+                        v.Add(new Voltage("VDDP", 5, 1, 1));
+                        v.Add(new Voltage("1.8V PLL", 6, 1, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("Motherboard", 1));
+                        t.Add(new Temperature("VRM", 2));
+
+                        // Those all move in sync with Temperature #3 (VRM) and I can't tell them apart
+                        for (int i = 3; i < superIO.Temperatures.Length; i++)
+                            t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                        f.Add(new Fan("CPU Fan", 0));
+
+                        for (int i = 1; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        c.Add(new Control("CPU Fan", 0));
+
+                        for (int i = 1; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.PRIME_X370_PRO: // IT8665E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Southbridge 2.5V", 1));

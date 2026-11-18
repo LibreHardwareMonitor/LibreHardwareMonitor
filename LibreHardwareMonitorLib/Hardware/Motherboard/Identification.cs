@@ -159,6 +159,8 @@ internal class Identification
                 return Model.P55_Deluxe;
             case var _ when name.Equals("Crosshair III Formula", StringComparison.OrdinalIgnoreCase):
                 return Model.CROSSHAIR_III_FORMULA;
+            case var _ when name.Equals("CROSSHAIR VI HERO", StringComparison.OrdinalIgnoreCase):
+                return Model.ROG_CROSSHAIR_VI_HERO;
             case var _ when name.Equals("ROG CROSSHAIR VIII HERO", StringComparison.OrdinalIgnoreCase):
                 return Model.ROG_CROSSHAIR_VIII_HERO;
             case var _ when name.Equals("ROG CROSSHAIR VIII HERO (WI-FI)", StringComparison.OrdinalIgnoreCase):
