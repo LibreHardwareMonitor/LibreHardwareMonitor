@@ -5196,33 +5196,33 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.ROG_CROSSHAIR_X670E_GENE: // NCT6799D
                     case Model.ROG_CROSSHAIR_X670E_HERO:
-                        v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
+                        v.Add(new Voltage("Vcore", 0, 15, 136));
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
-                        v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("VMISC", 5, 9, 82));
+                        v.Add(new Voltage("CPU SOC", 6, 9, 82));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("CPU Termination", 9)); // This is wrong
-                        v.Add(new Voltage("Voltage #11", 10, true));
-                        v.Add(new Voltage("Voltage #12", 11, true));
-                        v.Add(new Voltage("Voltage #13", 12, true));
-                        v.Add(new Voltage("Voltage #14", 13, true));
-                        v.Add(new Voltage("Voltage #15", 14, true));
-                        t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1)); // No matching temp value
-                        t.Add(new Temperature("Motherboard", 2)); // Matches MB in HWinfo
-                        t.Add(new Temperature("Temperature #3", 3)); // No matching temp value
-                        t.Add(new Temperature("Temperature #4", 4)); // No matching temp value
-                        t.Add(new Temperature("Temperature #5", 5)); // No matching temp value
-                        t.Add(new Temperature("Temperature #6", 6)); // No matching temp value
-                        t.Add(new Temperature("Temperature #7", 8)); // Matches MB in HWinfo
-                        t.Add(new Temperature("CPU", 22)); // Matches MB in HWinfo
-                        t.Add(new Temperature("Thermistor Sensor", 24));
+                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("Chipset 0 VDD", 10, 1, 1));
+                        v.Add(new Voltage("Chipset 1 VDD", 11, 1, 1));
+                        v.Add(new Voltage("1.8V Standby", 12, 36, 47)); // HWiNFO 1.8V_ALW
+                        v.Add(new Voltage("CPU VDDIO", 13, 9, 82));
+                        v.Add(new Voltage("1.8V PLL", 14, 17, 36));
+                        v.Add(new Voltage("Voltage #16", 15)); // HWiNFO VIN9
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
+                        t.Add(new Temperature("CPU Core", 0)); // PECI_0 / SB-TSI
+                        t.Add(new Temperature("Temperature #1", 1)); // CPUTIN, not shown by HWiNFO; rises under load, source unknown (VRM or Socket?)
+                        t.Add(new Temperature("Motherboard", 2)); // SYSTIN
+                        t.Add(new Temperature("Temperature #8", 8)); // TSENSOR
+                        t.Add(new Temperature("CPU", 22)); // PECI_0_CAL
+
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+
+                        for (int i = 2; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
 
                         for (int i = 0; i < superIO.Controls.Length; i++)
