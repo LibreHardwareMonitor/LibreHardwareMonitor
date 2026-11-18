@@ -683,13 +683,14 @@ internal sealed class SuperIOHardware : Hardware
 
                 switch (model)
                 {
+                    case Model.B650_TOMAHAWK_WIFI:
                     case Model.X870E_TOMAHAWK_WIFI:
                     case Model.X870E_TOMAHAWK_MAX_WIFI_PZ:
                     case Model.X870E_EDGE_TI_WIFI:
                         v.Add(new Voltage("+12V", 0));
                         v.Add(new Voltage("+5V", 1));
                         v.Add(new Voltage("CPU Northbridge/SoC", 2));
-                        v.Add(new Voltage("DIMM", 3, 1, 1));
+                        v.Add(new Voltage("CPU VDDIO", 3, 1, 1));
                         v.Add(new Voltage("Vcore", 4, -1, 2));
                         v.Add(new Voltage("Chipset", 5));
                         v.Add(new Voltage("CPU System Agent", 6));
@@ -1404,6 +1405,37 @@ internal sealed class SuperIOHardware : Hardware
             case Manufacturer.ASUS:
                 switch (model)
                 {
+                    case Model.ROG_CROSSHAIR_VI_HERO: // IT8665E
+                        // Matched against the ASUS WMI sensors and BIOS
+                        v.Add(new Voltage("Vcore", 0, 1, 1));
+                        v.Add(new Voltage("DIMM", 1, 1, 1));
+                        v.Add(new Voltage("+12V", 2, 5, 1));
+                        v.Add(new Voltage("+5V", 3, 1.5f, 1));
+                        v.Add(new Voltage("CPU SOC", 4, 1, 1));
+                        v.Add(new Voltage("VDDP", 5, 1, 1));
+                        v.Add(new Voltage("1.8V PLL", 6, 1, 1));
+                        v.Add(new Voltage("+3V Standby", 7, 10, 10));
+                        v.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        t.Add(new Temperature("CPU", 0));
+                        t.Add(new Temperature("Motherboard", 1));
+                        t.Add(new Temperature("VRM", 2));
+
+                        // Those all move in sync with Temperature #3 (VRM) and I can't tell them apart
+                        for (int i = 3; i < superIO.Temperatures.Length; i++)
+                            t.Add(new Temperature("Temperature #" + (i + 1), i));
+
+                        f.Add(new Fan("CPU Fan", 0));
+
+                        for (int i = 1; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        c.Add(new Control("CPU Fan", 0));
+
+                        for (int i = 1; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.PRIME_X370_PRO: // IT8665E
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Southbridge 2.5V", 1));
@@ -5164,33 +5196,33 @@ internal sealed class SuperIOHardware : Hardware
 
                     case Model.ROG_CROSSHAIR_X670E_GENE: // NCT6799D
                     case Model.ROG_CROSSHAIR_X670E_HERO:
-                        v.Add(new Voltage("Vcore", 0, 2, 2)); // This is wrong
+                        v.Add(new Voltage("Vcore", 0, 15, 136));
                         v.Add(new Voltage("+5V", 1, 4, 1));
                         v.Add(new Voltage("AVCC", 2, 34, 34));
                         v.Add(new Voltage("+3.3V", 3, 34, 34));
                         v.Add(new Voltage("+12V", 4, 11, 1));
-                        v.Add(new Voltage("Voltage #6", 5, true));
-                        v.Add(new Voltage("Voltage #7", 6, true));
+                        v.Add(new Voltage("VMISC", 5, 9, 82));
+                        v.Add(new Voltage("CPU SOC", 6, 9, 82));
                         v.Add(new Voltage("+3V Standby", 7, 34, 34));
                         v.Add(new Voltage("CMOS Battery", 8, 34, 34));
-                        v.Add(new Voltage("CPU Termination", 9)); // This is wrong
-                        v.Add(new Voltage("Voltage #11", 10, true));
-                        v.Add(new Voltage("Voltage #12", 11, true));
-                        v.Add(new Voltage("Voltage #13", 12, true));
-                        v.Add(new Voltage("Voltage #14", 13, true));
-                        v.Add(new Voltage("Voltage #15", 14, true));
-                        t.Add(new Temperature("CPU Core", 0));
-                        t.Add(new Temperature("Temperature #1", 1)); // No matching temp value
-                        t.Add(new Temperature("Motherboard", 2)); // Matches MB in HWinfo
-                        t.Add(new Temperature("Temperature #3", 3)); // No matching temp value
-                        t.Add(new Temperature("Temperature #4", 4)); // No matching temp value
-                        t.Add(new Temperature("Temperature #5", 5)); // No matching temp value
-                        t.Add(new Temperature("Temperature #6", 6)); // No matching temp value
-                        t.Add(new Temperature("Temperature #7", 8)); // Matches MB in HWinfo
-                        t.Add(new Temperature("CPU", 22)); // Matches MB in HWinfo
-                        t.Add(new Temperature("Thermistor Sensor", 24));
+                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("Chipset 0 VDD", 10, 1, 1));
+                        v.Add(new Voltage("Chipset 1 VDD", 11, 1, 1));
+                        v.Add(new Voltage("1.8V Standby", 12, 36, 47)); // HWiNFO 1.8V_ALW
+                        v.Add(new Voltage("CPU VDDIO", 13, 9, 82));
+                        v.Add(new Voltage("1.8V PLL", 14, 17, 36));
+                        v.Add(new Voltage("Voltage #16", 15)); // HWiNFO VIN9
 
-                        for (int i = 0; i < superIO.Fans.Length; i++)
+                        t.Add(new Temperature("CPU Core", 0)); // PECI_0 / SB-TSI
+                        t.Add(new Temperature("Temperature #1", 1)); // CPUTIN, not shown by HWiNFO; rises under load, source unknown (VRM or Socket?)
+                        t.Add(new Temperature("Motherboard", 2)); // SYSTIN
+                        t.Add(new Temperature("Temperature #8", 8)); // TSENSOR
+                        t.Add(new Temperature("CPU", 22)); // PECI_0_CAL
+
+                        f.Add(new Fan("Chassis Fan #1", 0));
+                        f.Add(new Fan("CPU Fan", 1));
+
+                        for (int i = 2; i < superIO.Fans.Length; i++)
                             f.Add(new Fan("Fan #" + (i + 1), i));
 
                         for (int i = 0; i < superIO.Controls.Length; i++)
@@ -5433,6 +5465,41 @@ internal sealed class SuperIOHardware : Hardware
 
                         break;
 
+                    case Model.ROG_CROSSHAIR_X870E_GLACIAL: // NCT6701D
+                        v.Add(new Voltage("Vcore", 0, 15, 136));
+                        v.Add(new Voltage("+5V", 1, 4, 1));
+                        v.Add(new Voltage("AVSB", 2, 34, 34));
+                        v.Add(new Voltage("+3.3V", 3, 34, 34));
+                        v.Add(new Voltage("+12V", 4, 11, 1));
+                        v.Add(new Voltage("VMISC", 5, 9, 82));
+                        v.Add(new Voltage("CPU SOC", 6, 9, 82));
+                        v.Add(new Voltage("+3V Standby", 7, 34, 34));
+                        v.Add(new Voltage("CMOS Battery", 8, 34, 34));
+                        v.Add(new Voltage("VTT", 9, 34, 34));
+                        v.Add(new Voltage("Chipset 0 VDD", 10, 1, 1));
+                        v.Add(new Voltage("Chipset 1 VDD", 11, 1, 1));
+                        v.Add(new Voltage("Chipset Standby", 12));
+                        v.Add(new Voltage("CPU VDDIO Memory", 13, 9, 82));
+                        v.Add(new Voltage("1.8V PLL", 14, 17, 36));
+
+                        t.Add(new Temperature("VRM", 1));
+                        t.Add(new Temperature("Motherboard", 2));
+                        t.Add(new Temperature("Temperature #3", 3));
+                        t.Add(new Temperature("Temperature #4", 4));
+                        t.Add(new Temperature("Temperature #5", 5));
+                        t.Add(new Temperature("Temperature #6", 6));
+                        t.Add(new Temperature("Temperature #7", 7));
+                        t.Add(new Temperature("CPU", 21));
+                        t.Add(new Temperature("Temperature #26", 26));
+
+                        for (int i = 0; i < superIO.Fans.Length; i++)
+                            f.Add(new Fan("Fan #" + (i + 1), i));
+
+                        for (int i = 0; i < superIO.Controls.Length; i++)
+                            c.Add(new Control("Fan #" + (i + 1), i));
+
+                        break;
+
                     case Model.PROART_X870E_CREATOR_WIFI: // NCT6701D
                         v.Add(new Voltage("Vcore", 0));
                         v.Add(new Voltage("Voltage #2", 1, true));
@@ -5607,9 +5674,14 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #15", 14, true));
                         v.Add(new Voltage("Voltage #16", 15, true));
 
-                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Temperature #1", 1)); // Not the CPU and not shown by HWiNFO, maybe VRM
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("T-Sensor", 6));
+
+                        // Depending on the BIOS version, the CPU temperature is at index 21 or 22
+                        t.Add(new Temperature("CPU", 21));
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("CPU Package", 26));
 
                         f.Add(new Fan("Chassis Fan", 0));
                         f.Add(new Fan("CPU Fan", 1));
