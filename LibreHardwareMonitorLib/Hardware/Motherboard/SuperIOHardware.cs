@@ -5674,9 +5674,14 @@ internal sealed class SuperIOHardware : Hardware
                         v.Add(new Voltage("Voltage #15", 14, true));
                         v.Add(new Voltage("Voltage #16", 15, true));
 
-                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("Temperature #1", 1)); // Not the CPU and not shown by HWiNFO, maybe VRM
                         t.Add(new Temperature("Motherboard", 2));
                         t.Add(new Temperature("T-Sensor", 6));
+
+                        // Depending on the BIOS version, the CPU temperature is at index 21 or 22
+                        t.Add(new Temperature("CPU", 21));
+                        t.Add(new Temperature("CPU", 22));
+                        t.Add(new Temperature("CPU Package", 26));
 
                         f.Add(new Fan("Chassis Fan", 0));
                         f.Add(new Fan("CPU Fan", 1));
